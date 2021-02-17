@@ -1,0 +1,14 @@
+
+.resizable{
+  width: 100px;
+  height: 100px;
+  border : 2px solid gray;
+}
+.wrap {
+  width: 500px;
+  height: 400px;
+  border: 2px dotted gray;
+}
+body{
+  height: 700px;
+}

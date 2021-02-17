@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>JQueryUI Draggable Tutorial</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="jquery-ui.min.css">
+    <script src="jquery-ui.min.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="resizable"></div>
+    </div>
+    <h1></h1>
+    <script>
+      $(function(){
+        $('.resizable').draggable();
+        $('.resizable').resizable({
+          handles : "n,s,w,e",
+          maxHeight : 200,
+          maxWidth : 200,
+          minWidth : 50,
+          minHeight : 50,
+          alsoResize : '.wrap',
+          start : function(event, ui){
+            $('h1').html('Resize started!');
+          },
+          stop : function(event, ui){
+            $('h1').html('Resize Stopped!');
+          },
+          resize : function(event, ui){
+            $('h1').html('Resizeing Element! Width :  ' + ui.size.width + ' Height : ' + ui.size.height );
+          }
+
+        });
+      });
+    </script>
+  </body>
+</html>

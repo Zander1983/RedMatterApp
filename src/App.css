@@ -1,0 +1,13 @@
+.ui-widget-header {
+    background:#b9cd6d;
+    border: 1px solid #b9cd6d;
+    color: #FFFFFF;
+    font-weight: bold;
+ }
+ .ui-widget-content {
+    background: #cedc98;
+    border: 1px solid #DDDDDD;
+    color: #333333;
+ }
+ #resizable { width: 150px; height: 150px; padding: 0.5em;
+    text-align: center; margin: 0; }
