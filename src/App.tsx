@@ -195,7 +195,7 @@ const App= ()=>{
 
     return(
         <>
-            <h1>Dummy Chart</h1>
+            <h1>Dummy Chart test</h1>
             <div className="chart-container" style={{position: 'relative', height:'40vh', width:'80vw'}}>
                 <canvas id="chart" style={{background:'black'}} ref={chartContainer} width='400px' height="400px"></canvas>
             </div>
