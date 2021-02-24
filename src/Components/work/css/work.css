@@ -1,0 +1,14 @@
+.workBlock{
+    background:white;
+    height:auto;
+}
+
+h2{
+    text-align:center;
+    text-decoration: underline;
+}
+
+.image{
+    display:flex;
+    margin:auto;
+}

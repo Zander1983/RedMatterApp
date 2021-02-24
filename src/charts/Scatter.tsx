@@ -1,6 +1,6 @@
 import React, { useEffect, useState,useRef } from 'react';
 import Chartjs from 'chart.js';
-import { updateGraph } from '../common/ReqHandling';
+import { updateGraph } from '../Components/common/ReqHandling';
 
 const Scatter = (props:any)=>{
     const chartContainer = useRef<HTMLCanvasElement>(null);

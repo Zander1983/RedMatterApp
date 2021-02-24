@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import { useParams } from 'react-router-dom';
-import { updateGraph } from '../common/ReqHandling';
+import { updateGraph } from '../Components/common/ReqHandling';
 import ScatterChart from './ScatterChart';
 
 interface ParamTypes {

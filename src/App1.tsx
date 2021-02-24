@@ -4,8 +4,8 @@ import './App.css';
 import Home from './Components/Home';
 import { Route, Switch } from 'react-router-dom';
 import Graph from './charts/Graph';
-import { fetchEventsData, fetchGraphData ,fetchParamsData,addGraph} from './common/ReqHandling';
-import Breadcrumbs from './common/Breadcrumbs';
+import { fetchEventsData, fetchGraphData ,fetchParamsData,addGraph} from './Components/common/ReqHandling';
+import Breadcrumbs from './Components/common/Breadcrumbs';
 
 function App() {
 
