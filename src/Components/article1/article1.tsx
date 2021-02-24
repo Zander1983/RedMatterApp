@@ -6,7 +6,7 @@ import './css/style.css';
 
 const AppArticle:FC = ()=>{
     return(
-        <div className="block block-article">
+        <div className="block block-article bgGray">
             <div className="container-fluid">
                 <div className="titleHolder">
                     <h2>Free flow cytometry software 'lite'</h2>
