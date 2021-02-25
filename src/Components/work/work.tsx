@@ -8,7 +8,7 @@ const AppWorking:FC = ()=>{
         <div className="block workBlock">
             <div className="container-fluid" id="work">
                 <div className="workTitleHolder">
-                    <h2>How It Works</h2>
+                    <h2 style={{textAlign:'center',textDecoration: "underline"}}>How It Works</h2>
                 </div>
                 <div className="workHolder">
                     <Row gutter={[8,8]}>

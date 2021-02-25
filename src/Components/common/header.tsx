@@ -27,6 +27,7 @@ const AppHeader:FC = ()=>{
                   <Link href="#help" title="Help" />
                   <Link href="#contact" title="Contact" />
                   <Link href="#blog" title="Blog" />
+                  <Link href="workspaces" title="My Workspace" />
               </Anchor>
             </div>
             <div className="mobileVisible">
@@ -45,6 +46,7 @@ const AppHeader:FC = ()=>{
                   <Link href="#help" title="Help" />
                   <Link href="#contact" title="Contact" />
                   <Link href="#blog" title="Blog" />
+                  <Link href="workspaces" title="My Workspace" />
                 </Anchor>
               </Drawer>
             </div>
