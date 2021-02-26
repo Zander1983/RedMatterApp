@@ -1,5 +1,13 @@
-import React,{useState} from 'react';
-import { List, Card, Button,Modal,Form, Input } from 'antd';
+import React,{useRef, useState} from 'react';
+import { List, Card, Button,Modal,Form, Input ,Tooltip} from 'antd';
+import './css/style.css';
+import {
+    EditTwoTone,
+    EditFilled,
+    CheckOutlined,
+    CloseOutlined,
+    DeleteFilled
+} from '@ant-design/icons';
 
 const data:any =[
     {
@@ -32,9 +40,10 @@ interface WorkspaceType{
 }
 const Workspaces = ()=>{
     const [workspaceData,setWorkspaceData] = useState(data);
-    const [visible,setVisible] = useState(false);
     const [loading,setLoading] = useState(false);
+    const [visible,setVisible] = useState(false);
     const [form] = Form.useForm();
+
     const getTimeCal = (date:string)=>{
         const date1 = new Date(date);
         const date2 = new Date();
@@ -42,51 +51,161 @@ const Workspaces = ()=>{
         return totalDays;
     }
 
-    const showModal = () => {
-        setVisible(true);
-    };
+    // Workspace child components
+    const WorkspaceCard = ({item}:any)=>{
+        const [isInEditMode,setIsInEditMode] = useState(false);
+        const editName = useRef<HTMLInputElement>(null);
+        const [isValid,setIsValid] = useState(true);
 
-    const handleCancel = (e:any) => {
-        setVisible(false);
-        form.resetFields();
-    };
+        const updateWorkspace = (id:string,data:any)=>{
+            const newWorkspaceName = editName.current?.value || '';
+            data['name'] = newWorkspaceName;
+            setIsInEditMode((prevData:Boolean) => !prevData);
+        }
+    
+        const changeEditMode = ()=>{
+            setIsInEditMode((prevData:Boolean) => !prevData);
+        }
 
-    const layout = {
-        labelCol: { span: 8 },
-        wrapperCol: { span: 16 },
-    };
-    const tailLayout = {
-        wrapperCol: { offset: 8, span: 16 },
-    };
+        const deleteWorkspace = (workid:string)=>{
+            setWorkspaceData((prevData:any)=>{
+                return(prevData.filter((data:any)=>{
+                    return data.id!=workid
+                }))
+            })
+        }
 
-    const addWorkspace = (values: any) => {
-        setLoading(true);
-        let newWorkspace:any = {};
-        newWorkspace['id']="6036460d0e12bc27db6df426";
-        newWorkspace['name']=values.workspacename;
-        newWorkspace['createdOn']=new Date().toISOString();
-        newWorkspace['owner']="abhitube434@gmail.com";
-        newWorkspace['isOwner']=true;
-        newWorkspace['isPrivate']=false;
-        newWorkspace['noAccepted']=true;
-        setWorkspaceData((prevData:any)=>{
-            return [...prevData,newWorkspace]
-        })
-        form.resetFields();
-        setVisible(false);
-        setLoading(false);
-    };
+        const cancel = ()=>{
+            setIsInEditMode(false);
+            setIsValid(true);
+        }
 
-    const deleteWorkspace = (workid:string)=>{
-        setWorkspaceData((prevData:any)=>{
-            return(prevData.filter((data:any)=>{
-                return data.id!=workid
-            }))
-        })
+        const handleChange = (event:any)=>{
+            setIsValid(true);
+            if(event.target.value.length == 0){
+                setIsValid(false);
+            }
+        }
+
+        return(
+            <Card>
+                <div className="workspaceDetail">
+                    {
+                        isInEditMode?(
+                            <div className="editable">
+                                <input type="text" onChange={handleChange} defaultValue={item.name} ref={editName}/>
+                                {/* <Button type="primary" disabled={!isValid?disabled:null} className="edit" onClick={()=>updateWorkspace(item.id,item)}>Save</Button> */}
+                                {/* <Button type="primary" onClick={()=>cancel()}>Cancel</Button> */}
+                                <div className="action">
+                                    <Tooltip placement="bottom" arrowPointAtCenter={true} title="Save Changes">
+                                        <a type="button" className={!isValid ? 'saveBtn disabled' : "saveBtn"} onClick={()=>updateWorkspace(item.id,item)}><CheckOutlined /></a>
+                                    </Tooltip>
+                                    <Tooltip placement="bottom" arrowPointAtCenter={true} title="Cancel">
+                                        <a type="button" className="cancelBtn" onClick={()=>cancel()}><CloseOutlined /></a>
+                                    </Tooltip>
+                                </div>
+                            </div>
+                        ):(
+                            <div className="workspace-name">
+                                <a href="#">{item.name}</a>
+                                {/* <Button type="primary" className="edit" onClick={()=>changeEditMode()}><EditFilled /></Button> */}
+                            </div>
+                        )
+                    }
+                    <p>{`${getTimeCal(item.createdOn)} days ago`}</p>
+                    <p>{item.isPrivate ? 'Private':'Public'}</p>
+                    <div className="main-action">
+                        {
+                            isInEditMode?null:
+                                <Tooltip placement="bottom" arrowPointAtCenter={true} title="Edit">
+                                    <a type="button" className="editBtn" onClick={()=>changeEditMode()}><EditFilled /></a>
+                                </Tooltip>
+                        }
+                        <Tooltip placement="bottom" arrowPointAtCenter={true} title="Delete">
+                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item.id)}}><DeleteFilled /></a>
+                        </Tooltip>
+                        {/* <Button type="primary"onClick={()=>{deleteWorkspace(item.id)}} danger>Delete</Button> */}
+                    </div>
+                </div>
+            </Card>
+        )
     }
-    return (
-        <div className="block workspaceBlock">
-          <div className="container-fluid">
+
+    const WorkspaceList = ()=>{
+        return(
+            <List
+              grid={{
+                gutter: 16,
+                xs: 1,
+                sm: 1,
+                md: 4,
+                lg: 4,
+                xl: 4,
+                xxl: 4,
+              }}
+              dataSource={workspaceData}
+              renderItem={(item:any) => (
+                <List.Item>
+                    <WorkspaceCard item={item}/>
+                </List.Item>
+              )}
+            />
+        )
+    }
+
+    const WorkspaceAddForm = ()=>{
+        const layout = {
+            labelCol: { span: 8 },
+            wrapperCol: { span: 16 },
+        };
+    
+        const tailLayout = {
+            wrapperCol: { offset: 8, span: 16 },
+        };
+
+        const addWorkspace = (values: any) => {
+            setLoading(true);
+            let newWorkspace:any = {};
+            newWorkspace['id']="6036460d0e12bc27db6df426";
+            newWorkspace['name']=values.workspacename;
+            newWorkspace['createdOn']=new Date().toISOString();
+            newWorkspace['owner']="abhitube434@gmail.com";
+            newWorkspace['isOwner']=true;
+            newWorkspace['isPrivate']=false;
+            newWorkspace['noAccepted']=true;
+            setWorkspaceData((prevData:any)=>{
+                return [...prevData,newWorkspace]
+            })
+            form.resetFields();
+            setVisible(false);
+            setLoading(false);
+        };
+
+        return(
+            <Form {...layout} form={form} name="control-hooks" onFinish={addWorkspace}>
+                <Form.Item name="workspacename" label="Workspace Name" rules={[{ required: true }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item {...tailLayout}>
+                    <Button type="primary" htmlType="submit">
+                        Add
+                    </Button>
+                </Form.Item>
+            </Form>
+        )
+    }
+
+    const WorkspaceHeader = ()=>{
+        const showModal = () => {
+            setVisible(true);
+        };
+
+        const handleCancel = (e:any) => {
+            setVisible(false);
+            form.resetFields();
+        };
+
+        return(
             <div className="workspaceHeader">
                 <h3>My Workspaces</h3>
                 <Button type="primary" onClick={showModal} className="text-dark">Create New Workspace</Button>
@@ -97,46 +216,19 @@ const Workspaces = ()=>{
                     footer={null}
                     destroyOnClose = {true}
                 >
-                    <Form {...layout} form={form} name="control-hooks" onFinish={addWorkspace}>
-                        <Form.Item name="workspacename" label="Workspace Name" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item {...tailLayout}>
-                            <Button type="primary" htmlType="submit">
-                                Add
-                            </Button>
-                        </Form.Item>
-                    </Form>
+                    <WorkspaceAddForm/>
                 </Modal>
             </div>
-            <List
-              grid={{
-                gutter: 16,
-                xs: 2,
-                sm: 2,
-                md: 4,
-                lg: 4,
-                xl: 4,
-                xxl: 4,
-              }}
-              dataSource={workspaceData}
-              renderItem={(item:any) => (
-                <List.Item>
-                  <Card>
-                      <div className="workspaceDetail">
-                        <a href="#">{item.name}</a>
-                        <Button type="primary" className="edit">Edit</Button>
-                        <p>{`${getTimeCal(item.createdOn)} days ago`}</p>
-                        <p>{item.isPrivate ? 'Private':'Public'}</p>
-                        <Button type="primary"onClick={()=>{deleteWorkspace(item.id)}} danger>Delete</Button>
-                      </div>
-                  </Card>
-                </List.Item>
-              )}
-            />
+        )
+    }
+
+    return (
+        <div className="block workspaceBlock">
+          <div className="container-fluid">
+                <WorkspaceHeader/>
+                <WorkspaceList/>
           </div>
         </div>  
-      );
+    );
 }
-
 export default Workspaces;

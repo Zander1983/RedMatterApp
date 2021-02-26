@@ -123,9 +123,9 @@ header
   display: flex;
 }
 
-/* .header .ant-anchor-ink {
+.header .ant-anchor-ink {
   display: none;
-} */
+}
 
 .header .ant-anchor-link {
   padding: 0 20px;
@@ -595,6 +595,9 @@ footer
 
 .mobileHidden {
   display: block;
+}
+.mobileHidden .navlink{
+    margin:10px 0px;
 }
 
 /* 

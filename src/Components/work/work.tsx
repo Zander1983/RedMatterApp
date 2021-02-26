@@ -6,7 +6,7 @@ import tablet_s from '../../assets/images/tablet_s.png';
 const AppWorking:FC = ()=>{
     return(
         <div className="block workBlock">
-            <div className="container-fluid" id="work">
+            <div className="container-fluid" id={"work"}>
                 <div className="workTitleHolder">
                     <h2 style={{textAlign:'center',textDecoration: "underline"}}>How It Works</h2>
                 </div>
