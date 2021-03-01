@@ -1,5 +1,7 @@
 import React,{useRef, useState} from 'react';
-import { List, Card, Button,Modal,Form, Input ,Tooltip} from 'antd';
+import { List, Card, Button,Modal,Form, Input ,Tooltip , Row,Col} from 'antd';
+import axios from 'axios';
+import {NavLink} from 'react-router-dom';
 import './css/style.css';
 import {
     EditTwoTone,
@@ -11,22 +13,88 @@ import {
 
 const data:any =[
     {
-        "id":"602b74e9e01b4c34d295c6b3",
-        "name":"testing",
-        "createdOn":"2021-02-16T07:31:53.576Z",
-        "owner":"abhitube434@gmail.com",
-        "isOwner":true,
-        "isPrivate":false,
-        "noAccepted":true
+        "_id" : "603be1a075bccb0c5987b3e7",
+        "userId" : "6022e58aa53f4f9a63367f6e",
+        "name" : "Test workspace 1",
+        "organisationId" : "6022e58aa53f4f9a63367f6f",
+        "paramsAnaylsis" : [
+            {
+                "min" : 0,
+                "acceptedMin" : 0,
+                "fifthPercentile" : 0,
+                "scaledMinLin" : 0,
+                "scaledMinBi" : 0,
+                "scaledMaxLin" : 262143,
+                "scaledMaxBi" : 262143,
+                "paramName" : "FSC-A"
+            },
+            {
+                "min" : 0,
+                "acceptedMin" : 0,
+                "fifthPercentile" : 0,
+                "scaledMinLin" : 0,
+                "scaledMinBi" : 0,
+                "scaledMaxLin" : 262143,
+                "scaledMaxBi" : 262143,
+                "paramName" : "SSC-A"
+            },
+            {
+                "min" : -27.719999313354492,
+                "acceptedMin" : 0,
+                "fifthPercentile" : -16.820999240875242,
+                "scaledMinLin" : -27.719999313354492,
+                "scaledMinBi" : -27.719999313354492,
+                "scaledMaxLin" : 20796.30078125,
+                "scaledMaxBi" : 20796.30078125,
+                "paramName" : "FITC-A"
+            },
+            {
+                "min" : -73.08000183105469,
+                "acceptedMin" : 0,
+                "fifthPercentile" : -36.540000915527344,
+                "scaledMinLin" : -73.08000183105469,
+                "scaledMinBi" : -73.08000183105469,
+                "scaledMaxLin" : 17506.439453125,
+                "scaledMaxBi" : 17506.439453125,
+                "paramName" : "PE-A"
+            },
+            {
+                "min" : -38.939998626708984,
+                "acceptedMin" : 0,
+                "fifthPercentile" : -23.599998474121094,
+                "scaledMinLin" : -38.939998626708984,
+                "scaledMinBi" : -38.939998626708984,
+                "scaledMaxLin" : 93748.6328125,
+                "scaledMaxBi" : 93748.6328125,
+                "paramName" : "APC-A"
+            },
+            {
+                "min" : 0,
+                "acceptedMin" : 0,
+                "fifthPercentile" : 0,
+                "scaledMinLin" : 0,
+                "scaledMinBi" : 0,
+                "scaledMaxLin" : 3623.199951171875,
+                "scaledMaxBi" : 3623.199951171875,
+                "paramName" : "Time"
+            }
+        ],
+        "isDemo" : false,
+        "isPrivate" : true,
+        "createdOn" : "2021-02-28T18:32:00.606Z",
+        "__v" : 1,
+        "gateId" : "603beb1152a37310ca068383"
     },
     {
-        "id":"6036460d0e12bc27db6df426",
-        "name":"try1",
-        "createdOn":"2021-02-24T12:26:53.814Z",
-        "owner":"abhitube434@gmail.com",
-        "isOwner":true,
-        "isPrivate":false,
-        "noAccepted":true
+        "_id" : "603be1a875bccb0c5987b3e8",
+        "userId" : "6022e58aa53f4f9a63367f6e",
+        "name" : "Test workspace 2",
+        "organisationId" : "6022e58aa53f4f9a63367f6f",
+        "paramsAnaylsis" : [ ],
+        "isDemo" : false,
+        "isPrivate" : false,
+        "createdOn" : "2021-02-28T18:32:08.340Z",
+        "__v" : 0
     }
 ]
 interface WorkspaceType{
@@ -50,7 +118,14 @@ const Workspaces = ()=>{
         let totalDays = Math.floor((date2.getTime()-date1.getTime())/(1000*3600*24))
         return totalDays;
     }
-
+    // const getWorkspaceData = ()=>{
+    //     axios.get('https://samplefcsdata.s3-eu-west-1.amazonaws.com/fcsfiles.json').then((data)=>{
+    //         console.log('workspacedata>>>>',data);
+    //     }).catch((e)=>{
+    //         console.log(e)
+    //     })
+    // }
+    // getWorkspaceData();
     // Workspace child components
     const WorkspaceCard = ({item}:any)=>{
         const [isInEditMode,setIsInEditMode] = useState(false);
@@ -70,7 +145,7 @@ const Workspaces = ()=>{
         const deleteWorkspace = (workid:string)=>{
             setWorkspaceData((prevData:any)=>{
                 return(prevData.filter((data:any)=>{
-                    return data.id!=workid
+                    return data._id!=workid
                 }))
             })
         }
@@ -107,7 +182,7 @@ const Workspaces = ()=>{
                             </div>
                         ):(
                             <div className="workspace-name">
-                                <a href="#">{item.name}</a>
+                                <NavLink to={{pathname:`/files/${item._id}`,state:{workspaceName:item.name}}}><p>{item.name}</p></NavLink>
                                 {/* <Button type="primary" className="edit" onClick={()=>changeEditMode()}><EditFilled /></Button> */}
                             </div>
                         )
@@ -122,7 +197,7 @@ const Workspaces = ()=>{
                                 </Tooltip>
                         }
                         <Tooltip placement="bottom" arrowPointAtCenter={true} title="Delete">
-                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item.id)}}><DeleteFilled /></a>
+                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item._id)}}><DeleteFilled /></a>
                         </Tooltip>
                         {/* <Button type="primary"onClick={()=>{deleteWorkspace(item.id)}} danger>Delete</Button> */}
                     </div>
@@ -207,17 +282,23 @@ const Workspaces = ()=>{
 
         return(
             <div className="workspaceHeader">
-                <h3>My Workspaces</h3>
-                <Button type="primary" onClick={showModal} className="text-dark">Create New Workspace</Button>
-                <Modal
-                    visible={visible}
-                    title="Add Workspace"
-                    onCancel={handleCancel}
-                    footer={null}
-                    destroyOnClose = {true}
-                >
-                    <WorkspaceAddForm/>
-                </Modal>
+                <Row gutter={[8, 8]}>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12} className="title">
+                        <h3>My Workspaces</h3>
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12} className="workspaceFileBtn">
+                        <Button type="primary" onClick={showModal} className="text-dark">Create New Workspace</Button>
+                        <Modal
+                            visible={visible}
+                            title="Add Workspace"
+                            onCancel={handleCancel}
+                            footer={null}
+                            destroyOnClose = {true}
+                        >
+                            <WorkspaceAddForm/>
+                        </Modal>
+                    </Col>
+                </Row>
             </div>
         )
     }

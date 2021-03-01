@@ -37,7 +37,7 @@ const AppHeader:FC = ()=>{
                 <NavLink activeClassName="navlink" to="/#help">Help &nbsp;</NavLink>
                 <NavLink activeClassName="navlink" to="/#contact">Contact &nbsp;</NavLink>
                 <NavLink activeClassName="navlink" to="/#blog">Blog &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="workspaces">MyWorkspace &nbsp;</NavLink>
+                <NavLink activeClassName="navlink" to="/workspaces">MyWorkspace &nbsp;</NavLink>
             </div>
             <div className="mobileVisible">
               <Button type="primary" onClick={showDrawer}>
@@ -63,7 +63,7 @@ const AppHeader:FC = ()=>{
                 <NavLink activeClassName="navlink" to="/#help">Help &nbsp;</NavLink><br/>
                 <NavLink activeClassName="navlink" to="/#contact">Contact &nbsp;</NavLink><br/>
                 <NavLink activeClassName="navlink" to="/#blog">Blog &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="workspaces">MyWorkspace &nbsp;</NavLink><br/>
+                <NavLink activeClassName="navlink" to="/workspaces">MyWorkspace &nbsp;</NavLink><br/>
               </Drawer>
             </div>
           </div>

@@ -9,6 +9,7 @@ import 'antd/dist/antd.css';
 import AppHeader from './Components/common/header';
 import AppHome from './Components/home/home';
 import Workspaces from './Components/workspaces/workspaces';
+import WorkspaceAppFiles from './Components/workspaces/workspaceFiles';
 
 const { Header, Footer,Content } = Layout;
 
@@ -22,6 +23,7 @@ const App: FC = () => {
                 <Switch>
                     <Route exact path="/" component={AppHome}/>
                     <Route exact path="/workspaces" component={Workspaces}/>
+                    <Route exact path="/files/:workspacesId" component={WorkspaceAppFiles}/>
                 </Switch>
                 {/* <AppHome/> */}
             </Content>

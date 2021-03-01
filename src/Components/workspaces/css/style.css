@@ -65,3 +65,39 @@
     /* font-size: 18px; */
     color:#fa541c;
 }
+
+/* Workspace File Component */
+.uploadFileModal p{
+    text-align:justify;
+    font-size:12px;
+}
+
+.workspace-name p{
+    width: 150px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align:center;
+}
+.workspaceHeader{
+    margin:10px 0;
+}
+.workspaceFileBtn{
+    display: flex;
+    justify-content: flex-end;
+}
+.workspaceFileBtn button{
+    margin:0 5px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media only screen and (max-width: 767px) {
+    .workspaceFileBtn{
+        display: flex;
+        justify-content: center;
+    }
+    .title h3{
+        text-align: center;
+    }
+}
