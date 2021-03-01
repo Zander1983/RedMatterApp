@@ -327,7 +327,7 @@ const WorkspaceAppFiles = ({match}:any)=>{
                             </div>
                         ):(
                             <div className="workspace-name">
-                                <NavLink to="#"><p>{item.label}</p></NavLink>
+                                <NavLink to=""><p>{item.label}</p></NavLink>
                             </div>
                         )
                     }
