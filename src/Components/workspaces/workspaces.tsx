@@ -1,6 +1,6 @@
-import React,{useRef, useState} from 'react';
+import React,{useRef, useState,useEffect} from 'react';
 import { List, Card, Button,Modal,Form, Input ,Tooltip , Row,Col} from 'antd';
-import axios from 'axios';
+import axios from './../common/axios';
 import {NavLink} from 'react-router-dom';
 import './css/style.css';
 import {
@@ -11,103 +11,8 @@ import {
     DeleteFilled
 } from '@ant-design/icons';
 
-const data:any =[
-    {
-        "_id" : "603be1a075bccb0c5987b3e7",
-        "userId" : "6022e58aa53f4f9a63367f6e",
-        "name" : "Test workspace 1",
-        "organisationId" : "6022e58aa53f4f9a63367f6f",
-        "paramsAnaylsis" : [
-            {
-                "min" : 0,
-                "acceptedMin" : 0,
-                "fifthPercentile" : 0,
-                "scaledMinLin" : 0,
-                "scaledMinBi" : 0,
-                "scaledMaxLin" : 262143,
-                "scaledMaxBi" : 262143,
-                "paramName" : "FSC-A"
-            },
-            {
-                "min" : 0,
-                "acceptedMin" : 0,
-                "fifthPercentile" : 0,
-                "scaledMinLin" : 0,
-                "scaledMinBi" : 0,
-                "scaledMaxLin" : 262143,
-                "scaledMaxBi" : 262143,
-                "paramName" : "SSC-A"
-            },
-            {
-                "min" : -27.719999313354492,
-                "acceptedMin" : 0,
-                "fifthPercentile" : -16.820999240875242,
-                "scaledMinLin" : -27.719999313354492,
-                "scaledMinBi" : -27.719999313354492,
-                "scaledMaxLin" : 20796.30078125,
-                "scaledMaxBi" : 20796.30078125,
-                "paramName" : "FITC-A"
-            },
-            {
-                "min" : -73.08000183105469,
-                "acceptedMin" : 0,
-                "fifthPercentile" : -36.540000915527344,
-                "scaledMinLin" : -73.08000183105469,
-                "scaledMinBi" : -73.08000183105469,
-                "scaledMaxLin" : 17506.439453125,
-                "scaledMaxBi" : 17506.439453125,
-                "paramName" : "PE-A"
-            },
-            {
-                "min" : -38.939998626708984,
-                "acceptedMin" : 0,
-                "fifthPercentile" : -23.599998474121094,
-                "scaledMinLin" : -38.939998626708984,
-                "scaledMinBi" : -38.939998626708984,
-                "scaledMaxLin" : 93748.6328125,
-                "scaledMaxBi" : 93748.6328125,
-                "paramName" : "APC-A"
-            },
-            {
-                "min" : 0,
-                "acceptedMin" : 0,
-                "fifthPercentile" : 0,
-                "scaledMinLin" : 0,
-                "scaledMinBi" : 0,
-                "scaledMaxLin" : 3623.199951171875,
-                "scaledMaxBi" : 3623.199951171875,
-                "paramName" : "Time"
-            }
-        ],
-        "isDemo" : false,
-        "isPrivate" : true,
-        "createdOn" : "2021-02-28T18:32:00.606Z",
-        "__v" : 1,
-        "gateId" : "603beb1152a37310ca068383"
-    },
-    {
-        "_id" : "603be1a875bccb0c5987b3e8",
-        "userId" : "6022e58aa53f4f9a63367f6e",
-        "name" : "Test workspace 2",
-        "organisationId" : "6022e58aa53f4f9a63367f6f",
-        "paramsAnaylsis" : [ ],
-        "isDemo" : false,
-        "isPrivate" : false,
-        "createdOn" : "2021-02-28T18:32:08.340Z",
-        "__v" : 0
-    }
-]
-interface WorkspaceType{
-    "id":string,
-    "name":string,
-    "createdOn":string,
-    "owner":string,
-    "isOwner":boolean,
-    "isPrivate":boolean,
-    "noAccepted":boolean
-}
-const Workspaces = ()=>{
-    const [workspaceData,setWorkspaceData] = useState(data);
+const Workspaces = ({url}:any)=>{
+    const [workspaceData,setWorkspaceData] = useState<any[]>([]);
     const [loading,setLoading] = useState(false);
     const [visible,setVisible] = useState(false);
     const [form] = Form.useForm();
@@ -118,14 +23,23 @@ const Workspaces = ()=>{
         let totalDays = Math.floor((date2.getTime()-date1.getTime())/(1000*3600*24))
         return totalDays;
     }
-    // const getWorkspaceData = ()=>{
-    //     axios.get('https://samplefcsdata.s3-eu-west-1.amazonaws.com/fcsfiles.json').then((data)=>{
-    //         console.log('workspacedata>>>>',data);
-    //     }).catch((e)=>{
-    //         console.log(e)
-    //     })
-    // }
-    // getWorkspaceData();
+    
+    useEffect(()=>{
+        const getWorkspaceData = async()=>{
+            try{
+                setLoading(true);
+                const response = await axios.get(url).catch((err)=>console.log(err))
+                if(response){
+                    const datatemp = response.data;
+                    setWorkspaceData(datatemp);
+                    setLoading(false);
+                }
+            }catch(err){
+                setLoading(false);
+            }
+        }
+        getWorkspaceData();
+    },[]);
     // Workspace child components
     const WorkspaceCard = ({item}:any)=>{
         const [isInEditMode,setIsInEditMode] = useState(false);
@@ -307,7 +221,7 @@ const Workspaces = ()=>{
         <div className="block workspaceBlock">
           <div className="container-fluid">
                 <WorkspaceHeader/>
-                <WorkspaceList/>
+                {loading?<h1>Loading...</h1>:<WorkspaceList/>}
           </div>
         </div>  
     );

@@ -1,5 +1,6 @@
-import React,{useRef, useState} from 'react';
+import React,{useRef, useState,useEffect} from 'react';
 import { List, Card, Button,Modal,Form, Input ,Tooltip, Upload, Space,message, Row, Col} from 'antd';
+import axios from './../common/axios';
 import {
     EditTwoTone,
     EditFilled,
@@ -10,181 +11,37 @@ import {
 } from '@ant-design/icons';
 import {NavLink,useLocation} from 'react-router-dom';
 
-const fullData = [
-    {
-	"_id" : "603be24975bccb0c5987b3e9",
-	"label" : "16F790 ERICA NI DREAGHNAIN BM_Tube_001_001.fcs",
-	"userId" : "6022e58aa53f4f9a63367f6e",
-	"workspaceId" : "603be1a075bccb0c5987b3e7",
-	"organisationId" : "6022e58aa53f4f9a63367f6f",
-	"filename" : "files0-1614537289408.fcs",
-	"paramsAnaylsis" : [
-		{
-			"max" : 262143,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 262143,
-			"scaledMaxBi" : 262143,
-			"paramName" : "FSC-A"
-		},
-		{
-			"max" : 262143,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 262143,
-			"scaledMaxBi" : 262143,
-			"paramName" : "SSC-A"
-		},
-		{
-			"max" : 20796.30078125,
-			"min" : -27.719999313354492,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -16.820999240875242,
-			"scaledMinLin" : -27.719999313354492,
-			"scaledMinBi" : -27.719999313354492,
-			"scaledMaxLin" : 20796.30078125,
-			"scaledMaxBi" : 20796.30078125,
-			"paramName" : "FITC-A"
-		},
-		{
-			"max" : 17506.439453125,
-			"min" : -73.08000183105469,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -36.540000915527344,
-			"scaledMinLin" : -73.08000183105469,
-			"scaledMinBi" : -73.08000183105469,
-			"scaledMaxLin" : 17506.439453125,
-			"scaledMaxBi" : 17506.439453125,
-			"paramName" : "PE-A"
-		},
-		{
-			"max" : 93748.6328125,
-			"min" : -38.939998626708984,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -23.599998474121094,
-			"scaledMinLin" : -38.939998626708984,
-			"scaledMinBi" : -38.939998626708984,
-			"scaledMaxLin" : 93748.6328125,
-			"scaledMaxBi" : 93748.6328125,
-			"paramName" : "APC-A"
-		},
-		{
-			"max" : 3623.199951171875,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 3623.199951171875,
-			"scaledMaxBi" : 3623.199951171875,
-			"paramName" : "Time"
-		}
-	],
-	"isPrivate" : true,
-	"createdOn" : "2021-02-28T18:34:49.427Z",
-	"__v" : 1
-},
-{
-	"_id" : "603be24e75bccb0c5987b3ea",
-	"label" : "16F790 ERICA NI DREAGHNAIN BM_Tube_001_001.fcs",
-	"userId" : "6022e58aa53f4f9a63367f6e",
-	"workspaceId" : "603be1a075bccb0c5987b3e7",
-	"organisationId" : "6022e58aa53f4f9a63367f6f",
-	"filename" : "files0-1614537294262.fcs",
-	"paramsAnaylsis" : [
-		{
-			"max" : 262143,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 262143,
-			"scaledMaxBi" : 262143,
-			"paramName" : "FSC-A"
-		},
-		{
-			"max" : 262143,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 262143,
-			"scaledMaxBi" : 262143,
-			"paramName" : "SSC-A"
-		},
-		{
-			"max" : 20796.30078125,
-			"min" : -27.719999313354492,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -16.820999240875242,
-			"scaledMinLin" : -27.719999313354492,
-			"scaledMinBi" : -27.719999313354492,
-			"scaledMaxLin" : 20796.30078125,
-			"scaledMaxBi" : 20796.30078125,
-			"paramName" : "FITC-A"
-		},
-		{
-			"max" : 17506.439453125,
-			"min" : -73.08000183105469,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -36.540000915527344,
-			"scaledMinLin" : -73.08000183105469,
-			"scaledMinBi" : -73.08000183105469,
-			"scaledMaxLin" : 17506.439453125,
-			"scaledMaxBi" : 17506.439453125,
-			"paramName" : "PE-A"
-		},
-		{
-			"max" : 93748.6328125,
-			"min" : -38.939998626708984,
-			"acceptedMin" : 0,
-			"fifthPercentile" : -23.599998474121094,
-			"scaledMinLin" : -38.939998626708984,
-			"scaledMinBi" : -38.939998626708984,
-			"scaledMaxLin" : 93748.6328125,
-			"scaledMaxBi" : 93748.6328125,
-			"paramName" : "APC-A"
-		},
-		{
-			"max" : 3623.199951171875,
-			"min" : 0,
-			"acceptedMin" : 0,
-			"fifthPercentile" : 0,
-			"scaledMinLin" : 0,
-			"scaledMinBi" : 0,
-			"scaledMaxLin" : 3623.199951171875,
-			"scaledMaxBi" : 3623.199951171875,
-			"paramName" : "Time"
-		}
-	],
-	"isPrivate" : true,
-	"createdOn" : "2021-02-28T18:34:54.270Z",
-	"__v" : 1
-}
-]
-
-const WorkspaceAppFiles = ({match}:any)=>{
+const WorkspaceAppFiles = ({id,url}:any)=>{
     const location:any = useLocation<any>();
     const workspaceName = location.state.workspaceName;
-    const workspacesId = match.params.workspacesId;
+    const workspacesId = id;
     const fileData:any[] = [];
-    fullData.map((data)=>{
-        if(data.workspaceId == workspacesId){
-            fileData.push(data);
-        }
-    })
-    const [workspaceFileData,setWorkspaceFileData] = useState(fileData);
+    const [workspaceFileData,setWorkspaceFileData] = useState<any[]>([]);
     const [loading,setLoading] = useState(false);
     const [visible,setVisible] = useState(false);
     const [form] = Form.useForm();
+
+    useEffect(()=>{
+        const getWorkspaceFileData = async()=>{
+            try{
+                setLoading(true);
+                const response = await axios.get(url).catch((err)=>console.log(err))
+                if(response){
+                    const datatemp = response.data;
+                    datatemp.map((data:any)=>{
+                        if(data.workspaceId == workspacesId){
+                            fileData.push(data);
+                        }
+                    })
+                    setWorkspaceFileData(fileData);
+                    setLoading(false);
+                }
+            }catch(err){
+                setLoading(false);
+            }
+        }
+        getWorkspaceFileData();
+    },[])
     const getTimeCal = (date:string)=>{
         const date1 = new Date(date);
         const date2 = new Date();
@@ -374,7 +231,8 @@ const WorkspaceAppFiles = ({match}:any)=>{
         <div className="block workspaceBlock">
           <div className="container-fluid">
                 <WorkspaceHeader/>
-                <WorkspaceFileList/>
+
+                {loading?<h1>Loading...</h1>:<WorkspaceFileList/>}
           </div>
         </div>  
     );

@@ -10,6 +10,7 @@ import AppHeader from './Components/common/header';
 import AppHome from './Components/home/home';
 import Workspaces from './Components/workspaces/workspaces';
 import WorkspaceAppFiles from './Components/workspaces/workspaceFiles';
+import requestsUrl from './Components/common/RequestUrls';
 
 const { Header, Footer,Content } = Layout;
 
@@ -22,8 +23,8 @@ const App: FC = () => {
             <Content>
                 <Switch>
                     <Route exact path="/" component={AppHome}/>
-                    <Route exact path="/workspaces" component={Workspaces}/>
-                    <Route exact path="/files/:workspacesId" component={WorkspaceAppFiles}/>
+                    <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/>
+                    <Route exact path="/files/:workspacesId" component={({match}:any)=><WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl}/>}/>
                 </Switch>
                 {/* <AppHome/> */}
             </Content>
