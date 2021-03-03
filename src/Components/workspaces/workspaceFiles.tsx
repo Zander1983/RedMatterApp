@@ -184,7 +184,7 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
                             </div>
                         ):(
                             <div className="workspace-name">
-                                <NavLink to=""><p>{item.label}</p></NavLink>
+                                <NavLink to={`/analyse/${workspacesId}/${item._id}`}><p>{item.label}</p></NavLink>
                             </div>
                         )
                     }

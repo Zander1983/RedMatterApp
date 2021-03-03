@@ -16,6 +16,7 @@ interface graphInterface{
     id:string;
     paramsData:any[];
     onChangeEvent:any;
+    workspacesId:string;
 }
 const ScatterChart = (props:graphInterface)=>{
     const [yaxis,setYaxis] = useState(props.graphData['paramY']);

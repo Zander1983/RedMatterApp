@@ -3,7 +3,7 @@ import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Home from './Components/Home';
 import { Route, Switch } from 'react-router-dom';
-import Graph from './charts/Graph';
+import Graph from './Components/charts/Graph';
 import { fetchEventsData, fetchGraphData ,fetchParamsData,addGraph} from './Components/common/ReqHandling';
 import Breadcrumbs from './Components/common/Breadcrumbs';
 

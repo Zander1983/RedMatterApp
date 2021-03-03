@@ -4,6 +4,7 @@ const requestsUrl = {
     eventsUrl : '/events.json',
     gatesUrl : '/gates.json',
     graphsUrl : '/graphs.json',
+    paramsUrl : '/params.json',
     baseUrl : 'https://samplefcsdata.s3-eu-west-1.amazonaws.com'
 }
 

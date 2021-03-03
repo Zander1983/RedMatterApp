@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import { useParams } from 'react-router-dom';
-import { updateGraph } from '../Components/common/ReqHandling';
+import { updateGraph } from '../common/ReqHandling';
 import ScatterChart from './ScatterChart';
 
 interface ParamTypes {
@@ -40,7 +40,7 @@ const Graph = (props:any)=>{
             {
                 graphData.map((data:any)=>{
                     return (
-                        <ScatterChart onChangeEvent={onChangeEvent} key={data._id} id={data._id} paramsData={props.params} lableData={lableObj} graphData={data} eventsData={props.events}/>
+                        <ScatterChart workspacesId="hjdhfjkdhfkjdhfkdfhkjdf" onChangeEvent={onChangeEvent} key={data._id} id={data._id} paramsData={props.params} lableData={lableObj} graphData={data} eventsData={props.events}/>
                     )
                 })
             }
