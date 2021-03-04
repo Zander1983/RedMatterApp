@@ -75,15 +75,15 @@ const Scatter = (props:any)=>{
             setYLabel(props.Ylabel);
             setXAxis(props.xaxis);
             setYAxis(props.yaxis);
-            $(function() {
-                $( `#${props.graphId}` ).resizable({
-                    stop:(event,ui)=>{
-                        const newHeight = ui.size.width;
-                        const newHWidth = ui.size.height;
-                        onResize(newHeight,newHWidth);
-                    }
-                });
-                });
+            // $(function() {
+            //     $( `#${props.graphId}` ).resizable({
+            //         stop:(event,ui)=>{
+            //             const newHeight = ui.size.width;
+            //             const newHWidth = ui.size.height;
+            //             onResize(newHeight,newHWidth);
+            //         }
+            //     });
+            //     });
                 setChartData(props.chartData.datasets)
     })
     useEffect(()=>{
