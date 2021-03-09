@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function Challange1() {
+function FormPrototype() {
   const classes = useStyles();
   return (
     <div className={classes.header}>
@@ -18,4 +18,4 @@ function Challange1() {
   );
 }
 
-export default Challange1;
+export default FormPrototype;
