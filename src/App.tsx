@@ -13,6 +13,12 @@ import WorkspaceAppFiles from './Components/workspaces/workspaceFiles';
 import requestsUrl from './Components/common/RequestUrls';
 import Graph from './Components/charts/Graph';
 
+// Prototype components
+import GraphPrototype from './Components/prototype/graphPrototype';
+import FormPrototype from './Components/prototype/formPrototype';
+import LandingPagePrototype from './Components/prototype/landingPagePrototype';
+// End of prototype components
+
 const { Header, Footer,Content } = Layout;
 
 const App: FC = () => {
@@ -23,7 +29,12 @@ const App: FC = () => {
             </Header>
             <Content>
                 <Switch>
-                    <Route exact path="/" component={AppHome}/>
+                    {/* PROTOTYPE ENDPOINTS */}
+                    <Route exact path="/graph-prototype" component={GraphPrototype}/>
+                    <Route exact path="/form-prototype" component={FormPrototype}/>
+                    <Route exact path="/" component={LandingPagePrototype}/>
+                    {/* END OF PROTOTYPE ENDPOINTS */}
+                    <Route exact path="/full-landing-page" component={AppHome}/>
                     <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/>
                     <Route exact path="/files/:workspacesId" component={({match}:any)=><WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl}/>}/>
                     <Route exact path="/analyse/:workspacesId/:fcsfileId" component={({match}:any)=><Graph fcsfileId={match.params.fcsfileId} workspacesId={match.params.workspacesId} graphsUrl={requestsUrl.graphsUrl} gatesUrl={requestsUrl.gatesUrl} paramsUrl={requestsUrl.paramsUrl} eventsurl={requestsUrl.eventsUrl}/>}/>
