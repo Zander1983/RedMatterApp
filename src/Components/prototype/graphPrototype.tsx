@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import data from './fcsFileData'
 import { type } from 'node:os';
+import FlowCytometryGraph from './graph/FlowCytometryGraph'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -15,10 +16,9 @@ const useStyles = makeStyles((theme) => ({
 
 function GraphPrototype() {
   const classes = useStyles();
-  console.log(typeof(data))
   return (
-    <div className={classes.header}>]
-        {/* <p>{ JSON.stringify(data['dimesions']) }</p> */}
+    <div className={classes.header}>
+        <FlowCytometryGraph/>
     </div>
   );
 }
