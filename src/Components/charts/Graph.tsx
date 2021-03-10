@@ -39,6 +39,17 @@ const Graph = ({fcsfileId,workspacesId,graphsUrl,gatesUrl,eventsurl,paramsUrl}:a
         const res = await axios.get(eventsurl);
         if(res){
             setEvents(res.data);
+            const arr = res.data;
+            if(arr.length>0){
+                const no_of_param = arr[0].length;
+                let events_min_max:any = {};
+                for(var i=0;i<no_of_param;i++){
+                    const min = Math.min.apply(Math, arr.map((v:any) => v[i]));
+                    const max = Math.max.apply(Math, arr.map((v:any) => v[i]));
+                    events_min_max[i] = [min,max]
+                }
+                // console.log('minmax',events_min_max)
+            }
             setEventLoad(true);
         }
     }
@@ -60,7 +71,6 @@ const Graph = ({fcsfileId,workspacesId,graphsUrl,gatesUrl,eventsurl,paramsUrl}:a
             setGraphs(res.data);
             res.data.map((data:any)=>{
                 if(data.workspaceId == workspacesId){
-                    console.log(data.graphs)
                     setGraphdata(data.graphs);
                 }
             });
@@ -68,9 +78,13 @@ const Graph = ({fcsfileId,workspacesId,graphsUrl,gatesUrl,eventsurl,paramsUrl}:a
         }
     }
     async function getGates(){
-        const res = await axios.get(graphsUrl);
+        const res = await axios.get(gatesUrl);
         if(res){
-            setGates(res.data);
+            res.data.map((data:any)=>{
+                if(data.workspaceId == workspacesId){
+                    setGates(res.data);
+                }
+            });
             setGateLoad(true);
         }
     }
@@ -80,7 +94,7 @@ const Graph = ({fcsfileId,workspacesId,graphsUrl,gatesUrl,eventsurl,paramsUrl}:a
     }
     return(
         <>
-            <div className="block workspaceBlock">
+            <div className="block workspaceBlock graphBlock">
                 <div className="container-fluid">
                     { 
                         ( isEventLoaded && isParamLoaded && isGraphLoaded && isGateLoaded ) ? (
@@ -91,7 +105,7 @@ const Graph = ({fcsfileId,workspacesId,graphsUrl,gatesUrl,eventsurl,paramsUrl}:a
                                         graphData.map((data:any)=>{
                                             return (
                                                 <>
-                                                    <ScatterChart key={data._id} workspacesId={workspacesId} onChangeEvent={onChangeEvent} id={data._id} paramsData={params} lableData={lableObj} graphData={data} eventsData={events}/>
+                                                    <ScatterChart key={data._id} gates={gates} workspacesId={workspacesId} onChangeEvent={onChangeEvent} id={data._id} paramsData={params} lableData={lableObj} graphData={data} eventsData={events}/>
                                                 </>
                                             )
                                         })

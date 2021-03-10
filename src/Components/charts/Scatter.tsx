@@ -20,15 +20,17 @@ const Scatter = (props:any)=>{
         },
         scales: {
             xAxes: [{
+                    gridLines: {
+                        color:'red',
+                        display:false
+                    },
                     scaleLabel: {
                         labelString: Xlabel,
                         display: true
                     },
                     ticks: {
+                        min:0,
                         stepSize:xstepSize,
-                    },
-                    gridLines: {
-                        display: false
                     },
                     display: true
                 }],
@@ -40,12 +42,13 @@ const Scatter = (props:any)=>{
                     ticks: {
                         // beginAtZero: true,
                         // max: 250000,
-                        // min:0,
+                        min:0,
                         stepSize:ystepSize,
                         // maxTicksLimit:250000
                     },
                     gridLines: {
-                        display: false
+                        color:'green',
+                        display:false
                     }
                     // display: false
                 }]
@@ -87,10 +90,11 @@ const Scatter = (props:any)=>{
                 setChartData(props.chartData.datasets)
     })
     useEffect(()=>{
-        console.log('chartData>>',chartData)
+        // console.log('chartData>>',chartData)
         const context = chartContainer.current?.getContext('2d')
         if (context) {
             const newChartInstance = new Chartjs(context, {'type':"scatter",'data':{'datasets':chartData},'options':options});
+            console.log(newChartInstance);
             // if(context.canvas.parentNode){
             //     context.canvas.parentNode.style.height = height;
             // }
@@ -101,7 +105,7 @@ const Scatter = (props:any)=>{
     return (
         <>
             <div id={props.graphId} className="my-2 mx-2" style={{width:`${width}px`,height:`${height}px`,border:"1px solid black"}}>
-                <canvas ref={chartContainer}></canvas>
+                <canvas style={{background:'black'}} ref={chartContainer}></canvas>
             </div>
         </>
     )
