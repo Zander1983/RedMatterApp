@@ -66,11 +66,14 @@ const App= ()=>{
 
     let newChartInstance:any;
     function ourClickHandler(element:any) {
+        console.log(newChartInstance);
+        console.log(newChartInstance.scales);
         let scaleRef:any;
         let valueX:any;
         let valueY:any;
         for (var scaleKey in newChartInstance.scales) {
             scaleRef = newChartInstance.scales[scaleKey];
+            console.log('scaleref>>',scaleRef.getValueForPixel(168));
             if (scaleRef.isHorizontal() && scaleKey == 'x-axis-1') {
                 valueX = scaleRef.getValueForPixel(element.offsetX);
             } else if (scaleKey == 'y-axis-1') {
