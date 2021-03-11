@@ -17,8 +17,9 @@ import {
     Input,
     Table
   } from 'antd';
-  import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
-  
+import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
+import { NavLink } from 'react-router-dom';
+
   const { Option } = Select;
   const {TextArea} = Input;
 
@@ -159,15 +160,6 @@ const Questions = ()=>{
                     </Col> */}
                 </Row>
 
-                <Row>
-                    <Col sm={24} md={24} xl={24}>
-                        <Form.Item wrapperCol={{ span: 12, offset: 12 }}>
-                            <Button type="primary" htmlType="submit">
-                            Submit
-                            </Button>
-                        </Form.Item>
-                    </Col>
-                </Row>
             </Form>
             </div>
         )

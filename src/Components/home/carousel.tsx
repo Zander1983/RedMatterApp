@@ -17,7 +17,7 @@ return(
         {slideDetails.map((data:any,index:number)=>{
             return <div key={`slide${index}`}>
                 <div className="rightPanel">
-                    <p className="textWhite textCenter">{data.description}</p>
+                    <p className="textCenter">{data.description}</p>
                     <img id={`slide${data.id}`} src={data.imgSrc}/>
                 </div>
             </div>
