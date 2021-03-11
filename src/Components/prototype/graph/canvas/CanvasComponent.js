@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 
 
-function useCanvas(draw) {
+function useCanvas(parent, scale) {
 
   const canvasRef = useRef(null)
 
@@ -10,8 +10,8 @@ function useCanvas(draw) {
     const { width, height } = canvas.getBoundingClientRect()
 
     if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width
-      canvas.height = height
+      canvas.width = width * scale
+      canvas.height = height * scale
       return true
     }
 
@@ -24,10 +24,16 @@ function useCanvas(draw) {
     let frameCount = 0
     let animationFrameId
 
+    canvas.addEventListener('mousemove', parent.registerMouseEvent)
+    canvas.addEventListener('mousedown', parent.registerMouseEvent)
+    canvas.addEventListener('mouseup', parent.registerMouseEvent)
+    // canvas.addEventListener('mousemove', parent.registerMouseEvent)
+
     const render = () => {
       frameCount++
       resizeCanvasToDisplaySize(canvas)
-      draw(context, frameCount)
+      // console.log(parent)
+      parent.draw(context, frameCount)
       animationFrameId = window.requestAnimationFrame(render)
     }
     render()
@@ -35,7 +41,7 @@ function useCanvas(draw) {
     return () => {
       window.cancelAnimationFrame(animationFrameId)
     }
-  }, [draw])
+  }, [parent.draw])
 
   return canvasRef
 }
@@ -43,8 +49,8 @@ function useCanvas(draw) {
 
 const CanvasComponent = props => {
 
-  const { draw, ...rest } = props
-  const canvasRef = useCanvas(draw)
+  const { parent, scale, ...rest } = props
+  const canvasRef = useCanvas(parent, scale)
 
   return <canvas ref={canvasRef} {...rest} />
 }

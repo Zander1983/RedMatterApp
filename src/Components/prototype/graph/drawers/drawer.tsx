@@ -1,7 +1,7 @@
 /*
     This is responsible for drawing basic canvas shapes
 */
-import Context from './contextInterface'
+import Context from '../canvas/contextInterface'
 
 interface BaseParams {
     fillColor?: string
@@ -27,7 +27,7 @@ interface TextParams extends BaseParams {
     font?: string
 }
 
-export default class Drawer {
+export default abstract class Drawer {
     protected ctx: Context
 
     constructor(context: Context) {
@@ -52,10 +52,17 @@ export default class Drawer {
         this.ctx.lineWidth = width
     }
 
+    protected setFont(font: string | undefined) {
+        if (font == undefined)
+            return
+        this.ctx.font = font
+    }
+
     protected setDefaultStyle() {
         this.ctx.strokeStyle = '#000'
         this.ctx.fillStyle = '#000'
         this.ctx.lineWidth = 1
+        this.ctx.font = '10px Arial'
     }
 
     circle({x, y, radius, fillColor, strokeColor}: CircleParams) {
