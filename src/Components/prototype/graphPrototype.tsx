@@ -3,7 +3,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import ScatterPlotGraph from './graph/ScatterPlotGraph'
 import { Button } from '@material-ui/core'
 import Modal from '@material-ui/core/Modal'
-import { Divider } from '@material-ui/core';
+import { Divider } from '@material-ui/core'
+import Grid from '@material-ui/core/Grid'
+import TextField from '@material-ui/core/TextField'
 
 import AddFileModal from './components/AddFileModal'
 import GenerateReportModal from './components/GenerateReportModal'
@@ -74,47 +76,105 @@ function GraphPrototype() {
   }
 
   return (
-    <div className={classes.header}>
+    <div className={classes.header} style={{
+      height: '100%',
+    }}>
       <AddFileModal
         addFile={addFile}
         open={addFileModalOpen}
-        closeCall={{ f: handleClose, ref: setAddFileModalOpen }}/>
+        closeCall={{ f: handleClose, ref: setAddFileModalOpen }} />
 
       <GenerateReportModal
         open={generateReportModalOpen}
-        closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}/>
+        closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }} />
 
-      <div style={{ color: '#555', backgroundColor: '#eee', paddingBottom: 1, paddingTop: 15, marginBottom: 30 }}>
+      {
+        window.innerWidth < 700 ? (
+          <div style={{ color: '#555', backgroundColor: '#fdd', padding: 20, paddingBottom: 1, paddingTop: 15, marginTop: -10}}>
+            <p>
+              <b>We noticed you are using a small screen</b><br/>
+              Unfortunately, Red Matter is made with Desktop-sized
+              screens in mind. Consider switching devices!
+            </p>
+          </div>
+        ) : null
+      }
+
+      <div style={{ color: '#555', backgroundColor: '#dedede', paddingBottom: 1, paddingTop: 15, marginBottom: 30 }}>
         <p>
           This is a <b>PROTOTYPE</b> showing basic functionalities we expect to add to Red Matter.<br />
           You can help us improve or learn more by sending an email to <a href="mailto:redmatterapp@gmail.com"><b>redmatterapp@gmail.com</b></a>.
         </p>
       </div>
 
-      <div style={{
+      <Grid style={{
+        justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        backgroundColor: '#fafafa',
+        borderRadius: 10,
         marginBottom: 50
-      }}>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          onClick={() => handleOpen(setAddFileModalOpen)}
-          className={classes.topButton}>
-          + Add new file
-        </Button>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          onClick={() => handleOpen(setGenerateReportModalOpen)}
-          className={classes.topButton}>
-          Generate report
-        </Button>
-      </div>
-
-      {
-        scatterPlots.map(e => e)
-      }
+      }}
+        md={12} lg={9} xl={6}>
+        <Grid style={{
+          marginBottom: 50,
+          backgroundColor: '#66a',
+          paddingTop: 20,
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: 19,
+          borderRadius: 10,
+          WebkitBorderBottomLeftRadius: 0,
+          WebkitBorderBottomRightRadius: 0,
+        }} container>
+          <Grid  item xs={6} style={{
+            textAlign: 'left'
+          }}>
+            <TextField style={{
+              backgroundColor: '#fafafa',
+              padding: 5,
+              width: 300,
+              borderRadius: 5
+            }}
+              placeholder="Worskpace name">
+              suck on my balls
+            </TextField>
+          </Grid>
+          <Grid  item xs={6} style={{
+            textAlign: 'right'          
+          }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => handleOpen(setAddFileModalOpen)}
+              className={classes.topButton}
+              style={{
+                backgroundColor: '#fafafa'
+              }}>
+              + Add new file
+            </Button>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => handleOpen(setGenerateReportModalOpen)}
+              className={classes.topButton}
+              style={{
+                backgroundColor: '#fafafa',
+              }}>
+              Generate report
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid>
+          {
+            scatterPlots.length > 0?
+              scatterPlots.map(e => e) :
+              <h4 style={{marginBottom: 50, color: '#666'}}>Click add new file to add plots!</h4>
+          }
+        </Grid>
+      </Grid>
     </div>
   );
 }
