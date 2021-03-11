@@ -28,12 +28,12 @@ const useStyles = makeStyles((theme) => ({
         height: '100%',
         width: '100%',
         backgroundColor: 'rgba(150, 200, 200, 0.5)',
-        fontFamily: 'Raleway'
+        fontFamily: 'Raleway',
     },
     card: {
         width: 600,
         flex: 1,
-        backgroundColor: 'rgba(230, 240, 240, 0.99)'
+        backgroundColor: 'rgba(100, 120, 140, 0.99)'
     },
     centralizer: {
         display: 'grid',
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
         width: 300,
         height: 50,
-        backgroundColor: 'rgb(255, 255, 255)',
+        backgroundColor: 'rgb(210, 230, 240)',
     },
     video: {
         position: 'fixed',
@@ -68,14 +68,14 @@ const AppLandingPage = () => {
                         <Card className={classes.card} variant="outlined">
                             <CardContent>
                                 <h1>
-                                    <b style={{color: '#333'}}>Red Matter</b>
+                                    <b style={{color: '#fafafa'}}>Red Matter</b>
                                 </h1>
                                 <p>
-                                    <b style={{color: '#777'}}>Flow Cytometry software solutions</b>
+                                    <b style={{color: '#eee'}}>Flow Cytometry software solutions</b>
                                 </p>
-                                <p>Anaylising FCS files has never been easier</p>
+                                <p style={{color: '#eee'}}>Anaylising FCS files has never been easier</p>
                                 {/* <ImgCarousel /> */}
-                                <Button variant="outlined" size="large" color="primary" className={classes.marginButton}>
+                                <Button variant="contained" size="large" color="primary" className={classes.marginButton}>
                                     <NavLink to="/questions">
                                         Start now
                                     </NavLink>
