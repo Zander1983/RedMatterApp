@@ -15,8 +15,9 @@ import {
     Col,
     Input
   } from 'antd';
-  import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
-  
+import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
+import { NavLink } from 'react-router-dom';
+
   const { Option } = Select;
   const {TextArea} = Input;
 
@@ -109,7 +110,9 @@ const Questions = ()=>{
 
                 <Form.Item wrapperCol={{ span: 12, offset: 12 }}>
                     <Button type="primary" htmlType="submit">
-                    Submit
+                        <NavLink to="/graph">
+                            Submit
+                        </NavLink>
                     </Button>
                 </Form.Item>
     
