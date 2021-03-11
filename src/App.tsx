@@ -1,8 +1,9 @@
-import React, { useState,FC, useEffect } from 'react';
+import React, { useState, FC, useEffect } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 // import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import { Layout,Image } from 'antd';
+import { Layout, Image } from 'antd';
 
+import { makeStyles } from '@material-ui/core/styles';
 import './App.css';
 import 'antd/dist/antd.css';
 
@@ -17,37 +18,31 @@ import Questions from './Components/home/questions';
 
 import CanvasChart from './Components/canvasChart/canvasChart';
 
-const { Header, Footer,Content } = Layout;
+const { Header, Content } = Layout;
+
+const useStyles = makeStyles((theme) => ({
+    content: {
+      marginTop: 64,
+    }
+  }));
 
 const App: FC = () => {
-    // let locations = useLocation();
-    // const paths = locations.pathname.split('/');
-    // const [isNavTransparent,setNavTransparent] = useState(false);
-    
-    // useEffect(()=>{
-    //     if(paths.length>0 && paths[1]==""){
-    //         setNavTransparent(true);
-    //     }else{
-    //         setNavTransparent(false);
-    //     }
-    // },[])
-    // useEffect(()=>{
-    //     console.log(locations,paths)
-    // },[isNavTransparent])
+    const classes = useStyles()
+
     return (
         <Layout className="mainLayout">
             <Header className="default-header">
-                <AppHeader/>
+                <AppHeader />
             </Header>
-            <Content>
+            <Content className={classes.content}>
                 <Switch>
                     {/* <Route exact path="/" component={AppHome}/> */}
-                    <Route exact path="/" component={AppLandingPage}/>
-                    <Route exact path="/questions" component={Questions}/>
+                    <Route exact path="/" component={AppLandingPage} />
+                    <Route exact path="/questions" component={Questions} />
                     {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
-                    <Route exact path="/workspaces" component={()=><CanvasChart/>}/>
-                    <Route exact path="/files/:workspacesId" component={({match}:any)=><WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl}/>}/>
-                    <Route exact path="/analyse/:workspacesId/:fcsfileId" component={({match}:any)=><Graph fcsfileId={match.params.fcsfileId} workspacesId={match.params.workspacesId} graphsUrl={requestsUrl.graphsUrl} gatesUrl={requestsUrl.gatesUrl} paramsUrl={requestsUrl.paramsUrl} eventsurl={requestsUrl.eventsUrl}/>}/>
+                    <Route exact path="/workspaces" component={() => <CanvasChart />} />
+                    <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} />
+                    <Route exact path="/analyse/:workspacesId/:fcsfileId" component={({ match }: any) => <Graph fcsfileId={match.params.fcsfileId} workspacesId={match.params.workspacesId} graphsUrl={requestsUrl.graphsUrl} gatesUrl={requestsUrl.gatesUrl} paramsUrl={requestsUrl.paramsUrl} eventsurl={requestsUrl.eventsUrl} />} />
                 </Switch>
                 {/* <AppHome/> */}
             </Content>
@@ -56,6 +51,6 @@ const App: FC = () => {
             </Footer>       */}
         </Layout>
     );
-    };
+};
 
 export default App;

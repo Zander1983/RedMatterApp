@@ -1,74 +1,68 @@
-import React, { useState,FC } from 'react';
+import React, { useState, FC } from 'react';
 
-import {NavLink} from 'react-router-dom';
-import { Anchor, Drawer, Button } from 'antd';
+import { NavLink } from 'react-router-dom';
+import { Anchor, Drawer } from 'antd';
 
-import {UnorderedListOutlined} from '@ant-design/icons';
+import { UnorderedListOutlined } from '@ant-design/icons';
+
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import { makeStyles } from '@material-ui/core/styles';
 
 const { Link } = Anchor;
 
-const AppHeader:FC = ()=>{
-    const [visible, setVisible] = useState(false);
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+    fontFamily: 'Raleway',
+    fontWeight: 700,
+    color: 'white',
+  },
+  topBarLink: {
+    color: 'white',
+    fontSize: 17,
+    fontFamily: 'Raleway',
+    fontWeight: 600,
+  },
+  toolbar: {
+    backgroundColor: '#333',
+    textColor: '#fafafa',
+  },
+}));
 
-    const showDrawer = () => {
-      setVisible(true);
-    };
-  
-    const onClose = () => {
-      setVisible(false);
-    };
-    return (
-        <div className="container-fluid">
-          <div className="header">
-            <div className="logo">
-              <a href="#">Red Matter</a>
-            </div>
-            <div className="mobileHidden">
-              {/* <Anchor>
-                  <Link href="/#home" title="Home" />
-                  <Link href="/#work" title="How it works" />
-                  <Link href="/#help" title="Help" />
-                  <Link href="/#contact" title="Contact" />
-                  <Link href="/#blog" title="Blog" />
-                  <Link href="workspaces" title="My Workspace" />
-              </Anchor> */}
-                <NavLink activeClassName="navlink" to="/">Home &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="/#work">Working &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="/#help">Help &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="/#contact">Contact &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="/#blog">Blog &nbsp;</NavLink>
-                <NavLink activeClassName="navlink" to="/workspaces">MyWorkspace &nbsp;</NavLink>
-            </div>
-            <div className="mobileVisible">
-              <Button type="primary" onClick={showDrawer}>
-                {/* <i className="fas fa-bars"></i> */}
-                <UnorderedListOutlined style={{color:'#999'}}/>
-              </Button>
-              <Drawer
-                placement="left"
-                closable={false}
-                onClose={onClose}
-                visible={visible}
-              >
-                {/* <Anchor>
-                  <Link href="/#home" title="Home" />
-                  <Link href="/#work" title="How it works" />
-                  <Link href="/#help" title="Help" />
-                  <Link href="/#contact" title="Contact" />
-                  <Link href="/#blog" title="Blog" />
-                  <Link href="workspaces" title="My Workspace" />
-                </Anchor> */}
-                <NavLink activeClassName="navlink" to="/">Home &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="/#work">Working &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="/#help">Help &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="/#contact">Contact &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="/#blog">Blog &nbsp;</NavLink><br/>
-                <NavLink activeClassName="navlink" to="/workspaces">MyWorkspace &nbsp;</NavLink><br/>
-              </Drawer>
-            </div>
-          </div>
-        </div>
-      );
+
+const AppHeader: FC = () => {
+  const classes = useStyles();
+
+  return (
+    <AppBar className={classes.toolbar}>
+      <Toolbar>
+        {/* <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+          <MenuIcon />
+        </IconButton> */}
+        <Typography variant="h6" className={classes.title}>
+          Red Matter App
+        </Typography>
+        <NavLink className={classes.topBarLink} to="/graph-prototype">Start graphing!</NavLink>
+        {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
+        <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
+        <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>
+        <NavLink className={classes.topBarLink} to="/contact">Contact &nbsp;</NavLink>
+        <NavLink className={classes.topBarLink} to="/blog">Blog &nbsp;</NavLink>
+        <NavLink className={classes.topBarLink} to="/workspaces">Workspace &nbsp;</NavLink> */}
+      </Toolbar>
+    </AppBar>
+  );
 }
 
 export default AppHeader;
