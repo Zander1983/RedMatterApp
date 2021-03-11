@@ -24,7 +24,6 @@ export default class ScatterPlotGraph extends
         super(props)
 
         this.data = props.data
-        console.log('lenght of data = ', this.data.length)
         
         if (props.xAxis.display == 'log') {
             this.toLogAxis('x')
@@ -37,7 +36,7 @@ export default class ScatterPlotGraph extends
         this.plot = new ScatterPlot({
             data: this.data,
             xAxis: { key: 0, value: 'x' },
-            yAxis: { key: 1, value: 'y' }
+            yAxis: { key: 1, value: 'y' },
         })
     }
 
@@ -48,9 +47,6 @@ export default class ScatterPlotGraph extends
     render(): JSX.Element {
         return (
             <div>
-                <div>
-                    <button>Click me to die instantly!</button>
-                </div>
                 <div style={{
                 }}>
                     { this.plot.getCanvas() }
