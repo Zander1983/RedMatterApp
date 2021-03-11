@@ -51,9 +51,11 @@ const AppHeader: FC = () => {
           <MenuIcon />
         </IconButton> */}
         <Typography variant="h6" className={classes.title}>
-          Red Matter App
+          <NavLink style={{color: '#fafafa'}} to="/">Red Matter App</NavLink>
+
+          
         </Typography>
-        <NavLink className={classes.topBarLink} to="/graph-prototype">Start graphing!</NavLink>
+        <NavLink className={classes.topBarLink} to="/questions">Start graphing!</NavLink>
         {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>
