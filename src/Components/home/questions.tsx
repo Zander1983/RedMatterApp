@@ -187,7 +187,7 @@ const Questions = ()=>{
     }
     return(
         <div className="block">
-            <div className="container-fluid" style={{height:"500px",width:"500px",position:"relative"}}>
+            <div className="container-fluid" style={{height:"auto",width:"500px",position:"relative"}}>
                 <Quesform/>
             </div>
         </div>
