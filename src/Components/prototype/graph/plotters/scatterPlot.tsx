@@ -42,9 +42,9 @@ export default class ScatterPlot {
     scale: number = 2
 
     constructor({ data, xAxis, yAxis, xLabels = undefined, yLabels = undefined,
-        xRange = undefined, yRange = undefined, width = 1000, height = 700 }: ScatterPlotParams) {
+        xRange = undefined, yRange = undefined, width = 700, height = 600 }: ScatterPlotParams) {
             
-        this.data = [[2,2], [1,2]]
+        this.data = data
         this.xAxis = xAxis
         this.yAxis = yAxis
         
@@ -86,7 +86,6 @@ export default class ScatterPlot {
             min = Math.min(e[iaxis], min)
             max = Math.max(e[iaxis], max)
         })
-        console.log(min, max)
         const d = Math.max(max - min, 0.1)
         return [min - d*this.rangeSpacer, max + d*this.rangeSpacer]
     }

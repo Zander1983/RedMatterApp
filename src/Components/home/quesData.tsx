@@ -1,4 +1,3 @@
-
 const particlesSizeList = [
     {id:1,key:"Below 1µm",value:"Below 1µm"}, {id:2,key:"1-3 µm",value:"1-3 µm"}, {id:3,key:"2µm+",value:"2µm+"}
 ];
