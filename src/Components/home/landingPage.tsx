@@ -70,25 +70,25 @@ const AppLandingPage = () => {
             <Card className={classes.card} variant="outlined">
               <CardContent>
                 <h1>
-                  <b style={{ color: "#fafafa" }}>Red Matter</b>
+                  <b style={{ color: "#fafafa" }}>Welcome to Red Matter</b>
                 </h1>
                 <p>
-                  <b style={{ color: "#eee" }}>
-                    Flow Cytometry software solutions
-                  </b>
+                  <b style={{ color: "#eee" }}>Your flow analysis tool</b>
                 </p>
                 <p style={{ color: "#eee" }}>
                   Anaylising FCS files has never been easier
                 </p>
                 {/* <ImgCarousel /> */}
-                <Button
-                  variant="contained"
-                  size="large"
-                  color="primary"
-                  className={classes.marginButton}
-                >
-                  <NavLink to="/questions">Start now</NavLink>
-                </Button>
+                <NavLink to="/questions">
+                  <Button
+                    variant="contained"
+                    size="large"
+                    color="primary"
+                    className={classes.marginButton}
+                  >
+                    Start now
+                  </Button>
+                </NavLink>
               </CardContent>
             </Card>
           </div>

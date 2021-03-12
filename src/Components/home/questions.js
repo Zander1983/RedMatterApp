@@ -1,29 +1,41 @@
 import React,{useState} from 'react';
 import {sectionList} from './quesData';
 import {
-    message,
-    Form,
-    Select,
-    Button,
-    Row,
-    Col,
-    Input
-  } from 'antd';
+  message,
+  Form,
+  Select,
+  Button,
+  Row,
+  Col,
+  Input,
+} from "antd";
 
 const { Option } = Select;
 const {TextArea} = Input;
 
-const Questions = ()=>{
-    // This is form component
-    const Quesform = ()=>{
-        const [formObj,setFormObj] = useState<any>({});
-        const [sectionId,setSectionId] = useState(1);
-        
-        const onFinish = (values: any) => {
-            nextSection();
-            message.success('Successfully Sent');
-            console.log('Received values of form: ', formObj,values);
-        };
+const Questions = () => {
+  const Quesform = () => {
+    const [sectionId, setSectionId] = useState(1);
+    
+    const particlesSizeList = [
+      { id: 1, key: "Below 1µm", value: "Below 1µm" },
+      { id: 2, key: "1-3 µm", value: "1-3 µm" },
+      { id: 3, key: "2µm+", value: "2µm+" },
+    ];
+    const cellTypeList = [
+      { id: 1, key: 1, value: "Single cells" },
+      { id: 2, key: 2, value: "Heterogenous population" },
+    ];
+    
+    const onFinish = (values: any) => {
+      nextSection();
+      message.success("Successfully Sent");
+      console.log("Received values of form: ", values);
+    };
+
+    const nextSection = () => {
+      setSectionId((curId: any) => curId + 1);
+    };
 
         /* Code for next and prev button */
         const nextSection = ()=>{
@@ -191,6 +203,18 @@ const Questions = ()=>{
                 <Quesform/>
             </div>
         </div>
-    )
+      </div>
+    );
+  };
+  return (
+    <div className="block" style={{ background: "lightgrey" }}>
+      <div
+        className="container-fluid"
+        style={{ height: "500px", width: "500px", position: "relative" }}
+      >
+        <Quesform />
+      </div>
+    </div>
+  );
 };
 export default Questions;

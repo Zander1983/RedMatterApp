@@ -14,7 +14,7 @@ import AppLandingPage from './Components/home/landingPage';
 import WorkspaceAppFiles from './Components/workspaces/workspaceFiles';
 import requestsUrl from './Components/common/RequestUrls';
 import Graph from './Components/charts/Graph';
-import Questions from './Components/home/questions';
+import PrototypeForm from './Components/home/PrototypeForm';
 
 // import CanvasChart from './Components/canvasChart/canvasChart';
 import GraphPrototype from './Components/prototype/graphPrototype';
@@ -39,7 +39,7 @@ const App: FC = () => {
                 <Switch>
                     {/* <Route exact path="/" component={AppHome}/> */}
                     <Route exact path="/" component={AppLandingPage} />
-                    <Route exact path="/questions" component={Questions} />
+                    <Route exact path="/questions" component={PrototypeForm} />
                     <Route exact path="/graph" component={GraphPrototype} />
                     {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
                     {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}
