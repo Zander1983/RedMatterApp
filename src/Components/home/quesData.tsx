@@ -960,7 +960,7 @@ export const fluorophoresData = [
   { key: 493, value: "ZsGreen" },
 ];
 
-export const machinesData = [
+export const deviceData = [
   { key: 16294, value: "ACEA NovoCyte 1000" },
   { key: 16295, value: "ACEA NovoCyte 2000" },
   { key: 16296, value: "ACEA NovoCyte 2060" },
@@ -1008,11 +1008,11 @@ export const machinesData = [
   { key: 246902, value: "Bio-Rad ZE5 3 laser (V/B/R) 17 color" },
   { key: 246729, value: "Bio-Rad ZE5 4 laser 24 color" },
   { key: 141788, value: "Bio-Rad ZE5 5 laser 27 color" },
-  { key: 297377, value: "Guava easyCyte 12 &amp; 12HT" },
-  { key: 297375, value: "Guava easyCyte 5 &amp; 5HT" },
-  { key: 297376, value: "Guava easyCyte 8 &amp; 8HT" },
-  { key: 297378, value: "Guava easyCyte B/G/R &amp; B/G/RHT" },
-  { key: 297379, value: "Guava easyCyte B/G/V &amp; B/G/VHT" },
+  { key: 297377, value: "Guava easyCyte 12; 12HT" },
+  { key: 297375, value: "Guava easyCyte 5; 5HT" },
+  { key: 297376, value: "Guava easyCyte 8; 8HT" },
+  { key: 297378, value: "Guava easyCyte B/G/R; B/G/RHT" },
+  { key: 297379, value: "Guava easyCyte B/G/V; B/G/VHT" },
   { key: 297374, value: "Guava Muse" },
   { key: 44, value: "iCyte Reflection" },
   { key: 46, value: "ImageStream" },

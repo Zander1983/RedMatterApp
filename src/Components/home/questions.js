@@ -4,21 +4,11 @@ import {
   message,
   Form,
   Select,
-  InputNumber,
-  Switch,
-  Radio,
-  Slider,
   Button,
-  Upload,
-  Rate,
-  Checkbox,
   Row,
   Col,
   Input,
-  Table,
 } from "antd";
-import { UploadOutlined, InboxOutlined } from "@ant-design/icons";
-import { NavLink } from "react-router-dom";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,14 +16,7 @@ const { TextArea } = Input;
 const Questions = () => {
   const Quesform = () => {
     const [sectionId, setSectionId] = useState(1);
-    const deviceList = [
-      { id: 1, key: 1, value: "ZE5 Cell Analyzer" },
-      { id: 2, key: 2, value: "S3e Cell Sorter" },
-    ];
-    const fluorophoresList = [
-      { id: 1, key: 1, value: "FL1" },
-      { id: 2, key: 2, value: "FL2" },
-    ];
+    
     const particlesSizeList = [
       { id: 1, key: "Below 1µm", value: "Below 1µm" },
       { id: 2, key: "1-3 µm", value: "1-3 µm" },
@@ -43,28 +26,13 @@ const Questions = () => {
       { id: 1, key: 1, value: "Single cells" },
       { id: 2, key: 2, value: "Heterogenous population" },
     ];
+    
     const onFinish = (values: any) => {
       nextSection();
       message.success("Successfully Sent");
       console.log("Received values of form: ", values);
     };
-    const columns = [
-      {
-        title: "Fluorophores",
-        key: "fluorophores_name",
-        width: 100,
-      },
-      {
-        title: "Fluorophores",
-        key: "fluorophores_name2",
-        width: 100,
-      },
-      {
-        title: "Fluorophores",
-        key: "fluorophores_name3",
-        width: 100,
-      },
-    ];
+
     const nextSection = () => {
       setSectionId((curId: any) => curId + 1);
     };
@@ -385,7 +353,6 @@ const Questions = () => {
         className="container-fluid"
         style={{ height: "500px", width: "500px", position: "relative" }}
       >
-        {/* <h2 className="textCenter">Please Enter Following Details :</h2>*/}
         <Quesform />
       </div>
     </div>

@@ -139,7 +139,6 @@ function GraphPrototype() {
               borderRadius: 5
             }}
               placeholder="Worskpace name">
-              suck on my balls
             </TextField>
           </Grid>
           <Grid  item xs={6} style={{
