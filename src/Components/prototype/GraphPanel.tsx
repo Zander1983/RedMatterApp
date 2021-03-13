@@ -75,7 +75,7 @@ function GraphPanel(props: {
   // let histogramPlotGraph: HistogramPlotGraph | null = null;
 
   const [gates, setGates] = React.useState(
-    Array.from({ length: Math.round(Math.random() * 8) }, (v, i) => i + 1)
+    Array.from({ length: Math.round(Math.random() * 8 + 8) }, (v, i) => i + 1)
   );
   console.log(gates);
   // Constant params
@@ -171,7 +171,7 @@ function GraphPanel(props: {
                   color: "white",
                 }}
               >
-                Create Gate
+                Gate
               </Button>
               <Button
                 variant="contained"
@@ -183,7 +183,19 @@ function GraphPanel(props: {
                   marginLeft: 10,
                 }}
               >
-                Some other action....
+                Oval Gate
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                // onClick={}
+                style={{
+                  backgroundColor: "#66a",
+                  color: "white",
+                  marginLeft: 10,
+                }}
+              >
+                Quadrant
               </Button>
             </Grid>
           </Grid>
@@ -207,16 +219,19 @@ function GraphPanel(props: {
               </div>
               {/* xAxis == yAxis ? histogramPlotGraph : scatterPlotGraph */}
             </Grid>
-            <Grid xs={3} container direction="column" style={{}}>
+            <Grid
+              xs={3}
+              container
+              direction="column"
+              style={{ paddingTop: 10 }}
+            >
               <div
                 style={{
                   textAlign: "left",
                   border: "solid 0.5px #ccc",
-                  padding: 10,
-                  paddingTop: 5,
+                  padding: 7,
                   borderRadius: 5,
                   backgroundColor: "#fafafa",
-                  margin: 10,
                   boxShadow: "1px 3px 4px #bbd",
                 }}
               >
@@ -287,8 +302,8 @@ function GraphPanel(props: {
                   border: "solid 0.5px #ccc",
                   padding: 10,
                   paddingTop: 5,
+                  marginTop: 10,
                   borderRadius: 5,
-                  margin: 10,
                   backgroundColor: "#fafafa",
                   boxShadow: "1px 3px 4px #bbd",
                 }}
@@ -379,7 +394,7 @@ function GraphPanel(props: {
                 textAlign: "center",
               }}
             >
-              Gates
+              Gates and Quadrants
             </h2>
             <Divider></Divider>
             <div
@@ -406,7 +421,13 @@ function GraphPanel(props: {
                     }}
                   >
                     <Grid container xs={12} direction="row" style={{}}>
-                      <h3 style={{ marginTop: 5 }}>Gate{e}</h3>
+                      <h3 style={{ marginTop: 5 }}>
+                        {e % 3 == 0
+                          ? "Gate " + Math.round(e / 3 + 0.6).toString()
+                          : e % 3 == 1
+                          ? "Quadrant " + Math.round(e / 3 + 0.6).toString()
+                          : "Oval Gate " + Math.round(e / 3 + 0.6).toString()}
+                      </h3>
                       <Button style={{ marginLeft: 10 }}>
                         <DeleteIcon></DeleteIcon>
                       </Button>

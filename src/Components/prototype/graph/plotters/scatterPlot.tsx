@@ -48,7 +48,7 @@ export default class ScatterPlot {
     yLabels = undefined,
     xRange = undefined,
     yRange = undefined,
-    width = 800,
+    width = 700,
     height = 600,
   }: ScatterPlotParams) {
     this.data = data;
