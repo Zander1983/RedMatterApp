@@ -4,8 +4,8 @@ import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { Divider } from "@material-ui/core";
 
-import { file1Dimesions, file1Data } from './fcsFile1.tsx'
-// import { file2Dimesions, file2Data } from './fcsFile1.tsx'
+import file1 from "./fcsFile1.tsx";
+import file2 from "./fcsFile2.tsx";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -107,39 +107,39 @@ function AddFileModal(props: {
       {
         title: "Patient1_experiment2_2020_9_2.fcs",
         information:
-          "Source of this file has been ommited.",
-        data: file1Data,
-        axes: file1Dimesions,
+          "Source of this file has been ommited. This file has 10k points in 6 dimesions.",
+        data: file1.data,
+        axes: file1.dimesions,
         lastModified: "2020/9/2",
       },
-      // {
-      //   title: "Patient1_experiment3_2020_9_3.fcs",
-      //   information:
-      //     "Source of this file has been ommited.",
-      //   data: file1Data,
-      //   axes: file1Dimesions,
-      //   lastModified: "2020/9/3",
-      // },
       {
-        title: "Patient1_experiment2_2020_9_2.fcs",
+        title: "Patient1_experiment3_2020_9_3.fcs",
         information:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+          "Source of this file has been ommited. This file has 14k points in 11 dimesions.",
+        data: file2.data,
+        axes: file2.dimesions,
+        lastModified: "2020/9/3",
+      },
+      {
+        title: "SmallRandomDataset.fcs",
+        information:
+          "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
         data: generateRandomData(2, 100, 0, 100),
         axes: generateRandomAxes(2),
         lastModified: "Right now!",
       },
       {
-        title: "Patient1_experiment3_2020_9_3.fcs",
+        title: "MediumRandomDataset.fcs",
         information:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+          "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
         data: generateRandomData(10, 1000, 0, 1),
         axes: generateRandomAxes(10),
         lastModified: "Right now!",
       },
       {
-        title: "Patient2_experiment3_2020_10_4.fcs",
+        title: "LargeRandomDataset.fcs",
         information:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+          "Generates many axes and points randomly! Around ~5000 points, 200 dimesions, ranging from -10000 to 1000000",
         data: generateRandomData(200, 3000, -10000, 1000000),
         axes: generateRandomAxes(200),
         lastModified: "Right now!",
