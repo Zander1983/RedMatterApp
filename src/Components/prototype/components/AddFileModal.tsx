@@ -4,6 +4,9 @@ import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { Divider } from "@material-ui/core";
 
+import { file1Dimesions, file1Data } from './fcsFile1.tsx'
+// import { file2Dimesions, file2Data } from './fcsFile1.tsx'
+
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
     backgroundColor: "#fafafa",
@@ -104,10 +107,26 @@ function AddFileModal(props: {
       {
         title: "Patient1_experiment2_2020_9_2.fcs",
         information:
+          "Source of this file has been ommited.",
+        data: file1Data,
+        axes: file1Dimesions,
+        lastModified: "2020/9/2",
+      },
+      // {
+      //   title: "Patient1_experiment3_2020_9_3.fcs",
+      //   information:
+      //     "Source of this file has been ommited.",
+      //   data: file1Data,
+      //   axes: file1Dimesions,
+      //   lastModified: "2020/9/3",
+      // },
+      {
+        title: "Patient1_experiment2_2020_9_2.fcs",
+        information:
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         data: generateRandomData(2, 100, 0, 100),
         axes: generateRandomAxes(2),
-        lastModified: "2020/9/2",
+        lastModified: "Right now!",
       },
       {
         title: "Patient1_experiment3_2020_9_3.fcs",
@@ -115,7 +134,7 @@ function AddFileModal(props: {
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         data: generateRandomData(10, 1000, 0, 1),
         axes: generateRandomAxes(10),
-        lastModified: "2020/9/3",
+        lastModified: "Right now!",
       },
       {
         title: "Patient2_experiment3_2020_10_4.fcs",
@@ -123,7 +142,7 @@ function AddFileModal(props: {
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         data: generateRandomData(200, 3000, -10000, 1000000),
         axes: generateRandomAxes(200),
-        lastModified: "2020/10/5",
+        lastModified: "Right now!",
       },
     ];
   };
