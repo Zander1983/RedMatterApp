@@ -28,6 +28,7 @@
     "react-dom": "^17.0.1",
     "react-hook-form": "^6.15.4",
     "react-jquery-plugin": "^1.1.7",
+    "react-material-ui-form-validator": "^2.1.4",
     "react-resizable": "^1.11.0",
     "react-resizable-box": "^2.1.0",
     "react-resizable-component": "^1.1.0",

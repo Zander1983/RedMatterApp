@@ -18,6 +18,7 @@ import PrototypeForm from "./Components/home/PrototypeForm";
 
 // import CanvasChart from './Components/canvasChart/canvasChart';
 import GraphPrototype from "./Components/prototype/GraphPrototype";
+import Login from "./Components/users/login";
 
 const { Header, Content } = Layout;
 
@@ -30,6 +31,11 @@ const useStyles = makeStyles((theme) => ({
 const App: FC = () => {
   const classes = useStyles();
 
+  const [isLogin,setIsLogin] = useState(true);
+
+  const handleAfterLogin = ()=>{
+    console.log('handleAfterLogin>>>>')
+  }
   return (
     <Layout className="mainLayout">
       <Header className="default-header">
@@ -40,7 +46,9 @@ const App: FC = () => {
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
           <Route exact path="/questions" component={PrototypeForm} />
+          <Route exact path="/login" component={(props:any)=><Login {...props} handleAfterLogin={handleAfterLogin} />} />
           <Route exact path="/graph" component={GraphPrototype} />
+          <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/>
           {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
           {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}
           {/* <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} /> */}
