@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 17,
     fontFamily: 'Raleway',
     fontWeight: 600,
+    marginLeft:"10px"
   },
   toolbar: {
     backgroundColor: '#333',
@@ -43,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
 const AppHeader: FC = () => {
   const classes = useStyles();
+  const [isLogin,setIsLogin] = useState(true);
 
   return (
     <AppBar className={classes.toolbar}>
@@ -56,6 +58,11 @@ const AppHeader: FC = () => {
           
         </Typography>
         <NavLink className={classes.topBarLink} to="/questions">Start graphing!</NavLink>
+        {
+          isLogin?
+          <NavLink className={classes.topBarLink} to="/login">Login</NavLink> :
+          <h1>Logout</h1>
+        }
         {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>
