@@ -55,7 +55,7 @@ const Login = (props:any)=>{
 
     const handleSubmit = async () => {
         try{
-            const res = await axios.post("http://localhost:8080/api/login",formData);
+            const res = await axios.post("http://integration6.eba-mdppjui3.us-east-1.elasticbeanstalk.com/api/login",formData);
             const loginData = res.data;
             setError((prev:any)=> false)
             setSuccess((prev:any)=> true)

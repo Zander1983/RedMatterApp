@@ -33,7 +33,7 @@ const Workspaces = ({url}:any)=>{
     }
     useEffect(()=>{
         const getWorkspaceByOrgid = ()=>{
-            axios.get(`http://localhost:8080/api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
+            axios.get(`http://integration6.eba-mdppjui3.us-east-1.elasticbeanstalk.com/api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
                 const datatemp = res.data.workspaces;
                 console.log(datatemp)
                 setWorkspaceData(datatemp);
