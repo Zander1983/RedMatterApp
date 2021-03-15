@@ -2,7 +2,7 @@
 #  CHANGE FILES CONFIG BELOW TO GET THE EXPECTED RESULT
  
 import fcsparser
-path = fcsparser.test_sample_path   # switch this path for any fsc file
+path = '../'   # switch this path for any fsc file
                                     # you want to load (string)
 meta, data = fcsparser.parse(path, reformat_meta=True)
 
@@ -24,7 +24,6 @@ file.write("""
 \t],
 \tdata: [
 """)
-
 
 for i in range(len(data)):
     l = "[ "
