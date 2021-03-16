@@ -57,7 +57,8 @@ const App: FC = () => {
           <Route exact path="/questions" component={PrototypeForm} />
           <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
           <Route exact path="/graph" component={GraphPrototype} />
-          <Route exact path="/workspaces" component={()=><Workspaces url={requestsUrl.workspaceUrl}/>}/>
+          <Route exact path="/workspaces" component={()=><Workspaces/>}/>
+          <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} />} />
           {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
           {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}
           {/* <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} /> */}
