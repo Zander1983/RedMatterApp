@@ -12,8 +12,13 @@ import {
     DeleteFilled
 } from '@ant-design/icons';
 
-const Workspaces = ({url}:any)=>{
-    const [organisationId,setOrgId] = useState(localStorage.getItem("organisationId") || '')
+const Workspaces = ()=>{
+    // const [organisationId,setOrgId] = useState()
+    let organisationId ="";
+    let user = JSON.parse(localStorage?.getItem('user'));
+    if(user){
+        organisationId = user['organisationId'];
+    }
     const [workspaceData,setWorkspaceData] = useState<any[]>([]);
     const [loading,setLoading] = useState(false);
     const [visible,setVisible] = useState(false);
@@ -33,9 +38,8 @@ const Workspaces = ({url}:any)=>{
     }
     useEffect(()=>{
         const getWorkspaceByOrgid = ()=>{
-            axios.get(`http://integration6.eba-mdppjui3.us-east-1.elasticbeanstalk.com/api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
+            axios.get(`api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
                 const datatemp = res.data.workspaces;
-                console.log(datatemp)
                 setWorkspaceData(datatemp);
                 setLoading(false);
             }).catch((err:any)=>{

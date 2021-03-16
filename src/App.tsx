@@ -1,5 +1,5 @@
 import React, { useState, FC, useEffect } from "react";
-import { Route, Switch, useLocation } from "react-router-dom";
+import { Route, Switch, useLocation,useHistory } from "react-router-dom";
 // import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import { Layout, Image } from "antd";
 
@@ -29,26 +29,35 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const App: FC = () => {
+  const history = useHistory();
   const classes = useStyles();
 
-  const [isLogin,setIsLogin] = useState(true);
+  const [isLoggedIn,setIsLogged] = useState(false);
 
   const handleAfterLogin = ()=>{
-    console.log('handleAfterLogin>>>>')
+    history.push('/workspaces');
+    setIsLogged((prevData:any)=>true);
   }
+  const handleAfterLogout = ()=>{
+    localStorage.clear();
+    setIsLogged((prevData:any)=>false);
+  }
+  useEffect(()=>{
+  },[isLoggedIn])
+
   return (
     <Layout className="mainLayout">
       <Header className="default-header">
-        <AppHeader />
+        <AppHeader onLogout={handleAfterLogout}/>
       </Header>
       <Content className={classes.content}>
         <Switch>
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
           <Route exact path="/questions" component={PrototypeForm} />
-          <Route exact path="/login" component={(props:any)=><Login {...props} handleAfterLogin={handleAfterLogin} />} />
+          <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
           <Route exact path="/graph" component={GraphPrototype} />
-          <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/>
+          <Route exact path="/workspaces" component={()=><Workspaces url={requestsUrl.workspaceUrl}/>}/>
           {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
           {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}
           {/* <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} /> */}
