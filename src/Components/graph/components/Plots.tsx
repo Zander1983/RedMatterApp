@@ -8,7 +8,7 @@ import AddFileModal from "./modals/AddFileModal";
 import GenerateReportModal from "./modals/GenerateReportModal";
 import MessageModal from "./modals/MessageModal";
 
-import Workspace from "../general/workspaces/Workspace";
+import Workspace from "./workspaces/Workspace";
 
 const useStyles = makeStyles((theme) => ({
   header: {

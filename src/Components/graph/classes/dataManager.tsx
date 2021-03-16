@@ -17,7 +17,7 @@ class DataManager {
 
   private static objId: number = 0;
   files: { file: FCSFile; id: number }[] = [];
-  rerender: Function = null;
+  rerender: Function = () => {};
 
   setRerendererCallback(rerenderer: Function) {
     this.rerender = rerenderer;
@@ -28,6 +28,7 @@ class DataManager {
     DataManager.objId++;
     this.files.push({ file: file, id: fileId });
     this.rerender();
+    console.log("Added file: ", file, " with id: ", fileId);
     return fileId;
   }
 

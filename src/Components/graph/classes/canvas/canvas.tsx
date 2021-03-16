@@ -1,6 +1,13 @@
-import React, { useRef, useEffect } from "react";
+import Plotter from "../plotters/plotter";
+import { useRef, useEffect } from "react";
 
-function useCanvas(parent: any, scale: any) {
+interface CanvasInput {
+  style: object;
+  scale: number;
+  plotter: Plotter;
+}
+
+function useCanvas(plotter: any, scale: any) {
   const canvasRef = useRef(null);
 
   function resizeCanvasToDisplaySize(canvas: any) {
@@ -21,14 +28,14 @@ function useCanvas(parent: any, scale: any) {
     let frameCount = 0;
     let animationFrameId = 0;
 
-    canvas.addEventListener("mousemove", parent.registerMouseEvent);
-    canvas.addEventListener("mousedown", parent.registerMouseEvent);
-    canvas.addEventListener("mouseup", parent.registerMouseEvent);
+    canvas.addEventListener("mousemove", plotter.registerMouseEvent);
+    canvas.addEventListener("mousedown", plotter.registerMouseEvent);
+    canvas.addEventListener("mouseup", plotter.registerMouseEvent);
 
     const render = () => {
       frameCount++;
       resizeCanvasToDisplaySize(canvas);
-      parent.draw(context, frameCount);
+      plotter.draw(context, frameCount);
       animationFrameId = window.requestAnimationFrame(render);
     };
     render();
@@ -36,16 +43,15 @@ function useCanvas(parent: any, scale: any) {
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [parent.draw]);
+  }, [plotter.draw]);
 
   return canvasRef;
 }
 
-const CanvasComponent = (props: any) => {
-  const { parent, scale, ...rest } = props;
-  const canvasRef = useCanvas(parent, scale);
+const Canvas = ({ style, scale, plotter, ...rest }: CanvasInput) => {
+  const canvasRef = useCanvas(plotter, scale);
 
   return <canvas ref={canvasRef} {...rest} />;
 };
 
-export default CanvasComponent;
+export default Canvas;
