@@ -1,4 +1,4 @@
-import React, { useState, FC } from 'react';
+import React, { useState, FC,useEffect } from 'react';
 
 import { NavLink } from 'react-router-dom';
 import { Anchor, Drawer } from 'antd';
@@ -42,9 +42,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const AppHeader: FC = () => {
+const AppHeader: FC = (props:any) => {
   const classes = useStyles();
   const [isLogin,setIsLogin] = useState(true);
+
+  let user = localStorage?.getItem('user');
+  let login_logout_button;
+
+  if(user){
+    login_logout_button=(
+      <NavLink className={classes.topBarLink} onClick={()=>props.onLogout()} to="/">Logout</NavLink>
+    )
+  }else{
+    login_logout_button=(
+      <NavLink className={classes.topBarLink} to="/login">Login</NavLink>
+    )
+  }
 
   return (
     <AppBar className={classes.toolbar}>
@@ -59,9 +72,7 @@ const AppHeader: FC = () => {
         </Typography>
         <NavLink className={classes.topBarLink} to="/questions">Start graphing!</NavLink>
         {
-          isLogin?
-          <NavLink className={classes.topBarLink} to="/login">Login</NavLink> :
-          <h1>Logout</h1>
+          login_logout_button
         }
         {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>

@@ -1,18 +1,19 @@
 import React,{useState,useRef} from 'react';
 import axios from 'axios';
+
+// Material UI Components
 import { makeStyles } from "@material-ui/core/styles";
-
-
-import {Avatar, Grid, Paper} from '@material-ui/core';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Button from '@material-ui/core/Button';
-import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
-
+import {Avatar, Grid, Paper, Button, IconButton, Collapse} from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import IconButton from '@material-ui/core/IconButton';
-import Collapse from '@material-ui/core/Collapse';
+
+// Material Ui Icons
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import CloseIcon from '@material-ui/icons/Close';
 
+// Material UI validator
+import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
+
+// Style Classes
 const useStyles = makeStyles((theme) => ({
     paperStyle : {
         padding:"10px",
@@ -35,17 +36,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Login = (props:any)=>{
+    console.log('url>>>>>',process.env.REACT_APP_API_URL)
     const classes = useStyles();
-    const loginForm = useRef();
+
     const [isError, setError] = React.useState(false);
+    const [isSubmit,setIsSubmit] = useState(false);
     const [isSuccess, setSuccess] = React.useState(false);
+
+    const loginForm = useRef();
 
     const [formData,setFormData] = useState({
         email: '',
         password: '',
     })
- 
-    const [isSubmit,setIsSubmit] = useState(false);
 
     const handleChange = (event:any) => {
         setFormData((prevData:any)=>{
@@ -55,14 +58,14 @@ const Login = (props:any)=>{
 
     const handleSubmit = async () => {
         try{
-            const res = await axios.post("http://integration6.eba-mdppjui3.us-east-1.elasticbeanstalk.com/api/login",formData);
+            const res = await axios.post("api/login",formData);
             const loginData = res.data;
             setError((prev:any)=> false)
             setSuccess((prev:any)=> true)
             localStorage.setItem('token',loginData.token)
-            localStorage.setItem('organisationId',loginData.userDetails.organisationId)
-            props.handleAfterLogin();
-            props.history.push('/workspaces');
+            localStorage.setItem('user',JSON.stringify(loginData.userDetails))
+            props.onLogin();
+            // props.history.push('/workspaces');
         }catch(err){
             setError((prev:any)=> true)
             setSuccess((prev:any)=> false)
