@@ -1,68 +1,77 @@
-import Plotter from "../plotters/plotter";
-import { useRef, useEffect } from "react";
+/*
+  Canvas - A frontend for a canvas component, which includes it's files.
+  This exists to facilitate the life of CanvasManager by removing the
+  complexities of logic that has to be fed to each canvas.
+*/
 
-interface CanvasInput {
-  style: object;
-  scale: number;
-  plotter: Plotter;
-}
+import FCSFile from "../fcsFile";
+import CanvasComponent from "./canvasComponent";
 
-function useCanvas(plotter: any, scale: any) {
-  const canvasRef = useRef(null);
+class Canvas {
+  xAxis: string;
+  yAxis: string;
+  width: number;
+  height: number;
+  changed: boolean = false;
+  xPlotType = "lin";
+  yPlotType = "lin";
+  canvas: any = null;
+  id: number;
+  rerender: Function;
 
-  function resizeCanvasToDisplaySize(canvas: any) {
-    const { width, height } = canvas.getBoundingClientRect();
+  constructor(file: FCSFile, id: number, rerender: Function) {
+    this.xAxis = file.axes[0];
+    this.yAxis = file.axes[1];
+    this.width = 0;
+    this.height = 0;
+    this.id = id;
 
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width * scale;
-      canvas.height = height * scale;
+    this.rerender = rerender;
+
+    this.canvas = <CanvasComponent rerender={this.rerender} />;
+  }
+
+  wasCanvasChanged(): boolean {
+    if (this.changed) {
+      this.changed = false;
       return true;
     }
-
     return false;
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    let frameCount = 0;
-    let animationFrameId = 0;
+  getCanvas() {
+    return this.canvas;
+  }
 
-    canvas.addEventListener("mousemove", plotter.registerMouseEvent);
-    canvas.addEventListener("mousedown", plotter.registerMouseEvent);
-    canvas.addEventListener("mouseup", plotter.registerMouseEvent);
+  setXAxisPlotType(plotType: string) {
+    this.changed = this.changed || this.xPlotType !== plotType;
+    this.xPlotType = plotType;
+  }
 
-    const render = () => {
-      frameCount++;
-      resizeCanvasToDisplaySize(canvas);
-      plotter.draw(context, frameCount);
-      animationFrameId = window.requestAnimationFrame(render);
-    };
-    render();
+  setYAxisPlotType(plotType: string) {
+    this.changed = this.changed || this.yPlotType !== plotType;
+    this.yPlotType = plotType;
+  }
 
-    return () => {
-      window.cancelAnimationFrame(animationFrameId);
-    };
-  }, [plotter.draw]);
+  xAxisToHistogram() {
+    this.changed = this.changed || this.yAxis !== this.xAxis;
+    this.yAxis = this.xAxis;
+  }
 
-  return canvasRef;
+  yAxisToHistogram() {
+    this.changed = this.changed || this.yAxis !== this.xAxis;
+    this.xAxis = this.yAxis;
+  }
+
+  setXAxis(xAxis: string) {
+    this.changed = this.changed || xAxis !== this.xAxis;
+    this.xAxis = xAxis;
+  }
+
+  setYAxis(yAxis: string) {
+    this.changed = this.changed || yAxis !== this.yAxis;
+    this.yAxis = yAxis;
+  }
 }
-
-// const Canvas = ({ style, scale, plotter, ...rest }: CanvasInput) => {
-//   const canvasRef = useCanvas(plotter, scale);
-
-//   return <canvas ref={canvasRef} {...rest} />;
-// };
-
-const Canvas = (props: any) => {
-  // const canvasRef = useCanvas(plotter, scale);
-
-  // return <canvas ref={canvasRef} {...rest} />;
-  return (
-    <div style={{ width: 400, height: 400, backgroundColor: "#afa" }}>
-      <h1>I'm a canvas with id = {props.canvasIndex}!</h1>
-    </div>
-  );
-};
 
 export default Canvas;

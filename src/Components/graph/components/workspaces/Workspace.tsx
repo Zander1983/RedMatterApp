@@ -94,11 +94,11 @@ class Workspace extends React.Component {
           }}
         >
           <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-            Click on "Add new file" to visualize!
+            Click on "Add new file" to visualize
           </h3>
           <h4 style={{ marginBottom: 90, color: "#777" }}>
-            Here you may move around your plots, gate them, duplicate, delete or
-            resize them as you see fit.
+            Here you may move around, gate, duplicate, delete or resize your
+            plots as you see fit!
           </h4>
         </div>
       );

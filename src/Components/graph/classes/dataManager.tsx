@@ -1,6 +1,12 @@
 /*
   dataManager - Singleton class reponsible for controlling the flow of all data
   on graphs, providing this data to each file and reloading visualization
+
+  This is the main source of truth, all other classes extract from here the
+  exitance or non-existance of any attribute. Any conflicting view with this
+  class about the state of the workspace should never be tolerated. Because of 
+  this, it's easy load new files from any source, as long as they follow the 
+  FCSFile interface, delete, update or save them also.
 */
 import FCSFile from "./fcsFile";
 
