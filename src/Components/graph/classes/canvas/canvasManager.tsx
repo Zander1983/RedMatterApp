@@ -1,3 +1,4 @@
+import dataManager from "../dataManager";
 import Canvas from "./canvas";
 
 class CanvasManager {
@@ -13,8 +14,41 @@ class CanvasManager {
 
   private static objId: number = 0;
 
-  canvas: JSX.Element[] = [];
-  rerender: Function = () => {};
+  canvasMap = new Map();
+
+  /* Returns true if any change to general state is detected */
+  getCanvas(): Map<number, object> {
+    const files = dataManager.getFiles();
+    const present: number[] = [];
+
+    for (const file of files) {
+      const id = file.id;
+      present.push(id);
+      if (!this.canvasIsPresent(id)) {
+        this.canvasMap.set(id, this.instanceNewCanvas(id));
+      }
+    }
+
+    this.canvasMap.forEach((v, k) => {
+      if (!present.includes(k)) {
+        this.canvasMap.delete(k);
+      }
+    });
+
+    return this.canvasMap;
+  }
+
+  private instanceNewCanvas(id: number): { canvas: typeof Canvas; id: number } {
+    const canvas = new Canvas();
+    return {
+      id: id,
+      canvas: canvas,
+    };
+  }
+
+  private canvasIsPresent(id: number): boolean {
+    return this.canvasMap.has(id);
+  }
 }
 
 export default CanvasManager.getInstance();

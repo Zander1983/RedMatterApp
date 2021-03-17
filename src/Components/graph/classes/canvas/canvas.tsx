@@ -48,10 +48,21 @@ function useCanvas(plotter: any, scale: any) {
   return canvasRef;
 }
 
-const Canvas = ({ style, scale, plotter, ...rest }: CanvasInput) => {
-  const canvasRef = useCanvas(plotter, scale);
+// const Canvas = ({ style, scale, plotter, ...rest }: CanvasInput) => {
+//   const canvasRef = useCanvas(plotter, scale);
 
-  return <canvas ref={canvasRef} {...rest} />;
+//   return <canvas ref={canvasRef} {...rest} />;
+// };
+
+const Canvas = (props: any) => {
+  // const canvasRef = useCanvas(plotter, scale);
+
+  // return <canvas ref={canvasRef} {...rest} />;
+  return (
+    <div style={{ width: 400, height: 400, backgroundColor: "#afa" }}>
+      <h1>I'm a canvas!</h1>
+    </div>
+  );
 };
 
 export default Canvas;

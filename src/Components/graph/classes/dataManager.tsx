@@ -41,6 +41,10 @@ class DataManager {
     }
     throw Error("File " + fileId.toString() + " was not found");
   }
+
+  getFiles() {
+    return this.files;
+  }
 }
 
 export default DataManager.getInstance();
