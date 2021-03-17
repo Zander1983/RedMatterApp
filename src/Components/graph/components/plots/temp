@@ -1,109 +1,26 @@
-import React from "react";
-import { Button } from "@material-ui/core";
-import { Divider } from "@material-ui/core";
-import Grid from "@material-ui/core/Grid";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
-import Switch from "@material-ui/core/Switch";
-import DeleteIcon from "@material-ui/icons/Delete";
-
-import MessageModal from "../modals/MessageModal";
-import dataManager from "../../classes/dataManager";
-
-interface PlotInput {
-  canvas: JSX.Element;
-  canvasIndex: number;
-}
-
-const classes = {
-  mainContainer: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  },
-  utilityBar: {
-    width: "100%",
-  },
-  buttonBar: {
-    marginBottom: 10,
-    paddingLeft: 2,
-    paddingRight: 2,
-    height: 40,
-  },
-  buttonBarDelete: {
-    backgroundColor: "#6666aa",
-  },
-  buttonBarButton: {
-    backgroundColor: "#66a",
-    color: "white",
-    marginLeft: 10,
-  },
-  axisBar: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  axisBarAxis: {
-    textAlign: "left",
-    border: "solid 0.5px #ccc",
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#fafafa",
-    boxShadow: "1px 3px 4px #bbd",
-  },
-  canvasDisplay: {
-    backgroundColor: "white",
-    borderRadius: 5,
-    boxShadow: "1px 3px 4px #bbd",
-    width: "100%",
-    height: "100% - 207",
-    backgroundColor: "#dfd",
-    flexGrow: 1,
-  },
-};
-
-function Plot(props: PlotInput) {
-  // Delete plot modal
-  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const deletePlot = () => {
-    console.log("delete plot called on id = ", props.canvasIndex);
-    dataManager.removeFile(props.canvasIndex);
-  };
-
-  // == General modal logic ==
-  const handleOpen = (func: Function) => {
-    func(true);
-  };
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-
-  return (
-    <div id="workspace" style={classes.mainContainer}>
-      <MessageModal
-        open={deleteModalOpen}
-        closeCall={{
-          f: handleClose,
-          ref: setDeleteModalOpen,
-        }}
-        message={<h2>Are you sure you want to delete this panel?</h2>}
-        options={{
-          yes: () => {
-            deletePlot();
-          },
-          no: () => {
-            handleClose(setDeleteModalOpen);
-          },
-        }}
-      />
-
       {/* UTILITY BAR DISPLAY */}
-      <div style={classes.utilityBar}>
+      <div
+        style={{
+          width: "100%",
+        }}
+      >
         {/* BUTTONBAR DISPLAY */}
-        <Grid container direction="row" xs={12} style={classes.buttonBar}>
+        <Grid
+          container
+          direction="row"
+          xs={12}
+          style={{
+            marginBottom: 10,
+            paddingLeft: 2,
+            paddingRight: 2,
+            height: 40,
+          }}
+        >
           <Button
             onClick={() => setDeleteModalOpen(true)}
-            style={classes.buttonBarDelete}
+            style={{
+              backgroundColor: "#6666aa",
+            }}
           >
             <DeleteIcon fontSize="small" style={{ color: "#fff" }}></DeleteIcon>
           </Button>
@@ -111,7 +28,11 @@ function Plot(props: PlotInput) {
             variant="contained"
             size="medium"
             // onClick={}
-            style={classes.buttonBarButton}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
           >
             Polygon Gate
           </Button> */}
@@ -119,7 +40,11 @@ function Plot(props: PlotInput) {
             variant="contained"
             size="medium"
             // onClick={}
-            style={classes.buttonBarButton}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
           >
             Oval Gate
           </Button>
@@ -127,7 +52,11 @@ function Plot(props: PlotInput) {
             variant="contained"
             size="medium"
             // onClick={}
-            style={classes.buttonBarButton}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
           >
             Quadrant
           </Button> */}
@@ -135,12 +64,24 @@ function Plot(props: PlotInput) {
         <Divider></Divider>
 
         {/* AXISBAR DISPLAY */}
-        <Grid xs={12} container direction="column" style={classes.axisBar}>
+        <Grid
+          xs={12}
+          container
+          direction="column"
+          style={{ marginTop: 10, marginBottom: 10 }}
+        >
           <Grid
             container
             direction="row"
             justify="space-evenly"
-            style={classes.axisBarAxis}
+            style={{
+              textAlign: "left",
+              border: "solid 0.5px #ccc",
+              padding: 10,
+              borderRadius: 5,
+              backgroundColor: "#fafafa",
+              boxShadow: "1px 3px 4px #bbd",
+            }}
           >
             <Grid>
               <h3
@@ -187,7 +128,15 @@ function Plot(props: PlotInput) {
             container
             direction="row"
             justify="space-evenly"
-            style={{ ...classes.axisBarAxis, marginTop: 10 }}
+            style={{
+              textAlign: "left",
+              border: "solid 0.5px #ccc",
+              padding: 10,
+              borderRadius: 5,
+              backgroundColor: "#fafafa",
+              boxShadow: "1px 3px 4px #bbd",
+              marginTop: 10,
+            }}
           >
             <Grid>
               <h3
@@ -232,11 +181,3 @@ function Plot(props: PlotInput) {
         </Grid>
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
-
-      {/* CANVAS DISPLAY */}
-      <div style={classes.canvasDisplay}>{props.canvas}</div>
-    </div>
-  );
-}
-
-export default Plot;

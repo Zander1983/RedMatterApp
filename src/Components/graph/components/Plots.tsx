@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 
-function GraphPrototype() {
+function Plots() {
   const classes = useStyles();
 
   // == Small screen size notice ==
@@ -89,16 +89,6 @@ function GraphPrototype() {
         open={generateReportModalOpen}
         closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
       />
-
-      {/* <MessageModal
-        open={deletePanelModalOpen}
-        closeCall={{
-          f: handleClose,
-          ref: setDeletePanelModalOpen,
-        }}
-        message={<h2>Are you sure you want to delete this panel?</h2>}
-        options={deletePanelModalOptions}
-      /> */}
 
       {/* == NOTICES == */}
       {showSmallScreenNotice ? (
@@ -154,7 +144,7 @@ function GraphPrototype() {
           marginBottom: 50,
         }}
         lg={12}
-        xl={9}
+        xl={10}
       >
         <Grid
           style={{
@@ -210,4 +200,4 @@ function GraphPrototype() {
   );
 }
 
-export default GraphPrototype;
+export default Plots;

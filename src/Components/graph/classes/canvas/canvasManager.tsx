@@ -38,12 +38,9 @@ class CanvasManager {
     return this.canvasMap;
   }
 
-  private instanceNewCanvas(id: number): { canvas: typeof Canvas; id: number } {
-    const canvas = new Canvas();
-    return {
-      id: id,
-      canvas: canvas,
-    };
+  private instanceNewCanvas(id: number): JSX.Element {
+    const canvas = <Canvas canvasIndex={id} />;
+    return canvas;
   }
 
   private canvasIsPresent(id: number): boolean {

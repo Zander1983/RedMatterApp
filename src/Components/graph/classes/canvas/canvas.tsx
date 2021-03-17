@@ -60,7 +60,7 @@ const Canvas = (props: any) => {
   // return <canvas ref={canvasRef} {...rest} />;
   return (
     <div style={{ width: 400, height: 400, backgroundColor: "#afa" }}>
-      <h1>I'm a canvas!</h1>
+      <h1>I'm a canvas with id = {props.canvasIndex}!</h1>
     </div>
   );
 };

@@ -16,7 +16,7 @@ class DataManager {
   }
 
   private static objId: number = 0;
-  files: { file: FCSFile; id: number }[] = [];
+  files = new Map();
   rerender: Function = () => {};
 
   setRerendererCallback(rerenderer: Function) {
@@ -25,25 +25,33 @@ class DataManager {
 
   addFile(file: FCSFile): number {
     const fileId = DataManager.objId;
+    console.log("new file with id = ", fileId);
     DataManager.objId++;
-    this.files.push({ file: file, id: fileId });
+    this.files.set(fileId, file);
     this.rerender();
-    console.log("Added file: ", file, " with id: ", fileId);
     return fileId;
   }
 
   removeFile(fileId: number) {
-    for (let i = 0; i < this.files.length; i++) {
-      if (this.files[i].id == fileId) {
-        this.files.splice(i, 1);
-        this.rerender();
-      }
+    console.log("delete file with id = ", fileId);
+    if (this.files.has(fileId)) {
+      this.files.delete(fileId);
+      this.rerender();
+      return;
     }
     throw Error("File " + fileId.toString() + " was not found");
   }
 
   getFiles() {
-    return this.files;
+    const files: { file: FCSFile; id: number }[] = [];
+    this.files.forEach((v, k) => {
+      files.push({ file: v, id: k });
+    });
+    return files;
+  }
+
+  getFile(id: number) {
+    return this.files.get(id);
   }
 }
 

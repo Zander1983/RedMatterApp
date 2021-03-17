@@ -1,12 +1,11 @@
-import Plot from "../Plots";
+import Plot from "./Plot";
 import canvasManager from "../../classes/canvas/canvasManager";
 
-const plotFactory = (): JSX.Element[] => {
+const plotFactory = (): any => {
   const canvas = canvasManager.getCanvas();
   const plots: JSX.Element[] = [];
   canvas.forEach((v, k) => {
-    const newPlot = <Plot />;
-    plots.push(newPlot);
+    plots.push(<Plot key={k} canvas={v} canvasIndex={k}></Plot>);
   });
   return plots;
 };
