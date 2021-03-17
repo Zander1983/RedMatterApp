@@ -73,7 +73,7 @@ class Workspace extends React.Component {
      not re re-rendered unecessarely, which could slow down app's perfomance
      significatively */
   render() {
-    console.log("render count: ", ++Workspace.renderCalls);
+    console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
     if (this.plots.length > 0) {
       return (
         <ResponsiveGridLayout

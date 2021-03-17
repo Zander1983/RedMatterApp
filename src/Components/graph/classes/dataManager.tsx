@@ -31,7 +31,6 @@ class DataManager {
 
   addFile(file: FCSFile): number {
     const fileId = DataManager.objId;
-    console.log("new file with id = ", fileId);
     DataManager.objId++;
     this.files.set(fileId, file);
     this.rerender();
@@ -39,7 +38,6 @@ class DataManager {
   }
 
   removeFile(fileId: number) {
-    console.log("delete file with id = ", fileId);
     if (this.files.has(fileId)) {
       this.files.delete(fileId);
       this.rerender();

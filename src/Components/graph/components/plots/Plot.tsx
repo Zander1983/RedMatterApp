@@ -9,9 +9,10 @@ import DeleteIcon from "@material-ui/icons/Delete";
 
 import MessageModal from "../modals/MessageModal";
 import dataManager from "../../classes/dataManager";
+import Canvas from "../../classes/canvas/canvas";
 
 interface PlotInput {
-  canvas: JSX.Element;
+  canvas: Canvas;
   canvasIndex: number;
 }
 
@@ -52,7 +53,6 @@ const classes = {
     boxShadow: "1px 3px 4px #bbd",
   },
   canvasDisplay: {
-    backgroundColor: "white",
     borderRadius: 5,
     boxShadow: "1px 3px 4px #bbd",
     width: "100%",
@@ -63,11 +63,58 @@ const classes = {
 };
 
 function Plot(props: PlotInput) {
-  // Delete plot modal
-  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const deletePlot = () => {
-    console.log("delete plot called on id = ", props.canvasIndex);
-    dataManager.removeFile(props.canvasIndex);
+  // == Setup canvas + metadata ==
+  const [renderCount, setRenderCount] = React.useState(0);
+  const canvas = props.canvas;
+  canvas.rerender = () => setRenderCount(renderCount + 1);
+
+  const xAxis = canvas.xAxis;
+  const yAxis = canvas.yAxis;
+  const xPlotType = canvas.xPlotType;
+  const yPlotType = canvas.yPlotType;
+  const [xHistogram, setXHistogram] = React.useState(false);
+  const [yHistogram, setYHistogram] = React.useState(false);
+  const [oldXAxis, setOldXAxis] = React.useState(null);
+  const [oldYAxis, setOldYAxis] = React.useState(null);
+
+  // == Canvas state management ==
+
+  const isAxisDisabled = (axis: "x" | "y") => {
+    return axis === "x" ? yHistogram : xHistogram;
+  };
+
+  const isCanvasHistogram = () => {
+    return isAxisDisabled("y") || isAxisDisabled("x");
+  };
+
+  const setHistogram = (axis: "x" | "y", value: boolean) => {
+    axis === "x" ? setXHistogram(value) : setYHistogram(value);
+
+    if (value) {
+      axis === "x" ? setOldYAxis(yAxis) : setOldXAxis(xAxis);
+      axis === "x"
+        ? props.canvas.xAxisToHistogram()
+        : props.canvas.yAxisToHistogram();
+    } else {
+      axis === "x"
+        ? props.canvas.setYAxis(oldYAxis)
+        : props.canvas.setXAxis(oldXAxis);
+    }
+  };
+
+  const setAxis = (axis: "x" | "y", value: string) => {
+    const otherAxisValue = axis == "x" ? yAxis : xAxis;
+    if (value == otherAxisValue && !isCanvasHistogram()) {
+      setHistogram(axis == "x" ? "y" : "x", true);
+    } else {
+      axis == "x" ? props.canvas.setXAxis(value) : props.canvas.setYAxis(value);
+    }
+  };
+
+  const setPlotType = (axis: "x" | "y", value: string) => {
+    axis == "x"
+      ? props.canvas.setXAxisPlotType(value)
+      : props.canvas.setYAxisPlotType(value);
   };
 
   // == General modal logic ==
@@ -77,7 +124,13 @@ function Plot(props: PlotInput) {
   const handleClose = (func: Function) => {
     func(false);
   };
+  // Delete plot modal
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const deletePlot = () => {
+    dataManager.removeFile(props.canvasIndex);
+  };
 
+  console.log(`plot ${props.canvasIndex} rendered for the ${renderCount} time`);
   return (
     <div id="workspace" style={classes.mainContainer}>
       <MessageModal
@@ -153,18 +206,28 @@ function Plot(props: PlotInput) {
             </Grid>
             <Grid>
               <b>Type:</b>
-              <Select style={{ width: 100, marginLeft: 10 }}>
+              <Select
+                style={{ width: 100, marginLeft: 10 }}
+                disabled={isAxisDisabled("x") || isCanvasHistogram()}
+                value={xPlotType}
+                onChange={(e) => setPlotType("x", e.target.value)}
+              >
                 <MenuItem value={"lin"}>Linear</MenuItem>
                 <MenuItem value={"log"}>Log</MenuItem>
-                <MenuItem value={"bin"}>Bilinear</MenuItem>
+                {/* <MenuItem value={"bin"}>Bilinear</MenuItem> */}
               </Select>
             </Grid>
             <Grid>
               <b>Axis:</b>
-              <Select style={{ width: 100, marginLeft: 10 }}>
-                <MenuItem value={"lin"}>FCA-1</MenuItem>
-                <MenuItem value={"log"}>FCA-1</MenuItem>
-                <MenuItem value={"bin"}>FTP-69</MenuItem>
+              <Select
+                style={{ width: 100, marginLeft: 10 }}
+                onChange={(e) => setAxis("x", e.target.value)}
+                disabled={isAxisDisabled("x")}
+                value={canvas.xAxis}
+              >
+                {canvas.getFile().axes.map((e) => (
+                  <MenuItem value={e}>{e}</MenuItem>
+                ))}
               </Select>
             </Grid>
             <Grid>
@@ -179,6 +242,9 @@ function Plot(props: PlotInput) {
                 color="primary"
                 name="checkedB"
                 inputProps={{ "aria-label": "primary checkbox" }}
+                checked={xHistogram}
+                disabled={isAxisDisabled("x")}
+                onChange={(_, checked) => setHistogram("x", checked)}
               />
             </Grid>
           </Grid>
@@ -200,18 +266,28 @@ function Plot(props: PlotInput) {
             </Grid>
             <Grid>
               <b>Type:</b>
-              <Select style={{ width: 100, marginLeft: 10 }}>
+              <Select
+                style={{ width: 100, marginLeft: 10 }}
+                value={yPlotType}
+                disabled={isAxisDisabled("y") || isCanvasHistogram()}
+                onChange={(e) => setPlotType("y", e.target.value)}
+              >
                 <MenuItem value={"lin"}>Linear</MenuItem>
                 <MenuItem value={"log"}>Log</MenuItem>
-                <MenuItem value={"bin"}>Bilinear</MenuItem>
+                {/* <MenuItem value={"bin"}>Bilinear</MenuItem> */}
               </Select>
             </Grid>
             <Grid>
               <b>Axis:</b>
-              <Select style={{ width: 100, marginLeft: 10 }}>
-                <MenuItem value={"lin"}>FCA-1</MenuItem>
-                <MenuItem value={"log"}>FCA-1</MenuItem>
-                <MenuItem value={"bin"}>FTP-69</MenuItem>
+              <Select
+                style={{ width: 100, marginLeft: 10 }}
+                onChange={(e) => setAxis("y", e.target.value)}
+                disabled={isAxisDisabled("y")}
+                value={yAxis}
+              >
+                {canvas.getFile().axes.map((e) => (
+                  <MenuItem value={e}>{e}</MenuItem>
+                ))}
               </Select>
             </Grid>
             <Grid>
@@ -226,6 +302,9 @@ function Plot(props: PlotInput) {
                 color="primary"
                 name="checkedB"
                 inputProps={{ "aria-label": "primary checkbox" }}
+                checked={yHistogram}
+                disabled={isAxisDisabled("y")}
+                onChange={(_, checked) => setHistogram("y", checked)}
               />
             </Grid>
           </Grid>
@@ -234,7 +313,7 @@ function Plot(props: PlotInput) {
       </div>
 
       {/* CANVAS DISPLAY */}
-      <div style={classes.canvasDisplay}>{props.canvas}</div>
+      <div style={classes.canvasDisplay}>{canvas.getCanvas()}</div>
     </div>
   );
 }

@@ -5,7 +5,7 @@ const plotFactory = (): any => {
   const canvas = canvasManager.getAllCanvas();
   const plots: JSX.Element[] = [];
   canvas.forEach((v, k) => {
-    plots.push(<Plot key={k} canvas={v.getCanvas()} canvasIndex={k}></Plot>);
+    plots.push(<Plot key={k} canvas={v} canvasIndex={k}></Plot>);
   });
   return plots;
 };

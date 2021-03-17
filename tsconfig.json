@@ -23,7 +23,10 @@
     // Settings to remove specific transpile annoying rules
     "strict": true,
     "strictPropertyInitialization": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+
+    // Risky new features of typescript
+    "experimentalDecorators": true,
   },
   "include": [
     "src"

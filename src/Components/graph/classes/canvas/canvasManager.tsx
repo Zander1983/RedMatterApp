@@ -55,7 +55,7 @@ class CanvasManager {
     return this.canvasMap;
   }
 
-  rerender() {
+  private rerender(id: number) {
     dataManager.rerender();
   }
 
