@@ -55,7 +55,12 @@ const AppHeader: FC = (props:any) => {
     )
   }else{
     login_logout_button=(
-      <NavLink className={classes.topBarLink} to="/login">Login</NavLink>
+      <>
+        <NavLink className={classes.topBarLink} to="/login">Login</NavLink>
+        <NavLink className={classes.topBarLink} to="/register">Register</NavLink>
+        {/* <NavLink className={classes.topBarLink} to="/authentication/0">Login</NavLink>
+        <NavLink className={classes.topBarLink} to="/authentication/1">Register</NavLink> */}
+      </>
     )
   }
 

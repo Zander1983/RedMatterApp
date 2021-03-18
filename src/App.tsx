@@ -19,6 +19,8 @@ import PrototypeForm from "./Components/home/PrototypeForm";
 // import CanvasChart from './Components/canvasChart/canvasChart';
 import GraphPrototype from "./Components/prototype/GraphPrototype";
 import Login from "./Components/users/login";
+import Register from "./Components/users/register";
+import SignInOutContainer from "./Components/users/signInOutContainer";
 
 const { Header, Content } = Layout;
 
@@ -38,6 +40,9 @@ const App: FC = () => {
     history.push('/workspaces');
     setIsLogged((prevData:any)=>true);
   }
+  const handleAfterRegister = ()=>{
+    history.push('/login');
+  }
   const handleAfterLogout = ()=>{
     localStorage.clear();
     setIsLogged((prevData:any)=>false);
@@ -55,7 +60,9 @@ const App: FC = () => {
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
           <Route exact path="/questions" component={PrototypeForm} />
+          <Route exact path="/authentication/:tabId" component={(props:any)=><SignInOutContainer {...props} />} />
           <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
+          <Route exact path="/register" component={(props:any)=><Register {...props} onRegister={handleAfterRegister} />} />
           <Route exact path="/graph" component={GraphPrototype} />
           <Route exact path="/workspaces" component={()=><Workspaces/>}/>
           <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} />} />
