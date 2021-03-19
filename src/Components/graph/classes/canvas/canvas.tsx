@@ -52,7 +52,18 @@ class Canvas {
 
     this.rerender = null;
 
-    this.canvas = <CanvasComponent rerender={this.rerender} />;
+    this.canvas = (
+      <CanvasComponent
+        width={this.width}
+        height={this.height}
+        data={{
+          x: this.file.getAxisPoints(this.xAxis),
+          y: this.file.getAxisPoints(this.yAxis),
+        }}
+        histogram={this.xAxis == this.yAxis}
+        id={id}
+      />
+    );
   }
 
   getCanvas() {
@@ -61,6 +72,11 @@ class Canvas {
 
   getFile() {
     return this.file;
+  }
+
+  setWidthAndHeight(width: number, height: number) {
+    this.width = width;
+    this.height = height;
   }
 
   @conditionalUpdateDecorator()

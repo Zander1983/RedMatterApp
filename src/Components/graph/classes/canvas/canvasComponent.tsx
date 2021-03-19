@@ -1,5 +1,6 @@
 import Plotter from "../plotters/plotter";
 import { useRef, useEffect } from "react";
+import ScatterPlotter from "../plotters/scatterPlotter";
 
 interface CanvasInput {
   style: object;
@@ -55,9 +56,24 @@ function useCanvas(plotter: any, scale: any) {
 // };
 
 const CanvasComponent = (props: any) => {
-  // const canvasRef = useCanvas(plotter, width, height);
+  const plotter = props.histogram
+    ? new ScatterPlotter({
+        xAxis: props.data.x,
+        yAxis: props.data.y,
+        width: props.width,
+        height: props.height,
+      })
+    : // Should have been histogram plotter
+      new ScatterPlotter({
+        xAxis: props.data.x,
+        yAxis: props.data.y,
+        width: props.width,
+        height: props.height,
+      });
 
-  // return <canvas ref={canvasRef} {...rest} />;
+  const canvasRef = useCanvas(plotter, width, height);
+
+  return <canvas ref={canvasRef} {...rest} />;
   return (
     <div
       style={{
@@ -69,7 +85,7 @@ const CanvasComponent = (props: any) => {
         verticalAlign: "middle",
       }}
     >
-      <h1>I'm a canvas with id = {props.canvasIndex}!</h1>
+      <h1>I'm a canvas with id = {props.id}!</h1>
     </div>
   );
 };

@@ -117,6 +117,8 @@ function Plot(props: PlotInput) {
       : props.canvas.setYAxisPlotType(value);
   };
 
+  const setCanvasWidthAndHeight = (width: number, height: number) => {};
+
   // == General modal logic ==
   const handleOpen = (func: Function) => {
     func(true);

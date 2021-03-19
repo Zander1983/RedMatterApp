@@ -6,7 +6,6 @@
 import Plotter, { PlotterInput } from "./plotter";
 import ScatterPlotter from "./scatterPlotter";
 import HistogramPlotter from "./histogramPlotter";
-import canvasManager from "../../classes/canvas/canvasManager";
 
 const plotterFactory = (input: PlotterInput): Plotter => {
   if (input.xAxis == input.yAxis) {
@@ -16,9 +15,4 @@ const plotterFactory = (input: PlotterInput): Plotter => {
   }
 };
 
-const generatePlots = (): Plotter[] => {
-  const canvasList = canvasManager.getCanvas();
-  plotterFactory();
-};
-
-export default generatePlots;
+export default plotterFactory;

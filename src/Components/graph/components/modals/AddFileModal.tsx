@@ -1,14 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import { Divider } from "@material-ui/core";
 
 import dataManager from "../../classes/dataManager";
 import FCSFile from "../../classes/fcsFile";
 
-import file1 from "./fcsFile1";
-import file2 from "./fcsFile2";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -49,6 +47,107 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const generateRandomData = (
+  dimesionCount: number,
+  maxPoints: number,
+  l: number,
+  r: number
+) => {
+  if (l > r) throw Error("R must be greater than L");
+  const pointCount = Math.round(Math.random() * maxPoints);
+  const points: Array<Array<number>> = [];
+  for (let i = 0; i < pointCount; i++) {
+    let dimesion = [];
+    for (let j = 0; j < dimesionCount; j++) {
+      dimesion.push(Math.random() * (r - l) + l);
+    }
+    points.push(dimesion);
+  }
+  return points;
+};
+
+const generateRandomAxes = (dimesionCount: number) => {
+  const list = [];
+  for (let i: number = 0; i < dimesionCount; i++) {
+    list.push({
+      value: Math.random()
+        .toString(36)
+        .replace(/[^a-z]+/g, "")
+        .substr(0, Math.round(Math.random() * 5 + 2)),
+      key: i,
+      display: ["lin", "log"][Math.round(Math.random() * 1.5 - 0.5)],
+    });
+  }
+  return list;
+};
+
+const files = [
+  {
+    title: "SmallRandomDataset.fcs",
+    information:
+      "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
+    data: generateRandomData(2, 100, 0, 100),
+    axes: generateRandomAxes(2),
+    lastModified: "Right now!",
+  },
+  {
+    title: "MediumRandomDataset.fcs",
+    information:
+      "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
+    data: generateRandomData(10, 1000, 0, 1),
+    axes: generateRandomAxes(10),
+    lastModified: "Right now!",
+  },
+  {
+    title: "LargeRandomDataset.fcs",
+    information:
+      "Generates many axes and points randomly! Around ~5000 points, 200 dimesions, ranging from -10000 to 1000000",
+    data: generateRandomData(200, 3000, -10000, 1000000),
+    axes: generateRandomAxes(200),
+    lastModified: "Right now!",
+  },
+];
+
+const addToFiles = (data: Array<any>, axes: object[], title: string) => {
+  files.unshift({
+    title: title,
+    information: "Real anonymous FCS file",
+    data: data,
+    axes: axes,
+    lastModified: "??",
+  });
+};
+
+const getRemotePrototypeFile = (url: string) => {
+  axios.get(url).then((response) => {
+    let text = response.data.slice(0, -3);
+    text += "]]";
+    const filedata = JSON.parse(text);
+    console.log(filedata);
+    const remoteFileAxes = [
+      "FSC-A",
+      "SSC",
+      "Comp-FITC-A - CD7",
+      "Comp-PE-A - CD3",
+      "Comp-APC-A - CD45",
+      "Time",
+    ].map((e, i) => {
+      return { key: i, value: e, display: "lin" };
+    });
+    addToFiles(filedata, remoteFileAxes, url.split("/")[3].split(".")[0]);
+  });
+};
+
+getRemotePrototypeFile(
+  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
+);
+getRemotePrototypeFile(
+  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
+);
+getRemotePrototypeFile(
+  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
+);
+
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
@@ -66,87 +165,8 @@ function AddFileModal(props: {
     setOpen(false);
   };
 
-  const generateRandomData = (
-    dimesionCount: number,
-    maxPoints: number,
-    l: number,
-    r: number
-  ) => {
-    if (l > r) throw Error("R must be greater than L");
-    const pointCount = Math.round(Math.random() * maxPoints);
-    const points: Array<Array<number>> = [];
-    for (let i = 0; i < pointCount; i++) {
-      let dimesion = [];
-      for (let j = 0; j < dimesionCount; j++) {
-        dimesion.push(Math.random() * (r - l) + l);
-      }
-      points.push(dimesion);
-    }
-    return points;
-  };
-
-  const generateRandomAxes = (dimesionCount: number) => {
-    const list = [];
-    for (let i: number = 0; i < dimesionCount; i++) {
-      list.push({
-        value: Math.random()
-          .toString(36)
-          .replace(/[^a-z]+/g, "")
-          .substr(0, Math.round(Math.random() * 5 + 2)),
-        key: i,
-        display: ["lin", "log"][Math.round(Math.random() * 1.5 - 0.5)],
-      });
-    }
-    return list;
-  };
-
-  const getFiles = () => {
-    return [
-      {
-        title: "Patient1_experiment2_2020_9_2.fcs",
-        information:
-          "Source of this file has been ommited. This file has 10k points in 6 dimesions.",
-        data: file1.data,
-        axes: file1.dimesions,
-        lastModified: "2020/9/2",
-      },
-      {
-        title: "Patient1_experiment3_2020_9_3.fcs",
-        information:
-          "Source of this file has been ommited. This file has 14k points in 11 dimesions.",
-        data: file2.data,
-        axes: file2.dimesions,
-        lastModified: "2020/9/3",
-      },
-      {
-        title: "SmallRandomDataset.fcs",
-        information:
-          "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
-        data: generateRandomData(2, 100, 0, 100),
-        axes: generateRandomAxes(2),
-        lastModified: "Right now!",
-      },
-      {
-        title: "MediumRandomDataset.fcs",
-        information:
-          "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
-        data: generateRandomData(10, 1000, 0, 1),
-        axes: generateRandomAxes(10),
-        lastModified: "Right now!",
-      },
-      {
-        title: "LargeRandomDataset.fcs",
-        information:
-          "Generates many axes and points randomly! Around ~5000 points, 200 dimesions, ranging from -10000 to 1000000",
-        data: generateRandomData(200, 3000, -10000, 1000000),
-        axes: generateRandomAxes(200),
-        lastModified: "Right now!",
-      },
-    ];
-  };
-
   const addFile = (index: number) => {
-    const file = getFiles()[index];
+    const file = files[index];
     const newFile = new FCSFile({
       name: file.title,
       axes: file.axes.map((e) => e.value),
@@ -155,8 +175,6 @@ function AddFileModal(props: {
     });
     dataManager.addFile(newFile);
   };
-
-  const files = getFiles();
 
   return (
     <Modal
