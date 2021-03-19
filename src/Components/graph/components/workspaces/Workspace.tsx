@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import Plot from "../plots/Plot";
@@ -40,20 +40,19 @@ const standardGridPlotItem = (x: number, y: number) => {
 class Workspace extends React.Component {
   private static renderCalls = 0;
   plots: JSX.Element[] = [];
-  keys: number[] = [];
 
   constructor(props: any) {
     super(props);
     dataManager.setRerendererCallback(() => {
       this.update();
     });
+    this.state = {
+      refs: [],
+    };
   }
 
   update() {
     this.plots = plotFactory();
-    this.keys = Array(this.plots.length)
-      .fill(0)
-      .map((e, i) => i);
     this.forceUpdate();
   }
 
@@ -63,8 +62,11 @@ class Workspace extends React.Component {
         key={key}
         style={classes.itemOuterDiv}
         data-grid={standardGridPlotItem(0, 0)}
+        id="outter"
       >
-        <div style={classes.itemInnerDiv}>{plot}</div>
+        <div id="inner" style={classes.itemInnerDiv}>
+          {plot}
+        </div>
       </div>
     );
   }
@@ -83,7 +85,7 @@ class Workspace extends React.Component {
           rows={{ lg: 30 }}
           rowHeight={30}
         >
-          {this.plots.map((e, i) => this.renderPlot(e, this.keys[i]))}
+          {this.plots.map((e, i) => this.renderPlot(e, i))}
         </ResponsiveGridLayout>
       );
     } else {

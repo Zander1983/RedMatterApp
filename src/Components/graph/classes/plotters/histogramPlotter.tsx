@@ -54,14 +54,4 @@ export default class HistogramPlotter extends Plotter {
     // for each gate:
     //     plotgraph.drawPolygon()
   }
-
-  registerMouseEvent(event: any) {
-    // console.log(event.type)
-  }
-
-  getCanvas() {
-    return this.canvas.getCanvasComponent(this.draw);
-  }
-
-  getMouseEvents() {}
 }

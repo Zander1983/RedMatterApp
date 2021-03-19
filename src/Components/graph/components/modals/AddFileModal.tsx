@@ -123,7 +123,6 @@ const getRemotePrototypeFile = (url: string) => {
     let text = response.data.slice(0, -3);
     text += "]]";
     const filedata = JSON.parse(text);
-    console.log(filedata);
     const remoteFileAxes = [
       "FSC-A",
       "SSC",

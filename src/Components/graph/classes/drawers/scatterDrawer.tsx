@@ -4,8 +4,7 @@
 import Drawer from "./drawer";
 import Polygon from "../gates/polygon";
 
-interface GraphDrawerConstructorParams {
-  context: any;
+interface ScatterDrawerConstructorParams {
   x1: number;
   y1: number;
   x2: number;
@@ -25,13 +24,13 @@ interface GraphLineParams {
   ie: number;
 }
 
-interface PlotGraph {
+interface ScatterPlotGraph {
   addLine: Function;
   addPoint: Function;
   addPolygon: Function;
 }
 
-export default class GraphDrawer extends Drawer {
+export default class ScatterDrawer extends Drawer {
   private x1: number;
   private y1: number;
   private x2: number;
@@ -42,7 +41,6 @@ export default class GraphDrawer extends Drawer {
   private iey: number;
 
   constructor({
-    context,
     x1,
     y1,
     x2,
@@ -51,8 +49,8 @@ export default class GraphDrawer extends Drawer {
     iex,
     iby,
     iey,
-  }: GraphDrawerConstructorParams) {
-    super(context);
+  }: ScatterDrawerConstructorParams) {
+    super();
     this.x1 = x1;
     this.y1 = y1;
     this.x2 = x2;
@@ -150,7 +148,7 @@ export default class GraphDrawer extends Drawer {
     return v;
   };
 
-  drawPlotGraph(): PlotGraph {
+  drawPlotGraph(): ScatterPlotGraph {
     this.graphLine({
       x1: this.x1,
       y1: this.y1,

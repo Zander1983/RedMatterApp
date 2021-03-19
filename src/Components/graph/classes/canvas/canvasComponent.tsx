@@ -1,6 +1,8 @@
+import React from "react";
 import Plotter from "../plotters/plotter";
 import { useRef, useEffect } from "react";
 import ScatterPlotter from "../plotters/scatterPlotter";
+import MouseInteractor from "../mouseInteractors/mouseInteractor";
 
 interface CanvasInput {
   style: object;
@@ -8,7 +10,11 @@ interface CanvasInput {
   plotter: Plotter;
 }
 
-function useCanvas(plotter: any, scale: any) {
+function useCanvas(
+  plotter: any,
+  scale: number,
+  mouseInteractor: MouseInteractor
+) {
   const canvasRef = useRef(null);
 
   function resizeCanvasToDisplaySize(canvas: any) {
@@ -29,9 +35,9 @@ function useCanvas(plotter: any, scale: any) {
     let frameCount = 0;
     let animationFrameId = 0;
 
-    canvas.addEventListener("mousemove", plotter.registerMouseEvent);
-    canvas.addEventListener("mousedown", plotter.registerMouseEvent);
-    canvas.addEventListener("mouseup", plotter.registerMouseEvent);
+    // canvas.addEventListener("mousemove", mouseInteractor.registerMouseEvent);
+    // canvas.addEventListener("mousedown", mouseInteractor.registerMouseEvent);
+    // canvas.addEventListener("mouseup", mouseInteractor.registerMouseEvent);
 
     const render = () => {
       frameCount++;
@@ -49,44 +55,53 @@ function useCanvas(plotter: any, scale: any) {
   return canvasRef;
 }
 
-// const CanvasComponent = ({ style, scale, plotter, ...rest }: CanvasInput) => {
-//   const canvasRef = useCanvas(plotter, scale);
-
-//   return <canvas ref={canvasRef} {...rest} />;
-// };
-
 const CanvasComponent = (props: any) => {
-  const plotter = props.histogram
-    ? new ScatterPlotter({
-        xAxis: props.data.x,
-        yAxis: props.data.y,
-        width: props.width,
-        height: props.height,
-      })
-    : // Should have been histogram plotter
-      new ScatterPlotter({
-        xAxis: props.data.x,
-        yAxis: props.data.y,
-        width: props.width,
-        height: props.height,
-      });
+  const { data, width, height, mouseInteractor, ...rest } = props;
+  const [eWidth, setEWidth] = React.useState(0);
+  const [eHeight, setEHeight] = React.useState(0);
+  const scale = 2;
 
-  const canvasRef = useCanvas(plotter, width, height);
+  const sizeUpdater = (w, h) => {
+    setEWidth(w);
+    setEHeight(h);
+  };
 
-  return <canvas ref={canvasRef} {...rest} />;
+  props.sizeupdatersetter(sizeUpdater);
+
+  const plotter =
+    props.histogram == "true"
+      ? new ScatterPlotter({
+          xAxis: data.x,
+          yAxis: data.y,
+          width: eWidth,
+          height: eHeight,
+          scale: scale,
+        })
+      : // Should have been histogram plotter
+        new ScatterPlotter({
+          xAxis: data.x,
+          yAxis: data.y,
+          width: eWidth,
+          height: eHeight,
+          scale: scale,
+        });
+
+  const canvasRef = useCanvas(plotter, scale, mouseInteractor);
+
   return (
-    <div
+    <canvas
       style={{
-        width: props.width,
-        height: props.height,
-        backgroundColor: "#afa",
+        backgroundColor: "#fcc",
         textAlign: "center",
-        display: "table-cell",
-        verticalAlign: "middle",
+        width: eWidth,
+        height: eHeight,
+        borderRadius: 5,
+        boxShadow: "1px 3px 4px #bbd",
+        flexGrow: 1,
       }}
-    >
-      <h1>I'm a canvas with id = {props.id}!</h1>
-    </div>
+      ref={canvasRef}
+      {...rest}
+    />
   );
 };
 

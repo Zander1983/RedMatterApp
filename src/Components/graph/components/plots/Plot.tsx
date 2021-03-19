@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@material-ui/core";
 import { Divider } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
@@ -20,8 +20,8 @@ const classes = {
   mainContainer: {
     width: "100%",
     height: "100%",
-    display: "flex",
-    flexDirection: "column",
+    // display: "flex",
+    // flexDirection: "column",
   },
   utilityBar: {
     width: "100%",
@@ -55,8 +55,6 @@ const classes = {
   canvasDisplay: {
     borderRadius: 5,
     boxShadow: "1px 3px 4px #bbd",
-    width: "100%",
-    height: "100% - 207",
     backgroundColor: "#dfd",
     flexGrow: 1,
   },
@@ -117,8 +115,6 @@ function Plot(props: PlotInput) {
       : props.canvas.setYAxisPlotType(value);
   };
 
-  const setCanvasWidthAndHeight = (width: number, height: number) => {};
-
   // == General modal logic ==
   const handleOpen = (func: Function) => {
     func(true);
@@ -132,9 +128,23 @@ function Plot(props: PlotInput) {
     dataManager.removeFile(props.canvasIndex);
   };
 
+  const displayRef = React.useRef();
+
+  const [canvasUpdaterInterval, setCanvasUpdaterInterval] = React.useState(
+    false
+  );
+  if (!canvasUpdaterInterval) {
+    setCanvasUpdaterInterval(true);
+    setInterval(() => {
+      console.log("update some shoit");
+      const br = displayRef.current.getBoundingClientRect();
+      props.canvas.setWidthAndHeight(br.width, br.height - 218);
+    }, 250);
+  }
+
   console.log(`plot ${props.canvasIndex} rendered for the ${renderCount} time`);
   return (
-    <div id="workspace" style={classes.mainContainer}>
+    <div style={classes.mainContainer} ref={displayRef} id="what the fuck">
       <MessageModal
         open={deleteModalOpen}
         closeCall={{
@@ -151,7 +161,6 @@ function Plot(props: PlotInput) {
           },
         }}
       />
-
       {/* UTILITY BAR DISPLAY */}
       <div style={classes.utilityBar}>
         {/* BUTTONBAR DISPLAY */}
@@ -276,7 +285,6 @@ function Plot(props: PlotInput) {
               >
                 <MenuItem value={"lin"}>Linear</MenuItem>
                 <MenuItem value={"log"}>Log</MenuItem>
-                {/* <MenuItem value={"bin"}>Bilinear</MenuItem> */}
               </Select>
             </Grid>
             <Grid>
@@ -313,9 +321,8 @@ function Plot(props: PlotInput) {
         </Grid>
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
-
       {/* CANVAS DISPLAY */}
-      <div style={classes.canvasDisplay}>{canvas.getCanvas()}</div>
+      {canvas.getCanvas()}
     </div>
   );
 }

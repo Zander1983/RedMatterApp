@@ -5,6 +5,7 @@
 */
 
 import FCSFile from "../fcsFile";
+import MouseInteractor from "../mouseInteractors/mouseInteractor";
 import CanvasComponent from "./canvasComponent";
 
 /* TypeScript does not deal well with decorators. Your linter might
@@ -32,42 +33,40 @@ const conditionalUpdateDecorator = () => {
 class Canvas {
   xAxis: string;
   yAxis: string;
-  width: number;
-  height: number;
   changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
-  canvas: any = null;
   id: number;
   rerender: Function | null = null;
   file: FCSFile;
+  mouseInteractor: MouseInteractor;
 
   constructor(file: FCSFile, id: number) {
     this.xAxis = file.axes[0];
     this.yAxis = file.axes[1];
-    this.width = 0;
-    this.height = 0;
     this.id = id;
     this.file = file;
-
     this.rerender = null;
+    this.mouseInteractor = new MouseInteractor();
+  }
 
-    this.canvas = (
+  componentSizeUpdater: Function;
+
+  getCanvas() {
+    return (
       <CanvasComponent
-        width={this.width}
-        height={this.height}
+        sizeupdatersetter={(su: Function) => {
+          this.componentSizeUpdater = su;
+        }}
         data={{
           x: this.file.getAxisPoints(this.xAxis),
           y: this.file.getAxisPoints(this.yAxis),
         }}
-        histogram={this.xAxis == this.yAxis}
-        id={id}
+        histogram={(this.xAxis == this.yAxis).toString()}
+        // mouseInteractor={this.mouseInteractor}
+        id={this.id}
       />
     );
-  }
-
-  getCanvas() {
-    return this.canvas;
   }
 
   getFile() {
@@ -75,8 +74,7 @@ class Canvas {
   }
 
   setWidthAndHeight(width: number, height: number) {
-    this.width = width;
-    this.height = height;
+    this.componentSizeUpdater(width, height);
   }
 
   @conditionalUpdateDecorator()

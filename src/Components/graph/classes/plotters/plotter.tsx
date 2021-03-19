@@ -2,14 +2,14 @@
     Responsible for providing a scatterplot with the input data
 */
 import FCSFile from "../fcsFile";
-import Drawer from "../drawers/drawer";
-import GraphDrawer from "../drawers/scatterDrawer";
+import ScatterDrawer from "../drawers/scatterDrawer";
 
 export interface PlotterInput {
-  xAxis: string; // "FCS-A"
-  yAxis: string; // "FTP-S"
+  xAxis: Array<number>; // "FCS-A"
+  yAxis: Array<number>; // "FTP-S"
   width: number;
   height: number;
+  scale: number;
   xRange?: [number, number] | undefined; // [0, 2000], or [10^5, 10^10]
   yRange?: [number, number] | undefined; // [0, 2000], or [10^5, 10^10]
 }
@@ -26,9 +26,6 @@ export default abstract class Plotter {
   xRange: [number, number];
   yRange: [number, number];
 
-  // Internal
-  drawer: Drawer | null = null;
-
   // Constant
   rangeSpacer: number = 0.05;
   scale: number = 2;
@@ -38,26 +35,23 @@ export default abstract class Plotter {
     yAxis,
     width,
     height,
+    scale,
     xRange = undefined,
     yRange = undefined,
-  }: PlotInput) {
-    if (drawer === null) {
-      throw Error("Undefined drawer for plotter");
-    }
+  }: PlotterInput) {
     this.xAxis = xAxis;
     this.yAxis = yAxis;
 
     this.width = width;
     this.height = height;
+    this.scale = scale;
 
     this.xRange = xRange === undefined ? this.findRangeBoundries("x") : xRange;
     this.yRange = yRange === undefined ? this.findRangeBoundries("y") : yRange;
-
-    this.drawer = new GraphDrawer({});
   }
 
   findRangeBoundries(axis: "x" | "y"): [number, number] {
-    const axisData = axis === "x" ? this.xData : this.yData;
+    const axisData = axis === "x" ? this.xAxis : this.yAxis;
     let min = axisData[0],
       max = axisData[0];
     for (const p of axisData) {

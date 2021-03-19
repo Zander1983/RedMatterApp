@@ -1,11 +1,19 @@
 /*
     Responsible for providing a scatterplot with the input data
 */
-import GraphDrawer from "../drawers/scatterDrawer";
+import ScatterDrawer from "../drawers/scatterDrawer";
 
 import Plotter, { PlotterInput } from "./plotter";
 
+const leftPadding = 70;
+const rightPadding = 50;
+const topPadding = 50;
+const bottomPadding = 50;
+
 export default class ScatterPlotter extends Plotter {
+  // Internal
+  drawer: ScatterDrawer | null = null;
+
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
@@ -14,7 +22,17 @@ export default class ScatterPlotter extends Plotter {
     super(props);
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
-    this.drawer = scatterDrawer();
+
+    this.drawer = new ScatterDrawer({
+      x1: leftPadding * this.scale,
+      y1: topPadding * this.scale,
+      x2: (this.width - rightPadding) * this.scale,
+      y2: (this.height - bottomPadding) * this.scale,
+      ibx: this.xRange[0],
+      iex: this.xRange[1],
+      iby: this.yRange[0],
+      iey: this.yRange[1],
+    });
   }
 
   createRangeArray(axis: "x" | "y"): Array<string> {
@@ -31,37 +49,19 @@ export default class ScatterPlotter extends Plotter {
   }
 
   draw(context: any, frameCount: number) {
-    if (this.drawer == null) {
-      this.drawer = new GraphDrawer({
-        context: context,
-        x1: 70 * this.scale,
-        y1: 50 * this.scale,
-        x2: (this.width - 50) * this.scale,
-        y2: (this.height - 50) * this.scale,
-        ibx: this.xRange[0],
-        iex: this.xRange[1],
-        iby: this.yRange[0],
-        iey: this.yRange[1],
-      });
-    }
+    this.drawer.setContext(context);
 
     let plotGraph = this.drawer.drawPlotGraph();
 
-    for (let i = 0; i < this.xData.length; i++) {
-      plotGraph.addPoint(this.xData[i], this.yData[i]);
+    for (let i = 0; i < this.xAxis.length; i++) {
+      plotGraph.addPoint(this.xAxis[i], this.yAxis[i]);
     }
 
     // for each gate:
     //     plotgraph.drawPolygon()
   }
 
-  registerMouseEvent(event: any) {
-    // console.log(event.type)
-  }
-
   getCanvas() {
     return this.canvas.getCanvasComponent(this.draw);
   }
-
-  getMouseEvents() {}
 }
