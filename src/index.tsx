@@ -6,6 +6,10 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import "typeface-roboto";
 import "typeface-raleway";
+import axios from 'axios';
+
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+console.log('process.env.REACT_APP_API_URL>>',process.env.REACT_APP_API_URL)
 
 ReactDOM.render(
   <>

@@ -1,4 +1,4 @@
-import React, { useState, FC } from 'react';
+import React, { useState, FC,useEffect } from 'react';
 
 import { NavLink } from 'react-router-dom';
 import { Anchor, Drawer } from 'antd';
@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 17,
     fontFamily: 'Raleway',
     fontWeight: 600,
+    marginLeft:"10px"
   },
   toolbar: {
     backgroundColor: '#333',
@@ -41,8 +42,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const AppHeader: FC = () => {
+const AppHeader: FC = (props:any) => {
   const classes = useStyles();
+  const [isLogin,setIsLogin] = useState(true);
+
+  let user = localStorage?.getItem('user');
+  let login_logout_button;
+
+  if(user){
+    login_logout_button=(
+      <NavLink className={classes.topBarLink} onClick={()=>props.onLogout()} to="/">Logout</NavLink>
+    )
+  }else{
+    login_logout_button=(
+      <NavLink className={classes.topBarLink} to="/login">Login</NavLink>
+    )
+  }
 
   return (
     <AppBar className={classes.toolbar}>
@@ -56,6 +71,9 @@ const AppHeader: FC = () => {
           
         </Typography>
         <NavLink className={classes.topBarLink} to="/questions">Start graphing!</NavLink>
+        {
+          login_logout_button
+        }
         {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>

@@ -1,6 +1,7 @@
 import React,{useRef, useState,useEffect} from 'react';
 import { List, Card, Button,Modal,Form, Input ,Tooltip , Row,Col} from 'antd';
-import axios from './../common/axios';
+// import axios from './../common/axios';
+import axios from 'axios';
 import {NavLink} from 'react-router-dom';
 import './css/style.css';
 import {
@@ -11,7 +12,13 @@ import {
     DeleteFilled
 } from '@ant-design/icons';
 
-const Workspaces = ({url}:any)=>{
+const Workspaces = ()=>{
+    // const [organisationId,setOrgId] = useState()
+    let organisationId ="";
+    let user = JSON.parse(localStorage?.getItem('user'));
+    if(user){
+        organisationId = user['organisationId'];
+    }
     const [workspaceData,setWorkspaceData] = useState<any[]>([]);
     const [loading,setLoading] = useState(false);
     const [visible,setVisible] = useState(false);
@@ -24,21 +31,36 @@ const Workspaces = ({url}:any)=>{
         return totalDays;
     }
     
-    useEffect(()=>{
-        const getWorkspaceData = async()=>{
-            try{
-                setLoading(true);
-                const response = await axios.get(url).catch((err)=>console.log(err))
-                if(response){
-                    const datatemp = response.data;
-                    setWorkspaceData(datatemp);
-                    setLoading(false);
-                }
-            }catch(err){
-                setLoading(false);
-            }
+    const options = {
+        headers:{
+            'Token' : localStorage.getItem("token")
         }
-        getWorkspaceData();
+    }
+    useEffect(()=>{
+        const getWorkspaceByOrgid = ()=>{
+            axios.get(`api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
+                const datatemp = res.data.workspaces;
+                setWorkspaceData(datatemp);
+                setLoading(false);
+            }).catch((err:any)=>{
+                setLoading(false);
+            })
+        }
+        getWorkspaceByOrgid();
+        // const getWorkspaceData = async()=>{
+        //     try{
+        //         setLoading(true);
+        //         const response = await axios.get(url).catch((err)=>console.log(err))
+        //         if(response){
+        //             const datatemp = response.data;
+        //             setWorkspaceData(datatemp);
+        //             setLoading(false);
+        //         }
+        //     }catch(err){
+        //         setLoading(false);
+        //     }
+        // }
+        // getWorkspaceData();
     },[]);
     // Workspace child components
     const WorkspaceCard = ({item}:any)=>{
@@ -59,7 +81,7 @@ const Workspaces = ({url}:any)=>{
         const deleteWorkspace = (workid:string)=>{
             setWorkspaceData((prevData:any)=>{
                 return(prevData.filter((data:any)=>{
-                    return data._id!=workid
+                    return data.id!=workid
                 }))
             })
         }
@@ -96,7 +118,7 @@ const Workspaces = ({url}:any)=>{
                             </div>
                         ):(
                             <div className="workspace-name">
-                                <NavLink to={{pathname:`/files/${item._id}`,state:{workspaceName:item.name}}}><p>{item.name}</p></NavLink>
+                                <NavLink to={{pathname:`/files/${item.id}`,state:{workspaceName:item.name}}}><p>{item.name}</p></NavLink>
                                 {/* <Button type="primary" className="edit" onClick={()=>changeEditMode()}><EditFilled /></Button> */}
                             </div>
                         )
@@ -111,7 +133,7 @@ const Workspaces = ({url}:any)=>{
                                 </Tooltip>
                         }
                         <Tooltip placement="bottom" arrowPointAtCenter={true} title="Delete">
-                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item._id)}}><DeleteFilled /></a>
+                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item.id)}}><DeleteFilled /></a>
                         </Tooltip>
                         {/* <Button type="primary"onClick={()=>{deleteWorkspace(item.id)}} danger>Delete</Button> */}
                     </div>
