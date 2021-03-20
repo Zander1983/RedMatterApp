@@ -24,6 +24,7 @@ function MessageModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   message: JSX.Element;
+  noButtons?: boolean;
   options?: {
     yes(): void;
     no(): void;
@@ -40,41 +41,45 @@ function MessageModal(props: {
     >
       <div className={classes.modal}>
         {props.message}
-        <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
-        {props.options === undefined ? (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => props.closeCall.f(props.closeCall.ref)}
-          >
-            Go back
-          </Button>
-        ) : (
+        {props.noButtons ? null : (
           <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                props.options?.yes();
-                props.closeCall.f(props.closeCall.ref);
-              }}
-            >
-              Yes
-            </Button>
+            <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
+            {props.options === undefined ? (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => props.closeCall.f(props.closeCall.ref)}
+              >
+                Go back
+              </Button>
+            ) : (
+              <div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    props.options?.yes();
+                    props.closeCall.f(props.closeCall.ref);
+                  }}
+                >
+                  Yes
+                </Button>
 
-            <Button
-              variant="contained"
-              color="primary"
-              style={{
-                marginLeft: 20,
-              }}
-              onClick={() => {
-                props.options?.no();
-                props.closeCall.f(props.closeCall.ref);
-              }}
-            >
-              No
-            </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{
+                    marginLeft: 20,
+                  }}
+                  onClick={() => {
+                    props.options?.no();
+                    props.closeCall.f(props.closeCall.ref);
+                  }}
+                >
+                  No
+                </Button>
+              </div>
+            )}{" "}
           </div>
         )}
       </div>

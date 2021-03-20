@@ -20,6 +20,7 @@ const classes = {
   mainContainer: {
     width: "100%",
     height: "100%",
+    padding: 10,
     // display: "flex",
     // flexDirection: "column",
   },
@@ -116,9 +117,6 @@ function Plot(props: PlotInput) {
   };
 
   // == General modal logic ==
-  const handleOpen = (func: Function) => {
-    func(true);
-  };
   const handleClose = (func: Function) => {
     func(false);
   };
@@ -130,21 +128,41 @@ function Plot(props: PlotInput) {
 
   const displayRef = React.useRef();
 
+  const updateCanvasSize = () => {
+    if (displayRef.current === undefined || displayRef.current === null) return;
+    const br = displayRef.current.getBoundingClientRect();
+    props.canvas.setWidthAndHeight(br.width - 20, br.height - 238);
+  };
+
   const [canvasUpdaterInterval, setCanvasUpdaterInterval] = React.useState(
-    false
+    null
   );
-  if (!canvasUpdaterInterval) {
-    setCanvasUpdaterInterval(true);
-    setInterval(() => {
-      console.log("update some shoit");
-      const br = displayRef.current.getBoundingClientRect();
-      props.canvas.setWidthAndHeight(br.width, br.height - 218);
-    }, 250);
+
+  const setUpdater = () => {
+    if (canvasUpdaterInterval !== null) return;
+    const interval = setInterval(() => {
+      updateCanvasSize();
+    }, 500);
+    setCanvasUpdaterInterval(interval);
+  };
+
+  if (canvasUpdaterInterval === null) {
+    setUpdater();
   }
 
-  console.log(`plot ${props.canvasIndex} rendered for the ${renderCount} time`);
+  const unsetUpdater = () => {
+    if (canvasUpdaterInterval === null) return;
+    clearInterval(canvasUpdaterInterval);
+    setCanvasUpdaterInterval(null);
+    updateCanvasSize();
+  };
+
+  setTimeout(() => updateCanvasSize(), 150);
+  console.log(
+    `Plot with ID = ${props.canvasIndex} rendered for the ${renderCount} time`
+  );
   return (
-    <div style={classes.mainContainer} ref={displayRef} id="what the fuck">
+    <div style={classes.mainContainer} ref={displayRef}>
       <MessageModal
         open={deleteModalOpen}
         closeCall={{
@@ -322,7 +340,7 @@ function Plot(props: PlotInput) {
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
       {/* CANVAS DISPLAY */}
-      {canvas.getCanvas()}
+      {canvas.getCanvas({ a: "1" })}
     </div>
   );
 }

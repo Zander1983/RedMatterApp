@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
@@ -9,6 +9,7 @@ import GenerateReportModal from "./modals/GenerateReportModal";
 import MessageModal from "./modals/MessageModal";
 
 import Workspace from "./workspaces/Workspace";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -72,6 +73,14 @@ function Plots() {
   const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
     false
   );
+  const [loadModal, setLoadModal] = React.useState(true);
+  const waitTime = Math.random() * 1000 + 500;
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoadModal(false);
+    }, waitTime);
+  });
 
   return (
     <div
@@ -88,6 +97,20 @@ function Plots() {
       <GenerateReportModal
         open={generateReportModalOpen}
         closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+      />
+
+      <MessageModal
+        open={loadModal}
+        closeCall={{ f: handleClose, ref: setLoadModal }}
+        message={
+          <div>
+            <h2>Loading your new workspace!</h2>
+            <h3 style={{ color: "#777" }}>Please wait</h3>
+            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
+            <p style={{ color: "#777" }}>No more than 10 seconds</p>
+          </div>
+        }
+        noButtons={true}
       />
 
       {/* == NOTICES == */}

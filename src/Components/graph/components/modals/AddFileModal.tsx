@@ -8,6 +8,10 @@ import FCSFile from "../../classes/fcsFile";
 
 import axios from "axios";
 
+import erica1 from "./staticFCSFiles/ericaFile1";
+import erica2 from "./staticFCSFiles/ericaFile2";
+import erica3 from "./staticFCSFiles/ericaFile3";
+
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
     backgroundColor: "#fafafa",
@@ -47,6 +51,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/* Frontend kmeans is very expensive, don't use */
+// const kmeansify = (
+//   list: Array<Array<number>>,
+//   callback: Function
+// ): Array<Array<number>> => {
+//   dataManager.loading = true;
+//   kmeans.clusterize(list, { k: 600 }, (err, res) => {
+//     if (err) throw Error("Clusterization failed!");
+//     else {
+//       callback(res.map((e) => e.centroid));
+//       dataManager.loading = false;
+//     }
+//   });
+// };
+
 const generateRandomData = (
   dimesionCount: number,
   maxPoints: number,
@@ -83,6 +102,27 @@ const generateRandomAxes = (dimesionCount: number) => {
 
 const files = [
   {
+    title: "erica1",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: erica1.data,
+    axes: erica1.axes,
+    lastModified: "23/05/2020",
+  },
+  {
+    title: "erica2",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: erica2.data,
+    axes: erica2.axes,
+    lastModified: "25/05/2020",
+  },
+  {
+    title: "erica3",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: erica3.data,
+    axes: erica3.axes,
+    lastModified: "26/05/2020",
+  },
+  {
     title: "SmallRandomDataset.fcs",
     information:
       "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
@@ -109,13 +149,20 @@ const files = [
 ];
 
 const addToFiles = (data: Array<any>, axes: object[], title: string) => {
-  files.unshift({
-    title: title,
-    information: "Real anonymous FCS file",
-    data: data,
-    axes: axes,
-    lastModified: "??",
-  });
+  const add = (data: Array<any>) => {
+    files.unshift({
+      title: title,
+      information: "Real anonymous FCS file",
+      data: data,
+      axes: axes,
+      lastModified: "??",
+    });
+  };
+  // if (data.length > 1000) {
+  //   kmeansify(data, add);
+  // } else {
+  add(data);
+  // }
 };
 
 const getRemotePrototypeFile = (url: string) => {
@@ -137,15 +184,15 @@ const getRemotePrototypeFile = (url: string) => {
   });
 };
 
-getRemotePrototypeFile(
-  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
-);
-getRemotePrototypeFile(
-  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
-);
-getRemotePrototypeFile(
-  "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
-);
+// getRemotePrototypeFile(
+//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
+// );
+// getRemotePrototypeFile(
+//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
+// );
+// getRemotePrototypeFile(
+//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
+// );
 
 function AddFileModal(props: {
   open: boolean;

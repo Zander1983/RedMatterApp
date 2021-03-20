@@ -19,13 +19,7 @@ const conditionalUpdateDecorator = () => {
     const original = descriptor.value;
     descriptor.value = function (...args: any[]) {
       original.apply(this, args);
-      if (this.changed) {
-        this.changed = false;
-        if (this.rerender === null) {
-          throw Error("Null rerenderer for Canvas");
-        }
-        this.rerender();
-      }
+      this.conditionalUpdate();
     };
   };
 };
@@ -52,7 +46,7 @@ class Canvas {
 
   componentSizeUpdater: Function;
 
-  getCanvas() {
+  getCanvas(canvasComponentProps: object) {
     return (
       <CanvasComponent
         sizeupdatersetter={(su: Function) => {
@@ -63,10 +57,27 @@ class Canvas {
           y: this.file.getAxisPoints(this.yAxis),
         }}
         histogram={(this.xAxis == this.yAxis).toString()}
-        // mouseInteractor={this.mouseInteractor}
-        id={this.id}
+        mouseInteractor={this.mouseInteractor}
+        id={`canvas-${this.id}`}
+        {...canvasComponentProps}
       />
     );
+  }
+
+  private conditionalUpdate() {
+    if (this.changed) {
+      this.changed = false;
+      if (this.rerender === null) {
+        throw Error("Null rerenderer for Canvas");
+      }
+      this.rerender();
+    }
+  }
+
+  setOvalGating(value: boolean) {
+    value
+      ? this.mouseInteractor.ovalGateStart()
+      : this.mouseInteractor.ovalGateEnd();
   }
 
   getFile() {

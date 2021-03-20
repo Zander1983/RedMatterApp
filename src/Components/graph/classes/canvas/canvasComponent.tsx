@@ -50,7 +50,7 @@ function useCanvas(
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [plotter.draw]);
+  }); // }, [plotter.draw]);
 
   return canvasRef;
 }
@@ -91,7 +91,7 @@ const CanvasComponent = (props: any) => {
   return (
     <canvas
       style={{
-        backgroundColor: "#fcc",
+        backgroundColor: "#fff",
         textAlign: "center",
         width: eWidth,
         height: eHeight,

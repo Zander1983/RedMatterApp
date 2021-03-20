@@ -24,6 +24,7 @@ class DataManager {
   private static objId: number = 0;
   files = new Map();
   rerender: Function = () => {};
+  loading = false;
 
   setRerendererCallback(rerenderer: Function) {
     this.rerender = rerenderer;

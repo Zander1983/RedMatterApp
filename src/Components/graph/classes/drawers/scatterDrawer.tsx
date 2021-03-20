@@ -203,7 +203,7 @@ export default class ScatterDrawer extends Drawer {
           parent.circle({
             x: plotx,
             y: ploty,
-            radius: 6,
+            radius: 3,
             strokeColor: color,
           });
         },

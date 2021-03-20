@@ -17,7 +17,6 @@ const classes = {
     borderRadius: 5,
   },
   itemInnerDiv: {
-    padding: 10,
     width: "100%",
     height: "100%",
   },
@@ -62,7 +61,7 @@ class Workspace extends React.Component {
         key={key}
         style={classes.itemOuterDiv}
         data-grid={standardGridPlotItem(0, 0)}
-        id="outter"
+        id={`workspace-outter-${key}`}
       >
         <div id="inner" style={classes.itemInnerDiv}>
           {plot}
