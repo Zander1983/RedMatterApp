@@ -17,8 +17,10 @@ import Graph from "./Components/charts/Graph";
 import PrototypeForm from "./Components/home/PrototypeForm";
 
 // import CanvasChart from './Components/canvasChart/canvasChart';
-import GraphPrototype from "./Components/prototype/GraphPrototype";
+
+import Plots from "./Components/graph/components/Plots";
 import Login from "./Components/users/login";
+
 
 const { Header, Content } = Layout;
 
@@ -55,8 +57,8 @@ const App: FC = () => {
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
           <Route exact path="/questions" component={PrototypeForm} />
+          <Route exact path="/graph" component={Plots} />
           <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
-          <Route exact path="/graph" component={GraphPrototype} />
           <Route exact path="/workspaces" component={()=><Workspaces url={requestsUrl.workspaceUrl}/>}/>
           {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
           {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}

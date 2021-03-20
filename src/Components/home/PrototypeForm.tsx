@@ -108,7 +108,6 @@ export default function PrototypeForm() {
     }
 
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    console.log(activeStep);
     setSkipped(newSkipped);
   };
 
