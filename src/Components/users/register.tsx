@@ -1,12 +1,15 @@
-import React,{useState,useRef} from 'react';
+import React,{useState,useRef,useEffect} from 'react';
 import axios from 'axios';
+import ReCAPTCHA from "react-google-recaptcha";
 import {Link} from 'react-router-dom'
 
 // Material UI Components
 import { makeStyles } from "@material-ui/core/styles";
 import {Avatar, Grid, Paper, Button, IconButton, Collapse} from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import Alert from '@material-ui/lab/Alert';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 // Material Ui Icons
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
@@ -15,11 +18,14 @@ import CloseIcon from '@material-ui/icons/Close';
 // Material UI validator
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 
+// Import Country list 
+import {counrtyList} from './common-data';
+
 // Style Classes
 const useStyles = makeStyles((theme) => ({
     paperStyle : {
         padding:"10px",
-        height:"70vh",
+        minHeight:"70vh",
         width:"450px",
         margin:"20px auto"
     },
@@ -37,18 +43,23 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const Login = (props:any)=>{
+const Register = (props:any)=>{
     const classes = useStyles();
 
-    const [isError, setError] = React.useState(false);
+    const [isError, setError] = useState(false);
+    const [isErrorMsg, setErrorMsg] = useState('');
     const [isSubmit,setIsSubmit] = useState(false);
-    const [isSuccess, setSuccess] = React.useState(false);
+    const [isSuccess, setSuccess] = useState(false);
+    const [isLocationSelected,setLocationStatus] = useState();
 
-    const loginForm = useRef();
+    const registerForm = useRef();
 
     const [formData,setFormData] = useState({
-        email: '',
-        password: '',
+        email:"",
+        organisation:"",
+        location:"",
+        password:"",
+        g_recaptcha_response:""
     })
 
     const handleChange = (event:any) => {
@@ -57,17 +68,48 @@ const Login = (props:any)=>{
         })
     }
 
+    const handleAutoCompleteField = (value:any,name:string)=>{
+        if(value === null){
+            setLocationStatus((prev:any) => false);
+        }else{
+            setLocationStatus((prev:any) => true);
+            setFormData((prevData:any)=>{
+                return {...prevData,[name]:value.key}
+            })
+        }
+    }
+
+    useEffect(()=>{
+    },[isLocationSelected])
+
+    function onChangeCaptcha(value:any) {
+        setFormData((prevData:any)=>{
+            return {...prevData,g_recaptcha_response:value}
+        })
+    }
+
     const handleSubmit = async () => {
+        if(formData.location === ""){
+            setLocationStatus((prev:any) => false);
+            return;
+        }
         try{
-            const res = await axios.post("api/login",formData);
+            const res = await axios.post("api/register",formData);
             const loginData = res.data;
             setError((prev:any)=> false)
             setSuccess((prev:any)=> true)
-            localStorage.setItem('token',loginData.token)
-            localStorage.setItem('user',JSON.stringify(loginData.userDetails))
-            props.onLogin();
-            // props.history.push('/workspaces');
+            // localStorage.setItem('token',loginData.token)
+            // localStorage.setItem('user',JSON.stringify(loginData.userDetails))
+            // props.onLogin();
+            props.onRegister();
+            // setTimeout(()=>{
+                // props.onRegister();
+            // },3000)
         }catch(err){
+            const errMsg = err.response.data.message;
+            setErrorMsg((prevMsg:string)=>{
+                return errMsg;
+            })
             setError((prev:any)=> true)
             setSuccess((prev:any)=> false)
         }
@@ -94,7 +136,7 @@ const Login = (props:any)=>{
                                     </IconButton>
                                     }
                                 >
-                                    Invalid Email or Password!!!
+                                    {isErrorMsg}
                                 </Alert>
                             </Collapse>
 
@@ -114,17 +156,48 @@ const Login = (props:any)=>{
                                     </IconButton>
                                     }
                                 >
-                                    Successfully Logged In
+                                    Successfully Registered!!!
                                 </Alert>
                             </Collapse>
                         </div>
                         <Avatar className={classes.avatarStyle}><LockOutlinedIcon/></Avatar>
-                        <h2>Sign In</h2>
+                        <h2>Sign Up</h2>
                         <div>
                            <ValidatorForm
-                                ref={loginForm}
-                                onSubmit={handleSubmit}
+                                ref={registerForm}
+                                onSubmit={()=>{
+                                    handleSubmit();
+                                }}
                             >
+                                <TextValidator
+                                    className = {classes.textFieldWidth}
+                                    label="Organisation"
+                                    onChange={handleChange}
+                                    name="organisation"
+                                    value={formData.organisation}
+                                    validators={['required']}
+                                    errorMessages={['Organisation is required!!!']}
+                                />
+                                <br />
+                                <Autocomplete
+                                    id="location"
+                                    onChange={(event, value) => handleAutoCompleteField(value,'location')}
+                                    options={counrtyList}
+                                    className = {classes.textFieldWidth}
+                                    autoHighlight
+                                    getOptionLabel={(option) => option.value}
+                                    renderInput={(params) => {
+                                        return <TextField 
+                                        {...params} 
+                                        label="Select Country" 
+                                        error={isLocationSelected === undefined?false:!isLocationSelected}
+                                        helperText={isLocationSelected === undefined?null:!isLocationSelected?"Location is required":null}
+                                        fullWidth 
+                                        />
+                                    }
+                                }
+                                />
+                                <br/>
                                 <TextValidator
                                     className = {classes.textFieldWidth}
                                     label="Email"
@@ -146,11 +219,27 @@ const Login = (props:any)=>{
                                     errorMessages={['Password is required']}
                                 />
                                 <br />
+                                <ReCAPTCHA
+                                    sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                                    onChange={onChangeCaptcha}
+                                    onExpired={()=>{
+                                        setFormData((prevData:any)=>{
+                                            return {...prevData,g_recaptcha_response:""}
+                                        })
+                                    }}
+                                />
+                                <br/>
                                 <Button
                                     color="primary"
                                     variant="contained"
                                     type="submit"
                                     disabled={isSubmit}
+                                    onFocus={()=>{
+                                        if(formData.location === ""){
+                                            setLocationStatus((prev:any) => false);
+                                            return;
+                                        }
+                                    }}
                                 >
                                     {
                                         (isSubmit && 'Your form is submitted!')
@@ -158,10 +247,10 @@ const Login = (props:any)=>{
                                     }
                                 </Button>
                             </ValidatorForm>
-                            <br/>
+                            
                             <Typography>
-                                Not yet registered ?
-                                <Link to="/register">Register Now</Link>
+                                Already registered ?
+                                <Link to="/login">Login In</Link>
                             </Typography>
                         </div>
                     </Grid>
@@ -170,5 +259,4 @@ const Login = (props:any)=>{
         </>
     )
 }
-
-export default Login;
+export default Register;
