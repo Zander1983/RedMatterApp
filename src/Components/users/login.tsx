@@ -38,7 +38,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Login = (props:any)=>{
-    console.log('url>>>>>',process.env.REACT_APP_API_URL)
     const classes = useStyles();
 
     const [isError, setError] = React.useState(false);

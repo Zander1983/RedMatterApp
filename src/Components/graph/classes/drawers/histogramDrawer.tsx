@@ -5,7 +5,7 @@ import Drawer from "./drawer";
 import Context from "../canvas/contextInterface";
 import Polygon from "../gates/polygon";
 
-interface GraphDrawerConstructorParams {
+interface HistogramDrawerConstructorParams {
   context: Context;
   x1: number;
   y1: number;
@@ -32,7 +32,7 @@ interface PlotGraph {
   addPolygon: Function;
 }
 
-export default class GraphDrawer extends Drawer {
+export default class HistogramDrawer extends Drawer {
   private x1: number;
   private y1: number;
   private x2: number;

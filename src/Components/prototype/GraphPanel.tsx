@@ -77,7 +77,7 @@ function GraphPanel(props: {
   const [gates, setGates] = React.useState(
     Array.from({ length: Math.round(Math.random() * 8 + 8) }, (v, i) => i + 1)
   );
-  console.log(gates);
+
   // Constant params
   const axes: Array<{ key: number; value: string; display: string }> =
     props.file.axes;
@@ -144,12 +144,16 @@ function GraphPanel(props: {
                 paddingLeft: 10,
               }}
             >
-              <h1 style={{ marginTop: 12, marginLeft: 10 }}>Name of data</h1>
+              <h2 style={{ marginTop: 8, marginLeft: 10, fontSize: 21 }}>
+                Name of data
+              </h2>
               <Button
                 onClick={() => props.interaction.deletePanel(props.index)}
-                style={{ marginLeft: 10 }}
               >
-                <DeleteIcon></DeleteIcon>
+                <DeleteIcon
+                  fontSize="small"
+                  style={{ marginTop: -5 }}
+                ></DeleteIcon>
               </Button>
             </Grid>
             <Grid
@@ -164,7 +168,7 @@ function GraphPanel(props: {
             >
               <Button
                 variant="contained"
-                size="large"
+                size="medium"
                 // onClick={}
                 style={{
                   backgroundColor: "#66a",
@@ -175,7 +179,7 @@ function GraphPanel(props: {
               </Button>
               <Button
                 variant="contained"
-                size="large"
+                size="medium"
                 // onClick={}
                 style={{
                   backgroundColor: "#66a",
@@ -187,7 +191,7 @@ function GraphPanel(props: {
               </Button>
               <Button
                 variant="contained"
-                size="large"
+                size="medium"
                 // onClick={}
                 style={{
                   backgroundColor: "#66a",
@@ -236,13 +240,13 @@ function GraphPanel(props: {
                 }}
               >
                 <Grid xs={12} style={{ textAlign: "center" }}>
-                  <h2
+                  <h3
                     style={{
                       marginBottom: 0,
                     }}
                   >
                     X axis
-                  </h2>
+                  </h3>
                   <Divider></Divider>
                 </Grid>
                 <Grid
@@ -309,13 +313,13 @@ function GraphPanel(props: {
                 }}
               >
                 <Grid xs={12} style={{ textAlign: "center" }}>
-                  <h2
+                  <h3
                     style={{
                       marginBottom: 0,
                     }}
                   >
                     Y axis
-                  </h2>
+                  </h3>
                   <Divider></Divider>
                 </Grid>
                 <Grid
@@ -389,13 +393,13 @@ function GraphPanel(props: {
               paddingTop: 12,
             }}
           >
-            <h2
+            <h3
               style={{
                 textAlign: "center",
               }}
             >
               Gates and Quadrants
-            </h2>
+            </h3>
             <Divider></Divider>
             <div
               style={{
@@ -421,15 +425,15 @@ function GraphPanel(props: {
                     }}
                   >
                     <Grid container xs={12} direction="row" style={{}}>
-                      <h3 style={{ marginTop: 5 }}>
+                      <h4 style={{ marginTop: 8 }}>
                         {e % 3 == 0
                           ? "Gate " + Math.round(e / 3 + 0.6).toString()
                           : e % 3 == 1
                           ? "Quadrant " + Math.round(e / 3 + 0.6).toString()
                           : "Oval Gate " + Math.round(e / 3 + 0.6).toString()}
-                      </h3>
-                      <Button style={{ marginLeft: 10 }}>
-                        <DeleteIcon></DeleteIcon>
+                      </h4>
+                      <Button style={{ marginLeft: 2 }}>
+                        <DeleteIcon fontSize="small"></DeleteIcon>
                       </Button>
                     </Grid>
                     <Grid>

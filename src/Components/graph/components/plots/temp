@@ -1,0 +1,183 @@
+      {/* UTILITY BAR DISPLAY */}
+      <div
+        style={{
+          width: "100%",
+        }}
+      >
+        {/* BUTTONBAR DISPLAY */}
+        <Grid
+          container
+          direction="row"
+          xs={12}
+          style={{
+            marginBottom: 10,
+            paddingLeft: 2,
+            paddingRight: 2,
+            height: 40,
+          }}
+        >
+          <Button
+            onClick={() => setDeleteModalOpen(true)}
+            style={{
+              backgroundColor: "#6666aa",
+            }}
+          >
+            <DeleteIcon fontSize="small" style={{ color: "#fff" }}></DeleteIcon>
+          </Button>
+          {/* <Button
+            variant="contained"
+            size="medium"
+            // onClick={}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
+          >
+            Polygon Gate
+          </Button> */}
+          <Button
+            variant="contained"
+            size="medium"
+            // onClick={}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
+          >
+            Oval Gate
+          </Button>
+          {/* <Button
+            variant="contained"
+            size="medium"
+            // onClick={}
+            style={{
+              backgroundColor: "#66a",
+              color: "white",
+              marginLeft: 10,
+            }}
+          >
+            Quadrant
+          </Button> */}
+        </Grid>
+        <Divider></Divider>
+
+        {/* AXISBAR DISPLAY */}
+        <Grid
+          xs={12}
+          container
+          direction="column"
+          style={{ marginTop: 10, marginBottom: 10 }}
+        >
+          <Grid
+            container
+            direction="row"
+            justify="space-evenly"
+            style={{
+              textAlign: "left",
+              border: "solid 0.5px #ccc",
+              padding: 10,
+              borderRadius: 5,
+              backgroundColor: "#fafafa",
+              boxShadow: "1px 3px 4px #bbd",
+            }}
+          >
+            <Grid>
+              <h3
+                style={{
+                  marginTop: 1,
+                }}
+              >
+                X axis
+              </h3>
+            </Grid>
+            <Grid>
+              <b>Type:</b>
+              <Select style={{ width: 100, marginLeft: 10 }}>
+                <MenuItem value={"lin"}>Linear</MenuItem>
+                <MenuItem value={"log"}>Log</MenuItem>
+                <MenuItem value={"bin"}>Bilinear</MenuItem>
+              </Select>
+            </Grid>
+            <Grid>
+              <b>Axis:</b>
+              <Select style={{ width: 100, marginLeft: 10 }}>
+                <MenuItem value={"lin"}>FCA-1</MenuItem>
+                <MenuItem value={"log"}>FCA-1</MenuItem>
+                <MenuItem value={"bin"}>FTP-69</MenuItem>
+              </Select>
+            </Grid>
+            <Grid>
+              <b
+                style={{
+                  marginRight: 10,
+                }}
+              >
+                Histogram:
+              </b>
+              <Switch
+                color="primary"
+                name="checkedB"
+                inputProps={{ "aria-label": "primary checkbox" }}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid
+            container
+            direction="row"
+            justify="space-evenly"
+            style={{
+              textAlign: "left",
+              border: "solid 0.5px #ccc",
+              padding: 10,
+              borderRadius: 5,
+              backgroundColor: "#fafafa",
+              boxShadow: "1px 3px 4px #bbd",
+              marginTop: 10,
+            }}
+          >
+            <Grid>
+              <h3
+                style={{
+                  marginTop: 1,
+                }}
+              >
+                Y axis
+              </h3>
+            </Grid>
+            <Grid>
+              <b>Type:</b>
+              <Select style={{ width: 100, marginLeft: 10 }}>
+                <MenuItem value={"lin"}>Linear</MenuItem>
+                <MenuItem value={"log"}>Log</MenuItem>
+                <MenuItem value={"bin"}>Bilinear</MenuItem>
+              </Select>
+            </Grid>
+            <Grid>
+              <b>Axis:</b>
+              <Select style={{ width: 100, marginLeft: 10 }}>
+                <MenuItem value={"lin"}>FCA-1</MenuItem>
+                <MenuItem value={"log"}>FCA-1</MenuItem>
+                <MenuItem value={"bin"}>FTP-69</MenuItem>
+              </Select>
+            </Grid>
+            <Grid>
+              <b
+                style={{
+                  marginRight: 10,
+                }}
+              >
+                Histogram:
+              </b>
+              <Switch
+                color="primary"
+                name="checkedB"
+                inputProps={{ "aria-label": "primary checkbox" }}
+              />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
+      </div>
