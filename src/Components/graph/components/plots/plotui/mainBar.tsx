@@ -24,6 +24,7 @@ const classes = {
 
 export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const canvas = props.canvas;
 
   const deletePlot = () => {
     dataManager.removeFile(props.canvasIndex);
@@ -31,6 +32,14 @@ export default function MainBar(props: any) {
 
   const handleClose = (func: Function) => {
     func(false);
+  };
+
+  const setOvalGating = () => {
+    if (canvas.gating) {
+      canvas.setOvalGating(false);
+    } else {
+      canvas.setOvalGating(true);
+    }
   };
 
   return (
@@ -69,7 +78,7 @@ export default function MainBar(props: any) {
       <Button
         variant="contained"
         size="medium"
-        // onClick={}
+        onClick={() => setOvalGating()}
         style={classes.mainButton}
       >
         Oval Gate

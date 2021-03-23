@@ -32,6 +32,14 @@ export default abstract class Drawer {
 
   constructor() {}
 
+  abstract convertToAbstractPoint(
+    x: number,
+    y: number
+  ): { x: number; y: number };
+
+  abstract sizeUpdater(params: object): void;
+  abstract boundsUpdater(params: object): void;
+
   protected setFillColor(color: string | undefined) {
     if (color == undefined) return;
     this.ctx.fillStyle = color;

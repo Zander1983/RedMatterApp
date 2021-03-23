@@ -6,7 +6,8 @@
 
 import FCSFile from "../fcsFile";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
-import CanvasComponent from "./canvasComponent";
+import Plotter from "../plotters/plotter";
+import ScatterPlotter from "../plotters/scatterPlotter";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -25,15 +26,24 @@ const conditionalUpdateDecorator = () => {
 };
 
 class Canvas {
+  // Plot params
   xAxis: string;
   yAxis: string;
   changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
+
   id: number;
-  rerender: Function | null = null;
   file: FCSFile;
   mouseInteractor: MouseInteractor;
+
+  // Rendering objects
+  rerender: Function | null = null;
+  plotter: Plotter | null = null;
+
+  width: number = 0;
+  height: number = 0;
+  scale: number = 2;
 
   constructor(file: FCSFile, id: number) {
     this.xAxis = file.axes[0];
@@ -42,26 +52,8 @@ class Canvas {
     this.file = file;
     this.rerender = null;
     this.mouseInteractor = new MouseInteractor();
-  }
 
-  componentSizeUpdater: Function;
-
-  getCanvas(canvasComponentProps: object) {
-    return (
-      <CanvasComponent
-        sizeupdatersetter={(su: Function) => {
-          this.componentSizeUpdater = su;
-        }}
-        data={{
-          x: this.file.getAxisPoints(this.xAxis),
-          y: this.file.getAxisPoints(this.yAxis),
-        }}
-        histogram={(this.xAxis == this.yAxis).toString()}
-        mouseInteractor={this.mouseInteractor}
-        id={`canvas-${this.id}`}
-        {...canvasComponentProps}
-      />
-    );
+    this.constructPlotter();
   }
 
   private conditionalUpdate() {
@@ -70,8 +62,95 @@ class Canvas {
       if (this.rerender === null) {
         throw Error("Null rerenderer for Canvas");
       }
+      this.constructPlotter();
       this.rerender();
     }
+  }
+
+  setComponentRenderer(rerender: Function) {
+    this.rerender = rerender;
+  }
+
+  constructPlotter() {
+    const data = {
+      x: this.file.getAxisPoints(this.xAxis),
+      y: this.file.getAxisPoints(this.yAxis),
+    };
+
+    this.plotter =
+      this.xAxis == this.yAxis
+        ? new ScatterPlotter({
+            xAxis: data.x,
+            yAxis: data.y,
+            width: this.width,
+            height: this.height,
+            scale: this.scale,
+          })
+        : // Should have been histogram plotter
+          new ScatterPlotter({
+            xAxis: data.x,
+            yAxis: data.y,
+            width: this.width,
+            height: this.height,
+            scale: this.scale,
+          });
+  }
+
+  useCanvas(ref: any) {
+    const canvas = ref.current;
+    const context = canvas.getContext("2d");
+    let frameCount = 0;
+    let animationFrameId = 0;
+
+    const sendMouseInteraction = (event: Event) => {
+      const x = event.offsetX;
+      const y = event.offsetY;
+      const type = event.type;
+      const p = this.plotter.convertToAbstractPoint(x, y);
+      this.mouseInteractor.registerMouseEvent(type, p.x, p.y);
+    };
+
+    const addCanvasListener = (type: string, func: Function) => {
+      if (canvas.getAttribute(`${type}-listener`) !== "true") {
+        canvas.addEventListener(type, func);
+        canvas.setAttribute(`${type}-listener`, "true");
+      }
+    };
+
+    addCanvasListener("mousedown", sendMouseInteraction);
+    addCanvasListener("mouseup", sendMouseInteraction);
+
+    const render = () => {
+      frameCount++;
+      const { width, height } = canvas.getBoundingClientRect();
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width * this.scale;
+        canvas.height = height * this.scale;
+      }
+      this.plotter.draw(context, frameCount);
+      return () => {
+        window.cancelAnimationFrame(animationFrameId);
+      };
+    };
+    render();
+    return ref;
+  }
+
+  getCanvas() {
+    return (
+      <canvas
+        style={{
+          backgroundColor: "#fff",
+          textAlign: "center",
+          width: this.width,
+          height: this.height,
+          borderRadius: 5,
+          boxShadow: "1px 3px 4px #bbd",
+          flexGrow: 1,
+        }}
+        ref={canvasRef}
+      />
+    );
   }
 
   setOvalGating(value: boolean) {
@@ -84,8 +163,11 @@ class Canvas {
     return this.file;
   }
 
-  setWidthAndHeight(width: number, height: number) {
-    this.componentSizeUpdater(width, height);
+  @conditionalUpdateDecorator()
+  setWidthAndHeight(w: number, h: number) {
+    this.changed = this.changed || this.width != w || this.height != h;
+    this.width = w;
+    this.height = h;
   }
 
   @conditionalUpdateDecorator()

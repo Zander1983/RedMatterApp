@@ -1,6 +1,7 @@
 /*
     Responsible for providing a scatterplot with the input data
 */
+import Drawer from "../drawers/drawer";
 import ScatterDrawer from "../drawers/scatterDrawer";
 
 import Plotter, { PlotterInput } from "./plotter";
@@ -11,17 +12,19 @@ const topPadding = 50;
 const bottomPadding = 50;
 
 export default class ScatterPlotter extends Plotter {
-  // Internal
-  drawer: ScatterDrawer | null = null;
-
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
 
-  constructor(props: PlotterInput) {
-    super(props);
+  static index = 0;
+  index: number;
+
+  constructor(params: PlotterInput) {
+    super(params);
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
+
+    this.index = ScatterPlotter.index++;
 
     this.drawer = new ScatterDrawer({
       x1: leftPadding * this.scale,
@@ -32,6 +35,7 @@ export default class ScatterPlotter extends Plotter {
       iex: this.xRange[1],
       iby: this.yRange[0],
       iey: this.yRange[1],
+      scale: this.scale,
     });
   }
 
@@ -48,6 +52,36 @@ export default class ScatterPlotter extends Plotter {
     );
   }
 
+  sizeUpdater(width: number, height: number): void {
+    this.width = width;
+    this.height = height;
+    this.drawer.sizeUpdater({
+      x1: leftPadding * this.scale,
+      y1: topPadding * this.scale,
+      x2: (this.width - rightPadding) * this.scale,
+      y2: (this.height - bottomPadding) * this.scale,
+    });
+  }
+
+  dataUpdater({
+    xData,
+    yData,
+  }: {
+    xData: Array<number>;
+    yData: Array<number>;
+  }) {
+    this.xAxis = xData;
+    this.yAxis = yData;
+    this.xLabels = this.createRangeArray("x");
+    this.yLabels = this.createRangeArray("y");
+    this.drawer.boundsUpdater({
+      ibx: this.xRange[0],
+      iex: this.xRange[1],
+      iby: this.yRange[0],
+      iey: this.yRange[1],
+    });
+  }
+
   draw(context: any, frameCount: number) {
     this.drawer.setContext(context);
 
@@ -61,7 +95,7 @@ export default class ScatterPlotter extends Plotter {
     //     plotgraph.drawPolygon()
   }
 
-  getCanvas() {
-    return this.canvas.getCanvasComponent(this.draw);
+  convertToAbstractPoint(x: number, y: number): any {
+    return this.drawer.convertToAbstractPoint(x, y);
   }
 }

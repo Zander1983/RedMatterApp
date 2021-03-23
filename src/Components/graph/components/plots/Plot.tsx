@@ -5,10 +5,7 @@ import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
 
-interface PlotInput {
-  canvas: Canvas;
-  canvasIndex: number;
-}
+import CanvasComponent from "../canvas/CanvasComponent";
 
 const classes = {
   mainContainer: {
@@ -27,10 +24,13 @@ const classes = {
   },
 };
 
-function Plot(props: PlotInput) {
+function Plot(props: any) {
   const [renderCount, setRenderCount] = React.useState(0);
   const canvas = props.canvas;
-  canvas.rerender = () => setRenderCount(renderCount + 1);
+
+  canvas.setComponentRenderer(() => {
+    setRenderCount(renderCount + 1);
+  });
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
@@ -39,7 +39,7 @@ function Plot(props: PlotInput) {
     if (displayRef.current === undefined || displayRef.current === null) return;
     const br = displayRef.current.getBoundingClientRect();
     const bar = barRef.current.getBoundingClientRect();
-    props.canvas.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
+    canvas.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };
 
   const [canvasUpdaterInterval, setCanvasUpdaterInterval] = React.useState(
@@ -65,9 +65,8 @@ function Plot(props: PlotInput) {
 
   return (
     <div style={classes.mainContainer} ref={displayRef}>
-      {/* UTILITY BAR DISPLAY */}
       <div style={classes.utilityBar} ref={barRef}>
-        <MainBar canvasIndex={props.canvasIndex}></MainBar>
+        <MainBar canvasIndex={props.canvasIndex} canvas={canvas}></MainBar>
         <Divider></Divider>
 
         <GateBar></GateBar>
@@ -76,8 +75,8 @@ function Plot(props: PlotInput) {
         <AxisBar canvas={canvas}></AxisBar>
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
-      {/* CANVAS DISPLAY */}
-      {canvas.getCanvas({ a: "1" })}
+
+      <CanvasComponent canvas={props.canvas} updateID={renderCount} />
     </div>
   );
 }
