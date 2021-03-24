@@ -56,7 +56,7 @@ const AppHeader: FC = (props:any) => {
   }else{
     login_logout_button=(
       <>
-        <NavLink className={classes.topBarLink} to="/login">Login</NavLink>
+        <NavLink className={classes.topBarLink} to="/login">Sign In</NavLink>
         <NavLink className={classes.topBarLink} to="/register">Register</NavLink>
         {/* <NavLink className={classes.topBarLink} to="/authentication/0">Login</NavLink>
         <NavLink className={classes.topBarLink} to="/authentication/1">Register</NavLink> */}
@@ -71,7 +71,7 @@ const AppHeader: FC = (props:any) => {
           <MenuIcon />
         </IconButton> */}
         <Typography variant="h6" className={classes.title}>
-          <NavLink style={{color: '#fafafa'}} to="/">Red Matter App</NavLink>
+          <NavLink style={{color: '#fafafa'}} to="/">Red Matter App v2.0.1</NavLink>
 
           
         </Typography>
