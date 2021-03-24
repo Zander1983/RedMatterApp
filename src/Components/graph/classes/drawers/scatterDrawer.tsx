@@ -2,7 +2,7 @@
   This is responsible for plotting a general graph given specific inputs
 */
 import Drawer from "./drawer";
-import Polygon from "../gates/polygon";
+import Polygon from "../gate/polygon";
 
 interface ScatterDrawerConstructorParams {
   x1: number;
@@ -72,41 +72,6 @@ export default class ScatterDrawer extends Drawer {
 
     this.xpts = Math.round((Math.max(x1, x2) - Math.min(x1, x2)) / 100);
     this.ypts = Math.round((Math.max(y1, y2) - Math.min(y1, y2)) / 100);
-  }
-
-  sizeUpdater({
-    x1,
-    x2,
-    y1,
-    y2,
-  }: {
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  }) {
-    console.log("size update drawer index", this.index);
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
-  }
-
-  boundsUpdater({
-    ibx,
-    iby,
-    iex,
-    iey,
-  }: {
-    ibx: number;
-    iby: number;
-    iex: number;
-    iey: number;
-  }) {
-    this.ibx = ibx;
-    this.iex = iex;
-    this.iby = iby;
-    this.iey = iey;
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {

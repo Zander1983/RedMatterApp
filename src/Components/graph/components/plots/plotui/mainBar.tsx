@@ -24,6 +24,7 @@ const classes = {
 
 export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [ovalGating, setOvalGating] = React.useState(false);
   const canvas = props.canvas;
 
   const deletePlot = () => {
@@ -34,11 +35,13 @@ export default function MainBar(props: any) {
     func(false);
   };
 
-  const setOvalGating = () => {
-    if (canvas.gating) {
+  const ovalGatingSetter = () => {
+    if (ovalGating) {
       canvas.setOvalGating(false);
+      setOvalGating(false);
     } else {
       canvas.setOvalGating(true);
+      setOvalGating(true);
     }
   };
 
@@ -78,8 +81,11 @@ export default function MainBar(props: any) {
       <Button
         variant="contained"
         size="medium"
-        onClick={() => setOvalGating()}
-        style={classes.mainButton}
+        onClick={() => ovalGatingSetter()}
+        style={{
+          ...classes.mainButton,
+          backgroundColor: ovalGating ? "#6666ee" : "#6666aa",
+        }}
       >
         Oval Gate
       </Button>

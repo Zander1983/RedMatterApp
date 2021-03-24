@@ -5,6 +5,7 @@
 */
 
 import FCSFile from "../fcsFile";
+import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
 import Plotter from "../plotters/plotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
@@ -51,9 +52,9 @@ class Canvas {
     this.id = id;
     this.file = file;
     this.rerender = null;
-    this.mouseInteractor = new MouseInteractor();
 
     this.constructPlotter();
+    this.contructMouseInteractor();
   }
 
   private conditionalUpdate() {
@@ -68,7 +69,18 @@ class Canvas {
   }
 
   setComponentRenderer(rerender: Function) {
+    console.log("rerenderer set");
     this.rerender = rerender;
+  }
+
+  rerenderInterval: any;
+  setRerenderingInterval(interval: number, unset?: false) {
+    if (unset) {
+      clearInterval(this.rerenderInterval);
+      return;
+    }
+    const rerenderer = this.rerender;
+    this.rerenderInterval = setInterval(() => rerenderer(), interval);
   }
 
   constructPlotter() {
@@ -94,6 +106,18 @@ class Canvas {
             height: this.height,
             scale: this.scale,
           });
+  }
+
+  contructMouseInteractor() {
+    this.mouseInteractor = new MouseInteractor(
+      this.createGate,
+      this.plotter,
+      this.setRerenderingInterval
+    );
+  }
+
+  createGate(gate: Gate) {
+    // wtf now?
   }
 
   useCanvas(ref: any) {

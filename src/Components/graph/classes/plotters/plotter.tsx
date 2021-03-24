@@ -2,7 +2,7 @@
     Responsible for providing a scatterplot with the input data
 */
 import FCSFile from "../fcsFile";
-import Drawer from "../drawers/drawer";
+import ScatterDrawer from "../drawers/scatterDrawer";
 
 export interface PlotterInput {
   xAxis: Array<number>; // "FCS-A"
@@ -30,7 +30,7 @@ export default abstract class Plotter {
   rangeSpacer: number = 0.05;
   scale: number = 2;
 
-  drawer: Drawer | null = null;
+  drawer: ScatterDrawer | null = null;
 
   constructor({
     xAxis,
@@ -63,9 +63,6 @@ export default abstract class Plotter {
     const d = Math.max(max - min, 0.1);
     return [min - d * this.rangeSpacer, max + d * this.rangeSpacer];
   }
-
-  abstract sizeUpdater(width: number, height: number): void;
-  abstract dataUpdater(params: object): void;
 
   abstract draw(context: any, frameCount: number): void;
 
