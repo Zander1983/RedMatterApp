@@ -71,7 +71,7 @@ const AppHeader: FC = (props:any) => {
           <MenuIcon />
         </IconButton> */}
         <Typography variant="h6" className={classes.title}>
-          <NavLink style={{color: '#fafafa'}} to="/">Red Matter App</NavLink>
+          <NavLink style={{color: '#fafafa'}} to="/">Red Matter App v2.0.1</NavLink>
 
           
         </Typography>
