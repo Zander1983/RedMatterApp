@@ -1,7 +1,9 @@
 /*
     Responsible for providing a scatterplot with the input data
 */
+import Drawer from "../drawers/drawer";
 import ScatterDrawer from "../drawers/scatterDrawer";
+import OvalGate from "../gate/OvalGate";
 
 import Plotter, { PlotterInput } from "./plotter";
 
@@ -11,17 +13,36 @@ const topPadding = 50;
 const bottomPadding = 50;
 
 export default class ScatterPlotter extends Plotter {
-  // Internal
-  drawer: ScatterDrawer | null = null;
-
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
 
-  constructor(props: PlotterInput) {
-    super(props);
+  ovalGateState: {
+    p0: {
+      x: number;
+      y: number;
+    } | null;
+    p1: {
+      x: number;
+      y: number;
+    } | null;
+    lastMousePos: {
+      x: number;
+      y: number;
+    } | null;
+    e: number;
+    ovalGate: OvalGate | null;
+  } | null = null;
+
+  static index = 0;
+  index: number;
+
+  constructor(params: PlotterInput) {
+    super(params);
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
+
+    this.index = ScatterPlotter.index++;
 
     this.drawer = new ScatterDrawer({
       x1: leftPadding * this.scale,
@@ -32,6 +53,7 @@ export default class ScatterPlotter extends Plotter {
       iex: this.xRange[1],
       iby: this.yRange[0],
       iey: this.yRange[1],
+      scale: this.scale,
     });
   }
 
@@ -48,6 +70,8 @@ export default class ScatterPlotter extends Plotter {
     );
   }
 
+  ovalGate: OvalGate;
+
   draw(context: any, frameCount: number) {
     this.drawer.setContext(context);
 
@@ -57,11 +81,51 @@ export default class ScatterPlotter extends Plotter {
       plotGraph.addPoint(this.xAxis[i], this.yAxis[i]);
     }
 
-    // for each gate:
-    //     plotgraph.drawPolygon()
+    console.log("ovalGateState");
+    if (this.ovalGateState != null) {
+      this.drawOvalGating(context);
+    }
   }
 
-  getCanvas() {
-    return this.canvas.getCanvasComponent(this.draw);
+  setOvalGateState(state: {
+    p0: {
+      x: number;
+      y: number;
+    } | null;
+    p1: {
+      x: number;
+      y: number;
+    } | null;
+    lastMousePos: {
+      x: number;
+      y: number;
+    } | null;
+    e: number;
+    ovalGate: OvalGate | null;
+  }) {
+    this.ovalGateState = state;
+  }
+
+  unsetOvalGate() {
+    this.ovalGateState = null;
+  }
+
+  drawOvalGating(context: any) {
+    if (this.ovalGateState.p0 != null && this.ovalGateState.p1 != null) {
+    }
+    if (this.ovalGateState.p0 != null) {
+      this.drawer.line({
+        x1: this.ovalGateState.p0.x,
+        y1: this.ovalGateState.p0.y,
+        x2: this.ovalGateState.lastMousePos.x,
+        y2: this.ovalGateState.lastMousePos.y,
+        lineWidth: 3,
+        strokeColor: "#d77",
+      });
+    }
+  }
+
+  convertToAbstractPoint(x: number, y: number): any {
+    return this.drawer.convertToAbstractPoint(x, y);
   }
 }

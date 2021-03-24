@@ -2,7 +2,7 @@
   This is responsible for plotting a general graph given specific inputs
 */
 import Drawer from "./drawer";
-import Polygon from "../gates/polygon";
+import Polygon from "../gate/polygon";
 
 interface ScatterDrawerConstructorParams {
   x1: number;
@@ -13,6 +13,7 @@ interface ScatterDrawerConstructorParams {
   iex: number;
   iby: number;
   iey: number;
+  scale: number;
 }
 
 interface GraphLineParams {
@@ -39,6 +40,12 @@ export default class ScatterDrawer extends Drawer {
   private iex: number;
   private iby: number;
   private iey: number;
+  private xpts: number;
+  private ypts: number;
+  private scale: number;
+
+  static index = 0;
+  index: number;
 
   constructor({
     x1,
@@ -49,6 +56,7 @@ export default class ScatterDrawer extends Drawer {
     iex,
     iby,
     iey,
+    scale,
   }: ScatterDrawerConstructorParams) {
     super();
     this.x1 = x1;
@@ -59,6 +67,11 @@ export default class ScatterDrawer extends Drawer {
     this.iex = iex;
     this.iby = iby;
     this.iey = iey;
+    this.scale = scale;
+    this.index = ScatterDrawer.index++;
+
+    this.xpts = Math.round((Math.max(x1, x2) - Math.min(x1, x2)) / 100);
+    this.ypts = Math.round((Math.max(y1, y2) - Math.min(y1, y2)) / 100);
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {
@@ -71,12 +84,10 @@ export default class ScatterDrawer extends Drawer {
       lineWidth: 2,
     });
 
-    // Draw markings and text
-    let counter = 10;
-
     if (x1 === x2) {
+      let counter = this.ypts;
       let interval = Math.max(y1, y2) - Math.min(y1, y2);
-      interval /= 10;
+      interval /= this.ypts;
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y += interval) {
         this.line({
           x1: x1 - 14,
@@ -86,7 +97,10 @@ export default class ScatterDrawer extends Drawer {
           lineWidth: 1,
         });
 
-        let textWrite = ((Math.abs(ib - ie) / 10) * counter + ib).toString();
+        let textWrite = (
+          (Math.abs(ie - ib) / this.ypts) * counter +
+          ib
+        ).toString();
         if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
 
         this.text({
@@ -100,8 +114,9 @@ export default class ScatterDrawer extends Drawer {
         counter--;
       }
     } else if (y1 === y2) {
+      let counter = this.xpts;
       let interval = Math.max(x1, x2) - Math.min(x1, x2);
-      interval /= 10;
+      interval /= this.xpts;
       for (let x = Math.max(x1, x2); x >= Math.min(x1, x2); x -= interval) {
         this.line({
           x1: x,
@@ -110,13 +125,16 @@ export default class ScatterDrawer extends Drawer {
           y2: y1 + 14,
           lineWidth: 1,
         });
-        let text_write = ((Math.abs(ie - ib) / 10) * counter + ib).toString();
-        if (text_write.length > 6) text_write = text_write.substring(0, 6);
+        let textWrite = (
+          (Math.abs(ie - ib) / this.xpts) * counter +
+          ib
+        ).toString();
+        if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
 
         this.text({
           font: "20px Arial",
           fillColor: "black",
-          text: text_write,
+          text: textWrite,
           x: x - 24,
           y: y1 + 40,
         });
@@ -148,6 +166,18 @@ export default class ScatterDrawer extends Drawer {
     return v;
   };
 
+  convertToAbstractPoint = (x: number, y: number) => {
+    const plotXRange = this.x2 / this.scale - this.x1 / this.scale;
+    const plotYRange = this.y1 / this.scale - this.y2 / this.scale;
+    const abstractXRange = this.iex - this.ibx;
+    const abstractYRange = this.iey - this.iby;
+    const nx =
+      ((x - this.x1 / this.scale) / plotXRange) * abstractXRange + this.ibx;
+    const ny =
+      this.iey - ((this.y1 / this.scale - y) / plotYRange) * abstractYRange;
+    return { x: nx, y: ny };
+  };
+
   drawPlotGraph(): ScatterPlotGraph {
     this.graphLine({
       x1: this.x1,
@@ -168,9 +198,11 @@ export default class ScatterDrawer extends Drawer {
     });
 
     // Horizontal plot lines
-    for (let i = 0; i < 10; i++) {
+    // console.log("drawing x", this.xpts, "lines");
+    for (let i = 0; i < this.ypts; i++) {
       const height =
-        (Math.abs(this.y1 - this.y2) / 10) * i + Math.min(this.y1, this.y2);
+        (Math.abs(this.y1 - this.y2) / this.ypts) * i +
+        Math.min(this.y1, this.y2);
       this.line({
         x1: this.x1,
         y1: height,
@@ -180,9 +212,10 @@ export default class ScatterDrawer extends Drawer {
       });
     }
     // Vertical plot lines
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= this.xpts; i++) {
       const width =
-        (Math.abs(this.x1 - this.x2) / 10) * i + Math.min(this.x1, this.x2);
+        (Math.abs(this.x1 - this.x2) / this.xpts) * i +
+        Math.min(this.x1, this.x2);
       this.line({
         x1: width,
         y1: this.y1,

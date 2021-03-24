@@ -30,6 +30,8 @@ export default abstract class Plotter {
   rangeSpacer: number = 0.05;
   scale: number = 2;
 
+  drawer: ScatterDrawer | null = null;
+
   constructor({
     xAxis,
     yAxis,
@@ -63,4 +65,6 @@ export default abstract class Plotter {
   }
 
   abstract draw(context: any, frameCount: number): void;
+
+  abstract convertToAbstractPoint(x: number, y: number): any;
 }
