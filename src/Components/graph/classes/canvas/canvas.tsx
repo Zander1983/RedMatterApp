@@ -40,6 +40,7 @@ class Canvas {
 
   // Rendering objects
   rerender: Function | null = null;
+  rerenderInterval: Function | null = null;
   plotter: Plotter | null = null;
 
   width: number = 0;
@@ -64,7 +65,8 @@ class Canvas {
         throw Error("Null rerenderer for Canvas");
       }
       this.constructPlotter();
-      this.rerender();
+      console.log("rerender was just fucking called by decorator");
+      this.rerenderInterval();
     }
   }
 
@@ -73,14 +75,9 @@ class Canvas {
     this.rerender = rerender;
   }
 
-  rerenderInterval: any;
-  setRerenderingInterval(interval: number, unset?: false) {
-    if (unset) {
-      clearInterval(this.rerenderInterval);
-      return;
-    }
-    const rerenderer = this.rerender;
-    this.rerenderInterval = setInterval(() => rerenderer(), interval);
+  setComponentRendererInterval(rerender: Function) {
+    console.log("rerenderer interval set");
+    this.rerender = rerender;
   }
 
   constructPlotter() {

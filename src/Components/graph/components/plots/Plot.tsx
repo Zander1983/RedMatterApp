@@ -28,9 +28,21 @@ function Plot(props: any) {
   const [renderCount, setRenderCount] = React.useState(0);
   const canvas = props.canvas;
 
-  canvas.setComponentRenderer(() => {
+  const rerender = () => {
     setRenderCount(renderCount + 1);
-  });
+  };
+
+  let interval: any = null;
+  const setRerenderInterval = (time: number, kill?: boolean = false) => {
+    if (kill) {
+      clearInterval(interval);
+      return;
+    }
+    interval = setInterval(() => rerender(), time);
+  };
+
+  canvas.setComponentRenderer(rerender);
+  canvas.setComponentRendererInterval(setRerenderInterval);
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
