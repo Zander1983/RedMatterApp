@@ -18,7 +18,6 @@ phases:
     commands:
       - echo Building...
       - yarn build:dev
-      - yarn build:staging
 artifacts:
   files:
     - "**/*"
