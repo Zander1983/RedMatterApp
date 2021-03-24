@@ -22,6 +22,7 @@ import Plots from "./Components/graph/components/Plots";
 import Login from "./Components/users/login";
 import Register from "./Components/users/register";
 import SignInOutContainer from "./Components/users/signInOutContainer";
+import GraphPrototype from "./Components/prototype/GraphPrototype";
 
 
 const { Header, Content } = Layout;

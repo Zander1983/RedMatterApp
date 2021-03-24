@@ -41,6 +41,7 @@ const Login = (props:any)=>{
     const classes = useStyles();
 
     const [isError, setError] = React.useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const [isSubmit,setIsSubmit] = useState(false);
     const [isSuccess, setSuccess] = React.useState(false);
 
@@ -68,6 +69,10 @@ const Login = (props:any)=>{
             props.onLogin();
             // props.history.push('/workspaces');
         }catch(err){
+            const errMsg = err.response.data.message;
+            setErrorMsg((prevMsg:string)=>{
+                return errMsg;
+            })
             setError((prev:any)=> true)
             setSuccess((prev:any)=> false)
         }
@@ -94,7 +99,7 @@ const Login = (props:any)=>{
                                     </IconButton>
                                     }
                                 >
-                                    Invalid Email or Password!!!
+                                    {errorMsg}
                                 </Alert>
                             </Collapse>
 
