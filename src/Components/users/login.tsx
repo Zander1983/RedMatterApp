@@ -69,6 +69,7 @@ const Login = (props:any)=>{
             props.onLogin();
             // props.history.push('/workspaces');
         }catch(err){
+            console.log("errrrtt>>>>>>",err)
             const errMsg = err.response.data.message;
             setErrorMsg((prevMsg:string)=>{
                 return errMsg;
