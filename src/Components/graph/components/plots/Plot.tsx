@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Divider } from "@material-ui/core";
 
 import GateBar from "./plotui/gateBar";
@@ -24,13 +24,29 @@ const classes = {
   },
 };
 
-function Plot(props: any) {
-  const [renderCount, setRenderCount] = React.useState(0);
-  const canvas = props.canvas;
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
 
-  canvas.setComponentRenderer(() => {
-    setRenderCount(renderCount + 1);
-  });
+function Plot(props: any) {
+  const [intervalRef, setIntervalRef] = React.useState(null);
+  const canvas = props.canvas;
+  const rerender = useForceUpdate();
+
+  const setRerenderInterval = (time: number, kill?: boolean = false) => {
+    if (kill) {
+      clearInterval(intervalRef);
+      setIntervalRef(null);
+      return;
+    }
+    if (intervalRef === null) {
+      setIntervalRef(setInterval(() => rerender(), time));
+    }
+  };
+
+  canvas.setRerender(rerender);
+  canvas.setRerenderInterval(setRerenderInterval);
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
@@ -59,10 +75,7 @@ function Plot(props: any) {
     setUpdater();
   }
 
-  console.log(
-    `Plot with ID = ${props.canvasIndex} rendered for the ${renderCount} time`
-  );
-
+  console.log(`Plot with ID = ${props.canvasIndex} rendered`);
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>
@@ -76,7 +89,7 @@ function Plot(props: any) {
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
 
-      <CanvasComponent canvas={props.canvas} updateID={renderCount} />
+      <CanvasComponent canvas={props.canvas} />
     </div>
   );
 }

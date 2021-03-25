@@ -39,8 +39,13 @@ class Canvas {
   mouseInteractor: MouseInteractor;
 
   // Rendering objects
-  rerender: Function | null = null;
   plotter: Plotter | null = null;
+
+  // Rendering methods
+  // Calling canvas render means the canvas will be redrawn
+  canvasRender: Function | null = null;
+  // Calling plot render means the component plot will be redrawn
+  plotRender: Function | null = null;
 
   width: number = 0;
   height: number = 0;
@@ -51,7 +56,7 @@ class Canvas {
     this.yAxis = file.axes[1];
     this.id = id;
     this.file = file;
-    this.rerender = null;
+    this.plotRender = null;
 
     this.constructPlotter();
     this.contructMouseInteractor();
@@ -60,52 +65,49 @@ class Canvas {
   private conditionalUpdate() {
     if (this.changed) {
       this.changed = false;
-      if (this.rerender === null) {
-        throw Error("Null rerenderer for Canvas");
+      if (this.plotRender === null || this.canvasRender === null) {
+        throw Error("Null renderer for Canvas");
       }
-      this.constructPlotter();
-      this.rerender();
+      this.updateAndRenderPlotter();
+      this.plotRender();
     }
   }
 
-  setComponentRenderer(rerender: Function) {
-    console.log("rerenderer set");
-    this.rerender = rerender;
+  updateAndRenderPlotter() {
+    this.plotter.xAxis = this.file.getAxisPoints(this.xAxis);
+    this.plotter.yAxis = this.file.getAxisPoints(this.yAxis);
+    this.plotter.width = this.width;
+    this.plotter.height = this.height;
+    this.canvasRender();
   }
 
-  rerenderInterval: any;
-  setRerenderingInterval(interval: number, unset?: false) {
-    if (unset) {
-      clearInterval(this.rerenderInterval);
-      return;
-    }
-    const rerenderer = this.rerender;
-    this.rerenderInterval = setInterval(() => rerenderer(), interval);
+  setRerender(plotRender: Function) {
+    this.plotRender = plotRender;
+  }
+
+  setRerenderInterval(rerenderInterval: Function) {
+    this.mouseInteractor.setRerenderInterval(rerenderInterval);
   }
 
   constructPlotter() {
-    const data = {
-      x: this.file.getAxisPoints(this.xAxis),
-      y: this.file.getAxisPoints(this.yAxis),
-    };
-
+    // This is supposed to have the histograms
     this.plotter =
-      this.xAxis == this.yAxis
-        ? new ScatterPlotter({
-            xAxis: data.x,
-            yAxis: data.y,
-            width: this.width,
-            height: this.height,
-            scale: this.scale,
-          })
-        : // Should have been histogram plotter
-          new ScatterPlotter({
-            xAxis: data.x,
-            yAxis: data.y,
-            width: this.width,
-            height: this.height,
-            scale: this.scale,
-          });
+      // this.xAxis == this.yAxis
+      new ScatterPlotter({
+        xAxis: this.file.getAxisPoints(this.xAxis),
+        yAxis: this.file.getAxisPoints(this.yAxis),
+        width: this.width,
+        height: this.height,
+        scale: this.scale,
+      });
+    // : // Should have been histogram plotter
+    //   new ScatterPlotter({
+    //     xAxis: data.x,
+    //     yAxis: data.y,
+    //     width: this.width,
+    //     height: this.height,
+    //     scale: this.scale,
+    //   });
   }
 
   contructMouseInteractor() {
@@ -143,8 +145,9 @@ class Canvas {
 
     addCanvasListener("mousedown", sendMouseInteraction);
     addCanvasListener("mouseup", sendMouseInteraction);
+    addCanvasListener("mousemove", sendMouseInteraction);
 
-    const render = () => {
+    this.canvasRender = () => {
       frameCount++;
       const { width, height } = canvas.getBoundingClientRect();
       if (canvas.width !== width || canvas.height !== height) {
@@ -156,8 +159,16 @@ class Canvas {
         window.cancelAnimationFrame(animationFrameId);
       };
     };
-    render();
+
+    this.mouseInteractor.setCanvasRender(this.canvasRender);
+
+    this.canvasRender();
+
     return ref;
+  }
+
+  setStopGatingParent(f: Function) {
+    this.mouseInteractor.setStopGatingParent(f);
   }
 
   getCanvas() {

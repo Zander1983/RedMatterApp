@@ -37,6 +37,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: 170,
     backgroundColor: "#66a",
     color: "white",
+    "&:hover": {
+      backgroundColor: "#66a",
+    },
   },
   instructions: {
     marginTop: theme.spacing(1),
@@ -48,6 +51,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 50,
     backgroundColor: "#66a",
     color: "#fff",
+    "&:hover": {
+      backgroundColor: "#66a",
+    },
   },
   activeStepLabel: {
     color: "white",
@@ -279,9 +285,16 @@ export default function PrototypeForm() {
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 className={classes.emptyButton}
+                style={{
+                  borderColor: activeStep === 0 ? "#ddd" : "#66a",
+                }}
               >
                 <Typography
-                  style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
+                  style={{
+                    fontSize: 15,
+                    color: activeStep === 0 ? "#ddd" : "#66a",
+                    fontWeight: 500,
+                  }}
                 >
                   Back
                 </Typography>

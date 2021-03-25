@@ -3,7 +3,7 @@ import React from "react";
 import { useRef, useEffect } from "react";
 import Canvas from "../../classes/canvas/canvas";
 
-const CanvasComponent = (props: { canvas: Canvas; updateID: number }) => {
+const CanvasComponent = (props: { canvas: Canvas }) => {
   const canvas = props.canvas;
   let canvasRef = useRef(null);
 
