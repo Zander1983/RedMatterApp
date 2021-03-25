@@ -48,10 +48,12 @@
   },
   "scripts": {
     "start:dev": "env-cmd -f .env.development react-scripts start",
+    "start:local": "env-cmd -f .env.local react-scripts start",
     "start:staging": "env-cmd -f .env.staging react-scripts start",
     "start:prod": "env-cmd -f .env.production react-scripts start",
     "start:qa": "env-cmd -f .env.qa react-scripts start",
     "build:dev": "env-cmd -f .env.development react-scripts build",
+    "build:local": "env-cmd -f .env.local react-scripts build",
     "build:staging": "env-cmd -f .env.staging react-scripts build",
     "build:prod": "env-cmd -f .env.production react-scripts build",
     "build:qa": "env-cmd -f .env.qa react-scripts build",

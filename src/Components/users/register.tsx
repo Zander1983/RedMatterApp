@@ -47,7 +47,7 @@ const Register = (props:any)=>{
     const classes = useStyles();
 
     const [isError, setError] = useState(false);
-    const [isErrorMsg, setErrorMsg] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
     const [isSubmit,setIsSubmit] = useState(false);
     const [isSuccess, setSuccess] = useState(false);
     const [isLocationSelected,setLocationStatus] = useState();
@@ -136,7 +136,7 @@ const Register = (props:any)=>{
                                     </IconButton>
                                     }
                                 >
-                                    {isErrorMsg}
+                                    {errorMsg}
                                 </Alert>
                             </Collapse>
 
