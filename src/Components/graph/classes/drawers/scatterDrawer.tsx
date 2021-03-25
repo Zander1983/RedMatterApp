@@ -70,8 +70,7 @@ export default class ScatterDrawer extends Drawer {
     this.scale = scale;
     this.index = ScatterDrawer.index++;
 
-    this.xpts = Math.round((Math.max(x1, x2) - Math.min(x1, x2)) / 100);
-    this.ypts = Math.round((Math.max(y1, y2) - Math.min(y1, y2)) / 100);
+    this.xpts = this.ypts = 3;
   }
 
   setMeta(state: any) {
@@ -84,6 +83,13 @@ export default class ScatterDrawer extends Drawer {
     this.iby = state.iby;
     this.iey = state.iey;
     this.scale = state.scale;
+
+    this.xpts = Math.round(
+      (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / 100
+    );
+    this.ypts = Math.round(
+      (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
+    );
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {
