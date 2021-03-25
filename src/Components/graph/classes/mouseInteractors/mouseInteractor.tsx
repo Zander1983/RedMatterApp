@@ -23,7 +23,7 @@ export default class MouseInteractor {
   ovalGating: boolean = false;
   ovalGateP0: Point | null = null;
   ovalGateP1: Point | null = null;
-  majorToMinorSize: number = 1;
+  majorToMinorSize: number = 0;
   lastMousePos: { x: number; y: number } | null = null;
   ang: number = 0;
 
@@ -83,7 +83,18 @@ export default class MouseInteractor {
       // Step 2: select second point
       console.log("set second point");
       this.ovalGateP1 = { x: x, y: y };
-      this.majorToMinorSize = 1;
+      this.majorToMinorSize = 0;
+      const [pc1x, pc1y] = this.plotter.convertToPlotPoint(
+        this.ovalGateP1.x,
+        this.ovalGateP1.y
+      );
+      const [pc0x, pc0y] = this.plotter.convertToPlotPoint(
+        this.ovalGateP0.x,
+        this.ovalGateP0.y
+      );
+      const vectorX = pc1x - pc0x;
+      const vectorY = pc1y - pc0y;
+      this.ang = Math.atan2(vectorY, vectorX);
     } else if (
       // Step 3: move mouse to open oval gate up
       this.ovalGateP0 != null &&
