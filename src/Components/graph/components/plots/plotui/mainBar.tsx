@@ -35,6 +35,8 @@ export default function MainBar(props: any) {
     func(false);
   };
 
+  canvas.setStopGatingParent(() => setOvalGating(false));
+
   const ovalGatingSetter = () => {
     if (ovalGating) {
       canvas.setOvalGating(false);

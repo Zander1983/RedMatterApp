@@ -1,9 +1,11 @@
 /*
     Responsible for providing a scatterplot with the input data
 */
+import { ThreeSixtySharp } from "@material-ui/icons";
 import Drawer from "../drawers/drawer";
 import ScatterDrawer from "../drawers/scatterDrawer";
 import OvalGate from "../gate/OvalGate";
+import { euclidianDistance2D } from "../utils/euclidianPlane";
 
 import Plotter, { PlotterInput } from "./plotter";
 
@@ -31,6 +33,7 @@ export default class ScatterPlotter extends Plotter {
       y: number;
     } | null;
     e: number;
+    ang: number;
     ovalGate: OvalGate | null;
   } | null = null;
 
@@ -72,18 +75,41 @@ export default class ScatterPlotter extends Plotter {
 
   ovalGate: OvalGate;
 
+  convertToPlotPoint(x: number, y: number) {
+    return this.drawer.convertToPlotCanvasPoint(x, y);
+  }
+
+  resetDrawer() {
+    this.xRange = this.findRangeBoundries("x");
+    this.yRange = this.findRangeBoundries("y");
+    this.xLabels = this.createRangeArray("x");
+    this.yLabels = this.createRangeArray("y");
+    this.drawer.setMeta({
+      x1: leftPadding * this.scale,
+      y1: topPadding * this.scale,
+      x2: (this.width - rightPadding) * this.scale,
+      y2: (this.height - bottomPadding) * this.scale,
+      ibx: this.xRange[0],
+      iex: this.xRange[1],
+      iby: this.yRange[0],
+      iey: this.yRange[1],
+      scale: this.scale,
+    });
+  }
+
   draw(context: any, frameCount: number) {
+    this.resetDrawer();
+
     this.drawer.setContext(context);
 
     let plotGraph = this.drawer.drawPlotGraph();
 
     for (let i = 0; i < this.xAxis.length; i++) {
-      plotGraph.addPoint(this.xAxis[i], this.yAxis[i]);
+      plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 2.6, "#444");
     }
 
-    console.log("ovalGateState");
     if (this.ovalGateState != null) {
-      this.drawOvalGating(context);
+      this.drawOvalGating(context, plotGraph);
     }
   }
 
@@ -101,6 +127,7 @@ export default class ScatterPlotter extends Plotter {
       y: number;
     } | null;
     e: number;
+    ang: number;
     ovalGate: OvalGate | null;
   }) {
     this.ovalGateState = state;
@@ -110,17 +137,47 @@ export default class ScatterPlotter extends Plotter {
     this.ovalGateState = null;
   }
 
-  drawOvalGating(context: any) {
+  drawOvalGating(context: any, plotGraph: any) {
     if (this.ovalGateState.p0 != null && this.ovalGateState.p1 != null) {
-    }
-    if (this.ovalGateState.p0 != null) {
-      this.drawer.line({
+      const x = (this.ovalGateState.p0.x + this.ovalGateState.p1.x) / 2;
+      const y = (this.ovalGateState.p0.y + this.ovalGateState.p1.y) / 2;
+
+      const [p1cx, p1cy] = this.drawer.convertToPlotCanvasPoint(
+        this.ovalGateState.p0.x,
+        this.ovalGateState.p0.y
+      );
+      const [p2cx, p2cy] = this.drawer.convertToPlotCanvasPoint(
+        this.ovalGateState.p1.x,
+        this.ovalGateState.p1.y
+      );
+      const dist = euclidianDistance2D(
+        { x: p1cx, y: p1cy },
+        { x: p2cx, y: p2cy }
+      );
+      this.drawer.oval({
+        x: x,
+        y: y,
+        ang: this.ovalGateState.ang,
+        d1: dist / 2,
+        d2: (this.ovalGateState.e * dist) / 2,
+      });
+      this.drawer.scline({
+        x1: x,
+        y1: y,
+        x2: this.ovalGateState.p1.x,
+        y2: this.ovalGateState.p1.y,
+        lineWidth: 3,
+        strokeColor: "#f00",
+      });
+      plotGraph.addPoint(x, y, "#00f");
+    } else if (this.ovalGateState.p0 != null) {
+      this.drawer.scline({
         x1: this.ovalGateState.p0.x,
         y1: this.ovalGateState.p0.y,
         x2: this.ovalGateState.lastMousePos.x,
         y2: this.ovalGateState.lastMousePos.y,
         lineWidth: 3,
-        strokeColor: "#d77",
+        strokeColor: "#f00",
       });
     }
   }

@@ -10,16 +10,14 @@ interface Point {
 export default class MouseInteractor {
   plotter: ScatterPlotter;
   gateCreator: (gate: Gate) => void;
-  setRerenderingInterval: Function;
+  renderInterval: Function;
+  canvasRender: Function;
+  canvasRenderLastTimestamp: any = 0;
+  stopGatingParent: Function;
 
-  constructor(
-    gateCreator: (gate: Gate) => void,
-    plotter: ScatterPlotter,
-    setRerenderingInterval: Function
-  ) {
+  constructor(gateCreator: (gate: Gate) => void, plotter: ScatterPlotter) {
     this.gateCreator = gateCreator;
     this.plotter = plotter;
-    this.setRerenderingInterval = setRerenderingInterval;
   }
 
   ovalGating: boolean = false;
@@ -27,19 +25,32 @@ export default class MouseInteractor {
   ovalGateP1: Point | null = null;
   majorToMinorSize: number = 1;
   lastMousePos: { x: number; y: number } | null = null;
+  ang: number = 0;
+
+  setRerenderInterval(f: Function) {
+    this.renderInterval = f;
+  }
+
+  setCanvasRender(f: Function) {
+    this.canvasRender = f;
+  }
 
   ovalGateStart() {
-    console.log("start");
     this.ovalGating = true;
-    this.setRerenderingInterval(500);
   }
 
   ovalGateEnd() {
-    console.log("end");
     this.ovalGating = false;
     this.ovalGateP0 = null;
     this.ovalGateP1 = null;
-    this.setRerenderingInterval(0, true);
+    this.majorToMinorSize = 1;
+    this.setPlotterOvalGateState();
+    this.canvasRender();
+    this.stopGatingParent();
+  }
+
+  setStopGatingParent(f: Function) {
+    this.stopGatingParent = f;
   }
 
   setPlotterOvalGateState() {
@@ -49,11 +60,21 @@ export default class MouseInteractor {
       e: this.majorToMinorSize,
       ovalGate: null,
       lastMousePos: this.lastMousePos,
+      ang: this.ang,
     });
   }
 
+  distLinePoint(p0: any, p1: any, pl: any) {
+    const top = Math.abs(
+      (p1.x - p0.x) * (p0.y - pl.y) - (p0.x - pl.x) * (p1.y - p0.y)
+    );
+    const bottom = Math.sqrt(
+      Math.pow(p1.x - p0.x, 2) + Math.pow(p1.y - p0.y, 2)
+    );
+    return top / bottom;
+  }
+
   ovalGateEvent(type: string, x: number, y: number) {
-    console.log("ovalGateEvent");
     if (this.ovalGateP0 == null && type == "mousedown") {
       // Step 1: select first point
       console.log("set first point");
@@ -69,18 +90,45 @@ export default class MouseInteractor {
       this.ovalGateP1 != null &&
       type == "mousemove"
     ) {
+      const [pc0x, pc0y] = this.plotter.convertToPlotPoint(
+        this.ovalGateP0.x,
+        this.ovalGateP0.y
+      );
+      const [pc1x, pc1y] = this.plotter.convertToPlotPoint(
+        this.ovalGateP1.x,
+        this.ovalGateP1.y
+      );
+      const [pm1x, pm1y] = this.plotter.convertToPlotPoint(
+        this.lastMousePos.x,
+        this.lastMousePos.y
+      );
+      const distMouseFromLine = this.distLinePoint(
+        { x: pc0x, y: pc0y },
+        { x: pc1x, y: pc1y },
+        { x: pm1x, y: pm1y }
+      );
+      const vectorX = pc1x - pc0x;
+      const vectorY = pc1y - pc0y;
+      this.ang = Math.atan2(vectorY, vectorX);
       this.majorToMinorSize =
-        euclidianDistance2D(this.ovalGateP1, { x: x, y: y }) /
-        euclidianDistance2D(this.ovalGateP0, this.ovalGateP1);
+        distMouseFromLine /
+        euclidianDistance2D({ x: pc0x, y: pc0y }, { x: pc1x, y: pc1y });
     } else if (
       // Step 4: press to confirm and create
       this.ovalGateP0 != null &&
       this.ovalGateP1 != null &&
       type == "mousedown"
     ) {
+      this.ovalGateEnd();
       // create gate...
     }
     this.setPlotterOvalGateState();
+
+    const now = new Date().getTime();
+    if (this.canvasRenderLastTimestamp + 10 < now) {
+      this.canvasRender();
+      this.canvasRenderLastTimestamp = now;
+    }
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
