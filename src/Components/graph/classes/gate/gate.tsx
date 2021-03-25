@@ -1,5 +1,3 @@
-export type Point = [number, number];
-
 export interface GateInput {
   name?: string;
   color?: string;
@@ -20,5 +18,5 @@ export default abstract class Gate {
     this.yAxis = gate.yAxis;
   }
 
-  abstract isPointInside(point: Point): boolean;
+  abstract isPointInside(point: { x: number; y: number }): boolean;
 }

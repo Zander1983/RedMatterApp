@@ -18,6 +18,7 @@ export default class ScatterPlotter extends Plotter {
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
+  gates: Gate[] = [];
 
   ovalGateState: {
     p0: {
@@ -73,6 +74,10 @@ export default class ScatterPlotter extends Plotter {
     );
   }
 
+  setGates(gates: Gate[]) {
+    this.gates = gates;
+  }
+
   ovalGate: OvalGate;
 
   convertToPlotPoint(x: number, y: number) {
@@ -97,6 +102,36 @@ export default class ScatterPlotter extends Plotter {
     });
   }
 
+  drawOvalGate(gate: OvalGate) {
+    const [p1x, p1y] = this.convertToPlotPoint(
+      gate.primaryP1.x,
+      gate.primaryP1.y
+    );
+    const [p2x, p2y] = this.convertToPlotPoint(
+      gate.primaryP2.x,
+      gate.primaryP2.y
+    );
+    const [s1x, s1y] = this.convertToPlotPoint(
+      gate.secondaryP1.x,
+      gate.secondaryP1.y
+    );
+    const [s2x, s2y] = this.convertToPlotPoint(
+      gate.secondaryP2.x,
+      gate.secondaryP2.y
+    );
+
+    const d1 = euclidianDistance2D({ x: p1x, y: p1y }, { x: p2x, y: p2y });
+    const d2 = euclidianDistance2D({ x: s1x, y: s1y }, { x: s2x, y: s2y });
+
+    this.drawer.oval({
+      x: gate.center.x,
+      y: gate.center.y,
+      d1: d1 / 2,
+      d2: d2 / 2,
+      ang: gate.ang,
+    });
+  }
+
   draw(context: any, frameCount: number) {
     this.resetDrawer();
 
@@ -110,6 +145,12 @@ export default class ScatterPlotter extends Plotter {
 
     if (this.ovalGateState != null) {
       this.drawOvalGating(context, plotGraph);
+    }
+
+    for (const gate of this.gates) {
+      if (gate instanceof OvalGate) {
+        this.drawOvalGate(gate);
+      }
     }
   }
 

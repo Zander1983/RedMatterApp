@@ -33,6 +33,7 @@ class Canvas {
   changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
+  gates: Array<Gate> = [];
 
   id: number;
   file: FCSFile;
@@ -57,6 +58,7 @@ class Canvas {
     this.id = id;
     this.file = file;
     this.plotRender = null;
+    this.gates = [];
 
     this.constructPlotter();
     this.contructMouseInteractor();
@@ -78,6 +80,7 @@ class Canvas {
     this.plotter.yAxis = this.file.getAxisPoints(this.yAxis);
     this.plotter.width = this.width;
     this.plotter.height = this.height;
+    this.plotter.setGates(this.gates);
     this.canvasRender();
   }
 
@@ -111,15 +114,10 @@ class Canvas {
   }
 
   contructMouseInteractor() {
-    this.mouseInteractor = new MouseInteractor(
-      this.createGate,
-      this.plotter,
-      this.setRerenderingInterval
-    );
-  }
-
-  createGate(gate: Gate) {
-    // wtf now?
+    this.mouseInteractor = new MouseInteractor((gate: Gate) => {
+      this.gates.push(gate);
+      this.updateAndRenderPlotter();
+    }, this.plotter);
   }
 
   useCanvas(ref: any) {

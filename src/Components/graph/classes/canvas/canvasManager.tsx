@@ -15,6 +15,7 @@
   pure FCSfiles, Gates and other abstract objects.
 */
 import dataManager from "../dataManager";
+import Gate from "../gate/gate";
 import Canvas from "./canvas";
 
 class CanvasManager {
@@ -54,6 +55,8 @@ class CanvasManager {
 
     return this.canvasMap;
   }
+
+  registerGate(gate: Gate) {}
 
   private rerender(id: number) {
     dataManager.rerender();
