@@ -1,6 +1,6 @@
 import canvasManager from "../canvas/canvasManager";
 import Gate from "../gate/gate";
-import OvalGate from "../gate/OvalGate";
+import OvalGate from "../gate/ovalGate";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import {
   euclidianDistance2D,

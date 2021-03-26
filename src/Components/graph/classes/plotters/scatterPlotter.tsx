@@ -4,7 +4,8 @@
 import { ThreeSixtySharp } from "@material-ui/icons";
 import Drawer from "../drawers/drawer";
 import ScatterDrawer from "../drawers/scatterDrawer";
-import OvalGate from "../gate/OvalGate";
+import OvalGate from "../gate/ovalGate";
+import Gate from "../gate/gate";
 import { euclidianDistance2D } from "../utils/euclidianPlane";
 
 import Plotter, { PlotterInput } from "./plotter";
@@ -19,6 +20,7 @@ export default class ScatterPlotter extends Plotter {
   xLabels: Array<string>;
   yLabels: Array<string>;
   gates: Gate[] = [];
+  drawer: ScatterDrawer;
 
   ovalGateState: {
     p0: {

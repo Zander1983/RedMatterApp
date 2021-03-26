@@ -8,6 +8,7 @@ import dataManager from "../dataManager";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
+import HistogramPlotter from "../plotters/histogramPlotter";
 import Plotter from "../plotters/plotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import canvasManager from "./canvasManager";
@@ -43,6 +44,8 @@ class Canvas {
 
   // Rendering objects
   plotter: Plotter | null = null;
+  scatterPlotter: ScatterPlotter | null = null;
+  histogramPlotter: HistogramPlotter | null = null;
 
   // Rendering methods
   // Calling canvas render means the canvas will be redrawn
@@ -62,7 +65,7 @@ class Canvas {
     this.plotRender = null;
     this.gates = [];
 
-    this.constructPlotter();
+    this.constructPlotters();
     this.contructMouseInteractor();
   }
 
@@ -71,6 +74,11 @@ class Canvas {
       this.changed = false;
       if (this.plotRender === null || this.canvasRender === null) {
         throw Error("Null renderer for Canvas");
+      }
+      if (this.xAxis == this.yAxis) {
+        this.plotter = this.histogramPlotter;
+      } else {
+        this.plotter = this.scatterPlotter;
       }
       this.updateAndRenderPlotter();
       this.plotRender();
@@ -95,25 +103,25 @@ class Canvas {
     this.mouseInteractor.setRerenderInterval(rerenderInterval);
   }
 
-  constructPlotter() {
-    // This is supposed to have the histograms
-    this.plotter =
-      // this.xAxis == this.yAxis
-      new ScatterPlotter({
-        xAxis: this.file.getAxisPoints(this.xAxis),
-        yAxis: this.file.getAxisPoints(this.yAxis),
-        width: this.width,
-        height: this.height,
-        scale: this.scale,
-      });
-    // : // Should have been histogram plotter
-    //   new ScatterPlotter({
-    //     xAxis: data.x,
-    //     yAxis: data.y,
-    //     width: this.width,
-    //     height: this.height,
-    //     scale: this.scale,
-    //   });
+  constructPlotters() {
+    this.scatterPlotter = new ScatterPlotter({
+      xAxis: this.file.getAxisPoints(this.xAxis),
+      yAxis: this.file.getAxisPoints(this.yAxis),
+      width: this.width,
+      height: this.height,
+      scale: this.scale,
+    });
+
+    this.histogramPlotter = new HistogramPlotter({
+      xAxis: this.file.getAxisPoints(this.xAxis),
+      yAxis: this.file.getAxisPoints(this.yAxis),
+      width: this.width,
+      height: this.height,
+      scale: this.scale,
+    });
+
+    // By default, it's a scatter
+    this.plotter = this.histogramPlotter;
   }
 
   contructMouseInteractor() {
@@ -124,7 +132,7 @@ class Canvas {
       console.log(subpopfile);
       dataManager.addFile(subpopfile);
       this.updateAndRenderPlotter();
-    }, this.plotter);
+    }, this.scatterPlotter);
     this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
   }
 
@@ -138,7 +146,7 @@ class Canvas {
       const x = event.offsetX;
       const y = event.offsetY;
       const type = event.type;
-      const p = this.plotter.convertToAbstractPoint(x, y);
+      const p = this.scatterPlotter.convertToAbstractPoint(x, y);
       this.mouseInteractor.registerMouseEvent(type, p.x, p.y);
     };
 
@@ -175,23 +183,6 @@ class Canvas {
 
   setStopGatingParent(f: Function) {
     this.mouseInteractor.setStopGatingParent(f);
-  }
-
-  getCanvas() {
-    return (
-      <canvas
-        style={{
-          backgroundColor: "#fff",
-          textAlign: "center",
-          width: this.width,
-          height: this.height,
-          borderRadius: 5,
-          boxShadow: "1px 3px 4px #bbd",
-          flexGrow: 1,
-        }}
-        ref={canvasRef}
-      />
-    );
   }
 
   setOvalGating(value: boolean) {
