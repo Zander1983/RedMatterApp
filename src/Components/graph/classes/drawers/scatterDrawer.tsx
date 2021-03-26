@@ -207,9 +207,7 @@ export default class ScatterDrawer extends Drawer {
   }
 
   oval(obj: any) {
-    const p = this.convertToPlotCanvasPoint(obj.x, obj.y);
-    const x = p[0];
-    const y = p[1];
+    const [x, y] = this.convertToPlotCanvasPoint(obj.x, obj.y);
 
     this.setStrokeColor("#f33");
     this.ctx.beginPath();

@@ -80,23 +80,62 @@ export default class FCSFile {
     });
   }
 
-  getPopulationFromGate(gate: Gate, inverse: boolean = false) {
-    const xAxis = this.getAxisIndex(gate.xAxis);
-    const yAxis = this.getAxisIndex(gate.yAxis);
+  getPopulationFromGates(gatingParams: { gate: Gate; inverse: boolean }[]) {
     const newPopulation: Array<Array<number>> = [];
-    this.data.map((p) => {
-      if (gate.isPointInside([p[xAxis], p[yAxis]])) {
-        if (!inverse) newPopulation.push(p);
-      } else if (inverse) {
+    this.data.map((p, i) => {
+      let belongsToAllGates = true;
+      for (const { gate, inverse } of gatingParams) {
+        console.log(
+          "analyse points ",
+          this.data[i][this.getAxisIndex(gate.xAxis)],
+          " and ",
+          this.data[i][this.getAxisIndex(gate.yAxis)]
+        );
+        if (
+          gate.isPointInside({
+            x: this.data[i][this.getAxisIndex(gate.xAxis)],
+            y: this.data[i][this.getAxisIndex(gate.yAxis)],
+          })
+        ) {
+          if (inverse) {
+            belongsToAllGates = false;
+          }
+        } else if (!inverse) belongsToAllGates = false;
+        if (belongsToAllGates === false) break;
+      }
+      if (belongsToAllGates) {
         newPopulation.push(p);
       }
     });
     return newPopulation;
   }
 
+  duplicateWithSubpop(gates: Gate[]) {
+    const pop = this.getPopulationFromGates(
+      gates.map((e) => {
+        return { gate: e, inverse: false };
+      })
+    );
+    return new FCSFile({
+      name: `${this.name}'s ${gates.map((e) => e.name).join(" ")} subpop`,
+      axes: this.axes,
+      data: pop,
+      gates: gates,
+      label: this.label,
+      plotTypes: this.plotTypes,
+    });
+  }
+
+  axisIndexCache: any = new Map();
   private getAxisIndex(axisName: string): number {
+    if (this.axisIndexCache.has(axisName)) {
+      return this.axisIndexCache.get(axisName);
+    }
     for (let i = 0; i < this.axes.length; i++) {
-      if (this.axes[i] == axisName) return i;
+      if (this.axes[i] == axisName) {
+        this.axisIndexCache.set(axisName, i);
+        return i;
+      }
     }
     throw Error("Axis " + axisName.toString() + " not found");
   }
