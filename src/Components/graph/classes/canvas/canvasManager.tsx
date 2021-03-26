@@ -56,7 +56,10 @@ class CanvasManager {
     return this.canvasMap;
   }
 
-  registerGate(gate: Gate) {}
+  registerGate(gate: Gate) {
+    // console.log("gate was registred");
+    // this.rerender();
+  }
 
   private rerender(id: number) {
     dataManager.rerender();

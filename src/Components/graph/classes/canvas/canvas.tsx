@@ -4,11 +4,13 @@
   complexities of logic that has to be fed to each canvas.
 */
 
+import dataManager from "../dataManager";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
 import Plotter from "../plotters/plotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
+import canvasManager from "./canvasManager";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -72,6 +74,7 @@ class Canvas {
       }
       this.updateAndRenderPlotter();
       this.plotRender();
+      this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
     }
   }
 
@@ -115,9 +118,14 @@ class Canvas {
 
   contructMouseInteractor() {
     this.mouseInteractor = new MouseInteractor((gate: Gate) => {
+      console.log("MAKE GATE CALLED!!!!");
+      const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
       this.gates.push(gate);
+      console.log(subpopfile);
+      dataManager.addFile(subpopfile);
       this.updateAndRenderPlotter();
     }, this.plotter);
+    this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
   }
 
   useCanvas(ref: any) {

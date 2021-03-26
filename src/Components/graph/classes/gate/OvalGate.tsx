@@ -34,19 +34,27 @@ export default class OvalGate extends Gate {
   }
 
   // Abstract override, returns true if given point is inside ellipse (2D)
+  // Shameless copy of:
+  // https://stackoverflow.com/questions/7946187/point-and-ellipse-rotated-position-test-algorithm
   isPointInside(p: { x: number; y: number }) {
-    // First we spin the point around until it matches the angle of the ellipse
-    const centralizedPoint = rotateVector2D(p, this.ang);
-    // Then we check the ellipse inequality and return true if inside
-    const primaryAxisSize = euclidianDistance2D(this.primaryP1, this.primaryP2);
-    const secondaryAxisSize = euclidianDistance2D(
-      this.secondaryP1,
-      this.secondaryP2
-    );
-    return (
-      Math.pow(p.x - this.x, 2) / Math.pow(primaryAxisSize, 2) +
-        Math.pow(p.y - this.y, 2) / Math.pow(secondaryAxisSize, 2) <=
-      1
-    );
+    const primarySize = euclidianDistance2D(this.primaryP1, this.primaryP2) / 2;
+    const secondarySize =
+      euclidianDistance2D(this.secondaryP1, this.secondaryP2) / 2;
+
+    const eq1 =
+      Math.pow(
+        Math.cos(this.ang) * (p.x - this.center.x) +
+          Math.sin(this.ang) * (p.y - this.center.y),
+        2
+      ) / Math.pow(primarySize, 2);
+
+    const eq2 =
+      Math.pow(
+        Math.sin(this.ang) * (p.x - this.center.x) -
+          Math.cos(this.ang) * (p.y - this.center.y),
+        2
+      ) / Math.pow(secondarySize, 2);
+
+    return eq1 + eq2 <= 1;
   }
 }

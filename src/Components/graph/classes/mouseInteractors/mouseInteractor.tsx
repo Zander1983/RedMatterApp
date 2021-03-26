@@ -21,6 +21,8 @@ export default class MouseInteractor {
   canvasRender: Function;
   canvasRenderLastTimestamp: any = 0;
   stopGatingParent: Function;
+  xAxis: string;
+  yAxis: string;
 
   constructor(gateCreator: Function, plotter: ScatterPlotter) {
     this.gateCreator = gateCreator;
@@ -44,6 +46,11 @@ export default class MouseInteractor {
 
   ovalGateStart() {
     this.ovalGating = true;
+  }
+
+  updateAxis(xAxis: string, yAxis: string) {
+    this.xAxis = xAxis;
+    this.yAxis = yAxis;
   }
 
   ovalGateEnd() {
@@ -144,10 +151,9 @@ export default class MouseInteractor {
         y: as2.y,
       },
       ang: this.ang,
-      xAxis: "",
-      yAxis: "",
+      xAxis: this.xAxis,
+      yAxis: this.yAxis,
     });
-    canvasManager.registerGate(gate);
     this.gateCreator(gate);
     this.ovalGateEnd();
   }
