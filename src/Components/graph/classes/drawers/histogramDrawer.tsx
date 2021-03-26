@@ -247,7 +247,7 @@ export default class HistogramDrawer extends Drawer {
       });
     } else {
       // vertical hist lines
-      for (let i = 0; i < this.xpts; i++) {
+      for (let i = 0; i <= this.xpts; i++) {
         const width =
           (Math.abs(this.x1 - this.x2) / this.xpts) * i +
           Math.min(this.x1, this.x2);
