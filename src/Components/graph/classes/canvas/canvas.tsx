@@ -179,6 +179,8 @@ class Canvas {
         canvas.width = width * this.scale;
         canvas.height = height * this.scale;
       }
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
       this.plotter.draw(context, frameCount);
       return () => {
         window.cancelAnimationFrame(animationFrameId);
