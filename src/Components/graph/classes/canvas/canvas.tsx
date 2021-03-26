@@ -47,6 +47,7 @@ class Canvas {
   plotter: Plotter | null = null;
   scatterPlotter: ScatterPlotter | null = null;
   histogramPlotter: HistogramPlotter | null = null;
+  histogramAxis: "vertical" | "horizontal" = "vertical";
 
   // Rendering methods
   // Calling canvas render means the canvas will be redrawn
@@ -96,6 +97,8 @@ class Canvas {
     if (this.plotter instanceof ScatterPlotter) {
       this.plotter.xAxisName = this.xAxis;
       this.plotter.yAxisName = this.yAxis;
+    } else if (this.plotter instanceof HistogramPlotter) {
+      this.plotter.axis = this.histogramAxis;
     }
     this.canvasRender();
   }
@@ -226,12 +229,14 @@ class Canvas {
   xAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.yAxis = this.xAxis;
+    this.histogramAxis = "vertical";
   }
 
   @conditionalUpdateDecorator()
   yAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.xAxis = this.yAxis;
+    this.histogramAxis = "horizontal";
   }
 
   @conditionalUpdateDecorator()

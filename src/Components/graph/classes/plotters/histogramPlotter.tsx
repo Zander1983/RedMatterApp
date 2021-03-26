@@ -11,16 +11,21 @@ const topPadding = 50;
 const bottomPadding = 50;
 const binSize = 50;
 
+interface HistogramPlotterInput extends PlotterInput {
+  axis: string;
+}
+
 export default class HistogramPlotter extends Plotter {
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
   drawer: HistogramDrawer;
   bins: number;
+  axis: "vertical" | "horizontal" = "vertical";
 
-  constructor(props: PlotterInput) {
+  constructor(props: HistogramPlotterInput) {
     super(props);
-    this.bins = this.width / 100;
+    this.bins = (props.axis === "x" ? this.width : this.height) / binSize;
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
 
@@ -29,10 +34,10 @@ export default class HistogramPlotter extends Plotter {
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.xRange[0],
-      iex: this.xRange[1],
-      iby: 0,
-      iey: this.getBinList().max,
+      ibx: this.axis == "vertical" ? this.xRange[0] : 0,
+      iex: this.axis == "vertical" ? this.xRange[1] : this.getBinList().max,
+      iby: this.axis == "vertical" ? 0 : this.yRange[0],
+      iey: this.axis == "vertical" ? this.getBinList().max : this.yRange[1],
       scale: this.scale,
     });
   }
@@ -47,7 +52,10 @@ export default class HistogramPlotter extends Plotter {
     if (this.width === 0 || this.bins === 0) {
       return [];
     }
-    const lineCount = Math.round(plotSize / (this.width / this.bins));
+    const lineCount = Math.round(
+      plotSize /
+        ((this.axis == "vertical" ? this.width : this.height) / this.bins)
+    );
     return Array(lineCount).map((_, i) =>
       ((rangeSize * i) / lineCount + rangeMin).toString()
     );
@@ -58,32 +66,38 @@ export default class HistogramPlotter extends Plotter {
   }
 
   resetDrawer() {
-    this.bins = Math.floor(this.width / binSize);
+    this.bins = Math.floor(
+      (this.axis == "vertical" ? this.width : this.height) / binSize
+    );
     this.xRange = this.findRangeBoundries("x");
     this.yRange = this.findRangeBoundries("y");
 
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
+
     this.drawer.setMeta({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.xRange[0],
-      iex: this.xRange[1],
-      iby: 0,
-      iey: this.getBinList().max,
+      ibx: this.axis == "vertical" ? this.xRange[0] : 0,
+      iex: this.axis == "vertical" ? this.xRange[1] : this.getBinList().max,
+      iby: this.axis == "vertical" ? 0 : this.yRange[0],
+      iey: this.axis == "vertical" ? this.getBinList().max : this.yRange[1],
       scale: this.scale,
       bins: this.bins,
+      axis: this.axis,
     });
   }
 
   getBinList() {
+    const axis = this.axis == "vertical" ? this.xAxis : this.yAxis;
+    const range = this.axis == "vertical" ? this.xRange : this.yRange;
     const binCounts = Array(this.bins).fill(0);
-    const step = (this.xRange[1] - this.xRange[0]) / this.bins;
+    const step = (range[1] - range[0]) / this.bins;
     let mx = 0;
-    for (let i = 0; i < this.xAxis.length; i++) {
-      const index = Math.floor((this.xAxis[i] - this.xRange[0]) / step);
+    for (let i = 0; i < axis.length; i++) {
+      const index = Math.floor((axis[i] - range[0]) / step);
       binCounts[index]++;
       if (binCounts[index] > mx) mx = binCounts[index];
     }

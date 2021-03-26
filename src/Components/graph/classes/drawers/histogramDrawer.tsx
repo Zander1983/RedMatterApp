@@ -49,8 +49,11 @@ export default class HistogramDrawer extends Drawer {
   private scale: number;
 
   private ypts: number;
+  private xpts: number;
   private binSize: number;
   private bins: number;
+
+  private axis: "vertical" | "horizontal" = "vertical";
 
   constructor({
     x1,
@@ -75,8 +78,6 @@ export default class HistogramDrawer extends Drawer {
 
     this.binSize = binSize;
     this.bins = Math.floor((x2 - x1) / this.binSize);
-
-    this.ypts = 3;
   }
 
   setMeta(state: any) {
@@ -93,9 +94,17 @@ export default class HistogramDrawer extends Drawer {
     this.binSize = state.binSize;
     this.bins = state.bins;
 
-    this.ypts = Math.round(
-      (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
-    );
+    this.axis = state.axis;
+
+    if (this.axis === "vertical") {
+      this.ypts = Math.round(
+        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
+      );
+    } else {
+      this.xpts = Math.round(
+        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / 100
+      );
+    }
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {
@@ -109,9 +118,9 @@ export default class HistogramDrawer extends Drawer {
     });
 
     if (x1 === x2) {
-      let counter = this.ypts;
+      let counter = this.axis === "vertical" ? this.ypts : this.bins;
       let interval = Math.max(y1, y2) - Math.min(y1, y2);
-      interval /= this.ypts;
+      interval /= this.axis === "vertical" ? this.ypts : this.bins;
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y += interval) {
         this.line({
           x1: x1 - 14,
@@ -122,7 +131,9 @@ export default class HistogramDrawer extends Drawer {
         });
 
         let textWrite = (
-          (Math.abs(ie - ib) / this.ypts) * counter +
+          (Math.abs(ie - ib) /
+            (this.axis === "vertical" ? this.ypts : this.bins)) *
+            counter +
           ib
         ).toString();
         if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
@@ -138,9 +149,9 @@ export default class HistogramDrawer extends Drawer {
         counter--;
       }
     } else if (y1 === y2) {
-      let counter = this.bins;
+      let counter = this.axis === "vertical" ? this.bins : this.xpts;
       let interval = Math.max(x1, x2) - Math.min(x1, x2);
-      interval /= this.bins;
+      interval /= this.axis === "vertical" ? this.bins : this.xpts;
       for (let x = Math.max(x1, x2); x >= Math.min(x1, x2); x -= interval) {
         this.line({
           x1: x,
@@ -150,7 +161,9 @@ export default class HistogramDrawer extends Drawer {
           lineWidth: 1,
         });
         let textWrite = (
-          (Math.abs(ie - ib) / this.bins) * counter +
+          (Math.abs(ie - ib) /
+            (this.axis === "vertical" ? this.bins : this.xpts)) *
+            counter +
           ib
         ).toString();
         if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
@@ -209,28 +222,53 @@ export default class HistogramDrawer extends Drawer {
       ie: this.iex,
     });
 
-    // Horizontal hist lines
-    for (let i = 0; i < this.ypts; i++) {
-      const height =
-        (Math.abs(this.y1 - this.y2) / this.ypts) * i +
-        Math.min(this.y1, this.y2);
+    if (this.axis == "vertical") {
+      // Horizontal hist lines
+      for (let i = 0; i < this.ypts; i++) {
+        const height =
+          (Math.abs(this.y1 - this.y2) / this.ypts) * i +
+          Math.min(this.y1, this.y2);
+        this.line({
+          x1: this.x1,
+          y1: height,
+          x2: this.x2,
+          y2: height,
+          strokeColor: "#bababa",
+        });
+      }
+
+      // Last vertical hist line
+      this.line({
+        x1: this.x2,
+        y1: this.y1,
+        x2: this.x2,
+        y2: this.y2,
+        strokeColor: "#bababa",
+      });
+    } else {
+      // vertical hist lines
+      for (let i = 0; i < this.xpts; i++) {
+        const width =
+          (Math.abs(this.x1 - this.x2) / this.xpts) * i +
+          Math.min(this.x1, this.x2);
+        this.line({
+          y1: this.y1,
+          x1: width,
+          y2: this.y2,
+          x2: width,
+          strokeColor: "#bababa",
+        });
+      }
+
+      // Last horizontal hist line
       this.line({
         x1: this.x1,
-        y1: height,
+        y1: this.y1,
         x2: this.x2,
-        y2: height,
+        y2: this.y1,
         strokeColor: "#bababa",
       });
     }
-
-    // Last vertical hist line
-    this.line({
-      x1: this.x2,
-      y1: this.y1,
-      x2: this.x2,
-      y2: this.y2,
-      strokeColor: "#bababa",
-    });
 
     return ((parent) => {
       return {
@@ -239,26 +277,50 @@ export default class HistogramDrawer extends Drawer {
           heightPercentage: number,
           color: string = "#66a"
         ) => {
-          this.binSize = (this.x2 - this.x1) / this.bins;
-          if (this.bins <= index) {
-            throw Error(
-              `Out of bounds index for histogram with ${this.bins} bins`
-            );
-          }
-          const outterBeginX = this.x1 + index * this.binSize;
-          const outterEndX = this.x1 + (index + 1) * this.binSize;
-          const innerBeginX = outterBeginX + binPadding;
-          const innerEndX = outterEndX - binPadding;
-          const y = (this.y2 - this.y1) * (1 - heightPercentage) + this.y1;
+          if (this.axis === "vertical") {
+            this.binSize = (this.x2 - this.x1) / this.bins;
+            if (this.bins <= index) {
+              throw Error(
+                `Out of bounds index for histogram with ${this.bins} bins`
+              );
+            }
+            const outterBeginX = this.x1 + index * this.binSize;
+            const outterEndX = this.x1 + (index + 1) * this.binSize;
+            const innerBeginX = outterBeginX + binPadding;
+            const innerEndX = outterEndX - binPadding;
+            const y = (this.y2 - this.y1) * (1 - heightPercentage) + this.y1;
 
-          this.rect({
-            x: innerBeginX,
-            y: y,
-            w: innerEndX - innerBeginX,
-            h: (this.y2 - this.y1) * heightPercentage,
-            fill: true,
-            fillColor: color,
-          });
+            this.rect({
+              x: innerBeginX,
+              y: y,
+              w: innerEndX - innerBeginX,
+              h: (this.y2 - this.y1) * heightPercentage,
+              fill: true,
+              fillColor: color,
+            });
+          } else {
+            this.binSize = (this.y2 - this.y1) / this.bins;
+            if (this.bins <= index) {
+              throw Error(
+                `Out of bounds index for histogram with ${this.bins} bins`
+              );
+            }
+            console.log(this.y1, this.y2);
+            const outterBeginY =
+              this.y1 + (this.bins - 1 - index) * this.binSize;
+            const outterEndY = this.y1 + (this.bins - index) * this.binSize;
+            const innerBeginY = outterBeginY + binPadding;
+            const innerEndY = outterEndY - binPadding;
+
+            this.rect({
+              x: this.x1,
+              y: innerBeginY,
+              h: innerEndY - innerBeginY,
+              w: (this.x2 - this.x1) * heightPercentage,
+              fill: true,
+              fillColor: color,
+            });
+          }
         },
       };
     })(this);
