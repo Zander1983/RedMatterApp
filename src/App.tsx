@@ -21,7 +21,9 @@ import PrototypeForm from "./Components/home/PrototypeForm";
 import Plots from "./Components/graph/components/Plots";
 import Login from "./Components/users/login";
 import Register from "./Components/users/register";
+import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
+import GraphPrototype from "./Components/prototype/GraphPrototype";
 
 
 const { Header, Content } = Layout;
@@ -66,6 +68,7 @@ const App: FC = () => {
           <Route exact path="/authentication/:tabId" component={(props:any)=><SignInOutContainer {...props} />} />
           <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
           <Route exact path="/register" component={(props:any)=><Register {...props} onRegister={handleAfterRegister} />} />
+          <Route exact path="/verify/:verifyStr" component={({ match }: any) => <VerifyEmail verifyStr={match.params.verifyStr} />} />
           <Route exact path="/graph" component={GraphPrototype} />
           <Route exact path="/workspaces" component={()=><Workspaces/>}/>
           <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} />} />
