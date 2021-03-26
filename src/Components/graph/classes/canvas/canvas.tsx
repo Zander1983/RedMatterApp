@@ -4,6 +4,7 @@
   complexities of logic that has to be fed to each canvas.
 */
 
+import Scatter from "../../../charts/Scatter";
 import dataManager from "../dataManager";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
@@ -92,6 +93,10 @@ class Canvas {
     this.plotter.width = this.width;
     this.plotter.height = this.height;
     this.plotter.setGates(this.gates);
+    if (this.plotter instanceof ScatterPlotter) {
+      this.plotter.xAxisName = this.xAxis;
+      this.plotter.yAxisName = this.yAxis;
+    }
     this.canvasRender();
   }
 
@@ -110,6 +115,9 @@ class Canvas {
       width: this.width,
       height: this.height,
       scale: this.scale,
+      heatmap: true,
+      xAxisName: this.xAxis,
+      yAxisName: this.yAxis,
     });
 
     this.histogramPlotter = new HistogramPlotter({
