@@ -38,6 +38,7 @@ const Workspaces = ()=>{
     }
     useEffect(()=>{
         const getWorkspaceByOrgid = ()=>{
+            setLoading(true);
             axios.get(`api/workspaces?organisationId=${organisationId}`,options).then((res:any)=>{
                 const datatemp = res.data.workspaces;
                 setWorkspaceData(datatemp);

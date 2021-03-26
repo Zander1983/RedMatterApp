@@ -5,6 +5,7 @@ import Plot from "../plots/Plot";
 
 import dataManager from "../../classes/dataManager";
 import plotFactory from "../plots/plotFactory";
+import canvasManager from "../../classes/canvas/canvasManager";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -38,7 +39,6 @@ const standardGridPlotItem = (x: number, y: number) => {
 
 class Workspace extends React.Component {
   private static renderCalls = 0;
-  plots: JSX.Element[] = [];
 
   constructor(props: any) {
     super(props);
@@ -46,28 +46,18 @@ class Workspace extends React.Component {
       this.update();
     });
     this.state = {
-      refs: [],
+      canvas: [],
     };
   }
 
   update() {
-    this.plots = plotFactory();
-    this.forceUpdate();
-  }
+    const canvasMap = canvasManager.getAllCanvas();
+    const canvasList: object[] = [];
+    canvasMap.forEach((v, k) => canvasList.push({ canvas: v, key: k }));
 
-  renderPlot(plot: JSX.Element, key: number) {
-    return (
-      <div
-        key={key}
-        style={classes.itemOuterDiv}
-        data-grid={standardGridPlotItem(0, 0)}
-        id={`workspace-outter-${key}`}
-      >
-        <div id="inner" style={classes.itemInnerDiv}>
-          {plot}
-        </div>
-      </div>
-    );
+    this.setState({
+      canvas: canvasList,
+    });
   }
 
   /* This function has to be carefully controlled ensure that the plots will
@@ -75,7 +65,7 @@ class Workspace extends React.Component {
      significatively */
   render() {
     console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
-    if (this.plots.length > 0) {
+    if (this.state.canvas.length > 0) {
       return (
         <ResponsiveGridLayout
           className="layout"
@@ -84,7 +74,20 @@ class Workspace extends React.Component {
           rows={{ lg: 30 }}
           rowHeight={30}
         >
-          {this.plots.map((e, i) => this.renderPlot(e, i))}
+          {this.state.canvas.map((e) => {
+            return (
+              <div
+                key={e.key}
+                style={classes.itemOuterDiv}
+                data-grid={standardGridPlotItem(0, 0)}
+                id={`workspace-outter-${e.key}`}
+              >
+                <div id="inner" style={classes.itemInnerDiv}>
+                  <Plot canvas={e.canvas} canvasIndex={e.key} />
+                </div>
+              </div>
+            );
+          })}
         </ResponsiveGridLayout>
       );
     } else {

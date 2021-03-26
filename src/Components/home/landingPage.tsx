@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   card: {
     width: 600,
     flex: 1,
-    backgroundColor: "rgba(100, 120, 140, 0.99)",
+    backgroundColor: "rgba(90, 110, 120, 0.96)",
   },
   centralizer: {
     display: "grid",
@@ -45,7 +45,11 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     width: 300,
     height: 50,
-    backgroundColor: "rgb(210, 230, 240)",
+    boxShadow: "1px 1px 5px 1px #555",
+    backgroundColor: "#66a",
+    "&:hover": {
+      backgroundColor: "#77b",
+    },
   },
   video: {
     position: "fixed",

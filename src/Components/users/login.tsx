@@ -41,6 +41,7 @@ const Login = (props:any)=>{
     const classes = useStyles();
 
     const [isError, setError] = React.useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const [isSubmit,setIsSubmit] = useState(false);
     const [isSuccess, setSuccess] = React.useState(false);
 
@@ -59,7 +60,15 @@ const Login = (props:any)=>{
 
     const handleSubmit = async () => {
         try{
-            const res = await axios.post("api/login",formData);
+            const res = await axios.post("api/login",formData).catch((err:any)=>{
+                console.log("errrrtt1212>>>>>>",err)
+                const errMsg = err.response.data.message;
+                setErrorMsg((prevMsg:string)=>{
+                    return errMsg;
+                })
+                setError((prev:any)=> true)
+                setSuccess((prev:any)=> false)
+            });
             const loginData = res.data;
             setError((prev:any)=> false)
             setSuccess((prev:any)=> true)
@@ -68,6 +77,11 @@ const Login = (props:any)=>{
             props.onLogin();
             // props.history.push('/workspaces');
         }catch(err){
+            console.log("errrrtt>>>>>>",err)
+            const errMsg = "Some internal problem, please contact to redmatter.";
+            setErrorMsg((prevMsg:string)=>{
+                return errMsg;
+            })
             setError((prev:any)=> true)
             setSuccess((prev:any)=> false)
         }
@@ -94,7 +108,7 @@ const Login = (props:any)=>{
                                     </IconButton>
                                     }
                                 >
-                                    Invalid Email or Password!!!
+                                    {errorMsg}
                                 </Alert>
                             </Collapse>
 
