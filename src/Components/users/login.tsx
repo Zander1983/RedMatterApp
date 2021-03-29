@@ -77,11 +77,20 @@ const Login = (props:any)=>{
             props.onLogin();
             // props.history.push('/workspaces');
         }catch(err){
-            console.log("errrrtt>>>>>>",err)
-            const errMsg = "Some internal problem, please contact to redmatter.";
-            setErrorMsg((prevMsg:string)=>{
-                return errMsg;
-            })
+            const errMsg = '';
+            if(err.response.data){
+                errMsg = err.response.data.message;
+                setErrorMsg((prevMsg:string)=>{
+                    return errMsg;
+                })
+            }else{
+                errMsg = "Some internal problem, please contact to redmatter.";
+                setErrorMsg((prevMsg:string)=>{
+                    return errMsg;
+                })
+            }
+            
+            
             setError((prev:any)=> true)
             setSuccess((prev:any)=> false)
         }
