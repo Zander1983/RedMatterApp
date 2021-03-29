@@ -70,8 +70,26 @@ export default class ScatterDrawer extends Drawer {
     this.scale = scale;
     this.index = ScatterDrawer.index++;
 
-    this.xpts = Math.round((Math.max(x1, x2) - Math.min(x1, x2)) / 100);
-    this.ypts = Math.round((Math.max(y1, y2) - Math.min(y1, y2)) / 100);
+    this.xpts = this.ypts = 3;
+  }
+
+  setMeta(state: any) {
+    this.x1 = state.x1;
+    this.y1 = state.y1;
+    this.x2 = state.x2;
+    this.y2 = state.y2;
+    this.ibx = state.ibx;
+    this.iex = state.iex;
+    this.iby = state.iby;
+    this.iey = state.iey;
+    this.scale = state.scale;
+
+    this.xpts = Math.round(
+      (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / 100
+    );
+    this.ypts = Math.round(
+      (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
+    );
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {
@@ -154,7 +172,7 @@ export default class ScatterDrawer extends Drawer {
     return Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
   }
 
-  private convertToPlotCanvasPoint = (x: number, y: number) => {
+  convertToPlotCanvasPoint = (x: number, y: number) => {
     const w = this.plotCanvasWidth();
     const h = this.plotCanvasHeight();
     const xBegin = Math.min(this.x1, this.x2);
@@ -178,6 +196,26 @@ export default class ScatterDrawer extends Drawer {
     return { x: nx, y: ny };
   };
 
+  scline({ x1, y1, x2, y2, lineWidth, strokeColor }: LineParams) {
+    const p1 = this.convertToPlotCanvasPoint(x1, y1);
+    x1 = p1[0];
+    y1 = p1[1];
+    const p2 = this.convertToPlotCanvasPoint(x2, y2);
+    x2 = p2[0];
+    y2 = p2[1];
+    this.line({ x1, y1, x2, y2, lineWidth, strokeColor });
+  }
+
+  oval(obj: any) {
+    const [x, y] = this.convertToPlotCanvasPoint(obj.x, obj.y);
+
+    this.setStrokeColor("#f33");
+    this.ctx.beginPath();
+    this.ctx.ellipse(x, y, obj.d1, obj.d2, obj.ang, 0, 2 * Math.PI);
+    this.setLineWidth(5);
+    this.ctx.stroke();
+  }
+
   drawPlotGraph(): ScatterPlotGraph {
     this.graphLine({
       x1: this.x1,
@@ -198,7 +236,6 @@ export default class ScatterDrawer extends Drawer {
     });
 
     // Horizontal plot lines
-    // console.log("drawing x", this.xpts, "lines");
     for (let i = 0; i < this.ypts; i++) {
       const height =
         (Math.abs(this.y1 - this.y2) / this.ypts) * i +
@@ -227,7 +264,12 @@ export default class ScatterDrawer extends Drawer {
 
     return ((parent) => {
       return {
-        addPoint: (x: number, y: number, color: string = "#000") => {
+        addPoint: (
+          x: number,
+          y: number,
+          r: number = 3,
+          color: string = "#000"
+        ) => {
           if (x < parent.ibx || x > parent.iex) return;
           if (y < parent.iby || y > parent.iey) return;
           const plotPoints = parent.convertToPlotCanvasPoint(x, y);
@@ -236,8 +278,8 @@ export default class ScatterDrawer extends Drawer {
           parent.circle({
             x: plotx,
             y: ploty,
-            radius: 3,
-            strokeColor: color,
+            radius: r,
+            fillColor: color,
           });
         },
         addPolygon: (polygon: Polygon, color: string = "#000") => {

@@ -2,6 +2,7 @@ import { Button } from "@material-ui/core";
 import React from "react";
 import Grid from "@material-ui/core/Grid";
 import DeleteIcon from "@material-ui/icons/Delete";
+import CameraAltIcon from "@material-ui/icons/CameraAlt";
 
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../classes/dataManager";
@@ -35,6 +36,8 @@ export default function MainBar(props: any) {
     func(false);
   };
 
+  canvas.setStopGatingParent(() => setOvalGating(false));
+
   const ovalGatingSetter = () => {
     if (ovalGating) {
       canvas.setOvalGating(false);
@@ -43,6 +46,22 @@ export default function MainBar(props: any) {
       canvas.setOvalGating(true);
       setOvalGating(true);
     }
+  };
+
+  const downloadCanvasAsImage = () => {
+    let downloadLink = document.createElement("a");
+    downloadLink.setAttribute(
+      "download",
+      `workspacename-filename-${props.canvasIndex}.png`
+    );
+    let canvas = document.getElementById(`canvas-${props.canvasIndex}`);
+    let dataURL = canvas.toDataURL("image/png");
+    let url = dataURL.replace(
+      /^data:image\/png/,
+      "data:application/octet-stream"
+    );
+    downloadLink.setAttribute("href", url);
+    downloadLink.click();
   };
 
   return (
@@ -112,6 +131,15 @@ export default function MainBar(props: any) {
         style={classes.mainButton}
       >
         Inverse Subpop
+      </Button>
+      <Button
+        onClick={() => downloadCanvasAsImage()}
+        style={{ ...classes.mainDelete, marginLeft: 10 }}
+      >
+        <CameraAltIcon
+          fontSize="small"
+          style={{ color: "#fff" }}
+        ></CameraAltIcon>
       </Button>
     </Grid>
   );

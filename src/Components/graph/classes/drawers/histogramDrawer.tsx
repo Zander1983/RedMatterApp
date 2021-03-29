@@ -4,6 +4,9 @@
 import Drawer from "./drawer";
 import Context from "../canvas/contextInterface";
 import Polygon from "../gates/polygon";
+import { TimerOff } from "@material-ui/icons";
+
+const binPadding = 10;
 
 interface HistogramDrawerConstructorParams {
   context: Context;
@@ -37,13 +40,22 @@ export default class HistogramDrawer extends Drawer {
   private y1: number;
   private x2: number;
   private y2: number;
+
   private ibx: number;
   private iex: number;
   private iby: number;
   private iey: number;
 
+  private scale: number;
+
+  private ypts: number;
+  private xpts: number;
+  private binSize: number;
+  private bins: number;
+
+  private axis: "vertical" | "horizontal" = "vertical";
+
   constructor({
-    context,
     x1,
     y1,
     x2,
@@ -52,8 +64,9 @@ export default class HistogramDrawer extends Drawer {
     iex,
     iby,
     iey,
+    binSize,
   }: GraphDrawerConstructorParams) {
-    super(context);
+    super();
     this.x1 = x1;
     this.y1 = y1;
     this.x2 = x2;
@@ -62,6 +75,36 @@ export default class HistogramDrawer extends Drawer {
     this.iex = iex;
     this.iby = iby;
     this.iey = iey;
+
+    this.binSize = binSize;
+    this.bins = Math.floor((x2 - x1) / this.binSize);
+  }
+
+  setMeta(state: any) {
+    this.x1 = state.x1;
+    this.y1 = state.y1;
+    this.x2 = state.x2;
+    this.y2 = state.y2;
+    this.ibx = state.ibx;
+    this.iex = state.iex;
+    this.iby = state.iby;
+    this.iey = state.iey;
+    this.scale = state.scale;
+
+    this.binSize = state.binSize;
+    this.bins = state.bins;
+
+    this.axis = state.axis;
+
+    if (this.axis === "vertical") {
+      this.ypts = Math.round(
+        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
+      );
+    } else {
+      this.xpts = Math.round(
+        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / 100
+      );
+    }
   }
 
   private graphLine({ x1, y1, x2, y2, ib, ie }: GraphLineParams) {
@@ -74,12 +117,10 @@ export default class HistogramDrawer extends Drawer {
       lineWidth: 2,
     });
 
-    // Draw markings and text
-    let counter = 10;
-
     if (x1 === x2) {
+      let counter = this.axis === "vertical" ? this.ypts : this.bins;
       let interval = Math.max(y1, y2) - Math.min(y1, y2);
-      interval /= 10;
+      interval /= this.axis === "vertical" ? this.ypts : this.bins;
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y += interval) {
         this.line({
           x1: x1 - 14,
@@ -89,7 +130,12 @@ export default class HistogramDrawer extends Drawer {
           lineWidth: 1,
         });
 
-        let textWrite = ((Math.abs(ib - ie) / 10) * counter + ib).toString();
+        let textWrite = (
+          (Math.abs(ie - ib) /
+            (this.axis === "vertical" ? this.ypts : this.bins)) *
+            counter +
+          ib
+        ).toString();
         if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
 
         this.text({
@@ -103,8 +149,9 @@ export default class HistogramDrawer extends Drawer {
         counter--;
       }
     } else if (y1 === y2) {
+      let counter = this.axis === "vertical" ? this.bins : this.xpts;
       let interval = Math.max(x1, x2) - Math.min(x1, x2);
-      interval /= 10;
+      interval /= this.axis === "vertical" ? this.bins : this.xpts;
       for (let x = Math.max(x1, x2); x >= Math.min(x1, x2); x -= interval) {
         this.line({
           x1: x,
@@ -113,13 +160,18 @@ export default class HistogramDrawer extends Drawer {
           y2: y1 + 14,
           lineWidth: 1,
         });
-        let text_write = ((Math.abs(ie - ib) / 10) * counter + ib).toString();
-        if (text_write.length > 6) text_write = text_write.substring(0, 6);
+        let textWrite = (
+          (Math.abs(ie - ib) /
+            (this.axis === "vertical" ? this.bins : this.xpts)) *
+            counter +
+          ib
+        ).toString();
+        if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
 
         this.text({
           font: "20px Arial",
           fillColor: "black",
-          text: text_write,
+          text: textWrite,
           x: x - 24,
           y: y1 + 40,
         });
@@ -139,7 +191,7 @@ export default class HistogramDrawer extends Drawer {
     return Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
   }
 
-  private convertToPlotCanvasPoint = (x: number, y: number) => {
+  convertToPlotCanvasPoint = (x: number, y: number) => {
     const w = this.plotCanvasWidth();
     const h = this.plotCanvasHeight();
     const xBegin = Math.min(this.x1, this.x2);
@@ -151,7 +203,7 @@ export default class HistogramDrawer extends Drawer {
     return v;
   };
 
-  drawPlotGraph(): PlotGraph {
+  drawPlotGraph(): ScatterPlotGraph {
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
@@ -170,79 +222,105 @@ export default class HistogramDrawer extends Drawer {
       ie: this.iex,
     });
 
-    // Horizontal plot lines
-    for (let i = 0; i < 10; i++) {
-      const height =
-        (Math.abs(this.y1 - this.y2) / 10) * i + Math.min(this.y1, this.y2);
+    if (this.axis == "vertical") {
+      // Horizontal hist lines
+      for (let i = 0; i < this.ypts; i++) {
+        const height =
+          (Math.abs(this.y1 - this.y2) / this.ypts) * i +
+          Math.min(this.y1, this.y2);
+        this.line({
+          x1: this.x1,
+          y1: height,
+          x2: this.x2,
+          y2: height,
+          strokeColor: "#bababa",
+        });
+      }
+
+      // Last vertical hist line
       this.line({
-        x1: this.x1,
-        y1: height,
+        x1: this.x2,
+        y1: this.y1,
         x2: this.x2,
-        y2: height,
+        y2: this.y2,
         strokeColor: "#bababa",
       });
-    }
-    // Vertical plot lines
-    for (let i = 1; i <= 10; i++) {
-      const width =
-        (Math.abs(this.x1 - this.x2) / 10) * i + Math.min(this.x1, this.x2);
+    } else {
+      // vertical hist lines
+      for (let i = 0; i <= this.xpts; i++) {
+        const width =
+          (Math.abs(this.x1 - this.x2) / this.xpts) * i +
+          Math.min(this.x1, this.x2);
+        this.line({
+          y1: this.y1,
+          x1: width,
+          y2: this.y2,
+          x2: width,
+          strokeColor: "#bababa",
+        });
+      }
+
+      // Last horizontal hist line
       this.line({
-        x1: width,
+        x1: this.x1,
         y1: this.y1,
-        x2: width,
-        y2: this.y2,
+        x2: this.x2,
+        y2: this.y1,
         strokeColor: "#bababa",
       });
     }
 
     return ((parent) => {
       return {
-        addPoint: (x: number, y: number, color: string = "#000") => {
-          if (x < parent.ibx || x > parent.iex) return;
-          if (y < parent.iby || y > parent.iey) return;
-          const plotPoints = parent.convertToPlotCanvasPoint(x, y);
-          const plotx = plotPoints[0];
-          const ploty = plotPoints[1];
-          parent.circle({
-            x: plotx,
-            y: ploty,
-            radius: 6,
-            strokeColor: color,
-          });
-        },
-        addPolygon: (polygon: Polygon, color: string = "#000") => {
-          const pl = polygon.getLength();
-          for (let i = 0; i < pl; i++) {
-            let pA = polygon.getPoint(i);
-            const a = parent.convertToPlotCanvasPoint(pA.x, pA.y);
+        addBin: (
+          index: number,
+          heightPercentage: number,
+          color: string = "#66a"
+        ) => {
+          if (this.axis === "vertical") {
+            this.binSize = (this.x2 - this.x1) / this.bins;
+            if (this.bins <= index) {
+              throw Error(
+                `Out of bounds index for histogram with ${this.bins} bins`
+              );
+            }
+            const outterBeginX = this.x1 + index * this.binSize;
+            const outterEndX = this.x1 + (index + 1) * this.binSize;
+            const innerBeginX = outterBeginX + binPadding;
+            const innerEndX = outterEndX - binPadding;
+            const y = (this.y2 - this.y1) * (1 - heightPercentage) + this.y1;
 
-            let pB = polygon.getPoint((i + 1) % pl);
-            const b = parent.convertToPlotCanvasPoint(pB.x, pB.y);
+            this.rect({
+              x: innerBeginX,
+              y: y,
+              w: innerEndX - innerBeginX,
+              h: (this.y2 - this.y1) * heightPercentage,
+              fill: true,
+              fillColor: color,
+            });
+          } else {
+            this.binSize = (this.y2 - this.y1) / this.bins;
+            if (this.bins <= index) {
+              throw Error(
+                `Out of bounds index for histogram with ${this.bins} bins`
+              );
+            }
+            console.log(this.y1, this.y2);
+            const outterBeginY =
+              this.y1 + (this.bins - 1 - index) * this.binSize;
+            const outterEndY = this.y1 + (this.bins - index) * this.binSize;
+            const innerBeginY = outterBeginY + binPadding;
+            const innerEndY = outterEndY - binPadding;
 
-            parent.line({
-              x1: a[0],
-              y1: a[1],
-              x2: b[0],
-              y2: b[1],
-              strokeColor: color,
+            this.rect({
+              x: this.x1,
+              y: innerBeginY,
+              h: innerEndY - innerBeginY,
+              w: (this.x2 - this.x1) * heightPercentage,
+              fill: true,
+              fillColor: color,
             });
           }
-        },
-        addLine: (
-          pa: [number, number],
-          pb: [number, number],
-          color: string = "#000"
-        ) => {
-          parent.ctx.strokeStyle = color;
-          const a = parent.convertToPlotCanvasPoint(pa[0], pa[1]);
-          const b = parent.convertToPlotCanvasPoint(pb[0], pb[1]);
-          parent.line({
-            x1: a[0],
-            y1: a[1],
-            x2: b[0],
-            y2: b[1],
-            strokeColor: color,
-          });
         },
       };
     })(this);
