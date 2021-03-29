@@ -134,15 +134,17 @@ class Canvas {
     this.plotter = this.histogramPlotter;
   }
 
+  addGate(gate: Gate) {
+    console.log("MAKE GATE CALLED!!!!");
+    const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
+    this.gates.push(gate);
+    dataManager.addFile(subpopfile);
+
+    this.updateAndRenderPlotter();
+  }
+
   contructMouseInteractor() {
-    this.mouseInteractor = new MouseInteractor((gate: Gate) => {
-      console.log("MAKE GATE CALLED!!!!");
-      const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
-      this.gates.push(gate);
-      console.log(subpopfile);
-      dataManager.addFile(subpopfile);
-      this.updateAndRenderPlotter();
-    }, this.scatterPlotter);
+    this.mouseInteractor = new MouseInteractor(this.scatterPlotter, this.id);
     this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
   }
 

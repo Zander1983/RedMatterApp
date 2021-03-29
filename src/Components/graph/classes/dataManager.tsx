@@ -12,6 +12,8 @@ import FCSFile from "./fcsFile";
 import Canvas from "../classes/canvas/canvas";
 import Gate from "../classes/gate/gate";
 
+const uuid = require("uuid");
+
 class DataManager {
   private static instance: DataManager;
 
@@ -23,74 +25,101 @@ class DataManager {
     return DataManager.instance;
   }
 
-  private static objId: number = 0;
-  files = new Map();
-  canvasMap = new Map();
-  gates = new Map();
+  files: Map<string, FCSFile> = new Map();
+  canvas: Map<string, Canvas> = new Map();
+  gates: Map<string, Gate> = new Map();
 
   rerender: Function = () => {};
   loading = false;
+
+  getInstanceIDOfNewObject(): string {
+    const newObjectInstaceID = uuid.v4();
+    return newObjectInstaceID;
+  }
 
   setRerendererCallback(rerenderer: Function) {
     this.rerender = rerenderer;
   }
 
-  addFile(file: FCSFile): number {
-    const fileId = DataManager.objId;
-    DataManager.objId++;
+  addFile(file: FCSFile): string {
+    const fileId = this.getInstanceIDOfNewObject();
     this.files.set(fileId, file);
     this.rerender();
     return fileId;
   }
 
-  removeFile(fileId: number) {
+  removeFile(fileId: string) {
     if (this.files.has(fileId)) {
       this.files.delete(fileId);
       this.rerender();
       return;
     }
-    throw Error("File " + fileId.toString() + " was not found");
+    throw Error("File " + fileId + " was not found");
   }
 
   getFiles() {
-    const files: { file: FCSFile; id: number }[] = [];
+    const files: { file: FCSFile; id: string }[] = [];
     this.files.forEach((v, k) => {
       files.push({ file: v, id: k });
     });
     return files;
   }
 
-  getFile(id: number) {
-    return this.files.get(id);
+  getFile(fileID: string) {
+    return this.files.get(fileID);
   }
 
-  getAllCanvas(): Map<number, Canvas> {
+  addCanvas(fileID: string) {}
+
+  getAllCanvas(): Map<string, Canvas> {
     const files = this.getFiles();
-    const present: number[] = [];
+    const present: string[] = [];
 
     for (const file of files) {
       present.push(file.id);
       if (!this.canvasIsPresent(file.id)) {
-        this.canvasMap.set(file.id, new Canvas(file.file, file.id));
+        this.canvas.set(file.id, new Canvas(file.file, file.id));
       }
     }
 
-    this.canvasMap.forEach((_, k) => {
+    this.canvas.forEach((_, k) => {
       if (!present.includes(k)) {
-        this.canvasMap.delete(k);
+        this.canvas.delete(k);
       }
     });
 
-    return this.canvasMap;
+    return this.canvas;
   }
 
-  registerGate(gate: Gate) {
-    // console.log("gate was registred");
-    // this.rerender();
+  getAllGates(): Map<string, Gate> {
+    return this.gates;
   }
 
-  private canvasIsPresent(id: number): boolean {
-    return this.canvasMap.has(id);
+  addGateToCanvas(gateID: string, canvasID: string) {
+    console.log("adding gate ", gateID, " to canvas ", canvasID);
+    if (!this.canvasIsPresent(canvasID)) {
+      throw Error("Adding gate to non-existent canvas");
+    }
+    if (!this.gateIsPresent(gateID)) {
+      throw Error("Adding non-existent gate to canvas");
+    }
+    const ccanvas = this.canvas.get(canvasID);
+    ccanvas.addGate(this.gates.get(gateID));
+  }
+
+  addGate(gate: Gate): string {
+    const gateID = this.getInstanceIDOfNewObject();
+    gate.setID(gateID);
+    this.gates.set(gateID, gate);
+    return gateID;
+  }
+
+  private canvasIsPresent(id: string): boolean {
+    return this.canvas.has(id);
+  }
+
+  private gateIsPresent(id: string): boolean {
+    return this.gates.has(id);
   }
 }
 

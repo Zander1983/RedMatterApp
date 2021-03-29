@@ -1,4 +1,5 @@
-import dataManager from "../canvas/dataManager";
+import { data } from "jquery";
+import dataManager from "../dataManager";
 import Gate from "../gate/gate";
 import OvalGate from "../gate/ovalGate";
 import ScatterPlotter from "../plotters/scatterPlotter";
@@ -15,6 +16,7 @@ interface Point {
 }
 
 export default class MouseInteractor {
+  parentID: string;
   plotter: ScatterPlotter;
   gateCreator: Function;
   renderInterval: Function;
@@ -24,9 +26,9 @@ export default class MouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  constructor(gateCreator: Function, plotter: ScatterPlotter) {
-    this.gateCreator = gateCreator;
+  constructor(plotter: ScatterPlotter, parentID: number) {
     this.plotter = plotter;
+    this.parentID = parentID;
   }
 
   ovalGating: boolean = false;
@@ -154,7 +156,8 @@ export default class MouseInteractor {
       xAxis: this.xAxis,
       yAxis: this.yAxis,
     });
-    this.gateCreator(gate);
+    const id = dataManager.addGate(gate);
+    dataManager.addGateToCanvas(id, this.parentID);
     this.ovalGateEnd();
   }
 

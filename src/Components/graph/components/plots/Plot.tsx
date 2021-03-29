@@ -82,7 +82,7 @@ function Plot(props: any) {
         <MainBar canvasIndex={props.canvasIndex} canvas={canvas}></MainBar>
         <Divider></Divider>
 
-        <GateBar></GateBar>
+        <GateBar canvas={canvas}></GateBar>
         <Divider></Divider>
 
         <AxisBar canvas={canvas}></AxisBar>

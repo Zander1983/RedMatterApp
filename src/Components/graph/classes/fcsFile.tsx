@@ -85,12 +85,6 @@ export default class FCSFile {
     this.data.map((p, i) => {
       let belongsToAllGates = true;
       for (const { gate, inverse } of gatingParams) {
-        console.log(
-          "analyse points ",
-          this.data[i][this.getAxisIndex(gate.xAxis)],
-          " and ",
-          this.data[i][this.getAxisIndex(gate.yAxis)]
-        );
         if (
           gate.isPointInside({
             x: this.data[i][this.getAxisIndex(gate.xAxis)],

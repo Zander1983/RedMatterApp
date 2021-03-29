@@ -202,7 +202,7 @@ export default class ScatterPlotter extends Plotter {
     const lp = Array(this.xAxis.length)
       .fill(0)
       .map((e, i) => closePoints(i));
-    const mx = lp.reduce((a, c) => (a > c ? a : c));
+    const mx = lp.reduce((a, c) => (a > c ? a : c), []);
     let cColors: string[] = lp.map((e) => {
       const p = -Math.pow(e / mx, 5) + 1;
       const blue = (150 - 50) * p + 50;
@@ -244,7 +244,11 @@ export default class ScatterPlotter extends Plotter {
     }
 
     for (const gate of this.gates) {
-      if (gate instanceof OvalGate) {
+      if (
+        gate instanceof OvalGate &&
+        this.xAxisName == gate.xAxis &&
+        this.yAxisName == gate.yAxis
+      ) {
         this.drawOvalGate(gate);
       }
     }
