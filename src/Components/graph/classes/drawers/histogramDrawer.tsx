@@ -6,7 +6,7 @@ import Context from "../canvas/contextInterface";
 import Polygon from "../gates/polygon";
 import { TimerOff } from "@material-ui/icons";
 
-const binPadding = 10;
+const binPadding = 5;
 
 interface HistogramDrawerConstructorParams {
   context: Context;
