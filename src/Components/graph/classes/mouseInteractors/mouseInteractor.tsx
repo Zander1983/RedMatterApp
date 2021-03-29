@@ -1,4 +1,4 @@
-import canvasManager from "../canvas/canvasManager";
+import dataManager from "../canvas/dataManager";
 import Gate from "../gate/gate";
 import OvalGate from "../gate/ovalGate";
 import ScatterPlotter from "../plotters/scatterPlotter";

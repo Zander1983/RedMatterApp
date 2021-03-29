@@ -9,6 +9,8 @@
   FCSFile interface, delete, update or save them also.
 */
 import FCSFile from "./fcsFile";
+import Canvas from "../classes/canvas/canvas";
+import Gate from "../classes/gate/gate";
 
 class DataManager {
   private static instance: DataManager;
@@ -23,6 +25,9 @@ class DataManager {
 
   private static objId: number = 0;
   files = new Map();
+  canvasMap = new Map();
+  gates = new Map();
+
   rerender: Function = () => {};
   loading = false;
 
@@ -57,6 +62,35 @@ class DataManager {
 
   getFile(id: number) {
     return this.files.get(id);
+  }
+
+  getAllCanvas(): Map<number, Canvas> {
+    const files = this.getFiles();
+    const present: number[] = [];
+
+    for (const file of files) {
+      present.push(file.id);
+      if (!this.canvasIsPresent(file.id)) {
+        this.canvasMap.set(file.id, new Canvas(file.file, file.id));
+      }
+    }
+
+    this.canvasMap.forEach((_, k) => {
+      if (!present.includes(k)) {
+        this.canvasMap.delete(k);
+      }
+    });
+
+    return this.canvasMap;
+  }
+
+  registerGate(gate: Gate) {
+    // console.log("gate was registred");
+    // this.rerender();
+  }
+
+  private canvasIsPresent(id: number): boolean {
+    return this.canvasMap.has(id);
   }
 }
 

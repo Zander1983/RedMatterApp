@@ -1,18 +1,17 @@
 /*
   Canvas - A frontend for a canvas component, which includes it's files.
-  This exists to facilitate the life of CanvasManager by removing the
+  This exists to facilitate the life of dataManager by removing the
   complexities of logic that has to be fed to each canvas.
 */
 
 import Scatter from "../../../charts/Scatter";
-import dataManager from "../dataManager";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import Plotter from "../plotters/plotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import canvasManager from "./canvasManager";
+import dataManager from "../dataManager";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
