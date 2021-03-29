@@ -68,13 +68,16 @@ const WorkspaceAppFiles = ({id}:any)=>{
 
     const WorkspaceFileUploadForm = ()=>{
         const props = {
-            name: 'file',
-            action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+            name: 'files[1]',
+            action: 'http://localhost:8080/api/upload',
             headers: {
-                authorization: 'authorization-text',
+                'Access-Control-Allow-Origin':'*',
+                'content-type': 'multipart/form-data',
+                'authorization': 'authorization-text',
+                'token': localStorage.getItem('token')
             },
             beforeUpload(file:any) {
-                console.log(file);
+                console.log('file>>>>>',file.type);
                 console.log('upload>>>',Upload);
                 // if (file.type !== 'image/png') {
                 //     message.error(`${file.name} is not a png file`);
