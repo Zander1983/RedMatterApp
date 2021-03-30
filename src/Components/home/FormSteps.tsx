@@ -86,7 +86,7 @@ function FormDeviceType() {
   return (
     <div
       style={{
-        fontFamily: "Raleway",
+        fontFamily: "Quicksand",
         textAlign: "center",
         display: "grid",
         placeItems: "center",
@@ -147,7 +147,7 @@ function FormCellType() {
   return (
     <div
       style={{
-        fontFamily: "Raleway",
+        fontFamily: "Quicksand",
         textAlign: "center",
         display: "grid",
         placeItems: "center",
@@ -182,7 +182,7 @@ function FormParticleSize() {
   return (
     <div
       style={{
-        fontFamily: "Raleway",
+        fontFamily: "Quicksand",
         textAlign: "center",
         display: "grid",
         placeItems: "center",
@@ -219,7 +219,7 @@ function FormFluorophores() {
   return (
     <div
       style={{
-        fontFamily: "Raleway",
+        fontFamily: "Quicksand",
         textAlign: "center",
         display: "grid",
         placeItems: "center",

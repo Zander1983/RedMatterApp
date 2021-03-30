@@ -8,10 +8,12 @@ import OvalGate from "../gate/ovalGate";
 import Gate from "../gate/gate";
 import {
   euclidianDistance2D,
+  getVectorAngle2D,
   pointInsideEllipse,
 } from "../utils/euclidianPlane";
 
 import Plotter, { PlotterInput } from "./plotter";
+import { type } from "jquery";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -34,6 +36,13 @@ export default class ScatterPlotter extends Plotter {
   xAxisName: string;
   yAxisName: string;
   heatmappingRadius: number;
+  specialPointsList: {
+    x: number;
+    y: number;
+    color: string;
+    text?: string;
+    concrete?: boolean;
+  }[] = [];
 
   ovalGateState: {
     p0: {
@@ -53,15 +62,11 @@ export default class ScatterPlotter extends Plotter {
     ovalGate: OvalGate | null;
   } | null = null;
 
-  static index = 0;
-  index: number;
-
   constructor(params: ScatterPlotterInput) {
     super(params);
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
 
-    this.index = ScatterPlotter.index++;
     this.heatmap = params.heatmap;
     this.xAxisName = params.xAxisName;
     this.yAxisName = params.yAxisName;
@@ -145,12 +150,17 @@ export default class ScatterPlotter extends Plotter {
     const d1 = euclidianDistance2D({ x: p1x, y: p1y }, { x: p2x, y: p2y });
     const d2 = euclidianDistance2D({ x: s1x, y: s1y }, { x: s2x, y: s2y });
 
+    const concreteAng = getVectorAngle2D(
+      { x: p1x, y: p1y },
+      { x: p2x, y: p2y }
+    );
+
     this.drawer.oval({
       x: gate.center.x,
       y: gate.center.y,
       d1: d1 / 2,
       d2: d2 / 2,
-      ang: gate.ang,
+      ang: concreteAng,
     });
   }
 
@@ -202,7 +212,7 @@ export default class ScatterPlotter extends Plotter {
     const lp = Array(this.xAxis.length)
       .fill(0)
       .map((e, i) => closePoints(i));
-    const mx = lp.reduce((a, c) => (a > c ? a : c));
+    const mx = lp.reduce((a, c) => (a > c ? a : c), []);
     let cColors: string[] = lp.map((e) => {
       const p = -Math.pow(e / mx, 5) + 1;
       const blue = (150 - 50) * p + 50;
@@ -227,25 +237,134 @@ export default class ScatterPlotter extends Plotter {
     let plotGraph = this.drawer.drawPlotGraph();
 
     let heatmapColors: string[] = [];
-    if (this.heatmap) {
-      heatmapColors = this.getHeatmapColors();
-    }
+    // if (this.heatmap) {
+    //   heatmapColors = this.getHeatmapColors();
+    // }
 
     for (let i = 0; i < this.xAxis.length; i++) {
       let color = "#444";
-      if (this.heatmap) {
-        color = heatmapColors[i];
+      // if (this.heatmap) {
+      //   color = heatmapColors[i];
+      // }
+
+      let validConcrete = this.gates.length > 0 ? true : false;
+      for (let gate of this.gates) {
+        if (!(gate instanceof OvalGate)) {
+          continue;
+        }
+        const [p1x, p1y] = this.drawer.convertToPlotCanvasPoint(
+          gate.primaryP1.x,
+          gate.primaryP1.y
+        );
+        const [p2x, p2y] = this.drawer.convertToPlotCanvasPoint(
+          gate.primaryP2.x,
+          gate.primaryP2.y
+        );
+        const [s1x, s1y] = this.drawer.convertToPlotCanvasPoint(
+          gate.secondaryP1.x,
+          gate.secondaryP1.y
+        );
+        const [s2x, s2y] = this.drawer.convertToPlotCanvasPoint(
+          gate.secondaryP2.x,
+          gate.secondaryP2.y
+        );
+        const c = { x: (p1x + p2x) / 2, y: (p1y + p2y) / 2 };
+        const p1 = { x: p1x, y: p1y };
+        const p2 = { x: p2x, y: p2y };
+        const s1 = { x: s1x, y: s1y };
+        const s2 = { x: s2x, y: s2y };
+        const [v1, v2] = this.drawer.convertToPlotCanvasPoint(
+          this.xAxis[i],
+          this.yAxis[i]
+        );
+        const p = { x: v1, y: v2 };
+        if (
+          !pointInsideEllipse(p, {
+            center: c,
+            primaryP1: p1,
+            primaryP2: p2,
+            secondaryP1: s1,
+            secondaryP2: s2,
+            ang: getVectorAngle2D(p1, p2),
+          })
+        ) {
+          validConcrete = false;
+        }
       }
-      plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 2.8, color);
+
+      let validAbstract = this.gates.length > 0 ? true : false;
+      for (let gate of this.gates) {
+        if (!(gate instanceof OvalGate)) {
+          continue;
+        }
+        if (
+          !pointInsideEllipse(
+            { x: this.xAxis[i], y: this.yAxis[i] },
+            {
+              center: gate.center,
+              primaryP1: gate.primaryP1,
+              primaryP2: gate.primaryP2,
+              secondaryP1: gate.secondaryP1,
+              secondaryP2: gate.secondaryP2,
+              ang: getVectorAngle2D(gate.primaryP1, gate.primaryP2),
+            }
+          )
+        ) {
+          validAbstract = false;
+        }
+      }
+      if (validConcrete && !validAbstract) color = "#f44";
+      if (!validConcrete && validAbstract) color = "#4f4";
+      if (validConcrete && validAbstract) color = "#44f";
+      plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 1.4, color);
     }
+    console.log("drawing again");
 
     if (this.ovalGateState != null) {
       this.drawOvalGating(context, plotGraph);
     }
 
     for (const gate of this.gates) {
-      if (gate instanceof OvalGate) {
+      if (
+        gate instanceof OvalGate &&
+        this.xAxisName == gate.xAxis &&
+        this.yAxisName == gate.yAxis
+      ) {
         this.drawOvalGate(gate);
+      }
+    }
+
+    for (const special of this.specialPointsList) {
+      if (special.concrete === true) {
+        this.drawer.circle({
+          x: special.x * this.scale,
+          y: special.y * this.scale,
+          radius: 3,
+          fillColor: special.color,
+        });
+      } else {
+        plotGraph.addPoint(special.x, special.y, 5, special.color);
+      }
+      if (special.text !== undefined) {
+        if (special.concrete !== true) {
+          const [x, y] = this.drawer.convertToPlotCanvasPoint(
+            special.x,
+            special.y
+          );
+          this.drawer.text({
+            x: (x + 5) * this.scale,
+            y: (y - 5) * this.scale,
+            text: special.text,
+            font: "30px Roboto black",
+          });
+        } else {
+          this.drawer.text({
+            x: (special.x + 5) * this.scale,
+            y: (special.y - 5) * this.scale,
+            text: special.text,
+            font: "30px Roboto black",
+          });
+        }
       }
     }
   }

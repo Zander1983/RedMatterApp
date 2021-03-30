@@ -9,7 +9,7 @@ const leftPadding = 70;
 const rightPadding = 50;
 const topPadding = 50;
 const bottomPadding = 50;
-const binSize = 50;
+const binSize = 45;
 
 interface HistogramPlotterInput extends PlotterInput {
   axis: string;

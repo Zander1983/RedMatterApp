@@ -1,18 +1,17 @@
 /*
   Canvas - A frontend for a canvas component, which includes it's files.
-  This exists to facilitate the life of CanvasManager by removing the
+  This exists to facilitate the life of dataManager by removing the
   complexities of logic that has to be fed to each canvas.
 */
 
 import Scatter from "../../../charts/Scatter";
-import dataManager from "../dataManager";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import Plotter from "../plotters/plotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import canvasManager from "./canvasManager";
+import dataManager from "../dataManager";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -39,7 +38,7 @@ class Canvas {
   yPlotType = "lin";
   gates: Array<Gate> = [];
 
-  id: number;
+  id: string;
   file: FCSFile;
   mouseInteractor: MouseInteractor;
 
@@ -59,7 +58,8 @@ class Canvas {
   height: number = 0;
   scale: number = 2;
 
-  constructor(file: FCSFile, id: number) {
+  constructor(file: FCSFile, id: string) {
+    // By default, get the first and second axis as X and Y axis
     this.xAxis = file.axes[0];
     this.yAxis = file.axes[1];
     this.id = id;
@@ -135,15 +135,26 @@ class Canvas {
     this.plotter = this.histogramPlotter;
   }
 
+  addGate(gate: Gate, createSubpop: boolean = false) {
+    this.gates.push(gate);
+    if (createSubpop) {
+      this.createSubpop();
+    }
+    this.updateAndRenderPlotter();
+  }
+
+  createSubpop(inverse: boolean = false) {
+    const subpopfile = this.file.duplicateWithSubpop(this.gates, inverse);
+    dataManager.addFile(subpopfile);
+  }
+
+  removeGate(gateID: string) {
+    this.gates = this.gates.filter((gate) => gate.id !== gateID);
+    this.updateAndRenderPlotter();
+  }
+
   contructMouseInteractor() {
-    this.mouseInteractor = new MouseInteractor((gate: Gate) => {
-      console.log("MAKE GATE CALLED!!!!");
-      const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
-      this.gates.push(gate);
-      console.log(subpopfile);
-      dataManager.addFile(subpopfile);
-      this.updateAndRenderPlotter();
-    }, this.scatterPlotter);
+    this.mouseInteractor = new MouseInteractor(this.scatterPlotter, this.id);
     this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
   }
 

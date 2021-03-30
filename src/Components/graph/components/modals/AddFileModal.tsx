@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: "-150px",
     textAlign: "center",
     borderRadius: 10,
-    fontFamiliy: "Raleway",
+    fontFamiliy: "Quicksand",
   },
   fileSelectFileContainer: {
     paddingTop: 15,

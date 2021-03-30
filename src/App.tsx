@@ -54,7 +54,7 @@ const App: FC = () => {
       <Header className="default-header">
         <AppHeader onLogout={handleAfterLogout} />
       </Header>
-      <Content className={classes.content}>
+      <Content className={classes.content} style={{ fontFamily: "Quicksand" }}>
         <Switch>
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
