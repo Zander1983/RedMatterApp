@@ -100,7 +100,7 @@ const AppLandingPage = () => {
                   <b style={{ color: "#eee" }}>Your flow analysis tool</b>
                 </p>
                 <p style={{ color: "#eee", marginTop: -15 }}>
-                  Anaylising FCS files has never been easier
+                  Analysing FCS files has never been easier
                 </p>
                 {/* <ImgCarousel /> */}
                 <NavLink to="/questions">
