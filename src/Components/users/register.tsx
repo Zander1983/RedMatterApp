@@ -250,7 +250,7 @@ const Register = (props:any)=>{
                             
                             <Typography>
                                 Already registered ?
-                                <Link to="/login">Login In</Link>
+                                <Link to="/login">Sign In</Link>
                             </Typography>
                         </div>
                     </Grid>
