@@ -48,9 +48,9 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 ---
 **Note**
 
-We can run frontend into different environment [i.e.,local, developement, production, staging]
-Currently local and developement env's are active
-To use localhost as backend API: use npm run start:local
-To use AWS server as backend API : use npm run start:dev
+- We can run frontend into different environment [i.e.,local, developement, production, staging]
+- Currently local and developement env's are active
+- To use localhost as backend API: use npm run start:local
+- To use AWS server as backend API : use npm run start:dev
 
 ---
