@@ -5,8 +5,10 @@
 */
 
 import FCSFile from "../fcsFile";
+import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
-import CanvasComponent from "./canvasComponent";
+import Plotter from "../plotters/plotter";
+import ScatterPlotter from "../plotters/scatterPlotter";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -25,53 +27,165 @@ const conditionalUpdateDecorator = () => {
 };
 
 class Canvas {
+  // Plot params
   xAxis: string;
   yAxis: string;
   changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
+
   id: number;
-  rerender: Function | null = null;
   file: FCSFile;
   mouseInteractor: MouseInteractor;
+
+  // Rendering objects
+  plotter: Plotter | null = null;
+
+  // Rendering methods
+  // Calling canvas render means the canvas will be redrawn
+  canvasRender: Function | null = null;
+  // Calling plot render means the component plot will be redrawn
+  plotRender: Function | null = null;
+
+  width: number = 0;
+  height: number = 0;
+  scale: number = 2;
 
   constructor(file: FCSFile, id: number) {
     this.xAxis = file.axes[0];
     this.yAxis = file.axes[1];
     this.id = id;
     this.file = file;
-    this.rerender = null;
-    this.mouseInteractor = new MouseInteractor();
-  }
+    this.plotRender = null;
 
-  componentSizeUpdater: Function;
-
-  getCanvas(canvasComponentProps: object) {
-    return (
-      <CanvasComponent
-        sizeupdatersetter={(su: Function) => {
-          this.componentSizeUpdater = su;
-        }}
-        data={{
-          x: this.file.getAxisPoints(this.xAxis),
-          y: this.file.getAxisPoints(this.yAxis),
-        }}
-        histogram={(this.xAxis == this.yAxis).toString()}
-        mouseInteractor={this.mouseInteractor}
-        id={`canvas-${this.id}`}
-        {...canvasComponentProps}
-      />
-    );
+    this.constructPlotter();
+    this.contructMouseInteractor();
   }
 
   private conditionalUpdate() {
     if (this.changed) {
       this.changed = false;
-      if (this.rerender === null) {
-        throw Error("Null rerenderer for Canvas");
+      if (this.plotRender === null || this.canvasRender === null) {
+        throw Error("Null renderer for Canvas");
       }
-      this.rerender();
+      this.updateAndRenderPlotter();
+      this.plotRender();
     }
+  }
+
+  updateAndRenderPlotter() {
+    this.plotter.xAxis = this.file.getAxisPoints(this.xAxis);
+    this.plotter.yAxis = this.file.getAxisPoints(this.yAxis);
+    this.plotter.width = this.width;
+    this.plotter.height = this.height;
+    this.canvasRender();
+  }
+
+  setRerender(plotRender: Function) {
+    this.plotRender = plotRender;
+  }
+
+  setRerenderInterval(rerenderInterval: Function) {
+    this.mouseInteractor.setRerenderInterval(rerenderInterval);
+  }
+
+  constructPlotter() {
+    // This is supposed to have the histograms
+    this.plotter =
+      // this.xAxis == this.yAxis
+      new ScatterPlotter({
+        xAxis: this.file.getAxisPoints(this.xAxis),
+        yAxis: this.file.getAxisPoints(this.yAxis),
+        width: this.width,
+        height: this.height,
+        scale: this.scale,
+      });
+    // : // Should have been histogram plotter
+    //   new ScatterPlotter({
+    //     xAxis: data.x,
+    //     yAxis: data.y,
+    //     width: this.width,
+    //     height: this.height,
+    //     scale: this.scale,
+    //   });
+  }
+
+  contructMouseInteractor() {
+    this.mouseInteractor = new MouseInteractor(
+      this.createGate,
+      this.plotter,
+      this.setRerenderingInterval
+    );
+  }
+
+  createGate(gate: Gate) {
+    // wtf now?
+  }
+
+  useCanvas(ref: any) {
+    const canvas = ref.current;
+    const context = canvas.getContext("2d");
+    let frameCount = 0;
+    let animationFrameId = 0;
+
+    const sendMouseInteraction = (event: Event) => {
+      const x = event.offsetX;
+      const y = event.offsetY;
+      const type = event.type;
+      const p = this.plotter.convertToAbstractPoint(x, y);
+      this.mouseInteractor.registerMouseEvent(type, p.x, p.y);
+    };
+
+    const addCanvasListener = (type: string, func: Function) => {
+      if (canvas.getAttribute(`${type}-listener`) !== "true") {
+        canvas.addEventListener(type, func);
+        canvas.setAttribute(`${type}-listener`, "true");
+      }
+    };
+
+    addCanvasListener("mousedown", sendMouseInteraction);
+    addCanvasListener("mouseup", sendMouseInteraction);
+    addCanvasListener("mousemove", sendMouseInteraction);
+
+    this.canvasRender = () => {
+      frameCount++;
+      const { width, height } = canvas.getBoundingClientRect();
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width * this.scale;
+        canvas.height = height * this.scale;
+      }
+      this.plotter.draw(context, frameCount);
+      return () => {
+        window.cancelAnimationFrame(animationFrameId);
+      };
+    };
+
+    this.mouseInteractor.setCanvasRender(this.canvasRender);
+
+    this.canvasRender();
+
+    return ref;
+  }
+
+  setStopGatingParent(f: Function) {
+    this.mouseInteractor.setStopGatingParent(f);
+  }
+
+  getCanvas() {
+    return (
+      <canvas
+        style={{
+          backgroundColor: "#fff",
+          textAlign: "center",
+          width: this.width,
+          height: this.height,
+          borderRadius: 5,
+          boxShadow: "1px 3px 4px #bbd",
+          flexGrow: 1,
+        }}
+        ref={canvasRef}
+      />
+    );
   }
 
   setOvalGating(value: boolean) {
@@ -84,8 +198,11 @@ class Canvas {
     return this.file;
   }
 
-  setWidthAndHeight(width: number, height: number) {
-    this.componentSizeUpdater(width, height);
+  @conditionalUpdateDecorator()
+  setWidthAndHeight(w: number, h: number) {
+    this.changed = this.changed || this.width != w || this.height != h;
+    this.width = w;
+    this.height = h;
   }
 
   @conditionalUpdateDecorator()

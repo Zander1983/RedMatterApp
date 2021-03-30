@@ -65,14 +65,6 @@ export default class ScatterPlot {
     this.yLabels = yLabels === undefined ? this.createRangeArray("y") : yLabels;
 
     this.drawer = null;
-    this.canvas = new GraphCanvas({
-      scale: this.scale,
-      parentref: this,
-      style: {
-        width: this.width,
-        height: this.height,
-      },
-    });
   }
 
   createRangeArray(axis: "x" | "y"): Array<string> {
@@ -152,10 +144,6 @@ export default class ScatterPlot {
 
   registerMouseEvent(event: any) {
     // console.log(event.type)
-  }
-
-  getCanvas() {
-    return this.canvas.getCanvasComponent(this.draw);
   }
 
   getMouseEvents() {}

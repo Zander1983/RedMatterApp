@@ -141,8 +141,16 @@ const files = [
   {
     title: "LargeRandomDataset.fcs",
     information:
-      "Generates many axes and points randomly! Around ~5000 points, 200 dimesions, ranging from -10000 to 1000000",
+      "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
     data: generateRandomData(200, 3000, -10000, 1000000),
+    axes: generateRandomAxes(200),
+    lastModified: "Right now!",
+  },
+  {
+    title: "ExtremelyLargeRandomDataset.fcs",
+    information:
+      "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
+    data: generateRandomData(200, 30000, -10000, 1000000),
     axes: generateRandomAxes(200),
     lastModified: "Right now!",
   },
