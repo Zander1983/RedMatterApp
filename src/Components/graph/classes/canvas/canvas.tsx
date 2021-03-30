@@ -38,7 +38,7 @@ class Canvas {
   yPlotType = "lin";
   gates: Array<Gate> = [];
 
-  id: number;
+  id: string;
   file: FCSFile;
   mouseInteractor: MouseInteractor;
 
@@ -58,7 +58,7 @@ class Canvas {
   height: number = 0;
   scale: number = 2;
 
-  constructor(file: FCSFile, id: number) {
+  constructor(file: FCSFile, id: string) {
     this.xAxis = file.axes[0];
     this.yAxis = file.axes[1];
     this.id = id;
@@ -134,12 +134,17 @@ class Canvas {
     this.plotter = this.histogramPlotter;
   }
 
-  addGate(gate: Gate) {
-    console.log("MAKE GATE CALLED!!!!");
-    const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
+  addGate(gate: Gate, createSubpop: boolean = false) {
     this.gates.push(gate);
-    dataManager.addFile(subpopfile);
+    if (createSubpop) {
+      const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
+      dataManager.addFile(subpopfile);
+    }
+    this.updateAndRenderPlotter();
+  }
 
+  removeGate(gateID: string) {
+    this.gates = this.gates.filter((gate) => gate.id !== gateID);
     this.updateAndRenderPlotter();
   }
 

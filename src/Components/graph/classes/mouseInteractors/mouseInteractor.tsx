@@ -157,7 +157,7 @@ export default class MouseInteractor {
       yAxis: this.yAxis,
     });
     const id = dataManager.addGate(gate);
-    dataManager.addGateToCanvas(id, this.parentID);
+    dataManager.addGateToCanvas(id, this.parentID, true);
     this.ovalGateEnd();
   }
 
