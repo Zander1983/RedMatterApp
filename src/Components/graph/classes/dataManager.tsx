@@ -121,6 +121,11 @@ class DataManager {
     return this.files.get(fileID);
   }
 
+  createSubpopFile(canvasID: string, inverse: boolean = false) {
+    const ccanvas = this.canvas.get(canvasID);
+    ccanvas.createSubpop(inverse);
+  }
+
   addCanvas(fileID: string) {}
 
   getAllCanvas(): Map<string, Canvas> {
@@ -165,12 +170,6 @@ class DataManager {
 
   @publishDecorator()
   removeGateFromCanvas(gateID: string, canvasID: string) {
-    console.log(
-      "REMOVE GATE FROM CANVAS | CANVASID = ",
-      canvasID,
-      " GATEID = ",
-      gateID
-    );
     if (!this.canvasIsPresent(canvasID)) {
       throw Error("Removing gate to non-existent canvas");
     }

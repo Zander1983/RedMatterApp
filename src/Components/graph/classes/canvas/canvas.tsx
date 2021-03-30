@@ -137,10 +137,14 @@ class Canvas {
   addGate(gate: Gate, createSubpop: boolean = false) {
     this.gates.push(gate);
     if (createSubpop) {
-      const subpopfile = this.file.duplicateWithSubpop([gate, ...this.gates]);
-      dataManager.addFile(subpopfile);
+      this.createSubpop();
     }
     this.updateAndRenderPlotter();
+  }
+
+  createSubpop(inverse: boolean = false) {
+    const subpopfile = this.file.duplicateWithSubpop(this.gates, inverse);
+    dataManager.addFile(subpopfile);
   }
 
   removeGate(gateID: string) {

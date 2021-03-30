@@ -305,7 +305,6 @@ export default class HistogramDrawer extends Drawer {
                 `Out of bounds index for histogram with ${this.bins} bins`
               );
             }
-            console.log(this.y1, this.y2);
             const outterBeginY =
               this.y1 + (this.bins - 1 - index) * this.binSize;
             const outterEndY = this.y1 + (this.bins - index) * this.binSize;

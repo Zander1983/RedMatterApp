@@ -25,6 +25,7 @@ const classes = {
 
 export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   const [ovalGating, setOvalGating] = React.useState(false);
   const canvas = props.canvas;
 
@@ -83,6 +84,19 @@ export default function MainBar(props: any) {
         }}
       />
 
+      <MessageModal
+        open={emptySubpopModalOpen}
+        closeCall={{
+          f: handleClose,
+          ref: setEmptySubpopModalOpen,
+        }}
+        message={
+          <h2>
+            You cannot create a subpopulation of a plot that is not gated!
+          </h2>
+        }
+      />
+
       <Button
         onClick={() => setDeleteModalOpen(true)}
         style={classes.mainDelete}
@@ -119,7 +133,13 @@ export default function MainBar(props: any) {
       <Button
         variant="contained"
         size="medium"
-        // onClick={}
+        onClick={() => {
+          if (canvas.gates.length === 0) {
+            setEmptySubpopModalOpen(true);
+            return;
+          }
+          dataManager.createSubpopFile(canvas.id);
+        }}
         style={classes.mainButton}
       >
         Subpop
@@ -127,7 +147,13 @@ export default function MainBar(props: any) {
       <Button
         variant="contained"
         size="medium"
-        // onClick={}
+        onClick={() => {
+          if (canvas.gates.length === 0) {
+            setEmptySubpopModalOpen(true);
+            return;
+          }
+          dataManager.createSubpopFile(canvas.id, true);
+        }}
         style={classes.mainButton}
       >
         Inverse Subpop

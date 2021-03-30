@@ -5,6 +5,7 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import dataManager from "../../../classes/dataManager";
 import Canvas from "../../../classes/canvas/canvas";
@@ -18,6 +19,13 @@ const classes = {
   bar: {
     marginTop: 10,
     marginBottom: 10,
+  },
+  root: {
+    borderRadius: 0,
+    color: "#0f0",
+    boxSizing: "border-box",
+    border: "1px solid",
+    borderColor: "#bddaff",
   },
 };
 
@@ -46,7 +54,7 @@ export default function GateBar(props: any) {
     setGates(cgates);
   };
 
-  const addGateToCanvas = (gateName: string, selected: boolean) => {
+  const changeGateCanvasState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
     if (selected) {
       dataManager.removeGateFromCanvas(gateID, canvas.id);
@@ -64,9 +72,9 @@ export default function GateBar(props: any) {
   useEffect(() => {
     idCanvasGateUpdate = dataManager.addObserver("addGate", update);
     idGateUpdate = dataManager.addObserver("addGateToCanvas", update);
+    update();
   }, []);
 
-  console.log("i rendered");
   return (
     <Grid xs={12} container direction="column" style={classes.bar}>
       <Autocomplete
@@ -77,7 +85,7 @@ export default function GateBar(props: any) {
         getOptionLabel={(option) => option}
         renderOption={(option, { selected }) => (
           <Button
-            onClick={() => addGateToCanvas(option, selected)}
+            onClick={() => changeGateCanvasState(option, selected)}
             style={{ flex: 1, justifyContent: "left" }}
           >
             <Checkbox
@@ -91,13 +99,17 @@ export default function GateBar(props: any) {
         )}
         style={{ flex: 1 }}
         renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            label="Gates"
-            onClick={() => console.log("someone touched me im scared")}
-          />
+          <TextField {...params} variant="outlined" label="Gates" />
         )}
+        renderTags={(tagValue, getTagProps) => {
+          return tagValue.map((option, index) => (
+            <Chip
+              label={option}
+              onDelete={() => changeGateCanvasState(option, true)}
+              {...props}
+            />
+          ));
+        }}
       />
     </Grid>
   );

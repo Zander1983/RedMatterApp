@@ -104,10 +104,10 @@ export default class FCSFile {
     return newPopulation;
   }
 
-  duplicateWithSubpop(gates: Gate[]) {
+  duplicateWithSubpop(gates: Gate[], inverse: boolean = false) {
     const pop = this.getPopulationFromGates(
       gates.map((e) => {
-        return { gate: e, inverse: false };
+        return { gate: e, inverse: inverse };
       })
     );
     return new FCSFile({
