@@ -178,8 +178,8 @@ export default class ScatterDrawer extends Drawer {
     const xBegin = Math.min(this.x1, this.x2);
     const yEnd = Math.max(this.y1, this.y2);
     const v = [
-      ((x - this.ibx) / (this.iex - this.ibx)) * w + xBegin,
-      yEnd - ((y - this.iby) / (this.iey - this.iby)) * h,
+      (((x - this.ibx) / (this.iex - this.ibx)) * w + xBegin) / this.scale,
+      (yEnd - ((y - this.iby) / (this.iey - this.iby)) * h) / this.scale,
     ];
     return v;
   };
@@ -196,13 +196,24 @@ export default class ScatterDrawer extends Drawer {
     return { x: nx, y: ny };
   };
 
+  test() {
+    let p = { x: 100, y: 100 };
+    for (let i = 0; i < 100; i++) {
+      const p1 = this.convertToAbstractPoint(p.x, p.y);
+      console.log("abstract p is", p1.x, p1.y);
+      const [x, y] = this.convertToPlotCanvasPoint(p1.x, p1.y);
+      p = { x: x, y: y };
+      console.log("p is now:", p.x, p.y);
+    }
+  }
+
   scline({ x1, y1, x2, y2, lineWidth, strokeColor }: LineParams) {
     const p1 = this.convertToPlotCanvasPoint(x1, y1);
-    x1 = p1[0];
-    y1 = p1[1];
+    x1 = p1[0] * this.scale;
+    y1 = p1[1] * this.scale;
     const p2 = this.convertToPlotCanvasPoint(x2, y2);
-    x2 = p2[0];
-    y2 = p2[1];
+    x2 = p2[0] * this.scale;
+    y2 = p2[1] * this.scale;
     this.line({ x1, y1, x2, y2, lineWidth, strokeColor });
   }
 
@@ -211,7 +222,15 @@ export default class ScatterDrawer extends Drawer {
 
     this.setStrokeColor("#f33");
     this.ctx.beginPath();
-    this.ctx.ellipse(x, y, obj.d1, obj.d2, obj.ang, 0, 2 * Math.PI);
+    this.ctx.ellipse(
+      x * this.scale,
+      y * this.scale,
+      obj.d1 * this.scale,
+      obj.d2 * this.scale,
+      obj.ang,
+      0,
+      2 * Math.PI
+    );
     this.setLineWidth(5);
     this.ctx.stroke();
   }
@@ -267,7 +286,7 @@ export default class ScatterDrawer extends Drawer {
         addPoint: (
           x: number,
           y: number,
-          r: number = 3,
+          r: number = 1,
           color: string = "#000"
         ) => {
           if (x < parent.ibx || x > parent.iex) return;
@@ -276,9 +295,9 @@ export default class ScatterDrawer extends Drawer {
           const plotx = plotPoints[0];
           const ploty = plotPoints[1];
           parent.circle({
-            x: plotx,
-            y: ploty,
-            radius: r,
+            x: plotx * this.scale,
+            y: ploty * this.scale,
+            radius: r * this.scale,
             fillColor: color,
           });
         },
@@ -292,10 +311,10 @@ export default class ScatterDrawer extends Drawer {
             const b = parent.convertToPlotCanvasPoint(pB.x, pB.y);
 
             parent.line({
-              x1: a[0],
-              y1: a[1],
-              x2: b[0],
-              y2: b[1],
+              x1: a[0] * this.scale,
+              y1: a[1] * this.scale,
+              x2: b[0] * this.scale,
+              y2: b[1] * this.scale,
               strokeColor: color,
             });
           }
@@ -309,10 +328,10 @@ export default class ScatterDrawer extends Drawer {
           const a = parent.convertToPlotCanvasPoint(pa[0], pa[1]);
           const b = parent.convertToPlotCanvasPoint(pb[0], pb[1]);
           parent.line({
-            x1: a[0],
-            y1: a[1],
-            x2: b[0],
-            y2: b[1],
+            x1: a[0] * this.scale,
+            y1: a[1] * this.scale,
+            x2: b[0] * this.scale,
+            y2: b[1] * this.scale,
             strokeColor: color,
           });
         },

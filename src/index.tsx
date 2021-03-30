@@ -6,6 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import "typeface-roboto";
 import "typeface-raleway";
+import "typeface-quicksand";
 import axios from "axios";
 
 // Redux config

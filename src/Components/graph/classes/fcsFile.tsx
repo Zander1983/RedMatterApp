@@ -82,7 +82,7 @@ export default class FCSFile {
 
   getPopulationFromGates(gatingParams: { gate: Gate; inverse: boolean }[]) {
     const newPopulation: Array<Array<number>> = [];
-    this.data.map((p, i) => {
+    this.data.forEach((p, i) => {
       let belongsToAllGates = true;
       for (const { gate, inverse } of gatingParams) {
         if (

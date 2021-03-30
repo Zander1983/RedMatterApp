@@ -4,11 +4,13 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import "./css/landing.css";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
+import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
 
+import icon from "../../assets/images/white_icon.png";
 import ImgCarousel from "./carousel";
 
 const useStyles = makeStyles((theme) => ({
@@ -30,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     width: "100%",
     backgroundColor: "rgba(150, 200, 200, 0.5)",
-    fontFamily: "Raleway",
+    fontFamily: "Quicksand",
   },
   card: {
     width: 600,
@@ -73,13 +75,31 @@ const AppLandingPage = () => {
           <div className={classes.centralizer}>
             <Card className={classes.card} variant="outlined">
               <CardContent>
-                <h1>
-                  <b style={{ color: "#fafafa" }}>Welcome to Red Matter</b>
-                </h1>
-                <p>
+                <Typography variant="h6" className={classes.title}>
+                  <img
+                    src={icon}
+                    alt="Logo"
+                    height="25"
+                    style={{
+                      marginRight: 10,
+                      marginTop: -8,
+                    }}
+                  />
+                  <b
+                    style={{
+                      fontFamily: "quicksand",
+                      fontWeight: 400,
+                      fontSize: 29,
+                      color: "#fff",
+                    }}
+                  >
+                    RED MATTER
+                  </b>
+                </Typography>
+                <p style={{ marginTop: 10 }}>
                   <b style={{ color: "#eee" }}>Your flow analysis tool</b>
                 </p>
-                <p style={{ color: "#eee" }}>
+                <p style={{ color: "#eee", marginTop: -15 }}>
                   Anaylising FCS files has never been easier
                 </p>
                 {/* <ImgCarousel /> */}

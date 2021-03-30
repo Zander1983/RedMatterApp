@@ -59,6 +59,7 @@ class Canvas {
   scale: number = 2;
 
   constructor(file: FCSFile, id: string) {
+    // By default, get the first and second axis as X and Y axis
     this.xAxis = file.axes[0];
     this.yAxis = file.axes[1];
     this.id = id;
