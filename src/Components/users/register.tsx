@@ -240,7 +240,7 @@ const Register = (props: any) => {
                   errorMessages={["Password is required"]}
                 />
                 <br />
-                {/* <ReCAPTCHA
+                <ReCAPTCHA
                                     sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
                                     onChange={onChangeCaptcha}
                                     onExpired={()=>{
@@ -248,33 +248,36 @@ const Register = (props: any) => {
                                             return {...prevData,g_recaptcha_response:""}
                                         })
                                     }}
-                                /> */}
-                <br />
-                <Button
-                  color="primary"
-                  variant="contained"
-                  type="submit"
-                  disabled={isSubmit}
-                  onFocus={() => {
-                    if (formData.location === "") {
-                      setLocationStatus((prev: any) => false);
-                      return;
-                    }
-                  }}
-                >
-                  {(isSubmit && "Your form is submitted!") ||
-                    (!isSubmit && "Submit")}
-                </Button>
-              </ValidatorForm>
-
-              <Typography>
-                Already registered ?<Link to="/login">Login In</Link>
-              </Typography>
-            </div>
-          </Grid>
-        </Paper>
-      </Grid>
-    </>
-  );
-};
+                                />
+                                <br/>
+                                <Button
+                                    color="primary"
+                                    variant="contained"
+                                    type="submit"
+                                    disabled={isSubmit}
+                                    onFocus={()=>{
+                                        if(formData.location === ""){
+                                            setLocationStatus((prev:any) => false);
+                                            return;
+                                        }
+                                    }}
+                                >
+                                    {
+                                        (isSubmit && 'Your form is submitted!')
+                                        || (!isSubmit && 'Submit')
+                                    }
+                                </Button>
+                            </ValidatorForm>
+                            
+                            <Typography>
+                                Already registered ?
+                                <Link to="/login">Sign In</Link>
+                            </Typography>
+                        </div>
+                    </Grid>
+                </Paper>
+            </Grid>
+        </>
+    )
+}
 export default Register;
