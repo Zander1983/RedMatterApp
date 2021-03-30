@@ -89,7 +89,7 @@ function Plot(props: any) {
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
 
-      <CanvasComponent canvas={props.canvas} />
+      <CanvasComponent canvas={props.canvas} canvasIndex={props.canvasIndex} />
     </div>
   );
 }

@@ -4,8 +4,12 @@
 import { ThreeSixtySharp } from "@material-ui/icons";
 import Drawer from "../drawers/drawer";
 import ScatterDrawer from "../drawers/scatterDrawer";
-import OvalGate from "../gate/OvalGate";
-import { euclidianDistance2D } from "../utils/euclidianPlane";
+import OvalGate from "../gate/ovalGate";
+import Gate from "../gate/gate";
+import {
+  euclidianDistance2D,
+  pointInsideEllipse,
+} from "../utils/euclidianPlane";
 
 import Plotter, { PlotterInput } from "./plotter";
 
@@ -14,10 +18,22 @@ const rightPadding = 50;
 const topPadding = 50;
 const bottomPadding = 50;
 
+interface ScatterPlotterInput extends PlotterInput {
+  heatmap: boolean;
+  xAxisName: string;
+  yAxisName: string;
+}
+
 export default class ScatterPlotter extends Plotter {
   // Optional params
   xLabels: Array<string>;
   yLabels: Array<string>;
+  gates: Gate[] = [];
+  drawer: ScatterDrawer;
+  heatmap: boolean = false;
+  xAxisName: string;
+  yAxisName: string;
+  heatmappingRadius: number;
 
   ovalGateState: {
     p0: {
@@ -40,12 +56,19 @@ export default class ScatterPlotter extends Plotter {
   static index = 0;
   index: number;
 
-  constructor(params: PlotterInput) {
+  constructor(params: ScatterPlotterInput) {
     super(params);
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
 
     this.index = ScatterPlotter.index++;
+    this.heatmap = params.heatmap;
+    this.xAxisName = params.xAxisName;
+    this.yAxisName = params.yAxisName;
+
+    // percentage of range in each dimension. seeks all points close to each
+    // point to assign it's color.
+    this.heatmappingRadius = 0.05;
 
     this.drawer = new ScatterDrawer({
       x1: leftPadding * this.scale,
@@ -73,6 +96,10 @@ export default class ScatterPlotter extends Plotter {
     );
   }
 
+  setGates(gates: Gate[]) {
+    this.gates = gates;
+  }
+
   ovalGate: OvalGate;
 
   convertToPlotPoint(x: number, y: number) {
@@ -97,6 +124,101 @@ export default class ScatterPlotter extends Plotter {
     });
   }
 
+  drawOvalGate(gate: OvalGate) {
+    const [p1x, p1y] = this.convertToPlotPoint(
+      gate.primaryP1.x,
+      gate.primaryP1.y
+    );
+    const [p2x, p2y] = this.convertToPlotPoint(
+      gate.primaryP2.x,
+      gate.primaryP2.y
+    );
+    const [s1x, s1y] = this.convertToPlotPoint(
+      gate.secondaryP1.x,
+      gate.secondaryP1.y
+    );
+    const [s2x, s2y] = this.convertToPlotPoint(
+      gate.secondaryP2.x,
+      gate.secondaryP2.y
+    );
+
+    const d1 = euclidianDistance2D({ x: p1x, y: p1y }, { x: p2x, y: p2y });
+    const d2 = euclidianDistance2D({ x: s1x, y: s1y }, { x: s2x, y: s2y });
+
+    this.drawer.oval({
+      x: gate.center.x,
+      y: gate.center.y,
+      d1: d1 / 2,
+      d2: d2 / 2,
+      ang: gate.ang,
+    });
+  }
+
+  heatMapCache: Array<{ xAxis: string; yAxis: string; colors: string[] }> = [];
+
+  getHeatmapColors() {
+    for (const hm of this.heatMapCache) {
+      const { xAxis, yAxis, colors } = hm;
+      if (this.xAxisName == xAxis && this.yAxisName == yAxis) {
+        return colors;
+      }
+    }
+    const hmr = this.heatmappingRadius;
+
+    // Returns how many points are close (within heatmapping percentage radius)
+    // to a given point i
+    const closePoints = (i: number) => {
+      let count = 0;
+
+      const x = this.xAxis[i];
+      const y = this.yAxis[i];
+      const xr = this.xRange[1] - this.xRange[0];
+      const yr = this.yRange[1] - this.yRange[0];
+      const pp1 = { x: x - hmr * xr, y: y };
+      const pp2 = { x: x + hmr * xr, y: y };
+      const sp1 = { x: x, y: y - hmr * yr };
+      const sp2 = { x: x, y: y + hmr * yr };
+
+      this.xAxis.forEach((e, j) => {
+        if (
+          j !== i &&
+          pointInsideEllipse(
+            { x: this.xAxis[j], y: this.yAxis[j] },
+            {
+              center: { x: x, y: y },
+              primaryP1: pp1,
+              primaryP2: pp2,
+              secondaryP1: sp1,
+              secondaryP2: sp2,
+              ang: 0,
+            }
+          )
+        ) {
+          count++;
+        }
+      });
+      return count;
+    };
+    const lp = Array(this.xAxis.length)
+      .fill(0)
+      .map((e, i) => closePoints(i));
+    const mx = lp.reduce((a, c) => (a > c ? a : c));
+    let cColors: string[] = lp.map((e) => {
+      const p = -Math.pow(e / mx, 5) + 1;
+      const blue = (150 - 50) * p + 50;
+      const red = -(210 - 100) * p + 210;
+      const green = 80;
+      return `rgb(${red}, ${green}, ${blue})`;
+    });
+    for (let i = 0; i < this.xAxis.length; i++) {}
+    this.heatMapCache.push({
+      colors: cColors,
+      xAxis: this.xAxisName,
+      yAxis: this.yAxisName,
+    });
+    return cColors;
+  }
+
   draw(context: any, frameCount: number) {
     this.resetDrawer();
 
@@ -104,12 +226,27 @@ export default class ScatterPlotter extends Plotter {
 
     let plotGraph = this.drawer.drawPlotGraph();
 
+    let heatmapColors: string[] = [];
+    if (this.heatmap) {
+      heatmapColors = this.getHeatmapColors();
+    }
+
     for (let i = 0; i < this.xAxis.length; i++) {
-      plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 2.6, "#444");
+      let color = "#444";
+      if (this.heatmap) {
+        color = heatmapColors[i];
+      }
+      plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 2.8, color);
     }
 
     if (this.ovalGateState != null) {
       this.drawOvalGating(context, plotGraph);
+    }
+
+    for (const gate of this.gates) {
+      if (gate instanceof OvalGate) {
+        this.drawOvalGate(gate);
+      }
     }
   }
 

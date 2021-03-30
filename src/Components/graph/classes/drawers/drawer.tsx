@@ -27,6 +27,12 @@ interface TextParams extends BaseParams {
   font?: string;
 }
 
+interface RectParams extends BaseParams {
+  h: number;
+  w: number;
+  fill: boolean;
+}
+
 export default abstract class Drawer {
   protected ctx: any;
 
@@ -99,6 +105,19 @@ export default abstract class Drawer {
     }
     this.ctx.fillText(text, x, y);
     this.ctx.font = "Arial";
+
+    this.setDefaultStyle();
+  }
+
+  rect({ x, y, w, h, fill, strokeColor, fillColor }: RectParams) {
+    this.setFillColor(fillColor);
+    this.setStrokeColor(strokeColor);
+
+    this.ctx.beginPath();
+    this.ctx.rect(x, y, w, h);
+
+    if (fill) this.ctx.fill();
+    else this.ctx.stroke();
 
     this.setDefaultStyle();
   }

@@ -59,16 +59,44 @@ const App: FC = () => {
           {/* <Route exact path="/" component={AppHome}/> */}
           <Route exact path="/" component={AppLandingPage} />
           <Route exact path="/questions" component={PrototypeForm} />
-          
-          <Route exact path="/authentication/:tabId" component={(props:any)=><SignInOutContainer {...props} />} />
-          <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
-          <Route exact path="/register" component={(props:any)=><Register {...props} onRegister={handleAfterRegister} />} />
-          <Route exact path="/verify/:verifyStr" component={({ match }: any) => <VerifyEmail verifyStr={match.params.verifyStr} />} />
-          <Route exact path="/graph" component={GraphPrototype} />
-          <Route exact path="/workspaces" component={()=><Workspaces/>}/>
-          <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} />} />
-        
-        {/* <Route exact path="/graph" component={Plots} />
+
+          <Route
+            exact
+            path="/authentication/:tabId"
+            component={(props: any) => <SignInOutContainer {...props} />}
+          />
+          <Route
+            exact
+            path="/login"
+            component={(props: any) => (
+              <Login {...props} onLogin={handleAfterLogin} />
+            )}
+          />
+          <Route
+            exact
+            path="/register"
+            component={(props: any) => (
+              <Register {...props} onRegister={handleAfterRegister} />
+            )}
+          />
+          <Route
+            exact
+            path="/verify/:verifyStr"
+            component={({ match }: any) => (
+              <VerifyEmail verifyStr={match.params.verifyStr} />
+            )}
+          />
+          <Route exact path="/graph" component={Plots} />
+          <Route exact path="/workspaces" component={() => <Workspaces />} />
+          <Route
+            exact
+            path="/files/:workspacesId"
+            component={({ match }: any) => (
+              <WorkspaceAppFiles id={match.params.workspacesId} />
+            )}
+          />
+
+          {/* <Route exact path="/graph" component={Plots} />
 
           <Route
             exact

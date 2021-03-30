@@ -112,7 +112,6 @@ const WorkspaceAppFiles = ({id}:any)=>{
                 console.log('er12344=>>>>>',err)
             })
         }
-
         return(
             <div className="uploadFileModal">
                 <p>Upload no more than 3 files (.fcs, .lmd only) at a time (hold Control on keyboard to select multiple files). Maximum of 40MB in one upload. 
