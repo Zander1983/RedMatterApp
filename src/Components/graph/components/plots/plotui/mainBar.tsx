@@ -91,7 +91,7 @@ export default function MainBar(props: any) {
           ref: setEmptySubpopModalOpen,
         }}
         message={
-          <h2>
+          <h2 style={{ fontSize: 23, fontWeight: 400 }}>
             You cannot create a subpopulation of a plot that is not gated!
           </h2>
         }

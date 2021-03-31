@@ -71,14 +71,8 @@ export default class MouseInteractor {
   }
 
   setPlotterOvalGateState() {
-    this.plotter.setOvalGateState({
-      p0: this.ovalGateP0,
-      p1: this.ovalGateP1,
-      e: this.majorToMinorSize,
-      ovalGate: null,
-      lastMousePos: this.lastMousePos,
-      ang: this.ang,
-    });
+    this.plotter.setOvalGateState(this.generateOvalGateState());
+    this.plotter.setLastMousePos(this.lastMousePos);
   }
 
   calculateMainToSecondaryAxisEllipseSize(x: number, y: number) {
@@ -91,26 +85,32 @@ export default class MouseInteractor {
       this.lastMousePos
     );
     this.majorToMinorSize =
-      distMouseFromLine / euclidianDistance2D(this.ovalGateP0, this.ovalGateP1);
+      (distMouseFromLine * 2) /
+      euclidianDistance2D(this.ovalGateP0, this.ovalGateP1);
   }
 
-  calculateEllipseAngle() {
-    const [pc0x, pc0y] = this.plotter.convertToPlotPoint(
+  calculateEllipseAngle(params?: { abstract: boolean }) {
+    this.ang = -getVectorAngle2D(this.ovalGateP0, this.ovalGateP1);
+    const p1 = this.plotter.convertToPlotPoint(
       this.ovalGateP0.x,
       this.ovalGateP0.y
     );
-    const [pc1x, pc1y] = this.plotter.convertToPlotPoint(
+    const p2 = this.plotter.convertToPlotPoint(
       this.ovalGateP1.x,
       this.ovalGateP1.y
     );
-    this.ang = getVectorAngle2D({ x: pc0x, y: pc0y }, { x: pc1x, y: pc1y });
+    const concreteAngle = getVectorAngle2D(p1, p2);
+    if (params !== undefined && params.abstract === true) {
+      this.ang = abstractAngle;
+    } else {
+      this.ang = concreteAngle;
+    }
   }
 
   presentPoint(name: string, point: { x: number; y: number }) {
-    const p = this.plotter.convertToAbstractPoint(point.x, point.y);
     this.plotter.specialPointsList.push({
-      x: p.x,
-      y: p.y,
+      x: point.x,
+      y: point.y,
       color: "#3a3",
       text: name,
     });
@@ -126,10 +126,36 @@ export default class MouseInteractor {
     });
   }
 
-  createAndAddGate() {
+  generateOvalGateState() {
     // This is going to calculate the 2 secondary points by creating a vector
     // from center to primaryP1, then rotate that vector -90º and multiply
     // for secondaryP1 and do the same but 90º to get secondaryP2
+
+    if (this.ovalGateP0 === null) {
+      return {
+        center: null,
+        primaryP1: null,
+        primaryP2: null,
+        secondaryP1: null,
+        secondaryP2: null,
+        ang: null,
+        xAxis: this.xAxis,
+        yAxis: this.yAxis,
+      };
+    }
+
+    if (this.ovalGateP1 === null) {
+      return {
+        center: null,
+        primaryP1: this.ovalGateP0,
+        primaryP2: this.ovalGateP0,
+        secondaryP1: null,
+        secondaryP2: null,
+        ang: null,
+        xAxis: this.xAxis,
+        yAxis: this.yAxis,
+      };
+    }
 
     const mx = (this.ovalGateP0.x + this.ovalGateP1.x) / 2;
     const my = (this.ovalGateP0.y + this.ovalGateP1.y) / 2;
@@ -147,9 +173,7 @@ export default class MouseInteractor {
     s2.x += mx;
     s2.y += my;
 
-    this.ang = getVectorAngle2D(this.ovalGateP0, this.ovalGateP1);
-
-    const gate = new OvalGate({
+    return {
       center: {
         x: mx,
         y: my,
@@ -167,7 +191,14 @@ export default class MouseInteractor {
       ang: this.ang,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
-    });
+    };
+  }
+
+  createAndAddGate() {
+    const state = this.generateOvalGateState();
+    this.calculateEllipseAngle();
+    state.ang = this.ang;
+    const gate = new OvalGate(this.generateOvalGateState());
     const id = dataManager.addGate(gate);
     dataManager.addGateToCanvas(id, this.parentID, true);
     this.ovalGateEnd();
@@ -208,9 +239,10 @@ export default class MouseInteractor {
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
-    this.lastMousePos = { x: x, y: y };
+    const p = this.plotter.convertToAbstractPoint(x, y);
+    this.lastMousePos = { x: p.x, y: p.y };
     if (this.ovalGating) {
-      this.ovalGateEvent(type, x, y);
+      this.ovalGateEvent(type, p.x, p.y);
     }
   }
 }

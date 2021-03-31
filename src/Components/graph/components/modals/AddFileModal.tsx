@@ -73,7 +73,9 @@ const generateRandomData = (
   r: number
 ) => {
   if (l > r) throw Error("R must be greater than L");
-  const pointCount = Math.round(Math.random() * maxPoints);
+  const pointCount = Math.round(
+    Math.random() * (maxPoints / 2) + maxPoints / 2
+  );
   const points: Array<Array<number>> = [];
   for (let i = 0; i < pointCount; i++) {
     let dimesion = [];

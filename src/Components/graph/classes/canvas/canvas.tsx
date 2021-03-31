@@ -168,8 +168,7 @@ class Canvas {
       const x = event.offsetX;
       const y = event.offsetY;
       const type = event.type;
-      const p = this.scatterPlotter.convertToAbstractPoint(x, y);
-      this.mouseInteractor.registerMouseEvent(type, p.x, p.y);
+      this.mouseInteractor.registerMouseEvent(type, x, y);
     };
 
     const addCanvasListener = (type: string, func: Function) => {

@@ -20,6 +20,11 @@ const rightPadding = 50;
 const topPadding = 50;
 const bottomPadding = 50;
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 interface ScatterPlotterInput extends PlotterInput {
   heatmap: boolean;
   xAxisName: string;
@@ -45,22 +50,14 @@ export default class ScatterPlotter extends Plotter {
   }[] = [];
 
   ovalGateState: {
-    p0: {
-      x: number;
-      y: number;
-    } | null;
-    p1: {
-      x: number;
-      y: number;
-    } | null;
-    lastMousePos: {
-      x: number;
-      y: number;
-    } | null;
-    e: number;
-    ang: number;
-    ovalGate: OvalGate | null;
+    center: Point | null;
+    primaryP1: Point | null;
+    primaryP2: Point | number;
+    secondaryP1: Point | null;
+    secondaryP2: Point | null;
+    ang: number | null;
   } | null = null;
+  lastMousePos: Point;
 
   constructor(params: ScatterPlotterInput) {
     super(params);
@@ -105,6 +102,10 @@ export default class ScatterPlotter extends Plotter {
     this.gates = gates;
   }
 
+  setLastMousePos(lastMousePos: { x: number; y: number }) {
+    this.lastMousePos = lastMousePos;
+  }
+
   ovalGate: OvalGate;
 
   convertToPlotPoint(x: number, y: number) {
@@ -129,38 +130,34 @@ export default class ScatterPlotter extends Plotter {
     });
   }
 
-  drawOvalGate(gate: OvalGate) {
-    const [p1x, p1y] = this.convertToPlotPoint(
-      gate.primaryP1.x,
-      gate.primaryP1.y
-    );
-    const [p2x, p2y] = this.convertToPlotPoint(
-      gate.primaryP2.x,
-      gate.primaryP2.y
-    );
-    const [s1x, s1y] = this.convertToPlotPoint(
-      gate.secondaryP1.x,
-      gate.secondaryP1.y
-    );
-    const [s2x, s2y] = this.convertToPlotPoint(
-      gate.secondaryP2.x,
-      gate.secondaryP2.y
-    );
+  drawOvalGate(
+    gate:
+      | OvalGate
+      | {
+          center: Point;
+          primaryP1: Point;
+          primaryP2: Point;
+          secondaryP1: Point;
+          secondaryP2: Point;
+        }
+  ) {
+    const c = this.convertToPlotPoint(gate.center.x, gate.center.y);
+    const p1 = this.convertToPlotPoint(gate.primaryP1.x, gate.primaryP1.y);
+    const p2 = this.convertToPlotPoint(gate.primaryP2.x, gate.primaryP2.y);
+    const s1 = this.convertToPlotPoint(gate.secondaryP1.x, gate.secondaryP1.y);
+    const s2 = this.convertToPlotPoint(gate.secondaryP2.x, gate.secondaryP2.y);
 
-    const d1 = euclidianDistance2D({ x: p1x, y: p1y }, { x: p2x, y: p2y });
-    const d2 = euclidianDistance2D({ x: s1x, y: s1y }, { x: s2x, y: s2y });
+    const d1 = euclidianDistance2D(p1, p2);
+    const d2 = euclidianDistance2D(s1, s2);
 
-    const concreteAng = getVectorAngle2D(
-      { x: p1x, y: p1y },
-      { x: p2x, y: p2y }
-    );
+    const ang = getVectorAngle2D(p1, p2);
 
     this.drawer.oval({
-      x: gate.center.x,
-      y: gate.center.y,
+      x: c.x,
+      y: c.y,
       d1: d1 / 2,
       d2: d2 / 2,
-      ang: concreteAng,
+      ang: ang,
     });
   }
 
@@ -237,55 +234,55 @@ export default class ScatterPlotter extends Plotter {
     let plotGraph = this.drawer.drawPlotGraph();
 
     let heatmapColors: string[] = [];
-    // if (this.heatmap) {
-    //   heatmapColors = this.getHeatmapColors();
-    // }
+    if (this.heatmap) {
+      heatmapColors = this.getHeatmapColors();
+    }
 
     for (let i = 0; i < this.xAxis.length; i++) {
       let color = "#444";
-      // if (this.heatmap) {
-      //   color = heatmapColors[i];
-      // }
+      if (this.heatmap) {
+        color = heatmapColors[i];
+      }
 
       let validConcrete = this.gates.length > 0 ? true : false;
       for (let gate of this.gates) {
         if (!(gate instanceof OvalGate)) {
           continue;
         }
-        const [p1x, p1y] = this.drawer.convertToPlotCanvasPoint(
+        const c = this.drawer.convertToPlotCanvasPoint(
+          gate.center.x,
+          gate.center.y
+        );
+        const p1 = this.drawer.convertToPlotCanvasPoint(
           gate.primaryP1.x,
           gate.primaryP1.y
         );
-        const [p2x, p2y] = this.drawer.convertToPlotCanvasPoint(
+        const p2 = this.drawer.convertToPlotCanvasPoint(
           gate.primaryP2.x,
           gate.primaryP2.y
         );
-        const [s1x, s1y] = this.drawer.convertToPlotCanvasPoint(
+        const s1 = this.drawer.convertToPlotCanvasPoint(
           gate.secondaryP1.x,
           gate.secondaryP1.y
         );
-        const [s2x, s2y] = this.drawer.convertToPlotCanvasPoint(
+        const s2 = this.drawer.convertToPlotCanvasPoint(
           gate.secondaryP2.x,
           gate.secondaryP2.y
         );
-        const c = { x: (p1x + p2x) / 2, y: (p1y + p2y) / 2 };
-        const p1 = { x: p1x, y: p1y };
-        const p2 = { x: p2x, y: p2y };
-        const s1 = { x: s1x, y: s1y };
-        const s2 = { x: s2x, y: s2y };
-        const [v1, v2] = this.drawer.convertToPlotCanvasPoint(
+        const v = this.drawer.convertToPlotCanvasPoint(
           this.xAxis[i],
           this.yAxis[i]
         );
-        const p = { x: v1, y: v2 };
+        const ang = getVectorAngle2D(p1, p2);
+
         if (
-          !pointInsideEllipse(p, {
+          !pointInsideEllipse(v, {
             center: c,
             primaryP1: p1,
             primaryP2: p2,
             secondaryP1: s1,
             secondaryP2: s2,
-            ang: getVectorAngle2D(p1, p2),
+            ang: ang,
           })
         ) {
           validConcrete = false;
@@ -297,28 +294,17 @@ export default class ScatterPlotter extends Plotter {
         if (!(gate instanceof OvalGate)) {
           continue;
         }
-        if (
-          !pointInsideEllipse(
-            { x: this.xAxis[i], y: this.yAxis[i] },
-            {
-              center: gate.center,
-              primaryP1: gate.primaryP1,
-              primaryP2: gate.primaryP2,
-              secondaryP1: gate.secondaryP1,
-              secondaryP2: gate.secondaryP2,
-              ang: getVectorAngle2D(gate.primaryP1, gate.primaryP2),
-            }
-          )
-        ) {
+        if (!gate.isPointInside({ x: this.xAxis[i], y: this.yAxis[i] })) {
           validAbstract = false;
         }
       }
-      if (validConcrete && !validAbstract) color = "#f44";
-      if (!validConcrete && validAbstract) color = "#4f4";
-      if (validConcrete && validAbstract) color = "#44f";
+
+      if (validConcrete && !validAbstract) color = "#44f";
+      if (!validConcrete && validAbstract) color = "#4b4";
+      if (validConcrete && validAbstract) color = "#f44";
+      // if (validAbstract) color = "#44f";
       plotGraph.addPoint(this.xAxis[i], this.yAxis[i], 1.4, color);
     }
-    console.log("drawing again");
 
     if (this.ovalGateState != null) {
       this.drawOvalGating(context, plotGraph);
@@ -347,7 +333,7 @@ export default class ScatterPlotter extends Plotter {
       }
       if (special.text !== undefined) {
         if (special.concrete !== true) {
-          const [x, y] = this.drawer.convertToPlotCanvasPoint(
+          const { x, y } = this.drawer.convertToPlotCanvasPoint(
             special.x,
             special.y
           );
@@ -370,22 +356,14 @@ export default class ScatterPlotter extends Plotter {
   }
 
   setOvalGateState(state: {
-    p0: {
-      x: number;
-      y: number;
-    } | null;
-    p1: {
-      x: number;
-      y: number;
-    } | null;
-    lastMousePos: {
-      x: number;
-      y: number;
-    } | null;
-    e: number;
+    center: Point | null;
+    primaryP1: Point | null;
+    primaryP2: Point | number;
+    secondaryP1: Point | null;
+    secondaryP2: Point | null;
     ang: number;
-    ovalGate: OvalGate | null;
   }) {
+    console.log("=== oval gate state has been set ===");
     this.ovalGateState = state;
   }
 
@@ -394,44 +372,30 @@ export default class ScatterPlotter extends Plotter {
   }
 
   drawOvalGating(context: any, plotGraph: any) {
-    if (this.ovalGateState.p0 != null && this.ovalGateState.p1 != null) {
-      const x = (this.ovalGateState.p0.x + this.ovalGateState.p1.x) / 2;
-      const y = (this.ovalGateState.p0.y + this.ovalGateState.p1.y) / 2;
-
-      const [p1cx, p1cy] = this.drawer.convertToPlotCanvasPoint(
-        this.ovalGateState.p0.x,
-        this.ovalGateState.p0.y
-      );
-      const [p2cx, p2cy] = this.drawer.convertToPlotCanvasPoint(
-        this.ovalGateState.p1.x,
-        this.ovalGateState.p1.y
-      );
-      const dist = euclidianDistance2D(
-        { x: p1cx, y: p1cy },
-        { x: p2cx, y: p2cy }
-      );
-      this.drawer.oval({
-        x: x,
-        y: y,
-        ang: this.ovalGateState.ang,
-        d1: dist / 2,
-        d2: (this.ovalGateState.e * dist) / 2,
-      });
+    if (
+      this.ovalGateState.primaryP1 != null &&
+      this.ovalGateState.secondaryP1 != null
+    ) {
+      this.drawOvalGate(this.ovalGateState);
       this.drawer.scline({
-        x1: x,
-        y1: y,
-        x2: this.ovalGateState.p1.x,
-        y2: this.ovalGateState.p1.y,
+        x1: this.ovalGateState.center.x,
+        y1: this.ovalGateState.center.y,
+        x2: this.ovalGateState.primaryP1.x,
+        y2: this.ovalGateState.primaryP1.y,
         lineWidth: 3,
-        strokeColor: "#f00",
+        strokeColor: "#d00",
       });
-      plotGraph.addPoint(x, y, "#00f");
-    } else if (this.ovalGateState.p0 != null) {
+      plotGraph.addPoint(
+        this.ovalGateState.center.x,
+        this.ovalGateState.center.y,
+        "#00d"
+      );
+    } else if (this.ovalGateState.primaryP1 != null) {
       this.drawer.scline({
-        x1: this.ovalGateState.p0.x,
-        y1: this.ovalGateState.p0.y,
-        x2: this.ovalGateState.lastMousePos.x,
-        y2: this.ovalGateState.lastMousePos.y,
+        x1: this.ovalGateState.primaryP1.x,
+        y1: this.ovalGateState.primaryP1.y,
+        x2: this.lastMousePos.x,
+        y2: this.lastMousePos.y,
         lineWidth: 3,
         strokeColor: "#f00",
       });

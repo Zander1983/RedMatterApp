@@ -59,10 +59,11 @@ const pointInsideEllipse = (
     secondaryP2: Point2D;
     d1?: number;
     d2?: number;
-    ang: number;
+    ang?: number;
   }
 ) => {
-  const mp = rotatePointOverTarget(ellipse.center, p, -ellipse.ang);
+  const ang = getVectorAngle2D(ellipse.primaryP1, ellipse.primaryP2);
+  const mp = rotatePointOverTarget(ellipse.center, p, -ang);
   const pd =
     ellipse.d1 !== undefined
       ? ellipse.d1

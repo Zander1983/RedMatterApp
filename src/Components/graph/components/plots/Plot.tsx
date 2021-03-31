@@ -66,7 +66,7 @@ function Plot(props: any) {
     if (canvasUpdaterInterval !== null) return;
     const interval = setInterval(() => {
       updateCanvasSize();
-    }, 500);
+    }, 20);
     setCanvasUpdaterInterval(interval);
   };
   setTimeout(() => updateCanvasSize(), 150);
