@@ -40,11 +40,12 @@ There are 4 environments:
 - Staging: Connected to homologation backend in the cloud.
 - Production: **[be careful]** connected to production environment in the cloud.
 
-**Note**
+If you want to use the localhost for the app you can run:
+```
+npm run start:local
+```
 
-- We can run frontend into different environment [i.e.,local, developement, production, staging]
-- Currently local and developement env's are active
-- To use localhost as backend API: use npm run start:local
-- To use AWS server as backend API : use npm run start:dev
-
----
+If you want to use the cloud development backend:
+```
+npm run start:dev
+```
