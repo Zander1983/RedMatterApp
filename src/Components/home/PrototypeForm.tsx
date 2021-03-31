@@ -22,7 +22,7 @@ import formSteps from "./FormSteps";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: "100%",
-    fontFamily: "Raleway",
+    fontFamily: "Quicksand",
   },
   emptyButton: {
     height: 50,
@@ -178,7 +178,7 @@ export default function PrototypeForm() {
                 style={{
                   color: "white",
                   fontSize: 13,
-                  fontFamily: "Raleway",
+                  fontFamily: "Quicksand",
                 }}
               ></Typography>
             );
@@ -217,7 +217,7 @@ export default function PrototypeForm() {
                   style={{
                     color: activeStep === index ? "#fff" : "#ddf",
                     fontWeight: activeStep === index ? 700 : 400,
-                    fontFamily: "Raleway",
+                    fontFamily: "Quicksand",
                   }}
                 >
                   {label}
@@ -230,12 +230,12 @@ export default function PrototypeForm() {
       <div>
         {activeStep === steps.length ? (
           <div>
-            <h1 style={{ fontFamily: "Raleway", marginTop: 30 }}>
+            <h1 style={{ fontFamily: "Quicksand", marginTop: 30 }}>
               All steps completed!
             </h1>
             <h4
               style={{
-                fontFamily: "Raleway",
+                fontFamily: "Quicksand",
                 marginTop: -10,
                 marginBottom: 30,
                 color: "#777",

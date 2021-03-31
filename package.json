@@ -34,6 +34,7 @@
     "react-hook-form": "^6.15.4",
     "react-jquery-plugin": "^1.1.7",
     "react-material-ui-form-validator": "^2.1.4",
+    "react-redux": "^7.2.3",
     "react-resizable": "^1.11.0",
     "react-resizable-box": "^2.1.0",
     "react-resizable-component": "^1.1.0",
@@ -42,9 +43,12 @@
     "react-scroll": "^1.8.1",
     "react-sizeme": "^3.0.1",
     "react-toastify": "^7.0.3",
+    "redux": "^4.0.5",
+    "typeface-quicksand": "^1.1.13",
     "typeface-raleway": "^1.1.13",
     "typeface-roboto": "^1.1.13",
     "typescript": "^4.1.4",
+    "uuid": "^8.3.2",
     "web-vitals": "^1.1.0"
   },
   "scripts": {

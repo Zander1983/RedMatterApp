@@ -82,15 +82,9 @@ export default class FCSFile {
 
   getPopulationFromGates(gatingParams: { gate: Gate; inverse: boolean }[]) {
     const newPopulation: Array<Array<number>> = [];
-    this.data.map((p, i) => {
+    this.data.forEach((p, i) => {
       let belongsToAllGates = true;
       for (const { gate, inverse } of gatingParams) {
-        console.log(
-          "analyse points ",
-          this.data[i][this.getAxisIndex(gate.xAxis)],
-          " and ",
-          this.data[i][this.getAxisIndex(gate.yAxis)]
-        );
         if (
           gate.isPointInside({
             x: this.data[i][this.getAxisIndex(gate.xAxis)],
@@ -110,10 +104,10 @@ export default class FCSFile {
     return newPopulation;
   }
 
-  duplicateWithSubpop(gates: Gate[]) {
+  duplicateWithSubpop(gates: Gate[], inverse: boolean = false) {
     const pop = this.getPopulationFromGates(
       gates.map((e) => {
-        return { gate: e, inverse: false };
+        return { gate: e, inverse: inverse };
       })
     );
     return new FCSFile({

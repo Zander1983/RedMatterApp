@@ -45,5 +45,12 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
-## To use localhost backend API: use npm run start:local
-## To use server backend API : use npm run start:dev
+---
+**Note**
+
+- We can run frontend into different environment [i.e.,local, developement, production, staging]
+- Currently local and developement env's are active
+- To use localhost as backend API: use npm run start:local
+- To use AWS server as backend API : use npm run start:dev
+
+---

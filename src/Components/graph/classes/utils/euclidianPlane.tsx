@@ -1,3 +1,5 @@
+import { Point } from "chart.js";
+
 interface Point2D {
   x: number;
   y: number;
@@ -33,8 +35,20 @@ const rotateVector2D = (v: Point2D, ang: number): Point2D => {
   };
 };
 
-// Shameless copy of:
-// https://stackoverflow.com/questions/7946187/point-and-ellipse-rotated-position-test-algorithm
+// Given a point, treated as 2D vector, and an angle in radians returns other
+// point/vector of the rotation of said point bt said degrees.
+// Counter-clockwise.
+const rotatePointOverTarget = (target: Point2D, p: Point2D, ang: number) => {
+  const cosA = Math.cos(ang);
+  const sinA = Math.sin(ang);
+  const dx = p.x - target.x;
+  const dy = p.y - target.y;
+  return {
+    x: target.x + dx * cosA - dy * sinA,
+    y: target.y + dx * sinA + dy * cosA,
+  };
+};
+
 const pointInsideEllipse = (
   p: Point2D,
   ellipse: {
@@ -43,33 +57,23 @@ const pointInsideEllipse = (
     primaryP2: Point2D;
     secondaryP1: Point2D;
     secondaryP2: Point2D;
+    d1?: number;
+    d2?: number;
     ang: number;
   }
 ) => {
-  const {
-    center,
-    primaryP1,
-    primaryP2,
-    secondaryP1,
-    secondaryP2,
-    ang,
-  } = ellipse;
-  const primarySize = euclidianDistance2D(primaryP1, primaryP2) / 2;
-  const secondarySize = euclidianDistance2D(secondaryP1, secondaryP2) / 2;
-
-  const eq1 =
-    Math.pow(
-      Math.cos(ang) * (p.x - center.x) + Math.sin(ang) * (p.y - center.y),
-      2
-    ) / Math.pow(primarySize, 2);
-
-  const eq2 =
-    Math.pow(
-      Math.sin(ang) * (p.x - center.x) - Math.cos(ang) * (p.y - center.y),
-      2
-    ) / Math.pow(secondarySize, 2);
-
-  return eq1 + eq2 <= 1;
+  const mp = rotatePointOverTarget(ellipse.center, p, -ellipse.ang);
+  const pd =
+    ellipse.d1 !== undefined
+      ? ellipse.d1
+      : euclidianDistance2D(ellipse.primaryP1, ellipse.primaryP2) / 2;
+  const sd =
+    ellipse.d2 !== undefined
+      ? ellipse.d2
+      : euclidianDistance2D(ellipse.secondaryP1, ellipse.secondaryP2) / 2;
+  const l = Math.pow(mp.x - ellipse.center.x, 2) / Math.pow(pd, 2);
+  const r = Math.pow(mp.y - ellipse.center.y, 2) / Math.pow(sd, 2);
+  return r + l <= 1;
 };
 
 export {
@@ -78,4 +82,5 @@ export {
   getVectorAngle2D,
   rotateVector2D,
   pointInsideEllipse,
+  rotatePointOverTarget,
 };

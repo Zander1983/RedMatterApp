@@ -1,4 +1,5 @@
-import canvasManager from "../canvas/canvasManager";
+import { data } from "jquery";
+import dataManager from "../dataManager";
 import Gate from "../gate/gate";
 import OvalGate from "../gate/ovalGate";
 import ScatterPlotter from "../plotters/scatterPlotter";
@@ -7,6 +8,7 @@ import {
   distLinePoint2D,
   getVectorAngle2D,
   rotateVector2D,
+  rotatePointOverTarget,
 } from "../utils/euclidianPlane";
 
 interface Point {
@@ -15,6 +17,7 @@ interface Point {
 }
 
 export default class MouseInteractor {
+  parentID: string;
   plotter: ScatterPlotter;
   gateCreator: Function;
   renderInterval: Function;
@@ -24,9 +27,9 @@ export default class MouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  constructor(gateCreator: Function, plotter: ScatterPlotter) {
-    this.gateCreator = gateCreator;
+  constructor(plotter: ScatterPlotter, parentID: number) {
     this.plotter = plotter;
+    this.parentID = parentID;
   }
 
   ovalGating: boolean = false;
@@ -103,58 +106,70 @@ export default class MouseInteractor {
     this.ang = getVectorAngle2D({ x: pc0x, y: pc0y }, { x: pc1x, y: pc1y });
   }
 
+  presentPoint(name: string, point: { x: number; y: number }) {
+    const p = this.plotter.convertToAbstractPoint(point.x, point.y);
+    this.plotter.specialPointsList.push({
+      x: p.x,
+      y: p.y,
+      color: "#3a3",
+      text: name,
+    });
+  }
+
+  presentConcretePoint(name: string, point: { x: number; y: number }) {
+    this.plotter.specialPointsList.push({
+      x: point.x,
+      y: point.y,
+      color: "#d33",
+      text: name,
+      concrete: true,
+    });
+  }
+
   createAndAddGate() {
     // This is going to calculate the 2 secondary points by creating a vector
     // from center to primaryP1, then rotate that vector -90º and multiply
     // for secondaryP1 and do the same but 90º to get secondaryP2
-    const [p0x, p0y] = this.plotter.convertToPlotPoint(
-      this.ovalGateP0.x,
-      this.ovalGateP0.y
-    );
-    const [p1x, p1y] = this.plotter.convertToPlotPoint(
-      this.ovalGateP1.x,
-      this.ovalGateP1.y
-    );
 
-    const mx = (p0x + p1x) / 2;
-    const my = (p0y + p1y) / 2;
-    const vec = { x: mx - p0x, y: my - p0y };
+    const mx = (this.ovalGateP0.x + this.ovalGateP1.x) / 2;
+    const my = (this.ovalGateP0.y + this.ovalGateP1.y) / 2;
+    const vec = { x: this.ovalGateP0.x - mx, y: this.ovalGateP0.y - my };
     const s1 = rotateVector2D(vec, -Math.PI / 2);
     const s2 = rotateVector2D(vec, Math.PI / 2);
 
-    s1.x *= this.majorToMinorSize / 2;
-    s1.y *= this.majorToMinorSize / 2;
-    s2.x *= this.majorToMinorSize / 2;
-    s2.y *= this.majorToMinorSize / 2;
+    s1.x *= this.majorToMinorSize;
+    s1.y *= this.majorToMinorSize;
+    s2.x *= this.majorToMinorSize;
+    s2.y *= this.majorToMinorSize;
 
     s1.x += mx;
     s1.y += my;
     s2.x += mx;
     s2.y += my;
 
-    const as1 = this.plotter.convertToAbstractPoint(s1.x, s1.y);
-    const as2 = this.plotter.convertToAbstractPoint(s2.x, s2.y);
+    this.ang = getVectorAngle2D(this.ovalGateP0, this.ovalGateP1);
 
     const gate = new OvalGate({
       center: {
-        x: (this.ovalGateP1.x + this.ovalGateP0.x) / 2,
-        y: (this.ovalGateP1.y + this.ovalGateP0.y) / 2,
+        x: mx,
+        y: my,
       },
       primaryP1: this.ovalGateP0,
       primaryP2: this.ovalGateP1,
       secondaryP1: {
-        x: as1.x,
-        y: as1.y,
+        x: s1.x,
+        y: s1.y,
       },
       secondaryP2: {
-        x: as2.x,
-        y: as2.y,
+        x: s2.x,
+        y: s2.y,
       },
       ang: this.ang,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
     });
-    this.gateCreator(gate);
+    const id = dataManager.addGate(gate);
+    dataManager.addGateToCanvas(id, this.parentID, true);
     this.ovalGateEnd();
   }
 

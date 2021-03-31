@@ -4,8 +4,6 @@ import "./react-grid-layout-styles.css";
 import Plot from "../plots/Plot";
 
 import dataManager from "../../classes/dataManager";
-import plotFactory from "../plots/plotFactory";
-import canvasManager from "../../classes/canvas/canvasManager";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -51,7 +49,7 @@ class Workspace extends React.Component {
   }
 
   update() {
-    const canvasMap = canvasManager.getAllCanvas();
+    const canvasMap = dataManager.getAllCanvas();
     const canvasList: object[] = [];
     canvasMap.forEach((v, k) => canvasList.push({ canvas: v, key: k }));
 
