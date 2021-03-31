@@ -11,6 +11,7 @@ import {
     UploadOutlined
 } from '@ant-design/icons';
 import {NavLink,useLocation} from 'react-router-dom';
+import { Progress } from 'antd';
 
 const WorkspaceAppFiles = ({id}:any)=>{
     const location:any = useLocation<any>();
@@ -68,66 +69,89 @@ const WorkspaceAppFiles = ({id}:any)=>{
 
     const WorkspaceFileUploadForm = ()=>{
         const [selectedFile,setSelectedFile] = useState(null);
-        // const props = {
-        //     name: 'file',
-        //     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-        //     headers: {
-        //         authorization: 'authorization-text',
-        //     },
-        //     beforeUpload(file:any) {
-        //         console.log(file);
-        //         console.log('upload>>>',Upload);
-        //         // if (file.type !== 'image/png') {
-        //         //     message.error(`${file.name} is not a png file`);
-        //         // }
-        //         // return file.type === 'image/png' ? true : Upload.LIST_IGNORE;
-        //         return true
-        //     },
-        //     onChange(info:any) {
-        //         if (info.file.status !== 'uploading') {
-        //             console.log(info.file, info.fileList);
-        //         }
-        //         console.log('File status>>>',info.file.status)
-        //         if (info.file.status === 'done') {
-        //             message.success(`${info.file.name} file uploaded successfully`);
-        //         } else if (info.file.status === 'error') {
-        //             message.error(`${info.file.name} file upload failed.`);
-        //         }
-        //     },
-        // };
-        useEffect(()=>{},[selectedFile])
-        const getFiles = (event:any)=>{
-            console.log('events>>>>>',event.target.files)
-            const data = new FormData();
-            for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
-                data.append(`files[${fileCount}]`,event.target.files[fileCount]);
+        const [loaded,setLoaded] = useState(0);
+        const maxSelectedFile = (event:any)=>{
+            const files = event.target.files;
+            if(files.length > 3){
+                const msg = "Only 3 files can be uploaded at a time";
+                event.target.value = null;
+                console.log(msg);
+                return false;
             }
-            // data.append('files',event.target.files[0]);
-            data.append('organisationId',organisationId);
-            data.append('workspaceId',workspacesId);
-            axios.post('api/upload',data,options).then((res:any)=>{
-                console.log('response>>>>>>',res)
-                setVisible(false)
-            }).catch((err:any)=>{
-                console.log('er12344=>>>>>',err)
-            })
+            return true;
+        }
+
+        const checkFileType = (event:any)=>{
+            const files = event.target.files;
+            let err = '';
+            const fileTypes = ['fcs','lmd'];
+            for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
+                let fileType = files[fileCount].name.split(".")[files[fileCount].name.split(".").length-1]
+                if(!fileTypes.includes(fileType)){
+                    err = 'Allowed file types are fcs,lmd';
+                }
+            };
+            if(err !== ''){
+                event.target.value = null;
+                console.log(err);
+                return false;
+            }
+            return true;
+        }
+        // const checkFileSize = (event:any)=>{
+        //     const files = event.target.files;
+        //     const maxSize = 15000;
+        //     let err = "";
+        //     for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
+        //         console.log(files[fileCount])
+        //         if(files[fileCount].size > maxSize){
+        //             err = "File size is too large.Maximum upload limit is 40MB"
+        //         }
+        //     }
+        //     if(err !== ''){
+        //         event.target.value = null;
+        //         console.log(err);
+        //         return false;
+        //     }
+        //     return true;
+        // }
+        const uploadFiles = (event:any)=>{
+            if(maxSelectedFile(event) && checkFileType(event)){
+                const data = new FormData();
+                for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
+                    data.append(`files[${fileCount}]`,event.target.files[fileCount]);
+                }
+                data.append('organisationId',organisationId);
+                data.append('workspaceId',workspacesId);
+                const config = {
+                    headers:{
+                        'Token' : localStorage.getItem("token")
+                    },
+                    onUploadProgress: (ProgressEvent:any)=>{
+                        console.log("ProgressEvent>>>",ProgressEvent)
+                        setLoaded(
+                            Math.round(ProgressEvent.loaded/ProgressEvent.total*100,2)
+                        )
+                    }
+                }
+                axios.post('api/upload',data,config).then((res:any)=>{
+                    console.log('response>>>>>>',res)
+                    setVisible(false)
+                }).catch((err:any)=>{
+                    console.log('er12344=>>>>>',err)
+                })
+            }
+            
         }
         return(
             <div className="uploadFileModal">
                 <p>Upload no more than 3 files (.fcs, .lmd only) at a time (hold Control on keyboard to select multiple files). Maximum of 40MB in one upload. 
                     <br/><strong>All files in the same workspace must have the same parameters.</strong>
                 </p>
-                {/* <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    <Upload
-                    {...props}
-                    listType="picture"
-                    maxCount={3}
-                    multiple
-                    >
-                        <Button icon={<UploadOutlined />}>Upload (Max: 3)</Button>
-                    </Upload>
-                </Space> */}
-                <input type="file" name="files" multiple onChange={getFiles}/>
+                <input type="file" name="files" multiple onChange={uploadFiles}/>
+                <Progress 
+                    percent={loaded}
+                />
             </div>
         )
     }
