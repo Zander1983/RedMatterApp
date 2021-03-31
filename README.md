@@ -2,7 +2,7 @@
 
 This version of the app is the flagship of Red Matter's company.
 
-The basic objective of this project is to make it as simple as possible to do Flow Cytometry, focusing on making it easier for begginers. Here's the decision guidelines for any feature:
+The basic objective of this project is to make it as simple as possible to do Flow Cytometry, focusing on making it easier for beginners. Here's the decision guidelines for any feature:
 
 - Is it fast?
 - Is it simple?
@@ -10,7 +10,7 @@ The basic objective of this project is to make it as simple as possible to do Fl
 - Is it pretty?
 - Is the user's goal accomplished?
 
-## How to setup
+## How to setup?
 
 You can clone this repository with:
 ```
