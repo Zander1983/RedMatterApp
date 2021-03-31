@@ -75,6 +75,7 @@ export default function AxisBar(props: any) {
         container
         direction="row"
         justify="space-evenly"
+        //@ts-ignore
         style={classes.axisBarAxis}
       >
         <Grid>
@@ -92,6 +93,7 @@ export default function AxisBar(props: any) {
             style={{ width: 100, marginLeft: 10 }}
             disabled={isAxisDisabled("x") || isCanvasHistogram()}
             value={xPlotType}
+            //@ts-ignore
             onChange={(e) => setPlotType("x", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
@@ -103,11 +105,12 @@ export default function AxisBar(props: any) {
           <b>Axis:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
+            //@ts-ignore
             onChange={(e) => setAxis("x", e.target.value)}
             disabled={isAxisDisabled("x")}
             value={canvas.xAxis}
           >
-            {canvas.getFile().axes.map((e) => (
+            {canvas.getFile().axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>
@@ -135,6 +138,7 @@ export default function AxisBar(props: any) {
         container
         direction="row"
         justify="space-evenly"
+        //@ts-ignore
         style={{ ...classes.axisBarAxis, marginTop: 10 }}
       >
         <Grid>
@@ -152,6 +156,7 @@ export default function AxisBar(props: any) {
             style={{ width: 100, marginLeft: 10 }}
             value={yPlotType}
             disabled={isAxisDisabled("y") || isCanvasHistogram()}
+            //@ts-ignore
             onChange={(e) => setPlotType("y", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
@@ -162,11 +167,12 @@ export default function AxisBar(props: any) {
           <b>Axis:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
+            //@ts-ignore
             onChange={(e) => setAxis("y", e.target.value)}
             disabled={isAxisDisabled("y")}
             value={yAxis}
           >
-            {canvas.getFile().axes.map((e) => (
+            {canvas.getFile().axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>

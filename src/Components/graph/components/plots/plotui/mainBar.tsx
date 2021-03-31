@@ -56,6 +56,7 @@ export default function MainBar(props: any) {
       `workspacename-filename-${props.canvasIndex}.png`
     );
     let canvas = document.getElementById(`canvas-${props.canvasIndex}`);
+    //@ts-ignore
     let dataURL = canvas.toDataURL("image/png");
     let url = dataURL.replace(
       /^data:image\/png/,

@@ -1,103 +1,102 @@
-.workspace-name{
-    padding:13px;
+.workspace-name {
+  padding: 13px;
 }
-.editable{
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 10px;
-}
-
-
-.editable input{
-    padding: 2px 5px;
-    border: none;
-    border-bottom: 1px solid black;
-    background: #F2F1EE;
+.editable {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 10px;
 }
 
-.action .saveBtn{
-    font-size: 16px;
-    color:#52c41a;
-}
-.action .saveBtn:hover{
-    /* font-size: 18px; */
-    color:#389e0d;
-}
-.action .cancelBtn{
-    font-size: 16px;
-    color:#ff4d4f;
-}
-.action .cancelBtn:hover{
-    /* font-size: 18px; */
-    color:#f5222d;
+.editable input {
+  padding: 2px 5px;
+  border: none;
+  border-bottom: 1px solid black;
+  background: #f2f1ee;
 }
 
-.action .disabled{
-    pointer-events: none;
-    cursor: default;
-    color:grey;
+.action .saveBtn {
+  font-size: 16px;
+  color: #52c41a;
+}
+.action .saveBtn:hover {
+  /* font-size: 18px; */
+  color: #389e0d;
+}
+.action .cancelBtn {
+  font-size: 16px;
+  color: #ff4d4f;
+}
+.action .cancelBtn:hover {
+  /* font-size: 18px; */
+  color: #f5222d;
 }
 
-.main-action{
-    width: 100%;
-    display: flex;
-    justify-content: center;
+.action .disabled {
+  pointer-events: none;
+  cursor: default;
+  color: grey;
 }
 
-.main-action .editBtn{
-    margin-right: 1rem;
-    font-size: 16px;
-    color:#40a9ff;
-}
-.main-action .editBtn:hover{
-    /* font-size: 18px; */
-    color:#096dd9;
+.main-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
-.main-action .deleteBtn{
-    margin-left: 1rem;
-    font-size: 16px;
-    color:#fa8c16;
+.main-action .editBtn {
+  margin-right: 1rem;
+  font-size: 16px;
+  color: #40a9ff;
 }
-.main-action .deleteBtn:hover{
-    /* font-size: 18px; */
-    color:#fa541c;
+.main-action .editBtn:hover {
+  /* font-size: 18px; */
+  color: #096dd9;
+}
+
+.main-action .deleteBtn {
+  margin-left: 1rem;
+  font-size: 16px;
+  color: #fa8c16;
+}
+.main-action .deleteBtn:hover {
+  /* font-size: 18px; */
+  color: #fa541c;
 }
 
 /* Workspace File Component */
-.uploadFileModal p{
-    text-align:justify;
-    font-size:12px;
+.uploadFileModal p {
+  text-align: justify;
+  font-size: 12px;
 }
 
-.workspace-name p{
-    width: 150px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    text-align:center;
+.workspace-name p {
+  width: 150px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
 }
-.workspaceHeader{
-    margin:10px 0;
+.workspaceHeader {
+  margin: 10px 0;
 }
-.workspaceFileBtn{
-    display: flex;
-    justify-content: flex-end;
+.workspaceFileBtn {
+  display: flex;
+  justify-content: flex-end;
 }
-.workspaceFileBtn button{
-    margin:0 5px;
-    display: flex;
-    justify-content: flex-end;
+.workspaceFileBtn button {
+  margin: 0 5px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 @media only screen and (max-width: 767px) {
-    .workspaceFileBtn{
-        display: flex;
-        justify-content: center;
-    }
-    .title h3{
-        text-align: center;
-    }
+  .workspaceFileBtn {
+    display: flex;
+    justify-content: center;
+  }
+  .title h3 {
+    text-align: center;
+  }
 }

@@ -34,7 +34,7 @@ function Plot(props: any) {
   const canvas = props.canvas;
   const rerender = useForceUpdate();
 
-  const setRerenderInterval = (time: number, kill?: boolean = false) => {
+  const setRerenderInterval = (time: number, kill?: boolean) => {
     if (kill) {
       clearInterval(intervalRef);
       setIntervalRef(null);
@@ -53,7 +53,9 @@ function Plot(props: any) {
 
   const updateCanvasSize = () => {
     if (displayRef.current === undefined || displayRef.current === null) return;
+    //@ts-ignore
     const br = displayRef.current.getBoundingClientRect();
+    //@ts-ignore
     const bar = barRef.current.getBoundingClientRect();
     canvas.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };

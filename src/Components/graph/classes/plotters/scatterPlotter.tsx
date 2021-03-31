@@ -212,6 +212,8 @@ export default class ScatterPlotter extends Plotter {
     const lp = Array(this.xAxis.length)
       .fill(0)
       .map((e, i) => closePoints(i));
+
+    //@ts-ignore
     const mx = lp.reduce((a, c) => (a > c ? a : c), []);
     let cColors: string[] = lp.map((e) => {
       const p = -Math.pow(e / mx, 5) + 1;

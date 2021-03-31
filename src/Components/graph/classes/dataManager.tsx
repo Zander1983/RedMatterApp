@@ -28,6 +28,7 @@ const publishDecorator = () => {
     const original = descriptor.value;
     descriptor.value = function (...args: any[]) {
       const ret = original.apply(this, args);
+      //@ts-ignore
       this.publish(key);
       return ret;
     };

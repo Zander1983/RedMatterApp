@@ -27,7 +27,7 @@ export default class MouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  constructor(plotter: ScatterPlotter, parentID: number) {
+  constructor(plotter: ScatterPlotter, parentID: string) {
     this.plotter = plotter;
     this.parentID = parentID;
   }

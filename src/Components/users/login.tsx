@@ -20,6 +20,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import CloseIcon from "@material-ui/icons/Close";
 
 // Material UI validator
+//@ts-ignore
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
 // Style Classes
@@ -89,6 +90,7 @@ const Login = (props: any) => {
     <>
       <Grid>
         <Paper elevation={10} className={classes.paperStyle}>
+          {/* @ts-ignore */}
           <Grid align="center">
             <div className={classes.root}>
               <Collapse in={isError}>

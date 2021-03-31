@@ -1,0 +1,98 @@
+.rightPanel img {
+  width: 100%;
+  height: 100%;
+}
+.ant-form {
+  display: flex;
+  /* background: rgba(100, 120, 140, 0.99); */
+  background: linear-gradient(to right, #50c9c3, #96deda);
+  margin-top: 10%;
+  position: relative;
+  flex-direction: column;
+}
+.form-div {
+  display: flex;
+  flex-direction: column;
+  height: 80%;
+}
+.main-form-div {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.btns {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+.label {
+  /* color:rgb(238, 238, 238); */
+  color: #222;
+}
+.ant-form label {
+  font-size: 16px;
+  font-weight: bold;
+}
+.ant-form-item-label > label::after {
+  content: "";
+  position: relative;
+  top: -0.5px;
+  margin: 0 8px 0 2px;
+}
+.final-section {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  padding: 16px;
+  font-size: 16px;
+}
+.final-section h1 {
+  color: rgb(238, 238, 238);
+}
+.step-col {
+  text-align: center;
+  color: #333;
+  position: relative;
+}
+.step-col-active {
+  background: linear-gradient(to right, #83a4d4, #b6fbff);
+  height: 100%;
+  font-weight: bold;
+  font-size: 20px;
+}
+.section {
+  margin: auto;
+  padding: 10px;
+}
+.step-row {
+  width: 100%;
+  height: 40px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -1px 5px -1px #000;
+  position: relative;
+}
+.nextBtn,
+.prevBtn,
+.submitBtn {
+  border: 1px solid gray;
+  border-radius: 10px;
+  background: linear-gradient(to right, #96deda, #50c9c3);
+}
+.submitBtn {
+  font-weight: bold;
+  color: #222;
+}
+.nextBtn:hover,
+.prevBtn:hover,
+.submitBtn:hover {
+  background: linear-gradient(to right, #50c9c3, #96deda);
+  /* transition: 2s; */
+}
+.nextBtn span,
+.prevBtn span {
+  font-weight: bold;
+  color: #222;
+}

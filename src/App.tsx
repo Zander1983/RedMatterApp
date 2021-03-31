@@ -8,11 +8,9 @@ import "./App.css";
 import "antd/dist/antd.css";
 
 import AppHeader from "./Components/common/header";
-import AppHome from "./Components/home/home";
 import Workspaces from "./Components/workspaces/workspaces";
-import AppLandingPage from "./Components/home/landingPage";
+import AppLandingPage from "./Components/home/LandingPage";
 import WorkspaceAppFiles from "./Components/workspaces/workspaceFiles";
-import requestsUrl from "./Components/common/RequestUrls";
 import PrototypeForm from "./Components/home/PrototypeForm";
 
 import Plots from "./Components/graph/components/Plots";
@@ -20,7 +18,6 @@ import Login from "./Components/users/login";
 import Register from "./Components/users/register";
 import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
-import GraphPrototype from "./Components/prototype/GraphPrototype";
 
 const { Header, Content } = Layout;
 
@@ -52,7 +49,7 @@ const App: FC = () => {
   return (
     <Layout className="mainLayout">
       <Header className="default-header">
-        <AppHeader onLogout={handleAfterLogout} />
+        <AppHeader />
       </Header>
       <Content className={classes.content} style={{ fontFamily: "Quicksand" }}>
         <Switch>
@@ -132,7 +129,6 @@ const App: FC = () => {
           <Route exact path="/workspaces" component={()=><Workspaces url={requestsUrl.workspaceUrl}/>}/> */}
 
           {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
-          {/* <Route exact path="/workspaces" component={() => <CanvasChart />} /> */}
           {/* <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} /> */}
           {/* <Route exact path="/analyse/:workspacesId/:fcsfileId" component={({ match }: any) => <Graph fcsfileId={match.params.fcsfileId} workspacesId={match.params.workspacesId} graphsUrl={requestsUrl.graphsUrl} gatesUrl={requestsUrl.gatesUrl} paramsUrl={requestsUrl.paramsUrl} eventsurl={requestsUrl.eventsUrl} />} /> */}
         </Switch>
