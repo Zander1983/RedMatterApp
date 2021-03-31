@@ -1,56 +1,51 @@
-# Getting Started with Create React App
+# Red Matter v2.0 Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This version of the app is the flagship of Red Matter's company.
 
-## Available Scripts
+The basic objective of this project is to make it as simple as possible to do Flow Cytometry, focusing on making it easier for beginners. Here's the decision guidelines for any feature:
 
-In the project directory, you can run:
+- Is it fast?
+- Is it simple?
+- Is it slick?
+- Is it pretty?
+- Is the user's goal accomplished?
 
-### `npm start`
+## How to setup?
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+You can clone this repository with:
+```
+git clone https://github.com/RedMatterApplication/RedMatterAppFrontend
+```
+*Authentication is required*
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Then install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
 
-### `npm test`
+You are ready to go!
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## How to run?
 
-### `npm run build`
+You can run the server by typing
+```
+npm run start:[env]
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+There are 4 environments:
+- Local: Connected to you local backend service. If it's not up, it's not going to work properly. Should be on port 8080.
+- Development: Connected to development backend in the cloud.
+- Staging: Connected to homologation backend in the cloud.
+- Production: **[be careful]** connected to production environment in the cloud.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+If you want to use the localhost for the app you can run:
+```
+npm run start:local
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
----
-**Note**
-
-- We can run frontend into different environment [i.e.,local, developement, production, staging]
-- Currently local and developement env's are active
-- To use localhost as backend API: use npm run start:local
-- To use AWS server as backend API : use npm run start:dev
-
----
+If you want to use the cloud development backend:
+```
+npm run start:dev
+```
