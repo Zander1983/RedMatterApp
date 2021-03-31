@@ -1,6 +1,7 @@
 import React,{useRef, useState,useEffect} from 'react';
 import { List, Card, Button,Modal,Form, Input ,Tooltip, Upload, Space,message, Row, Col} from 'antd';
-import axios from './../common/axios';
+// import axios from './../common/axios';
+import axios from 'axios';
 import {
     EditTwoTone,
     EditFilled,
@@ -11,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import {NavLink,useLocation} from 'react-router-dom';
 
-const WorkspaceAppFiles = ({id,url}:any)=>{
+const WorkspaceAppFiles = ({id}:any)=>{
     const location:any = useLocation<any>();
     const workspaceName = location.state.workspaceName;
     const workspacesId = id;
@@ -21,17 +22,33 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
     const [visible,setVisible] = useState(false);
     const [form] = Form.useForm();
 
+    let organisationId ="";
+    let user = JSON.parse(localStorage?.getItem('user'));
+    if(user){
+        organisationId = user['organisationId'];
+    }
+
+    const options = {
+        headers:{
+            'Token' : localStorage.getItem("token")
+        }
+    }
+
     useEffect(()=>{
+
         const getWorkspaceFileData = async()=>{
             try{
                 setLoading(true);
-                const response = await axios.get(url).catch((err)=>console.log(err))
+                const response = await axios.get(`api/files?organisationId=${organisationId}&workspaceId=${id}`,options).catch((err)=>console.log(err))
                 if(response){
                     const datatemp = response.data;
-                    datatemp.map((data:any)=>{
-                        if(data.workspaceId == workspacesId){
-                            fileData.push(data);
-                        }
+                    // datatemp.map((data:any)=>{
+                    //     if(data.workspaceId == workspacesId){
+                    //         fileData.push(data);
+                    //     }
+                    // })
+                    datatemp.files.map((data:any)=>{
+                        fileData.push(data)
                     })
                     setWorkspaceFileData(fileData);
                     setLoading(false);
@@ -50,40 +67,57 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
     }
 
     const WorkspaceFileUploadForm = ()=>{
-        const props = {
-            name: 'file',
-            action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-            headers: {
-                authorization: 'authorization-text',
-            },
-            beforeUpload(file:any) {
-                console.log(file);
-                console.log('upload>>>',Upload);
-                // if (file.type !== 'image/png') {
-                //     message.error(`${file.name} is not a png file`);
-                // }
-                // return file.type === 'image/png' ? true : Upload.LIST_IGNORE;
-                return true
-            },
-            onChange(info:any) {
-                if (info.file.status !== 'uploading') {
-                    console.log(info.file, info.fileList);
-                }
-                console.log('File status>>>',info.file.status)
-                if (info.file.status === 'done') {
-                    message.success(`${info.file.name} file uploaded successfully`);
-                } else if (info.file.status === 'error') {
-                    message.error(`${info.file.name} file upload failed.`);
-                }
-            },
-        };
-
+        const [selectedFile,setSelectedFile] = useState(null);
+        // const props = {
+        //     name: 'file',
+        //     action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+        //     headers: {
+        //         authorization: 'authorization-text',
+        //     },
+        //     beforeUpload(file:any) {
+        //         console.log(file);
+        //         console.log('upload>>>',Upload);
+        //         // if (file.type !== 'image/png') {
+        //         //     message.error(`${file.name} is not a png file`);
+        //         // }
+        //         // return file.type === 'image/png' ? true : Upload.LIST_IGNORE;
+        //         return true
+        //     },
+        //     onChange(info:any) {
+        //         if (info.file.status !== 'uploading') {
+        //             console.log(info.file, info.fileList);
+        //         }
+        //         console.log('File status>>>',info.file.status)
+        //         if (info.file.status === 'done') {
+        //             message.success(`${info.file.name} file uploaded successfully`);
+        //         } else if (info.file.status === 'error') {
+        //             message.error(`${info.file.name} file upload failed.`);
+        //         }
+        //     },
+        // };
+        useEffect(()=>{},[selectedFile])
+        const getFiles = (event:any)=>{
+            console.log('events>>>>>',event.target.files)
+            const data = new FormData();
+            for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
+                data.append(`files[${fileCount}]`,event.target.files[fileCount]);
+            }
+            // data.append('files',event.target.files[0]);
+            data.append('organisationId',organisationId);
+            data.append('workspaceId',workspacesId);
+            axios.post('api/upload',data,options).then((res:any)=>{
+                console.log('response>>>>>>',res)
+                setVisible(false)
+            }).catch((err:any)=>{
+                console.log('er12344=>>>>>',err)
+            })
+        }
         return(
             <div className="uploadFileModal">
                 <p>Upload no more than 3 files (.fcs, .lmd only) at a time (hold Control on keyboard to select multiple files). Maximum of 40MB in one upload. 
                     <br/><strong>All files in the same workspace must have the same parameters.</strong>
                 </p>
-                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                {/* <Space direction="vertical" style={{ width: '100%' }} size="large">
                     <Upload
                     {...props}
                     listType="picture"
@@ -92,7 +126,8 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
                     >
                         <Button icon={<UploadOutlined />}>Upload (Max: 3)</Button>
                     </Upload>
-                </Space>
+                </Space> */}
+                <input type="file" name="files" multiple onChange={getFiles}/>
             </div>
         )
     }
@@ -149,7 +184,7 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
         const deleteWorkspace = (workid:string)=>{
             setWorkspaceFileData((prevData:any)=>{
                 return(prevData.filter((data:any)=>{
-                    return data._id!=workid
+                    return data.id!=workid
                 }))
             })
         }
@@ -175,7 +210,7 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
                                 <input type="text" onChange={handleChange} defaultValue={item.label} ref={editName}/>
                                 <div className="action">
                                     <Tooltip placement="bottom" arrowPointAtCenter={true} title="Save Changes">
-                                        <a type="button" className={!isValid ? 'saveBtn disabled' : "saveBtn"} onClick={()=>updateWorkspaceFiles(item._id,item)}><CheckOutlined /></a>
+                                        <a type="button" className={!isValid ? 'saveBtn disabled' : "saveBtn"} onClick={()=>updateWorkspaceFiles(item.id,item)}><CheckOutlined /></a>
                                     </Tooltip>
                                     <Tooltip placement="bottom" arrowPointAtCenter={true} title="Cancel">
                                         <a type="button" className="cancelBtn" onClick={()=>cancel()}><CloseOutlined /></a>
@@ -184,7 +219,7 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
                             </div>
                         ):(
                             <div className="workspace-name">
-                                <NavLink to={`/analyse/${workspacesId}/${item._id}`}><p>{item.label}</p></NavLink>
+                                <NavLink to={`/analyse/${workspacesId}/${item.id}`}><p>{item.label}</p></NavLink>
                             </div>
                         )
                     }
@@ -198,7 +233,7 @@ const WorkspaceAppFiles = ({id,url}:any)=>{
                                 </Tooltip>
                         }
                         <Tooltip placement="bottom" arrowPointAtCenter={true} title="Delete">
-                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item._id)}}><DeleteFilled /></a>
+                            <a type="button" className="deleteBtn" onClick={()=>{deleteWorkspace(item.id)}}><DeleteFilled /></a>
                         </Tooltip>
                     </div>
                 </div>

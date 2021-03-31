@@ -17,9 +17,10 @@ interface graphInterface{
     paramsData:any[];
     onChangeEvent:any;
     workspacesId:string;
+    gates:any;
 }
 const ScatterChart = (props:graphInterface)=>{
-    console.log('scatterchart >>>',props)
+    // console.log('scatterchart >>>',props)
     const [yaxis,setYaxis] = useState(props.graphData['paramY']);
     const [xaxis,setXaxis] = useState(props.graphData['paramX']);
     const [Xlabel,setXLabel] = useState(props.graphData['paramXName']);
@@ -34,19 +35,45 @@ const ScatterChart = (props:graphInterface)=>{
         })
     }
     newData = getChartData(xaxis,yaxis);
+    const getAllParentGateData = (Grdata:any,Gadata:any)=>{
+        // console.log(`Grdata : ${Grdata} \n Gadata : ${Gadata[0].details}`);
+        Gadata[0].details.map((eachGates:any)=>{
+            if(eachGates.parent == "All"){
+                const gateX = eachGates.paramX;
+                const gateY = eachGates.paramY;
+                if(xaxis == gateX && yaxis == gateY){
+                    const gateColor = eachGates.color;
+                    const gatingCoords = eachGates.gatingDetails.gatingCoords;
+                    const graphHeight = graphData.height;
+                    const graphWidth = graphData.width;
+                    console.log(graphData)
+                    console.log(props.gates)
+                    console.log('gateX>',gateX)
+                    console.log('gateY>',gateY)
+                    console.log('gatecolor>',gateColor)
+                    console.log('gatingCoords>',gatingCoords)
+                    console.log('graphHeight>',graphHeight)
+                    console.log('graphWidth>',graphWidth)
+                }
+            }
+        })
+    }
+    // getAllParentGateData(graphData,props.gates);
     const [chartData,setChartData] = useState({
         "datasets":[{
             backgroundColor: "black",
-            pointBorderColor: "black",
-            pointBackgroundColor: "black","data":newData}]
+            pointBorderColor: "white",
+            pointRadius:0.5,
+            pointBackgroundColor: "white","data":newData}]
         });
     useEffect(()=>{
         newData = getChartData(xaxis,yaxis);
         setChartData({
             "datasets":[{
                 backgroundColor: "black",
-                pointBorderColor: "black",
-                pointBackgroundColor: "blue","data":newData}]
+                pointBorderColor: "white",
+                pointRadius:0.5,
+                pointBackgroundColor: "white","data":newData}]
             })
             setXLabel(props.lableData[xaxis]);
             setYLabel(props.lableData[yaxis]);
@@ -70,7 +97,8 @@ const ScatterChart = (props:graphInterface)=>{
     };
     return(
         <>
-            <div className="mx-2 my-2" style={{position: "relative", height:'fit-content', width:`fit-content`,border:'1px solid black'}}>
+        {/* <h1>Hello</h1> */}
+             <div className="mx-2 my-2" style={{position: "relative", height:'fit-content', width:`fit-content`,border:'1px solid black'}}>
                 <div style={{display:"flex",flexDirection:"column"}}>
                     <div style={{display:"flex",flexDirection:"row"}}>
                         <div className="mb-auto">
@@ -88,8 +116,7 @@ const ScatterChart = (props:graphInterface)=>{
                                 }
                             </Select>
                         </div>
-                        <Scatter workspaceId={props.workspacesId} graphData={graphData} graphId={graphData._id} yaxis={graphData.paramY} xaxis={graphData.paramX} Xlabel={Xlabel} Ylabel={Ylabel} chartData={chartData}/>
-                        
+                        <Scatter workspaceId={props.workspacesId} graphData={graphData} graphId={graphData._id} yaxis={graphData.paramY} xaxis={graphData.paramX} Xlabel={Xlabel} Ylabel={Ylabel} chartData={chartData}/> 
                     </div>
                     <div className="ml-auto">
                     <Select

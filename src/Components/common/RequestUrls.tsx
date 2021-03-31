@@ -1,7 +1,7 @@
 const requestsUrl = {
     workspaceUrl:'/workspaces.json',
     fcsfilesUrl : '/fcsfiles.json',
-    eventsUrl : '/events.json',
+    eventsUrl : '/events_new.json',
     gatesUrl : '/gates.json',
     graphsUrl : '/graphs.json',
     paramsUrl : '/params.json',

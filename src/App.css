@@ -45,7 +45,7 @@ body {
 }
 
 .mainLayout .ant-layout-header {
-  background: #222;
+  /* background: #222; */
   padding: 0;
   height: auto;
   line-height: 1.6;
@@ -96,6 +96,13 @@ header
   left: 0;
   right: 0;
   z-index: 999;
+}
+
+.transparent-header{
+  background: transparent;
+}
+.default-header{
+  background: #222;
 }
 
 .header {
@@ -338,7 +345,9 @@ block
 ----- 
 */
 .block {
-  padding: 60px 0;
+  /* padding: 60px 0; */
+  padding:10px 0;
+  height:100vh;
   border-bottom: 1px solid #d9d9d9;
 }
 

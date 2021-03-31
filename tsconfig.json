@@ -10,7 +10,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
@@ -20,6 +19,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "noImplicitAny": true,
+
+    // Settings to remove specific transpile annoying rules
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false,
+
+    // Risky new features of typescript
+    "experimentalDecorators": true,
   },
   "include": [
     "src"
