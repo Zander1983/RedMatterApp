@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import "react-toastify/dist/ReactToastify.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
@@ -20,6 +21,7 @@ console.log("process.env.REACT_APP_API_URL>>", process.env.REACT_APP_API_URL);
 // Redux config
 const store = createStore(
   reducers,
+  //@ts-ignore
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 

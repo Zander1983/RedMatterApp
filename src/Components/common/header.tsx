@@ -1,7 +1,6 @@
 import React, { useState, FC } from "react";
 
 import { NavLink } from "react-router-dom";
-import { Anchor, Drawer } from "antd";
 
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -9,8 +8,6 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 
 import icon from "../../assets/images/white_icon.png";
-
-const { Link } = Anchor;
 
 const useStyles = makeStyles((theme) => ({
   root: {

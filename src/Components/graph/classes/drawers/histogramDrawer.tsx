@@ -2,14 +2,12 @@
   This is responsible for plotting a general graph given specific inputs
 */
 import Drawer from "./drawer";
-import Context from "../canvas/contextInterface";
-import Polygon from "../gates/polygon";
 import { TimerOff } from "@material-ui/icons";
 
 const binPadding = 5;
 
 interface HistogramDrawerConstructorParams {
-  context: Context;
+  context: any;
   x1: number;
   y1: number;
   x2: number;
@@ -35,6 +33,7 @@ interface PlotGraph {
   addPolygon: Function;
 }
 
+//@ts-ignore
 export default class HistogramDrawer extends Drawer {
   private x1: number;
   private y1: number;
@@ -65,7 +64,8 @@ export default class HistogramDrawer extends Drawer {
     iby,
     iey,
     binSize,
-  }: GraphDrawerConstructorParams) {
+  }: //@ts-ignore
+  GraphDrawerConstructorParams) {
     super();
     this.x1 = x1;
     this.y1 = y1;
@@ -203,6 +203,7 @@ export default class HistogramDrawer extends Drawer {
     return v;
   };
 
+  // @ts-ignore
   drawPlotGraph(): ScatterPlotGraph {
     this.graphLine({
       x1: this.x1,

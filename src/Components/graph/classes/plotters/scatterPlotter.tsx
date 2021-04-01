@@ -209,6 +209,8 @@ export default class ScatterPlotter extends Plotter {
     const lp = Array(this.xAxis.length)
       .fill(0)
       .map((e, i) => closePoints(i));
+
+    //@ts-ignore
     const mx = lp.reduce((a, c) => (a > c ? a : c), []);
     let cColors: string[] = lp.map((e) => {
       const p = -Math.pow(e / mx, 5) + 1;
@@ -376,6 +378,7 @@ export default class ScatterPlotter extends Plotter {
       this.ovalGateState.primaryP1 != null &&
       this.ovalGateState.secondaryP1 != null
     ) {
+      //@ts-ignore
       this.drawOvalGate(this.ovalGateState);
       this.drawer.scline({
         x1: this.ovalGateState.center.x,

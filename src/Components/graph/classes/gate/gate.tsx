@@ -5,6 +5,11 @@ export interface GateInput {
   yAxis: string;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
 export default abstract class Gate {
   name?: string;
   color?: string;

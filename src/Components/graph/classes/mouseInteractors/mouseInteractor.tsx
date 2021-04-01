@@ -27,7 +27,7 @@ export default class MouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  constructor(plotter: ScatterPlotter, parentID: number) {
+  constructor(plotter: ScatterPlotter, parentID: string) {
     this.plotter = plotter;
     this.parentID = parentID;
   }
@@ -101,6 +101,7 @@ export default class MouseInteractor {
     );
     const concreteAngle = getVectorAngle2D(p1, p2);
     if (params !== undefined && params.abstract === true) {
+      //@ts-ignore
       this.ang = abstractAngle;
     } else {
       this.ang = concreteAngle;
