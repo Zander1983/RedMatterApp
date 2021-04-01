@@ -1,6 +1,6 @@
-.workBlock{
-    background:white;
-    height:auto;
+.workBlock {
+  background: white;
+  height: auto;
 }
 
 /* h2{
@@ -8,7 +8,7 @@
     text-decoration: underline;
 } */
 
-.image{
-    display:flex;
-    margin:auto;
+.image {
+  display: flex;
+  margin: auto;
 }

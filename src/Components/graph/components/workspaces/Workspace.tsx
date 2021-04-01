@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+//@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import Plot from "../plots/Plot";
@@ -63,6 +64,7 @@ class Workspace extends React.Component {
      significatively */
   render() {
     console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
+    //@ts-ignore
     if (this.state.canvas.length > 0) {
       return (
         <ResponsiveGridLayout
@@ -72,20 +74,23 @@ class Workspace extends React.Component {
           rows={{ lg: 30 }}
           rowHeight={30}
         >
-          {this.state.canvas.map((e) => {
-            return (
-              <div
-                key={e.key}
-                style={classes.itemOuterDiv}
-                data-grid={standardGridPlotItem(0, 0)}
-                id={`workspace-outter-${e.key}`}
-              >
-                <div id="inner" style={classes.itemInnerDiv}>
-                  <Plot canvas={e.canvas} canvasIndex={e.key} />
+          {
+            //@ts-ignore
+            this.state.canvas.map((e) => {
+              return (
+                <div
+                  key={e.key}
+                  style={classes.itemOuterDiv}
+                  data-grid={standardGridPlotItem(0, 0)}
+                  id={`workspace-outter-${e.key}`}
+                >
+                  <div id="inner" style={classes.itemInnerDiv}>
+                    <Plot canvas={e.canvas} canvasIndex={e.key} />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          }
         </ResponsiveGridLayout>
       );
     } else {

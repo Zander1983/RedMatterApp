@@ -2,7 +2,6 @@
   This is responsible for plotting a general graph given specific inputs
 */
 import Drawer from "./drawer";
-import Polygon from "../gate/polygon";
 
 interface ScatterDrawerConstructorParams {
   x1: number;
@@ -207,6 +206,7 @@ export default class ScatterDrawer extends Drawer {
     }
   }
 
+  //@ts-ignore
   scline({ x1, y1, x2, y2, lineWidth, strokeColor }: LineParams) {
     const p1 = this.convertToPlotCanvasPoint(x1, y1);
     x1 = p1[0] * this.scale;
@@ -301,6 +301,7 @@ export default class ScatterDrawer extends Drawer {
             fillColor: color,
           });
         },
+        //@ts-ignore
         addPolygon: (polygon: Polygon, color: string = "#000") => {
           const pl = polygon.getLength();
           for (let i = 0; i < pl; i++) {

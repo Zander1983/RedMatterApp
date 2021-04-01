@@ -1,8 +1,6 @@
 /*
     This is responsible for drawing basic canvas shapes
 */
-import Context from "../canvas/contextInterface";
-
 interface BaseParams {
   fillColor?: string;
   strokeColor?: string;

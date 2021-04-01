@@ -4,7 +4,6 @@
   complexities of logic that has to be fed to each canvas.
 */
 
-import Scatter from "../../../charts/Scatter";
 import FCSFile from "../fcsFile";
 import Gate from "../gate/gate";
 import MouseInteractor from "../mouseInteractors/mouseInteractor";
@@ -24,6 +23,7 @@ const conditionalUpdateDecorator = () => {
     const original = descriptor.value;
     descriptor.value = function (...args: any[]) {
       original.apply(this, args);
+      //@ts-ignore
       this.conditionalUpdate();
     };
   };
@@ -93,6 +93,7 @@ class Canvas {
     this.plotter.yAxis = this.file.getAxisPoints(this.yAxis);
     this.plotter.width = this.width;
     this.plotter.height = this.height;
+    // @ts-ignore
     this.plotter.setGates(this.gates);
     if (this.plotter instanceof ScatterPlotter) {
       this.plotter.xAxisName = this.xAxis;
@@ -122,7 +123,7 @@ class Canvas {
       xAxisName: this.xAxis,
       yAxisName: this.yAxis,
     });
-
+    //@ts-ignore
     this.histogramPlotter = new HistogramPlotter({
       xAxis: this.file.getAxisPoints(this.xAxis),
       yAxis: this.file.getAxisPoints(this.yAxis),
@@ -154,6 +155,7 @@ class Canvas {
   }
 
   contructMouseInteractor() {
+    //@ts-ignore
     this.mouseInteractor = new MouseInteractor(this.scatterPlotter, this.id);
     this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
   }
@@ -165,7 +167,9 @@ class Canvas {
     let animationFrameId = 0;
 
     const sendMouseInteraction = (event: Event) => {
+      //@ts-ignore
       const x = event.offsetX;
+      //@ts-ignore
       const y = event.offsetY;
       const type = event.type;
       const p = this.scatterPlotter.convertToAbstractPoint(x, y);

@@ -162,6 +162,7 @@ const addToFiles = (data: Array<any>, axes: object[], title: string) => {
       title: title,
       information: "Real anonymous FCS file",
       data: data,
+      //@ts-ignore
       axes: axes,
       lastModified: "??",
     });

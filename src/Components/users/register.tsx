@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+//@ts-ignore
 import ReCAPTCHA from "react-google-recaptcha";
 import { Link } from "react-router-dom";
 
@@ -23,6 +24,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import CloseIcon from "@material-ui/icons/Close";
 
 // Material UI validator
+//@ts-ignore
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
 // Import Country list
@@ -77,8 +79,10 @@ const Register = (props: any) => {
 
   const handleAutoCompleteField = (value: any, name: string) => {
     if (value === null) {
+      //@ts-ignore
       setLocationStatus((prev: any) => false);
     } else {
+      //@ts-ignore
       setLocationStatus((prev: any) => true);
       setFormData((prevData: any) => {
         return { ...prevData, [name]: value.key };
@@ -96,6 +100,7 @@ const Register = (props: any) => {
 
   const handleSubmit = async () => {
     if (formData.location === "") {
+      //@ts-ignore
       setLocationStatus((prev: any) => false);
       return;
     }
@@ -124,6 +129,7 @@ const Register = (props: any) => {
     <>
       <Grid>
         <Paper elevation={10} className={classes.paperStyle}>
+          {/* @ts-ignore */}
           <Grid align="center">
             <div className={classes.root}>
               <Collapse in={isError}>
@@ -241,43 +247,42 @@ const Register = (props: any) => {
                 />
                 <br />
                 <ReCAPTCHA
-                                    sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-                                    onChange={onChangeCaptcha}
-                                    onExpired={()=>{
-                                        setFormData((prevData:any)=>{
-                                            return {...prevData,g_recaptcha_response:""}
-                                        })
-                                    }}
-                                />
-                                <br/>
-                                <Button
-                                    color="primary"
-                                    variant="contained"
-                                    type="submit"
-                                    disabled={isSubmit}
-                                    onFocus={()=>{
-                                        if(formData.location === ""){
-                                            setLocationStatus((prev:any) => false);
-                                            return;
-                                        }
-                                    }}
-                                >
-                                    {
-                                        (isSubmit && 'Your form is submitted!')
-                                        || (!isSubmit && 'Submit')
-                                    }
-                                </Button>
-                            </ValidatorForm>
-                            
-                            <Typography>
-                                Already registered ?
-                                <Link to="/login">Sign In</Link>
-                            </Typography>
-                        </div>
-                    </Grid>
-                </Paper>
-            </Grid>
-        </>
-    )
-}
+                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                  onChange={onChangeCaptcha}
+                  onExpired={() => {
+                    setFormData((prevData: any) => {
+                      return { ...prevData, g_recaptcha_response: "" };
+                    });
+                  }}
+                />
+                <br />
+                <Button
+                  color="primary"
+                  variant="contained"
+                  type="submit"
+                  disabled={isSubmit}
+                  onFocus={() => {
+                    if (formData.location === "") {
+                      //@ts-ignore
+                      setLocationStatus((prev: any) => false);
+                      return;
+                    }
+                  }}
+                >
+                  {(isSubmit && "Your form is submitted!") ||
+                    (!isSubmit && "Submit")}
+                </Button>
+              </ValidatorForm>
+
+              <Typography>
+                Already registered?
+                <Link to="/login">Sign In</Link>
+              </Typography>
+            </div>
+          </Grid>
+        </Paper>
+      </Grid>
+    </>
+  );
+};
 export default Register;

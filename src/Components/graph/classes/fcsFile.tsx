@@ -74,6 +74,7 @@ export default class FCSFile {
     const xAxis = this.getAxisIndex(gate.xAxis);
     const yAxis = this.getAxisIndex(gate.yAxis);
     this.data.map((p, i) => {
+      //@ts-ignore
       if (gate.isPointInside([p[xAxis], p[yAxis]])) {
         this.pointColors[i] = color;
       }

@@ -1,7 +1,5 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
-import { ArrowRightOutlined } from "@ant-design/icons";
-import "./css/landing.css";
+import "./landing.css";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
@@ -11,7 +9,6 @@ import Button from "@material-ui/core/Button";
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
 
 import icon from "../../assets/images/white_icon.png";
-import ImgCarousel from "./carousel";
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
@@ -75,6 +72,7 @@ const AppLandingPage = () => {
           <div className={classes.centralizer}>
             <Card className={classes.card} variant="outlined">
               <CardContent>
+                {/*@ts-ignore*/}
                 <Typography variant="h6" className={classes.title}>
                   <img
                     src={icon}

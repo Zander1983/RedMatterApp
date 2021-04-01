@@ -1,23 +1,23 @@
 {
-    "workspaces":[
-        {
-            "id":"602b74e9e01b4c34d295c6b3",
-            "name":"testing",
-            "createdOn":"2021-02-16T07:31:53.576Z",
-            "owner":"abhitube434@gmail.com",
-            "isOwner":true,
-            "isPrivate":false,
-            "noAccepted":true
-        },
-        {
-            "id":"6036460d0e12bc27db6df426",
-            "name":"try1",
-            "createdOn":"2021-02-24T12:26:53.814Z",
-            "owner":"abhitube434@gmail.com",
-            "isOwner":true,
-            "isPrivate":false,
-            "noAccepted":true
-        }
-    ],
-    "token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc09yZ2FuaXNhdGlvbkFkbWluIjp0cnVlLCJpc0FkbWluIjpmYWxzZSwiaXNEZW1vVXNlciI6ZmFsc2UsImVtYWlsIjoiYWJoaXR1YmU0MzRAZ21haWwuY29tIiwiaWQiOiI2MDJiNzQ2OWUwMWI0YzM0ZDI5NWM2YjEiLCJpYXQiOjE2MTQyNTU5MDUsImV4cCI6MTYxNDI1NzcwNX0.Tas6iha9yxA_YEfEHdKIZA3qS7FyKFE3qq1jv8JIfAY"
+  "workspaces": [
+    {
+      "id": "602b74e9e01b4c34d295c6b3",
+      "name": "testing",
+      "createdOn": "2021-02-16T07:31:53.576Z",
+      "owner": "abhitube434@gmail.com",
+      "isOwner": true,
+      "isPrivate": false,
+      "noAccepted": true
+    },
+    {
+      "id": "6036460d0e12bc27db6df426",
+      "name": "try1",
+      "createdOn": "2021-02-24T12:26:53.814Z",
+      "owner": "abhitube434@gmail.com",
+      "isOwner": true,
+      "isPrivate": false,
+      "noAccepted": true
+    }
+  ],
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc09yZ2FuaXNhdGlvbkFkbWluIjp0cnVlLCJpc0FkbWluIjpmYWxzZSwiaXNEZW1vVXNlciI6ZmFsc2UsImVtYWlsIjoiYWJoaXR1YmU0MzRAZ21haWwuY29tIiwiaWQiOiI2MDJiNzQ2OWUwMWI0YzM0ZDI5NWM2YjEiLCJpYXQiOjE2MTQyNTU5MDUsImV4cCI6MTYxNDI1NzcwNX0.Tas6iha9yxA_YEfEHdKIZA3qS7FyKFE3qq1jv8JIfAY"
 }
