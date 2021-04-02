@@ -1,14 +1,5 @@
-import Gate, { GateInput } from "./gate";
-import {
-  euclidianDistance2D,
-  pointInsideEllipse,
-  rotateVector2D,
-} from "../math/euclidianPlane";
-
-interface Point {
-  x: number;
-  y: number;
-}
+import Gate, { GateInput, Point } from "./gate";
+import { pointInsideEllipse } from "../math/euclidianPlane";
 
 export interface OvalGateInput extends GateInput {
   center: Point;
@@ -26,6 +17,7 @@ export default class OvalGate extends Gate {
   secondaryP1: Point;
   secondaryP2: Point;
   ang: number;
+  gateType: string = "OvalGate";
 
   constructor(gate: OvalGateInput) {
     super(gate);

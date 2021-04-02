@@ -1,9 +1,5 @@
-/*
-    Responsible for providing a scatterplot with the input data
-*/
+import Plotter, { PlotterState } from "./plotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
-
-import Plotter, { PlotterInput } from "./plotter";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -11,7 +7,7 @@ const topPadding = 50;
 const bottomPadding = 50;
 const binSize = 45;
 
-interface HistogramPlotterInput extends PlotterInput {
+interface HistogramPlotterState extends PlotterState {
   axis: string;
 }
 

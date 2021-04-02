@@ -1,7 +1,7 @@
 export interface Point {}
 
 export default abstract class Transformer {
-  constructor() {}
+  update() {}
 
   abstract toAbstractPoint(point: Point): Point;
 

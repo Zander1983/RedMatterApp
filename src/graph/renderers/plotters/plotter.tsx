@@ -1,68 +1,59 @@
+import Drawer from "graph/renderers/drawers/drawer";
+import Transformer from "graph/renderers/transformations/transformer";
+
+export interface PlotterState {}
+
 /*
-    Responsible for providing a scatterplot with the input data
+  How to use plotters?
+   1. Instance the plotter (no args)
+   2. Set plotter state with setPlotterState(state)
+   3. Call setup(canvasContext)
+
+  You are now ready to go!
+  
+  Call draw() when you need to draw to the canvas
+  
+  If you ever need to update the plotter
+   1. Call setPlotterState(state)
+   2. Call update()
 */
-import FCSFile from "../../classes/fcsFile";
-import ScatterDrawer from "../drawers/scatterDrawer";
-
-export interface PlotterInput {
-  xAxis: Array<number>; // "FCS-A"
-  yAxis: Array<number>; // "FTP-S"
-  width: number;
-  height: number;
-  scale: number;
-  xRange?: [number, number] | undefined; // [0, 2000], or [10^5, 10^10]
-  yRange?: [number, number] | undefined; // [0, 2000], or [10^5, 10^10]
-}
-
 export default abstract class Plotter {
-  // Essential Paramss
-  width: number;
-  height: number;
+  /* === DATA === */
 
-  xAxis: Array<number>;
-  yAxis: Array<number>;
+  protected canvasContext: any = null;
+  protected drawer: Drawer | null = null;
+  protected transformer: Transformer | null = null;
 
-  // Optional params
-  xRange: [number, number];
-  yRange: [number, number];
+  /* === METHODS === */
 
-  // Constant
-  rangeSpacer: number = 0.05;
-  scale: number = 2;
+  public abstract draw(): void;
 
-  constructor({
-    xAxis,
-    yAxis,
-    width,
-    height,
-    scale,
-    xRange = undefined,
-    yRange = undefined,
-  }: PlotterInput) {
-    this.xAxis = xAxis;
-    this.yAxis = yAxis;
-
-    this.width = width;
-    this.height = height;
-    this.scale = scale;
-
-    this.xRange = xRange === undefined ? this.findRangeBoundries("x") : xRange;
-    this.yRange = yRange === undefined ? this.findRangeBoundries("y") : yRange;
+  public setup(canvasContext: any): void {
+    this.canvasContext = canvasContext;
+    this.createDrawer();
+    this.createTransformer();
   }
 
-  findRangeBoundries(axis: "x" | "y"): [number, number] {
-    const axisData = axis === "x" ? this.xAxis : this.yAxis;
-    let min = axisData[0],
-      max = axisData[0];
-    for (const p of axisData) {
-      min = Math.min(p, min);
-      max = Math.max(p, max);
-    }
-    const d = Math.max(max - min, 0.1);
-    return [min - d * this.rangeSpacer, max + d * this.rangeSpacer];
+  public update(): void {
+    this.setDrawerState();
+    this.updateDrawer();
+    this.setTransformerState();
+    this.updateTransformer();
   }
 
-  abstract draw(context: any, frameCount: number): void;
+  public setPlotterState(state: PlotterState): void {}
 
-  abstract convertToAbstractPoint(x: number, y: number): any;
+  public getPlotterState(): PlotterState {
+    return {};
+  }
+
+  protected abstract setDrawerState(): void;
+  protected abstract createDrawer(): void;
+
+  protected abstract updateDrawer(): void;
+
+  protected abstract setTransformerState(): void;
+
+  protected abstract createTransformer(): void;
+  protected abstract updateTransformer(): void;
 }

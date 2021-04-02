@@ -16,6 +16,7 @@ export default abstract class Gate {
   xAxis: string;
   yAxis: string;
   id: string;
+  gateType: string = "AbstractGate";
 
   static instanceCount: number = 1;
 
@@ -24,7 +25,7 @@ export default abstract class Gate {
     this.yAxis = gate.yAxis;
 
     if (gate.name !== undefined) this.name = gate.name;
-    else this.name = "Gate " + (Gate.instanceCount++).toString();
+    else this.name = this.gateType + " " + (Gate.instanceCount++).toString();
 
     if (gate.color !== undefined) this.color = gate.color;
     else gate.color = "#f00";

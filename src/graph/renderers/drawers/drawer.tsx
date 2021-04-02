@@ -1,45 +1,157 @@
+export interface DrawerState {}
+
 /*
-    This is responsible for drawing basic canvas shapes
+  How to use drawers?
+   1. Instance the drawer (no args)
+   2. Set Drawer state with setDrawerState(state)
+   3. Call setup()
+
+  You are now ready to go!
+  
+  If you ever need to update the Drawer
+   1. Call setDrawerState(state)
+   2. Call update()
+
+  Notes on drawers: Drawers expect ONLY concrete data. No points should ever be
+  passed to a drawer that are NOT concrete. Concrete point = transformer
 */
-interface BaseParams {
-  fillColor?: string;
-  strokeColor?: string;
-  lineWidth?: number;
-  x?: number;
-  y?: number;
-}
-
-interface CircleParams extends BaseParams {
-  radius: number;
-}
-
-interface LineParams extends BaseParams {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-interface TextParams extends BaseParams {
-  text: string;
-  font?: string;
-}
-
-interface RectParams extends BaseParams {
-  h: number;
-  w: number;
-  fill: boolean;
-}
+const resetStyleAfter = () => {
+  return function (
+    target: Drawer,
+    key: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      original.apply(this, args);
+      //@ts-ignore
+      this.setDefaultStyle();
+    };
+  };
+};
 
 export default abstract class Drawer {
   protected ctx: any;
 
-  constructor() {}
+  setup(canvasContext: any) {
+    this.ctx = canvasContext;
+  }
 
-  abstract convertToAbstractPoint(
-    x: number,
-    y: number
-  ): { x: number; y: number };
+  update() {}
+
+  getDrawerState(): DrawerState {
+    return {};
+  }
+
+  setDrawerState(state: DrawerState) {}
+
+  @resetStyleAfter()
+  circle(params: {
+    x: number;
+    y: number;
+    radius: number;
+    fill?: boolean;
+    fillColor?: string;
+    strokeColor?: string;
+  }) {
+    this.setStrokeColor(params.strokeColor);
+    this.setFillColor(params.fillColor);
+
+    this.ctx.beginPath();
+    this.ctx.arc(params.x, params.y, params.radius, 0, 2 * Math.PI);
+
+    if (params.fill === undefined || params.fill === true) {
+      this.ctx.fill();
+    } else {
+      this.ctx.stoke();
+    }
+  }
+
+  @resetStyleAfter()
+  segment(params: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    lineWidth?: number;
+    strokeColor?: string;
+  }) {
+    this.setStrokeColor(params.strokeColor);
+    this.setLineWidth(params.lineWidth);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(params.x1, params.y1);
+    this.ctx.lineTo(params.x2, params.y2);
+    this.ctx.stroke();
+  }
+
+  @resetStyleAfter()
+  text(params: {
+    x: number;
+    y: number;
+    text: string;
+    font?: string;
+    fillColor?: string;
+  }) {
+    this.setFillColor(params.fillColor);
+
+    if (params.font !== undefined) {
+      this.ctx.font = params.font;
+    }
+    this.ctx.fillText(params.text, params.x, params.y);
+    this.ctx.font = "Arial";
+  }
+
+  @resetStyleAfter()
+  rect(params: {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    fill?: boolean;
+    strokeColor?: string;
+    fillColor?: string;
+  }) {
+    this.setFillColor(params.fillColor);
+    this.setStrokeColor(params.strokeColor);
+
+    this.ctx.beginPath();
+    this.ctx.rect(params.x, params.y, params.w, params.h);
+
+    if (params.fill === true || params.fill === undefined) this.ctx.fill();
+    else this.ctx.stroke();
+  }
+
+  @resetStyleAfter()
+  oval(params: {
+    x: number;
+    y: number;
+    d1: number;
+    d2: number;
+    ang: number;
+    fill: boolean;
+    strokeColor?: string;
+    fillColor?: string;
+    lineWidth?: number;
+  }) {
+    this.setStrokeColor(params.strokeColor);
+    this.setFillColor(params.fillColor);
+    this.setLineWidth(params.lineWidth);
+
+    this.ctx.beginPath();
+    this.ctx.ellipse(
+      params.x,
+      params.y,
+      params.d1,
+      params.d2,
+      params.ang,
+      0,
+      2 * Math.PI
+    );
+
+    if (params.fill === false || params.fill === undefined) this.ctx.stroke();
+    else this.ctx.fill();
+  }
 
   protected setFillColor(color: string | undefined) {
     if (color == undefined) return;
@@ -66,57 +178,5 @@ export default abstract class Drawer {
     this.ctx.fillStyle = "#000";
     this.ctx.lineWidth = 1;
     this.ctx.font = "10px Arial";
-  }
-
-  setContext(context: any) {
-    this.ctx = context;
-  }
-
-  circle({ x, y, radius, fillColor, strokeColor }: CircleParams) {
-    this.setStrokeColor(strokeColor);
-    this.setFillColor(fillColor);
-
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    this.ctx.fill();
-
-    this.setDefaultStyle();
-  }
-
-  line({ x1, y1, x2, y2, lineWidth, strokeColor }: LineParams) {
-    this.setStrokeColor(strokeColor);
-    this.setLineWidth(lineWidth);
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(x1, y1);
-    this.ctx.lineTo(x2, y2);
-    this.ctx.stroke();
-
-    this.setDefaultStyle();
-  }
-
-  text({ x, y, text, font, fillColor }: TextParams) {
-    this.setFillColor(fillColor);
-
-    if (font !== undefined) {
-      this.ctx.font = font;
-    }
-    this.ctx.fillText(text, x, y);
-    this.ctx.font = "Arial";
-
-    this.setDefaultStyle();
-  }
-
-  rect({ x, y, w, h, fill, strokeColor, fillColor }: RectParams) {
-    this.setFillColor(fillColor);
-    this.setStrokeColor(strokeColor);
-
-    this.ctx.beginPath();
-    this.ctx.rect(x, y, w, h);
-
-    if (fill) this.ctx.fill();
-    else this.ctx.stroke();
-
-    this.setDefaultStyle();
   }
 }

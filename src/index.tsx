@@ -10,28 +10,14 @@ import "typeface-raleway";
 import "typeface-quicksand";
 import axios from "axios";
 
-// Redux config
-import { createStore } from "redux";
-import { Provider } from "react-redux";
-import reducers from "./Components/graph/store/reducers";
-
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 console.log("process.env.REACT_APP_API_URL>>", process.env.REACT_APP_API_URL);
 
-// Redux config
-const store = createStore(
-  reducers,
-  //@ts-ignore
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-);
-
 ReactDOM.render(
   <>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </>,
   document.getElementById("root")
 );
