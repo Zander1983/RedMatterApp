@@ -181,7 +181,8 @@ const WorkspaceAppFiles = ({ id }: any) => {
         <Grid item lg={3} md={6} sm={12}>
           <Card className={classes.root}>
             <CardContent style={{ textAlign: "center" }}>
-            <NavLink to={`/analyse/${workspacesId}/${props.data.id}`}>
+            {/* <NavLink to={`/analyse/${workspacesId}/${props.data.id}`}> */}
+            <NavLink to={`/workspaces`}>
               <Typography
                 style={{
                   fontWeight: "bold",
