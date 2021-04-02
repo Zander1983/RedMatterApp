@@ -1,392 +1,344 @@
 import React, { useRef, useState, useEffect } from "react";
-import {
-  List,
-  Card,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Tooltip,
-  Upload,
-  Space,
-  message,
-  Row,
-  Col,
-} from "antd";
-// import axios from './../common/axios';
 import axios from "axios";
-import {
-  EditTwoTone,
-  EditFilled,
-  CheckOutlined,
-  CloseOutlined,
-  DeleteFilled,
-  UploadOutlined,
-} from "@ant-design/icons";
 import { NavLink, useLocation } from "react-router-dom";
-import { Progress } from "antd";
+
+import {
+  Paper,
+  Grid,
+  Card,
+  CardActions,
+  CardContent,
+  Button,
+  Typography,
+  Tooltip,
+  Modal,
+  Fade,
+  Backdrop,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  LinearProgress,
+  CircularProgress,
+  Snackbar,
+  IconButton 
+} from "@material-ui/core";
+import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
+
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
+import SaveIcon from "@material-ui/icons/Save";
+import CloseIcon from "@material-ui/icons/Close";
+import { green } from "@material-ui/core/colors";
+import CheckIcon from "@material-ui/icons/Check";
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import LoopIcon from '@material-ui/icons/Loop';
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      minWidth: 275,
+      flexGrow: 1,
+    },
+    paper: {
+      position: "absolute",
+      width: 400,
+      backgroundColor: theme.palette.background.paper,
+      border: "2px solid #000",
+      boxShadow: theme.shadows[5],
+      padding: theme.spacing(2, 4, 3),
+    },
+    bullet: {
+      display: "inline-block",
+      margin: "0 2px",
+      transform: "scale(0.8)",
+    },
+    title: {
+      fontSize: 14,
+      color: "#222"
+    },
+    pos: {
+      marginBottom: 12,
+    },
+    addButton: {
+      marginLeft: 30,
+    },
+    zeroMargin: {
+      margin: 0,
+    },
+    zeroPadding: {
+      padding: 0,
+    },
+    buttonSuccess: {
+      backgroundColor: green[500],
+      "&:hover": {
+        backgroundColor: green[700],
+      },
+    },
+    buttonProgress: {
+      color: green[500],
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      marginTop: -12,
+      marginLeft: -12,
+    },
+    wrapper: {
+      margin: theme.spacing(1),
+      position: "relative",
+    },
+  })
+);
 
 const WorkspaceAppFiles = ({ id }: any) => {
-  const location: any = useLocation<any>();
-  const workspaceName = location.state.workspaceName;
   const workspacesId = id;
-  const fileData: any[] = [];
-  const [workspaceFileData, setWorkspaceFileData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [form] = Form.useForm();
-
+  const location: any = useLocation<any>();
+  const classes = useStyles();
+  function Alert(props: AlertProps) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }
   let organisationId = "";
   let user = JSON.parse(localStorage?.getItem("user"));
   if (user) {
     organisationId = user["organisationId"];
   }
+  const workspaceName = location.state.workspaceName;
+  
+  const [progress, setProgress] = useState(0);
+  const [success, setSuccess] = useState(false);
+  const [isSuccessAlert, setSuccessAlert] = useState(false); //use for success message
+  const [notifyMsg,setMsg] = useState("");
+
+  const [workspaceFileData, setWorkspaceFileData] = useState<any[]>([]);
+
+  const handleSuccessClose = (
+    event?: React.SyntheticEvent,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSuccessAlert(false);
+  };
 
   const options = {
     headers: {
       Token: localStorage.getItem("token"),
     },
+    onDownloadProgress: (progressEvent:any) => {
+      setProgress(
+        Math.round((progressEvent.loaded / progressEvent.total) * 100)
+      );
+    }
   };
 
-  useEffect(() => {
-    const getWorkspaceFileData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios
-          .get(
-            `api/files?organisationId=${organisationId}&workspaceId=${id}`,
-            options
-          )
-          .catch((err) => console.log(err));
-        if (response) {
-          const datatemp = response.data;
-          // datatemp.map((data:any)=>{
-          //     if(data.workspaceId == workspacesId){
-          //         fileData.push(data);
-          //     }
-          // })
-          datatemp.files.map((data: any) => {
-            fileData.push(data);
-          });
-          setWorkspaceFileData(fileData);
-          setLoading(false);
-        }
-      } catch (err) {
-        setLoading(false);
+  
+  const getWorkspaceFileData = async () => {
+    try {
+      const response = await axios
+        .get(
+          `api/files?organisationId=${organisationId}&workspaceId=${id}`,
+          options
+        )
+        .catch((err) => console.log(err));
+      if (response) {
+        const datatemp = response.data;
+        setWorkspaceFileData(datatemp.files);
       }
-    };
-    getWorkspaceFileData();
-  }, []);
+    } catch (err) {
+      console.log('11111111111111111111',err)
+    }
+  };
+
+  useEffect(()=>{
+    getWorkspaceFileData()
+  },[])
+
   const getTimeCal = (date: string) => {
     const date1 = new Date(date);
     const date2 = new Date();
+    let days = "";
     let totalDays = Math.floor(
       (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)
     );
-    return totalDays;
+    if(Math.floor(totalDays/31) > 0){
+      days = `${Math.floor(totalDays/31)} Months Ago`
+    }else{
+      days = `${totalDays} Days Ago`
+    }
+    console.log(totalDays,Math.floor(totalDays/31))
+    return days;
   };
 
-  const WorkspaceFileUploadForm = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [loaded, setLoaded] = useState(0);
-    const maxSelectedFile = (event: any) => {
-      const files = event.target.files;
-      if (files.length > 3) {
-        const msg = "Only 3 files can be uploaded at a time";
-        event.target.value = null;
-        console.log(msg);
-        return false;
-      }
-      return true;
-    };
-
-    const checkFileType = (event: any) => {
-      const files = event.target.files;
-      let err = "";
-      const fileTypes = ["fcs", "lmd"];
-      for (
-        let fileCount = 0;
-        fileCount < event.target.files.length;
-        fileCount++
-      ) {
-        let fileType = files[fileCount].name.split(".")[
-          files[fileCount].name.split(".").length - 1
-        ];
-        if (!fileTypes.includes(fileType)) {
-          err = "Allowed file types are fcs,lmd";
-        }
-      }
-      if (err !== "") {
-        event.target.value = null;
-        console.log(err);
-        return false;
-      }
-      return true;
-    };
-    // const checkFileSize = (event:any)=>{
-    //     const files = event.target.files;
-    //     const maxSize = 15000;
-    //     let err = "";
-    //     for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
-    //         console.log(files[fileCount])
-    //         if(files[fileCount].size > maxSize){
-    //             err = "File size is too large.Maximum upload limit is 40MB"
-    //         }
-    //     }
-    //     if(err !== ''){
-    //         event.target.value = null;
-    //         console.log(err);
-    //         return false;
-    //     }
-    //     return true;
-    // }
-    const uploadFiles = (event: any) => {
-      if (maxSelectedFile(event) && checkFileType(event)) {
-        const data = new FormData();
-        for (
-          let fileCount = 0;
-          fileCount < event.target.files.length;
-          fileCount++
-        ) {
-          data.append(`files[${fileCount}]`, event.target.files[fileCount]);
-        }
-        data.append("organisationId", organisationId);
-        data.append("workspaceId", workspacesId);
-        const config = {
-          headers: {
-            Token: localStorage.getItem("token"),
-          },
-          onUploadProgress: (ProgressEvent: any) => {
-            console.log("ProgressEvent>>>", ProgressEvent);
-            setLoaded(
-              //@ts-ignore
-              Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100, 2)
-            );
-          },
-        };
-        axios
-          .post("api/upload", data, config)
-          .then((res: any) => {
-            console.log("response>>>>>>", res);
-            setVisible(false);
-          })
-          .catch((err: any) => {
-            console.log("er12344=>>>>>", err);
-          });
-      }
-    };
+  
+  const FileCard = (props:any) => {
     return (
-      <div className="uploadFileModal">
-        <p>
-          Upload no more than 3 files (.fcs, .lmd only) at a time (hold Control
-          on keyboard to select multiple files). Maximum of 40MB in one upload.
-          <br />
-          <strong>
-            All files in the same workspace must have the same parameters.
-          </strong>
-        </p>
-        <input type="file" name="files" multiple onChange={uploadFiles} />
-        <Progress percent={loaded} />
-      </div>
+      <>
+        <Grid item lg={3} md={6} sm={12}>
+          <Card className={classes.root}>
+            <CardContent style={{ textAlign: "center" }}>
+            <NavLink to={`/analyse/${workspacesId}/${props.data.id}`}>
+              <Typography
+                style={{
+                  fontWeight: "bold",
+                  color: "#66a",
+                  marginBottom: "5px"
+                }}
+                color="textPrimary"
+                align="center"
+                gutterBottom
+                noWrap
+              >
+                {props.data.label}
+              </Typography>
+              </NavLink>
+              <Typography
+                className={classes.title}
+                color="textSecondary"
+                gutterBottom
+              >
+                {getTimeCal(props.data.createdOn)}
+              </Typography>
+            </CardContent>
+            <CardActions style={{ display: "flex", justifyContent: "center" }}>
+              <Tooltip title="Edit file">
+                <Button
+                  size="small"
+                  color="primary"
+                  startIcon={<EditIcon />}
+                  variant="contained"
+                >
+                  Edit
+                </Button>
+              </Tooltip>
+              <Tooltip title="Delete file">
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  variant="contained"
+                >
+                  Delete
+                </Button>
+              </Tooltip>
+            </CardActions>
+          </Card>
+        </Grid>
+      </>
     );
   };
 
   const WorkspaceHeader = () => {
-    const showModal = () => {
-      setVisible(true);
-    };
-
-    const handleCancel = (e: any) => {
-      setVisible(false);
-      form.resetFields();
-    };
-
     return (
-      <div className="workspaceHeader">
-        <Row gutter={[8, 8]}>
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} className="title">
-            <h3>{workspaceName} - Files</h3>
-          </Col>
-          <Col
-            xs={24}
-            sm={24}
-            md={12}
+      <>
+        <Grid
+          style={{
+            backgroundColor: "#66a",
+            WebkitBorderBottomLeftRadius: 0,
+            WebkitBorderBottomRightRadius: 0,
+          }}
+          container
+        >
+          <Grid
+            item
             lg={12}
-            xl={12}
-            className="workspaceFileBtn"
+            sm={12}
+            style={{
+              display: "flex",
+              padding: 10,
+              justifyContent: "space-between",
+            }}
           >
-            <Button type="primary" onClick={showModal} className="text-dark">
-              Upload Files
-            </Button>
-            <Modal
-              visible={visible}
-              title="Upload a Flow Cytometry File"
-              onCancel={handleCancel}
-              footer={null}
-              destroyOnClose={true}
-            >
-              <WorkspaceFileUploadForm />
-            </Modal>
-            <Button type="primary" className="text-dark">
-              Analyse
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    );
-  };
-
-  const WorkspaceFileCard = ({ item }: any) => {
-    const [isInEditMode, setIsInEditMode] = useState(false);
-    const editName = useRef<HTMLInputElement>(null);
-    const [isValid, setIsValid] = useState(true);
-
-    const updateWorkspaceFiles = (id: string, data: any) => {
-      const newWorkspaceName = editName.current?.value || "";
-      data["label"] = newWorkspaceName;
-      setIsInEditMode((prevData: Boolean) => !prevData);
-    };
-
-    const changeEditMode = () => {
-      setIsInEditMode((prevData: Boolean) => !prevData);
-    };
-
-    const deleteWorkspace = (workid: string) => {
-      setWorkspaceFileData((prevData: any) => {
-        return prevData.filter((data: any) => {
-          return data.id != workid;
-        });
-      });
-    };
-
-    const cancel = () => {
-      setIsInEditMode(false);
-      setIsValid(true);
-    };
-
-    const handleChange = (event: any) => {
-      setIsValid(true);
-      if (event.target.value.length == 0) {
-        setIsValid(false);
-      }
-    };
-
-    return (
-      <Card>
-        <div className="workspaceDetail">
-          {isInEditMode ? (
-            <div className="editable">
-              <input
-                type="text"
-                onChange={handleChange}
-                defaultValue={item.label}
-                ref={editName}
-              />
-              <div className="action">
-                <Tooltip
-                  placement="bottom"
-                  arrowPointAtCenter={true}
-                  title="Save Changes"
+            <h1 className={classes.zeroMargin} style={{ color: "#ddd" }}>
+              {workspaceName} - Files
+            </h1>
+            <div>
+              <Tooltip title="Upload file">
+                <Button
+                  variant="contained"
+                  className={classes.addButton}
+                  startIcon={<CloudUploadIcon />}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
                 >
-                  <a
-                    type="button"
-                    className={!isValid ? "saveBtn disabled" : "saveBtn"}
-                    onClick={() => updateWorkspaceFiles(item.id, item)}
-                  >
-                    <CheckOutlined />
-                  </a>
-                </Tooltip>
-                <Tooltip
-                  placement="bottom"
-                  arrowPointAtCenter={true}
-                  title="Cancel"
-                >
-                  <a
-                    type="button"
-                    className="cancelBtn"
-                    onClick={() => cancel()}
-                  >
-                    <CloseOutlined />
-                  </a>
-                </Tooltip>
-              </div>
-            </div>
-          ) : (
-            <div className="workspace-name">
-              <NavLink to={`/analyse/${workspacesId}/${item.id}`}>
-                <p>{item.label}</p>
-              </NavLink>
-            </div>
-          )}
-          <p>{`${getTimeCal(item.createdOn)} days ago`}</p>
-          <p>{item.isPrivate ? "Private" : "Public"}</p>
-          <div className="main-action">
-            {isInEditMode ? null : (
-              <Tooltip
-                placement="bottom"
-                arrowPointAtCenter={true}
-                title="Edit"
-              >
-                <a
-                  type="button"
-                  className="editBtn"
-                  onClick={() => changeEditMode()}
-                >
-                  <EditFilled />
-                </a>
+                  Upload File
+                </Button>
               </Tooltip>
-            )}
-            <Tooltip
-              placement="bottom"
-              arrowPointAtCenter={true}
-              title="Delete"
-            >
-              <a
-                type="button"
-                className="deleteBtn"
-                onClick={() => {
-                  deleteWorkspace(item.id);
-                }}
-              >
-                <DeleteFilled />
-              </a>
-            </Tooltip>
-          </div>
-        </div>
-      </Card>
+            
+            </div>
+          </Grid>
+
+          <Grid item lg={12} sm={12} md={12}>
+            <div className={classes.root}>
+              <LinearProgress variant="determinate" color="secondary" value={progress} />
+            </div>
+          </Grid>
+        </Grid>
+      </>
     );
   };
 
-  const WorkspaceFileList = () => {
-    return (
-      <List
-        grid={{
-          gutter: 16,
-          xs: 1,
-          sm: 1,
-          md: 4,
-          lg: 4,
-          xl: 4,
-          xxl: 4,
-        }}
-        dataSource={workspaceFileData}
-        renderItem={(item: any) => (
-          <List.Item>
-            <WorkspaceFileCard item={item} />
-          </List.Item>
-        )}
-      />
-    );
-  };
   return (
-    <div className="block workspaceBlock">
-      <div className="container-fluid">
-        <WorkspaceHeader />
-
-        {loading ? <h1>Loading...</h1> : <WorkspaceFileList />}
-      </div>
-    </div>
+    <>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={isSuccessAlert}
+        autoHideDuration={6000}
+        onClose={handleSuccessClose}
+      >
+        <Alert onClose={handleSuccessClose} severity="success">
+          {notifyMsg}
+        </Alert>
+      </Snackbar>
+      <Grid
+        style={{
+          marginLeft: "auto",
+          marginRight: "auto",
+          justifyContent: "center",
+          display: "flex",
+          marginBottom: 50,
+        }}
+        lg={12}
+        xl={10}
+      >
+        <Grid
+          style={{
+            backgroundColor: "#fafafa",
+            marginLeft: 10,
+            marginRight: 10,
+            marginTop: 5,
+            boxShadow: "2px 3px 3px #ddd",
+          }}
+          xs={12}
+        >
+          <WorkspaceHeader />
+          <Grid
+            container
+            spacing={2}
+            style={{
+              padding: "10px",
+              backgroundColor: "#ddd",
+              margin: "auto",
+              width: "100%",
+            }}
+          >
+            {
+              workspaceFileData.length > 0 ? workspaceFileData.map((data:any)=>{
+                return <FileCard data={data}/>
+              }) : 
+              <h1>No Data</h1>
+            }
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
+  
 };
 
 export default WorkspaceAppFiles;

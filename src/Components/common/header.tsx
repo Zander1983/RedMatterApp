@@ -1,6 +1,6 @@
 import React, { useState, FC } from "react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink,useHistory } from "react-router-dom";
 
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -38,19 +38,25 @@ const useStyles = makeStyles((theme) => ({
 const AppHeader: FC = (props: any) => {
   const classes = useStyles();
   const [isLogin, setIsLogin] = useState(true);
+  const history = useHistory();
 
   let user = localStorage?.getItem("user");
   let login_logout_button;
-
+  const onLogout = ()=>{
+    localStorage.clear();
+  }
   if (user) {
     login_logout_button = (
-      <NavLink
+      <>
+      <NavLink className={classes.topBarLink} to="/workspaces">My Workspace</NavLink>
+      <a
         className={classes.topBarLink}
-        onClick={() => props.onLogout()}
-        to="/"
+        onClick={onLogout}
+        href="/"
       >
         Logout
-      </NavLink>
+      </a>
+      </>
     );
   } else {
     login_logout_button = (

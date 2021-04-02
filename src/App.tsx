@@ -40,10 +40,10 @@ const App: FC = () => {
   const handleAfterRegister = () => {
     history.push("/login");
   };
-  const handleAfterLogout = () => {
-    localStorage.clear();
-    setIsLogged((prevData: any) => false);
-  };
+  // const handleAfterLogout = () => {
+  //   localStorage.clear();
+  //   setIsLogged((prevData: any) => false);
+  // };
   useEffect(() => {}, [isLoggedIn]);
 
   return (
