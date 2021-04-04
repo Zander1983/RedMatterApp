@@ -1,21 +1,66 @@
-import Plotter, { PlotterState } from "./plotter";
-import ScatterDrawer from "../../renderers/drawers/scatterDrawer";
-import OvalGate from "../../dataManagement/gate/ovalGate";
+import GraphPlotter, {
+  GraphPlotterState,
+} from "graph/renderers/plotters/graphPlotter";
+import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
+import OvalGate from "graph/dataManagement/gate/ovalGate";
 import PolygonGate from "graph/dataManagement/gate/PolygonGate";
-import {
-  euclidianDistance2D,
-  getVectorAngle2D,
-  pointInsideEllipse,
-} from "graph/dataManagement/math/euclidianPlane";
+import PlotterPlugin from "graph/renderers/plotters/plugins/plotterPlugin";
+import ScatterHeatmapper from "graph/renderers/plotters/plugins/scatterHeatmapper";
+import Plotter from "./plotter";
 
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+interface ScatterPlotterState extends GraphPlotterState {}
 
-interface ScatterPlotterState extends PlotterState {
-  heatmap: boolean;
-}
+const applyPlugin = () => {
+  return function (
+    target: DataManager,
+    key: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      let overwritten = false;
+      let functionList: any[] = ["original"];
+
+      // Let's build a function list of all plugin's function
+      if (this.plugins.has(key)) {
+        this.plugins.get(key).forEach((e) => {
+          if (e.overwrite) {
+            if (overwritten) {
+              throw Error(
+                "Two override plugins in " +
+                  key +
+                  " of " +
+                  this.constructor.name
+              );
+            }
+            overwritten = true;
+            functionList = [e.function];
+          } else if (!overwritten) {
+            if (e.order == "before") {
+              functionList = [e.function, ...functionList];
+            } else if (e.order == "after") {
+              functionList = [...functionList, e.function];
+            } else {
+              throw Error("Unrecognized plugin order " + e.order);
+            }
+          }
+        });
+      }
+
+      // Now call each function in the list, return is last function's return
+      let ret: any = null;
+      for (const e of functionList) {
+        if (typeof e == "string") {
+          ret = original.apply(this, args);
+        } else {
+          ret = e(args);
+        }
+      }
+
+      return ret;
+    };
+  };
+};
 
 /*
   How to use plotters?
@@ -31,39 +76,102 @@ interface ScatterPlotterState extends PlotterState {
    1. Call setPlotterState(state)
    2. Call update()
 */
-export default class ScatterPlotter extends Plotter {
+export default class ScatterPlotter extends GraphPlotter {
   gates: (OvalGate | PolygonGate)[] = [];
   drawer: ScatterDrawer | null = null;
+  plugins: Map<
+    string,
+    {
+      origin: string;
+      order: string;
+      overwrite: boolean;
+      functionSignature: string;
+      function: Function;
+    }[]
+  >;
 
-  constructor(params: ScatterPlotterInput) {
-    super(params);
-    this.xLabels = this.createRangeArray("x");
-    this.yLabels = this.createRangeArray("y");
-
-    this.heatmap = params.heatmap;
-    this.xAxisName = params.xAxisName;
-    this.yAxisName = params.yAxisName;
-
-    // percentage of range in each dimension. seeks all points close to each
-    // point to assign it's color.
-    this.heatmappingRadius = 0.05;
-
-    this.drawer = new ScatterDrawer({
-      x1: leftPadding * this.scale,
-      y1: topPadding * this.scale,
-      x2: (this.width - rightPadding) * this.scale,
-      y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.xRange[0],
-      iex: this.xRange[1],
-      iby: this.yRange[0],
-      iey: this.yRange[1],
-      scale: this.scale,
-    });
+  public addPlugin(plugin: PlotterPlugin) {
+    const setup = plugin.getPluginSetup();
+    for (const param of setup) {
+      const final = {
+        origin: plugin.constructor.name,
+        ...param,
+      };
+      if (this.plugins.has(param.functionSignature)) {
+        const list = this.plugins.get(param.functionSignature);
+        if (!list.includes(final)) {
+          list.push(final);
+          this.plugins.set(param.functionSignature, list);
+        }
+      } else {
+        this.plugins.set(param.functionSignature, [final]);
+      }
+    }
+    plugin.setPlotter(this);
   }
 
-  draw() {
-    this.drawer.drawPlotGraph();
+  public removePlugin(plugin: PlotterPlugin) {
+    const setup = plugin.getPluginSetup();
+    for (const param of setup) {
+      const l = this.plugins.get(param.functionSignature);
+      const final = {
+        origin: plugin.constructor.name,
+        ...param,
+      };
+      const nl = l.filter((e) => e !== final);
+      this.plugins.set(param.functionSignature, nl);
+    }
+  }
 
+  @applyPlugin()
+  public update() {
+    super.update();
+  }
+
+  @applyPlugin()
+  public setPlotterState(state: ScatterPlotterState) {
+    super.setPlotterState(state);
+  }
+
+  @applyPlugin()
+  public getPlotterState(): ScatterPlotterState {
+    return {
+      ...super.getPlotterState(),
+    };
+  }
+
+  @applyPlugin()
+  public setDrawerState(): void {
+    super.setDrawerState();
+  }
+
+  @applyPlugin()
+  public createDrawer(): void {
+    this.drawer = new ScatterDrawer();
+  }
+
+  @applyPlugin()
+  public updateDrawer(): void {
+    this.drawer.update();
+  }
+
+  @applyPlugin()
+  public setTransformerState(): void {
+    super.setTransformerState();
+  }
+
+  @applyPlugin()
+  public createTransformer(): void {
+    super.createTransformer();
+  }
+
+  @applyPlugin()
+  public updateTransformer(): void {
+    super.updateTransformer();
+  }
+
+  @applyPlugin()
+  public validateDraw(): void {
     if (this.xAxis.length != this.yAxis.length) {
       throw Error(
         "Axes point count are different. xAxis has " +
@@ -73,12 +181,28 @@ export default class ScatterPlotter extends Plotter {
           " points"
       );
     }
+  }
+
+  @applyPlugin()
+  public draw() {
+    super.draw();
+    this.validateDraw();
+
+    this.drawPoints();
+  }
+
+  @applyPlugin()
+  public drawPoints() {
     const pointCount = this.xAxis.length;
     for (let i = 0; i < pointCount; i++) {
-      const color = "#000";
+      const color = this.getPointColor(i);
       const x = this.xAxis[i];
       const y = this.yAxis[i];
       this.drawer.addPoint(this.xAxis[i], this.yAxis[i], 1.4, color);
     }
+  }
+
+  public getPointColor(index: number) {
+    return "#000";
   }
 }

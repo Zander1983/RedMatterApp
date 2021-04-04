@@ -1,27 +1,21 @@
-import Plotter, { PlotterState } from "./plotter";
+import GraphPlotter, {
+  GraphPlotterState,
+} from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
 const binSize = 45;
 
-interface HistogramPlotterState extends PlotterState {
-  axis: string;
+interface HistogramPlotterState extends GraphPlotterState {
+  direction: "vertical" | "horizontal";
+  bins: number;
 }
 
-export default class HistogramPlotter extends Plotter {
-  // Optional params
-  xLabels: Array<string>;
-  yLabels: Array<string>;
-  drawer: HistogramDrawer;
-  bins: number;
-  axis: "vertical" | "horizontal" = "vertical";
+export default class HistogramPlotter extends GraphPlotter {
+  direction: "vertical" | "horizontal" = "vertical";
+  bins: number = 0;
 
   constructor(props: HistogramPlotterInput) {
     super(props);
-    this.bins = (props.axis === "x" ? this.width : this.height) / binSize;
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");
 
@@ -36,6 +30,55 @@ export default class HistogramPlotter extends Plotter {
       iey: this.axis == "vertical" ? this.getBinList().max : this.yRange[1],
       scale: this.scale,
     });
+  }
+
+  public getPlotterState() {
+    return {
+      ...super.getPlotterState(),
+      direction: this.direction,
+      bins: this.bins,
+    };
+  }
+
+  public setPlotterState(state: HistogramPlotterState) {
+    super.setPlotterState(state);
+    this.direction = state.direction;
+    this.bins = state.bins;
+  }
+
+  public update() {
+    if (this.direction === "vertical") {
+      this.bins = this.verticalBinCount = this.height / binSize;
+    } else {
+      this.bins = this.horizontalBinCount = this.width / binSize;
+    }
+    this.horizontalBinCount;
+    this.verticalBinCount;
+    super.update();
+  }
+
+  public setDrawerState(): void {
+    super.setDrawerState();
+  }
+
+  public createDrawer(): void {
+    this.drawer = new HistogramDrawer();
+  }
+
+  public updateDrawer(): void {
+    this.drawer.update();
+  }
+
+  public setTransformerState(): void {
+    super.setTransformerState();
+  }
+
+  public createTransformer(): void {
+    super.createTransformer();
+  }
+
+  public updateTransformer(): void {
+    super.updateTransformer();
   }
 
   createRangeArray(axis: "x" | "y"): Array<string> {

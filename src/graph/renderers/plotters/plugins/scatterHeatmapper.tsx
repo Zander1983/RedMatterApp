@@ -1,33 +1,53 @@
-  heatMapCache: Array<{ xAxis: string; yAxis: string; colors: string[] }> = [];
+import PlotterPlugin from "graph/renderers/plotters/plugins/plotterPlugin";
+import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
+import { pointInsideEllipse } from "graph/dataManagement/math/euclidianPlane";
 
-  getHeatmapColors() {
+export default class ScatterHeatmapperPlugin extends PlotterPlugin {
+  static TargetPlotter = ScatterPlotter;
+  plotter: ScatterPlotter;
+  heatmappingRadius = 0.05;
+  heatMapCache: Array<{ xAxis: string; yAxis: string; colors: string[] }> = [];
+  colors: string[] | null = null;
+
+  setPlotter(plotter: ScatterPlotter) {
+    this.plotter = plotter;
+  }
+
+  getPointColor_AFTER(index: number) {
+    if (this.colors === null) {
+      this.colors = this.getHeatmapColors();
+    }
+    return this.colors[index];
+  }
+
+  private getHeatmapColors() {
+    const plotter = this.plotter;
     for (const hm of this.heatMapCache) {
       const { xAxis, yAxis, colors } = hm;
-      if (this.xAxisName == xAxis && this.yAxisName == yAxis) {
+      if (plotter.xAxisName == xAxis && plotter.yAxisName == yAxis) {
         return colors;
       }
     }
     const hmr = this.heatmappingRadius;
-
     // Returns how many points are close (within heatmapping percentage radius)
     // to a given point i
     const closePoints = (i: number) => {
       let count = 0;
 
-      const x = this.xAxis[i];
-      const y = this.yAxis[i];
-      const xr = this.xRange[1] - this.xRange[0];
-      const yr = this.yRange[1] - this.yRange[0];
+      const x = plotter.xAxis[i];
+      const y = plotter.yAxis[i];
+      const xr = plotter.xRange[1] - plotter.xRange[0];
+      const yr = plotter.yRange[1] - plotter.yRange[0];
       const pp1 = { x: x - hmr * xr, y: y };
       const pp2 = { x: x + hmr * xr, y: y };
       const sp1 = { x: x, y: y - hmr * yr };
       const sp2 = { x: x, y: y + hmr * yr };
 
-      this.xAxis.forEach((e, j) => {
+      plotter.xAxis.forEach((e, j) => {
         if (
           j !== i &&
           pointInsideEllipse(
-            { x: this.xAxis[j], y: this.yAxis[j] },
+            { x: plotter.xAxis[j], y: plotter.yAxis[j] },
             {
               center: { x: x, y: y },
               primaryP1: pp1,
@@ -43,7 +63,7 @@
       });
       return count;
     };
-    const lp = Array(this.xAxis.length)
+    const lp = Array(plotter.xAxis.length)
       .fill(0)
       .map((e, i) => closePoints(i));
 
@@ -56,11 +76,12 @@
       const green = 80;
       return `rgb(${red}, ${green}, ${blue})`;
     });
-    for (let i = 0; i < this.xAxis.length; i++) {}
+    for (let i = 0; i < plotter.xAxis.length; i++) {}
     this.heatMapCache.push({
       colors: cColors,
-      xAxis: this.xAxisName,
-      yAxis: this.yAxisName,
+      xAxis: plotter.xAxisName,
+      yAxis: plotter.yAxisName,
     });
     return cColors;
   }
+}

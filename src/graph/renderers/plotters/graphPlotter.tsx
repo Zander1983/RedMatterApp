@@ -1,7 +1,7 @@
 import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
 import Gate from "graph/dataManagement/gate/gate";
 import GraphDrawer from "graph/renderers/drawers/graphDrawer";
-import GraphTransformer from "graph/renderers/transformations/graphTransformer";
+import GraphTransformer from "graph/renderers/transformers/graphTransformer";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -45,27 +45,27 @@ export interface GraphPlotterState extends PlotterState {
 export default class GraphPlotter extends Plotter {
   /* === DATA === */
 
-  public width: number = 0;
-  public height: number = 0;
-  public scale: number = 2;
-  public xAxis: number[] = [];
-  public yAxis: number[] = [];
-  public xAxisName: string;
-  public yAxisName: string;
-  public xRange: [number, number] = [0, 0];
-  public yRange: [number, number] = [0, 0];
-  public xLabels: string[] = [];
-  public yLabels: string[] = [];
-  public gates: Gate[];
+  width: number = 0;
+  height: number = 0;
+  scale: number = 2;
+  xAxis: number[] = [];
+  yAxis: number[] = [];
+  xAxisName: string;
+  yAxisName: string;
+  xRange: [number, number] = [0, 0];
+  yRange: [number, number] = [0, 0];
+  xLabels: string[] = [];
+  yLabels: string[] = [];
+  gates: Gate[];
 
-  protected canvasContext: any = null;
-  protected drawer: GraphDrawer | null = null;
-  protected transformer: GraphTransformer | null = null;
-  protected verticalBinCount: number = 0;
-  protected horizontalBinCount: number = 0;
+  canvasContext: any = null;
+  drawer: GraphDrawer | null = null;
+  transformer: GraphTransformer | null = null;
+  verticalBinCount: number = 0;
+  horizontalBinCount: number = 0;
 
   // Constants
-  protected rangeSpacer: number = 0.05;
+  rangeSpacer: number = 0.05;
 
   /* === METHODS === */
 

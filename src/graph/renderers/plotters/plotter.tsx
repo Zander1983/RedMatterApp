@@ -1,5 +1,5 @@
 import Drawer from "graph/renderers/drawers/drawer";
-import Transformer from "graph/renderers/transformations/transformer";
+import Transformer from "graph/renderers/transformers/transformer";
 
 export interface PlotterState {}
 
@@ -49,11 +49,9 @@ export default abstract class Plotter {
 
   protected abstract setDrawerState(): void;
   protected abstract createDrawer(): void;
-
   protected abstract updateDrawer(): void;
 
   protected abstract setTransformerState(): void;
-
   protected abstract createTransformer(): void;
   protected abstract updateTransformer(): void;
 }

@@ -1,6 +1,4 @@
-import Transformer, {
-  Point,
-} from "graph/renderers/transformations/transformer";
+import Transformer, { Point } from "graph/renderers/transformers/transformer";
 
 export interface GraphPoint extends Point {
   x: number;
