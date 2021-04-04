@@ -5,8 +5,8 @@
 import Plotter from "graph/renderers/plotters/plotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
-import PlotterPlugin from "graph/renderers/plotters/plugins/plotterPlugin";
-import ScatterHeatmapperPlugin from "graph/renderers/plotters/plugins/scatterHeatmapper";
+import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
+import ScatterHeatmapperPlugin from "graph/renderers/plotters/instancePlugins/scatterHeatmapper";
 
 /*
   This is the only place in the whole codebase where plots are allowed to be

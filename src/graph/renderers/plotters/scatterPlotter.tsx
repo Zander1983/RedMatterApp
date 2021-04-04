@@ -4,8 +4,8 @@ import GraphPlotter, {
 import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
 import OvalGate from "graph/dataManagement/gate/ovalGate";
 import PolygonGate from "graph/dataManagement/gate/PolygonGate";
-import PlotterPlugin from "graph/renderers/plotters/plugins/plotterPlugin";
-import ScatterHeatmapper from "graph/renderers/plotters/plugins/scatterHeatmapper";
+import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
+import ScatterHeatmapper from "graph/renderers/plotters/instancePlugins/scatterHeatmapper";
 import Plotter from "./plotter";
 
 interface ScatterPlotterState extends GraphPlotterState {}

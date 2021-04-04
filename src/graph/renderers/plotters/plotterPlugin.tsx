@@ -23,7 +23,8 @@ interface PluginSetup {
   a underline after the name plus the a tag of the behaviour you expect 
   ("OVERWRITE", "AFTER", "BEFORE").
 
-  For example, if I want a plotter to draw a rect at the center of the scatter plot after the original plotter's draw is called, you could write:
+  For example, if I want a plotter to draw a rect at the center of the scatter
+  plot after the original plotter's draw is called, you could write:
 
   class CentralPointPlugin extends PlotterPlugin {
     static TargetPlotter = ScatterPlotter
@@ -56,9 +57,9 @@ interface PluginSetup {
   1) Only one overwrite per plotter function
   2) BEFORE is FIFO, if list is [plugin1, plugin2] then plugin1.func_BEFORE will be
   called before plugin2.func_BEFORE when func is called in plotter.
-  2) AFTER is FILO, if list is [plugin1, plugin2] then plugin2.func_BEFORE will be
-  called before plugin1.func_BEFORE when func is called in plotter.
-  3) A same plugin may implement (AFTER and BEFORE) or OVERWRITE
+  2) AFTER is FILO, if list is [plugin1, plugin2] then plugin2.func_AFTER will be
+  called before plugin1.func_AFTER when func is called in plotter.
+  3) A same plugin may implement a (BEFORE and AFTER) or OVERWRITE
 */
 export default abstract class PlotterPlugin {
   static TargetPlotter = Plotter;

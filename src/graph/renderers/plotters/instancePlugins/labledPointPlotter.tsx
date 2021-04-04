@@ -1,4 +1,4 @@
-import PlotterPlugin from "graph/renderers/plotters/plugins/plotterPlugin";
+import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
 export default class ScatterHeatmapperPlugin extends PlotterPlugin {
