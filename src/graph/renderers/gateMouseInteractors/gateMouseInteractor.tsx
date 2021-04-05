@@ -1,29 +1,38 @@
 import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
-import Plotter from "graph/plotters/plotter";
+import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 
 export interface Point {
   x: number;
   y: number;
 }
 
-export interface GateState {}
+export interface GateState {
+  lastMousePos: Point;
+}
 
-export default abstract class GateMouseInteractor {
+export interface MouseInteractorState {
   canvasID: string;
   canvasRender: Function;
-  canvasRenderLastTimestamp: any = 0;
-  started: boolean = false;
-  plotter: Plotter;
-  targetClass: Gate;
-  lastMousePos: Point;
+  plugin: GatePlotterPlugin;
+}
 
-  constructor(canvasID: string) {
-    this.canvasID = canvasID;
-  }
+export default abstract class GateMouseInteractor {
+  static targetGate: Gate;
+  static targetPlugin: GatePlotterPlugin;
 
-  setCanvasRender(f: Function) {
-    this.canvasRender = f;
+  protected started: boolean = false;
+  protected plugin: GatePlotterPlugin;
+  protected lastMousePos: Point;
+  private canvasRenderLastTimestamp: any = 0;
+
+  canvasID: string;
+  canvasRender: Function;
+
+  setMouseInteractorState(state: MouseInteractorState) {
+    this.canvasRender = state.canvasRender;
+    this.canvasID = state.canvasID;
+    this.plugin = state.plugin;
   }
 
   start() {
@@ -32,64 +41,44 @@ export default abstract class GateMouseInteractor {
 
   end() {
     this.started = false;
-    this.setPlotterState();
+    this.clearGateState();
+    this.setPluginState();
     this.canvasRender();
   }
 
-  setPlotterState() {
-    this.plotter.setGateState(this.generateGateState());
+  setPluginState() {
+    this.plugin.setGatingState(this.getGatingState());
     this.canvasRender();
   }
 
-  abstract generateGateState(): GateState;
+  getGatingState(): GateState {
+    return {
+      lastMousePos: this.lastMousePos,
+    };
+  }
+
+  protected abstract instanceGate(): Gate;
+  protected abstract clearGateState(): void;
+  protected abstract gateEvent(type: string, point: Point): void;
 
   createAndAddGate() {
-    const state = this.generateOvalGateState();
-    const gate = new this.targetClass(this.generateOvalGateState());
+    const gate = this.instanceGate();
     const id = dataManager.addGate(gate);
     dataManager.addGateToCanvas(id, this.canvasID, true);
-    this.ovalGateEnd();
-  }
-
-  ovalGateEvent(type: string, x: number, y: number) {
-    if (this.ovalGateP0 == null && type == "mousedown") {
-      // Step 1: select first point
-      this.ovalGateP0 = { x: x, y: y };
-    } else if (this.ovalGateP1 == null && type == "mousedown") {
-      // Step 2: select second point
-      this.ovalGateP1 = { x: x, y: y };
-      this.calculateEllipseAngle();
-    } else if (
-      // Step 3: move mouse to select other axis of oval gate
-      this.ovalGateP0 != null &&
-      this.ovalGateP1 != null &&
-      type == "mousemove"
-    ) {
-      this.calculateEllipseAngle();
-      this.calculateMainToSecondaryAxisEllipseSize(x, y);
-    } else if (
-      // Step 4: press to confirm and create gate
-      this.ovalGateP0 != null &&
-      this.ovalGateP1 != null &&
-      type == "mousedown"
-    ) {
-      // create gate...
-      this.createAndAddGate();
-    }
-    this.setPlotterOvalGateState();
-
-    const now = new Date().getTime();
-    if (this.canvasRenderLastTimestamp + 10 < now) {
-      this.canvasRender();
-      this.canvasRenderLastTimestamp = now;
-    }
+    this.end();
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
-    const p = this.plotter.convertToAbstractPoint(x, y);
-    this.lastMousePos = { x: p.x, y: p.y };
+    const p = this.plugin.plotter.transformer.toAbstractPoint({ x: x, y: y });
+    this.lastMousePos = p;
     if (this.started) {
-      this.ovalGateEvent(type, p.x, p.y);
+      this.gateEvent(type, p);
+      this.setPluginState();
+      const now = new Date().getTime();
+      if (this.canvasRenderLastTimestamp + 10 < now) {
+        this.canvasRender();
+        this.canvasRenderLastTimestamp = now;
+      }
     }
   }
 }

@@ -97,7 +97,7 @@ export default abstract class PlotterPlugin {
   public getPluginSetup(): PluginSetup[] {
     const funcs = this.getAllFunctions();
     const filtered = funcs.filter(
-      (e) => !PlotterPlugin.baseObjectFunctions.includes(e)
+      (e) => !PlotterPlugin.baseObjectFunctions.includes(e) && e.includes("_")
     );
     const ret = filtered.map((e) => {
       if (!e.includes("_"))
