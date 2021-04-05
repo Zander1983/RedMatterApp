@@ -20,12 +20,12 @@ const classes = {
 };
 
 export default function AxisBar(props: any) {
-  const canvas = props.canvas;
+  const plot = props.plot;
 
-  const xAxis = canvas.xAxis;
-  const yAxis = canvas.yAxis;
-  const xPlotType = canvas.xPlotType;
-  const yPlotType = canvas.yPlotType;
+  const xAxis = plot.xAxis;
+  const yAxis = plot.yAxis;
+  const xPlotType = plot.xPlotType;
+  const yPlotType = plot.yPlotType;
   const [xHistogram, setXHistogram] = React.useState(false);
   const [yHistogram, setYHistogram] = React.useState(false);
   const [oldXAxis, setOldXAxis] = React.useState(null);
@@ -35,7 +35,7 @@ export default function AxisBar(props: any) {
     return axis === "x" ? yHistogram : xHistogram;
   };
 
-  const isCanvasHistogram = () => {
+  const isPlotHistogram = () => {
     return isAxisDisabled("y") || isAxisDisabled("x");
   };
 
@@ -45,28 +45,28 @@ export default function AxisBar(props: any) {
     if (value) {
       axis === "x" ? setOldYAxis(yAxis) : setOldXAxis(xAxis);
       axis === "x"
-        ? props.canvas.xAxisToHistogram()
-        : props.canvas.yAxisToHistogram();
+        ? props.plot.xAxisToHistogram()
+        : props.plot.yAxisToHistogram();
     } else {
       axis === "x"
-        ? props.canvas.setYAxis(oldYAxis)
-        : props.canvas.setXAxis(oldXAxis);
+        ? props.plot.setYAxis(oldYAxis)
+        : props.plot.setXAxis(oldXAxis);
     }
   };
 
   const setAxis = (axis: "x" | "y", value: string) => {
     const otherAxisValue = axis == "x" ? yAxis : xAxis;
-    if (value == otherAxisValue && !isCanvasHistogram()) {
+    if (value == otherAxisValue && !isPlotHistogram()) {
       setHistogram(axis == "x" ? "y" : "x", true);
     } else {
-      axis == "x" ? props.canvas.setXAxis(value) : props.canvas.setYAxis(value);
+      axis == "x" ? props.plot.setXAxis(value) : props.plot.setYAxis(value);
     }
   };
 
   const setPlotType = (axis: "x" | "y", value: string) => {
     axis == "x"
-      ? props.canvas.setXAxisPlotType(value)
-      : props.canvas.setYAxisPlotType(value);
+      ? props.plot.setXAxisPlotType(value)
+      : props.plot.setYAxisPlotType(value);
   };
 
   return (
@@ -91,7 +91,7 @@ export default function AxisBar(props: any) {
           <b>Type:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            disabled={isAxisDisabled("x") || isCanvasHistogram()}
+            disabled={isAxisDisabled("x") || isPlotHistogram()}
             value={xPlotType}
             //@ts-ignore
             onChange={(e) => setPlotType("x", e.target.value)}
@@ -108,9 +108,9 @@ export default function AxisBar(props: any) {
             //@ts-ignore
             onChange={(e) => setAxis("x", e.target.value)}
             disabled={isAxisDisabled("x")}
-            value={canvas.xAxis}
+            value={plot.xAxis}
           >
-            {canvas.getFile().axes.map((e: any) => (
+            {plot.getFile().axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>
@@ -155,7 +155,7 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             value={yPlotType}
-            disabled={isAxisDisabled("y") || isCanvasHistogram()}
+            disabled={isAxisDisabled("y") || isPlotHistogram()}
             //@ts-ignore
             onChange={(e) => setPlotType("y", e.target.value)}
           >
@@ -172,7 +172,7 @@ export default function AxisBar(props: any) {
             disabled={isAxisDisabled("y")}
             value={yAxis}
           >
-            {canvas.getFile().axes.map((e: any) => (
+            {plot.getFile().axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>

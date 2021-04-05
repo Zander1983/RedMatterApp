@@ -2,11 +2,11 @@ import Gate, { GateInput, Point } from "./gate";
 import { pointInsidePolygon } from "graph/dataManagement/math/euclidianPlane";
 
 interface PolygonGateInput extends GateInput {
-  points: { x: number; y: number }[];
+  points: Point[];
 }
 
 export default class PolygonGate extends Gate {
-  points: { x: number; y: number }[] = [];
+  points: Point[] = [];
   gateType: string = "PolygonGate";
 
   constructor(gate: PolygonGateInput) {

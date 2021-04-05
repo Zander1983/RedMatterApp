@@ -19,21 +19,20 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
     const plotter = this.plotter;
     for (const special of this.specialPoints) {
       if (special.text !== undefined) {
-        const { x, y } = plotter.transformer.convertToPlotCanvasPoint(
-          special.x,
-          special.y
-        );
-        this.drawer.text({
-          x: (x + 5) * this.scale,
-          y: (y - 5) * this.scale,
-          radius: 3,
+        const { x, y } = plotter.transformer.toConcretePoint({
+          x: special.x,
+          y: special.y,
+        });
+        this.plotter.drawer.text({
+          x: (x + 5) * this.plotter.scale,
+          y: (y - 5) * this.plotter.scale,
           text: special.text,
           font: "30px Roboto black",
         });
       } else {
-        this.drawer.text({
-          x: (special.x + 5) * this.scale,
-          y: (special.y - 5) * this.scale,
+        this.plotter.drawer.text({
+          x: (special.x + 5) * this.plotter.scale,
+          y: (special.y - 5) * this.plotter.scale,
           text: special.text,
           font: "30px Roboto black",
         });

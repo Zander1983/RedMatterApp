@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
-import Plot from "../plots/Plot";
+import PlotComponent from "../plots/PlotComponent";
 
 import dataManager from "../../dataManagement/dataManager";
 
@@ -45,17 +45,17 @@ class Workspace extends React.Component {
       this.update();
     });
     this.state = {
-      canvas: [],
+      plots: [],
     };
   }
 
   update() {
-    const canvasMap = dataManager.getAllCanvas();
-    const canvasList: object[] = [];
-    canvasMap.forEach((v, k) => canvasList.push({ canvas: v, key: k }));
+    const plotMap = dataManager.getAllPlots();
+    const plotList: object[] = [];
+    plotMap.forEach((v, k) => plotList.push({ plot: v, key: k }));
 
     this.setState({
-      canvas: canvasList,
+      plots: plotList,
     });
   }
 
@@ -65,7 +65,7 @@ class Workspace extends React.Component {
   render() {
     console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
     //@ts-ignore
-    if (this.state.canvas.length > 0) {
+    if (this.state.plots.length > 0) {
       return (
         <ResponsiveGridLayout
           className="layout"
@@ -76,7 +76,7 @@ class Workspace extends React.Component {
         >
           {
             //@ts-ignore
-            this.state.canvas.map((e) => {
+            this.state.plots.map((e) => {
               return (
                 <div
                   key={e.key}
@@ -85,7 +85,7 @@ class Workspace extends React.Component {
                   id={`workspace-outter-${e.key}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
-                    <Plot canvas={e.canvas} canvasIndex={e.key} />
+                    <PlotComponent plot={e.plots} plotsIndex={e.key} />
                   </div>
                 </div>
               );

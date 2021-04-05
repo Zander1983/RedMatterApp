@@ -9,8 +9,8 @@
   FCSFile interface, delete, update or save them also.
 */
 import FCSFile from "./fcsFile";
-import Canvas from "../canvasManagement/canvas";
 import Gate from "./gate/gate";
+import Plot from "../plotManagement/plot";
 
 const uuid = require("uuid");
 
@@ -49,12 +49,16 @@ class DataManager {
   observers: Map<string, { id: string; func: Function }[]> = new Map();
 
   files: Map<string, FCSFile> = new Map();
-  canvas: Map<string, Canvas> = new Map();
+  plots: Map<string, PlotManager> = new Map();
   gates: Map<string, Gate> = new Map();
 
+  // Function resposible for re-rendering the whole plot if need be.
+  // As this class is the source of truth, when it's updated it expects
+  // to have this function set so it can reflect that update.
   rerender: Function = () => {};
   loading = false;
 
+  /* === GENERAL === */
   getInstanceIDOfNewObject(): string {
     const newObjectInstaceID = uuid.v4();
     return newObjectInstaceID;
@@ -64,6 +68,7 @@ class DataManager {
     this.rerender = rerenderer;
   }
 
+  /* === FCSFILE LOGIC === */
   addFile(file: FCSFile): string {
     const fileId = this.getInstanceIDOfNewObject();
     this.files.set(fileId, file);
@@ -71,6 +76,100 @@ class DataManager {
     return fileId;
   }
 
+  removeFile(fileId: string) {
+    if (this.files.has(fileId)) {
+      this.files.delete(fileId);
+      this.rerender();
+      return;
+    }
+    throw Error("File " + fileId + " was not found");
+  }
+
+  getFiles() {
+    const files: { file: FCSFile; id: string }[] = [];
+    this.files.forEach((v, k) => {
+      files.push({ file: v, id: k });
+    });
+    return files;
+  }
+
+  getFile(fileID: string) {
+    return this.files.get(fileID);
+  }
+
+  createSubpopFile(plotID: string, inverse: boolean = false) {
+    const cplot = this.plots.get(plotID);
+    cplot.createSubpop(inverse);
+  }
+
+  /* === PLOT LOGIC === */
+  addPlot(fileID: string) {}
+
+  getAllPlots(): Map<string, Plot> {
+    const files = this.getFiles();
+    const present: string[] = [];
+
+    for (const file of files) {
+      present.push(file.id);
+      if (!this.plotIsPresent(file.id)) {
+        this.plots.set(file.id, new PlotManager(file.file, file.id));
+      }
+    }
+
+    this.plots.forEach((_, k) => {
+      if (!present.includes(k)) {
+        this.plots.delete(k);
+      }
+    });
+
+    return this.plots;
+  }
+
+  /* === GATE LOGIC === */
+  getAllGates(): Map<string, Gate> {
+    return this.gates;
+  }
+
+  @publishDecorator()
+  addGateToPlot(gateID: string, plotID: string, createSubpop: boolean = false) {
+    if (!this.plotIsPresent(plotID)) {
+      throw Error("Adding gate to non-existent plot");
+    }
+    if (!this.gateIsPresent(gateID)) {
+      throw Error("Adding non-existent gate to plot");
+    }
+    const cplot = this.plots.get(plotID);
+    cplot.addGate(this.gates.get(gateID), createSubpop);
+  }
+
+  @publishDecorator()
+  removeGateFromPlot(gateID: string, plotID: string) {
+    if (!this.plotIsPresent(plotID)) {
+      throw Error("Removing gate to non-existent plot");
+    }
+    if (!this.gateIsPresent(gateID)) {
+      throw Error("Removing non-existent gate to plot");
+    }
+    const plotGates = this.plots.get(plotID).gates;
+    let found = -1;
+    for (let indx in plotGates) {
+      if (plotGates[indx].id == gateID) {
+        this.plots.get(plotID).removeGate(plotGates[indx].id);
+        return;
+      }
+    }
+    throw Error("Gate " + gateID + " was not found in plot " + plotID);
+  }
+
+  @publishDecorator()
+  addGate(gate: Gate): string {
+    const gateID = this.getInstanceIDOfNewObject();
+    gate.setID(gateID);
+    this.gates.set(gateID, gate);
+    return gateID;
+  }
+
+  /* === OBSERVER LOGIC === */
   addObserver(type: string, callback: Function): string {
     const observerID = this.getInstanceIDOfNewObject();
     const observer = { id: observerID, func: callback };
@@ -101,103 +200,8 @@ class DataManager {
     this.observers.get(type).forEach((e) => e.func());
   }
 
-  removeFile(fileId: string) {
-    if (this.files.has(fileId)) {
-      this.files.delete(fileId);
-      this.rerender();
-      return;
-    }
-    throw Error("File " + fileId + " was not found");
-  }
-
-  getFiles() {
-    const files: { file: FCSFile; id: string }[] = [];
-    this.files.forEach((v, k) => {
-      files.push({ file: v, id: k });
-    });
-    return files;
-  }
-
-  getFile(fileID: string) {
-    return this.files.get(fileID);
-  }
-
-  createSubpopFile(canvasID: string, inverse: boolean = false) {
-    const ccanvas = this.canvas.get(canvasID);
-    ccanvas.createSubpop(inverse);
-  }
-
-  addCanvas(fileID: string) {}
-
-  getAllCanvas(): Map<string, Canvas> {
-    const files = this.getFiles();
-    const present: string[] = [];
-
-    for (const file of files) {
-      present.push(file.id);
-      if (!this.canvasIsPresent(file.id)) {
-        this.canvas.set(file.id, new Canvas(file.file, file.id));
-      }
-    }
-
-    this.canvas.forEach((_, k) => {
-      if (!present.includes(k)) {
-        this.canvas.delete(k);
-      }
-    });
-
-    return this.canvas;
-  }
-
-  getAllGates(): Map<string, Gate> {
-    return this.gates;
-  }
-
-  @publishDecorator()
-  addGateToCanvas(
-    gateID: string,
-    canvasID: string,
-    createSubpop: boolean = false
-  ) {
-    if (!this.canvasIsPresent(canvasID)) {
-      throw Error("Adding gate to non-existent canvas");
-    }
-    if (!this.gateIsPresent(gateID)) {
-      throw Error("Adding non-existent gate to canvas");
-    }
-    const ccanvas = this.canvas.get(canvasID);
-    ccanvas.addGate(this.gates.get(gateID), createSubpop);
-  }
-
-  @publishDecorator()
-  removeGateFromCanvas(gateID: string, canvasID: string) {
-    if (!this.canvasIsPresent(canvasID)) {
-      throw Error("Removing gate to non-existent canvas");
-    }
-    if (!this.gateIsPresent(gateID)) {
-      throw Error("Removing non-existent gate to canvas");
-    }
-    const canvasGates = this.canvas.get(canvasID).gates;
-    let found = -1;
-    for (let indx in canvasGates) {
-      if (canvasGates[indx].id == gateID) {
-        this.canvas.get(canvasID).removeGate(canvasGates[indx].id);
-        return;
-      }
-    }
-    throw Error("Gate " + gateID + " was not found in Canvas " + canvasID);
-  }
-
-  @publishDecorator()
-  addGate(gate: Gate): string {
-    const gateID = this.getInstanceIDOfNewObject();
-    gate.setID(gateID);
-    this.gates.set(gateID, gate);
-    return gateID;
-  }
-
-  private canvasIsPresent(id: string): boolean {
-    return this.canvas.has(id);
+  private plotIsPresent(id: string): boolean {
+    return this.plots.has(id);
   }
 
   private gateIsPresent(id: string): boolean {

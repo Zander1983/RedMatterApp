@@ -1,10 +1,8 @@
-import { cssNumber } from "jquery";
-import React from "react";
 import { useRef, useEffect } from "react";
-import Canvas from "../../canvasManagement/canvas";
+import Plot from "../../plotManagement/plot";
 
-const CanvasComponent = (props: { canvas: Canvas; canvasIndex: number }) => {
-  const canvas = props.canvas;
+const CanvasComponent = (props: { plot: Plot; canvasIndex: number }) => {
+  const canvas = props.plot.canvas;
   let canvasRef = useRef(null);
 
   useEffect(() => {

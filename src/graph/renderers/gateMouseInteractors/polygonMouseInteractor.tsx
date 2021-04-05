@@ -18,8 +18,8 @@ export default class MouseInteractor {
   plotter: ScatterPlotter;
   gateCreator: Function;
   renderInterval: Function;
-  canvasRender: Function;
-  canvasRenderLastTimestamp: any = 0;
+  plotRender: Function;
+  plotRenderLastTimestamp: any = 0;
   stopGatingParent: Function;
   xAxis: string;
   yAxis: string;
@@ -40,8 +40,8 @@ export default class MouseInteractor {
     this.renderInterval = f;
   }
 
-  setCanvasRender(f: Function) {
-    this.canvasRender = f;
+  setPlotRender(f: Function) {
+    this.plotRender = f;
   }
 
   ovalGateStart() {
@@ -59,7 +59,7 @@ export default class MouseInteractor {
     this.ovalGateP1 = null;
     this.majorToMinorSize = 1;
     this.setPlotterOvalGateState();
-    this.canvasRender();
+    this.plotRender();
     this.stopGatingParent();
   }
 
@@ -198,7 +198,7 @@ export default class MouseInteractor {
     state.ang = this.ang;
     const gate = new OvalGate(this.generateOvalGateState());
     const id = dataManager.addGate(gate);
-    dataManager.addGateToCanvas(id, this.parentID, true);
+    dataManager.addGateToplot(id, this.parentID, true);
     this.ovalGateEnd();
   }
 
@@ -230,9 +230,9 @@ export default class MouseInteractor {
     this.setPlotterOvalGateState();
 
     const now = new Date().getTime();
-    if (this.canvasRenderLastTimestamp + 10 < now) {
-      this.canvasRender();
-      this.canvasRenderLastTimestamp = now;
+    if (this.plotRenderLastTimestamp + 10 < now) {
+      this.plotRender();
+      this.plotRenderLastTimestamp = now;
     }
   }
 

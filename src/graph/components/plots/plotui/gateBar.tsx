@@ -8,9 +8,8 @@ import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import dataManager from "../../../dataManagement/dataManager";
-import Canvas from "../../../canvasManagement/canvas";
+import Plot from "../../../plotManagement/plot";
 import Gate from "../../../dataManagement/gate/gate";
-import { data } from "jquery";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -38,12 +37,12 @@ export default function GateBar(props: any) {
   const rerender = useForceUpdate();
   const [gates, setGates] = React.useState([]);
   const [selected, setSelected] = React.useState([]);
-  const canvas: Canvas = props.canvas;
-  let idCanvasGateUpdate: any = null;
+  const plot: Plot = props.plot;
+  let idPlotGateUpdate: any = null;
   let idGateUpdate: any = null;
 
-  const getCanvasGates = () => {
-    setSelected(canvas.gates.map((e) => e.name));
+  const getPlotGates = () => {
+    setSelected(plot.gates.map((e) => e.name));
   };
 
   const getAllGates = () => {
@@ -54,24 +53,24 @@ export default function GateBar(props: any) {
     setGates(cgates);
   };
 
-  const changeGateCanvasState = (gateName: string, selected: boolean) => {
+  const changeGatePlotState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
     if (selected) {
-      dataManager.removeGateFromCanvas(gateID, canvas.id);
+      dataManager.removeGateFromPlot(gateID, plot.id);
     } else {
-      dataManager.addGateToCanvas(gateID, canvas.id);
+      dataManager.addGateToPlot(gateID, plot.id);
     }
     update();
   };
 
   const update = () => {
     getAllGates();
-    getCanvasGates();
+    getPlotGates();
   };
 
   useEffect(() => {
-    idCanvasGateUpdate = dataManager.addObserver("addGate", update);
-    idGateUpdate = dataManager.addObserver("addGateToCanvas", update);
+    idPlotGateUpdate = dataManager.addObserver("addGate", update);
+    idGateUpdate = dataManager.addObserver("addGateToPlot", update);
     update();
   }, []);
 
@@ -85,7 +84,7 @@ export default function GateBar(props: any) {
         getOptionLabel={(option) => option}
         renderOption={(option, { selected }) => (
           <Button
-            onClick={() => changeGateCanvasState(option, selected)}
+            onClick={() => changeGatePlotState(option, selected)}
             style={{ flex: 1, justifyContent: "left" }}
           >
             <Checkbox
@@ -105,7 +104,7 @@ export default function GateBar(props: any) {
           return tagValue.map((option, index) => (
             <Chip
               label={option}
-              onDelete={() => changeGateCanvasState(option, true)}
+              onDelete={() => changeGatePlotState(option, true)}
               {...props}
             />
           ));

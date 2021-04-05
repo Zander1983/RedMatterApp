@@ -31,22 +31,11 @@ function useForceUpdate() {
 
 function Plot(props: any) {
   const [intervalRef, setIntervalRef] = React.useState(null);
-  const canvas = props.canvas;
+  const plotManager = props.plotManager;
+  const canvas = plotManager.canvas;
   const rerender = useForceUpdate();
 
-  const setRerenderInterval = (time: number, kill?: boolean) => {
-    if (kill) {
-      clearInterval(intervalRef);
-      setIntervalRef(null);
-      return;
-    }
-    if (intervalRef === null) {
-      setIntervalRef(setInterval(() => rerender(), time));
-    }
-  };
-
-  canvas.setRerender(rerender);
-  canvas.setRerenderInterval(setRerenderInterval);
+  plotManager.setRerender(rerender);
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
@@ -57,7 +46,7 @@ function Plot(props: any) {
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
     const bar = barRef.current.getBoundingClientRect();
-    canvas.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
+    plotManager.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };
 
   const [canvasUpdaterInterval, setCanvasUpdaterInterval] = React.useState(
@@ -91,7 +80,7 @@ function Plot(props: any) {
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
 
-      <CanvasComponent canvas={props.canvas} canvasIndex={props.canvasIndex} />
+      <CanvasComponent canvas={canvas} canvasIndex={props.canvasIndex} />
     </div>
   );
 }

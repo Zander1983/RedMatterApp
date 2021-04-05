@@ -1,5 +1,5 @@
 /*
-  Canvas - A frontend for a canvas component, which includes it's files.
+  Plot - A frontend for a canvas component, which includes it's files.
   This exists to facilitate the life of dataManager by removing the
   complexities of logic that has to be fed to each canvas.
 */
@@ -11,12 +11,13 @@ import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import Plotter from "graph/renderers/plotters/plotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import dataManager from "graph/dataManagement/dataManager";
+import Canvas from "graph/plotManagement/canvas";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
 const conditionalUpdateDecorator = () => {
   return function (
-    target: Canvas,
+    target: Plot,
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
@@ -29,7 +30,7 @@ const conditionalUpdateDecorator = () => {
   };
 };
 
-class Canvas {
+export default class Plot {
   // Plot params
   xAxis: string;
   yAxis: string;
@@ -37,6 +38,7 @@ class Canvas {
   xPlotType = "lin";
   yPlotType = "lin";
   gates: Array<Gate> = [];
+  canvas: Canvas;
 
   id: string;
   file: FCSFile;
@@ -70,6 +72,27 @@ class Canvas {
     this.constructPlotters();
     this.contructMouseInteractor();
   }
+
+  draw() {
+    const canvasState = {};
+    this.canvas.setCanvasState(canvasState);
+    this.canvas.canvasRender();
+  }
+
+  /*
+  general idea behind component lifetimes
+  setup
+  -> initializer
+  -> set initial state
+  -> setup
+
+  upkeep
+  -> Set component states
+  -> Update components
+
+  discard
+  -> Dereference the object and that's it
+  */
 
   private conditionalUpdate() {
     if (this.changed) {
@@ -108,30 +131,6 @@ class Canvas {
     this.plotRender = plotRender;
   }
 
-  constructPlotters() {
-    this.scatterPlotter = new ScatterPlotter({
-      xAxis: this.file.getAxisPoints(this.xAxis),
-      yAxis: this.file.getAxisPoints(this.yAxis),
-      width: this.width,
-      height: this.height,
-      scale: this.scale,
-      heatmap: true,
-      xAxisName: this.xAxis,
-      yAxisName: this.yAxis,
-    });
-    //@ts-ignore
-    this.histogramPlotter = new HistogramPlotter({
-      xAxis: this.file.getAxisPoints(this.xAxis),
-      yAxis: this.file.getAxisPoints(this.yAxis),
-      width: this.width,
-      height: this.height,
-      scale: this.scale,
-    });
-
-    // By default, it's a scatter
-    this.plotter = this.histogramPlotter;
-  }
-
   addGate(gate: Gate, createSubpop: boolean = false) {
     this.gates.push(gate);
     if (createSubpop) {
@@ -154,54 +153,6 @@ class Canvas {
     //@ts-ignore
     this.mouseInteractor = new MouseInteractor(this.scatterPlotter, this.id);
     this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
-  }
-
-  useCanvas(ref: any) {
-    const canvas = ref.current;
-    const context = canvas.getContext("2d");
-    let frameCount = 0;
-    let animationFrameId = 0;
-
-    const sendMouseInteraction = (event: Event) => {
-      //@ts-ignore
-      const x = event.offsetX;
-      //@ts-ignore
-      const y = event.offsetY;
-      const type = event.type;
-      this.mouseInteractor.registerMouseEvent(type, x, y);
-    };
-
-    const addCanvasListener = (type: string, func: Function) => {
-      if (canvas.getAttribute(`${type}-listener`) !== "true") {
-        canvas.addEventListener(type, func);
-        canvas.setAttribute(`${type}-listener`, "true");
-      }
-    };
-
-    addCanvasListener("mousedown", sendMouseInteraction);
-    addCanvasListener("mouseup", sendMouseInteraction);
-    addCanvasListener("mousemove", sendMouseInteraction);
-
-    this.canvasRender = () => {
-      frameCount++;
-      const { width, height } = canvas.getBoundingClientRect();
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width * this.scale;
-        canvas.height = height * this.scale;
-      }
-      context.fillStyle = "#fff";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      this.plotter.draw(context, frameCount);
-      return () => {
-        window.cancelAnimationFrame(animationFrameId);
-      };
-    };
-
-    this.mouseInteractor.setCanvasRender(this.canvasRender);
-
-    this.canvasRender();
-
-    return ref;
   }
 
   setOvalGating(value: boolean) {
@@ -259,5 +210,3 @@ class Canvas {
     this.yAxis = yAxis;
   }
 }
-
-export default Canvas;

@@ -12,8 +12,8 @@ export interface GateState {
 }
 
 export interface MouseInteractorState {
-  canvasID: string;
-  canvasRender: Function;
+  plotID: string;
+  plotRender: Function;
   plugin: GatePlotterPlugin;
 }
 
@@ -24,14 +24,14 @@ export default abstract class GateMouseInteractor {
   protected started: boolean = false;
   protected plugin: GatePlotterPlugin;
   protected lastMousePos: Point;
-  private canvasRenderLastTimestamp: any = 0;
+  private plotRenderLastTimestamp: any = 0;
 
-  canvasID: string;
-  canvasRender: Function;
+  plotID: string;
+  plotRender: Function;
 
   setMouseInteractorState(state: MouseInteractorState) {
-    this.canvasRender = state.canvasRender;
-    this.canvasID = state.canvasID;
+    this.plotRender = state.plotRender;
+    this.plotID = state.plotID;
     this.plugin = state.plugin;
   }
 
@@ -43,12 +43,12 @@ export default abstract class GateMouseInteractor {
     this.started = false;
     this.clearGateState();
     this.setPluginState();
-    this.canvasRender();
+    this.plotRender();
   }
 
   setPluginState() {
     this.plugin.setGatingState(this.getGatingState());
-    this.canvasRender();
+    this.plotRender();
   }
 
   getGatingState(): GateState {
@@ -64,7 +64,7 @@ export default abstract class GateMouseInteractor {
   createAndAddGate() {
     const gate = this.instanceGate();
     const id = dataManager.addGate(gate);
-    dataManager.addGateToCanvas(id, this.canvasID, true);
+    dataManager.addGateToPlot(id, this.plotID, true);
     this.end();
   }
 
@@ -75,9 +75,9 @@ export default abstract class GateMouseInteractor {
       this.gateEvent(type, p);
       this.setPluginState();
       const now = new Date().getTime();
-      if (this.canvasRenderLastTimestamp + 10 < now) {
-        this.canvasRender();
-        this.canvasRenderLastTimestamp = now;
+      if (this.plotRenderLastTimestamp + 10 < now) {
+        this.plotRender();
+        this.plotRenderLastTimestamp = now;
       }
     }
   }

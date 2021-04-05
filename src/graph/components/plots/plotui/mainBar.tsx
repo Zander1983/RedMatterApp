@@ -27,24 +27,24 @@ export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   const [ovalGating, setOvalGating] = React.useState(false);
-  const canvas = props.canvas;
+  const plot = props.plot;
 
   const deletePlot = () => {
-    dataManager.removeFile(props.canvasIndex);
+    dataManager.removeFile(props.plotIndex);
   };
 
   const handleClose = (func: Function) => {
     func(false);
   };
 
-  canvas.setStopGatingParent(() => setOvalGating(false));
+  plot.setStopGatingParent(() => setOvalGating(false));
 
   const ovalGatingSetter = () => {
     if (ovalGating) {
-      canvas.setOvalGating(false);
+      plot.setOvalGating(false);
       setOvalGating(false);
     } else {
-      canvas.setOvalGating(true);
+      plot.setOvalGating(true);
       setOvalGating(true);
     }
   };
@@ -53,9 +53,9 @@ export default function MainBar(props: any) {
     let downloadLink = document.createElement("a");
     downloadLink.setAttribute(
       "download",
-      `workspacename-filename-${props.canvasIndex}.png`
+      `workspacename-filename-${props.plotIndex}.png`
     );
-    let canvas = document.getElementById(`canvas-${props.canvasIndex}`);
+    let canvas = document.getElementById(`canvas-${props.plotIndex}`);
     //@ts-ignore
     let dataURL = canvas.toDataURL("image/png");
     let url = dataURL.replace(
@@ -135,11 +135,11 @@ export default function MainBar(props: any) {
         variant="contained"
         size="medium"
         onClick={() => {
-          if (canvas.gates.length === 0) {
+          if (plot.gates.length === 0) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFile(canvas.id);
+          dataManager.createSubpopFile(plot.id);
         }}
         style={classes.mainButton}
       >
@@ -149,11 +149,11 @@ export default function MainBar(props: any) {
         variant="contained"
         size="medium"
         onClick={() => {
-          if (canvas.gates.length === 0) {
+          if (plot.gates.length === 0) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFile(canvas.id, true);
+          dataManager.createSubpopFile(plot.id, true);
         }}
         style={classes.mainButton}
       >
