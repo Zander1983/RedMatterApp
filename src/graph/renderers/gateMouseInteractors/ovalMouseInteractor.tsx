@@ -13,14 +13,14 @@ import GateMouseInteractor, {
 import ScatterOvalGatePlotter from "../plotters/runtimePlugins/scatterOvalGatePlotter";
 
 export interface OvalGateState extends GateState {
-  center: Point | null = null;
-  primaryP1: Point | null = null;
-  primaryP2: Point | null = null;
-  secondaryP1: Point | null = null;
-  secondaryP2: Point | null = null;
-  majorToMinorSize: number = 0;
-  lastMousePos: { x: number; y: number } | null = null;
-  ang: number = 0;
+  center: Point | null;
+  primaryP1: Point | null;
+  primaryP2: Point | null;
+  secondaryP1: Point | null;
+  secondaryP2: Point | null;
+  majorToMinorSize: number;
+  lastMousePos: { x: number; y: number } | null;
+  ang: number;
   xAxis: string;
   yAxis: string;
 }
@@ -32,7 +32,7 @@ export interface OvalMouseInteractorState extends MouseInteractorState {
 
 export default class OvalMouseInteractor extends GateMouseInteractor {
   static targetGate: OvalGate;
-  static targetPlugin: OvalGatePlotterPlugin;
+  static targetPlugin: ScatterOvalGatePlotter;
 
   protected plugin: ScatterOvalGatePlotter;
 
