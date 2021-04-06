@@ -85,8 +85,8 @@ export default abstract class PlotterPlugin {
     let props: string[] = [];
     let obj = this;
     do {
-      props = props.concat(Object.getOwnPropertyNames(obj));
-    } while ((obj = Object.getPrototypeOf(obj)));
+      props = props.concat(Object.getOwnPropertyNames(this));
+    } while ((obj = Object.getPrototypeOf(this)));
 
     return props.sort().filter(function (e, i, arr) {
       //@ts-ignore

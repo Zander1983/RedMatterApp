@@ -40,7 +40,7 @@ export default class HistogramDrawer extends GraphDrawer {
   }
 
   /* TODO FIX THIS SHIT WHEN EVERYTHING IS IN PLACE */
-  drawLines(): ScatterPlotGraph {
+  drawLines() {
     if (this.axis == "vertical") {
       // Horizontal hist lines
       for (let i = 0; i < this.ypts; i++) {

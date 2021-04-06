@@ -6,6 +6,7 @@ import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
 
 import CanvasComponent from "../canvas/CanvasComponent";
+import Plot from "graph/plotManagement/plot";
 
 const classes = {
   mainContainer: {
@@ -29,60 +30,55 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-function Plot(props: any) {
-  const [intervalRef, setIntervalRef] = React.useState(null);
-  const plotManager = props.plotManager;
-  const canvas = plotManager.canvas;
+function PlotComponent(props: { plot: Plot; plotIndex: string }) {
+  const [resizeObserver, setResizeObserver] = React.useState(null);
+  const [plotSetup, setPlotSetup] = React.useState(false);
+  const plot = props.plot;
   const rerender = useForceUpdate();
 
-  plotManager.setRerender(rerender);
+  plot.setRerender(rerender);
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
 
-  const updateCanvasSize = () => {
+  const updatePlotSize = () => {
     if (displayRef.current === undefined || displayRef.current === null) return;
     //@ts-ignore
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
     const bar = barRef.current.getBoundingClientRect();
-    plotManager.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
+    plot.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };
 
-  const [canvasUpdaterInterval, setCanvasUpdaterInterval] = React.useState(
-    null
-  );
+  useEffect(() => {
+    if (resizeObserver === null) {
+      setResizeObserver(
+        new ResizeObserver(updatePlotSize).observe(displayRef.current)
+      );
+    }
+    if (!plotSetup) {
+      plot.setup();
+      setPlotSetup(true);
+    }
+  }, []);
 
-  const setUpdater = () => {
-    if (canvasUpdaterInterval !== null) return;
-    const interval = setInterval(() => {
-      updateCanvasSize();
-    }, 20);
-    setCanvasUpdaterInterval(interval);
-  };
-  setTimeout(() => updateCanvasSize(), 150);
-
-  if (canvasUpdaterInterval === null) {
-    setUpdater();
-  }
-
-  console.log(`Plot with ID = ${props.canvasIndex} rendered`);
+  console.log(`Plot with ID = ${props.plotIndex} rendered`);
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>
-        <MainBar canvasIndex={props.canvasIndex} canvas={canvas}></MainBar>
+        <MainBar plotIndex={props.plotIndex} plot={plot}></MainBar>
         <Divider></Divider>
 
-        <GateBar canvas={canvas}></GateBar>
+        <GateBar plot={plot}></GateBar>
         <Divider></Divider>
 
-        <AxisBar canvas={canvas}></AxisBar>
+        <AxisBar plot={plot}></AxisBar>
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
 
-      <CanvasComponent canvas={canvas} canvasIndex={props.canvasIndex} />
+      <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
     </div>
   );
 }
 
-export default Plot;
+export default PlotComponent;

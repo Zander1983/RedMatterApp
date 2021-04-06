@@ -7,11 +7,17 @@
 import FCSFile from "graph/dataManagement/fcsFile";
 import Gate from "graph/dataManagement/gate/gate";
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
+import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
-import Plotter from "graph/renderers/plotters/plotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import dataManager from "graph/dataManagement/dataManager";
 import Canvas from "graph/plotManagement/canvas";
+import PlotterFactory from "graph/renderers/plotters/plotterFactory";
+import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gateMouseInteractorFactory";
+import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
+
+const plotterFactory = new PlotterFactory();
+const mouseInteractorFactory = new GateMouseInteractorFactory();
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -38,14 +44,19 @@ export default class Plot {
   xPlotType = "lin";
   yPlotType = "lin";
   gates: Array<Gate> = [];
-  canvas: Canvas;
+  width: number = 0;
+  height: number = 0;
+  scale: number = 2;
 
+  // Plot essentials
   id: string;
+  canvas: Canvas;
   file: FCSFile;
-  mouseInteractor: MouseInteractor;
+  mouseInteractor: MouseInteractor | null = null;
+  mouseInteractorPlugin: GatePlotterPlugin | null = null;
 
   // Rendering objects
-  plotter: Plotter | null = null;
+  plotter: GraphPlotter | null = null;
   scatterPlotter: ScatterPlotter | null = null;
   histogramPlotter: HistogramPlotter | null = null;
   histogramAxis: "vertical" | "horizontal" = "vertical";
@@ -56,27 +67,15 @@ export default class Plot {
   // Calling plot render means the component plot will be redrawn
   plotRender: Function | null = null;
 
-  width: number = 0;
-  height: number = 0;
-  scale: number = 2;
-
+  /*
+    This class has a constructor because a plot is individual to a file.
+    Existance of a plot can only be on the presence of a file. 
+  */
   constructor(file: FCSFile, id: string) {
-    // By default, get the first and second axis as X and Y axis
-    this.xAxis = file.axes[0];
-    this.yAxis = file.axes[1];
     this.id = id;
     this.file = file;
-    this.plotRender = null;
-    this.gates = [];
 
-    this.constructPlotters();
-    this.contructMouseInteractor();
-  }
-
-  draw() {
-    const canvasState = {};
-    this.canvas.setCanvasState(canvasState);
-    this.canvas.canvasRender();
+    this.canvas = new Canvas();
   }
 
   /*
@@ -94,6 +93,23 @@ export default class Plot {
   -> Dereference the object and that's it
   */
 
+  setup() {
+    // By default, get the first and second axis as X and Y axis
+    this.xAxis = this.file.axes[0];
+    this.yAxis = this.file.axes[1];
+    this.plotRender = null;
+    this.gates = [];
+
+    this.constructPlotters();
+    this.histogramPlotter.setup(this.canvas.getContext());
+    this.scatterPlotter.setup(this.canvas.getContext());
+  }
+
+  draw() {
+    this.updatePlotter();
+    this.canvasRender();
+  }
+
   private conditionalUpdate() {
     if (this.changed) {
       this.changed = false;
@@ -105,26 +121,9 @@ export default class Plot {
       } else {
         this.plotter = this.scatterPlotter;
       }
-      this.updateAndRenderPlotter();
+      this.updatePlotter();
       this.plotRender();
-      this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
     }
-  }
-
-  updateAndRenderPlotter() {
-    this.plotter.xAxis = this.file.getAxisPoints(this.xAxis);
-    this.plotter.yAxis = this.file.getAxisPoints(this.yAxis);
-    this.plotter.width = this.width;
-    this.plotter.height = this.height;
-    // @ts-ignore
-    this.plotter.setGates(this.gates);
-    if (this.plotter instanceof ScatterPlotter) {
-      this.plotter.xAxisName = this.xAxis;
-      this.plotter.yAxisName = this.yAxis;
-    } else if (this.plotter instanceof HistogramPlotter) {
-      this.plotter.axis = this.histogramAxis;
-    }
-    this.canvasRender();
   }
 
   setRerender(plotRender: Function) {
@@ -136,7 +135,7 @@ export default class Plot {
     if (createSubpop) {
       this.createSubpop();
     }
-    this.updateAndRenderPlotter();
+    this.updatePlotter();
   }
 
   createSubpop(inverse: boolean = false) {
@@ -146,23 +145,11 @@ export default class Plot {
 
   removeGate(gateID: string) {
     this.gates = this.gates.filter((gate) => gate.id !== gateID);
-    this.updateAndRenderPlotter();
-  }
-
-  contructMouseInteractor() {
-    //@ts-ignore
-    this.mouseInteractor = new MouseInteractor(this.scatterPlotter, this.id);
-    this.mouseInteractor.updateAxis(this.xAxis, this.yAxis);
+    this.updatePlotter();
   }
 
   setOvalGating(value: boolean) {
-    value
-      ? this.mouseInteractor.ovalGateStart()
-      : this.mouseInteractor.ovalGateEnd();
-  }
-
-  getFile() {
-    return this.file;
+    value ? this.mouseInteractor.start() : this.mouseInteractor.end();
   }
 
   @conditionalUpdateDecorator()
@@ -208,5 +195,67 @@ export default class Plot {
   setYAxis(yAxis: string) {
     this.changed = this.changed || yAxis !== this.yAxis;
     this.yAxis = yAxis;
+  }
+
+  getFile() {
+    return this.file;
+  }
+
+  private registerMouseEvent(type: string, x: number, y: number) {
+    if (this.mouseInteractor === null) return;
+
+    this.mouseInteractor.registerMouseEvent(type, x, y);
+  }
+
+  private setCanvasState() {
+    this.canvas.setCanvasState({
+      id: this.id,
+      width: this.width,
+      height: this.height,
+      scale: this.scale,
+      mouseEventRegister: this.registerMouseEvent,
+    });
+  }
+
+  private constructPlotters() {
+    //@ts-ignore
+    this.scatterPlotter = plotterFactory.makePlotter("scatter", ["heatmap"]);
+    //@ts-ignore
+    this.histogramPlotter = plotterFactory.makePlotter("histogram", []);
+  }
+
+  private updatePlotter() {
+    /*
+      Fills up data to feed all plotters. It's the resposability of a plotter to
+      pick only what it needs.
+    */
+    const plotterState = {
+      xAxis: this.file.getAxisPoints(this.xAxis),
+      yAxis: this.file.getAxisPoints(this.yAxis),
+      xAxisName: this.xAxis,
+      yAxisName: this.yAxis,
+      width: this.width,
+      height: this.height,
+      scale: this.scale,
+      gates: this.gates,
+      direction: this.histogramAxis,
+    };
+    this.plotter.setPlotterState(plotterState);
+    this.plotter.update();
+  }
+
+  private contructMouseInteractor(type: string) {
+    const {
+      mouseInteractor,
+      plotterPlugin,
+    } = mouseInteractorFactory.makeGateMouseInteractor(type);
+    this.mouseInteractor = mouseInteractor;
+    this.mouseInteractorPlugin = plotterPlugin;
+  }
+
+  private setupMouseInteraction(type: string) {
+    this.contructMouseInteractor(type);
+    /* add the correct plugin */
+    /* intialize everything */
   }
 }

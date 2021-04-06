@@ -48,7 +48,7 @@ export default class HistogramPlotter extends GraphPlotter {
   public setPlotterState(state: HistogramPlotterState) {
     super.setPlotterState(state);
     this.direction = state.direction;
-    this.bins = state.bins;
+    this.bins = state.bins !== undefined ? state.bins : 0;
   }
 
   public update() {

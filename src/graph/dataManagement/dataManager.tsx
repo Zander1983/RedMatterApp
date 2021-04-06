@@ -49,7 +49,7 @@ class DataManager {
   observers: Map<string, { id: string; func: Function }[]> = new Map();
 
   files: Map<string, FCSFile> = new Map();
-  plots: Map<string, PlotManager> = new Map();
+  plots: Map<string, Plot> = new Map();
   gates: Map<string, Gate> = new Map();
 
   // Function resposible for re-rendering the whole plot if need be.
@@ -112,7 +112,7 @@ class DataManager {
     for (const file of files) {
       present.push(file.id);
       if (!this.plotIsPresent(file.id)) {
-        this.plots.set(file.id, new PlotManager(file.file, file.id));
+        this.plots.set(file.id, new Plot(file.file, file.id));
       }
     }
 

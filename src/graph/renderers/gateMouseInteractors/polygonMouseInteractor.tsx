@@ -1,142 +1,115 @@
-import dataManager from "../../dataManagement/dataManager";
 import OvalGate from "../../dataManagement/gate/ovalGate";
-import ScatterPlotter from "../plotters/scatterPlotter";
 import {
   euclidianDistance2D,
   distLinePoint2D,
   getVectorAngle2D,
   rotateVector2D,
 } from "../../dataManagement/math/euclidianPlane";
+import GateMouseInteractor, {
+  Point,
+  GateState,
+  MouseInteractorState,
+} from "./gateMouseInteractor";
+import ScatterOvalGatePlotter from "../plotters/runtimePlugins/scatterOvalGatePlotter";
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-export default class MouseInteractor {
-  parentID: string;
-  plotter: ScatterPlotter;
-  gateCreator: Function;
-  renderInterval: Function;
-  plotRender: Function;
-  plotRenderLastTimestamp: any = 0;
-  stopGatingParent: Function;
+export interface OvalGateState extends GateState {
+  center: Point | null;
+  primaryP1: Point | null;
+  primaryP2: Point | null;
+  secondaryP1: Point | null;
+  secondaryP2: Point | null;
+  majorToMinorSize: number;
+  lastMousePos: { x: number; y: number } | null;
+  ang: number;
   xAxis: string;
   yAxis: string;
+}
 
-  constructor(plotter: ScatterPlotter, parentID: string) {
-    this.plotter = plotter;
-    this.parentID = parentID;
+export interface PolygonMouseInteractorState extends MouseInteractorState {
+  xAxis: string;
+  yAxis: string;
+}
+
+export default class PolygonMouseInteractor extends GateMouseInteractor {
+  static targetGate: OvalGate;
+  static targetPlugin: ScatterOvalGatePlotter;
+
+  protected plugin: ScatterOvalGatePlotter;
+
+  private xAxis: string;
+  private yAxis: string;
+  private ovalGateP0: Point | null = null;
+  private ovalGateP1: Point | null = null;
+  private majorToMinorSize: number = 0;
+  private ang: number = 0;
+
+  setMouseInteractorState(state: PolygonMouseInteractorState) {
+    super.setMouseInteractorState(state);
+    this.xAxis = state.xAxis;
+    this.yAxis = state.yAxis;
   }
 
-  ovalGating: boolean = false;
-  ovalGateP0: Point | null = null;
-  ovalGateP1: Point | null = null;
-  majorToMinorSize: number = 0;
-  lastMousePos: { x: number; y: number } | null = null;
-  ang: number = 0;
+  protected instanceGate(): OvalGate {
+    const {
+      center,
+      primaryP1,
+      primaryP2,
+      secondaryP1,
+      secondaryP2,
+      ang,
+      xAxis,
+      yAxis,
+    } = this.getGatingState();
 
-  setRerenderInterval(f: Function) {
-    this.renderInterval = f;
+    const checkNotNullOrUndefined = (x: any): void => {
+      if (x === null || x === undefined) {
+        throw Error("Invalid gate params on instancing");
+      }
+    };
+    checkNotNullOrUndefined(center);
+    checkNotNullOrUndefined(primaryP1);
+    checkNotNullOrUndefined(primaryP2);
+    checkNotNullOrUndefined(secondaryP1);
+    checkNotNullOrUndefined(secondaryP2);
+    checkNotNullOrUndefined(ang);
+    checkNotNullOrUndefined(xAxis);
+    checkNotNullOrUndefined(yAxis);
+
+    return new OvalGate({
+      center: center,
+      primaryP1: primaryP1,
+      primaryP2: primaryP2,
+      secondaryP1: secondaryP1,
+      secondaryP2: secondaryP2,
+      ang: ang,
+      xAxis: xAxis,
+      yAxis: yAxis,
+    });
   }
 
-  setPlotRender(f: Function) {
-    this.plotRender = f;
-  }
-
-  ovalGateStart() {
-    this.ovalGating = true;
-  }
-
-  updateAxis(xAxis: string, yAxis: string) {
-    this.xAxis = xAxis;
-    this.yAxis = yAxis;
-  }
-
-  ovalGateEnd() {
-    this.ovalGating = false;
+  protected clearGateState() {
     this.ovalGateP0 = null;
     this.ovalGateP1 = null;
-    this.majorToMinorSize = 1;
-    this.setPlotterOvalGateState();
-    this.plotRender();
-    this.stopGatingParent();
+    this.majorToMinorSize = 0;
+    this.lastMousePos = null;
+    this.ang = 0;
   }
 
-  setStopGatingParent(f: Function) {
-    this.stopGatingParent = f;
-  }
-
-  setPlotterOvalGateState() {
-    this.plotter.setOvalGateState(this.generateOvalGateState());
-    this.plotter.setLastMousePos(this.lastMousePos);
-  }
-
-  calculateMainToSecondaryAxisEllipseSize(x: number, y: number) {
-    if (this.ovalGateP0 === null || this.ovalGateP1 === null) {
-      throw Error("Invalid axis calculation: points not defined");
-    }
-    const distMouseFromLine = distLinePoint2D(
-      this.ovalGateP0,
-      this.ovalGateP1,
-      this.lastMousePos
-    );
-    this.majorToMinorSize =
-      (distMouseFromLine * 2) /
-      euclidianDistance2D(this.ovalGateP0, this.ovalGateP1);
-  }
-
-  calculateEllipseAngle(params?: { abstract: boolean }) {
-    this.ang = -getVectorAngle2D(this.ovalGateP0, this.ovalGateP1);
-    const p1 = this.plotter.convertToPlotPoint(
-      this.ovalGateP0.x,
-      this.ovalGateP0.y
-    );
-    const p2 = this.plotter.convertToPlotPoint(
-      this.ovalGateP1.x,
-      this.ovalGateP1.y
-    );
-    const concreteAngle = getVectorAngle2D(p1, p2);
-    if (params !== undefined && params.abstract === true) {
-      //@ts-ignore
-      this.ang = abstractAngle;
-    } else {
-      this.ang = concreteAngle;
-    }
-  }
-
-  presentPoint(name: string, point: { x: number; y: number }) {
-    this.plotter.specialPointsList.push({
-      x: point.x,
-      y: point.y,
-      color: "#3a3",
-      text: name,
-    });
-  }
-
-  presentConcretePoint(name: string, point: { x: number; y: number }) {
-    this.plotter.specialPointsList.push({
-      x: point.x,
-      y: point.y,
-      color: "#d33",
-      text: name,
-      concrete: true,
-    });
-  }
-
-  generateOvalGateState() {
+  getGatingState(): OvalGateState {
     // This is going to calculate the 2 secondary points by creating a vector
     // from center to primaryP1, then rotate that vector -90º and multiply
     // for secondaryP1 and do the same but 90º to get secondaryP2
 
     if (this.ovalGateP0 === null) {
       return {
+        ...super.getGatingState(),
         center: null,
         primaryP1: null,
         primaryP2: null,
         secondaryP1: null,
         secondaryP2: null,
         ang: null,
+        majorToMinorSize: this.majorToMinorSize,
         xAxis: this.xAxis,
         yAxis: this.yAxis,
       };
@@ -144,11 +117,13 @@ export default class MouseInteractor {
 
     if (this.ovalGateP1 === null) {
       return {
+        ...super.getGatingState(),
         center: null,
         primaryP1: this.ovalGateP0,
         primaryP2: this.ovalGateP0,
         secondaryP1: null,
         secondaryP2: null,
+        majorToMinorSize: this.majorToMinorSize,
         ang: null,
         xAxis: this.xAxis,
         yAxis: this.yAxis,
@@ -172,6 +147,7 @@ export default class MouseInteractor {
     s2.y += my;
 
     return {
+      ...super.getGatingState(),
       center: {
         x: mx,
         y: my,
@@ -186,23 +162,15 @@ export default class MouseInteractor {
         x: s2.x,
         y: s2.y,
       },
+      majorToMinorSize: this.majorToMinorSize,
       ang: this.ang,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
+      lastMousePos: this.lastMousePos,
     };
   }
 
-  createAndAddGate() {
-    const state = this.generateOvalGateState();
-    this.calculateEllipseAngle();
-    state.ang = this.ang;
-    const gate = new OvalGate(this.generateOvalGateState());
-    const id = dataManager.addGate(gate);
-    dataManager.addGateToplot(id, this.parentID, true);
-    this.ovalGateEnd();
-  }
-
-  ovalGateEvent(type: string, x: number, y: number) {
+  gateEvent(type: string, { x, y }: Point) {
     if (this.ovalGateP0 == null && type == "mousedown") {
       // Step 1: select first point
       this.ovalGateP0 = { x: x, y: y };
@@ -227,20 +195,33 @@ export default class MouseInteractor {
       // create gate...
       this.createAndAddGate();
     }
-    this.setPlotterOvalGateState();
-
-    const now = new Date().getTime();
-    if (this.plotRenderLastTimestamp + 10 < now) {
-      this.plotRender();
-      this.plotRenderLastTimestamp = now;
-    }
   }
 
-  registerMouseEvent(type: string, x: number, y: number) {
-    const p = this.plotter.convertToAbstractPoint(x, y);
-    this.lastMousePos = { x: p.x, y: p.y };
-    if (this.ovalGating) {
-      this.ovalGateEvent(type, p.x, p.y);
+  private calculateMainToSecondaryAxisEllipseSize(x: number, y: number) {
+    if (this.ovalGateP0 === null || this.ovalGateP1 === null) {
+      throw Error("Invalid axis calculation: points not defined");
     }
+    const distMouseFromLine = distLinePoint2D(
+      this.ovalGateP0,
+      this.ovalGateP1,
+      this.lastMousePos
+    );
+    this.majorToMinorSize =
+      (distMouseFromLine * 2) /
+      euclidianDistance2D(this.ovalGateP0, this.ovalGateP1);
+  }
+
+  private calculateEllipseAngle() {
+    this.ang = -getVectorAngle2D(this.ovalGateP0, this.ovalGateP1);
+    const p1 = this.plugin.plotter.transformer.toConcretePoint({
+      x: this.ovalGateP0.x,
+      y: this.ovalGateP0.y,
+    });
+    const p2 = this.plugin.plotter.transformer.toConcretePoint({
+      x: this.ovalGateP1.x,
+      y: this.ovalGateP1.y,
+    });
+    const concreteAngle = getVectorAngle2D(p1, p2);
+    this.ang = concreteAngle;
   }
 }

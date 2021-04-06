@@ -12,7 +12,7 @@ interface ScatterPlotterState extends GraphPlotterState {}
 
 const applyPlugin = () => {
   return function (
-    target: DataManager,
+    target: ScatterPlotter,
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
@@ -22,12 +22,15 @@ const applyPlugin = () => {
       let functionList: any[] = ["original"];
 
       // Let's build a function list of all plugin's function
+      //@ts-ignore
       if (this.plugins.has(key)) {
+        //@ts-ignore
         this.plugins.get(key).forEach((e) => {
           if (e.overwrite) {
             if (overwritten) {
               throw Error(
                 "Two override plugins in " +
+                  //@ts-ignore
                   key +
                   " of " +
                   this.constructor.name

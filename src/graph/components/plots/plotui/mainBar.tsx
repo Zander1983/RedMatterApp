@@ -37,8 +37,6 @@ export default function MainBar(props: any) {
     func(false);
   };
 
-  plot.setStopGatingParent(() => setOvalGating(false));
-
   const ovalGatingSetter = () => {
     if (ovalGating) {
       plot.setOvalGating(false);

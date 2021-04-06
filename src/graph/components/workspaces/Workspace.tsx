@@ -85,7 +85,7 @@ class Workspace extends React.Component {
                   id={`workspace-outter-${e.key}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent plot={e.plots} plotsIndex={e.key} />
+                    <PlotComponent plot={e.plot} plotIndex={e.key} />
                   </div>
                 </div>
               );

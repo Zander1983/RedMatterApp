@@ -13,7 +13,7 @@ import ScatterHeatmapperPlugin from "graph/renderers/plotters/instancePlugins/sc
   instanced. Don't break this rule otherwise you are going to have headaches.
 */
 export default class PlotterFactory {
-  makePlot(type: "histogram" | "scatter", options: string[]): Plotter {
+  makePlotter(type: "histogram" | "scatter", options: string[]): Plotter {
     if (type === "histogram") {
       return this.makeHistogramPlot(options);
     }
