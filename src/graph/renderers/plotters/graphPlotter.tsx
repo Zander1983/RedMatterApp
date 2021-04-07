@@ -66,6 +66,7 @@ export default class GraphPlotter extends Plotter {
 
   // Constants
   rangeSpacer: number = 0.05;
+  binSize: number = 30;
 
   /* === METHODS === */
 
@@ -83,6 +84,20 @@ export default class GraphPlotter extends Plotter {
 
   public setPlotterState(state: GraphPlotterState): void {
     super.setPlotterState(state);
+
+    this.horizontalBinCount =
+      this.width === undefined
+        ? 2
+        : Math.floor(this.width / (this.binSize * this.scale));
+    this.verticalBinCount =
+      this.height === undefined
+        ? 2
+        : Math.floor(this.height / (this.binSize * this.scale));
+    this.horizontalBinCount = Math.max(2, this.horizontalBinCount);
+    this.verticalBinCount = Math.max(2, this.verticalBinCount);
+
+    console.log(this.horizontalBinCount, this.verticalBinCount);
+
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
     this.xAxisName = state.xAxisName;
@@ -127,6 +142,8 @@ export default class GraphPlotter extends Plotter {
       iby: this.yRange[0],
       iey: this.yRange[1],
       scale: this.scale,
+      xpts: this.horizontalBinCount,
+      ypts: this.verticalBinCount,
     });
   }
 

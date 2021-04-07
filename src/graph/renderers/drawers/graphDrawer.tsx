@@ -15,7 +15,7 @@ export interface GraphDrawerState extends DrawerState {
   ypts?: number;
 }
 
-const binSize = 60;
+const binSize = 100;
 
 export default class GraphDrawer extends Drawer {
   protected x1: number;
@@ -34,17 +34,29 @@ export default class GraphDrawer extends Drawer {
   update() {
     super.update();
 
-    this.xpts = Math.round(
-      (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / binSize
-    );
+    if (this.xpts === undefined) {
+      this.xpts = Math.round(
+        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / binSize
+      );
+    }
 
-    this.ypts = Math.round(
-      (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / binSize
-    );
+    if (this.ypts === undefined) {
+      this.ypts = Math.round(
+        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / binSize
+      );
+    }
   }
 
   setDrawerState(state: any) {
     super.setDrawerState(state);
+
+    if (state.horizontalBinCount !== undefined) {
+      this.xpts = state.horizontalBinCount;
+    }
+
+    if (state.verticalBinCount !== undefined) {
+      this.xpts = state.verticalBinCount;
+    }
 
     this.x1 = state.x1;
     this.y1 = state.y1;
@@ -134,7 +146,7 @@ export default class GraphDrawer extends Drawer {
       for (let x = Math.max(p1, p2); x >= Math.min(p1, p2); x -= interval) {
         this.segment({
           x1: x,
-          y1: op1 - 14,
+          y1: op2 - 14,
           x2: x,
           y2: op2 + 14,
           lineWidth: 1,
@@ -150,7 +162,7 @@ export default class GraphDrawer extends Drawer {
           fillColor: "black",
           text: textWrite,
           x: x - 24,
-          y: op1 + 40,
+          y: op2 + 40,
         });
       }
       counter--;
@@ -159,17 +171,23 @@ export default class GraphDrawer extends Drawer {
 
   private drawPlotLines(orientation: "v" | "h", strokeColor?: string) {
     const bins = orientation == "h" ? this.ypts : this.xpts;
+
     const begin = orientation == "h" ? this.y1 : this.x1;
     const end = orientation == "h" ? this.y2 : this.x2;
+
     const obegin = orientation == "h" ? this.x1 : this.y1;
     const oend = orientation == "h" ? this.x2 : this.y2;
 
-    for (let i = 0; i < bins; i++) {
+    for (
+      let i = orientation == "v" ? 1 : 0;
+      i < bins + (orientation == "v" ? 1 : 0);
+      i++
+    ) {
       const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
       this.segment({
-        x1: orientation == "h" ? begin : fd,
+        x1: orientation == "h" ? obegin : fd,
         y1: orientation == "h" ? fd : obegin,
-        x2: orientation == "h" ? end : fd,
+        x2: orientation == "h" ? oend : fd,
         y2: orientation == "h" ? fd : oend,
         strokeColor: strokeColor,
       });

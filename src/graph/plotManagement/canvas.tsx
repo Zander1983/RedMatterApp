@@ -24,9 +24,10 @@ interface CanvasState {
   2) Call draw()
   */
 export default class Canvas {
-  private canvasRender: Function | null = null;
   private context: any | null = null;
   private useCanvasCalled = false;
+
+  canvasRender: Function | null = null;
 
   id: string;
   width: number = 0;

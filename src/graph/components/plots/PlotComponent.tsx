@@ -53,7 +53,9 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   useEffect(() => {
     if (resizeObserver === null) {
       setResizeObserver(
-        new ResizeObserver(updatePlotSize).observe(displayRef.current)
+        setInterval(() => {
+          updatePlotSize();
+        }, 100)
       );
     }
     if (!plotSetup) {

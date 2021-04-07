@@ -17,7 +17,7 @@ interface HistogramPlotterState extends GraphPlotterState {
 
 export default class HistogramPlotter extends GraphPlotter {
   direction: "vertical" | "horizontal" = "vertical";
-  bins: number = 0;
+  bins: number = 1;
   drawer: HistogramDrawer;
 
   protected setDrawerState(): void {
@@ -53,9 +53,11 @@ export default class HistogramPlotter extends GraphPlotter {
 
   public update() {
     if (this.direction === "vertical") {
-      this.bins = this.verticalBinCount = this.height / binSize;
+      this.bins = this.verticalBinCount = Math.round(this.height / binSize);
+      this.bins = this.verticalBinCount = Math.max(1, this.bins);
     } else {
-      this.bins = this.horizontalBinCount = this.width / binSize;
+      this.bins = this.horizontalBinCount = Math.round(this.width / binSize);
+      this.bins = this.horizontalBinCount = Math.max(1, this.bins);
     }
     super.update();
   }
@@ -76,6 +78,7 @@ export default class HistogramPlotter extends GraphPlotter {
   private getBinList() {
     const axis = this.direction == "vertical" ? this.xAxis : this.yAxis;
     const range = this.direction == "vertical" ? this.xRange : this.yRange;
+    console.log("this.bins = ", this.bins);
     const binCounts = Array(this.bins).fill(0);
     const step = (range[1] - range[0]) / this.bins;
     let mx = 0;

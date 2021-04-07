@@ -32,6 +32,7 @@ export default abstract class Plotter {
     this.canvasContext = canvasContext;
     this.createDrawer();
     this.createTransformer();
+    this.drawer.setup(canvasContext);
   }
 
   public update(): void {

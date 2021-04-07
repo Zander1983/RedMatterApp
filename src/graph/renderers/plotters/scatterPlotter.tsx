@@ -23,9 +23,9 @@ const applyPlugin = () => {
 
       // Let's build a function list of all plugin's function
       //@ts-ignore
-      if (this.plugins.has(key)) {
+      if (target.plugins !== undefined && target.plugins.has(key)) {
         //@ts-ignore
-        this.plugins.get(key).forEach((e) => {
+        target.plugins.get(key).forEach((e) => {
           if (e.overwrite) {
             if (overwritten) {
               throw Error(
@@ -33,7 +33,7 @@ const applyPlugin = () => {
                   //@ts-ignore
                   key +
                   " of " +
-                  this.constructor.name
+                  target.constructor.name
               );
             }
             overwritten = true;
@@ -54,7 +54,7 @@ const applyPlugin = () => {
       let ret: any = null;
       for (const e of functionList) {
         if (typeof e == "string") {
-          ret = original.apply(this, args);
+          ret = original.apply(target, args);
         } else {
           ret = e(args);
         }
@@ -91,7 +91,7 @@ export default class ScatterPlotter extends GraphPlotter {
       functionSignature: string;
       function: Function;
     }[]
-  >;
+  > = new Map();
 
   public addPlugin(plugin: PlotterPlugin) {
     const setup = plugin.getPluginSetup();
@@ -126,54 +126,54 @@ export default class ScatterPlotter extends GraphPlotter {
     }
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public update() {
     super.update();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public setPlotterState(state: ScatterPlotterState) {
     super.setPlotterState(state);
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public getPlotterState(): ScatterPlotterState {
     return {
       ...super.getPlotterState(),
     };
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public setDrawerState(): void {
     super.setDrawerState();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public createDrawer(): void {
     this.drawer = new ScatterDrawer();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public updateDrawer(): void {
     this.drawer.update();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public setTransformerState(): void {
     super.setTransformerState();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public createTransformer(): void {
     super.createTransformer();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public updateTransformer(): void {
     super.updateTransformer();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public validateDraw(): void {
     if (this.xAxis.length != this.yAxis.length) {
       throw Error(
@@ -186,7 +186,7 @@ export default class ScatterPlotter extends GraphPlotter {
     }
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public draw() {
     super.draw();
     this.validateDraw();
@@ -194,7 +194,7 @@ export default class ScatterPlotter extends GraphPlotter {
     this.drawPoints();
   }
 
-  @applyPlugin()
+  // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
     for (let i = 0; i < pointCount; i++) {

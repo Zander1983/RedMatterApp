@@ -15,14 +15,13 @@ export default class HistogramDrawer extends GraphDrawer {
   private axis: "vertical" | "horizontal" = "vertical";
 
   update() {
-    this.bins = Math.floor((this.x2 - this.x1) / this.binSize);
     if (this.axis === "vertical") {
-      this.ypts = Math.round(
-        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / 100
+      this.bins = this.ypts = Math.round(
+        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / this.binSize
       );
     } else {
-      this.xpts = Math.round(
-        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / 100
+      this.bins = this.xpts = Math.round(
+        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / this.binSize
       );
     }
     super.update();

@@ -1,13 +1,17 @@
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import Plot from "../../plotManagement/plot";
 
 const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
+  const [useCanvasCalled, setUseCanvasCalled] = React.useState(false);
   const canvas = props.plot.canvas;
   let canvasRef = useRef(null);
 
   useEffect(() => {
-    canvasRef = canvas.useCanvas(canvasRef);
-  });
+    if (!useCanvasCalled) {
+      canvasRef = canvas.useCanvas(canvasRef);
+      setUseCanvasCalled(true);
+    }
+  }, []);
 
   const id = `canvas-${props.plotIndex}`;
   return (

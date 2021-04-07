@@ -62,8 +62,6 @@ export default class Plot {
   histogramAxis: "vertical" | "horizontal" = "vertical";
 
   // Rendering methods
-  // Calling canvas render means the canvas will be redrawn
-  canvasRender: Function | null = null;
   // Calling plot render means the component plot will be redrawn
   plotRender: Function | null = null;
 
@@ -97,23 +95,46 @@ export default class Plot {
     // By default, get the first and second axis as X and Y axis
     this.xAxis = this.file.axes[0];
     this.yAxis = this.file.axes[1];
-    this.plotRender = null;
     this.gates = [];
 
     this.constructPlotters();
+    this.plotter = this.scatterPlotter;
+
+    this.setPlotterState();
     this.histogramPlotter.setup(this.canvas.getContext());
     this.scatterPlotter.setup(this.canvas.getContext());
+
+    this.updatePlotter();
+
+    this.draw();
   }
 
   draw() {
+    this.setCanvasState();
+    this.setPlotterState();
+
     this.updatePlotter();
     this.canvasRender();
+    this.plotRender();
+
+    console.log(
+      "ok calling plotter draw dims = ",
+      this.width,
+      this.height,
+      this.plotter.width,
+      this.plotter.height
+    );
+    this.plotter.draw();
+  }
+
+  canvasRender() {
+    this.canvas.canvasRender();
   }
 
   private conditionalUpdate() {
     if (this.changed) {
       this.changed = false;
-      if (this.plotRender === null || this.canvasRender === null) {
+      if (this.plotRender === null || this.canvas.canvasRender === null) {
         throw Error("Null renderer for Canvas");
       }
       if (this.xAxis == this.yAxis) {
@@ -121,8 +142,7 @@ export default class Plot {
       } else {
         this.plotter = this.scatterPlotter;
       }
-      this.updatePlotter();
-      this.plotRender();
+      this.draw();
     }
   }
 
@@ -202,7 +222,8 @@ export default class Plot {
   }
 
   private registerMouseEvent(type: string, x: number, y: number) {
-    if (this.mouseInteractor === null) return;
+    if (this.mouseInteractor === null || this.mouseInteractor === undefined)
+      return;
 
     this.mouseInteractor.registerMouseEvent(type, x, y);
   }
@@ -225,6 +246,10 @@ export default class Plot {
   }
 
   private updatePlotter() {
+    this.plotter.update();
+  }
+
+  private setPlotterState() {
     /*
       Fills up data to feed all plotters. It's the resposability of a plotter to
       pick only what it needs.
@@ -241,7 +266,6 @@ export default class Plot {
       direction: this.histogramAxis,
     };
     this.plotter.setPlotterState(plotterState);
-    this.plotter.update();
   }
 
   private contructMouseInteractor(type: string) {
