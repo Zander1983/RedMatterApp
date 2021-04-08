@@ -20,12 +20,15 @@ const applyPlugin = () => {
     descriptor.value = function (...args: any[]) {
       let overwritten = false;
       let functionList: any[] = ["original"];
+      // console.log("TRYING TO APPLY PLUGIN");
+      //@ts-ignore
+      // console.log(this.plugins);
 
       // Let's build a function list of all plugin's function
       //@ts-ignore
-      if (target.plugins !== undefined && target.plugins.has(key)) {
+      if (this.plugins !== undefined && this.plugins.has(key)) {
         //@ts-ignore
-        target.plugins.get(key).forEach((e) => {
+        this.plugins.get(key).forEach((e) => {
           if (e.overwrite) {
             if (overwritten) {
               throw Error(
@@ -33,16 +36,16 @@ const applyPlugin = () => {
                   //@ts-ignore
                   key +
                   " of " +
-                  target.constructor.name
+                  this.constructor.name
               );
             }
             overwritten = true;
-            functionList = [e.function];
+            functionList = [e];
           } else if (!overwritten) {
             if (e.order == "before") {
-              functionList = [e.function, ...functionList];
+              functionList = [e, ...functionList];
             } else if (e.order == "after") {
-              functionList = [...functionList, e.function];
+              functionList = [...functionList, e];
             } else {
               throw Error("Unrecognized plugin order " + e.order);
             }
@@ -54,9 +57,10 @@ const applyPlugin = () => {
       let ret: any = null;
       for (const e of functionList) {
         if (typeof e == "string") {
-          ret = original.apply(target, args);
+          ret = original.apply(this, args);
         } else {
-          ret = e(args);
+          console.log(e);
+          ret = e.plugin[e.functionSignature](args);
         }
       }
 
@@ -89,7 +93,6 @@ export default class ScatterPlotter extends GraphPlotter {
       order: string;
       overwrite: boolean;
       functionSignature: string;
-      function: Function;
     }[]
   > = new Map();
 
@@ -100,14 +103,15 @@ export default class ScatterPlotter extends GraphPlotter {
         origin: plugin.constructor.name,
         ...param,
       };
-      if (this.plugins.has(param.functionSignature)) {
-        const list = this.plugins.get(param.functionSignature);
+      const targetFunction = param.functionSignature.split("_")[0];
+      if (this.plugins.has(targetFunction)) {
+        const list = this.plugins.get(targetFunction);
         if (!list.includes(final)) {
           list.push(final);
-          this.plugins.set(param.functionSignature, list);
+          this.plugins.set(targetFunction, list);
         }
       } else {
-        this.plugins.set(param.functionSignature, [final]);
+        this.plugins.set(targetFunction, [final]);
       }
     }
     plugin.setPlotter(this);
@@ -191,18 +195,19 @@ export default class ScatterPlotter extends GraphPlotter {
   // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
+    const colors = this.getPointColors(pointCount);
     for (let i = 0; i < pointCount; i++) {
-      if (!this.shouldSamplePoint()) continue;
-      const color = this.getPointColor(i);
+      // if (!this.shouldSamplePoint()) continue;
       const { x, y } = this.transformer.toConcretePoint({
         x: this.xAxis[i],
         y: this.yAxis[i],
       });
-      this.drawer.addPoint(x, y, 1.4, color);
+      this.drawer.addPoint(x, y, 1.4, colors[i]);
     }
   }
 
-  public getPointColor(index: number) {
-    return "#000";
+  @applyPlugin()
+  public getPointColors(size: number) {
+    return Array(size).fill("#000");
   }
 }

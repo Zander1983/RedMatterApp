@@ -197,7 +197,6 @@ export default class GraphDrawer extends Drawer {
   }
 
   drawPlotGraph(): void {
-    console.log("draw plot graph called with state =", this.getDrawerState());
     this.graphLine({
       x1: this.x1,
       y1: this.y1,

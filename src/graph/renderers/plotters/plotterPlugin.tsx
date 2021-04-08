@@ -4,7 +4,7 @@ interface PluginSetup {
   order: string; // "before" | "after" | null;
   overwrite: boolean;
   functionSignature: string;
-  function: Function;
+  plugin: PlotterPlugin;
 }
 
 /*
@@ -81,21 +81,22 @@ export default abstract class PlotterPlugin {
     "setPluginState",
   ];
 
-  private getAllFunctions(): string[] {
-    let props: string[] = [];
-    let obj = this;
+  private getAllFunctions(obj: any): string[] {
+    let properties = new Set();
+    let currentObj = obj;
     do {
-      props = props.concat(Object.getOwnPropertyNames(this));
-    } while ((obj = Object.getPrototypeOf(this)));
-
-    return props.sort().filter(function (e, i, arr) {
-      //@ts-ignore
-      if (e != arr[i + 1] && typeof this[e] == "function") return true;
-    });
+      Object.getOwnPropertyNames(currentObj).map((item) =>
+        properties.add(item)
+      );
+    } while ((currentObj = Object.getPrototypeOf(currentObj)));
+    //@ts-ignore
+    return [...properties.keys()].filter(
+      (item) => typeof obj[item] === "function"
+    );
   }
 
   public getPluginSetup(): PluginSetup[] {
-    const funcs = this.getAllFunctions();
+    const funcs = this.getAllFunctions(this);
     const filtered = funcs.filter(
       (e) => !PlotterPlugin.baseObjectFunctions.includes(e) && e.includes("_")
     );
@@ -108,9 +109,9 @@ export default abstract class PlotterPlugin {
       return {
         order: order,
         overwrite: overwrite,
-        functionSignature: signature,
+        functionSignature: e,
         //@ts-ignore
-        function: this[e],
+        plugin: this,
       };
     });
     return ret;

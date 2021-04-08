@@ -49,6 +49,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const barRef = React.useRef();
 
   const updatePlotSize = () => {
+    if (displayRef === null || displayRef.current === null) return;
     //@ts-ignore
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
@@ -71,7 +72,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       setResizeObserver(
         setInterval(() => {
           plotUpdater();
-        }, 120)
+        }, 500)
       );
     }
     if (!plotSetup) {

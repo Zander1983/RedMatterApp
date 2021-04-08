@@ -13,11 +13,12 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
     this.plotter = plotter;
   }
 
-  getPointColor_AFTER(index: number) {
+  getPointColors_AFTER(size: number) {
+    console.log("HEATMAPPER WAS ACTUALLY CALLED WITH THIS = ", this);
     if (this.colors === null) {
       this.colors = this.getHeatmapColors();
     }
-    return this.colors[index];
+    return this.colors;
   }
 
   private getHeatmapColors() {

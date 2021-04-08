@@ -161,7 +161,7 @@ export default class Plot {
     this.updatePlotter();
   }
 
-  setOvalGating(value: boolean) {
+  setGating(type: "Oval" | "Histogram" | "Polygon", value: boolean) {
     value ? this.mouseInteractor.start() : this.mouseInteractor.end();
   }
 

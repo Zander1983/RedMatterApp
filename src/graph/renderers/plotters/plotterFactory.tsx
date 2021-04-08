@@ -34,9 +34,9 @@ export default class PlotterFactory {
   private makeScatterPlot(options: string[]): ScatterPlotter {
     const plugins: PlotterPlugin[] = [];
 
-    // if (options.includes("heatmap")) {
-    //   plugins.push(new ScatterHeatmapperPlugin());
-    // }
+    if (options.includes("heatmap")) {
+      plugins.push(new ScatterHeatmapperPlugin());
+    }
 
     const scatterPlotter = new ScatterPlotter();
     plugins.forEach((e) => scatterPlotter.addPlugin(e));
