@@ -75,26 +75,18 @@ export default class GraphPlotter extends Plotter {
   }
 
   public update(): void {
-    this.xRange = this.findRangeBoundries("x");
-    this.yRange = this.findRangeBoundries("y");
-    this.xLabels = this.createRangeArray("x");
-    this.yLabels = this.createRangeArray("y");
+    if (this.xRange === undefined) {
+      this.getBins();
+      this.xRange = this.findRangeBoundries("x");
+      this.yRange = this.findRangeBoundries("y");
+      this.xLabels = this.createRangeArray("x");
+      this.yLabels = this.createRangeArray("y");
+    }
     super.update();
   }
 
   public setPlotterState(state: GraphPlotterState): void {
     super.setPlotterState(state);
-
-    this.horizontalBinCount =
-      this.width === undefined
-        ? 2
-        : Math.floor(this.width / (this.binSize * this.scale));
-    this.verticalBinCount =
-      this.height === undefined
-        ? 2
-        : Math.floor(this.height / (this.binSize * this.scale));
-    this.horizontalBinCount = Math.max(2, this.horizontalBinCount);
-    this.verticalBinCount = Math.max(2, this.verticalBinCount);
 
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
@@ -104,14 +96,23 @@ export default class GraphPlotter extends Plotter {
     this.height = state.height;
     this.scale = state.scale;
     this.gates = state.gates === undefined ? this.gates : state.gates;
-    this.xRange =
-      state.xRange === undefined ? this.findRangeBoundries("x") : state.xRange;
-    this.yRange =
-      state.yRange === undefined ? this.findRangeBoundries("y") : state.yRange;
-    this.xLabels =
-      state.xLabels === undefined ? this.createRangeArray("x") : state.xLabels;
-    this.yLabels =
-      state.yLabels === undefined ? this.createRangeArray("y") : state.yLabels;
+    this.xRange = state.xRange;
+    this.yRange = state.yRange;
+    this.xLabels = state.xLabels;
+    this.yLabels = state.yLabels;
+  }
+
+  protected getBins() {
+    this.horizontalBinCount =
+      this.width === undefined
+        ? 2
+        : Math.round(this.width / (this.binSize * this.scale));
+    this.verticalBinCount =
+      this.height === undefined
+        ? 2
+        : Math.round(this.height / (this.binSize * this.scale));
+    this.horizontalBinCount = Math.max(2, this.horizontalBinCount);
+    this.verticalBinCount = Math.max(2, this.verticalBinCount);
   }
 
   public getPlotterState(): GraphPlotterState {

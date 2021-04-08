@@ -11,6 +11,7 @@ import GateMouseInteractor, {
   MouseInteractorState,
 } from "./gateMouseInteractor";
 import ScatterOvalGatePlotter from "../plotters/runtimePlugins/scatterOvalGatePlotter";
+import ScatterPlotter from "../plotters/scatterPlotter";
 
 export interface OvalGateState extends GateState {
   center: Point | null;
@@ -35,6 +36,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
   static targetPlugin: ScatterOvalGatePlotter;
 
   protected plugin: ScatterOvalGatePlotter;
+  plotter: ScatterPlotter | null = null;
 
   private xAxis: string;
   private yAxis: string;
@@ -47,6 +49,19 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
     super.setMouseInteractorState(state);
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
+  }
+
+  setup(plotter: ScatterPlotter) {
+    this.plugin = new ScatterOvalGatePlotter();
+    this.plugin.setPlotter(plotter);
+    this.plugin.isGating = true;
+    plotter.addPlugin(this.plugin);
+  }
+
+  end() {
+    this.plugin.plotter.removePlugin(this.plugin);
+    this.plugin.isGating = false;
+    super.end();
   }
 
   protected instanceGate(): OvalGate {

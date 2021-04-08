@@ -1,13 +1,14 @@
 import FCSFile from "graph/dataManagement/fcsFile";
 import dataManager from "graph/dataManagement/dataManager";
 import Plotter from "graph/renderers/plotters/plotter";
+import Plot from "./plot";
 
 interface CanvasState {
   id: string;
   width: number;
   height: number;
   scale: number;
-  mouseEventRegister: (type: string, x: number, y: number) => void;
+  plot: Plot;
 }
 
 /*
@@ -33,14 +34,14 @@ export default class Canvas {
   width: number = 0;
   height: number = 0;
   scale: number = 2;
-  mouseEventRegister: (type: string, x: number, y: number) => void;
+  plot: Plot;
 
-  setCanvasState(canvasState: CanvasState) {
-    this.id = canvasState.id;
-    this.width = canvasState.width;
-    this.height = canvasState.height;
-    this.scale = canvasState.scale;
-    this.mouseEventRegister = canvasState.mouseEventRegister;
+  setCanvasState(state: CanvasState) {
+    this.id = state.id;
+    this.width = state.width;
+    this.height = state.height;
+    this.scale = state.scale;
+    this.plot = state.plot;
   }
 
   getContext(): any {
@@ -72,7 +73,7 @@ export default class Canvas {
       //@ts-ignore
       const y = event.offsetY;
       const type = event.type;
-      this.mouseEventRegister(type, x, y);
+      this.plot.registerMouseEvent(type, x, y);
     };
 
     const addCanvasListener = (type: string, func: Function) => {
@@ -95,8 +96,6 @@ export default class Canvas {
       }
       context.fillStyle = "#fff";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      // plotter.draw();
-      // this should not necessarely be here?
       // canvas is now ready to be drawn on.
       return () => {
         window.cancelAnimationFrame(animationFrameId);

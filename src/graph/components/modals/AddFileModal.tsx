@@ -15,6 +15,7 @@ import erica3 from "./staticFCSFiles/ericaFile3";
 import transduction_1 from "./staticFCSFiles/transduction_1";
 import transduction_2 from "./staticFCSFiles/transduction_2";
 import transduction_3 from "./staticFCSFiles/transduction_3";
+const kmeans = require("node-kmeans");
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -56,19 +57,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 /* Frontend kmeans is very expensive, don't use */
-// const kmeansify = (
-//   list: Array<Array<number>>,
-//   callback: Function
-// ): Array<Array<number>> => {
-//   dataManager.loading = true;
-//   kmeans.clusterize(list, { k: 600 }, (err, res) => {
-//     if (err) throw Error("Clusterization failed!");
-//     else {
-//       callback(res.map((e) => e.centroid));
-//       dataManager.loading = false;
-//     }
-//   });
-// };
+const kmeansify = (list: Array<Array<number>>, callback: Function): void => {
+  kmeans.clusterize(list, { k: 1200 }, (err: any, res: any) => {
+    if (err) throw Error("Clusterization failed!");
+    else {
+      callback(res.map((e: any) => e.centroid));
+      dataManager.loading = false;
+    }
+  });
+};
 
 const generateRandomData = (
   dimesionCount: number,
@@ -194,11 +191,17 @@ const addToFiles = (data: Array<any>, axes: object[], title: string) => {
       lastModified: "??",
     });
   };
-  // if (data.length > 1000) {
-  //   kmeansify(data, add);
-  // } else {
-  add(data);
-  // }
+  if (data.length > 1000) {
+    kmeansify(data, (data: any) => {
+      add(data);
+    });
+  } else {
+    add(data);
+  }
+};
+
+const getLocal = (filename: any, title: string) => {
+  addToFiles(filename.data, filename.axes, title);
 };
 
 const getRemotePrototypeFile = (url: string) => {
@@ -219,6 +222,10 @@ const getRemotePrototypeFile = (url: string) => {
     addToFiles(filedata, remoteFileAxes, url.split("/")[3].split(".")[0]);
   });
 };
+
+// getLocal(transduction_1, "transduction_1");
+// getLocal(transduction_2, "transduction_2");
+// getLocal(transduction_3, "transduction_3");
 
 // getRemotePrototypeFile(
 //   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"

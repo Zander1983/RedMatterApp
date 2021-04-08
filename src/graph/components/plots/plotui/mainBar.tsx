@@ -39,10 +39,10 @@ export default function MainBar(props: any) {
 
   const ovalGatingSetter = () => {
     if (ovalGating) {
-      plot.setOvalGating(false);
+      plot.setGating("Oval", false);
       setOvalGating(false);
     } else {
-      plot.setOvalGating(true);
+      plot.setGating("Oval", true);
       setOvalGating(true);
     }
   };

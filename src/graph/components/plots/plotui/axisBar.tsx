@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
@@ -19,8 +19,14 @@ const classes = {
   },
 };
 
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
+
 export default function AxisBar(props: any) {
   const plot = props.plot;
+  const rerender = useForceUpdate();
 
   const xAxis = plot.xAxis;
   const yAxis = plot.yAxis;
@@ -108,7 +114,7 @@ export default function AxisBar(props: any) {
             //@ts-ignore
             onChange={(e) => setAxis("x", e.target.value)}
             disabled={isAxisDisabled("x")}
-            value={plot.xAxis}
+            value={xAxis}
           >
             {plot.getFile().axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>

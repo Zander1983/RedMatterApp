@@ -1,3 +1,4 @@
+import { ConsoleSqlOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
@@ -7,7 +8,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
 
   plotter: GraphPlotter;
   gatingState: any; // Too custom to be defined here
-  gates: Gate[];
+  gates: Gate[] = [];
   isGating: boolean = false;
 
   public abstract setGates(gates: Gate[]): void;

@@ -51,7 +51,12 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
   }
 
   protected drawGate(gate: OvalGate) {
-    const toConcretePoint = this.plotter.transformer.toConcretePoint;
+    const toConcretePoint = (p: { x: number; y: number }) => {
+      let np = this.plotter.transformer.toConcretePoint(p);
+      np.x *= this.plotter.scale;
+      np.y *= this.plotter.scale;
+      return np;
+    };
     const c = toConcretePoint({ x: gate.center.x, y: gate.center.y });
     const p1 = toConcretePoint({ x: gate.primaryP1.x, y: gate.primaryP1.y });
     const p2 = toConcretePoint({ x: gate.primaryP2.x, y: gate.primaryP2.y });
@@ -81,32 +86,38 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
 
   protected drawGating() {
     const plotter = this.plotter;
+    if (this.ovalGateState === null) return;
+    const toConcretePoint = (p: { x: number; y: number }) => {
+      let np = this.plotter.transformer.toConcretePoint(p);
+      np.x *= this.plotter.scale;
+      np.y *= this.plotter.scale;
+      return np;
+    };
     if (
       this.ovalGateState.primaryP1 != null &&
       this.ovalGateState.secondaryP1 != null
     ) {
       //@ts-ignore
-      this.drawOvalGate(this.ovalGateState);
+      this.drawGate(this.ovalGateState);
+      const center = toConcretePoint(this.ovalGateState.center);
+      const pp1 = toConcretePoint(this.ovalGateState.primaryP1);
       plotter.drawer.segment({
-        x1: this.ovalGateState.center.x,
-        y1: this.ovalGateState.center.y,
-        x2: this.ovalGateState.primaryP1.x,
-        y2: this.ovalGateState.primaryP1.y,
+        x1: center.x,
+        y1: center.y,
+        x2: pp1.x,
+        y2: pp1.y,
         lineWidth: 3,
         strokeColor: "#d00",
       });
-      plotter.drawer.addPoint(
-        this.ovalGateState.center.x,
-        this.ovalGateState.center.y,
-        2,
-        "#00d"
-      );
+      plotter.drawer.addPoint(center.x, center.y, 2, "#00d");
     } else if (this.ovalGateState.primaryP1 != null) {
+      const mouse = toConcretePoint(this.ovalGateState.lastMousePos);
+      const pp1 = toConcretePoint(this.ovalGateState.primaryP1);
       plotter.drawer.segment({
-        x1: this.ovalGateState.primaryP1.x,
-        y1: this.ovalGateState.primaryP1.y,
-        x2: this.ovalGateState.lastMousePos.x,
-        y2: this.ovalGateState.lastMousePos.y,
+        x1: pp1.x,
+        y1: pp1.y,
+        x2: mouse.x,
+        y2: mouse.y,
         lineWidth: 3,
         strokeColor: "#f00",
       });

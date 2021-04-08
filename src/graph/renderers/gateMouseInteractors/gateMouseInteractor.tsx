@@ -1,6 +1,7 @@
 import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
+import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 export interface Point {
   x: number;
@@ -14,7 +15,7 @@ export interface GateState {
 export interface MouseInteractorState {
   plotID: string;
   plotRender: Function;
-  plugin: GatePlotterPlugin;
+  canvasRender: Function;
 }
 
 export default abstract class GateMouseInteractor {
@@ -24,15 +25,16 @@ export default abstract class GateMouseInteractor {
   protected started: boolean = false;
   protected plugin: GatePlotterPlugin;
   protected lastMousePos: Point;
-  private plotRenderLastTimestamp: any = 0;
+  private canvasRenderLastTimestamp: any = 0;
 
   plotID: string;
   plotRender: Function;
+  canvasRender: Function;
 
   setMouseInteractorState(state: MouseInteractorState) {
     this.plotRender = state.plotRender;
+    this.canvasRender = state.canvasRender;
     this.plotID = state.plotID;
-    this.plugin = state.plugin;
   }
 
   start() {
@@ -69,15 +71,16 @@ export default abstract class GateMouseInteractor {
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
+    if (this.plugin === undefined || this.plugin.plotter === undefined) return;
     const p = this.plugin.plotter.transformer.toAbstractPoint({ x: x, y: y });
     this.lastMousePos = p;
     if (this.started) {
       this.gateEvent(type, p);
       this.setPluginState();
       const now = new Date().getTime();
-      if (this.plotRenderLastTimestamp + 10 < now) {
-        this.plotRender();
-        this.plotRenderLastTimestamp = now;
+      if (this.canvasRenderLastTimestamp + 10 < now) {
+        this.canvasRender();
+        this.canvasRenderLastTimestamp = now;
       }
     }
   }

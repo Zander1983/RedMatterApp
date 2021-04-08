@@ -56,14 +56,22 @@ export default class HistogramPlotter extends GraphPlotter {
     this.bins = state.bins !== undefined ? state.bins : 0;
   }
 
+  protected getBins() {
+    this.horizontalBinCount =
+      this.width === undefined
+        ? 2
+        : Math.max(2, Math.round(this.width / (this.binSize * this.scale)));
+    this.verticalBinCount =
+      this.height === undefined
+        ? 2
+        : Math.max(2, Math.round(this.height / (this.binSize * this.scale)));
+    this.bins =
+      this.direction === "vertical"
+        ? this.horizontalBinCount
+        : this.verticalBinCount;
+  }
+
   public update() {
-    if (this.direction === "vertical") {
-      this.bins = this.verticalBinCount = Math.round(this.height / binSize);
-      this.bins = this.verticalBinCount = Math.max(1, this.bins);
-    } else {
-      this.bins = this.horizontalBinCount = Math.round(this.width / binSize);
-      this.bins = this.horizontalBinCount = Math.max(1, this.bins);
-    }
     super.update();
   }
 

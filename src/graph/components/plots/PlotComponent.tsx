@@ -78,8 +78,6 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     if (!plotSetup) {
       plot.setup();
       setPlotSetup(true);
-    } else {
-      console.log("called plot draw");
     }
   }, []);
 

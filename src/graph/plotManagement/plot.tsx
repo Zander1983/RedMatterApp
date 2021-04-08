@@ -15,6 +15,8 @@ import Canvas from "graph/plotManagement/canvas";
 import PlotterFactory from "graph/renderers/plotters/plotterFactory";
 import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gateMouseInteractorFactory";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
+import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
+import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 
 const plotterFactory = new PlotterFactory();
 const mouseInteractorFactory = new GateMouseInteractorFactory();
@@ -38,8 +40,8 @@ const conditionalUpdateDecorator = () => {
 
 export default class Plot {
   // Plot params
-  xAxis: string;
-  yAxis: string;
+  xAxis: string = "69";
+  yAxis: string = "420";
   changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
@@ -52,7 +54,11 @@ export default class Plot {
   id: string;
   canvas: Canvas;
   file: FCSFile;
+
+  // Mouse interaction objects
   mouseInteractor: MouseInteractor | null = null;
+  ovalMouseInteractor: OvalMouseInteractor | null = null;
+  polygonMouseInteractor: PolygonMouseInteractor | null = null;
   mouseInteractorPlugin: GatePlotterPlugin | null = null;
 
   // Rendering objects
@@ -76,21 +82,6 @@ export default class Plot {
     this.canvas = new Canvas();
   }
 
-  /*
-  general idea behind component lifetimes
-  setup
-  -> initializer
-  -> set initial state
-  -> setup
-
-  upkeep
-  -> Set component states
-  -> Update components
-
-  discard
-  -> Dereference the object and that's it
-  */
-
   setup() {
     // By default, get the first and second axis as X and Y axis
     this.xAxis = this.file.axes[0];
@@ -105,6 +96,8 @@ export default class Plot {
     this.scatterPlotter.setup(this.canvas.getContext());
 
     this.updatePlotter();
+
+    this.contructMouseInteractors();
 
     setTimeout(() => this.draw(), 100);
   }
@@ -161,8 +154,24 @@ export default class Plot {
     this.updatePlotter();
   }
 
-  setGating(type: "Oval" | "Histogram" | "Polygon", value: boolean) {
-    value ? this.mouseInteractor.start() : this.mouseInteractor.end();
+  setGating(type: "Oval" | "Histogram" | "Polygon", start: boolean) {
+    if (start) {
+      if (type === "Oval") {
+        this.ovalMouseInteractor.setMouseInteractorState({
+          plotRender: this.plotRender,
+          plotID: this.id,
+          yAxis: this.yAxis,
+          xAxis: this.xAxis,
+          canvasRender: () => {
+            this.canvasRender();
+            this.plotter.draw();
+          },
+        });
+        this.ovalMouseInteractor.setup(this.scatterPlotter);
+        this.mouseInteractor = this.ovalMouseInteractor;
+      }
+    }
+    start ? this.mouseInteractor.start() : this.mouseInteractor.end();
   }
 
   @conditionalUpdateDecorator()
@@ -210,11 +219,19 @@ export default class Plot {
     this.yAxis = yAxis;
   }
 
+  getXAxisName() {
+    return this.xAxis;
+  }
+
+  getYAxisName() {
+    return this.yAxis;
+  }
+
   getFile() {
     return this.file;
   }
 
-  private registerMouseEvent(type: string, x: number, y: number) {
+  registerMouseEvent(type: string, x: number, y: number) {
     if (this.mouseInteractor === null || this.mouseInteractor === undefined)
       return;
 
@@ -227,7 +244,7 @@ export default class Plot {
       width: this.width,
       height: this.height,
       scale: this.scale,
-      mouseEventRegister: this.registerMouseEvent,
+      plot: this,
     });
   }
 
@@ -261,17 +278,15 @@ export default class Plot {
     this.plotter.setPlotterState(plotterState);
   }
 
-  private contructMouseInteractor(type: string) {
-    const {
-      mouseInteractor,
-      plotterPlugin,
-    } = mouseInteractorFactory.makeGateMouseInteractor(type);
-    this.mouseInteractor = mouseInteractor;
-    this.mouseInteractorPlugin = plotterPlugin;
+  private contructMouseInteractors() {
+    this.ovalMouseInteractor = new OvalMouseInteractor();
+    this.polygonMouseInteractor = new PolygonMouseInteractor();
+    // by default
+    this.mouseInteractor = this.ovalMouseInteractor;
   }
 
   private setupMouseInteraction(type: string) {
-    this.contructMouseInteractor(type);
+    // this.contructMouseInteractor(type);
     /* add the correct plugin */
     /* intialize everything */
   }

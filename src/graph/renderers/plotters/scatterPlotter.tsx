@@ -20,9 +20,6 @@ const applyPlugin = () => {
     descriptor.value = function (...args: any[]) {
       let overwritten = false;
       let functionList: any[] = ["original"];
-      // console.log("TRYING TO APPLY PLUGIN");
-      //@ts-ignore
-      // console.log(this.plugins);
 
       // Let's build a function list of all plugin's function
       //@ts-ignore
@@ -59,7 +56,6 @@ const applyPlugin = () => {
         if (typeof e == "string") {
           ret = original.apply(this, args);
         } else {
-          console.log(e);
           ret = e.plugin[e.functionSignature](args);
         }
       }
@@ -120,7 +116,7 @@ export default class ScatterPlotter extends GraphPlotter {
   public removePlugin(plugin: PlotterPlugin) {
     const setup = plugin.getPluginSetup();
     for (const param of setup) {
-      const l = this.plugins.get(param.functionSignature);
+      const l = this.plugins.get(param.functionSignature.split("_")[0]);
       const final = {
         origin: plugin.constructor.name,
         ...param,
@@ -175,7 +171,7 @@ export default class ScatterPlotter extends GraphPlotter {
     }
   }
 
-  // @applyPlugin()
+  @applyPlugin()
   public draw() {
     super.draw();
     this.validateDraw();

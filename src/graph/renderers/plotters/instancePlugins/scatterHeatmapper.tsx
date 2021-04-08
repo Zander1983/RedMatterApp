@@ -14,7 +14,6 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
   }
 
   getPointColors_AFTER(size: number) {
-    console.log("HEATMAPPER WAS ACTUALLY CALLED WITH THIS = ", this);
     if (this.colors === null) {
       this.colors = this.getHeatmapColors();
     }
