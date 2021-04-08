@@ -25,16 +25,23 @@ const classes = {
   },
 };
 
+const nullOrUndefined = (obj: any) => {
+  return obj === null || obj === undefined;
+};
+
 function useForceUpdate() {
   const [value, setValue] = React.useState(0); // integer state
   return () => setValue((value) => value + 1); // update the state to force render
 }
+
+const minDrawInterval = 200;
 
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const [resizeObserver, setResizeObserver] = React.useState(null);
   const [plotSetup, setPlotSetup] = React.useState(false);
   const plot = props.plot;
   const rerender = useForceUpdate();
+  const [lastDrawTimestamp, setlastDrawTimestamp] = React.useState(0);
 
   plot.setRerender(rerender);
 
@@ -42,7 +49,6 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const barRef = React.useRef();
 
   const updatePlotSize = () => {
-    if (displayRef.current === undefined || displayRef.current === null) return;
     //@ts-ignore
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
@@ -50,17 +56,29 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     plot.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };
 
+  const plotUpdater = () => {
+    updatePlotSize();
+    // TODO: THIS SOLUTION IS SO SHIT. PLEASE FIX THIS
+    const now = new Date().getTime();
+    if (lastDrawTimestamp + minDrawInterval <= now) {
+      setlastDrawTimestamp(now);
+      plot.draw();
+    }
+  };
+
   useEffect(() => {
     if (resizeObserver === null) {
       setResizeObserver(
         setInterval(() => {
-          updatePlotSize();
-        }, 100)
+          plotUpdater();
+        }, 120)
       );
     }
     if (!plotSetup) {
       plot.setup();
       setPlotSetup(true);
+    } else {
+      console.log("called plot draw");
     }
   }, []);
 

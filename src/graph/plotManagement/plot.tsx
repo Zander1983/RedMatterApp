@@ -106,7 +106,7 @@ export default class Plot {
 
     this.updatePlotter();
 
-    this.draw();
+    setTimeout(() => this.draw(), 100);
   }
 
   draw() {
@@ -115,16 +115,9 @@ export default class Plot {
 
     this.updatePlotter();
     this.canvasRender();
-    this.plotRender();
 
-    console.log(
-      "ok calling plotter draw dims = ",
-      this.width,
-      this.height,
-      this.plotter.width,
-      this.plotter.height
-    );
     this.plotter.draw();
+    this.plotRender();
   }
 
   canvasRender() {

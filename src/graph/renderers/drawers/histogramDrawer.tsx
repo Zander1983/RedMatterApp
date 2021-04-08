@@ -5,7 +5,8 @@ import GraphDrawer, {
 const binPadding = 5;
 
 interface HistogramDrawerState extends GraphDrawerState {
-  binSize: number;
+  axis: "vertical" | "horizontal";
+  bins: number;
 }
 
 //@ts-ignore
@@ -15,32 +16,25 @@ export default class HistogramDrawer extends GraphDrawer {
   private axis: "vertical" | "horizontal" = "vertical";
 
   update() {
-    if (this.axis === "vertical") {
-      this.bins = this.ypts = Math.round(
-        (Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2)) / this.binSize
-      );
-    } else {
-      this.bins = this.xpts = Math.round(
-        (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / this.binSize
-      );
-    }
     super.update();
   }
 
   setDrawerState(state: HistogramDrawerState) {
     super.setDrawerState(state);
+    this.axis = state.axis;
+    this.bins = state.bins;
   }
 
   getDrawerState(): HistogramDrawerState {
     return {
       ...super.getDrawerState(),
-      binSize: this.binSize,
+      bins: this.bins,
+      axis: this.axis,
     };
   }
 
-  /* TODO FIX THIS SHIT WHEN EVERYTHING IS IN PLACE */
   drawLines() {
-    if (this.axis == "vertical") {
+    if (this.axis == "horizontal") {
       // Horizontal hist lines
       for (let i = 0; i < this.ypts; i++) {
         const height =

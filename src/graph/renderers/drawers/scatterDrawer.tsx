@@ -24,8 +24,6 @@ export default class ScatterDrawer extends GraphDrawer {
   }
 
   addPoint = (x: number, y: number, r: number, color: string = "#000") => {
-    if (x < this.ibx || x > this.iex) return;
-    if (y < this.iby || y > this.iey) return;
     this.circle({
       x: x * this.scale,
       y: y * this.scale,

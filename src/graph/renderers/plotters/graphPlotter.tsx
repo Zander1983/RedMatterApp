@@ -96,8 +96,6 @@ export default class GraphPlotter extends Plotter {
     this.horizontalBinCount = Math.max(2, this.horizontalBinCount);
     this.verticalBinCount = Math.max(2, this.verticalBinCount);
 
-    console.log(this.horizontalBinCount, this.verticalBinCount);
-
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
     this.xAxisName = state.xAxisName;

@@ -159,21 +159,6 @@ export default class ScatterPlotter extends GraphPlotter {
   }
 
   // @applyPlugin()
-  public setTransformerState(): void {
-    super.setTransformerState();
-  }
-
-  // @applyPlugin()
-  public createTransformer(): void {
-    super.createTransformer();
-  }
-
-  // @applyPlugin()
-  public updateTransformer(): void {
-    super.updateTransformer();
-  }
-
-  // @applyPlugin()
   public validateDraw(): void {
     if (this.xAxis.length != this.yAxis.length) {
       throw Error(
@@ -194,14 +179,26 @@ export default class ScatterPlotter extends GraphPlotter {
     this.drawPoints();
   }
 
+  private shouldSamplePoint() {
+    const pointCount = this.xAxis.length;
+    if (pointCount < 1000) {
+      return true;
+    }
+    const v = (Math.random() * (pointCount - 1000)) / 1000;
+    return Math.round(v) === 1 ? true : false;
+  }
+
   // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
     for (let i = 0; i < pointCount; i++) {
+      if (!this.shouldSamplePoint()) continue;
       const color = this.getPointColor(i);
-      const x = this.xAxis[i];
-      const y = this.yAxis[i];
-      this.drawer.addPoint(this.xAxis[i], this.yAxis[i], 1.4, color);
+      const { x, y } = this.transformer.toConcretePoint({
+        x: this.xAxis[i],
+        y: this.yAxis[i],
+      });
+      this.drawer.addPoint(x, y, 1.4, color);
     }
   }
 

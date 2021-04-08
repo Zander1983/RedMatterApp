@@ -12,6 +12,10 @@ import erica1 from "./staticFCSFiles/ericaFile1";
 import erica2 from "./staticFCSFiles/ericaFile2";
 import erica3 from "./staticFCSFiles/ericaFile3";
 
+import transduction_1 from "./staticFCSFiles/transduction_1";
+import transduction_2 from "./staticFCSFiles/transduction_2";
+import transduction_3 from "./staticFCSFiles/transduction_3";
+
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
     backgroundColor: "#fafafa",
@@ -103,6 +107,27 @@ const generateRandomAxes = (dimesionCount: number) => {
 };
 
 const files = [
+  {
+    title: "transduction_1",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: transduction_1.data,
+    axes: transduction_1.axes,
+    lastModified: "01/03/2021",
+  },
+  {
+    title: "transduction_2",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: transduction_2.data,
+    axes: transduction_2.axes,
+    lastModified: "01/03/2021",
+  },
+  {
+    title: "transduction_3",
+    information: "No sources where given to anonymize data. Ficticious name.",
+    data: transduction_3.data,
+    axes: transduction_3.axes,
+    lastModified: "01/03/2021",
+  },
   {
     title: "erica1",
     information: "No sources where given to anonymize data. Ficticious name.",

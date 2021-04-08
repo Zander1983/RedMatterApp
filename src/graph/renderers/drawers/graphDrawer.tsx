@@ -16,6 +16,7 @@ export interface GraphDrawerState extends DrawerState {
 }
 
 const binSize = 100;
+const graphLineColor = "#888";
 
 export default class GraphDrawer extends Drawer {
   protected x1: number;
@@ -141,6 +142,7 @@ export default class GraphDrawer extends Drawer {
           font: "20px Arial",
           fillColor: "black",
         });
+        counter--;
       }
     } else {
       for (let x = Math.max(p1, p2); x >= Math.min(p1, p2); x -= interval) {
@@ -164,8 +166,8 @@ export default class GraphDrawer extends Drawer {
           x: x - 24,
           y: op2 + 40,
         });
+        counter--;
       }
-      counter--;
     }
   }
 
@@ -189,12 +191,13 @@ export default class GraphDrawer extends Drawer {
         y1: orientation == "h" ? fd : obegin,
         x2: orientation == "h" ? oend : fd,
         y2: orientation == "h" ? fd : oend,
-        strokeColor: strokeColor,
+        strokeColor: graphLineColor,
       });
     }
   }
 
   drawPlotGraph(): void {
+    console.log("draw plot graph called with state =", this.getDrawerState());
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
