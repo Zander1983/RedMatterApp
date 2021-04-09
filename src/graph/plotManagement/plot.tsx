@@ -44,7 +44,6 @@ export default class Plot {
   // Plot params
   xAxis: string = "69";
   yAxis: string = "420";
-  changed: boolean = false;
   xPlotType = "lin";
   yPlotType = "lin";
   gates: Array<Gate> = [];
@@ -56,6 +55,8 @@ export default class Plot {
   id: string;
   canvas: Canvas;
   file: FCSFile;
+
+  changed: boolean = false;
 
   // Mouse interaction objects
   mouseInteractor: MouseInteractor | null = null;
@@ -139,7 +140,6 @@ export default class Plot {
   }
 
   addGate(gate: Gate, createSubpop: boolean = false) {
-    console.log("gate added!");
     this.gates.push(gate);
     if (createSubpop) {
       this.createSubpop();
@@ -184,6 +184,20 @@ export default class Plot {
         });
         this.ovalMouseInteractor.setup(this.scatterPlotter);
         this.mouseInteractor = this.ovalMouseInteractor;
+      }
+      if (type == "Polygon") {
+        this.polygonMouseInteractor.setMouseInteractorState({
+          plotRender: this.plotRender,
+          plotID: this.id,
+          yAxis: this.yAxis,
+          xAxis: this.xAxis,
+          canvasRender: () => {
+            this.canvasRender();
+            this.plotter.draw();
+          },
+        });
+        this.polygonMouseInteractor.setup(this.scatterPlotter);
+        this.mouseInteractor = this.polygonMouseInteractor;
       }
     }
     start ? this.mouseInteractor.start() : this.mouseInteractor.end();

@@ -19,6 +19,10 @@ export default class OvalGate extends Gate {
   ang: number;
   gateType: string = "OvalGate";
 
+  protected getGateType() {
+    return "Oval Gate";
+  }
+
   constructor(gate: OvalGateInput) {
     super(gate);
     this.center = gate.center;

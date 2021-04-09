@@ -27,6 +27,7 @@ export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   const [ovalGating, setOvalGating] = React.useState(false);
+  const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
 
   const deletePlot = () => {
@@ -44,6 +45,16 @@ export default function MainBar(props: any) {
     } else {
       plot.setGating("Oval", true);
       setOvalGating(true);
+    }
+  };
+
+  const polygonGatingSetter = () => {
+    if (polygonGating) {
+      plot.setGating("Polygon", false);
+      setPolygonGating(false);
+    } else {
+      plot.setGating("Polygon", true);
+      setPolygonGating(true);
     }
   };
 
@@ -120,6 +131,17 @@ export default function MainBar(props: any) {
         }}
       >
         Oval Gate
+      </Button>
+      <Button
+        variant="contained"
+        size="medium"
+        onClick={() => polygonGatingSetter()}
+        style={{
+          ...classes.mainButton,
+          backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
+        }}
+      >
+        Polygon Gate
       </Button>
       {/* <Button
             variant="contained"

@@ -16,16 +16,21 @@ export default abstract class Gate {
   xAxis: string;
   yAxis: string;
   id: string;
-  gateType: string = "AbstractGate";
+  parent: Gate | null = null;
 
   static instanceCount: number = 1;
+
+  protected getGateType(): string {
+    return "Abstract Gate";
+  }
 
   constructor(gate: GateInput) {
     this.xAxis = gate.xAxis;
     this.yAxis = gate.yAxis;
 
     if (gate.name !== undefined) this.name = gate.name;
-    else this.name = this.gateType + " " + (Gate.instanceCount++).toString();
+    else
+      this.name = this.getGateType() + " " + (Gate.instanceCount++).toString();
 
     if (gate.color !== undefined) this.color = gate.color;
     else gate.color = "#f00";
