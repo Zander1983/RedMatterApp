@@ -52,14 +52,11 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
   }
 
   setup(plotter: ScatterPlotter) {
-    this.plugin = new ScatterOvalGatePlotter();
-    this.plugin.setPlotter(plotter);
+    this.plugin = plotter.ovalGatePlugin;
     this.plugin.isGating = true;
-    plotter.addPlugin(this.plugin);
   }
 
   end() {
-    this.plugin.plotter.removePlugin(this.plugin);
     this.plugin.isGating = false;
     super.end();
   }

@@ -1,4 +1,3 @@
-import { ConsoleSqlOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";

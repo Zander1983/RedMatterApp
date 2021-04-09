@@ -3,10 +3,12 @@ import GraphPlotter, {
 } from "graph/renderers/plotters/graphPlotter";
 import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
 import OvalGate from "graph/dataManagement/gate/ovalGate";
-import PolygonGate from "graph/dataManagement/gate/PolygonGate";
+import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 import ScatterHeatmapper from "graph/renderers/plotters/instancePlugins/scatterHeatmapper";
 import Plotter from "./plotter";
+import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
+import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
@@ -92,6 +94,10 @@ export default class ScatterPlotter extends GraphPlotter {
     }[]
   > = new Map();
 
+  // Gate plotters
+  ovalGatePlugin: ScatterOvalGatePlotter | null = null;
+  polygonGatePlugin: ScatterPolygonGatePlotter | null = null;
+
   public addPlugin(plugin: PlotterPlugin) {
     const setup = plugin.getPluginSetup();
     for (const param of setup) {
@@ -126,6 +132,32 @@ export default class ScatterPlotter extends GraphPlotter {
     }
   }
 
+  static instaceIndex = 0;
+  instance: number;
+
+  /* This will also create and add to itself all gate plugins it supports, so
+     it's never duplicated. Needless to say this is a bad idea and should be
+     addressed in the future. */
+  public setup(canvasContext: any) {
+    this.instance = ScatterPlotter.instaceIndex++;
+    super.setup(canvasContext);
+    this.ovalGatePlugin = new ScatterOvalGatePlotter();
+    this.ovalGatePlugin.setPlotter(this);
+    this.ovalGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e instanceof OvalGate)
+    );
+    this.polygonGatePlugin = new ScatterPolygonGatePlotter();
+    this.polygonGatePlugin.setPlotter(this);
+    this.ovalGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e instanceof PolygonGate)
+    );
+
+    this.addPlugin(this.ovalGatePlugin);
+    this.addPlugin(this.polygonGatePlugin);
+  }
+
   // @applyPlugin()
   public update() {
     super.update();
@@ -141,6 +173,26 @@ export default class ScatterPlotter extends GraphPlotter {
     return {
       ...super.getPlotterState(),
     };
+  }
+
+  public addGate(gate: OvalGate | PolygonGate) {
+    if (gate instanceof OvalGate) {
+      this.ovalGatePlugin.gates.push(gate);
+    } else if (gate instanceof PolygonGate) {
+      this.polygonGatePlugin.gates.push(gate);
+    }
+  }
+
+  public removeGate(gate: OvalGate | PolygonGate) {
+    if (gate instanceof OvalGate) {
+      this.ovalGatePlugin.gates = this.ovalGatePlugin.gates.filter(
+        (e) => e.id !== gate.id
+      );
+    } else if (gate instanceof PolygonGate) {
+      this.polygonGatePlugin.gates = this.polygonGatePlugin.gates.filter(
+        (e) => e.id !== gate.id
+      );
+    }
   }
 
   // @applyPlugin()
@@ -179,21 +231,11 @@ export default class ScatterPlotter extends GraphPlotter {
     this.drawPoints();
   }
 
-  private shouldSamplePoint() {
-    const pointCount = this.xAxis.length;
-    if (pointCount < 1000) {
-      return true;
-    }
-    const v = (Math.random() * (pointCount - 1000)) / 1000;
-    return Math.round(v) === 1 ? true : false;
-  }
-
   // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors(pointCount);
     for (let i = 0; i < pointCount; i++) {
-      // if (!this.shouldSamplePoint()) continue;
       const { x, y } = this.transformer.toConcretePoint({
         x: this.xAxis[i],
         y: this.yAxis[i],

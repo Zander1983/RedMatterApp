@@ -1,7 +1,6 @@
 import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 export interface Point {
   x: number;

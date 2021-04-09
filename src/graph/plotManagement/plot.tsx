@@ -17,6 +17,8 @@ import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gat
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
+import PolygonGate from "graph/dataManagement/gate/polygonGate";
+import OvalGate from "graph/dataManagement/gate/ovalGate";
 
 const plotterFactory = new PlotterFactory();
 const mouseInteractorFactory = new GateMouseInteractorFactory();
@@ -137,9 +139,13 @@ export default class Plot {
   }
 
   addGate(gate: Gate, createSubpop: boolean = false) {
+    console.log("gate added!");
     this.gates.push(gate);
     if (createSubpop) {
       this.createSubpop();
+    }
+    if (gate instanceof OvalGate || gate instanceof PolygonGate) {
+      this.scatterPlotter.addGate(gate);
     }
     this.updatePlotter();
   }
@@ -150,7 +156,16 @@ export default class Plot {
   }
 
   removeGate(gateID: string) {
+    let gate: Gate | null = null;
+    try {
+      gate = this.gates.filter((gate) => gate.id === gateID)[0];
+    } catch {
+      throw Error("Gate with ID = " + gateID + " was not found");
+    }
     this.gates = this.gates.filter((gate) => gate.id !== gateID);
+    if (gate instanceof OvalGate || gate instanceof PolygonGate) {
+      this.scatterPlotter.removeGate(gate);
+    }
     this.updatePlotter();
   }
 

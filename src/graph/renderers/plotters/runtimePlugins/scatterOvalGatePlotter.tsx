@@ -24,8 +24,8 @@ interface OvalGateState {
 }
 
 export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
-  static TargetPlotter = ScatterPlotter;
-  plotter: ScatterPlotter;
+  // static TargetPlotter = ScatterPlotter;
+  plotter: ScatterPlotter | null = null;
 
   ovalGateState: OvalGateState | null = null;
 
@@ -81,6 +81,8 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
       d2: d2 / 2,
       ang: ang,
       fill: false,
+      strokeColor: "#f00",
+      lineWidth: 3,
     });
   }
 

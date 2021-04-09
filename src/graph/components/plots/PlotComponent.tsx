@@ -81,7 +81,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     }
   }, []);
 
-  console.log(`Plot with ID = ${props.plotIndex} rendered`);
+  // console.log(`Plot with ID = ${props.plotIndex} rendered`);
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>
