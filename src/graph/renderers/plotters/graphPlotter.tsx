@@ -77,10 +77,10 @@ export default class GraphPlotter extends Plotter {
   public update(): void {
     if (this.xRange === undefined) {
       this.getBins();
-      // this.xRange = this.findRangeBoundries("x");
-      // this.yRange = this.findRangeBoundries("y");
-      this.xRange = [0, 273300];
-      this.yRange = [0, 273300];
+      this.xRange = this.findRangeBoundries("x");
+      this.yRange = this.findRangeBoundries("y");
+      // this.xRange = [0, 273300];
+      // this.yRange = [0, 273300];
       this.xLabels = this.createRangeArray("x");
       this.yLabels = this.createRangeArray("y");
     }

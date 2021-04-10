@@ -20,3 +20,5 @@ same thing. how do connect all of this without bloating?
 # solutions
 
 - decorators? don't know how to do intercommunication without having to instance each separetly and in order, which is dumb and defeats the decorator's purpose. Also somehow there should be away to add and ->remove<- in runtime
+
+- you are taking care of plot data and plot rendering at the same class. That is not necessary at all. split between a class that takes care of plot rendering and another that takes care of all the data inside of it.

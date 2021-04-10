@@ -1,0 +1,84 @@
+{
+  "graphs": [
+    {
+      "paramX": 1,
+      "paramY": 0,
+      "isDotPlot": true,
+      "selectedGate": "All",
+      "graphName": "graph1",
+      "index": 1,
+      "width": 305,
+      "height": 305
+    },
+    {
+      "paramX": 4,
+      "paramY": 1,
+      "isDotPlot": true,
+      "selectedGate": "G1",
+      "width": 285,
+      "height": 285,
+      "graphName": "graph2",
+      "index": 2
+    },
+    {
+      "paramX": 3,
+      "paramY": 2,
+      "paramXName": "APC-A",
+      "paramYName": "SSC-A",
+      "isDotPlot": true,
+      "selectedGate": "G2",
+      "width": 311,
+      "height": 311,
+      "graphName": "graph3",
+      "index": 3
+    }
+  ],
+  "gates": [
+    {
+      "paramX": 1,
+      "paramY": 0,
+      "gateType": "dotPlotGate",
+      "parent": "All",
+      "color": "red",
+      "gateName": "G1",
+      "index": 1,
+      "gatingDetails": {
+        "gatingCoords": [
+          [15172.32154340836, 160152.28295819936],
+          [71647.07395498392, 136550.89389067524],
+          [38773.710610932474, 65746.72668810289],
+          [6743.254019292604, 78390.32797427653]
+        ],
+        "boundingBox": {
+          "maxGateX": 71647.07395498392,
+          "minGateX": 6743.254019292604,
+          "maxGateY": 160152.28295819936,
+          "minGateY": 65746.72668810289
+        }
+      }
+    },
+    {
+      "paramX": 4,
+      "paramY": 1,
+      "gateType": "dotPlotGate",
+      "parent": "G1",
+      "color": "green",
+      "gateName": "G2",
+      "index": 2,
+      "gatingDetails": {
+        "gatingCoords": [
+          [0.3022508038585209, 54788.93890675241],
+          [0.2797427652733119, 12643.601286173633],
+          [0.6816720257234726, 11800.694533762058],
+          [0.7266881028938906, 74175.79421221865]
+        ],
+        "boundingBox": {
+          "maxGateX": 0.7266881028938906,
+          "minGateX": 0.2797427652733119,
+          "maxGateY": 74175.79421221865,
+          "minGateY": 11800.694533762058
+        }
+      }
+    }
+  ]
+}
