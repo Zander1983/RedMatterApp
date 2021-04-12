@@ -15,6 +15,7 @@ import erica3 from "./staticFCSFiles/ericaFile3";
 import transduction_1 from "./staticFCSFiles/transduction_1";
 import transduction_2 from "./staticFCSFiles/transduction_2";
 import transduction_3 from "./staticFCSFiles/transduction_3";
+import PlotData from "graph/dataManagement/plotData";
 const kmeans = require("node-kmeans");
 
 const useStyles = makeStyles((theme) => ({
@@ -62,7 +63,6 @@ const kmeansify = (list: Array<Array<number>>, callback: Function): void => {
     if (err) throw Error("Clusterization failed!");
     else {
       callback(res.map((e: any) => e.centroid));
-      dataManager.loading = false;
     }
   });
 };
@@ -262,7 +262,10 @@ function AddFileModal(props: {
       data: file.data,
       plotTypes: file.axes.map((e) => e.display),
     });
-    dataManager.addFile(newFile);
+    const fileID = dataManager.addNewFileToWorkspace(newFile);
+    const plot = new PlotData();
+    plot.file = dataManager.getFile(fileID);
+    dataManager.addNewPlotToWorkspace(plot);
   };
 
   return (

@@ -61,8 +61,8 @@ export default class GraphPlotter extends Plotter {
   canvasContext: any = null;
   drawer: GraphDrawer | null = null;
   transformer: GraphTransformer | null = null;
-  verticalBinCount: number = 0;
-  horizontalBinCount: number = 0;
+  verticalBinCount: number = 1;
+  horizontalBinCount: number = 1;
 
   // Constants
   rangeSpacer: number = 0.05;
@@ -105,6 +105,11 @@ export default class GraphPlotter extends Plotter {
   }
 
   protected getBins() {
+    if (this.scale === 0 || this.width === 0) {
+      this.verticalBinCount = 1;
+      this.horizontalBinCount = 1;
+      return;
+    }
     this.horizontalBinCount =
       this.width === undefined
         ? 2

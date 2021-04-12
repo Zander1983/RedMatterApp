@@ -14,7 +14,11 @@ export default class PolygonGate extends Gate {
     this.points = gate.points;
   }
 
+  protected getGateType() {
+    return "Polygon Gate";
+  }
+
   isPointInside(point: Point): boolean {
-    return pointInsidePolygon(point, this.points);
+    return pointInsidePolygon(point, this.points) && super.isPointInside(point);
   }
 }

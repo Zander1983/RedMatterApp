@@ -11,6 +11,7 @@ export interface FCSFileInput {
 }
 
 export default class FCSFile {
+  id: string;
   name: string = "";
   axes: string[] = [];
   data: Array<Array<number>> = [];

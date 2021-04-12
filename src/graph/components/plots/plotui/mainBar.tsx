@@ -31,7 +31,7 @@ export default function MainBar(props: any) {
   const plot = props.plot;
 
   const deletePlot = () => {
-    dataManager.removeFile(props.plotIndex);
+    dataManager.removePlotFromWorkspace(props.plotIndex);
   };
 
   const handleClose = (func: Function) => {
@@ -155,11 +155,11 @@ export default function MainBar(props: any) {
         variant="contained"
         size="medium"
         onClick={() => {
-          if (plot.gates.length === 0) {
+          if (plot.plotData.gates.length === 0) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFile(plot.id);
+          dataManager.createSubpopFromGatesInPlot(plot.id);
         }}
         style={classes.mainButton}
       >
@@ -169,11 +169,11 @@ export default function MainBar(props: any) {
         variant="contained"
         size="medium"
         onClick={() => {
-          if (plot.gates.length === 0) {
+          if (plot.plotData.gates.length === 0) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFile(plot.id, true);
+          dataManager.createSubpopFromGatesInPlot(plot.id, true);
         }}
         style={classes.mainButton}
       >

@@ -57,7 +57,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       const pp = this.plotter.transformer.toConcretePoint(
         gate.points[(i + 1) % gate.points.length]
       );
-      console.log("drawing point ", p);
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
       this.plotter.drawer.segment({
         x1: p.x * scale,
@@ -72,13 +71,11 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
   protected drawGating() {
     if (this.points === undefined) return;
-    console.log("drawing gate state");
     const pointCount = this.points.length;
     let lastPoint = null;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
       const p = this.plotter.transformer.toConcretePoint(this.points[i]);
-      console.log("drawing point ", p);
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
       if (i == pointCount - 1) {
         const mouse = this.plotter.transformer.toConcretePoint(
@@ -112,7 +109,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     const p1 = this.plotter.transformer.toConcretePoint(this.points[0]);
     const p2 = abstract ? this.plotter.transformer.toConcretePoint(p) : p;
     const dist = euclidianDistance2D(p1, p2);
-    console.log("DIST = ", dist);
     if (dist <= 10) {
       return true;
     }

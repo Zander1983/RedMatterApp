@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import Plot from "../../plotManagement/plot";
+import Plot from "graph/renderers/plotRender";
 
 const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
   const [useCanvasCalled, setUseCanvasCalled] = React.useState(false);

@@ -6,7 +6,8 @@ import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
 
 import CanvasComponent from "../canvas/CanvasComponent";
-import Plot from "graph/plotManagement/plot";
+import Plot from "graph/renderers/plotRender";
+import dataManager from "graph/dataManagement/dataManager";
 
 const classes = {
   mainContainer: {
@@ -39,11 +40,9 @@ const minDrawInterval = 200;
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const [resizeObserver, setResizeObserver] = React.useState(null);
   const [plotSetup, setPlotSetup] = React.useState(false);
-  const plot = props.plot;
-  const rerender = useForceUpdate();
   const [lastDrawTimestamp, setlastDrawTimestamp] = React.useState(0);
-
-  plot.setRerender(rerender);
+  const rerender = useForceUpdate();
+  const plot = props.plot;
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
@@ -54,7 +53,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
     const bar = barRef.current.getBoundingClientRect();
-    plot.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
+    plot.plotData.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
   };
 
   const plotUpdater = () => {
@@ -76,12 +75,12 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       );
     }
     if (!plotSetup) {
+      plot.plotData.addObserver("plotUpdated", () => rerender());
       plot.setup();
       setPlotSetup(true);
     }
   }, []);
 
-  // console.log(`Plot with ID = ${props.plotIndex} rendered`);
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>

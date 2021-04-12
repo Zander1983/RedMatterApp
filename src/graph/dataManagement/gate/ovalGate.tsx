@@ -35,13 +35,15 @@ export default class OvalGate extends Gate {
 
   // Abstract override, returns true if given point is inside ellipse (2D)
   isPointInside(p: { x: number; y: number }) {
-    return pointInsideEllipse(p, {
-      center: this.center,
-      primaryP1: this.primaryP1,
-      primaryP2: this.primaryP2,
-      secondaryP1: this.secondaryP1,
-      secondaryP2: this.secondaryP2,
-      ang: this.ang,
-    });
+    return (
+      pointInsideEllipse(p, {
+        center: this.center,
+        primaryP1: this.primaryP1,
+        primaryP2: this.primaryP2,
+        secondaryP1: this.secondaryP1,
+        secondaryP2: this.secondaryP2,
+        ang: this.ang,
+      }) && super.isPointInside(p)
+    );
   }
 }

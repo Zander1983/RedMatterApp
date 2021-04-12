@@ -117,7 +117,16 @@ export default class GraphDrawer extends Drawer {
 
     let counter = bins;
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
+
+    if (bins === 0 || bins === null || bins === undefined) {
+      throw Error("Bins are unset or set as an invalid amount");
+    }
+
     interval /= bins;
+
+    if (interval === 0) {
+      throw Error("Width and height are unset");
+    }
 
     if (orientation == "v") {
       for (let y = Math.min(p1, p2); y <= Math.max(p1, p2); y += interval) {

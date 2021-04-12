@@ -10,151 +10,242 @@
 */
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
-import Plot from "../plotManagement/plot";
+import PlotData from "graph/dataManagement/plotData";
+
 import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
+import WorkspaceData from "./workspaceData";
+import Plot from "graph/renderers/plotRender";
 
 const uuid = require("uuid");
 
+const workspaceResourcesURL = "https://suckdick.com/workspaces";
+const fileResourcesURL = "https://suckdick.com/files";
+const gateResourcesURL = "https://suckdick.com/gates";
+const plotResourcesURL = "https://suckdick.com/plots";
+
+type PlotID = string;
+type WorkspaceID = string;
+type FileID = string;
+type GateID = string;
+
 class DataManager extends ObserversFunctionality {
-  private static instance: DataManager;
+  /* 
 
-  static getInstance(): DataManager {
-    if (!DataManager.instance) {
-      DataManager.instance = new DataManager();
-    }
 
-    return DataManager.instance;
+    ================== PUBLIC ==================
+  
+  
+    */
+
+  // ======== Creators
+  @publishDecorator()
+  createWorkspace(): WorkspaceID {
+    console.log("WORKSPACE HAS BEEN CREATED AND ASSIGNED TO DATA MANAGER");
+    const workspaceID = this.createID();
+    this.currentWorkspace = new WorkspaceData();
+    this.currentWorkspace.id = workspaceID;
+    return workspaceID;
   }
 
-  files: Map<string, FCSFile> = new Map();
-  plots: Map<string, Plot> = new Map();
-  gates: Map<string, Gate> = new Map();
-
-  // Function resposible for re-rendering the whole plot if need be.
-  // As this class is the source of truth, when it's updated it expects
-  // to have this function set so it can reflect that update.
-  rerender: Function = () => {};
-  loading = false;
-
-  /* === GENERAL === */
-  getInstanceIDOfNewObject(): string {
-    const newObjectInstaceID = uuid.v4();
-    return newObjectInstaceID;
-  }
-
-  setRerendererCallback(rerenderer: Function) {
-    this.rerender = rerenderer;
-  }
-
-  /* === FCSFILE LOGIC === */
-  addFile(file: FCSFile): string {
-    const fileId = this.getInstanceIDOfNewObject();
-    this.files.set(fileId, file);
-    this.rerender();
+  @publishDecorator()
+  addNewFileToWorkspace(file: FCSFile): FileID {
+    console.log("FILE HAS BEEN ADDED TO WORKSPACE");
+    const fileId = this.createID();
+    file.id = fileId;
+    this.currentWorkspace.files.set(fileId, file);
     return fileId;
   }
 
-  removeFile(fileId: string) {
-    if (this.files.has(fileId)) {
-      this.files.delete(fileId);
-      this.rerender();
-      return;
+  @publishDecorator()
+  addNewGateToWorkspace(gate: Gate, originPlotID?: string): GateID {
+    console.log("GATE HAS BEEN ADDED TO WORKSPACE");
+    const gateId = this.createID();
+    gate.id = gateId;
+    this.currentWorkspace.gates.set(gateId, gate);
+    /* RESPOSIBLE FOR CREATING NEW PLOT WHEN GATE IS ADDED */
+    if (originPlotID !== undefined) {
+      this.createSubpopFromGatesInPlot(originPlotID);
     }
-    throw Error("File " + fileId + " was not found");
-  }
-
-  getFiles() {
-    const files: { file: FCSFile; id: string }[] = [];
-    this.files.forEach((v, k) => {
-      files.push({ file: v, id: k });
-    });
-    return files;
-  }
-
-  getFile(fileID: string) {
-    return this.files.get(fileID);
-  }
-
-  createSubpopFile(plotID: string, inverse: boolean = false) {
-    const cplot = this.plots.get(plotID);
-    cplot.createSubpop(inverse);
-  }
-
-  /* === PLOT LOGIC === */
-  addPlot(fileID: string) {}
-
-  getAllPlots(): Map<string, Plot> {
-    const files = this.getFiles();
-    const present: string[] = [];
-
-    for (const file of files) {
-      present.push(file.id);
-      if (!this.plotIsPresent(file.id)) {
-        this.plots.set(file.id, new Plot(file.file, file.id));
-      }
-    }
-
-    this.plots.forEach((_, k) => {
-      if (!present.includes(k)) {
-        this.plots.delete(k);
-      }
-    });
-
-    return this.plots;
-  }
-
-  /* === GATE LOGIC === */
-  getAllGates(): Map<string, Gate> {
-    return this.gates;
+    return gateId;
   }
 
   @publishDecorator()
-  addGateToPlot(gateID: string, plotID: string, createSubpop: boolean = false) {
-    if (!this.plotIsPresent(plotID)) {
+  addNewPlotToWorkspace(plotData: PlotData): PlotID {
+    console.log("PLOT HAS BEEN ADDED TO WORKSPACE");
+    const plotDataId = this.createID();
+    plotData.id = plotDataId;
+    this.currentWorkspace.plots.set(plotDataId, plotData);
+    plotData.setupPlot();
+    return plotDataId;
+  }
+
+  @publishDecorator()
+  createSubpopFromGatesInPlot(
+    plotID: PlotID,
+    inverse: boolean = false
+  ): PlotID {
+    const cplot = this.currentWorkspace.plots.get(plotID);
+    return cplot.createSubpop(inverse);
+  }
+
+  // ======== Gate-Plot management
+  @publishDecorator()
+  getPlotRendererForPlot(plotID: PlotID): Plot {
+    if (!this.plotRenderers.has(plotID)) {
+      this.plotRenderers.set(
+        plotID,
+        new Plot(this.currentWorkspace.plots.get(plotID))
+      );
+    }
+    return this.plotRenderers.get(plotID);
+  }
+
+  @publishDecorator()
+  linkGateToPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
       throw Error("Adding gate to non-existent plot");
     }
-    if (!this.gateIsPresent(gateID)) {
+    if (!this.currentWorkspace.gates.has(gateID)) {
       throw Error("Adding non-existent gate to plot");
     }
-    const cplot = this.plots.get(plotID);
-    cplot.addGate(this.gates.get(gateID), createSubpop);
+    const cplot = this.currentWorkspace.plots.get(plotID);
+    cplot.addGate(this.currentWorkspace.gates.get(gateID));
   }
 
   @publishDecorator()
-  removeGateFromPlot(gateID: string, plotID: string) {
-    if (!this.plotIsPresent(plotID)) {
+  unlinkGateFromPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
       throw Error("Removing gate to non-existent plot");
     }
-    if (!this.gateIsPresent(gateID)) {
+    if (!this.currentWorkspace.gates.has(gateID)) {
       throw Error("Removing non-existent gate to plot");
     }
-    const plotGates = this.plots.get(plotID).gates;
-    let found = -1;
+    const plotGates = this.currentWorkspace.plots.get(plotID).gates;
     for (let indx in plotGates) {
-      if (plotGates[indx].id == gateID) {
-        this.plots.get(plotID).removeGate(plotGates[indx].id);
+      if (plotGates[indx].gate.id == gateID) {
+        this.currentWorkspace.plots
+          .get(plotID)
+          .removeGate(plotGates[indx].gate);
         return;
       }
     }
     throw Error("Gate " + gateID + " was not found in plot " + plotID);
   }
 
+  // ======== Getters
   @publishDecorator()
-  addGate(gate: Gate): string {
-    const gateID = this.getInstanceIDOfNewObject();
-    gate.setID(gateID);
-    this.gates.set(gateID, gate);
-    return gateID;
+  getWorkspace(): { workspace: WorkspaceData; workspaceID: WorkspaceID } {
+    if (this.currentWorkspace === null) {
+      this.createWorkspace();
+    }
+    const id = this.currentWorkspace.id;
+    return { workspace: this.currentWorkspace, workspaceID: id };
   }
 
-  private plotIsPresent(id: string): boolean {
-    return this.plots.has(id);
+  @publishDecorator()
+  getAllFiles(): { file: FCSFile; fileID: FileID }[] {
+    const files: { file: FCSFile; fileID: string }[] = [];
+    this.currentWorkspace.files.forEach((v, k) => {
+      files.push({ file: v, fileID: k });
+    });
+    return files;
   }
 
-  private gateIsPresent(id: string): boolean {
-    return this.gates.has(id);
+  @publishDecorator()
+  getAllPlots(): { plot: PlotData; plotID: PlotID }[] {
+    const plots: { plot: PlotData; plotID: PlotID }[] = [];
+    this.currentWorkspace.plots.forEach((v, k) => {
+      plots.push({ plot: v, plotID: k });
+    });
+    return plots;
+  }
+
+  @publishDecorator()
+  getAllGates(): { gate: Gate; gateID: GateID }[] {
+    const gates: { gate: Gate; gateID: GateID }[] = [];
+    this.currentWorkspace.gates.forEach((v, k) => {
+      gates.push({ gate: v, gateID: k });
+    });
+    return gates;
+  }
+
+  @publishDecorator()
+  getFile(fileID: FileID): FCSFile {
+    return this.currentWorkspace.files.get(fileID);
+  }
+
+  @publishDecorator()
+  getPlot(plotID: PlotID): PlotData {
+    return this.currentWorkspace.plots.get(plotID);
+  }
+
+  @publishDecorator()
+  getGate(gateID: GateID): Gate {
+    return this.currentWorkspace.gates.get(gateID);
+  }
+
+  // ======== Destroyers
+  @publishDecorator()
+  removePlotFromWorkspace(plotID: PlotID) {}
+  @publishDecorator()
+  removeGateFromWorkspace(gateID: GateID) {}
+  @publishDecorator()
+  removeFileFromWorkspace(fileID: FileID) {}
+  @publishDecorator()
+  removeWorkspace() {}
+
+  // ======== Workspace management
+  @publishDecorator()
+  loadWorkspace(workspaceJSON: string) {
+    if (this.currentWorkspace === null) {
+      this.createWorkspace();
+    }
+    this.currentWorkspace.import(workspaceJSON);
+  }
+
+  @publishDecorator()
+  getWorkspaceJSON(): string {
+    if (this.currentWorkspace === null) {
+      throw Error("Can't parse JSON of null workspace.");
+    }
+    return this.currentWorkspace.export();
+  }
+  @publishDecorator()
+  saveWorkspaceToLocalStorage(workspaceID: WorkspaceID) {}
+
+  @publishDecorator()
+  saveWorkspaceToRemote(workspace: WorkspaceID, url?: string) {}
+
+  /* 
+
+  
+    ================== PRIVATE ==================
+  
+  
+    */
+  private static instance: DataManager;
+
+  static getInstance(): DataManager {
+    if (!DataManager.instance) {
+      DataManager.instance = new DataManager();
+      DataManager.instance.setStandardObservers();
+    }
+
+    return DataManager.instance;
+  }
+
+  private setStandardObservers() {}
+
+  plotRenderers: Map<string, Plot> = new Map();
+  currentWorkspace: WorkspaceData | null = null;
+
+  /* === GENERAL === */
+
+  private createID(): string {
+    const newObjectInstaceID = uuid.v4();
+    return newObjectInstaceID;
   }
 }
 

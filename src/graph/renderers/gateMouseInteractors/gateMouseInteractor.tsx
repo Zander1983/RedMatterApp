@@ -33,6 +33,7 @@ export default abstract class GateMouseInteractor {
   setMouseInteractorState(state: MouseInteractorState) {
     this.plotRender = state.plotRender;
     this.canvasRender = state.canvasRender;
+    console.log("setting plotID as ", state.plotID);
     this.plotID = state.plotID;
   }
 
@@ -64,8 +65,8 @@ export default abstract class GateMouseInteractor {
 
   createAndAddGate() {
     const gate = this.instanceGate();
-    const id = dataManager.addGate(gate);
-    dataManager.addGateToPlot(id, this.plotID, true);
+    const id = dataManager.addNewGateToWorkspace(gate, this.plotID);
+    dataManager.linkGateToPlot(this.plotID, id);
     this.end();
   }
 

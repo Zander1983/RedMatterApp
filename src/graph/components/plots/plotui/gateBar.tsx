@@ -8,7 +8,8 @@ import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import dataManager from "../../../dataManagement/dataManager";
-import Plot from "../../../plotManagement/plot";
+import Plot from "graph/renderers/plotRender";
+
 import Gate from "../../../dataManagement/gate/gate";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -28,13 +29,7 @@ const classes = {
   },
 };
 
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
-
 export default function GateBar(props: any) {
-  const rerender = useForceUpdate();
   const [gates, setGates] = React.useState([]);
   const [selected, setSelected] = React.useState([]);
   const plot: Plot = props.plot;
@@ -42,13 +37,13 @@ export default function GateBar(props: any) {
   let idGateUpdate: any = null;
 
   const getPlotGates = () => {
-    setSelected(plot.gates.map((e) => e.name));
+    setSelected(plot.plotData.gates.map((e) => e.gate.name));
   };
 
   const getAllGates = () => {
     const cgates: Gate[] = [];
-    dataManager.getAllGates().forEach((v, k) => {
-      cgates.push(v);
+    dataManager.getAllGates().forEach((v) => {
+      cgates.push(v.gate);
     });
     setGates(cgates);
   };
@@ -56,9 +51,9 @@ export default function GateBar(props: any) {
   const changeGatePlotState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
     if (selected) {
-      dataManager.removeGateFromPlot(gateID, plot.id);
+      dataManager.unlinkGateFromPlot(gateID, plot.plotData.id);
     } else {
-      dataManager.addGateToPlot(gateID, plot.id);
+      dataManager.linkGateToPlot(gateID, plot.plotData.id);
     }
     update();
   };
@@ -100,8 +95,8 @@ export default function GateBar(props: any) {
         renderInput={(params) => (
           <TextField {...params} variant="outlined" label="Gates" />
         )}
-        renderTags={(tagValue, getTagProps) => {
-          return tagValue.map((option, index) => (
+        renderTags={(tagValue, _) => {
+          return tagValue.map((option) => (
             <Chip
               label={option}
               onDelete={() => changeGatePlotState(option, true)}

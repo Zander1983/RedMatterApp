@@ -28,10 +28,10 @@ export default function AxisBar(props: any) {
   const plot = props.plot;
   const rerender = useForceUpdate();
 
-  const xAxis = plot.xAxis;
-  const yAxis = plot.yAxis;
-  const xPlotType = plot.xPlotType;
-  const yPlotType = plot.yPlotType;
+  const xAxis = plot.plotData.xAxis;
+  const yAxis = plot.plotData.yAxis;
+  const xPlotType = plot.plotData.xPlotType;
+  const yPlotType = plot.plotData.yPlotType;
   const [xHistogram, setXHistogram] = React.useState(false);
   const [yHistogram, setYHistogram] = React.useState(false);
   const [oldXAxis, setOldXAxis] = React.useState(null);
@@ -51,12 +51,12 @@ export default function AxisBar(props: any) {
     if (value) {
       axis === "x" ? setOldYAxis(yAxis) : setOldXAxis(xAxis);
       axis === "x"
-        ? props.plot.xAxisToHistogram()
-        : props.plot.yAxisToHistogram();
+        ? props.plot.plotData.xAxisToHistogram()
+        : props.plot.plotData.yAxisToHistogram();
     } else {
       axis === "x"
-        ? props.plot.setYAxis(oldYAxis)
-        : props.plot.setXAxis(oldXAxis);
+        ? props.plot.plotData.setYAxis(oldYAxis)
+        : props.plot.plotData.setXAxis(oldXAxis);
     }
   };
 
@@ -65,14 +65,16 @@ export default function AxisBar(props: any) {
     if (value == otherAxisValue && !isPlotHistogram()) {
       setHistogram(axis == "x" ? "y" : "x", true);
     } else {
-      axis == "x" ? props.plot.setXAxis(value) : props.plot.setYAxis(value);
+      axis == "x"
+        ? props.plot.plotData.setXAxis(value)
+        : props.plot.plotData.setYAxis(value);
     }
   };
 
   const setPlotType = (axis: "x" | "y", value: string) => {
     axis == "x"
-      ? props.plot.setXAxisPlotType(value)
-      : props.plot.setYAxisPlotType(value);
+      ? props.plot.plotData.setXAxisPlotType(value)
+      : props.plot.plotData.setYAxisPlotType(value);
   };
 
   return (
@@ -116,7 +118,7 @@ export default function AxisBar(props: any) {
             disabled={isAxisDisabled("x")}
             value={xAxis}
           >
-            {plot.getFile().axes.map((e: any) => (
+            {plot.plotData.file.axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>
@@ -178,7 +180,7 @@ export default function AxisBar(props: any) {
             disabled={isAxisDisabled("y")}
             value={yAxis}
           >
-            {plot.getFile().axes.map((e: any) => (
+            {plot.plotData.file.axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
           </Select>

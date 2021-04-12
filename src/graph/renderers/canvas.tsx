@@ -1,7 +1,7 @@
 import FCSFile from "graph/dataManagement/fcsFile";
 import dataManager from "graph/dataManagement/dataManager";
 import Plotter from "graph/renderers/plotters/plotter";
-import Plot from "./plot";
+import Plot from "./plotRender";
 
 interface CanvasState {
   id: string;

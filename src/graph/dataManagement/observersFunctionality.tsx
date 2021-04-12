@@ -36,14 +36,15 @@ export const publishDecorator = () => {
 
   class Observed extends ObserversFunctionality {
     private num: number = 3;
-
+    
+    @publishDecorator()
     public getNum() {
       const num = this.num++
       return num
     }
   }
 
-  const obs = Observed()
+  const obs = new Observed()
   obs.addObserver('getNum', () => { console.log("someone just called getNum() on Observed...") })
 
   obj.getNum()
@@ -83,7 +84,7 @@ export default abstract class ObserversFunctionality {
     }
   }
 
-  publish(type: string) {
+  private publish(type: string) {
     if (!this.observers.has(type)) return;
     this.observers.get(type).forEach((e) => e.func());
   }

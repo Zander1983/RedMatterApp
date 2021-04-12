@@ -5,6 +5,8 @@ import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
 import dataManager from "../../dataManagement/dataManager";
+import { data } from "jquery";
+import WorkspaceData from "graph/dataManagement/workspaceData";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -38,12 +40,18 @@ const standardGridPlotItem = (x: number, y: number) => {
 
 class Workspace extends React.Component {
   private static renderCalls = 0;
+  workspace: WorkspaceData;
 
   constructor(props: any) {
     super(props);
-    dataManager.setRerendererCallback(() => {
-      this.update();
-    });
+
+    this.workspace = dataManager.getWorkspace().workspace;
+
+    this.update();
+
+    dataManager.addObserver("addNewPlotToWorkspace", () => this.update());
+    dataManager.addObserver("removePlotFromWorkspace", () => this.update());
+
     this.state = {
       plots: [],
     };
@@ -52,7 +60,12 @@ class Workspace extends React.Component {
   update() {
     const plotMap = dataManager.getAllPlots();
     const plotList: object[] = [];
-    plotMap.forEach((v, k) => plotList.push({ plot: v, key: k }));
+    plotMap.forEach((v) =>
+      plotList.push({
+        plot: dataManager.getPlotRendererForPlot(v.plotID),
+        key: v.plotID,
+      })
+    );
 
     this.setState({
       plots: plotList,
@@ -82,10 +95,10 @@ class Workspace extends React.Component {
                   key={e.key}
                   style={classes.itemOuterDiv}
                   data-grid={standardGridPlotItem(0, 0)}
-                  id={`workspace-outter-${e.key}`}
+                  id={`workspace-outter-${e.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent plot={e.plot} plotIndex={e.key} />
+                    <PlotComponent plot={e.plot} plotIndex={e.id} />
                   </div>
                 </div>
               );
@@ -105,7 +118,7 @@ class Workspace extends React.Component {
           </h3>
           <h4 style={{ marginBottom: 90, color: "#777" }}>
             Here you may move around, gate, duplicate, delete or resize your
-            plots as you see fit!
+            plots as you see fit
           </h4>
         </div>
       );
