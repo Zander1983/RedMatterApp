@@ -58,7 +58,7 @@ const applyPlugin = () => {
         if (typeof e == "string") {
           ret = original.apply(this, args);
         } else {
-          ret = e.plugin[e.functionSignature](args);
+          ret = e.plugin[e.functionSignature](args, ret);
         }
       }
 
@@ -143,16 +143,9 @@ export default class ScatterPlotter extends GraphPlotter {
     super.setup(canvasContext);
     this.ovalGatePlugin = new ScatterOvalGatePlotter();
     this.ovalGatePlugin.setPlotter(this);
-    this.ovalGatePlugin.setGates(
-      //@ts-ignore
-      this.gates.filter((e) => e instanceof OvalGate)
-    );
+
     this.polygonGatePlugin = new ScatterPolygonGatePlotter();
     this.polygonGatePlugin.setPlotter(this);
-    this.ovalGatePlugin.setGates(
-      //@ts-ignore
-      this.gates.filter((e) => e instanceof PolygonGate)
-    );
 
     this.addPlugin(this.ovalGatePlugin);
     this.addPlugin(this.polygonGatePlugin);
@@ -161,6 +154,14 @@ export default class ScatterPlotter extends GraphPlotter {
   // @applyPlugin()
   public update() {
     super.update();
+    this.ovalGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e instanceof OvalGate)
+    );
+    this.polygonGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e instanceof PolygonGate)
+    );
   }
 
   // @applyPlugin()
@@ -235,13 +236,24 @@ export default class ScatterPlotter extends GraphPlotter {
   public drawPoints() {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors(pointCount);
+
     for (let i = 0; i < pointCount; i++) {
+      if (this.isOutOfRange({ x: this.xAxis[i], y: this.yAxis[i] })) continue;
       const { x, y } = this.transformer.toConcretePoint({
         x: this.xAxis[i],
         y: this.yAxis[i],
       });
       this.drawer.addPoint(x, y, 1.4, colors[i]);
     }
+  }
+
+  private isOutOfRange(p: { x: number; y: number }) {
+    return (
+      p.x < this.xRange[0] ||
+      p.x > this.xRange[1] ||
+      p.y < this.yRange[0] ||
+      p.y > this.yRange[1]
+    );
   }
 
   @applyPlugin()

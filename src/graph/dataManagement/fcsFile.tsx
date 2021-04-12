@@ -1,4 +1,5 @@
 import Gate from "../dataManagement/gate/gate";
+import dataManager from "./dataManager";
 
 export interface FCSFileInput {
   name: string;
@@ -11,7 +12,7 @@ export interface FCSFileInput {
 }
 
 export default class FCSFile {
-  id: string;
+  readonly id: string;
   name: string = "";
   axes: string[] = [];
   data: Array<Array<number>> = [];
@@ -21,6 +22,8 @@ export default class FCSFile {
   pointColors?: string[] = [];
 
   constructor(file: FCSFileInput) {
+    this.id = dataManager.createID();
+
     this.name = file.name;
     this.axes = file.axes;
     this.data = file.data;

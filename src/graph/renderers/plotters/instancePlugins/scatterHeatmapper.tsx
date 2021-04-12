@@ -14,17 +14,20 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
   }
 
   getPointColors_AFTER(size: number) {
-    if (this.colors === null) {
-      this.colors = this.getHeatmapColors();
-    }
+    this.colors = this.getHeatmapColors();
     return this.colors;
   }
 
+  // Caching is invalidated if data changes
   private getHeatmapColors() {
     const plotter = this.plotter;
     for (const hm of this.heatMapCache) {
       const { xAxis, yAxis, colors } = hm;
-      if (plotter.xAxisName == xAxis && plotter.yAxisName == yAxis) {
+      if (
+        plotter.xAxisName == xAxis &&
+        plotter.yAxisName == yAxis &&
+        plotter.xAxis.length === colors.length
+      ) {
         return colors;
       }
     }

@@ -43,11 +43,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     this.gatingState = state;
   }
 
-  /* TODO: WILL REQUIRE PLUGIN DYNAMIC RETURN IMPLEMENTATION */
-  getPointColor_AFTER(index: number): string {
-    return "#000";
-  }
-
   protected drawGate(gate: PolygonGate) {
     const pointCount = gate.points.length;
     let lastPoint = null;

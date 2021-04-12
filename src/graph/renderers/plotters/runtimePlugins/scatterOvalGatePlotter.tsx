@@ -45,11 +45,6 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
 
   setState(state: ScatterOvalGatePlotterState) {}
 
-  /* TODO: WILL REQUIRE PLUGIN DYNAMIC RETURN IMPLEMENTATION */
-  getPointColor_AFTER(index: number): string {
-    return "#000";
-  }
-
   protected drawGate(gate: OvalGate) {
     const toConcretePoint = (p: { x: number; y: number }) => {
       let np = this.plotter.transformer.toConcretePoint(p);

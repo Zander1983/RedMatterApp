@@ -35,6 +35,7 @@ export default function GateBar(props: any) {
   const plot: Plot = props.plot;
   let idPlotGateUpdate: any = null;
   let idGateUpdate: any = null;
+  let idLinkNewPlot: any = null;
 
   const getPlotGates = () => {
     setSelected(plot.plotData.gates.map((e) => e.gate.name));
@@ -51,9 +52,9 @@ export default function GateBar(props: any) {
   const changeGatePlotState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
     if (selected) {
-      dataManager.unlinkGateFromPlot(gateID, plot.plotData.id);
+      dataManager.unlinkGateFromPlot(plot.plotData.id, gateID);
     } else {
-      dataManager.linkGateToPlot(gateID, plot.plotData.id);
+      dataManager.linkGateToPlot(plot.plotData.id, gateID, true);
     }
     update();
   };
@@ -64,8 +65,8 @@ export default function GateBar(props: any) {
   };
 
   useEffect(() => {
-    idPlotGateUpdate = dataManager.addObserver("addGate", update);
-    idGateUpdate = dataManager.addObserver("addGateToPlot", update);
+    idPlotGateUpdate = dataManager.addObserver("addNewGateToWorkspace", update);
+    idGateUpdate = dataManager.addObserver("linkGateToPlot", update);
     update();
   }, []);
 

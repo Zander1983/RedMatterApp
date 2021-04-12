@@ -1,5 +1,5 @@
 import { Button } from "@material-ui/core";
-import React from "react";
+import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import DeleteIcon from "@material-ui/icons/Delete";
 import CameraAltIcon from "@material-ui/icons/CameraAlt";
@@ -31,7 +31,7 @@ export default function MainBar(props: any) {
   const plot = props.plot;
 
   const deletePlot = () => {
-    dataManager.removePlotFromWorkspace(props.plotIndex);
+    dataManager.removePlotFromWorkspace(plot.plotData.id);
   };
 
   const handleClose = (func: Function) => {
@@ -58,13 +58,20 @@ export default function MainBar(props: any) {
     }
   };
 
+  useEffect(() => {
+    plot.unsetGating = () => {
+      setPolygonGating(false);
+      setOvalGating(false);
+    };
+  }, []);
+
   const downloadCanvasAsImage = () => {
     let downloadLink = document.createElement("a");
     downloadLink.setAttribute(
       "download",
-      `workspacename-filename-${props.plotIndex}.png`
+      `workspacename-filename-${plot.plotData.id}.png`
     );
-    let canvas = document.getElementById(`canvas-${props.plotIndex}`);
+    let canvas = document.getElementById(`canvas-${plot.plotData.id}`);
     //@ts-ignore
     let dataURL = canvas.toDataURL("image/png");
     let url = dataURL.replace(
@@ -159,7 +166,7 @@ export default function MainBar(props: any) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFromGatesInPlot(plot.id);
+          dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
         }}
         style={classes.mainButton}
       >
@@ -173,7 +180,7 @@ export default function MainBar(props: any) {
             setEmptySubpopModalOpen(true);
             return;
           }
-          dataManager.createSubpopFromGatesInPlot(plot.id, true);
+          dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
         }}
         style={classes.mainButton}
       >

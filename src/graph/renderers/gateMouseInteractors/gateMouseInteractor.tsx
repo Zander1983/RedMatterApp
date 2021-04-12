@@ -26,6 +26,8 @@ export default abstract class GateMouseInteractor {
   protected lastMousePos: Point;
   private canvasRenderLastTimestamp: any = 0;
 
+  unsetGating: Function;
+
   plotID: string;
   plotRender: Function;
   canvasRender: Function;
@@ -33,7 +35,6 @@ export default abstract class GateMouseInteractor {
   setMouseInteractorState(state: MouseInteractorState) {
     this.plotRender = state.plotRender;
     this.canvasRender = state.canvasRender;
-    console.log("setting plotID as ", state.plotID);
     this.plotID = state.plotID;
   }
 
@@ -46,6 +47,7 @@ export default abstract class GateMouseInteractor {
     this.clearGateState();
     this.setPluginState();
     this.plotRender();
+    this.unsetGating();
   }
 
   setPluginState() {
@@ -65,8 +67,9 @@ export default abstract class GateMouseInteractor {
 
   createAndAddGate() {
     const gate = this.instanceGate();
-    const id = dataManager.addNewGateToWorkspace(gate, this.plotID);
-    dataManager.linkGateToPlot(this.plotID, id);
+    dataManager.addNewGateToWorkspace(gate);
+    dataManager.linkGateToPlot(this.plotID, gate.id);
+    dataManager.clonePlot(this.plotID);
     this.end();
   }
 

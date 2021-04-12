@@ -1,3 +1,5 @@
+import dataManager from "../dataManager";
+
 export interface GateInput {
   name?: string;
   color?: string;
@@ -13,11 +15,11 @@ export interface Point {
 const randomListOfColors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
 
 export default abstract class Gate {
+  readonly id: string;
   name?: string;
   color?: string;
   xAxis: string;
   yAxis: string;
-  id: string;
   parent: Gate | null = null;
 
   static instanceCount: number = 1;
@@ -27,6 +29,8 @@ export default abstract class Gate {
   }
 
   constructor(gate: GateInput) {
+    this.id = dataManager.createID();
+
     this.xAxis = gate.xAxis;
     this.yAxis = gate.yAxis;
 
@@ -35,15 +39,12 @@ export default abstract class Gate {
       this.name = this.getGateType() + " " + (Gate.instanceCount++).toString();
 
     if (gate.color !== undefined) this.color = gate.color;
-    else
-      gate.color =
+    else {
+      this.color =
         randomListOfColors[
           (Gate.instanceCount - 2) % randomListOfColors.length
         ];
-  }
-
-  setID(id: string) {
-    this.id = id;
+    }
   }
 
   isPointInside(point: { x: number; y: number }): boolean {

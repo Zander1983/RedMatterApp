@@ -47,6 +47,7 @@ export default class Plot {
   plotData: PlotData;
   canvas: Canvas;
   plotRender: Function;
+  unsetGating: Function;
 
   // Mouse interaction objects
   mouseInteractor: MouseInteractor | null = null;
@@ -66,9 +67,6 @@ export default class Plot {
   constructor(plotData: PlotData) {
     this.plotData = plotData;
     this.plotData.addObserver("plotUpdated", () => {
-      console.log(
-        "plot data has updated, which triggered me to update plot render"
-      );
       this.update();
     });
 
@@ -78,13 +76,13 @@ export default class Plot {
   /* Whenever plot data gets updated, this should be called to rerender
      what changed */
   update() {
+    // Plot type update
     if (this.plotData.xAxis === this.plotData.yAxis) {
-      console.log("setting histogram");
       this.plotter = this.histogramPlotter;
     } else {
-      console.log("setting scatter");
       this.plotter = this.scatterPlotter;
     }
+
     this.draw();
   }
 
@@ -125,31 +123,13 @@ export default class Plot {
 
   setPlotData(plotData: PlotData) {
     this.plotData = plotData;
-    this.plotData.addObserver("", () => {});
-  }
-
-  addGate(gate: Gate) {
-    if (gate instanceof OvalGate || gate instanceof PolygonGate) {
-      this.scatterPlotter.addGate(gate);
-    }
-    this.updatePlotter();
-  }
-
-  removeGate(gateID: string) {
-    const gate = dataManager.getGate(gateID);
-    if (gate instanceof OvalGate || gate instanceof PolygonGate) {
-      this.scatterPlotter.removeGate(gate);
-    }
-    this.updatePlotter();
   }
 
   setGating(type: "Oval" | "Histogram" | "Polygon", start: boolean) {
     if (start) {
       if (type === "Oval") {
         this.ovalMouseInteractor.setMouseInteractorState({
-          plotRender: () => {
-            console.log("SHOULD RENDER PLOT FROM PLOT.TSX");
-          },
+          plotRender: () => {},
           plotID: this.plotData.id,
           yAxis: this.plotData.getYAxisName(),
           xAxis: this.plotData.getXAxisName(),
@@ -163,9 +143,7 @@ export default class Plot {
       }
       if (type == "Polygon") {
         this.polygonMouseInteractor.setMouseInteractorState({
-          plotRender: () => {
-            console.log("SHOULD RENDER PLOT FROM PLOT.TSX");
-          },
+          plotRender: () => {},
           plotID: this.plotData.id,
           yAxis: this.plotData.getYAxisName(),
           xAxis: this.plotData.getXAxisName(),
@@ -178,6 +156,7 @@ export default class Plot {
         this.mouseInteractor = this.polygonMouseInteractor;
       }
     }
+    this.mouseInteractor.unsetGating = this.unsetGating;
     start ? this.mouseInteractor.start() : this.mouseInteractor.end();
   }
 
@@ -201,13 +180,14 @@ export default class Plot {
   }
 
   private setCanvasState() {
-    this.canvas.setCanvasState({
+    const canvasState = {
       id: this.plotData.id,
       width: this.plotData.plotWidth,
       height: this.plotData.plotHeight,
       scale: this.plotData.plotScale,
       plot: this,
-    });
+    };
+    this.canvas.setCanvasState(canvasState);
   }
 
   private constructPlotters() {

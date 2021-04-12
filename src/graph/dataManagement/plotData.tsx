@@ -34,7 +34,11 @@ export interface PlotDataState {
   xRange: [number, number];
   yRange: [number, number];
   file: FCSFile;
-  gates: { displayOnlyPointsInGate: boolean; gate: Gate }[];
+  gates: {
+    displayOnlyPointsInGate: boolean;
+    gate: Gate;
+    inverseGating: boolean;
+  }[];
   xAxis: string;
   yAxis: string;
   positionInWorkspace: [number, number];
@@ -46,11 +50,15 @@ export interface PlotDataState {
 }
 
 export default class PlotData extends ObserversFunctionality {
-  id: string;
+  readonly id: string;
   xRange: [number, number] = [0, 0];
   yRange: [number, number] = [0, 0];
   file: FCSFile;
-  gates: { displayOnlyPointsInGate: boolean; gate: Gate }[] = [];
+  gates: {
+    displayOnlyPointsInGate: boolean;
+    inverseGating: boolean;
+    gate: Gate;
+  }[] = [];
   xAxis: string = "";
   yAxis: string = "";
   positionInWorkspace: [number, number];
@@ -64,6 +72,11 @@ export default class PlotData extends ObserversFunctionality {
   private changed: boolean = false;
 
   /* PLOT DATA LIFETIME */
+
+  constructor() {
+    super();
+    this.id = dataManager.createID();
+  }
 
   setupPlot() {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
@@ -135,6 +148,7 @@ export default class PlotData extends ObserversFunctionality {
       return {
         displayOnlyPointsInGate: true,
         gate: e.gate,
+        inverseGating: inverse,
       };
     });
     const newPlotData = new PlotData();
@@ -145,19 +159,24 @@ export default class PlotData extends ObserversFunctionality {
 
   /* ALTER PLOT STATE */
 
-  addGate(gate: Gate) {
+  @publishDecorator()
+  addGate(gate: Gate, forceGatedPoints: boolean = false) {
     const gateQuery = this.gates.filter((g) => g.gate.id === gate.id);
     if (gateQuery.length > 0) {
       throw Error(
         "Adding the same gate with ID = " + gate.id + " twice to plot"
       );
     }
-    this.gates.push({ gate: gate, displayOnlyPointsInGate: false });
+    this.gates.push({
+      gate: gate,
+      displayOnlyPointsInGate: forceGatedPoints,
+      inverseGating: false,
+    });
     this.plotUpdated();
   }
 
+  @publishDecorator()
   removeGate(gate: Gate) {
-    console.log("REMOVING GATE");
     const gateQuery = this.gates.filter((g) => g.gate.id === gate.id);
     if (gateQuery.length !== 1) {
       if (gateQuery.length < 1)
@@ -241,7 +260,7 @@ export default class PlotData extends ObserversFunctionality {
     return { xAxis, yAxis };
   }
 
-  getAxesData(filterGating: boolean = true, inverse: boolean = false): any[] {
+  getAxesData(filterGating: boolean = true): any[] {
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -266,7 +285,7 @@ export default class PlotData extends ObserversFunctionality {
           const y = gate.gate.yAxis;
           data = data.filter((e: any) => {
             const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-            return inverse ? !inside : inside;
+            return gate.inverseGating ? !inside : inside;
           });
         }
       }

@@ -42,43 +42,32 @@ class DataManager extends ObserversFunctionality {
   // ======== Creators
   @publishDecorator()
   createWorkspace(): WorkspaceID {
-    console.log("WORKSPACE HAS BEEN CREATED AND ASSIGNED TO DATA MANAGER");
-    const workspaceID = this.createID();
     this.currentWorkspace = new WorkspaceData();
-    this.currentWorkspace.id = workspaceID;
-    return workspaceID;
+    return this.currentWorkspace.id;
   }
 
   @publishDecorator()
   addNewFileToWorkspace(file: FCSFile): FileID {
-    console.log("FILE HAS BEEN ADDED TO WORKSPACE");
-    const fileId = this.createID();
-    file.id = fileId;
-    this.currentWorkspace.files.set(fileId, file);
-    return fileId;
+    this.currentWorkspace.files.set(file.id, file);
+    return file.id;
   }
 
   @publishDecorator()
-  addNewGateToWorkspace(gate: Gate, originPlotID?: string): GateID {
-    console.log("GATE HAS BEEN ADDED TO WORKSPACE");
-    const gateId = this.createID();
-    gate.id = gateId;
-    this.currentWorkspace.gates.set(gateId, gate);
-    /* RESPOSIBLE FOR CREATING NEW PLOT WHEN GATE IS ADDED */
-    if (originPlotID !== undefined) {
-      this.createSubpopFromGatesInPlot(originPlotID);
-    }
-    return gateId;
+  addNewGateToWorkspace(gate: Gate): GateID {
+    this.currentWorkspace.gates.set(gate.id, gate);
+    return gate.id;
+  }
+
+  @publishDecorator()
+  clonePlot(plotID: PlotID, inverse: boolean = false): PlotID {
+    return this.createSubpopFromGatesInPlot(plotID, inverse);
   }
 
   @publishDecorator()
   addNewPlotToWorkspace(plotData: PlotData): PlotID {
-    console.log("PLOT HAS BEEN ADDED TO WORKSPACE");
-    const plotDataId = this.createID();
-    plotData.id = plotDataId;
-    this.currentWorkspace.plots.set(plotDataId, plotData);
+    this.currentWorkspace.plots.set(plotData.id, plotData);
     plotData.setupPlot();
-    return plotDataId;
+    return plotData.id;
   }
 
   @publishDecorator()
@@ -103,7 +92,11 @@ class DataManager extends ObserversFunctionality {
   }
 
   @publishDecorator()
-  linkGateToPlot(plotID: PlotID, gateID: GateID) {
+  linkGateToPlot(
+    plotID: PlotID,
+    gateID: GateID,
+    forceGatedPoints: boolean = false
+  ) {
     if (!this.currentWorkspace.plots.has(plotID)) {
       throw Error("Adding gate to non-existent plot");
     }
@@ -111,7 +104,7 @@ class DataManager extends ObserversFunctionality {
       throw Error("Adding non-existent gate to plot");
     }
     const cplot = this.currentWorkspace.plots.get(plotID);
-    cplot.addGate(this.currentWorkspace.gates.get(gateID));
+    cplot.addGate(this.currentWorkspace.gates.get(gateID), forceGatedPoints);
   }
 
   @publishDecorator()
@@ -188,7 +181,14 @@ class DataManager extends ObserversFunctionality {
 
   // ======== Destroyers
   @publishDecorator()
-  removePlotFromWorkspace(plotID: PlotID) {}
+  removePlotFromWorkspace(plotID: PlotID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
+      throw Error("Removing non-existent plot");
+    }
+    this.plotRenderers.delete(plotID);
+    this.currentWorkspace.plots.delete(plotID);
+  }
+
   @publishDecorator()
   removeGateFromWorkspace(gateID: GateID) {}
   @publishDecorator()
@@ -243,7 +243,7 @@ class DataManager extends ObserversFunctionality {
 
   /* === GENERAL === */
 
-  private createID(): string {
+  createID(): string {
     const newObjectInstaceID = uuid.v4();
     return newObjectInstaceID;
   }

@@ -3,6 +3,7 @@
   to load and save workspaces to json, somehow.
 */
 
+import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
 import ObserversFunctionality from "./observersFunctionality";
@@ -15,12 +16,17 @@ export interface WorkspaceState {
 }
 
 export default class WorkspaceData extends ObserversFunctionality {
-  id: string;
+  readonly id: string;
   workspaceName: string;
 
   files: Map<string, FCSFile> = new Map();
   plots: Map<string, PlotData> = new Map();
   gates: Map<string, Gate> = new Map();
+
+  constructor() {
+    super();
+    this.id = dataManager.createID();
+  }
 
   setupWorkspace() {
     this.plots.forEach((e) => e.setupPlot());
