@@ -1,10 +1,5 @@
 import PolygonGate from "../../dataManagement/gate/polygonGate";
-import {
-  euclidianDistance2D,
-  distLinePoint2D,
-  getVectorAngle2D,
-  rotateVector2D,
-} from "../../dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "../../dataManagement/math/euclidianPlane";
 import GateMouseInteractor, {
   Point,
   GateState,
@@ -34,9 +29,37 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  gateEditingStarted: boolean = false;
   targetEditGate: PolygonGate | null = null;
-  editGateEvent(type: string, { x, y }: Point) {}
+  targetPointIndex: number | null = null;
+  editGateEvent(type: string, mouse: Point) {
+    if (this.targetEditGate === null && type === "mousedown" && !this.started) {
+      this.plotter.gates.forEach((gate) => {
+        if (gate instanceof PolygonGate && this.targetEditGate === null)
+          gate.points.forEach((p, i) => {
+            if (
+              this.targetEditGate === null &&
+              euclidianDistance2D(
+                mouse,
+                this.plotter.transformer.toConcretePoint(p)
+              ) <= maxPolygonDist
+            ) {
+              this.targetEditGate = gate;
+              this.targetPointIndex = i;
+            }
+          });
+      });
+    } else if (this.targetEditGate !== null && type === "mousedown") {
+      this.targetEditGate = null;
+      this.targetPointIndex = null;
+    }
+    if (this.targetEditGate !== null && type === "mousemove") {
+      const gateState = this.targetEditGate.getState();
+      gateState.points[
+        this.targetPointIndex
+      ] = this.plotter.transformer.toAbstractPoint(mouse);
+      this.targetEditGate.update(gateState);
+    }
+  }
 
   protected instanceGate(): PolygonGate {
     if (!this.started) return;

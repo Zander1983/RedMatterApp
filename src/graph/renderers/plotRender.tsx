@@ -95,7 +95,12 @@ export default class Plot {
     setTimeout(() => this.draw(), 100);
   }
 
+  private timestampSinceLastDraw: number = 0;
   draw() {
+    if (this.timestampSinceLastDraw + 10 < new Date().getTime()) {
+      this.timestampSinceLastDraw = new Date().getTime();
+    }
+    console.log("drawn");
     if (!this.validateReady()) return;
 
     this.setCanvasState();
@@ -105,6 +110,7 @@ export default class Plot {
     this.canvasRender();
 
     this.plotter.draw();
+    setTimeout(() => this.draw(), 10);
   }
 
   canvasRender() {
