@@ -1,8 +1,6 @@
 /*
   Plot - Responsible for keeping all rendering state syncronized.
 */
-
-import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
 
 import PlotterFactory from "graph/renderers/plotters/plotterFactory";
@@ -11,10 +9,6 @@ import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
 import Canvas from "graph/renderers/canvas";
-
-import Gate from "graph/dataManagement/gate/gate";
-import PolygonGate from "graph/dataManagement/gate/polygonGate";
-import OvalGate from "graph/dataManagement/gate/ovalGate";
 
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 
@@ -50,7 +44,7 @@ export default class Plot {
   unsetGating: Function;
 
   // Mouse interaction objects
-  mouseInteractor: MouseInteractor | null = null;
+  mouseInteractors: MouseInteractor[] = [];
   ovalMouseInteractor: OvalMouseInteractor | null = null;
   polygonMouseInteractor: PolygonMouseInteractor | null = null;
 
@@ -125,46 +119,32 @@ export default class Plot {
     this.plotData = plotData;
   }
 
+  static typeToClassType = {
+    Oval: OvalMouseInteractor,
+    Polygon: PolygonMouseInteractor,
+    Histogram: Error,
+  };
   setGating(type: "Oval" | "Histogram" | "Polygon", start: boolean) {
-    if (start) {
-      if (type === "Oval") {
-        this.ovalMouseInteractor.setMouseInteractorState({
-          plotRender: () => {},
+    this.mouseInteractors
+      .filter((e) => e instanceof Plot.typeToClassType[type])
+      .forEach((e) => {
+        e.setMouseInteractorState({
           plotID: this.plotData.id,
           yAxis: this.plotData.getYAxisName(),
           xAxis: this.plotData.getXAxisName(),
-          canvasRender: () => {
+          rerender: () => {
             this.canvasRender();
             this.plotter.draw();
           },
         });
-        this.ovalMouseInteractor.setup(this.scatterPlotter);
-        this.mouseInteractor = this.ovalMouseInteractor;
-      }
-      if (type == "Polygon") {
-        this.polygonMouseInteractor.setMouseInteractorState({
-          plotRender: () => {},
-          plotID: this.plotData.id,
-          yAxis: this.plotData.getYAxisName(),
-          xAxis: this.plotData.getXAxisName(),
-          canvasRender: () => {
-            this.canvasRender();
-            this.plotter.draw();
-          },
-        });
-        this.polygonMouseInteractor.setup(this.scatterPlotter);
-        this.mouseInteractor = this.polygonMouseInteractor;
-      }
-    }
-    this.mouseInteractor.unsetGating = this.unsetGating;
-    start ? this.mouseInteractor.start() : this.mouseInteractor.end();
+        e.setup(this.scatterPlotter);
+        e.unsetGating = this.unsetGating;
+        start ? e.start() : e.end();
+      });
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
-    if (this.mouseInteractor === null || this.mouseInteractor === undefined)
-      return;
-
-    this.mouseInteractor.registerMouseEvent(type, x, y);
+    this.mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
   }
 
   private validateReady(): boolean {
@@ -207,7 +187,9 @@ export default class Plot {
       pick only what it needs.
     */
     const data = this.plotData.getXandYData();
+    const ranges = this.plotData.getXandYRanges();
     const plotterState = {
+      plotData: this.plotData,
       xAxis: data.xAxis,
       yAxis: data.yAxis,
       xAxisName: this.plotData.xAxis,
@@ -215,8 +197,10 @@ export default class Plot {
       width: this.plotData.plotWidth,
       height: this.plotData.plotHeight,
       scale: this.plotData.plotScale,
-      gates: this.plotData.getGates(),
       direction: this.plotData.histogramAxis,
+      gates: this.plotData.getGates(),
+      xRange: ranges.x,
+      yRange: ranges.y,
     };
     this.plotter.setPlotterState(plotterState);
   }
@@ -225,6 +209,9 @@ export default class Plot {
     this.ovalMouseInteractor = new OvalMouseInteractor();
     this.polygonMouseInteractor = new PolygonMouseInteractor();
     // by default
-    this.mouseInteractor = this.ovalMouseInteractor;
+    this.mouseInteractors = [
+      this.ovalMouseInteractor,
+      this.polygonMouseInteractor,
+    ];
   }
 }

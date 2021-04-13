@@ -2,6 +2,11 @@ import Gate from "graph/dataManagement/gate/gate";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 export default abstract class GatePlotterPlugin extends PlotterPlugin {
   static TargetPlotter = GraphPlotter;
 
@@ -9,6 +14,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   gatingState: any; // Too custom to be defined here
   gates: Gate[] = [];
   isGating: boolean = false;
+  lastMousePos: Point;
 
   public abstract setGates(gates: Gate[]): void;
   public abstract setGatingState(state: any): void;

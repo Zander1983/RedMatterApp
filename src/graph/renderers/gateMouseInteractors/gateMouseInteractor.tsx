@@ -1,6 +1,7 @@
 import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
+import ScatterPlotter from "../plotters/scatterPlotter";
 
 export interface Point {
   x: number;
@@ -13,8 +14,9 @@ export interface GateState {
 
 export interface MouseInteractorState {
   plotID: string;
-  plotRender: Function;
-  canvasRender: Function;
+  rerender: Function;
+  xAxis: string;
+  yAxis: string;
 }
 
 export default abstract class GateMouseInteractor {
@@ -24,18 +26,26 @@ export default abstract class GateMouseInteractor {
   protected started: boolean = false;
   protected plugin: GatePlotterPlugin;
   protected lastMousePos: Point;
-  private canvasRenderLastTimestamp: any = 0;
+  private rerenderLastTimestamp: any = 0;
 
   unsetGating: Function;
 
   plotID: string;
-  plotRender: Function;
-  canvasRender: Function;
+  rerender: Function;
+  xAxis: string;
+  yAxis: string;
+  plotter: ScatterPlotter | null = null;
 
   setMouseInteractorState(state: MouseInteractorState) {
-    this.plotRender = state.plotRender;
-    this.canvasRender = state.canvasRender;
+    this.rerender = state.rerender;
     this.plotID = state.plotID;
+    this.xAxis = state.xAxis;
+    this.yAxis = state.yAxis;
+  }
+
+  setup(plotter: ScatterPlotter) {
+    this.plotter = plotter;
+    this.plugin.isGating = true;
   }
 
   start() {
@@ -46,13 +56,11 @@ export default abstract class GateMouseInteractor {
     this.started = false;
     this.clearGateState();
     this.setPluginState();
-    this.plotRender();
     this.unsetGating();
   }
 
   setPluginState() {
     this.plugin.setGatingState(this.getGatingState());
-    this.plotRender();
   }
 
   getGatingState(): GateState {
@@ -64,6 +72,7 @@ export default abstract class GateMouseInteractor {
   protected abstract instanceGate(): Gate;
   protected abstract clearGateState(): void;
   protected abstract gateEvent(type: string, point: Point): void;
+  protected abstract editGateEvent(type: string, point: Point): void;
 
   createAndAddGate() {
     const gate = this.instanceGate();
@@ -76,14 +85,17 @@ export default abstract class GateMouseInteractor {
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
     const p = this.plugin.plotter.transformer.toAbstractPoint({ x: x, y: y });
-    this.lastMousePos = p;
+    this.lastMousePos = this.plugin.lastMousePos = p;
+    if (this.plotter != null && this.plotter.gates.length > 0) {
+      this.editGateEvent(type, p);
+    }
     if (this.started) {
       this.gateEvent(type, p);
       this.setPluginState();
       const now = new Date().getTime();
-      if (this.canvasRenderLastTimestamp + 10 < now) {
-        this.canvasRender();
-        this.canvasRenderLastTimestamp = now;
+      if (this.rerenderLastTimestamp + 10 < now) {
+        this.rerenderLastTimestamp = now;
+        this.rerender();
       }
     }
   }

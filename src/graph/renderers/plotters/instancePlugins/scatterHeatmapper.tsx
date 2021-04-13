@@ -34,13 +34,15 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
     const hmr = this.heatmappingRadius;
     // Returns how many points are close (within heatmapping percentage radius)
     // to a given point i
+
+    const ranges = this.plotter.plotData.getXandYRanges();
     const closePoints = (i: number) => {
       let count = 0;
 
       const x = plotter.xAxis[i];
       const y = plotter.yAxis[i];
-      const xr = plotter.xRange[1] - plotter.xRange[0];
-      const yr = plotter.yRange[1] - plotter.yRange[0];
+      const xr = ranges.x[1] - ranges.x[0];
+      const yr = ranges.y[1] - ranges.y[0];
       const pp1 = { x: x - hmr * xr, y: y };
       const pp2 = { x: x + hmr * xr, y: y };
       const sp1 = { x: x, y: y - hmr * yr };

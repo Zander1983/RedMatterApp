@@ -23,7 +23,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   plotter: ScatterPlotter | null = null;
 
   points: Point[] = [];
-  lastMousePos: Point;
   polygonGates: PolygonGate[] = [];
 
   setPlotter(plotter: ScatterPlotter) {
@@ -52,7 +51,16 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       const pp = this.plotter.transformer.toConcretePoint(
         gate.points[(i + 1) % gate.points.length]
       );
-      this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
+      let color = "#f00";
+      let size = 2;
+      if (
+        this.lastMousePos !== undefined &&
+        this.closeToFirstPoint(p, false, this.lastMousePos)
+      ) {
+        color = "#00f";
+        size = 4;
+      }
+      this.plotter.drawer.addPoint(p.x, p.y, size, color);
       this.plotter.drawer.segment({
         x1: p.x * scale,
         y1: p.y * scale,
@@ -100,8 +108,14 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     }
   }
 
-  private closeToFirstPoint(p: Point, abstract: boolean = false) {
-    const p1 = this.plotter.transformer.toConcretePoint(this.points[0]);
+  private closeToFirstPoint(
+    p: Point,
+    abstract: boolean = false,
+    otherPointToCompare: Point = undefined
+  ) {
+    const p1 = this.plotter.transformer.toConcretePoint(
+      otherPointToCompare === undefined ? this.points[0] : otherPointToCompare
+    );
     const p2 = abstract ? this.plotter.transformer.toConcretePoint(p) : p;
     const dist = euclidianDistance2D(p1, p2);
     if (dist <= 10) {

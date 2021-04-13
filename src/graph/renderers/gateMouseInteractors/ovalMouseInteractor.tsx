@@ -13,7 +13,7 @@ import GateMouseInteractor, {
 import ScatterOvalGatePlotter from "../plotters/runtimePlugins/scatterOvalGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
 
-export interface OvalGateState extends GateState {
+export interface MouseInteractorOvalGateState extends GateState {
   center: Point | null;
   primaryP1: Point | null;
   primaryP2: Point | null;
@@ -38,17 +38,17 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
   protected plugin: ScatterOvalGatePlotter;
   plotter: ScatterPlotter | null = null;
 
-  private xAxis: string;
-  private yAxis: string;
-  private ovalGateP0: Point | null = null;
-  private ovalGateP1: Point | null = null;
-  private majorToMinorSize: number = 0;
-  private ang: number = 0;
+  xAxis: string;
+  yAxis: string;
+  ovalGateP0: Point | null = null;
+  ovalGateP1: Point | null = null;
+  majorToMinorSize: number = 0;
+  ang: number = 0;
 
-  setMouseInteractorState(state: OvalMouseInteractorState) {
-    super.setMouseInteractorState(state);
-    this.xAxis = state.xAxis;
-    this.yAxis = state.yAxis;
+  gateEditingStarted: boolean = false;
+  targetEditGate: OvalGate | null = null;
+  editGateEvent(type: string, { x, y }: Point) {
+    // const moveToIfClose = (mousePoint) => {};
   }
 
   setup(plotter: ScatterPlotter) {
@@ -62,6 +62,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
   }
 
   protected instanceGate(): OvalGate {
+    if (!this.started) return;
     const {
       center,
       primaryP1,
@@ -96,6 +97,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
       ang: ang,
       xAxis: xAxis,
       yAxis: yAxis,
+      parent: null,
     });
   }
 
@@ -107,7 +109,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
     this.ang = 0;
   }
 
-  getGatingState(): OvalGateState {
+  getGatingState(): MouseInteractorOvalGateState {
     // This is going to calculate the 2 secondary points by creating a vector
     // from center to primaryP1, then rotate that vector -90º and multiply
     // for secondaryP1 and do the same but 90º to get secondaryP2
@@ -183,6 +185,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
   }
 
   gateEvent(type: string, { x, y }: Point) {
+    if (!this.started) return;
     if (this.ovalGateP0 == null && type == "mousedown") {
       // Step 1: select first point
       this.ovalGateP0 = { x: x, y: y };

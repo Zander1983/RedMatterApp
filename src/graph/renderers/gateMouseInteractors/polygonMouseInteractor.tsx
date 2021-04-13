@@ -21,10 +21,7 @@ export interface PolygonGateState extends GateState {
   yAxis: string;
 }
 
-export interface PolygonMouseInteractorState extends MouseInteractorState {
-  xAxis: string;
-  yAxis: string;
-}
+export interface PolygonMouseInteractorState extends MouseInteractorState {}
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
   static targetGate: PolygonGate;
@@ -37,13 +34,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   xAxis: string;
   yAxis: string;
 
-  setMouseInteractorState(state: PolygonMouseInteractorState) {
-    super.setMouseInteractorState(state);
-    this.xAxis = state.xAxis;
-    this.yAxis = state.yAxis;
-  }
+  gateEditingStarted: boolean = false;
+  targetEditGate: PolygonGate | null = null;
+  editGateEvent(type: string, { x, y }: Point) {}
 
   protected instanceGate(): PolygonGate {
+    if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
 
     const checkNotNullOrUndefined = (x: any): void => {
@@ -59,6 +55,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       points: points,
       xAxis: xAxis,
       yAxis: yAxis,
+      parent: null,
     });
   }
 
@@ -101,6 +98,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   gateEvent(type: string, { x, y }: Point) {
+    if (!this.started) return;
     const isCloseToFirstPoint = this.closeToFirstPoint({ x, y });
     if (type === "mousedown" && !isCloseToFirstPoint) {
       this.points = [...this.points, { x, y }];

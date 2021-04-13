@@ -6,8 +6,6 @@ import {
   getVectorAngle2D,
 } from "graph/dataManagement/math/euclidianPlane";
 
-export interface ScatterOvalGatePlotterState {}
-
 interface Point {
   x: number;
   y: number;
@@ -42,8 +40,6 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
   setGatingState(state: OvalGateState) {
     this.ovalGateState = state;
   }
-
-  setState(state: ScatterOvalGatePlotterState) {}
 
   protected drawGate(gate: OvalGate) {
     const toConcretePoint = (p: { x: number; y: number }) => {
@@ -108,7 +104,7 @@ export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
       });
       plotter.drawer.addPoint(center.x, center.y, 2, "#00d");
     } else if (this.ovalGateState.primaryP1 != null) {
-      const mouse = toConcretePoint(this.ovalGateState.lastMousePos);
+      const mouse = toConcretePoint(this.lastMousePos);
       const pp1 = toConcretePoint(this.ovalGateState.primaryP1);
       plotter.drawer.segment({
         x1: pp1.x,

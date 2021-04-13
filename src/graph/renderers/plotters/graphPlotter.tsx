@@ -2,6 +2,7 @@ import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
 import Gate from "graph/dataManagement/gate/gate";
 import GraphDrawer from "graph/renderers/drawers/graphDrawer";
 import GraphTransformer from "graph/renderers/transformers/graphTransformer";
+import PlotData from "graph/dataManagement/plotData";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -9,6 +10,8 @@ const topPadding = 50;
 const bottomPadding = 50;
 
 export interface GraphPlotterState extends PlotterState {
+  plotData: PlotData;
+
   width: number;
   height: number;
   scale: number;
@@ -45,6 +48,8 @@ export interface GraphPlotterState extends PlotterState {
 export default class GraphPlotter extends Plotter {
   /* === DATA === */
 
+  plotData: PlotData;
+
   width: number = 0;
   height: number = 0;
   scale: number = 2;
@@ -52,8 +57,6 @@ export default class GraphPlotter extends Plotter {
   yAxis: number[] = [];
   xAxisName: string;
   yAxisName: string;
-  xRange: [number, number] = [0, 0];
-  yRange: [number, number] = [0, 0];
   xLabels: string[] = [];
   yLabels: string[] = [];
   gates: Gate[];
@@ -75,21 +78,18 @@ export default class GraphPlotter extends Plotter {
   }
 
   public update(): void {
-    if (this.xRange === undefined) {
-      this.getBins();
-      this.xRange = [0, 175000]; //this.findRangeBoundries("x");
-      this.yRange = [0, 134999]; //this.findRangeBoundries("y");
-      // this.xRange = [0, 273300];
-      // this.yRange = [0, 273300];
-      this.xLabels = this.createRangeArray("x");
-      this.yLabels = this.createRangeArray("y");
-    }
+    this.getBins();
+
+    this.xLabels = this.createRangeArray("x");
+    this.yLabels = this.createRangeArray("y");
+
     super.update();
   }
 
   public setPlotterState(state: GraphPlotterState): void {
     super.setPlotterState(state);
 
+    this.plotData = state.plotData;
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
     this.xAxisName = state.xAxisName;
@@ -98,8 +98,6 @@ export default class GraphPlotter extends Plotter {
     this.height = state.height;
     this.scale = state.scale;
     this.gates = state.gates;
-    this.xRange = state.xRange;
-    this.yRange = state.yRange;
     this.xLabels = state.xLabels;
     this.yLabels = state.yLabels;
   }
@@ -124,13 +122,12 @@ export default class GraphPlotter extends Plotter {
 
   public getPlotterState(): GraphPlotterState {
     return {
+      plotData: this.plotData,
       width: this.width,
       height: this.height,
       scale: this.scale,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
-      xRange: this.xRange,
-      yRange: this.yRange,
       xLabels: this.xLabels,
       yLabels: this.yLabels,
       gates: this.gates,
@@ -138,15 +135,16 @@ export default class GraphPlotter extends Plotter {
   }
 
   protected setDrawerState(): void {
+    const ranges = this.plotData.getXandYRanges();
     this.drawer.setDrawerState({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.xRange[0],
-      iex: this.xRange[1],
-      iby: this.yRange[0],
-      iey: this.yRange[1],
+      ibx: ranges.x[0],
+      iex: ranges.x[1],
+      iby: ranges.y[0],
+      iey: ranges.y[1],
       scale: this.scale,
       xpts: this.horizontalBinCount,
       ypts: this.verticalBinCount,
@@ -162,15 +160,16 @@ export default class GraphPlotter extends Plotter {
   }
 
   protected setTransformerState(): void {
+    const ranges = this.plotData.getXandYRanges();
     this.transformer.setTransformerState({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.xRange[0],
-      iex: this.xRange[1],
-      iby: this.yRange[0],
-      iey: this.yRange[1],
+      ibx: ranges.x[0],
+      iex: ranges.x[1],
+      iby: ranges.y[0],
+      iey: ranges.y[1],
       scale: this.scale,
     });
   }
@@ -183,25 +182,13 @@ export default class GraphPlotter extends Plotter {
     this.transformer.update();
   }
 
-  private findRangeBoundries(axis: "x" | "y"): [number, number] {
-    const axisData = axis === "x" ? this.xAxis : this.yAxis;
-    let min = axisData[0],
-      max = axisData[0];
-    for (const p of axisData) {
-      min = Math.min(p, min);
-      max = Math.max(p, max);
-    }
-    const d = Math.max(max - min, 1e-10);
-    return [min - d * this.rangeSpacer, max + d * this.rangeSpacer];
-  }
-
   private createRangeArray(axis: "x" | "y"): Array<string> {
-    const plotSize = axis === "x" ? this.width : this.height;
+    const plotSize =
+      axis === "x" ? this.plotData.plotWidth : this.plotData.plotHeight;
+    const ranges = this.plotData.getXandYRanges();
     const rangeSize =
-      axis === "x"
-        ? this.xRange[1] - this.xRange[0]
-        : this.yRange[1] - this.yRange[0];
-    const rangeMin = axis === "x" ? this.xRange[0] : this.yRange[0];
+      axis === "x" ? ranges.x[1] - ranges.x[0] : ranges.y[1] - ranges.y[0];
+    const rangeMin = axis === "x" ? ranges.x[0] : ranges.y[0];
     const lineCount = Math.round(
       plotSize / (axis == "x" ? this.horizontalBinCount : this.verticalBinCount)
     );

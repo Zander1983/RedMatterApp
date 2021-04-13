@@ -3,8 +3,6 @@ import GraphPlotter, {
 } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 
-const binSize = 50;
-
 const leftPadding = 70;
 const rightPadding = 50;
 const topPadding = 50;
@@ -21,21 +19,19 @@ export default class HistogramPlotter extends GraphPlotter {
   drawer: HistogramDrawer;
 
   protected setDrawerState(): void {
+    const ranges = this.plotData.getXandYRanges();
     const drawerState = {
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.direction == "vertical" ? this.xRange[0] : 0,
-      iex:
-        this.direction == "vertical" ? this.xRange[1] : this.getBinList().max,
-      iby: this.direction == "vertical" ? 0 : this.yRange[0],
-      iey:
-        this.direction == "vertical" ? this.getBinList().max : this.yRange[1],
+      ibx: this.direction == "vertical" ? ranges.x[0] : 0,
+      iex: this.direction == "vertical" ? ranges.x[1] : this.getBinList().max,
+      iby: this.direction == "vertical" ? 0 : ranges.y[0],
+      iey: this.direction == "vertical" ? this.getBinList().max : ranges.y[1],
       scale: this.scale,
       xpts: this.horizontalBinCount,
       ypts: this.verticalBinCount,
-
       bins: this.bins,
       axis: this.direction,
     };
@@ -89,8 +85,9 @@ export default class HistogramPlotter extends GraphPlotter {
   }
 
   private getBinList() {
+    const ranges = this.plotData.getXandYRanges();
     const axis = this.direction == "vertical" ? this.xAxis : this.yAxis;
-    const range = this.direction == "vertical" ? this.xRange : this.yRange;
+    const range = this.direction == "vertical" ? ranges.x : ranges.y;
     const binCounts = Array(this.bins).fill(0);
     const step = (range[1] - range[0]) / this.bins;
     let mx = 0;

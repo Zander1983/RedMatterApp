@@ -1,7 +1,7 @@
-import Gate, { GateInput, Point } from "./gate";
+import Gate, { GateState, Point } from "./gate";
 import { pointInsideEllipse } from "../math/euclidianPlane";
 
-export interface OvalGateInput extends GateInput {
+export interface OvalGateState extends GateState {
   center: Point;
   primaryP1: Point;
   primaryP2: Point;
@@ -23,14 +23,31 @@ export default class OvalGate extends Gate {
     return "Oval Gate";
   }
 
-  constructor(gate: OvalGateInput) {
+  constructor(gate: OvalGateState) {
     super(gate);
+    this.setState(gate);
+  }
+
+  setState(gate: OvalGateState) {
+    super.setState(gate);
     this.center = gate.center;
     this.primaryP1 = gate.primaryP1;
     this.primaryP2 = gate.primaryP2;
     this.secondaryP1 = gate.secondaryP1;
     this.secondaryP2 = gate.secondaryP2;
     this.ang = gate.ang;
+  }
+
+  getState(): OvalGateState {
+    return {
+      ...super.getState(),
+      center: this.center,
+      primaryP1: this.primaryP1,
+      primaryP2: this.primaryP2,
+      secondaryP1: this.secondaryP1,
+      secondaryP2: this.secondaryP2,
+      ang: this.ang,
+    };
   }
 
   // Abstract override, returns true if given point is inside ellipse (2D)

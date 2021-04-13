@@ -38,7 +38,7 @@ export default function GateBar(props: any) {
   let idLinkNewPlot: any = null;
 
   const getPlotGates = () => {
-    setSelected(plot.plotData.gates.map((e) => e.gate.name));
+    setSelected(plot.plotData.gates.map((e) => e.gate));
   };
 
   const getAllGates = () => {
@@ -74,14 +74,18 @@ export default function GateBar(props: any) {
     <Grid xs={12} container direction="column" style={classes.bar}>
       <Autocomplete
         multiple
-        options={gates.map((e) => e.name)}
+        options={gates.map((e) => e)}
         value={selected.map((e) => e)}
         disableCloseOnSelect
-        getOptionLabel={(option) => option}
+        getOptionLabel={(option) => option.name}
         renderOption={(option, { selected }) => (
           <Button
-            onClick={() => changeGatePlotState(option, selected)}
-            style={{ flex: 1, justifyContent: "left" }}
+            onClick={() => changeGatePlotState(option.name, selected)}
+            style={{
+              flex: 1,
+              justifyContent: "left",
+              textTransform: "none",
+            }}
           >
             <Checkbox
               icon={icon}
@@ -89,7 +93,7 @@ export default function GateBar(props: any) {
               style={{ marginRight: 8, textAlign: "left", padding: 0 }}
               checked={selected}
             />
-            {option}
+            {option.name}
           </Button>
         )}
         style={{ flex: 1 }}
@@ -99,9 +103,22 @@ export default function GateBar(props: any) {
         renderTags={(tagValue, _) => {
           return tagValue.map((option) => (
             <Chip
-              label={option}
-              onDelete={() => changeGatePlotState(option, true)}
+              label={option.name}
+              avatar={
+                <div
+                  style={{
+                    borderRadius: "50%",
+                    width: 15,
+                    height: 15,
+                    marginLeft: 7,
+                    border: "solid 2px #999",
+                    backgroundColor: option.color,
+                  }}
+                ></div>
+              }
+              onDelete={() => changeGatePlotState(option.name, true)}
               {...props}
+              style={{ marginLeft: 5 }}
             />
           ));
         }}

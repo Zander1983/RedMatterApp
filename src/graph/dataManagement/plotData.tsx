@@ -4,7 +4,6 @@
   easily.
 */
 
-import { ConsoleSqlOutlined } from "@ant-design/icons";
 import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
@@ -31,8 +30,7 @@ const conditionalUpdateDecorator = () => {
 
 export interface PlotDataState {
   id: string;
-  xRange: [number, number];
-  yRange: [number, number];
+  ranges: Map<string, [number, number]>;
   file: FCSFile;
   gates: {
     displayOnlyPointsInGate: boolean;
@@ -51,8 +49,7 @@ export interface PlotDataState {
 
 export default class PlotData extends ObserversFunctionality {
   readonly id: string;
-  xRange: [number, number] = [0, 0];
-  yRange: [number, number] = [0, 0];
+  ranges: Map<string, [number, number]> = new Map();
   file: FCSFile;
   gates: {
     displayOnlyPointsInGate: boolean;
@@ -81,6 +78,8 @@ export default class PlotData extends ObserversFunctionality {
   setupPlot() {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
+    this.findAllRanges();
+    this.updateGateObservers();
   }
 
   export(): string {
@@ -109,8 +108,7 @@ export default class PlotData extends ObserversFunctionality {
   getState(): PlotDataState {
     return {
       id: this.id,
-      xRange: this.xRange,
-      yRange: this.xRange,
+      ranges: this.ranges,
       file: this.file,
       gates: this.gates,
       xAxis: this.xAxis,
@@ -125,8 +123,7 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   setState(state: PlotDataState) {
-    if (state.xRange !== undefined) this.xRange = state.xRange;
-    if (state.yRange !== undefined) this.yRange = state.xRange;
+    if (state.ranges !== undefined) this.ranges = state.ranges;
     if (state.file !== undefined) this.file = state.file;
     if (state.gates !== undefined) this.gates = state.gates;
     if (state.xAxis !== undefined) this.xAxis = state.xAxis;
@@ -172,6 +169,8 @@ export default class PlotData extends ObserversFunctionality {
       displayOnlyPointsInGate: forceGatedPoints,
       inverseGating: false,
     });
+
+    this.updateGateObservers();
     this.plotUpdated();
   }
 
@@ -186,6 +185,8 @@ export default class PlotData extends ObserversFunctionality {
       }
     }
     this.gates = this.gates.filter((g) => g.gate.id !== gate.id);
+
+    this.updateGateObservers();
     this.plotUpdated();
   }
 
@@ -260,6 +261,13 @@ export default class PlotData extends ObserversFunctionality {
     return { xAxis, yAxis };
   }
 
+  getXandYRanges(): { x: [number, number]; y: [number, number] } {
+    if (!this.ranges.has(this.xAxis) || !this.ranges.has(this.yAxis)) {
+      this.findAllRanges();
+    }
+    return { x: this.ranges.get(this.xAxis), y: this.ranges.get(this.yAxis) };
+  }
+
   getAxesData(filterGating: boolean = true): any[] {
     let dataAxes: any = {};
     let size;
@@ -292,7 +300,54 @@ export default class PlotData extends ObserversFunctionality {
     }
     return data;
   }
+
+  private gateObservers: { observerID: string; targetGateID: string }[] = [];
+  private updateGateObservers() {
+    const gateIds = this.gates.map((obj) => obj.gate.id);
+    const obsIds = this.gateObservers.map((obj) => obj.targetGateID);
+    const toAdd = gateIds.filter((g) => !obsIds.includes(g));
+    const toRemove = obsIds.filter((g) => !gateIds.includes(g));
+    toAdd.forEach((e) => {
+      const obsID = dataManager.getGate(e).addObserver("update", () => {
+        this.plotUpdated();
+      });
+      this.gateObservers.push({ observerID: obsID, targetGateID: e });
+    });
+    toRemove.forEach((e) => {
+      dataManager
+        .getGate(e)
+        .removeObserver(
+          "update",
+          this.gateObservers.filter((g) => g.targetGateID === e)[0].observerID
+        );
+      this.gateObservers = this.gateObservers.filter(
+        (g) => g.targetGateID === e
+      );
+    });
+  }
+
   private getAxisData(axis: string): number[] {
     return this.file.getAxisPoints(axis);
+  }
+
+  private findAllRanges() {
+    const axesData = this.getAxesData();
+    for (const axis of this.file.axes) {
+      if (this.ranges.has(axis)) continue;
+      const data = axesData.map((e) => e[axis]);
+      this.ranges.set(axis, this.findRangeBoundries(data));
+    }
+  }
+
+  private rangeSpacer = 0.1;
+  private findRangeBoundries(axisData: number[]): [number, number] {
+    let min = axisData[0],
+      max = axisData[0];
+    for (const p of axisData) {
+      min = Math.min(p, min);
+      max = Math.max(p, max);
+    }
+    const d = Math.max(max - min, 1e-10);
+    return [min - d * this.rangeSpacer, max + d * this.rangeSpacer];
   }
 }

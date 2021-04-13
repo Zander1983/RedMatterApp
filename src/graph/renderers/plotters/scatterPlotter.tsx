@@ -5,8 +5,6 @@ import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
 import OvalGate from "graph/dataManagement/gate/ovalGate";
 import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
-import ScatterHeatmapper from "graph/renderers/plotters/instancePlugins/scatterHeatmapper";
-import Plotter from "./plotter";
 import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 
@@ -248,12 +246,8 @@ export default class ScatterPlotter extends GraphPlotter {
   }
 
   private isOutOfRange(p: { x: number; y: number }) {
-    return (
-      p.x < this.xRange[0] ||
-      p.x > this.xRange[1] ||
-      p.y < this.yRange[0] ||
-      p.y > this.yRange[1]
-    );
+    const { x, y } = this.plotData.getXandYRanges();
+    return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 
   @applyPlugin()
