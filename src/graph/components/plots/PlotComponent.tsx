@@ -35,7 +35,7 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-const minDrawInterval = 200;
+const minDrawInterval = 30;
 
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const [resizeObserver, setResizeObserver] = React.useState(null);
@@ -71,10 +71,11 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       setResizeObserver(
         setInterval(() => {
           plotUpdater();
-        }, 500)
+        }, 10)
       );
     }
     if (!plotSetup) {
+      console.log("setting up the plots");
       plot.plotData.addObserver("plotUpdated", () => rerender());
       plot.setup();
       setPlotSetup(true);

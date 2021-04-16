@@ -3,6 +3,7 @@ import dataManager from "./dataManager";
 
 export interface FCSFileInput {
   name: string;
+  src: string;
   axes: string[];
   data: Array<Array<number>>;
   gates?: Gate[];
@@ -14,6 +15,7 @@ export interface FCSFileInput {
 export default class FCSFile {
   readonly id: string;
   name: string = "";
+  src: string = "";
   axes: string[] = [];
   data: Array<Array<number>> = [];
   gates?: Gate[] = [];
@@ -23,6 +25,8 @@ export default class FCSFile {
 
   constructor(file: FCSFileInput) {
     this.id = dataManager.createID();
+
+    this.src = file.src;
 
     this.name = file.name;
     this.axes = file.axes;
@@ -117,6 +121,7 @@ export default class FCSFile {
     );
     return new FCSFile({
       name: `${this.name}'s ${gates.map((e) => e.name).join(" ")} subpop`,
+      src: this.src,
       axes: this.axes,
       data: pop,
       gates: gates,

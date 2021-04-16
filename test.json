@@ -1,0 +1,83 @@
+{
+  "name": "",
+  "files": ["local://transduction_1"],
+  "gates": [
+    {
+      "observers": [],
+      "id": "9769481f-4204-4431-be79-eb84d5d38214",
+      "name": "PolygonGate1",
+      "color": "#f00",
+      "xAxis": "FSC-A",
+      "yAxis": "SSC",
+      "parent": null,
+      "points": [
+        { "x": 50484.36987785141, "y": 81383.06454820061 },
+        { "x": 101971.05637332541, "y": 24012.88913924269 },
+        { "x": 211380.2651762077, "y": 76813.7595156827 }
+      ],
+      "gateType": "PolygonGate"
+    }
+  ],
+  "plots": [
+    {
+      "observers": [],
+      "id": "04f0fd94-019e-45fd-9fbd-69266d4f33f5",
+      "ranges": {},
+      "file": "local://transduction_1",
+      "gates": [
+        {
+          "displayOnlyPointsInGate": false,
+          "inverseGating": false,
+          "gate": "9769481f-4204-4431-be79-eb84d5d38214"
+        }
+      ],
+      "xAxis": "FSC-A",
+      "yAxis": "SSC",
+      "plotWidth": 723,
+      "plotHeight": 390.28125,
+      "plotScale": 2,
+      "xPlotType": "lin",
+      "yPlotType": "lin",
+      "histogramAxis": "vertical",
+      "changed": false,
+      "gateObservers": [
+        {
+          "observerID": "b9980c73-87f6-48b8-aea2-b1307b02cf26",
+          "targetGateID": "9769481f-4204-4431-be79-eb84d5d38214"
+        }
+      ],
+      "rangeSpacer": 0.1,
+      "pointColors": []
+    },
+    {
+      "observers": [],
+      "id": "e2f1aa1d-454b-415f-95b2-0f7b1b303fa6",
+      "ranges": {},
+      "file": "local://transduction_1",
+      "gates": [
+        {
+          "displayOnlyPointsInGate": true,
+          "inverseGating": false,
+          "gate": "9769481f-4204-4431-be79-eb84d5d38214"
+        }
+      ],
+      "xAxis": "FSC-A",
+      "yAxis": "SSC",
+      "plotWidth": 723,
+      "plotHeight": 723,
+      "plotScale": 2,
+      "xPlotType": "lin",
+      "yPlotType": "lin",
+      "histogramAxis": "vertical",
+      "changed": false,
+      "gateObservers": [
+        {
+          "observerID": "2b4c76ec-634d-45f3-bc2d-f083bf35e3d8",
+          "targetGateID": "9769481f-4204-4431-be79-eb84d5d38214"
+        }
+      ],
+      "rangeSpacer": 0.1,
+      "pointColors": []
+    }
+  ]
+}

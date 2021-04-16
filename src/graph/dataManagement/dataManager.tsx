@@ -17,6 +17,7 @@ import ObserversFunctionality, {
 } from "./observersFunctionality";
 import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
+import LinkReconstructor from "./reconstructors/linkReconstructor";
 
 const uuid = require("uuid");
 
@@ -38,6 +39,13 @@ class DataManager extends ObserversFunctionality {
   
   
     */
+
+  // ======== General
+
+  createID(): string {
+    const newObjectInstaceID = uuid.v4();
+    return newObjectInstaceID;
+  }
 
   // ======== Creators
   @publishDecorator()
@@ -129,9 +137,23 @@ class DataManager extends ObserversFunctionality {
 
   // ======== Getters
   @publishDecorator()
+  updateWorkspace() {
+    console.log("update workspace");
+  }
+
+  @publishDecorator()
   getWorkspace(): { workspace: WorkspaceData; workspaceID: WorkspaceID } {
     if (this.currentWorkspace === null) {
       this.createWorkspace();
+      const linkReconstructor = new LinkReconstructor();
+      linkReconstructor.retrieve((workspaceJSON) => {
+        this.loadWorkspace(workspaceJSON);
+        this.currentWorkspace.plots.forEach((v) => {
+          const newPlot = new Plot(this.currentWorkspace.plots.get(v.id));
+          this.plotRenderers.set(v.id, newPlot);
+        });
+        this.updateWorkspace();
+      });
     }
     const id = this.currentWorkspace.id;
     return { workspace: this.currentWorkspace, workspaceID: id };
@@ -240,13 +262,6 @@ class DataManager extends ObserversFunctionality {
 
   plotRenderers: Map<string, Plot> = new Map();
   currentWorkspace: WorkspaceData | null = null;
-
-  /* === GENERAL === */
-
-  createID(): string {
-    const newObjectInstaceID = uuid.v4();
-    return newObjectInstaceID;
-  }
 }
 
 export default DataManager.getInstance();

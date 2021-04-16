@@ -11,6 +11,9 @@ import MessageModal from "./modals/MessageModal";
 import Workspace from "./workspaces/Workspace";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
+import ShareIcon from "@material-ui/icons/Share";
+import LinkShareModal from "./modals/linkShareModal";
+
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -69,6 +72,7 @@ function Plots() {
   };
 
   // == Add file modal logic ==
+  const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
     false
@@ -97,6 +101,11 @@ function Plots() {
       <GenerateReportModal
         open={generateReportModalOpen}
         closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+      />
+
+      <LinkShareModal
+        open={linkShareModalOpen}
+        closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
       />
 
       <MessageModal
@@ -190,28 +199,55 @@ function Plots() {
             }}
             container
           >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => handleOpen(setAddFileModalOpen)}
-              className={classes.topButton}
+            <Grid container xs={9}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => handleOpen(setAddFileModalOpen)}
+                className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                + Add new file
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => handleOpen(setGenerateReportModalOpen)}
+                className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                Generate report
+              </Button>
+            </Grid>
+            <Grid
+              xs={3}
               style={{
-                backgroundColor: "#fafafa",
+                textAlign: "right",
+                paddingRight: 30,
               }}
             >
-              + Add new file
-            </Button>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => handleOpen(setGenerateReportModalOpen)}
-              className={classes.topButton}
-              style={{
-                backgroundColor: "#fafafa",
-              }}
-            >
-              Generate report
-            </Button>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => handleOpen(setLinkShareModalOpen)}
+                className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <ShareIcon
+                  fontSize="small"
+                  style={{
+                    marginRight: 10,
+                  }}
+                ></ShareIcon>
+                Share
+              </Button>
+            </Grid>
           </Grid>
 
           <Grid>

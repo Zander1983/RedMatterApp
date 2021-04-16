@@ -7,6 +7,7 @@ import PlotComponent from "../plots/PlotComponent";
 import dataManager from "../../dataManagement/dataManager";
 import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
+import Plot from "graph/renderers/plotRender";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -41,6 +42,7 @@ const standardGridPlotItem = (x: number, y: number) => {
 class Workspace extends React.Component {
   private static renderCalls = 0;
   workspace: WorkspaceData;
+  plots: Plot[];
 
   constructor(props: any) {
     super(props);
@@ -51,6 +53,7 @@ class Workspace extends React.Component {
 
     dataManager.addObserver("addNewPlotToWorkspace", () => this.update());
     dataManager.addObserver("removePlotFromWorkspace", () => this.update());
+    dataManager.addObserver("updateWorkspace", () => this.update());
 
     this.state = {
       plots: [],
@@ -59,17 +62,13 @@ class Workspace extends React.Component {
 
   update() {
     const plotMap = dataManager.getAllPlots();
-    const plotList: object[] = [];
+    const plotList: Plot[] = [];
     plotMap.forEach((v) =>
-      plotList.push({
-        plot: dataManager.getPlotRendererForPlot(v.plotID),
-        key: v.plotID,
-      })
+      plotList.push(dataManager.getPlotRendererForPlot(v.plotID))
     );
-
-    this.setState({
-      plots: plotList,
-    });
+    console.log("plotlist = ", plotList);
+    this.plots = plotList;
+    this.forceUpdate();
   }
 
   /* This function has to be carefully controlled ensure that the plots will
@@ -78,7 +77,7 @@ class Workspace extends React.Component {
   render() {
     console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
     //@ts-ignore
-    if (this.state.plots.length > 0) {
+    if (this.plots.length > 0) {
       return (
         <ResponsiveGridLayout
           className="layout"
@@ -89,16 +88,16 @@ class Workspace extends React.Component {
         >
           {
             //@ts-ignore
-            this.state.plots.map((e) => {
+            this.plots.map((e) => {
               return (
                 <div
-                  key={e.key}
+                  key={e.plotData.id}
                   style={classes.itemOuterDiv}
                   data-grid={standardGridPlotItem(0, 0)}
-                  id={`workspace-outter-${e.id}`}
+                  id={`workspace-outter-${e.plotData.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent plot={e.plot} plotIndex={e.key} />
+                    <PlotComponent plot={e} plotIndex={e.plotData.id} />
                   </div>
                 </div>
               );

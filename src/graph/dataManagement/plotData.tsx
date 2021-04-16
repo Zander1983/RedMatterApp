@@ -4,6 +4,7 @@
   easily.
 */
 
+import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
@@ -42,6 +43,7 @@ export interface PlotDataState {
   positionInWorkspace: [number, number];
   plotWidth: number;
   plotHeight: number;
+  plotScale: number;
   xPlotType: string;
   yPlotType: string;
   histogramAxis: "horizontal" | "vertical";
@@ -78,16 +80,24 @@ export default class PlotData extends ObserversFunctionality {
   setupPlot() {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
-    this.findAllRanges();
+    // this.findAllRanges();
     this.updateGateObservers();
   }
 
   export(): string {
-    return JSON.stringify(this.getState());
+    const state: any = this.getState();
+    state.file = "local://" + state.file.name;
+    state.pointColors = [];
+    return JSON.stringify(state);
   }
 
   import(plotJSON: string) {
     const plot = JSON.parse(plotJSON);
+    if (plot.file.split("://")[0] === "local") {
+      const file = staticFileReader(plot.file.split("://")[1]);
+      const id = dataManager.addNewFileToWorkspace(file);
+      plot.file = dataManager.getFile(id);
+    }
     this.setState(plot);
   }
 
@@ -116,6 +126,7 @@ export default class PlotData extends ObserversFunctionality {
       positionInWorkspace: this.positionInWorkspace,
       plotWidth: this.plotHeight,
       plotHeight: this.plotWidth,
+      plotScale: this.plotScale,
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
@@ -131,7 +142,8 @@ export default class PlotData extends ObserversFunctionality {
     if (state.positionInWorkspace !== undefined)
       this.positionInWorkspace = state.positionInWorkspace;
     if (state.plotWidth !== undefined) this.plotWidth = state.plotHeight;
-    if (state.plotHeight !== undefined) this.plotHeight = state.plotWidth;
+    if (state.plotHeight !== undefined) this.plotHeight = state.plotHeight;
+    if (state.plotScale !== undefined) this.plotScale = state.plotScale;
     if (state.xPlotType !== undefined) this.xPlotType = state.xPlotType;
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
@@ -149,7 +161,9 @@ export default class PlotData extends ObserversFunctionality {
       };
     });
     const newPlotData = new PlotData();
+    console.log("setting state ranges for child as:", this.ranges);
     newPlotData.setState(this.getState());
+    console.log("not child is: ", newPlotData.ranges);
     newPlotData.gates = newGates;
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
@@ -262,7 +276,11 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   getXandYRanges(): { x: [number, number]; y: [number, number] } {
-    if (!this.ranges.has(this.xAxis) || !this.ranges.has(this.yAxis)) {
+    if (
+      this.ranges.constructor.name !== "Map" ||
+      !this.ranges.has(this.xAxis) ||
+      !this.ranges.has(this.yAxis)
+    ) {
       this.findAllRanges();
     }
     return { x: this.ranges.get(this.xAxis), y: this.ranges.get(this.yAxis) };
@@ -308,6 +326,7 @@ export default class PlotData extends ObserversFunctionality {
     const toAdd = gateIds.filter((g) => !obsIds.includes(g));
     const toRemove = obsIds.filter((g) => !gateIds.includes(g));
     toAdd.forEach((e) => {
+      console.log(dataManager.getAllGates(), e);
       const obsID = dataManager.getGate(e).addObserver("update", () => {
         this.plotUpdated();
       });
@@ -331,6 +350,9 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private findAllRanges() {
+    if (typeof this.ranges === "object") {
+      this.ranges = new Map();
+    }
     const axesData = this.getAxesData();
     for (const axis of this.file.axes) {
       if (this.ranges.has(axis)) continue;

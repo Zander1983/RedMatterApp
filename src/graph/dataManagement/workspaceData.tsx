@@ -8,6 +8,7 @@ import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
 import ObserversFunctionality from "./observersFunctionality";
 import PlotData from "./plotData";
+import WorkspaceAssembler from "./workspaceAssembler";
 
 export interface WorkspaceState {
   plots: PlotData[];
@@ -33,23 +34,29 @@ export default class WorkspaceData extends ObserversFunctionality {
   }
 
   export(): string {
-    const currentState: any = this.getState();
-    currentState.plots = currentState.plots.map((e: PlotData) => e.export());
-    return JSON.stringify(currentState);
+    const workspaceAssembler = new WorkspaceAssembler();
+    return workspaceAssembler.exportWorkspace(this);
   }
 
   import(workspaceJSON: string) {
-    const workspace = JSON.parse(workspaceJSON);
-    workspace.plots = workspace.plots.map((e: string) => {
-      const newPlot = new PlotData();
-      newPlot.import(e);
-      return newPlot;
-    });
-    const currentStateAdaptedToInterface: WorkspaceState = workspace;
-    this.setState(currentStateAdaptedToInterface);
+    const workspaceAssembler = new WorkspaceAssembler();
+    workspaceAssembler.importWorkspace(workspaceJSON, this);
   }
 
-  setState(state: WorkspaceState) {}
+  setState(state: any) {
+    this.files = new Map();
+    state.files.forEach((e: FCSFile) => {
+      this.files.set(e.id, e);
+    });
+    this.gates = new Map();
+    state.gates.forEach((e: Gate) => {
+      this.gates.set(e.id, e);
+    });
+    this.plots = new Map();
+    state.plots.forEach((e: PlotData) => {
+      this.plots.set(e.id, e);
+    });
+  }
 
   getPlotList(): PlotData[] {
     const list: PlotData[] = [];

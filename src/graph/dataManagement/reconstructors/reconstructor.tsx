@@ -1,13 +1,6 @@
-import FCSFile from "graph/dataManagement/fcsFile";
+import WorkspaceData from "../workspaceData";
 
 export default abstract class Reconstructor {
-  metadata: any;
-
-  abstract setMetadata(): void;
-
-  // getFile(): FCSFile {}
-
-  private checkValidity(file: FCSFile): boolean {
-    return true;
-  }
+  abstract store(metadata: any): any;
+  abstract retrieve(metadata: any): WorkspaceData;
 }

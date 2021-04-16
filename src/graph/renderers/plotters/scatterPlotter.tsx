@@ -241,7 +241,7 @@ export default class ScatterPlotter extends GraphPlotter {
         x: this.xAxis[i],
         y: this.yAxis[i],
       });
-      this.drawer.addPoint(x, y, 1.4, colors[i]);
+      this.drawer.addPoint(x, y, 1.1, colors[i]);
     }
   }
 

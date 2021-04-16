@@ -92,15 +92,15 @@ export default class Plot {
 
     this.contructMouseInteractors();
 
-    setTimeout(() => this.draw(), 100);
+    setTimeout(() => this.draw(), 20);
   }
 
   private timestampSinceLastDraw: number = 0;
   draw() {
-    if (this.timestampSinceLastDraw + 10 < new Date().getTime()) {
-      this.timestampSinceLastDraw = new Date().getTime();
+    if (this.timestampSinceLastDraw + 10 > new Date().getTime()) {
+      return;
     }
-    console.log("drawn");
+    this.timestampSinceLastDraw = new Date().getTime();
     if (!this.validateReady()) return;
 
     this.setCanvasState();

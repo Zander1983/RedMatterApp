@@ -8,15 +8,8 @@ import FCSFile from "graph/dataManagement/fcsFile";
 
 import axios from "axios";
 
-import erica1 from "./staticFCSFiles/ericaFile1";
-import erica2 from "./staticFCSFiles/ericaFile2";
-import erica3 from "./staticFCSFiles/ericaFile3";
-
-import transduction_1 from "./staticFCSFiles/transduction_1";
-import transduction_2 from "./staticFCSFiles/transduction_2";
-import transduction_3 from "./staticFCSFiles/transduction_3";
 import PlotData from "graph/dataManagement/plotData";
-const kmeans = require("node-kmeans");
+import staticFileReader from "./staticFCSFiles/staticFileReader";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -56,16 +49,6 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
   },
 }));
-
-/* Frontend kmeans is very expensive, don't use */
-const kmeansify = (list: Array<Array<number>>, callback: Function): void => {
-  kmeans.clusterize(list, { k: 1200 }, (err: any, res: any) => {
-    if (err) throw Error("Clusterization failed!");
-    else {
-      callback(res.map((e: any) => e.centroid));
-    }
-  });
-};
 
 const generateRandomData = (
   dimesionCount: number,
@@ -107,43 +90,37 @@ const files = [
   {
     title: "transduction_1",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: transduction_1.data,
-    axes: transduction_1.axes,
+    fromStatic: "transduction_1",
     lastModified: "01/03/2021",
   },
   {
     title: "transduction_2",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: transduction_2.data,
-    axes: transduction_2.axes,
+    fromStatic: "transduction_2",
     lastModified: "01/03/2021",
   },
   {
     title: "transduction_3",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: transduction_3.data,
-    axes: transduction_3.axes,
+    fromStatic: "transduction_3",
     lastModified: "01/03/2021",
   },
   {
     title: "erica1",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: erica1.data,
-    axes: erica1.axes,
+    fromStatic: "erica1",
     lastModified: "23/05/2020",
   },
   {
     title: "erica2",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: erica2.data,
-    axes: erica2.axes,
+    fromStatic: "erica2",
     lastModified: "25/05/2020",
   },
   {
     title: "erica3",
     information: "No sources where given to anonymize data. Ficticious name.",
-    data: erica3.data,
-    axes: erica3.axes,
+    fromStatic: "erica3",
     lastModified: "26/05/2020",
   },
   {
@@ -191,13 +168,8 @@ const addToFiles = (data: Array<any>, axes: object[], title: string) => {
       lastModified: "??",
     });
   };
-  if (data.length > 1000) {
-    kmeansify(data, (data: any) => {
-      add(data);
-    });
-  } else {
-    add(data);
-  }
+
+  add(data);
 };
 
 const getLocal = (filename: any, title: string) => {
@@ -256,12 +228,18 @@ function AddFileModal(props: {
 
   const addFile = (index: number) => {
     const file = files[index];
-    const newFile = new FCSFile({
-      name: file.title,
-      axes: file.axes.map((e) => e.value),
-      data: file.data,
-      plotTypes: file.axes.map((e) => e.display),
-    });
+    let newFile: FCSFile;
+    if (file.fromStatic !== undefined) {
+      newFile = staticFileReader(file.fromStatic);
+    } else {
+      newFile = new FCSFile({
+        name: file.title,
+        src: "generated",
+        axes: file.axes.map((e) => e.value),
+        data: file.data,
+        plotTypes: file.axes.map((e) => e.display),
+      });
+    }
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);
