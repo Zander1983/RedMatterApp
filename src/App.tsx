@@ -13,7 +13,7 @@ import AppLandingPage from "./Components/home/LandingPage";
 import WorkspaceAppFiles from "./Components/workspaces/workspaceFiles";
 import PrototypeForm from "./Components/home/PrototypeForm";
 
-import Plots from "./Components/graph/components/Plots";
+import Plots from "./graph/components/Plots";
 import Login from "./Components/users/login";
 import Register from "./Components/users/register";
 import VerifyEmail from "./Components/users/verifyEmail";

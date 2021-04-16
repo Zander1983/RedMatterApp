@@ -1,0 +1,78 @@
+import dataManager from "../dataManager";
+import ObserversFunctionality, {
+  publishDecorator,
+} from "../observersFunctionality";
+
+export interface GateState {
+  name?: string;
+  color?: string;
+  xAxis: string;
+  yAxis: string;
+  parent: Gate | null;
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+const randomListOfColors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
+
+export default abstract class Gate extends ObserversFunctionality {
+  readonly id: string;
+  name?: string;
+  color?: string;
+  xAxis: string;
+  yAxis: string;
+  parent: Gate | null = null;
+
+  static instanceCount: number = 1;
+
+  protected getGateType(): string {
+    return "Abstract Gate";
+  }
+
+  constructor(gate: GateState) {
+    super();
+    this.id = dataManager.createID();
+
+    this.setState(gate);
+  }
+
+  setState(gate: GateState) {
+    this.xAxis = gate.xAxis;
+    this.yAxis = gate.yAxis;
+    if (gate.name !== undefined) this.name = gate.name;
+    else
+      this.name = this.getGateType() + " " + (Gate.instanceCount++).toString();
+    if (gate.color !== undefined) this.color = gate.color;
+    else {
+      this.color =
+        randomListOfColors[
+          (Gate.instanceCount - 2) % randomListOfColors.length
+        ];
+    }
+  }
+
+  getState(): GateState {
+    return {
+      xAxis: this.xAxis,
+      yAxis: this.yAxis,
+      name: this.name,
+      color: this.color,
+      parent: this.parent,
+    };
+  }
+
+  @publishDecorator()
+  update(update: GateState) {
+    this.setState(update);
+  }
+
+  isPointInside(point: { x: number; y: number }): boolean {
+    if (this.parent !== null) {
+      return this.parent.isPointInside(point);
+    }
+    return true;
+  }
+}
