@@ -1,4 +1,4 @@
-.workspace-name {
+/* .workspace-name {
   padding: 13px;
 }
 .editable {
@@ -21,7 +21,7 @@
   color: #52c41a;
 }
 .action .saveBtn:hover {
-  /* font-size: 18px; */
+  /* font-size: 18px; *
   color: #389e0d;
 }
 .action .cancelBtn {
@@ -29,7 +29,7 @@
   color: #ff4d4f;
 }
 .action .cancelBtn:hover {
-  /* font-size: 18px; */
+  /* font-size: 18px; *
   color: #f5222d;
 }
 
@@ -51,7 +51,7 @@
   color: #40a9ff;
 }
 .main-action .editBtn:hover {
-  /* font-size: 18px; */
+  /* font-size: 18px; *
   color: #096dd9;
 }
 
@@ -61,11 +61,11 @@
   color: #fa8c16;
 }
 .main-action .deleteBtn:hover {
-  /* font-size: 18px; */
+  /* font-size: 18px; *
   color: #fa541c;
 }
 
-/* Workspace File Component */
+/* Workspace File Component *
 .uploadFileModal p {
   text-align: justify;
   font-size: 12px;
@@ -100,3 +100,5 @@
     text-align: center;
   }
 }
+
+ */
