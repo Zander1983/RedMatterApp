@@ -83,8 +83,6 @@ export default class WorkspaceAssembler {
       if (gate === null) {
         throw Error('Could not recover gate "' + JSON.stringify(gateObj) + '"');
       }
-      console.log("adding to map:", gate.id);
-      console.log("adding to mapping:", gateObj.id, "=>", gate.id);
       gates.set(gate.id, gate);
       gateMappings[gateObj.id] = gate.id;
     }
@@ -92,7 +90,6 @@ export default class WorkspaceAssembler {
     for (const plotObj of inp.plots) {
       plotObj.file = files.get(fileMappings[plotObj.file]);
       plotObj.gates = plotObj.gates.map((e: any) => {
-        console.log("ok now got e = ", e);
         e.gate = gates.get(gateMappings[e.gate]);
         return e;
       });
@@ -107,7 +104,5 @@ export default class WorkspaceAssembler {
     targetWorkspace.plots = plots;
 
     targetWorkspace.setupWorkspace();
-
-    console.log(targetWorkspace);
   }
 }

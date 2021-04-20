@@ -161,9 +161,7 @@ export default class PlotData extends ObserversFunctionality {
       };
     });
     const newPlotData = new PlotData();
-    console.log("setting state ranges for child as:", this.ranges);
     newPlotData.setState(this.getState());
-    console.log("not child is: ", newPlotData.ranges);
     newPlotData.gates = newGates;
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
@@ -326,7 +324,6 @@ export default class PlotData extends ObserversFunctionality {
     const toAdd = gateIds.filter((g) => !obsIds.includes(g));
     const toRemove = obsIds.filter((g) => !gateIds.includes(g));
     toAdd.forEach((e) => {
-      console.log(dataManager.getAllGates(), e);
       const obsID = dataManager.getGate(e).addObserver("update", () => {
         this.plotUpdated();
       });
