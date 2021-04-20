@@ -2,7 +2,7 @@ import GraphDrawer, {
   GraphDrawerState,
 } from "graph/renderers/drawers/graphDrawer";
 
-const binPadding = 5;
+const binPadding = 0;
 
 interface HistogramDrawerState extends GraphDrawerState {
   axis: "vertical" | "horizontal";

@@ -66,7 +66,6 @@ class Workspace extends React.Component {
     plotMap.forEach((v) =>
       plotList.push(dataManager.getPlotRendererForPlot(v.plotID))
     );
-    console.log("plotlist = ", plotList);
     this.plots = plotList;
     this.forceUpdate();
   }
@@ -82,7 +81,7 @@ class Workspace extends React.Component {
         <ResponsiveGridLayout
           className="layout"
           breakpoints={{ lg: 1200 }}
-          cols={{ lg: 20 }}
+          cols={{ lg: 30 }}
           rows={{ lg: 30 }}
           rowHeight={30}
         >

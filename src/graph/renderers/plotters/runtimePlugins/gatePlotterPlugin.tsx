@@ -40,12 +40,14 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
      determine which points are present or not */
   protected getPointColors_AFTER(index: number, ret: string[]): string[] {
     this.gates.forEach((gate) => {
-      this.plotter.xAxis.forEach((e, i) => {
-        const p = { x: e, y: this.plotter.yAxis[i] };
-        if (gate.isPointInside(p)) {
-          ret[i] = gate.color;
-        }
-      });
+      if (gate.color !== null) {
+        this.plotter.xAxis.forEach((e, i) => {
+          const p = { x: e, y: this.plotter.yAxis[i] };
+          if (gate.isPointInside(p)) {
+            ret[i] = gate.color;
+          }
+        });
+      }
     });
     return ret;
   }

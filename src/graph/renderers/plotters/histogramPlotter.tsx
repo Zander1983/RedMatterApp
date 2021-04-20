@@ -53,6 +53,7 @@ export default class HistogramPlotter extends GraphPlotter {
   }
 
   protected getBins() {
+    this.binSize = 1;
     this.horizontalBinCount =
       this.width === undefined
         ? 2

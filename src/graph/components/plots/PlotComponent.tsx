@@ -75,7 +75,6 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       );
     }
     if (!plotSetup) {
-      console.log("setting up the plots");
       plot.plotData.addObserver("plotUpdated", () => rerender());
       plot.setup();
       setPlotSetup(true);

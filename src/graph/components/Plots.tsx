@@ -13,6 +13,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 
 import ShareIcon from "@material-ui/icons/Share";
 import LinkShareModal from "./modals/linkShareModal";
+import dataManager from "graph/dataManagement/dataManager";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -221,6 +222,17 @@ function Plots() {
                 }}
               >
                 Generate report
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => console.log(dataManager.getWorkspaceJSON())}
+                className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                Print workspace
               </Button>
             </Grid>
             <Grid

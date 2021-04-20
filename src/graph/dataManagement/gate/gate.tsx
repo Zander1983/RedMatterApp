@@ -21,7 +21,7 @@ const randomListOfColors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
 export default abstract class Gate extends ObserversFunctionality {
   readonly id: string;
   name?: string;
-  color?: string;
+  color?: string | null;
   xAxis: string;
   yAxis: string;
   parent: Gate | null = null;
