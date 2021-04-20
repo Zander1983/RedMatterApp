@@ -98,7 +98,7 @@ export default function GateBar(props: any) {
         )}
         style={{ flex: 1 }}
         renderInput={(params) => (
-          <TextField {...params} variant="outlined" label="Gates" />
+          <TextField {...params} variant="outlined" label="Population" />
         )}
         renderTags={(tagValue, _) => {
           return tagValue.map((option) => (
