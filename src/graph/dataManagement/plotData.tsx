@@ -372,6 +372,15 @@ export default class PlotData extends ObserversFunctionality {
     if (typeof this.ranges === "object") {
       this.ranges = new Map();
     }
+    if (this.file.name == "erica1") {
+      this.ranges.set("FSC-A", [0, 262144]);
+      this.ranges.set("SSC", [0, 262144]);
+      this.ranges.set("Comp-FITC-A - CD7", [0, 1]);
+      this.ranges.set("Comp-PE-A - CD3", [0, 1]);
+      this.ranges.set("Comp-APC-A - CD45", [0, 1]);
+      this.ranges.set("Time", [0, 1]);
+      return;
+    }
     const axesData = this.getAxesData();
     for (const axis of this.file.axes) {
       if (this.ranges.has(axis)) continue;
