@@ -32,36 +32,45 @@ const classes = {
 export default function GateBar(props: any) {
   const [gates, setGates] = React.useState([]);
   const [selected, setSelected] = React.useState([]);
+  const [population, setPopulation] = React.useState([]);
   const plot: Plot = props.plot;
   let idPlotGateUpdate: any = null;
   let idGateUpdate: any = null;
   let idLinkNewPlot: any = null;
-
-  const getPlotGates = () => {
-    setSelected(plot.plotData.gates.map((e) => e.gate));
-  };
-
-  const getAllGates = () => {
-    const cgates: Gate[] = [];
-    dataManager.getAllGates().forEach((v) => {
-      cgates.push(v.gate);
-    });
-    setGates(cgates);
-  };
 
   const changeGatePlotState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
     if (selected) {
       dataManager.unlinkGateFromPlot(plot.plotData.id, gateID);
     } else {
-      dataManager.linkGateToPlot(plot.plotData.id, gateID, true);
+      dataManager.linkGateToPlot(plot.plotData.id, gateID);
     }
     update();
   };
 
   const update = () => {
-    getAllGates();
-    getPlotGates();
+    let gates = plot.plotData.gates.map((e) => e.gate);
+    const pop = plot.plotData.population.map((e) => e.gate);
+    setPopulation(pop);
+    console.log(gates, pop);
+    gates = gates.filter((e: any) => {
+      for (const gate of pop) {
+        if (gate.id === e.id) return false;
+      }
+      return true;
+    });
+    setSelected(gates);
+    let cgates: Gate[] = [];
+    dataManager.getAllGates().forEach((v) => {
+      cgates.push(v.gate);
+    });
+    // cgates = cgates.filter((e: any) => {
+    //   for (const gate of pop) {
+    //     if (gate.id === e.id) return false;
+    //   }
+    //   return true;
+    // });
+    setGates(cgates);
   };
 
   useEffect(() => {
@@ -70,17 +79,34 @@ export default function GateBar(props: any) {
     update();
   }, []);
 
+  const gateInPopulation = (id: string) => {
+    for (const gate of population) if (gate.id === id) return true;
+    return false;
+  };
+
   return (
     <Grid xs={12} container direction="column" style={classes.bar}>
       <Autocomplete
         multiple
-        options={gates.map((e) => e)}
-        value={selected.map((e) => e)}
+        options={gates}
+        value={gates.filter((e: any) => {
+          for (const gate of population) {
+            if (gate.id === e.id) return true;
+          }
+          for (const gate of selected) {
+            if (gate.id === e.id) return true;
+          }
+          return false;
+        })}
         disableCloseOnSelect
         getOptionLabel={(option) => option.name}
         renderOption={(option, { selected }) => (
           <Button
-            onClick={() => changeGatePlotState(option.name, selected)}
+            onClick={() => {
+              if (!gateInPopulation(option.id)) {
+                changeGatePlotState(option.name, selected);
+              }
+            }}
             style={{
               flex: 1,
               justifyContent: "left",
@@ -89,9 +115,10 @@ export default function GateBar(props: any) {
           >
             <Checkbox
               icon={icon}
+              disabled={gateInPopulation(option.id)}
               checkedIcon={checkedIcon}
               style={{ marginRight: 8, textAlign: "left", padding: 0 }}
-              checked={selected}
+              checked={selected || gateInPopulation(option.id)}
             />
             {option.name}
           </Button>
@@ -104,6 +131,7 @@ export default function GateBar(props: any) {
           return tagValue.map((option) => (
             <Chip
               label={option.name}
+              disabled={gateInPopulation(option.id)}
               avatar={
                 <div
                   style={{
@@ -116,7 +144,11 @@ export default function GateBar(props: any) {
                   }}
                 ></div>
               }
-              onDelete={() => changeGatePlotState(option.name, true)}
+              onDelete={() => {
+                if (!gateInPopulation(option.id)) {
+                  changeGatePlotState(option.name, true);
+                }
+              }}
               {...props}
               style={{ marginLeft: 5 }}
             />

@@ -34,7 +34,11 @@ export interface PlotDataState {
   ranges: Map<string, [number, number]>;
   file: FCSFile;
   gates: {
+    gate: Gate;
     displayOnlyPointsInGate: boolean;
+    inverseGating: boolean;
+  }[];
+  population: {
     gate: Gate;
     inverseGating: boolean;
   }[];
@@ -57,6 +61,10 @@ export default class PlotData extends ObserversFunctionality {
     displayOnlyPointsInGate: boolean;
     inverseGating: boolean;
     gate: Gate;
+  }[] = [];
+  population: {
+    gate: Gate;
+    inverseGating: boolean;
   }[] = [];
   xAxis: string = "";
   yAxis: string = "";
@@ -121,6 +129,7 @@ export default class PlotData extends ObserversFunctionality {
       ranges: this.ranges,
       file: this.file,
       gates: this.gates,
+      population: this.population,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
       positionInWorkspace: this.positionInWorkspace,
@@ -155,14 +164,14 @@ export default class PlotData extends ObserversFunctionality {
   createSubpop(inverse: boolean = false) {
     const newGates = this.gates.map((e) => {
       return {
-        displayOnlyPointsInGate: true,
         gate: e.gate,
         inverseGating: inverse,
       };
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
-    newPlotData.gates = newGates;
+    newPlotData.population = [...newGates, ...this.population];
+    newPlotData.gates = [];
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
 
@@ -314,12 +323,25 @@ export default class PlotData extends ObserversFunctionality {
         }
       }
     }
+    for (const gate of this.population) {
+      const x = gate.gate.xAxis;
+      const y = gate.gate.yAxis;
+      data = data.filter((e: any) => {
+        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+        return gate.inverseGating ? !inside : inside;
+      });
+    }
     return data;
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
   private updateGateObservers() {
-    const gateIds = this.gates.map((obj) => obj.gate.id);
+    this.updateGateObserversFromList(this.gates);
+    this.updateGateObserversFromList(this.population);
+  }
+
+  private updateGateObserversFromList(targetList: any[]) {
+    const gateIds = targetList.map((obj) => obj.gate.id);
     const obsIds = this.gateObservers.map((obj) => obj.targetGateID);
     const toAdd = gateIds.filter((g) => !obsIds.includes(g));
     const toRemove = obsIds.filter((g) => !gateIds.includes(g));

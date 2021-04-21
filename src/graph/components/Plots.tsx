@@ -91,6 +91,7 @@ function Plots() {
     <div
       style={{
         height: "100%",
+        padding: 0,
       }}
     >
       {/* == MODALS == */}
@@ -170,14 +171,12 @@ function Plots() {
       {/* == MAIN PANEL == */}
       <Grid
         style={{
-          marginLeft: "auto",
-          marginRight: "auto",
+          marginLeft: 0,
+          marginRight: 0,
           justifyContent: "center",
           display: "flex",
           marginBottom: 50,
         }}
-        lg={12}
-        xl={10}
       >
         <Grid
           style={{

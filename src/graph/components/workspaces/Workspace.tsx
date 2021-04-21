@@ -87,12 +87,12 @@ class Workspace extends React.Component {
         >
           {
             //@ts-ignore
-            this.plots.map((e) => {
+            this.plots.map((e, i) => {
               return (
                 <div
                   key={e.plotData.id}
                   style={classes.itemOuterDiv}
-                  data-grid={standardGridPlotItem(0, 0)}
+                  data-grid={standardGridPlotItem((i * MINW) % 30, 100000)}
                   id={`workspace-outter-${e.plotData.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
