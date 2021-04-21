@@ -32,10 +32,11 @@ const standardGridPlotItem = (x: number, y: number) => {
   return {
     x: x,
     y: y,
-    w: MINW,
+    w: 30 / 2,
     h: MINH,
     minW: MINW,
     minH: MINH,
+    // static: true,
   };
 };
 
@@ -92,7 +93,7 @@ class Workspace extends React.Component {
                 <div
                   key={e.plotData.id}
                   style={classes.itemOuterDiv}
-                  data-grid={standardGridPlotItem((i * MINW) % 30, 100000)}
+                  data-grid={standardGridPlotItem((i * MINW) % 30, 0)}
                   id={`workspace-outter-${e.plotData.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>

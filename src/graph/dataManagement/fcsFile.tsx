@@ -6,10 +6,8 @@ export interface FCSFileInput {
   src: string;
   axes: string[];
   data: Array<Array<number>>;
-  gates?: Gate[];
   label?: string;
   plotTypes?: string[];
-  pointColors?: string[];
 }
 
 export default class FCSFile {
@@ -18,10 +16,8 @@ export default class FCSFile {
   src: string = "";
   axes: string[] = [];
   data: Array<Array<number>> = [];
-  gates?: Gate[] = [];
   label?: string = "";
   plotTypes?: string[] = [];
-  pointColors?: string[] = [];
 
   constructor(file: FCSFileInput) {
     this.id = dataManager.createID();
@@ -31,9 +27,7 @@ export default class FCSFile {
     this.name = file.name;
     this.axes = file.axes;
     this.data = file.data;
-    if (file.gates !== undefined) {
-      this.gates = file.gates;
-    }
+
     if (file.label !== undefined) {
       this.label = file.label;
     }
@@ -42,20 +36,11 @@ export default class FCSFile {
       file.plotTypes === undefined
         ? Array(this.data.length).fill("lin")
         : file.plotTypes;
-
-    this.pointColors =
-      file.pointColors === undefined
-        ? Array(this.data.length).fill("#000")
-        : file.pointColors;
   }
 
   getAxisPoints(axisName: string): number[] {
     const axisIndex = this.getAxisIndex(axisName);
     return this.data.map((e) => e[axisIndex]);
-  }
-
-  getPointColors() {
-    return this.pointColors;
   }
 
   setAxisPlottingType(axisName: string, type: string) {
@@ -68,25 +53,6 @@ export default class FCSFile {
 
   getAxes() {
     return this.axes;
-  }
-
-  registerGate(gate: Gate) {
-    this.gates.push(gate);
-  }
-
-  getGates(): Gate[] {
-    return this.gates;
-  }
-
-  colorPoints(gate: Gate, color: string) {
-    const xAxis = this.getAxisIndex(gate.xAxis);
-    const yAxis = this.getAxisIndex(gate.yAxis);
-    this.data.map((p, i) => {
-      //@ts-ignore
-      if (gate.isPointInside([p[xAxis], p[yAxis]])) {
-        this.pointColors[i] = color;
-      }
-    });
   }
 
   getPopulationFromGates(gatingParams: { gate: Gate; inverse: boolean }[]) {
@@ -124,7 +90,6 @@ export default class FCSFile {
       src: this.src,
       axes: this.axes,
       data: pop,
-      gates: gates,
       label: this.label,
       plotTypes: this.plotTypes,
     });

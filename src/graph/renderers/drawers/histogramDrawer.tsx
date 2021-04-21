@@ -34,12 +34,13 @@ export default class HistogramDrawer extends GraphDrawer {
   }
 
   drawLines() {
+    const vl = (this.y2 - this.y1) / this.binSize;
+    const hl = (this.x2 - this.x1) / this.binSize;
     if (this.axis == "horizontal") {
       // Horizontal hist lines
-      for (let i = 0; i < this.ypts; i++) {
+      for (let i = 0; i < vl; i++) {
         const height =
-          (Math.abs(this.y1 - this.y2) / this.ypts) * i +
-          Math.min(this.y1, this.y2);
+          (Math.abs(this.y1 - this.y2) / vl) * i + Math.min(this.y1, this.y2);
         this.segment({
           x1: this.x1,
           y1: height,
@@ -58,10 +59,9 @@ export default class HistogramDrawer extends GraphDrawer {
       });
     } else {
       // vertical hist lines
-      for (let i = 0; i <= this.xpts; i++) {
+      for (let i = 0; i <= hl; i++) {
         const width =
-          (Math.abs(this.x1 - this.x2) / this.xpts) * i +
-          Math.min(this.x1, this.x2);
+          (Math.abs(this.x1 - this.x2) / hl) * i + Math.min(this.x1, this.x2);
         this.segment({
           y1: this.y1,
           x1: width,

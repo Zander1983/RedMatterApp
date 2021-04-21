@@ -95,6 +95,7 @@ export default class GraphDrawer extends Drawer {
     y2: number;
     ib: number;
     ie: number;
+    bins?: number;
   }) {
     this.segment({
       x1: params.x1,
@@ -109,7 +110,12 @@ export default class GraphDrawer extends Drawer {
     }
 
     const orientation = params.x1 === params.x2 ? "v" : "h";
-    const bins = orientation == "v" ? this.ypts : this.xpts;
+    const bins =
+      params.bins !== undefined
+        ? params.bins
+        : orientation == "v"
+        ? this.ypts
+        : this.xpts;
     const p1 = orientation == "v" ? this.y1 : this.x1;
     const p2 = orientation == "v" ? this.y2 : this.x2;
     const op1 = orientation == "v" ? this.x1 : this.y1;
@@ -180,8 +186,13 @@ export default class GraphDrawer extends Drawer {
     }
   }
 
-  private drawPlotLines(orientation: "v" | "h", strokeColor?: string) {
-    const bins = orientation == "h" ? this.ypts : this.xpts;
+  private drawPlotLines(
+    orientation: "v" | "h",
+    sbins?: number,
+    strokeColor?: string
+  ) {
+    const bins =
+      sbins !== undefined ? sbins : orientation == "h" ? this.ypts : this.xpts;
 
     const begin = orientation == "h" ? this.y1 : this.x1;
     const end = orientation == "h" ? this.y2 : this.x2;
@@ -205,7 +216,7 @@ export default class GraphDrawer extends Drawer {
     }
   }
 
-  drawPlotGraph(): void {
+  drawPlotGraph(lines: boolean = true, vbins?: number, hbins?: number): void {
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
@@ -213,6 +224,7 @@ export default class GraphDrawer extends Drawer {
       y2: this.y2,
       ib: this.iby,
       ie: this.iey,
+      bins: vbins,
     });
 
     this.graphLine({
@@ -222,9 +234,12 @@ export default class GraphDrawer extends Drawer {
       y2: this.y2,
       ib: this.ibx,
       ie: this.iex,
+      bins: hbins,
     });
 
-    this.drawPlotLines("v");
-    this.drawPlotLines("h");
+    if (lines) {
+      this.drawPlotLines("v", hbins);
+      this.drawPlotLines("h", vbins);
+    }
   }
 }

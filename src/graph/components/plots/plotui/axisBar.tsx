@@ -77,6 +77,14 @@ export default function AxisBar(props: any) {
       : props.plot.plotData.setYAxisPlotType(value);
   };
 
+  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
+  const handleSelectEvent = (e: any, func: Function) => {
+    if (lastSelectEvent + 500 < new Date().getTime()) {
+      func(e);
+      setLastSelectEvent(new Date().getTime());
+    }
+  };
+
   return (
     <Grid xs={12} container direction="column" style={classes.axisBar}>
       <Grid
@@ -113,8 +121,9 @@ export default function AxisBar(props: any) {
           <b>Axis:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            //@ts-ignore
-            onChange={(e) => setAxis("x", e.target.value)}
+            onChange={(e) =>
+              handleSelectEvent(e, (e: any) => setAxis("x", e.target.value))
+            }
             disabled={isAxisDisabled("x")}
             value={xAxis}
           >
@@ -175,8 +184,9 @@ export default function AxisBar(props: any) {
           <b>Axis:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            //@ts-ignore
-            onChange={(e) => setAxis("y", e.target.value)}
+            onChange={(e) =>
+              handleSelectEvent(e, (e: any) => setAxis("y", e.target.value))
+            }
             disabled={isAxisDisabled("y")}
             value={yAxis}
           >

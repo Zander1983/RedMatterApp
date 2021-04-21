@@ -77,7 +77,11 @@ export default class HistogramPlotter extends GraphPlotter {
   }
 
   public draw() {
-    super.draw();
+    this.drawer.drawPlotGraph(
+      false,
+      (this.height - bottomPadding) / 50,
+      (this.width - rightPadding) / 50
+    );
 
     const { list, max } = this.getBinList();
     for (let i = 0; i < this.bins; i++) {
