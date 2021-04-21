@@ -389,7 +389,6 @@ export default class PlotData extends ObserversFunctionality {
     }
   }
 
-  private rangeSpacer = 0.1;
   private findRangeBoundries(axisData: number[]): [number, number] {
     let min = axisData[0],
       max = axisData[0];
@@ -398,6 +397,6 @@ export default class PlotData extends ObserversFunctionality {
       max = Math.max(p, max);
     }
     const d = Math.max(max - min, 1e-10);
-    return [min - d * this.rangeSpacer, max + d * this.rangeSpacer];
+    return [min, max];
   }
 }
