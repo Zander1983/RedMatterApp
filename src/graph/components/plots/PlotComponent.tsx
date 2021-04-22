@@ -36,11 +36,10 @@ function useForceUpdate() {
 }
 
 const minDrawInterval = 30;
+let interval: any = {};
 
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
-  const [resizeObserver, setResizeObserver] = React.useState(null);
   const [plotSetup, setPlotSetup] = React.useState(false);
-  const [lastDrawTimestamp, setlastDrawTimestamp] = React.useState(0);
   const rerender = useForceUpdate();
   const plot = props.plot;
 
@@ -58,24 +57,29 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
 
   const plotUpdater = () => {
     updatePlotSize();
-    // TODO: THIS SOLUTION IS SO SHIT. PLEASE FIX THIS
-    const now = new Date().getTime();
-    if (lastDrawTimestamp + minDrawInterval <= now) {
-      setlastDrawTimestamp(now);
-      plot.draw();
+    plot.draw();
+  };
+
+  const tryKillComponent = () => {
+    try {
+      dataManager.getPlotRendererForPlot(props.plotIndex);
+    } catch {
+      clearInterval(interval[props.plotIndex]);
+      interval[props.plotIndex] = undefined;
     }
   };
 
   useEffect(() => {
-    if (resizeObserver === null) {
-      setResizeObserver(
-        setInterval(() => {
-          plotUpdater();
-        }, 10)
-      );
+    if (interval[props.plotIndex] === undefined) {
+      interval[props.plotIndex] = setInterval(() => {
+        plotUpdater();
+      }, 10);
     }
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
+      dataManager.addObserver("removePlotFromWorkspace", () =>
+        tryKillComponent()
+      );
       plot.setup();
       setPlotSetup(true);
     }

@@ -16,6 +16,8 @@ import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInter
 import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gateMouseInteractorFactory";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
+import dataManager from "graph/dataManagement/dataManager";
+import { controllers } from "chart.js";
 
 const plotterFactory = new PlotterFactory();
 const mouseInteractorFactory = new GateMouseInteractorFactory();
@@ -95,13 +97,30 @@ export default class Plot {
     setTimeout(() => this.draw(), 20);
   }
 
-  private timestampSinceLastDraw: number = 0;
-  draw() {
-    if (this.timestampSinceLastDraw + 10 > new Date().getTime()) {
-      return;
+  private timestampSinceLastDraw = 0;
+  private triesSinceLastDrawTry = 0;
+  private drawWaitTime = 10;
+  private shouldDraw(): boolean {
+    if (
+      this.timestampSinceLastDraw + this.drawWaitTime >
+      new Date().getTime()
+    ) {
+      this.triesSinceLastDrawTry++;
+      return false;
     }
     this.timestampSinceLastDraw = new Date().getTime();
-    if (!this.validateReady()) return;
+    if (this.triesSinceLastDrawTry === 0 && this.drawWaitTime < 50) {
+      this.drawWaitTime++;
+    } else {
+      this.drawWaitTime--;
+    }
+    this.triesSinceLastDrawTry = 0;
+    return true;
+  }
+
+  draw() {
+    if (!this.shouldDraw() || !this.validateReady()) return;
+    // if (this.drawWaitTime > 50) console.log("too laggy");
 
     this.setCanvasState();
     this.setPlotterState();
@@ -110,7 +129,6 @@ export default class Plot {
     this.canvasRender();
 
     this.plotter.draw();
-    setTimeout(() => this.draw(), 10);
   }
 
   canvasRender() {

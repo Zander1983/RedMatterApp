@@ -30,6 +30,7 @@ const conditionalUpdateDecorator = () => {
 };
 
 const DEFAULT_COLOR = "#000";
+const MAX_EVENT_SIZE = 10000;
 
 export interface PlotDataState {
   id: string;
@@ -79,6 +80,7 @@ export default class PlotData extends ObserversFunctionality {
   histogramAxis: "horizontal" | "vertical" = "vertical";
 
   private changed: boolean = false;
+  private randomSelection: number[] | null = null;
 
   /* PLOT DATA LIFETIME */
 
@@ -90,8 +92,38 @@ export default class PlotData extends ObserversFunctionality {
   setupPlot() {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
-    // this.findAllRanges();
+
     this.updateGateObservers();
+    this.updateRandomSelection();
+  }
+
+  private updateRandomSelection() {
+    const pointCount = this.getXandYData().xAxis.length;
+    const axisCount = this.file.axes.length;
+    if (pointCount * axisCount > MAX_EVENT_SIZE) {
+      const selectedPointsCount = Math.round(MAX_EVENT_SIZE / axisCount);
+      let permutation = Array(pointCount)
+        .fill(0)
+        .map((_, i) => i);
+      for (let i = 0; i < pointCount; i++) {
+        const temp = permutation[i];
+        const rnd = Math.round(Math.random() * pointCount);
+        permutation[i] = permutation[rnd];
+        permutation[rnd] = temp;
+      }
+      this.randomSelection = permutation.filter(
+        (_, i) => i < selectedPointsCount
+      );
+    } else this.randomSelection = null;
+    this.randomSelection === null
+      ? console.log("random selection not applied")
+      : console.log("random selection applied");
+    this.axisDataCache = null;
+  }
+
+  private filterIndexesFromRandomSelection(arr: any[]) {
+    if (this.randomSelection === null) return arr;
+    return this.randomSelection.map((e) => arr[e]);
   }
 
   export(): string {
@@ -192,7 +224,10 @@ export default class PlotData extends ObserversFunctionality {
       inverseGating: false,
     });
 
+    this.axisDataCache = null;
     this.updateGateObservers();
+    this.updateRandomSelection();
+
     this.plotUpdated();
   }
 
@@ -208,7 +243,10 @@ export default class PlotData extends ObserversFunctionality {
     }
     this.gates = this.gates.filter((g) => g.gate.id !== gate.id);
 
+    this.axisDataCache = null;
     this.updateGateObservers();
+    this.updateRandomSelection();
+
     this.plotUpdated();
   }
 
@@ -344,11 +382,16 @@ export default class PlotData extends ObserversFunctionality {
     return { x: this.ranges.get(this.xAxis), y: this.ranges.get(this.yAxis) };
   }
 
+  private axisDataCache: null | any[] = null;
   getAxesData(filterGating: boolean = true): any[] {
+    if (this.axisDataCache) return this.axisDataCache;
+    console.log("calculating axes data");
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
-      dataAxes[axis] = this.getAxisData(axis);
+      dataAxes[axis] = this.filterIndexesFromRandomSelection(
+        this.getAxisData(axis)
+      );
       if (size !== undefined && dataAxes[axis].length !== size) {
         throw Error("Axes of different size were found");
       } else if (size === undefined) size = dataAxes[axis].length;
@@ -382,20 +425,16 @@ export default class PlotData extends ObserversFunctionality {
         return gate.inverseGating ? !inside : inside;
       });
     }
-    return data;
+    return (this.axisDataCache = data);
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
+  private popObservers: { observerID: string; targetGateID: string }[] = [];
   private updateGateObservers() {
-    this.updateGateObserversFromList(this.gates);
-    this.updateGateObserversFromList(this.population);
-  }
-
-  private updateGateObserversFromList(targetList: any[]) {
-    const gateIds = targetList.map((obj) => obj.gate.id);
-    const obsIds = this.gateObservers.map((obj) => obj.targetGateID);
-    const toAdd = gateIds.filter((g) => !obsIds.includes(g));
-    const toRemove = obsIds.filter((g) => !gateIds.includes(g));
+    let gateIds = this.gates.map((obj) => obj.gate.id);
+    let obsIds = this.gateObservers.map((obj) => obj.targetGateID);
+    let toAdd = gateIds.filter((g) => !obsIds.includes(g));
+    let toRemove = obsIds.filter((g) => !gateIds.includes(g));
     toAdd.forEach((e) => {
       const obsID = dataManager.getGate(e).addObserver("update", () => {
         this.plotUpdated();
@@ -412,6 +451,25 @@ export default class PlotData extends ObserversFunctionality {
       this.gateObservers = this.gateObservers.filter(
         (g) => g.targetGateID === e
       );
+    });
+    gateIds = this.population.map((obj) => obj.gate.id);
+    obsIds = this.popObservers.map((obj) => obj.targetGateID);
+    toAdd = gateIds.filter((g) => !obsIds.includes(g));
+    toRemove = obsIds.filter((g) => !gateIds.includes(g));
+    toAdd.forEach((e) => {
+      const obsID = dataManager.getGate(e).addObserver("update", () => {
+        this.plotUpdated();
+      });
+      this.popObservers.push({ observerID: obsID, targetGateID: e });
+    });
+    toRemove.forEach((e) => {
+      dataManager
+        .getGate(e)
+        .removeObserver(
+          "update",
+          this.popObservers.filter((g) => g.targetGateID === e)[0].observerID
+        );
+      this.popObservers = this.popObservers.filter((g) => g.targetGateID === e);
     });
   }
 

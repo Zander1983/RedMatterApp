@@ -72,7 +72,9 @@ export default abstract class Gate extends ObserversFunctionality {
 
   isPointInside(point: { x: number; y: number }): boolean {
     for (const parent of this.parents) {
-      if (!parent.isPointInside(point)) return false;
+      if (!parent.isPointInside(point)) {
+        return false;
+      }
     }
     return true;
   }
