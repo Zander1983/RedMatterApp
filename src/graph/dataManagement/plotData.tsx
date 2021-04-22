@@ -296,8 +296,12 @@ export default class PlotData extends ObserversFunctionality {
       }
       return ans;
     };
+    const default_color =
+      this.population.length === 0
+        ? DEFAULT_COLOR
+        : this.population[0].gate.color;
     for (let i = 0; i < allData.length; i++) {
-      let ans = { depth: 0, color: DEFAULT_COLOR };
+      let ans = { depth: 0, color: default_color };
       for (const gate of this.gates) {
         const cAns = gateDFS(allData[i], gate, 1);
         if (cAns.color !== null && cAns.depth > ans.depth) {

@@ -107,7 +107,7 @@ export default function AxisBar(props: any) {
           <b>Type:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            disabled={isAxisDisabled("x") || isPlotHistogram()}
+            disabled={true || isAxisDisabled("x") || isPlotHistogram()}
             value={xPlotType}
             //@ts-ignore
             onChange={(e) => setPlotType("x", e.target.value)}
@@ -172,7 +172,7 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             value={yPlotType}
-            disabled={isAxisDisabled("y") || isPlotHistogram()}
+            disabled={true || isAxisDisabled("y") || isPlotHistogram()}
             //@ts-ignore
             onChange={(e) => setPlotType("y", e.target.value)}
           >
