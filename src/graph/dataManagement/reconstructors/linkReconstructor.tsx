@@ -55,13 +55,11 @@ export default class LinkReconstructor {
     token: string,
     callback: (workspaceJSON: string) => void
   ) {
-    console.log("retrieving from cloud...");
     //@ts-ignore
     db.collection("linkshortening")
       .where("workspaceID", "==", token)
       .get()
       .then((snapshot: any) => {
-        console.log("got snapshot = ", snapshot.docs);
         const docs = snapshot.docs;
         if (docs.length === 0)
           throw Error("Document for workspace " + token + " was not found");

@@ -88,7 +88,7 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(xAxis);
     checkNotNullOrUndefined(yAxis);
 
-    return new OvalGate({
+    const newGate = new OvalGate({
       center: center,
       primaryP1: primaryP1,
       primaryP2: primaryP2,
@@ -97,8 +97,14 @@ export default class OvalMouseInteractor extends GateMouseInteractor {
       ang: ang,
       xAxis: xAxis,
       yAxis: yAxis,
-      parent: null,
+      parents: this.plotter.plotData.population.map((e) => e.gate),
     });
+
+    for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
+      gate.children.push(newGate);
+    }
+
+    return newGate;
   }
 
   protected clearGateState() {

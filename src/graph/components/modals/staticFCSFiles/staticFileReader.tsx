@@ -19,8 +19,6 @@ export default (filename: string): FCSFile => {
     // should run kmeans
   }
 
-  console.log('adding a file with ' + file.data.length + ' events in ' + file.axes.length + ' dimesions')
-
   return new FCSFile({
     name: filename,
     src: "local",

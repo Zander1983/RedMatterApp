@@ -52,7 +52,6 @@ export default function GateBar(props: any) {
     let gates = plot.plotData.gates.map((e) => e.gate);
     const pop = plot.plotData.population.map((e) => e.gate);
     setPopulation(pop);
-    console.log(gates, pop);
     gates = gates.filter((e: any) => {
       for (const gate of pop) {
         if (gate.id === e.id) return false;

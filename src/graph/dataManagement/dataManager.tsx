@@ -137,9 +137,7 @@ class DataManager extends ObserversFunctionality {
 
   // ======== Getters
   @publishDecorator()
-  updateWorkspace() {
-    console.log("update workspace");
-  }
+  updateWorkspace() {}
 
   @publishDecorator()
   getWorkspace(): { workspace: WorkspaceData; workspaceID: WorkspaceID } {

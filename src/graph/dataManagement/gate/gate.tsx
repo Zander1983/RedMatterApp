@@ -8,7 +8,7 @@ export interface GateState {
   color?: string;
   xAxis: string;
   yAxis: string;
-  parent: Gate | null;
+  parents: Gate[];
 }
 
 export interface Point {
@@ -24,7 +24,8 @@ export default abstract class Gate extends ObserversFunctionality {
   color?: string | null;
   xAxis: string;
   yAxis: string;
-  parent: Gate | null = null;
+  parents: Gate[] = [];
+  children: Gate[] = [];
 
   static instanceCount: number = 1;
 
@@ -60,7 +61,7 @@ export default abstract class Gate extends ObserversFunctionality {
       yAxis: this.yAxis,
       name: this.name,
       color: this.color,
-      parent: this.parent,
+      parents: this.parents,
     };
   }
 
@@ -70,8 +71,8 @@ export default abstract class Gate extends ObserversFunctionality {
   }
 
   isPointInside(point: { x: number; y: number }): boolean {
-    if (this.parent !== null) {
-      return this.parent.isPointInside(point);
+    for (const parent of this.parents) {
+      if (!parent.isPointInside(point)) return false;
     }
     return true;
   }

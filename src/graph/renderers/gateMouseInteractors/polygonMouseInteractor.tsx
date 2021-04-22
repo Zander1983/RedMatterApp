@@ -74,12 +74,18 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(xAxis);
     checkNotNullOrUndefined(yAxis);
 
-    return new PolygonGate({
+    const newGate = new PolygonGate({
       points: points,
       xAxis: xAxis,
       yAxis: yAxis,
-      parent: null,
+      parents: this.plotter.plotData.population.map((e) => e.gate),
     });
+
+    for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
+      gate.children.push(newGate);
+    }
+
+    return newGate;
   }
 
   setup(plotter: ScatterPlotter) {

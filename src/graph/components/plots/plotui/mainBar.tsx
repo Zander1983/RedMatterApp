@@ -13,13 +13,20 @@ const classes = {
     paddingLeft: 2,
     paddingRight: 2,
   },
-  mainDelete: {
+  iconButton: {
     backgroundColor: "#6666aa",
+    maxWidth: 20,
+    boxShadow: "1px 1px 2px #555",
+  },
+  iconButtonIcon: {
+    color: "#fff",
+    width: 20,
   },
   mainButton: {
     backgroundColor: "#66a",
     color: "white",
-    marginLeft: 10,
+    marginLeft: 5,
+    fontSize: 12,
   },
 };
 
@@ -116,9 +123,12 @@ export default function MainBar(props: any) {
 
       <Button
         onClick={() => setDeleteModalOpen(true)}
-        style={classes.mainDelete}
+        style={classes.iconButton}
       >
-        <DeleteIcon fontSize="small" style={{ color: "#fff" }}></DeleteIcon>
+        <DeleteIcon
+          fontSize="small"
+          style={classes.iconButtonIcon}
+        ></DeleteIcon>
       </Button>
       {/* <Button
             variant="contained"
@@ -137,7 +147,7 @@ export default function MainBar(props: any) {
           backgroundColor: ovalGating ? "#6666ee" : "#6666aa",
         }}
       >
-        Oval Gate
+        Oval
       </Button>
       <Button
         variant="contained"
@@ -148,7 +158,7 @@ export default function MainBar(props: any) {
           backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
         }}
       >
-        Polygon Gate
+        Polygon
       </Button>
       {/* <Button
             variant="contained"
@@ -188,11 +198,11 @@ export default function MainBar(props: any) {
       </Button>
       <Button
         onClick={() => downloadCanvasAsImage()}
-        style={{ ...classes.mainDelete, marginLeft: 10 }}
+        style={{ ...classes.iconButton, marginLeft: 5 }}
       >
         <CameraAltIcon
           fontSize="small"
-          style={{ color: "#fff" }}
+          style={classes.iconButtonIcon}
         ></CameraAltIcon>
       </Button>
     </Grid>

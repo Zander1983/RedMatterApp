@@ -233,7 +233,7 @@ export default class ScatterPlotter extends GraphPlotter {
   // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
-    const colors = this.getPointColors(pointCount);
+    const colors = this.getPointColors();
 
     for (let i = 0; i < pointCount; i++) {
       if (this.isOutOfRange({ x: this.xAxis[i], y: this.yAxis[i] })) continue;
@@ -250,8 +250,8 @@ export default class ScatterPlotter extends GraphPlotter {
     return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 
-  @applyPlugin()
-  public getPointColors(size: number) {
-    return Array(size).fill("#000");
+  // @applyPlugin()
+  public getPointColors() {
+    return this.plotData.getPointColors();
   }
 }

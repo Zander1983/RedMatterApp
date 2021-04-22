@@ -29,6 +29,8 @@ const conditionalUpdateDecorator = () => {
   };
 };
 
+const DEFAULT_COLOR = "#000";
+
 export interface PlotDataState {
   id: string;
   ranges: Map<string, [number, number]>;
@@ -95,7 +97,6 @@ export default class PlotData extends ObserversFunctionality {
   export(): string {
     const state: any = this.getState();
     state.file = "local://" + state.file.name;
-    state.pointColors = [];
     return JSON.stringify(state);
   }
 
@@ -261,6 +262,52 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   /* PLOT STATE GETTERS */
+
+  getPointColors() {
+    const allData = this.getAxesData(false);
+    const colors: string[] = [];
+    const isPointInside = (gate: any, point: number[]): boolean => {
+      const p = {
+        x: point[gate.gate.xAxis],
+        y: point[gate.gate.yAxis],
+      };
+      return gate.gate.isPointInside(p)
+        ? !gate.inverseGating
+        : gate.inverseGating;
+    };
+    const gateDFS = (
+      point: number[],
+      gate: any,
+      currentDepth: number
+    ): { depth: number; color: string | null } => {
+      if (!isPointInside(gate, point)) {
+        return { depth: 0, color: null };
+      }
+      let ans = { depth: currentDepth, color: gate.gate.color };
+      for (const child of gate.gate.children) {
+        const cAns = gateDFS(
+          point,
+          { gate: child, inverseGating: false },
+          currentDepth + 1
+        );
+        if (cAns.color !== null && cAns.depth > ans.depth) {
+          ans = cAns;
+        }
+      }
+      return ans;
+    };
+    for (let i = 0; i < allData.length; i++) {
+      let ans = { depth: 0, color: DEFAULT_COLOR };
+      for (const gate of this.gates) {
+        const cAns = gateDFS(allData[i], gate, 1);
+        if (cAns.color !== null && cAns.depth > ans.depth) {
+          ans = cAns;
+        }
+      }
+      colors.push(ans.color);
+    }
+    return colors;
+  }
 
   getXAxisName() {
     return this.xAxis;
