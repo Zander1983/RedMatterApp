@@ -389,9 +389,7 @@ export default class PlotData extends ObserversFunctionality {
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
-      dataAxes[axis] = this.filterIndexesFromRandomSelection(
-        this.getAxisData(axis)
-      );
+      dataAxes[axis] = this.getAxisData(axis);
       if (size !== undefined && dataAxes[axis].length !== size) {
         throw Error("Axes of different size were found");
       } else if (size === undefined) size = dataAxes[axis].length;
@@ -425,6 +423,7 @@ export default class PlotData extends ObserversFunctionality {
         return gate.inverseGating ? !inside : inside;
       });
     }
+    data = this.filterIndexesFromRandomSelection(data);
     return (this.axisDataCache = data);
   }
 
