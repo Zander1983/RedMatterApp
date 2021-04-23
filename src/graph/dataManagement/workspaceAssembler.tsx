@@ -26,7 +26,7 @@ export default class WorkspaceAssembler {
     workspace.plots.forEach((plot: any) => {
       // If you don't do this, you are going to alter live refs
       const p = JSON.parse(JSON.stringify(plot));
-      p.observers = [];
+      delete p.axisDataCache;
 
       p.file = p.file.src + "://" + p.file.name;
       p.gates = p.gates.map((e: any) => {
@@ -36,7 +36,6 @@ export default class WorkspaceAssembler {
           gate: e.gate.id,
         };
       });
-      p.pointColors = [];
       plots.push(p);
     });
     const name =

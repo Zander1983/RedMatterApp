@@ -120,7 +120,6 @@ export default class Plot {
 
   draw() {
     if (!this.shouldDraw() || !this.validateReady()) return;
-    // if (this.drawWaitTime > 50) console.log("too laggy");
 
     this.setCanvasState();
     this.setPlotterState();

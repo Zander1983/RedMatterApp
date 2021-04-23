@@ -30,7 +30,7 @@ const conditionalUpdateDecorator = () => {
 };
 
 const DEFAULT_COLOR = "#000";
-const MAX_EVENT_SIZE = 10000;
+const MAX_EVENT_SIZE = 100000;
 
 export interface PlotDataState {
   id: string;
@@ -115,9 +115,6 @@ export default class PlotData extends ObserversFunctionality {
         (_, i) => i < selectedPointsCount
       );
     } else this.randomSelection = null;
-    this.randomSelection === null
-      ? console.log("random selection not applied")
-      : console.log("random selection applied");
     this.axisDataCache = null;
   }
 
@@ -385,7 +382,6 @@ export default class PlotData extends ObserversFunctionality {
   private axisDataCache: null | any[] = null;
   getAxesData(filterGating: boolean = true): any[] {
     if (this.axisDataCache) return this.axisDataCache;
-    console.log("calculating axes data");
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -458,6 +454,7 @@ export default class PlotData extends ObserversFunctionality {
     toAdd.forEach((e) => {
       const obsID = dataManager.getGate(e).addObserver("update", () => {
         this.plotUpdated();
+        this.axisDataCache = null;
       });
       this.popObservers.push({ observerID: obsID, targetGateID: e });
     });
