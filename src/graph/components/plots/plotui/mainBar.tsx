@@ -1,7 +1,7 @@
 import { Button } from "@material-ui/core";
 import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
-import DeleteIcon from "@material-ui/icons/Delete";
+import CancelIcon from "@material-ui/icons/Cancel";
 import CameraAltIcon from "@material-ui/icons/CameraAlt";
 
 import MessageModal from "../../modals/MessageModal";
@@ -123,12 +123,12 @@ export default function MainBar(props: any) {
 
       <Button
         onClick={() => setDeleteModalOpen(true)}
-        style={classes.iconButton}
+        style={{ ...classes.iconButton, backgroundColor: "#c45" }}
       >
-        <DeleteIcon
+        <CancelIcon
           fontSize="small"
-          style={classes.iconButtonIcon}
-        ></DeleteIcon>
+          style={{ ...classes.iconButtonIcon }}
+        ></CancelIcon>
       </Button>
       <Button
         variant="contained"

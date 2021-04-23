@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   linkArea: {
     backgroundColor: "#dadada",
     borderRadius: 5,
-    width: 400,
+    width: 600,
     height: 50,
     padding: 10,
     marginTop: 30,
@@ -67,23 +67,32 @@ function LinkShareModal(props: {
                 flex: 1,
               }}
             >
-              <Scrollbars>
-                <p
-                  style={{
-                    overflowX: "hidden",
-                    overflowY: "hidden",
-                  }}
-                >
-                  {link}
-                </p>
-              </Scrollbars>
+              <p
+                style={{
+                  overflowX: "hidden",
+                  overflowY: "hidden",
+                  textAlign: "center",
+                  fontFamily:
+                    "SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace",
+                  fontSize: 14,
+                  marginTop: 2,
+                }}
+              >
+                {link}
+              </p>
             </Grid>
             <Grid
-              style={{ marginTop: -3, marginRight: -15, textAlign: "right" }}
+              style={{
+                marginTop: -3,
+                marginRight: -5,
+                textAlign: "right",
+              }}
             >
+              <Divider orientation="vertical"></Divider>
               <Button
                 style={{
-                  width: 10,
+                  marginLeft: 5,
+                  marginTop: -60,
                 }}
                 onClick={() => {
                   navigator.clipboard.writeText(link);

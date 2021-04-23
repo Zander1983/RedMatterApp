@@ -119,7 +119,7 @@ export default function GateBar(props: any) {
               style={{ marginRight: 8, textAlign: "left", padding: 0 }}
               checked={selected || gateInPopulation(option.id)}
             />
-            {option.name}
+            {option.name} - ({option.xAxis}, {option.yAxis})
           </Button>
         )}
         style={{ flex: 1 }}

@@ -10,9 +10,10 @@ const classes = {
     marginBottom: 10,
   },
   axisBarAxis: {
+    height: 44,
+    paddingTop: 3,
     textAlign: "left",
     border: "solid 0.5px #ccc",
-    padding: 10,
     borderRadius: 5,
     backgroundColor: "#fafafa",
     boxShadow: "1px 3px 4px #bbd",
@@ -136,6 +137,7 @@ export default function AxisBar(props: any) {
           <b
             style={{
               marginRight: 10,
+              display: "inline",
             }}
           >
             Histogram:
