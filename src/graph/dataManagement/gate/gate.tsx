@@ -53,6 +53,7 @@ export default abstract class Gate extends ObserversFunctionality {
           (Gate.instanceCount - 2) % randomListOfColors.length
         ];
     }
+    this.parents = gate.parents;
   }
 
   getState(): GateState {

@@ -9,6 +9,7 @@ import OvalGate from "./gate/ovalGate";
 import PolygonGate from "./gate/polygonGate";
 import PlotData from "./plotData";
 import WorkspaceData from "./workspaceData";
+import lodash from "lodash";
 
 export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
@@ -18,24 +19,41 @@ export default class WorkspaceAssembler {
     });
     const gates: Gate[] = [];
     workspace.gates.forEach((e) => {
+      e = lodash.cloneDeep(e);
+      e.parents = e.parents.map((p: any) => p.id);
+      e.children = e.children.map((c: any) => c.id);
       const gateObj = JSON.parse(JSON.stringify(e));
-      gateObj.observers = [];
+      delete gateObj.observers;
       gates.push(gateObj);
     });
     const plots: object[] = [];
     workspace.plots.forEach((plot: any) => {
-      // If you don't do this, you are going to alter live refs
-      const p = JSON.parse(JSON.stringify(plot));
-      delete p.axisDataCache;
-
-      p.file = p.file.src + "://" + p.file.name;
-      p.gates = p.gates.map((e: any) => {
-        return {
-          displayOnlyPointsInGate: e.displayOnlyPointsInGate,
-          inverseGating: e.inverseGating,
-          gate: e.gate.id,
-        };
+      plot = lodash.cloneDeep(plot);
+      plot.gates = plot.gates.map((e: any) => {
+        e.gate = e.gate.id;
+        return e;
       });
+      plot.population = plot.population.map((e: any) => {
+        e.gate = e.gate.id;
+        return e;
+      });
+
+      delete plot.axisDataCache;
+      delete plot.randomSelection;
+      delete plot.changed;
+      delete plot.gateObservers;
+      delete plot.popObservers;
+      delete plot.observers;
+      plot.file = plot.file.src + "://" + plot.file.name;
+
+      const p = JSON.parse(JSON.stringify(plot));
+
+      const ranges: any = {};
+      plot.ranges.forEach((v: [number, number], k: string) => {
+        ranges[k] = v;
+      });
+      p.ranges = ranges;
+
       plots.push(p);
     });
     const name =
@@ -45,9 +63,7 @@ export default class WorkspaceAssembler {
       files,
       gates,
       plots: plots === null || plots === undefined ? [] : plots,
-    })
-      .split(" ")
-      .join("");
+    });
   }
 
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
@@ -57,6 +73,7 @@ export default class WorkspaceAssembler {
     const plots = new Map();
     const fileMappings: any = {};
     const gateMappings: any = {};
+    const inverseGateMappings: any = {};
 
     for (const fileString of inp.files) {
       const src = fileString.split("://");
@@ -71,27 +88,52 @@ export default class WorkspaceAssembler {
       fileMappings[fileString] = file.id;
     }
 
+    let i = 0;
     for (const gateObj of inp.gates) {
       let gate: Gate;
-      if (gateObj.points !== undefined) {
+      if (gateObj.gateType === "PolygonGate") {
         gate = new PolygonGate(gateObj);
       }
-      if (gateObj.center !== undefined) {
+      if (gateObj.gateType === "OvalGate") {
         gate = new OvalGate(gateObj);
       }
+      gate.children = [];
+      gate.parents = [];
       if (gate === null) {
         throw Error('Could not recover gate "' + JSON.stringify(gateObj) + '"');
       }
       gates.set(gate.id, gate);
       gateMappings[gateObj.id] = gate.id;
+      inverseGateMappings[gate.id] = i++;
     }
 
-    for (const plotObj of inp.plots) {
+    gates.forEach((v: any, k: any) => {
+      const origin = inp.gates[inverseGateMappings[v.id]];
+      v.children = origin.children.map((e: any) => gates.get(gateMappings[e]));
+      v.parents = origin.parents.map((e: any) => gates.get(gateMappings[e]));
+    });
+
+    for (let i = 0; i < inp.plots.length; i++) {
+      const plotObj = inp.plots[i];
+
       plotObj.file = files.get(fileMappings[plotObj.file]);
+
       plotObj.gates = plotObj.gates.map((e: any) => {
         e.gate = gates.get(gateMappings[e.gate]);
         return e;
       });
+
+      plotObj.population = plotObj.population.map((e: any) => {
+        e.gate = gates.get(gateMappings[e.gate]);
+        return e;
+      });
+
+      const ranges = new Map();
+      for (const key in plotObj.ranges) {
+        ranges.set(key, plotObj.ranges[key]);
+      }
+      plotObj.ranges = ranges;
+
       const plot = new PlotData();
       plot.setState(plotObj);
       plots.set(plot.id, plot);

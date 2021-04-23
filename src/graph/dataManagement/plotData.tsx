@@ -176,6 +176,7 @@ export default class PlotData extends ObserversFunctionality {
     if (state.ranges !== undefined) this.ranges = state.ranges;
     if (state.file !== undefined) this.file = state.file;
     if (state.gates !== undefined) this.gates = state.gates;
+    if (state.population !== undefined) this.population = state.population;
     if (state.xAxis !== undefined) this.xAxis = state.xAxis;
     if (state.yAxis !== undefined) this.yAxis = state.yAxis;
     if (state.positionInWorkspace !== undefined)
