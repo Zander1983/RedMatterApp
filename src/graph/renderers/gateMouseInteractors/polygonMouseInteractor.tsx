@@ -81,7 +81,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       yAxis: yAxis,
       parents: this.plotter.plotData.population.map((e) => e.gate),
     });
-    console.log("new gate\n\n\n", newGate, "\n\n\n====");
 
     for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
       gate.children.push(newGate);

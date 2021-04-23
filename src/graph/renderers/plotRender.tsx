@@ -93,6 +93,10 @@ export default class Plot {
     this.updatePlotter();
 
     this.contructMouseInteractors();
+    this.setGating("Polygon", true);
+    this.setGating("Polygon", false);
+    this.setGating("Oval", true);
+    this.setGating("Oval", false);
 
     setTimeout(() => this.draw(), 20);
   }
@@ -147,6 +151,7 @@ export default class Plot {
     Polygon: PolygonMouseInteractor,
     Histogram: Error,
   };
+
   setGating(type: "Oval" | "Histogram" | "Polygon", start: boolean) {
     this.mouseInteractors
       .filter((e) => e instanceof Plot.typeToClassType[type])

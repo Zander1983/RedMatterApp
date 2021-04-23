@@ -38,19 +38,19 @@ export default abstract class Gate extends ObserversFunctionality {
     this.id = dataManager.createID();
 
     this.setState(gate);
+    Gate.instanceCount++;
   }
 
   setState(gate: GateState) {
     this.xAxis = gate.xAxis;
     this.yAxis = gate.yAxis;
     if (gate.name !== undefined) this.name = gate.name;
-    else
-      this.name = this.getGateType() + " " + (Gate.instanceCount++).toString();
+    else this.name = this.getGateType() + " " + Gate.instanceCount.toString();
     if (gate.color !== undefined) this.color = gate.color;
     else {
       this.color =
         randomListOfColors[
-          (Gate.instanceCount - 2) % randomListOfColors.length
+          (Gate.instanceCount - 1) % randomListOfColors.length
         ];
     }
     this.parents = gate.parents;

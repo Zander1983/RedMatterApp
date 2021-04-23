@@ -130,14 +130,6 @@ export default function MainBar(props: any) {
           style={classes.iconButtonIcon}
         ></DeleteIcon>
       </Button>
-      {/* <Button
-            variant="contained"
-            size="medium"
-            // onClick={}
-            style={classes.mainButton}
-          >
-            Polygon Gate
-          </Button> */}
       <Button
         variant="contained"
         size="medium"
