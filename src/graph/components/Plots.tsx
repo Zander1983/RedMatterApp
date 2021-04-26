@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
   },
   topButton: {
-    marginLeft: 30,
+    marginLeft: 20,
   },
 }));
 
@@ -413,7 +413,7 @@ function Plots() {
               xs={3}
               style={{
                 textAlign: "right",
-                paddingRight: 30,
+                paddingRight: 20,
               }}
             >
               <Button
