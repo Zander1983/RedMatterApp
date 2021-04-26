@@ -15,6 +15,12 @@ export default class LinkReconstructor {
   }
 
   retrieve(callback: (workspaceJSON: string) => void) {
+    if (!this.canBuildWorkspace()) return;
+    const workspaceID = this.getWorkspaceID();
+    this.retrieveFromCloud(workspaceID, callback);
+  }
+
+  canBuildWorkspace() {
     const queryParams = this.getQueryParams();
     if (
       queryParams === null ||
@@ -22,10 +28,14 @@ export default class LinkReconstructor {
       queryParams["id"] === null ||
       queryParams["id"] === undefined
     ) {
-      return;
+      return false;
     }
-    const workspaceID = queryParams["id"];
-    this.retrieveFromCloud(workspaceID, callback);
+    return true;
+  }
+
+  private getWorkspaceID() {
+    const queryParams = this.getQueryParams();
+    return queryParams["id"];
   }
 
   private getQueryParams() {

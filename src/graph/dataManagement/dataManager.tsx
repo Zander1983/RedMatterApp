@@ -31,6 +31,22 @@ type WorkspaceID = string;
 type FileID = string;
 type GateID = string;
 
+const updateWorkspaceDecorator = () => {
+  return function (
+    target: DataManager,
+    key: string | symbol,
+    descriptor: PropertyDescriptor
+  ) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      const ret = original.apply(this, args);
+      //@ts-ignore
+      this.updateWorkspace();
+      return ret;
+    };
+  };
+};
+
 class DataManager extends ObserversFunctionality {
   /* 
 
@@ -55,23 +71,27 @@ class DataManager extends ObserversFunctionality {
   }
 
   @publishDecorator()
+  @updateWorkspaceDecorator()
   addNewFileToWorkspace(file: FCSFile): FileID {
     this.currentWorkspace.files.set(file.id, file);
     return file.id;
   }
 
   @publishDecorator()
+  @updateWorkspaceDecorator()
   addNewGateToWorkspace(gate: Gate): GateID {
     this.currentWorkspace.gates.set(gate.id, gate);
     return gate.id;
   }
 
   @publishDecorator()
+  @updateWorkspaceDecorator()
   clonePlot(plotID: PlotID, inverse: boolean = false): PlotID {
     return this.createSubpopFromGatesInPlot(plotID, inverse);
   }
 
   @publishDecorator()
+  @updateWorkspaceDecorator()
   addNewPlotToWorkspace(plotData: PlotData): PlotID {
     this.currentWorkspace.plots.set(plotData.id, plotData);
     plotData.setupPlot();
@@ -79,6 +99,7 @@ class DataManager extends ObserversFunctionality {
   }
 
   @publishDecorator()
+  @updateWorkspaceDecorator()
   createSubpopFromGatesInPlot(
     plotID: PlotID,
     inverse: boolean = false
@@ -137,21 +158,22 @@ class DataManager extends ObserversFunctionality {
 
   // ======== Getters
   @publishDecorator()
-  updateWorkspace() {}
+  updateWorkspace() {
+    this.saveWorkspaceToLocalStorage();
+  }
 
   @publishDecorator()
   getWorkspace(): { workspace: WorkspaceData; workspaceID: WorkspaceID } {
     if (this.currentWorkspace === null) {
       this.createWorkspace();
       const linkReconstructor = new LinkReconstructor();
-      linkReconstructor.retrieve((workspaceJSON) => {
-        this.loadWorkspace(workspaceJSON);
-        this.currentWorkspace.plots.forEach((v) => {
-          const newPlot = new Plot(this.currentWorkspace.plots.get(v.id));
-          this.plotRenderers.set(v.id, newPlot);
+      if (linkReconstructor.canBuildWorkspace()) {
+        linkReconstructor.retrieve((workspaceJSON) => {
+          this.rebuildWorkspaceFromJson(workspaceJSON);
         });
-        this.updateWorkspace();
-      });
+      } else if (this.canLoadFromLocalStorage()) {
+        this.loadWorkspaceFromLocalStorage();
+      }
     }
     const id = this.currentWorkspace.id;
     return { workspace: this.currentWorkspace, workspaceID: id };
@@ -200,6 +222,7 @@ class DataManager extends ObserversFunctionality {
   }
 
   // ======== Destroyers
+  @updateWorkspaceDecorator()
   @publishDecorator()
   removePlotFromWorkspace(plotID: PlotID) {
     if (!this.currentWorkspace.plots.has(plotID)) {
@@ -209,12 +232,50 @@ class DataManager extends ObserversFunctionality {
     this.currentWorkspace.plots.delete(plotID);
   }
 
+  @updateWorkspaceDecorator()
   @publishDecorator()
-  removeGateFromWorkspace(gateID: GateID) {}
+  removeGateFromWorkspace(gateID: GateID) {
+    if (!this.currentWorkspace.gates.has(gateID)) {
+      throw Error("Removing non-existent gate");
+    }
+    this.currentWorkspace.gates.delete(gateID);
+  }
+
+  @updateWorkspaceDecorator()
   @publishDecorator()
-  removeFileFromWorkspace(fileID: FileID) {}
+  removeFileFromWorkspace(fileID: FileID) {
+    if (!this.currentWorkspace.files.has(fileID)) {
+      throw Error("Removing non-existent gate");
+    }
+    this.currentWorkspace.plots.forEach((e) => {
+      if (e.file.id === fileID) {
+        throw Error("Removing file currently in use by workspace.");
+      }
+    });
+    this.currentWorkspace.files.delete(fileID);
+  }
+
   @publishDecorator()
-  removeWorkspace() {}
+  removeWorkspace() {
+    this.plotRenderers.forEach((_, k) => this.plotRenderers.delete(k));
+    this.currentWorkspace = null;
+  }
+
+  @updateWorkspaceDecorator()
+  @publishDecorator()
+  clearWorkspace() {
+    this.removeWorkspace();
+    // Clears local storage
+    window.localStorage.removeItem("currentWorkspace");
+    // Clears link shared
+    if (window.location.href.includes("?")) {
+      window.history.pushState({}, null, window.location.href.split("?")[0]);
+    }
+    // Creates brand new workspace
+    this.createWorkspace();
+    // Informs everyone of the change
+    this.updateWorkspace();
+  }
 
   // ======== Workspace management
   @publishDecorator()
@@ -232,19 +293,45 @@ class DataManager extends ObserversFunctionality {
     }
     return this.currentWorkspace.export();
   }
-  @publishDecorator()
-  saveWorkspaceToLocalStorage(workspaceID: WorkspaceID) {}
 
   @publishDecorator()
-  saveWorkspaceToRemote(workspace: WorkspaceID, url?: string) {}
+  saveWorkspaceToLocalStorage() {
+    const currentWorkspace = this.getWorkspaceJSON();
+    window.localStorage.removeItem("currentWorkspace");
+    window.localStorage.setItem("currentWorkspace", this.getWorkspaceJSON());
+  }
+
+  loadWorkspaceFromLocalStorage() {
+    const workspaceJSON = window.localStorage.getItem("currentWorkspace");
+    this.rebuildWorkspaceFromJson(workspaceJSON);
+  }
 
   /* 
+  =====
+  
+  TODO IMPLEMENT THESE 3 BELOW!!!!!!! 
+  
+  =====
+  */
+  @publishDecorator()
+  saveWorkspaceToRemote(url?: string) {}
 
+  setWorkspacePlotMovement(plotMovement: boolean) {
+    /**/
+  }
+
+  loading: boolean = false;
+  setWorkspaceLoading(loading: boolean) {
+    this.loading = loading;
+  }
+
+  /* 
   
-    ================== PRIVATE ==================
+  
+  ================== PRIVATE ==================
   
   
-    */
+  */
   private static instance: DataManager;
 
   static getInstance(): DataManager {
@@ -260,6 +347,19 @@ class DataManager extends ObserversFunctionality {
 
   plotRenderers: Map<string, Plot> = new Map();
   currentWorkspace: WorkspaceData | null = null;
+
+  private rebuildWorkspaceFromJson(workspaceJSON: string) {
+    this.loadWorkspace(workspaceJSON);
+    this.currentWorkspace.plots.forEach((v) => {
+      const newPlot = new Plot(this.currentWorkspace.plots.get(v.id));
+      this.plotRenderers.set(v.id, newPlot);
+    });
+    this.updateWorkspace();
+  }
+
+  private canLoadFromLocalStorage() {
+    return window.localStorage.getItem("currentWorkspace") !== null;
+  }
 }
 
 export default DataManager.getInstance();

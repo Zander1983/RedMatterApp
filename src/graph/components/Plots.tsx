@@ -80,6 +80,7 @@ function Plots() {
   );
   const [loadModal, setLoadModal] = React.useState(true);
   const [helpModal, setHelpModal] = React.useState(false);
+  const [clearModal, setClearModal] = React.useState(false);
   const waitTime = Math.random() * 1000 + 500;
 
   useEffect(() => {
@@ -251,6 +252,31 @@ function Plots() {
         noButtons={true}
       />
 
+      <MessageModal
+        open={clearModal}
+        closeCall={{
+          f: handleClose,
+          ref: setClearModal,
+        }}
+        message={
+          <div>
+            <h2>Are you sure you want to delete the entire workspace?</h2>
+            <p style={{ marginLeft: 100, marginRight: 100 }}>
+              The links you've shared with "share workspace" will still work, if
+              you want to access this in the future, make sure to store them.
+            </p>
+          </div>
+        }
+        options={{
+          yes: () => {
+            dataManager.clearWorkspace();
+          },
+          no: () => {
+            handleClose(setClearModal);
+          },
+        }}
+      />
+
       {/* == NOTICES == */}
       {showSmallScreenNotice ? (
         <div
@@ -360,7 +386,7 @@ function Plots() {
               >
                 Learn More
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -370,6 +396,17 @@ function Plots() {
                 }}
               >
                 Print workspace
+              </Button> */}
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => handleOpen(setClearModal)}
+                className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                Clear
               </Button>
             </Grid>
             <Grid
