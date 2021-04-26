@@ -28,9 +28,9 @@ import {
   Paper,
   Grid,
   Card,
-  CardActions,  
-  CardContent,  
-  Button, 
+  CardActions,
+  CardContent,
+  Button,
   Typography,
   Tooltip,
   Modal,
@@ -43,37 +43,37 @@ import {
   DialogContentText,
   DialogTitle,
   LinearProgress,
-  CircularProgress 
-} from '@material-ui/core';
+  CircularProgress,
+} from "@material-ui/core";
 
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
-import EditIcon from '@material-ui/icons/Edit';
-import SaveIcon from '@material-ui/icons/Save';
-import CloseIcon from '@material-ui/icons/Close';
-import { green } from '@material-ui/core/colors';
-import CheckIcon from '@material-ui/icons/Check';
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
+import SaveIcon from "@material-ui/icons/Save";
+import CloseIcon from "@material-ui/icons/Close";
+import { green } from "@material-ui/core/colors";
+import CheckIcon from "@material-ui/icons/Check";
 
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       minWidth: 275,
-      flexGrow: 1
+      flexGrow: 1,
     },
     paper: {
-      position: 'absolute',
+      position: "absolute",
       width: 400,
       backgroundColor: theme.palette.background.paper,
-      border: '2px solid #000',
+      border: "2px solid #000",
       boxShadow: theme.shadows[5],
       padding: theme.spacing(2, 4, 3),
     },
     bullet: {
-      display: 'inline-block',
-      margin: '0 2px',
-      transform: 'scale(0.8)',
+      display: "inline-block",
+      margin: "0 2px",
+      transform: "scale(0.8)",
     },
     title: {
       fontSize: 14,
@@ -92,23 +92,23 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     buttonSuccess: {
       backgroundColor: green[500],
-      '&:hover': {
+      "&:hover": {
         backgroundColor: green[700],
       },
     },
     buttonProgress: {
       color: green[500],
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
+      position: "absolute",
+      top: "50%",
+      left: "50%",
       marginTop: -12,
       marginLeft: -12,
     },
     wrapper: {
       margin: theme.spacing(1),
-      position: 'relative',
+      position: "relative",
     },
-  }),
+  })
 );
 
 function rand() {
@@ -122,7 +122,7 @@ function getModalStyle() {
   return {
     top: `${top}%`,
     left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`
+    transform: `translate(-${top}%, -${left}%)`,
   };
 }
 
@@ -152,9 +152,7 @@ const Workspaces = () => {
       clearTimeout(timer.current);
     };
   }, []);
-  const handleButtonClick = () => {
-    
-  };
+  const handleButtonClick = () => {};
   const handleOpen = () => {
     setOpen(true);
   };
@@ -395,25 +393,25 @@ const Workspaces = () => {
     // };
 
     // return (
-      // <Form
-      //   {...layout}
-      //   form={form}
-      //   name="control-hooks"
-      //   onFinish={addWorkspace}
-      // >
-      //   <Form.Item
-      //     name="workspacename"
-      //     label="Workspace Name"
-      //     rules={[{ required: true }]}
-      //   >
-      //     <Input />
-      //   </Form.Item>
-      //   <Form.Item {...tailLayout}>
-      //     <Button type="primary" htmlType="submit">
-      //       Add
-      //     </Button>
-      //   </Form.Item>
-      // </Form>
+    // <Form
+    //   {...layout}
+    //   form={form}
+    //   name="control-hooks"
+    //   onFinish={addWorkspace}
+    // >
+    //   <Form.Item
+    //     name="workspacename"
+    //     label="Workspace Name"
+    //     rules={[{ required: true }]}
+    //   >
+    //     <Input />
+    //   </Form.Item>
+    //   <Form.Item {...tailLayout}>
+    //     <Button type="primary" htmlType="submit">
+    //       Add
+    //     </Button>
+    //   </Form.Item>
+    // </Form>
     // );
   };
 
@@ -428,82 +426,87 @@ const Workspaces = () => {
     };
 
     // return (
-      // <div className="workspaceHeader">
-      //   <Row gutter={[8, 8]}>
-      //     <Col xs={24} sm={24} md={12} lg={12} xl={12} className="title">
-      //       <h3>My Workspaces</h3>
-      //     </Col>
-      //     <Col
-      //       xs={24}
-      //       sm={24}
-      //       md={12}
-      //       lg={12}
-      //       xl={12}
-      //       className="workspaceFileBtn"
-      //     >
-      //       <Button type="primary" onClick={showModal} className="text-dark">
-      //         Create New Workspace
-      //       </Button>
-      //       <Modal
-      //         visible={visible}
-      //         title="Add Workspace"
-      //         onCancel={handleCancel}
-      //         footer={null}
-      //         destroyOnClose={true}
-      //       >
-      //         <WorkspaceAddForm />
-      //       </Modal>
-      //     </Col>
-      //   </Row>
-      // </div>
+    // <div className="workspaceHeader">
+    //   <Row gutter={[8, 8]}>
+    //     <Col xs={24} sm={24} md={12} lg={12} xl={12} className="title">
+    //       <h3>My Workspaces</h3>
+    //     </Col>
+    //     <Col
+    //       xs={24}
+    //       sm={24}
+    //       md={12}
+    //       lg={12}
+    //       xl={12}
+    //       className="workspaceFileBtn"
+    //     >
+    //       <Button type="primary" onClick={showModal} className="text-dark">
+    //         Create New Workspace
+    //       </Button>
+    //       <Modal
+    //         visible={visible}
+    //         title="Add Workspace"
+    //         onCancel={handleCancel}
+    //         footer={null}
+    //         destroyOnClose={true}
+    //       >
+    //         <WorkspaceAddForm />
+    //       </Modal>
+    //     </Col>
+    //   </Row>
+    // </div>
     // );
   };
 
-  const WorkspaceHeader = ()=>{
-    return(
+  const WorkspaceHeader = () => {
+    return (
       <>
         <Grid
-            style={{
-              backgroundColor: "#66a",
-              WebkitBorderBottomLeftRadius: 0,
-              WebkitBorderBottomRightRadius: 0,
-            }}
-            container
+          style={{
+            backgroundColor: "#66a",
+            WebkitBorderBottomLeftRadius: 0,
+            WebkitBorderBottomRightRadius: 0,
+          }}
+          container
         >
-            <Grid item lg={12} sm={12}
-              style={{
-                display: "flex",
-                padding: 10,
-                justifyContent: "space-between"
-              }}
-            >
-              <h1 className={classes.zeroMargin} style={{color: "#ddd"}}>My Workspaces</h1>
-              <Tooltip title="Add new workspace">
-                <Button
-                  variant="contained"
-                  className={classes.topButton}
-                  startIcon={<AddIcon/>}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                  onClick={handleOpen}
-                >
-                  Add Workspace
-                </Button>
-              </Tooltip>
-            </Grid>
-        
-            <Grid item lg={12} sm={12} md={12}>
-              <div className={classes.root}>
-                  <LinearProgress variant="determinate" value={10} />
-              </div>
-            </Grid>
+          <Grid
+            item
+            lg={12}
+            sm={12}
+            style={{
+              display: "flex",
+              padding: 10,
+              justifyContent: "space-between",
+            }}
+          >
+            <h1 className={classes.zeroMargin} style={{ color: "#ddd" }}>
+              My Workspaces
+            </h1>
+            <Tooltip title="Add new workspace">
+              <Button
+                variant="contained"
+                className={classes.topButton}
+                startIcon={<AddIcon />}
+                style={{
+                  backgroundColor: "#fafafa",
+                }}
+                onClick={handleOpen}
+              >
+                Add Workspace
+              </Button>
+            </Tooltip>
+          </Grid>
+
+          <Grid item lg={12} sm={12} md={12}>
+            <div className={classes.root}>
+              <LinearProgress variant="determinate" value={10} />
+            </div>
+          </Grid>
         </Grid>
       </>
-    )
-  }
+    );
+  };
 
-  const addWorkspace = (event:any)=>{
+  const addWorkspace = (event: any) => {
     event.preventDefault();
     if (!loading) {
       setSuccess(false);
@@ -513,20 +516,27 @@ const Workspaces = () => {
         setLoading(false);
       }, 2000);
     }
-    console.log(event)
-  }
+  };
   const body = (
     <div style={modalStyle} className={classes.paper}>
       <h2>Add New Workspace</h2>
       <form onSubmit={addWorkspace} noValidate autoComplete="off">
-        <div style={{display: "flex",flexDirection:"column",justifyContent: "center"}}>
-          <TextField label="Enter Workspace Name" style={{width: "100%"}}/>
-          <div style={{
+        <div
+          style={{
             display: "flex",
-            width: "100%",
-            justifyContent: "space-evenly",
-            padding: "5px",
-          }}>
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <TextField label="Enter Workspace Name" style={{ width: "100%" }} />
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-evenly",
+              padding: "5px",
+            }}
+          >
             <Tooltip title="Save">
               <Button
                 variant="contained"
@@ -548,57 +558,85 @@ const Workspaces = () => {
                 Cancel
               </Button>
             </Tooltip>
-            
           </div>
         </div>
       </form>
-        
     </div>
   );
-  
-  const WkCard = ()=>{
-    return(
+
+  const WkCard = () => {
+    return (
       <>
         <Grid item lg={3} md={6} sm={12}>
           <Card className={classes.root}>
-            <CardContent style={{textAlign: "center"}}>
-              <Typography className={classes.title} variant="h1" color="textPrimary" gutterBottom>
+            <CardContent style={{ textAlign: "center" }}>
+              <Typography
+                className={classes.title}
+                variant="h1"
+                color="textPrimary"
+                gutterBottom
+              >
                 WorkSpace Name
-              </Typography><br/>
+              </Typography>
+              <br />
               <TextField />
-              <Typography className={classes.title} color="textSecondary" gutterBottom>
+              <Typography
+                className={classes.title}
+                color="textSecondary"
+                gutterBottom
+              >
                 20 Days Ago
               </Typography>
-              <Typography className={classes.title} color="textSecondary" gutterBottom>
+              <Typography
+                className={classes.title}
+                color="textSecondary"
+                gutterBottom
+              >
                 Private
               </Typography>
             </CardContent>
-            <CardActions style={{display: "flex", justifyContent: "center"}}>
+            <CardActions style={{ display: "flex", justifyContent: "center" }}>
               <Tooltip title="Edit workspace">
-                <Button size="small" color="primary" startIcon={<EditIcon/>} variant="contained">Edit</Button>
+                <Button
+                  size="small"
+                  color="primary"
+                  startIcon={<EditIcon />}
+                  variant="contained"
+                >
+                  Edit
+                </Button>
               </Tooltip>
               <Tooltip title="Delete workspace">
-                <Button size="small" color="secondary" startIcon={<DeleteIcon />} variant="contained">Delete</Button>
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  variant="contained"
+                >
+                  Delete
+                </Button>
               </Tooltip>
             </CardActions>
           </Card>
         </Grid>
       </>
-    )
-  }
+    );
+  };
 
-  
-const handleText = (event:any)=>{
-  console.log('setInput',event.target.value)
-}
-  const AddWorkspaceDialog = ()=>{
-    return(
-      <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+  const handleText = (event: any) => {};
+  const AddWorkspaceDialog = () => {
+    return (
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="form-dialog-title"
+      >
         <DialogTitle id="form-dialog-title">Add Workspace</DialogTitle>
         <form onSubmit={addWorkspace} noValidate autoComplete="off">
           <DialogContent>
             <DialogContentText>
-              Please enter workspace name and click on submit button to create new workspace
+              Please enter workspace name and click on submit button to create
+              new workspace
             </DialogContentText>
             <TextField
               autoFocus
@@ -612,50 +650,60 @@ const handleText = (event:any)=>{
             />
           </DialogContent>
           <DialogActions>
-        <Tooltip title="Cancel">
-          <span>
-          <Button 
-          disabled={loading}
-          onClick={handleClose} startIcon={<CloseIcon/>} variant="contained">
-            Cancel
-          </Button>
-          </span>
-        </Tooltip>
-        <div className={classes.wrapper}>
-        <Tooltip title="Create Workspace">
-          <span>
-          <Button
-          disabled={loading}
-          type="submit"
-          startIcon={<AddIcon/>} variant="contained" color="primary">
-            Create
-          </Button>
-          </span>
-        </Tooltip>
-          {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-          </div>
-        </DialogActions>
+            <Tooltip title="Cancel">
+              <span>
+                <Button
+                  disabled={loading}
+                  onClick={handleClose}
+                  startIcon={<CloseIcon />}
+                  variant="contained"
+                >
+                  Cancel
+                </Button>
+              </span>
+            </Tooltip>
+            <div className={classes.wrapper}>
+              <Tooltip title="Create Workspace">
+                <span>
+                  <Button
+                    disabled={loading}
+                    type="submit"
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Create
+                  </Button>
+                </span>
+              </Tooltip>
+              {loading && (
+                <CircularProgress
+                  size={24}
+                  className={classes.buttonProgress}
+                />
+              )}
+            </div>
+          </DialogActions>
         </form>
       </Dialog>
-    )
-  }
+    );
+  };
 
-  
   return (
-  <>
-  <AddWorkspaceDialog/>
-  <Grid
-    style={{
-      marginLeft: "auto",
-      marginRight: "auto",
-      justifyContent: "center",
-      display: "flex",
-      marginBottom: 50,
-    }}
-    lg={12}
-    xl={10}
-  >
-    <Grid
+    <>
+      <AddWorkspaceDialog />
+      <Grid
+        style={{
+          marginLeft: "auto",
+          marginRight: "auto",
+          justifyContent: "center",
+          display: "flex",
+          marginBottom: 50,
+        }}
+        lg={12}
+        xl={10}
+      >
+        <Grid
           style={{
             backgroundColor: "#fafafa",
             marginLeft: 10,
@@ -664,22 +712,24 @@ const handleText = (event:any)=>{
             boxShadow: "2px 3px 3px #ddd",
           }}
           xs={12}
-    >
-      <WorkspaceHeader/>
-          <Grid container spacing={2}
+        >
+          <WorkspaceHeader />
+          <Grid
+            container
+            spacing={2}
             style={{
               padding: "10px",
               backgroundColor: "#ddd",
               margin: "auto",
-              width: "100%"
+              width: "100%",
             }}
           >
-            <WkCard/>
-            <WkCard/>
+            <WkCard />
+            <WkCard />
           </Grid>
-    </Grid>
-  </Grid>
-    {/* <div className="block workspaceBlock" style={{background: "red"}}>
+        </Grid>
+      </Grid>
+      {/* <div className="block workspaceBlock" style={{background: "red"}}>
       {/* <div className="container-fluid">
 
         {/* <WorkspaceHeader /> *}

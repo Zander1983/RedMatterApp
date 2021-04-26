@@ -23,7 +23,7 @@ import {
   LinearProgress,
   CircularProgress,
   Snackbar,
-  IconButton 
+  IconButton,
 } from "@material-ui/core";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
@@ -34,8 +34,8 @@ import SaveIcon from "@material-ui/icons/Save";
 import CloseIcon from "@material-ui/icons/Close";
 import { green } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import LoopIcon from '@material-ui/icons/Loop';
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import LoopIcon from "@material-ui/icons/Loop";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     title: {
       fontSize: 14,
-      color: "#222"
+      color: "#222",
     },
     pos: {
       marginBottom: 12,
@@ -107,11 +107,11 @@ const WorkspaceAppFiles = ({ id }: any) => {
     organisationId = user["organisationId"];
   }
   const workspaceName = location.state.workspaceName;
-  
+
   const [progress, setProgress] = useState(0);
   const [success, setSuccess] = useState(false);
   const [isSuccessAlert, setSuccessAlert] = useState(false); //use for success message
-  const [notifyMsg,setMsg] = useState("");
+  const [notifyMsg, setMsg] = useState("");
 
   const [workspaceFileData, setWorkspaceFileData] = useState<any[]>([]);
 
@@ -129,14 +129,13 @@ const WorkspaceAppFiles = ({ id }: any) => {
     headers: {
       Token: localStorage.getItem("token"),
     },
-    onDownloadProgress: (progressEvent:any) => {
+    onDownloadProgress: (progressEvent: any) => {
       setProgress(
         Math.round((progressEvent.loaded / progressEvent.total) * 100)
       );
-    }
+    },
   };
 
-  
   const getWorkspaceFileData = async () => {
     try {
       const response = await axios
@@ -149,14 +148,12 @@ const WorkspaceAppFiles = ({ id }: any) => {
         const datatemp = response.data;
         setWorkspaceFileData(datatemp.files);
       }
-    } catch (err) {
-      console.log('11111111111111111111',err)
-    }
+    } catch (err) {}
   };
 
-  useEffect(()=>{
-    getWorkspaceFileData()
-  },[])
+  useEffect(() => {
+    getWorkspaceFileData();
+  }, []);
 
   const getTimeCal = (date: string) => {
     const date1 = new Date(date);
@@ -165,37 +162,36 @@ const WorkspaceAppFiles = ({ id }: any) => {
     let totalDays = Math.floor(
       (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)
     );
-    if(Math.floor(totalDays/31) > 0){
-      days = `${Math.floor(totalDays/31)} Months Ago`
-    }else{
-      days = `${totalDays} Days Ago`
+    if (Math.floor(totalDays / 31) > 0) {
+      days = `${Math.floor(totalDays / 31)} Months Ago`;
+    } else {
+      days = `${totalDays} Days Ago`;
     }
-    console.log(totalDays,Math.floor(totalDays/31))
+    console.log(totalDays, Math.floor(totalDays / 31));
     return days;
   };
 
-  
-  const FileCard = (props:any) => {
+  const FileCard = (props: any) => {
     return (
       <>
         <Grid item lg={3} md={6} sm={12}>
           <Card className={classes.root}>
             <CardContent style={{ textAlign: "center" }}>
-            {/* <NavLink to={`/analyse/${workspacesId}/${props.data.id}`}> */}
-            <NavLink to={`/workspaces`}>
-              <Typography
-                style={{
-                  fontWeight: "bold",
-                  color: "#66a",
-                  marginBottom: "5px"
-                }}
-                color="textPrimary"
-                align="center"
-                gutterBottom
-                noWrap
-              >
-                {props.data.label}
-              </Typography>
+              {/* <NavLink to={`/analyse/${workspacesId}/${props.data.id}`}> */}
+              <NavLink to={`/workspaces`}>
+                <Typography
+                  style={{
+                    fontWeight: "bold",
+                    color: "#66a",
+                    marginBottom: "5px",
+                  }}
+                  color="textPrimary"
+                  align="center"
+                  gutterBottom
+                  noWrap
+                >
+                  {props.data.label}
+                </Typography>
               </NavLink>
               <Typography
                 className={classes.title}
@@ -270,13 +266,16 @@ const WorkspaceAppFiles = ({ id }: any) => {
                   Upload File
                 </Button>
               </Tooltip>
-            
             </div>
           </Grid>
 
           <Grid item lg={12} sm={12} md={12}>
             <div className={classes.root}>
-              <LinearProgress variant="determinate" color="secondary" value={progress} />
+              <LinearProgress
+                variant="determinate"
+                color="secondary"
+                value={progress}
+              />
             </div>
           </Grid>
         </Grid>
@@ -328,18 +327,18 @@ const WorkspaceAppFiles = ({ id }: any) => {
               width: "100%",
             }}
           >
-            {
-              workspaceFileData.length > 0 ? workspaceFileData.map((data:any)=>{
-                return <FileCard data={data}/>
-              }) : 
+            {workspaceFileData.length > 0 ? (
+              workspaceFileData.map((data: any) => {
+                return <FileCard data={data} />;
+              })
+            ) : (
               <h1>No Data</h1>
-            }
+            )}
           </Grid>
         </Grid>
       </Grid>
     </>
   );
-  
 };
 
 export default WorkspaceAppFiles;

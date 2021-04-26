@@ -77,7 +77,6 @@ const Login = (props: any) => {
       props.onLogin();
       // props.history.push('/workspaces');
     } catch (err) {
-      console.log("err444444>>>>>>", err);
       const errMsg = err.response.data.message;
       setErrorMsg((prevMsg: string) => {
         return errMsg;

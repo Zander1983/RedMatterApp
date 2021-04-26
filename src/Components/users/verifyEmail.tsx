@@ -37,14 +37,11 @@ const VerifyEmail = (props: any) => {
   const [isError, setError] = useState(false);
   const [isSuccess, setSuccess] = useState(false);
 
-  useEffect(() => {
-    console.log("Renering...");
-  }, []);
+  useEffect(() => {}, []);
 
   const verify = async () => {
     try {
       const res = await axios.get(`/api/verify?verifyStr=${props.verifyStr}`);
-      console.log("verify message>>>", res);
       const resMsg = res.data.message;
       setError(false);
       setSuccess(true);
@@ -53,7 +50,6 @@ const VerifyEmail = (props: any) => {
         history.push("/login");
       }, 4000);
     } catch (err: any) {
-      console.log("hjhkjhkjhjk", err);
       const resMsg = "Error while verifying.Please try after some time!";
       setError(true);
       setSuccess(false);

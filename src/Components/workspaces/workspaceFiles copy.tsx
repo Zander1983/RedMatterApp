@@ -94,7 +94,6 @@ const WorkspaceAppFiles = ({ id }: any) => {
       if (files.length > 3) {
         const msg = "Only 3 files can be uploaded at a time";
         event.target.value = null;
-        console.log(msg);
         return false;
       }
       return true;
@@ -118,7 +117,6 @@ const WorkspaceAppFiles = ({ id }: any) => {
       }
       if (err !== "") {
         event.target.value = null;
-        console.log(err);
         return false;
       }
       return true;
@@ -128,14 +126,12 @@ const WorkspaceAppFiles = ({ id }: any) => {
     //     const maxSize = 15000;
     //     let err = "";
     //     for(let fileCount = 0; fileCount<event.target.files.length; fileCount++){
-    //         console.log(files[fileCount])
     //         if(files[fileCount].size > maxSize){
     //             err = "File size is too large.Maximum upload limit is 40MB"
     //         }
     //     }
     //     if(err !== ''){
     //         event.target.value = null;
-    //         console.log(err);
     //         return false;
     //     }
     //     return true;
@@ -157,7 +153,6 @@ const WorkspaceAppFiles = ({ id }: any) => {
             Token: localStorage.getItem("token"),
           },
           onUploadProgress: (ProgressEvent: any) => {
-            console.log("ProgressEvent>>>", ProgressEvent);
             setLoaded(
               //@ts-ignore
               Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100, 2)
@@ -167,12 +162,9 @@ const WorkspaceAppFiles = ({ id }: any) => {
         axios
           .post("api/upload", data, config)
           .then((res: any) => {
-            console.log("response>>>>>>", res);
             setVisible(false);
           })
-          .catch((err: any) => {
-            console.log("er12344=>>>>>", err);
-          });
+          .catch((err: any) => {});
       }
     };
     return (

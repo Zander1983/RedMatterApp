@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     title: {
       fontSize: 14,
-      color: "#222"
+      color: "#222",
     },
     pos: {
       marginBottom: 12,
@@ -111,12 +111,12 @@ const Workspaces = () => {
   const [success, setSuccess] = useState(false);
   const [isSuccessAlert, setSuccessAlert] = useState(false); //use for success message
   const [loading, setLoading] = useState(false); //used in add/edit dialog popup
-  const [notifyMsg,setMsg] = useState("");
+  const [notifyMsg, setMsg] = useState("");
 
   const [isDialogActive, setDialogActive] = useState(false);
-  const [newWorkspace,setNewWorkspace] = useState({
-    name: ""
-  })
+  const [newWorkspace, setNewWorkspace] = useState({
+    name: "",
+  });
   const timer = useRef<number>();
 
   const handleSuccessClose = (
@@ -133,24 +133,21 @@ const Workspaces = () => {
     headers: {
       Token: localStorage.getItem("token"),
     },
-    onDownloadProgress: (progressEvent:any) => {
+    onDownloadProgress: (progressEvent: any) => {
       setProgress(
         Math.round((progressEvent.loaded / progressEvent.total) * 100)
       );
-    }
+    },
   };
-  
+
   const getWorkspaceByOrgid = () => {
     axios
       .get(`api/workspaces?organisationId=${organisationId}`, options)
       .then((res: any) => {
         const datatemp = res.data.workspaces;
         setWorkspaceData(datatemp);
-        console.log('datatemp>>>',datatemp)
       })
-      .catch((err: any) => {
-        console.log('error>>>',err)
-      });
+      .catch((err: any) => {});
   };
 
   useEffect(() => {
@@ -175,15 +172,14 @@ const Workspaces = () => {
     let totalDays = Math.floor(
       (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)
     );
-    if(Math.floor(totalDays/31) > 0){
-      days = `${Math.floor(totalDays/31)} Months Ago`
-    }else{
-      days = `${totalDays} Days Ago`
+    if (Math.floor(totalDays / 31) > 0) {
+      days = `${Math.floor(totalDays / 31)} Months Ago`;
+    } else {
+      days = `${totalDays} Days Ago`;
     }
-    console.log(totalDays,Math.floor(totalDays/31))
     return days;
   };
-  const WkCard = (props:any) => {
+  const WkCard = (props: any) => {
     return (
       <>
         <Grid item lg={3} md={6} sm={12}>
@@ -195,19 +191,19 @@ const Workspaces = () => {
                   state: { workspaceName: props.data.name },
                 }}
               >
-              <Typography
-                style={{
-                  fontWeight: "bold",
-                  color: "#66a",
-                  marginBottom: "5px"
-                }}
-                color="textPrimary"
-                align="center"
-                gutterBottom
-                noWrap
-              >
-                {props.data.name}
-              </Typography>
+                <Typography
+                  style={{
+                    fontWeight: "bold",
+                    color: "#66a",
+                    marginBottom: "5px",
+                  }}
+                  color="textPrimary"
+                  align="center"
+                  gutterBottom
+                  noWrap
+                >
+                  {props.data.name}
+                </Typography>
               </NavLink>
               <Typography
                 className={classes.title}
@@ -221,7 +217,7 @@ const Workspaces = () => {
                 color="textSecondary"
                 gutterBottom
               >
-                {props.data.isPrivate?"Private":"Public"}
+                {props.data.isPrivate ? "Private" : "Public"}
               </Typography>
             </CardContent>
             <CardActions style={{ display: "flex", justifyContent: "center" }}>
@@ -253,10 +249,9 @@ const Workspaces = () => {
   };
 
   const handleText = (event: any) => {
-    console.log("setInput", event.target.value);
-    setNewWorkspace((prevState:any)=>{
-      return {...prevState,[event.target.name] : event.target.value}
-    })
+    setNewWorkspace((prevState: any) => {
+      return { ...prevState, [event.target.name]: event.target.value };
+    });
   };
   const addWorkspace = (event: any) => {
     event.preventDefault();
@@ -266,12 +261,11 @@ const Workspaces = () => {
       timer.current = window.setTimeout(() => {
         setSuccessAlert(true);
         handleDialogClose();
-        setMsg('Successfully Added')
+        setMsg("Successfully Added");
         setSuccess(true);
         setLoading(false);
       }, 2000);
     }
-    console.log(event);
   };
   const AddWorkspaceDialog = () => {
     return (
@@ -339,7 +333,7 @@ const Workspaces = () => {
       </Dialog>
     );
   };
-  
+
   const WorkspaceHeader = () => {
     return (
       <>
@@ -381,7 +375,11 @@ const Workspaces = () => {
 
           <Grid item lg={12} sm={12} md={12}>
             <div className={classes.root}>
-              <LinearProgress variant="determinate" color="secondary" value={progress} />
+              <LinearProgress
+                variant="determinate"
+                color="secondary"
+                value={progress}
+              />
             </div>
           </Grid>
         </Grid>
@@ -434,11 +432,10 @@ const Workspaces = () => {
               width: "100%",
             }}
           >
-            {
-              workspaceData.length > 0 && workspaceData.map((data:any)=>{
-                return <WkCard data={data}/>
-              })
-            }
+            {workspaceData.length > 0 &&
+              workspaceData.map((data: any) => {
+                return <WkCard data={data} />;
+              })}
           </Grid>
         </Grid>
       </Grid>

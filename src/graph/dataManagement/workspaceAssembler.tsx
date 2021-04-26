@@ -92,7 +92,6 @@ export default class WorkspaceAssembler {
     for (const gateObj of inp.gates) {
       let gate: Gate;
       if (gateObj.gateType === "PolygonGate") {
-        console.log("create gate...");
         gate = new PolygonGate(gateObj);
       }
       if (gateObj.gateType === "OvalGate") {
