@@ -420,7 +420,7 @@ export default class PlotData extends ObserversFunctionality {
         return gate.inverseGating ? !inside : inside;
       });
     }
-    data = this.filterIndexesFromRandomSelection(data);
+    // data = this.filterIndexesFromRandomSelection(data);
     return (this.axisDataCache = data);
   }
 

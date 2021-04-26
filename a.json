@@ -1,53 +1,55 @@
 {
   "name": "",
-  "files": ["local://transduction_1"],
+  "files": ["local://erica1"],
   "gates": [
     {
-      "id": "c1f0f128-543d-47db-bd00-3094da58ba5a",
+      "id": "b909335b-4d41-46b5-930a-6107d5aa7456",
       "name": "Polygon Gate 1",
       "color": "#f00",
       "xAxis": "FSC-A",
       "yAxis": "SSC",
       "parents": [],
-      "children": ["4d98e878-9d0c-46e7-9f74-1146dd6a19f4"],
+      "children": ["342eeabd-8ce9-4346-a2aa-3ad4d602e7f2"],
       "points": [
-        { "x": 81022.46749223057, "y": 90875.51559136051 },
-        { "x": 84187.47776380715, "y": 35859.13691426984 },
-        { "x": 133561.638000402, "y": 53093.18324685245 }
+        { "x": 127285.87620357634, "y": 85516.48780487804 },
+        { "x": 103847.96698762036, "y": -14385.951219512208 },
+        { "x": 211662.34938101788, "y": 46354.731707317085 },
+        { "x": 171998.1953232462, "y": 131072 }
       ],
       "gateType": "PolygonGate"
     },
     {
-      "id": "4d98e878-9d0c-46e7-9f74-1146dd6a19f4",
+      "id": "342eeabd-8ce9-4346-a2aa-3ad4d602e7f2",
       "name": "Polygon Gate 2",
       "color": "#0f0",
       "xAxis": "FSC-A",
-      "yAxis": "SSC",
-      "parents": ["c1f0f128-543d-47db-bd00-3094da58ba5a"],
+      "yAxis": "Comp-APC-A - CD45",
+      "parents": ["b909335b-4d41-46b5-930a-6107d5aa7456"],
       "children": [],
       "points": [
-        { "x": 87352.48803538375, "y": 77618.55687398926 },
-        { "x": 93049.50652422161, "y": 34533.44104253272 },
-        { "x": 113305.5722623118, "y": 54418.87911858958 }
+        { "x": 103847.96698762036, "y": 0.8292682926829268 },
+        { "x": 74640.72627235213, "y": 0.13719512195121952 },
+        { "x": 224643.34525447042, "y": 0.35365853658536583 },
+        { "x": 206614.18431911967, "y": 0.7957317073170732 }
       ],
       "gateType": "PolygonGate"
     }
   ],
   "plots": [
     {
-      "id": "e3504d07-7c63-4158-b008-c28d4d444f4e",
+      "id": "d4c6c79a-7d62-4773-888f-d4b4d369c9af",
       "ranges": {
-        "FSC-A": [5062.220974392361, 253832.0283203125],
-        "SSC": [5181.705882352941, 127995],
-        "Comp-FITC-A - CD7": [62704.74725115741, 202291.38461538462],
-        "Comp-PE-A - CD3": [496.6666768391927, 242484.626953125],
-        "Comp-APC-A - CD45": [571.5, 134168.125],
-        "Time": [49585.064453125, 174682.93149038462]
+        "FSC-A": [0, 262144],
+        "SSC": [0, 262144],
+        "Comp-FITC-A - CD7": [0, 1],
+        "Comp-PE-A - CD3": [0, 1],
+        "Comp-APC-A - CD45": [0, 1],
+        "Time": [0, 1]
       },
-      "file": "local://transduction_1",
+      "file": "local://erica1",
       "gates": [
         {
-          "gate": "c1f0f128-543d-47db-bd00-3094da58ba5a",
+          "gate": "b909335b-4d41-46b5-930a-6107d5aa7456",
           "displayOnlyPointsInGate": false,
           "inverseGating": false
         }
@@ -55,72 +57,72 @@
       "population": [],
       "xAxis": "FSC-A",
       "yAxis": "SSC",
-      "plotWidth": 513,
-      "plotHeight": 285.28125,
+      "plotWidth": 847,
+      "plotHeight": 428,
       "plotScale": 2,
       "xPlotType": "lin",
       "yPlotType": "lin",
       "histogramAxis": "vertical"
     },
     {
-      "id": "9c0fa15f-cff6-4eb6-acb4-4f327cac032a",
+      "id": "d3a58312-992f-4de2-a9a9-5bed125da600",
       "ranges": {
-        "FSC-A": [5062.220974392361, 253832.0283203125],
-        "SSC": [5181.705882352941, 127995],
-        "Comp-FITC-A - CD7": [62704.74725115741, 202291.38461538462],
-        "Comp-PE-A - CD3": [496.6666768391927, 242484.626953125],
-        "Comp-APC-A - CD45": [571.5, 134168.125],
-        "Time": [49585.064453125, 174682.93149038462]
+        "FSC-A": [0, 262144],
+        "SSC": [0, 262144],
+        "Comp-FITC-A - CD7": [0, 1],
+        "Comp-PE-A - CD3": [0, 1],
+        "Comp-APC-A - CD45": [0, 1],
+        "Time": [0, 1]
       },
-      "file": "local://transduction_1",
+      "file": "local://erica1",
       "gates": [
         {
-          "gate": "4d98e878-9d0c-46e7-9f74-1146dd6a19f4",
+          "gate": "342eeabd-8ce9-4346-a2aa-3ad4d602e7f2",
           "displayOnlyPointsInGate": false,
           "inverseGating": false
         }
       ],
       "population": [
         {
-          "gate": "c1f0f128-543d-47db-bd00-3094da58ba5a",
+          "gate": "b909335b-4d41-46b5-930a-6107d5aa7456",
           "inverseGating": false
         }
       ],
       "xAxis": "FSC-A",
-      "yAxis": "SSC",
-      "plotWidth": 513,
-      "plotHeight": 285.28125,
+      "yAxis": "Comp-APC-A - CD45",
+      "plotWidth": 847,
+      "plotHeight": 428,
       "plotScale": 2,
       "xPlotType": "lin",
       "yPlotType": "lin",
       "histogramAxis": "vertical"
     },
     {
-      "id": "5b4d605b-42f8-48d5-9aff-fb0142603123",
+      "id": "0654bd8c-b8e2-43c3-b7be-edacc3aa8262",
       "ranges": {
-        "FSC-A": [5062.220974392361, 253832.0283203125],
-        "SSC": [5181.705882352941, 127995],
-        "Comp-FITC-A - CD7": [62704.74725115741, 202291.38461538462],
-        "Comp-PE-A - CD3": [496.6666768391927, 242484.626953125],
-        "Comp-APC-A - CD45": [571.5, 134168.125],
-        "Time": [49585.064453125, 174682.93149038462]
+        "FSC-A": [0, 262144],
+        "SSC": [0, 262144],
+        "Comp-FITC-A - CD7": [0, 1],
+        "Comp-PE-A - CD3": [0, 1],
+        "Comp-APC-A - CD45": [0, 1],
+        "Time": [0, 1]
       },
-      "file": "local://transduction_1",
+      "file": "local://erica1",
       "gates": [],
       "population": [
         {
-          "gate": "4d98e878-9d0c-46e7-9f74-1146dd6a19f4",
+          "gate": "342eeabd-8ce9-4346-a2aa-3ad4d602e7f2",
           "inverseGating": false
         },
         {
-          "gate": "c1f0f128-543d-47db-bd00-3094da58ba5a",
+          "gate": "b909335b-4d41-46b5-930a-6107d5aa7456",
           "inverseGating": false
         }
       ],
       "xAxis": "FSC-A",
       "yAxis": "SSC",
-      "plotWidth": 513,
-      "plotHeight": 285.28125,
+      "plotWidth": 847,
+      "plotHeight": 428,
       "plotScale": 2,
       "xPlotType": "lin",
       "yPlotType": "lin",

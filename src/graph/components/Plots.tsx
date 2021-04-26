@@ -360,7 +360,7 @@ function Plots() {
               >
                 Learn More
               </Button>
-              {/* <Button
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -370,7 +370,7 @@ function Plots() {
                 }}
               >
                 Print workspace
-              </Button> */}
+              </Button>
             </Grid>
             <Grid
               xs={3}
