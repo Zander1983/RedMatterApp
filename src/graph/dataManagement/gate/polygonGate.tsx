@@ -26,7 +26,7 @@ export default class PolygonGate extends Gate {
     };
   }
 
-  protected getGateType() {
+  getGateType() {
     return "Polygon Gate";
   }
 

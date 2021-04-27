@@ -8,6 +8,7 @@ import dataManager from "../../dataManagement/dataManager";
 import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
+import PlotData from "graph/dataManagement/plotData";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -44,7 +45,10 @@ const standardGridPlotItem = (x: number, y: number) => {
 class Workspace extends React.Component {
   private static renderCalls = 0;
   workspace: WorkspaceData;
-  plots: Plot[];
+  plots: {
+    plotData: PlotData;
+    plotRender: Plot;
+  }[] = [];
 
   constructor(props: any) {
     super(props);
@@ -64,9 +68,15 @@ class Workspace extends React.Component {
 
   update() {
     const plotMap = dataManager.getAllPlots();
-    const plotList: Plot[] = [];
+    const plotList: {
+      plotData: PlotData;
+      plotRender: Plot;
+    }[] = [];
     plotMap.forEach((v) =>
-      plotList.push(dataManager.getPlotRendererForPlot(v.plotID))
+      plotList.push({
+        plotData: v.plot,
+        plotRender: dataManager.getPlotRendererForPlot(v.plotID),
+      })
     );
     this.plots = plotList;
     this.forceUpdate();
@@ -98,7 +108,10 @@ class Workspace extends React.Component {
                   id={`workspace-outter-${e.plotData.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent plot={e} plotIndex={e.plotData.id} />
+                    <PlotComponent
+                      plot={e.plotRender}
+                      plotIndex={e.plotData.id}
+                    />
                   </div>
                 </div>
               );

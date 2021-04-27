@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
+import Popover from "@material-ui/core/Popover";
+import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 
 import AddFileModal from "./modals/AddFileModal";
@@ -14,6 +16,8 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import LinkShareModal from "./modals/linkShareModal";
 import dataManager from "graph/dataManagement/dataManager";
+import SideButtons from "./static/SideButtons";
+import Menus from "./static/SideButtons";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -88,6 +92,19 @@ function Plots() {
       setLoadModal(false);
     }, waitTime);
   });
+
+  /* POPOVER ELEMENTS */
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handlePopoverOpen = (e: any) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
 
   return (
     <div
@@ -277,6 +294,10 @@ function Plots() {
         }}
       />
 
+      {/* == STATIC ELEMENTS == */}
+      <Menus></Menus>
+      <SideButtons></SideButtons>
+
       {/* == NOTICES == */}
       {showSmallScreenNotice ? (
         <div
@@ -328,7 +349,7 @@ function Plots() {
           marginRight: 0,
           justifyContent: "center",
           display: "flex",
-          marginBottom: 50,
+          marginBottom: 500,
         }}
       >
         <Grid
@@ -364,6 +385,22 @@ function Plots() {
               >
                 + Add new file
               </Button>
+              <Popover
+                open={open}
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "left",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "left",
+                }}
+                onClose={handlePopoverClose}
+                disableRestoreFocus
+              >
+                <Typography>I use Popover.</Typography>
+              </Popover>
               <Button
                 variant="contained"
                 size="large"

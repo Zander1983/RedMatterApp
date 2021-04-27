@@ -19,7 +19,7 @@ export default class OvalGate extends Gate {
   ang: number;
   gateType: string = "OvalGate";
 
-  protected getGateType() {
+  getGateType() {
     return "Oval Gate";
   }
 

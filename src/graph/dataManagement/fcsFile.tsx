@@ -55,6 +55,10 @@ export default class FCSFile {
     return this.axes;
   }
 
+  update(update: any) {
+    if (update.name !== undefined) this.name = update.name;
+  }
+
   getPopulationFromGates(gatingParams: { gate: Gate; inverse: boolean }[]) {
     const newPopulation: Array<Array<number>> = [];
     this.data.forEach((p, i) => {

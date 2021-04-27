@@ -1,7 +1,8 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import { Divider } from "@material-ui/core";
+import { Button, Divider } from "@material-ui/core";
+import BackupIcon from "@material-ui/icons/Backup";
 
 import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
@@ -267,6 +268,36 @@ function AddFileModal(props: {
           but here we have a selection of 3 real fcs files for you to play
           around!
         </p>
+
+        <div
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
+          <Button
+            style={{
+              backgroundColor: "#66d",
+              color: "white",
+              fontSize: 13,
+              marginLeft: 20,
+            }}
+          >
+            Upload file (<BackupIcon fontSize="small"></BackupIcon>)
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#66d",
+              color: "white",
+              fontSize: 13,
+              marginLeft: 20,
+            }}
+          >
+            Upload file (Anonymous)
+          </Button>
+        </div>
 
         <p>
           <b>Click on the file you want to open:</b>

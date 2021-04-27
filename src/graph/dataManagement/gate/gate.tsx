@@ -29,7 +29,7 @@ export default abstract class Gate extends ObserversFunctionality {
 
   static instanceCount: number = 1;
 
-  protected getGateType(): string {
+  getGateType(): string {
     return "Abstract Gate";
   }
 
@@ -66,9 +66,22 @@ export default abstract class Gate extends ObserversFunctionality {
     };
   }
 
+  private instanceOfGateState(object: any): object is GateState {
+    return (
+      "children" in object &&
+      "parents" in object &&
+      "xAxis" in object &&
+      "yAxis" in object
+    );
+  }
+
   @publishDecorator()
-  update(update: GateState) {
-    this.setState(update);
+  update(update: GateState | any) {
+    if (this.instanceOfGateState(update)) {
+      this.setState(update);
+    }
+    if (update.name !== undefined) this.name = update.name;
+    if (update.color !== undefined) this.color = update.color;
   }
 
   isPointInside(point: { x: number; y: number }): boolean {
