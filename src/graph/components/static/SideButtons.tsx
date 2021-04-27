@@ -56,9 +56,12 @@ function FilesBar() {
                     fontSize: 14,
                   }}
                   onChange={(e) => {
-                    const newName = e.target.value;
-                    file.file.update({ name: newName });
-                    resetFiles(file.fileID);
+                    alert(
+                      "Unfortunately we haven't implemented full support for changing the name of files as of now."
+                    );
+                    // const newName = e.target.value;
+                    // file.file.update({ name: newName });
+                    // resetFiles(file.fileID);
                   }}
                 />
               </TableCell>
