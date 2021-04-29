@@ -1,6 +1,6 @@
 import React, { useState, FC } from "react";
 
-import { NavLink,useHistory } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -28,6 +28,11 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Quicksand",
     fontWeight: 600,
     marginLeft: "10px",
+    padding: 6,
+    borderRadius: 5,
+    "&:hover": {
+      backgroundColor: "rgba(255,255,255,0.2)",
+    },
   },
   toolbar: {
     backgroundColor: "#333",
@@ -42,36 +47,9 @@ const AppHeader: FC = (props: any) => {
 
   let user = localStorage?.getItem("user");
   let login_logout_button;
-  const onLogout = ()=>{
+  const onLogout = () => {
     localStorage.clear();
-  }
-  if (user) {
-    login_logout_button = (
-      <>
-      <NavLink className={classes.topBarLink} to="/workspaces">My Workspace</NavLink>
-      <a
-        className={classes.topBarLink}
-        onClick={onLogout}
-        href="/"
-      >
-        Logout
-      </a>
-      </>
-    );
-  } else {
-    login_logout_button = (
-      <>
-        <NavLink className={classes.topBarLink} to="/login">
-          Sign In
-        </NavLink>
-        <NavLink className={classes.topBarLink} to="/register">
-          Register
-        </NavLink>
-        {/* <NavLink className={classes.topBarLink} to="/authentication/0">Login</NavLink>
-        <NavLink className={classes.topBarLink} to="/authentication/1">Register</NavLink> */}
-      </>
-    );
-  }
+  };
 
   return (
     <AppBar className={classes.toolbar}>
@@ -109,9 +87,33 @@ const AppHeader: FC = (props: any) => {
           </NavLink>
         </Typography>
         <NavLink className={classes.topBarLink} to="/questions">
-          Start graphing!
+          Start graphing
         </NavLink>
-        {login_logout_button}
+
+        {user ? (
+          <>
+            <NavLink className={classes.topBarLink} to="/workspaces">
+              Workspace
+            </NavLink>
+            <a className={classes.topBarLink} onClick={onLogout} href="/">
+              Logout
+            </a>
+          </>
+        ) : (
+          <>
+            <NavLink className={classes.topBarLink} to="/login">
+              Sign In
+            </NavLink>
+            <NavLink className={classes.topBarLink} to="/register">
+              Register
+            </NavLink>
+            {/* <NavLink className={classes.topBarLink} to="/authentication/0">Login</NavLink>
+        <NavLink className={classes.topBarLink} to="/authentication/1">Register</NavLink> */}
+          </>
+        )}
+        <NavLink className={classes.topBarLink} to="/mailing-list">
+          Mailing list
+        </NavLink>
         {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
         <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>

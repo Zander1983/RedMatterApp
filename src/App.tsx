@@ -95,7 +95,7 @@ const App: FC = () => {
           />
           <Route
             exact
-            path="/about"
+            path="/mailing-list"
             component={(props: any) => <About {...props} />}
           />
 

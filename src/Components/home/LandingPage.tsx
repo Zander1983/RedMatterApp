@@ -111,6 +111,16 @@ const AppLandingPage = () => {
                     Start now
                   </Button>
                 </NavLink>
+                <br />
+                <NavLink to="/mailing-list">
+                  <a
+                    style={{
+                      color: "#ddf",
+                    }}
+                  >
+                    Or join our mailing list
+                  </a>
+                </NavLink>
               </CardContent>
             </Card>
           </div>
