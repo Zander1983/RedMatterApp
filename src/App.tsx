@@ -12,6 +12,7 @@ import Workspaces from "./Components/workspaces/workspaces";
 import AppLandingPage from "./Components/home/LandingPage";
 import WorkspaceAppFiles from "./Components/workspaces/workspaceFiles";
 import PrototypeForm from "./Components/home/PrototypeForm";
+import About from "./Components/home/About";
 
 import Plots from "./graph/components/Plots";
 import Login from "./Components/users/login";
@@ -91,6 +92,11 @@ const App: FC = () => {
             component={({ match }: any) => (
               <WorkspaceAppFiles id={match.params.workspacesId} />
             )}
+          />
+          <Route
+            exact
+            path="/about"
+            component={(props: any) => <About {...props} />}
           />
 
           {/* <Route exact path="/graph" component={Plots} />

@@ -1,5 +1,6 @@
 import dataManager from "../dataManager";
 import WorkspaceData from "../workspaceData";
+import firebase from "utils/firebase";
 
 export default class LinkReconstructor {
   store(workspace: WorkspaceData): string {
@@ -53,8 +54,7 @@ export default class LinkReconstructor {
 
   private saveToCloud(workspaceJSON: string): string {
     const newURLID = dataManager.createID().substr(0, 8);
-    //@ts-ignore
-    db.collection("linkshortening").add({
+    firebase.saveToCloud("linkshortening", {
       workspaceJSON: workspaceJSON,
       workspaceID: newURLID,
     });
@@ -65,15 +65,13 @@ export default class LinkReconstructor {
     token: string,
     callback: (workspaceJSON: string) => void
   ) {
-    //@ts-ignore
-    db.collection("linkshortening")
-      .where("workspaceID", "==", token)
-      .get()
-      .then((snapshot: any) => {
-        const docs = snapshot.docs;
-        if (docs.length === 0)
-          throw Error("Document for workspace " + token + " was not found");
-        callback(docs[0].data().workspaceJSON);
-      });
+    firebase.retrieveFromCloud(
+      "linkshortening",
+      "workspaceID",
+      token,
+      (collection: any) => {
+        callback(collection.workspaceJSON);
+      }
+    );
   }
 }
