@@ -88,74 +88,74 @@ const generateRandomAxes = (dimesionCount: number) => {
 };
 
 const files = [
+  // {
+  //   title: "transduction_1",
+  //   information: "No sources where given to anonymize data. Ficticious name.",
+  //   fromStatic: "transduction_1",
+  //   lastModified: "01/03/2021",
+  // },
+  // {
+  //   title: "transduction_2",
+  //   information: "No sources where given to anonymize data. Ficticious name.",
+  //   fromStatic: "transduction_2",
+  //   lastModified: "01/03/2021",
+  // },
+  // {
+  //   title: "transduction_3",
+  //   information: "No sources where given to anonymize data. Ficticious name.",
+  //   fromStatic: "transduction_3",
+  //   lastModified: "01/03/2021",
+  // },
   {
-    title: "transduction_1",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_1",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_2",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_2",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_3",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_3",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "erica1",
-    information: "No sources where given to anonymize data. Ficticious name.",
+    title: "Sample file 1",
+    information: "No sources were given to anonymize data.",
     fromStatic: "erica1",
     lastModified: "23/05/2020",
   },
   {
-    title: "erica2",
-    information: "No sources where given to anonymize data. Ficticious name.",
+    title: "Sample file 1",
+    information: "No sources were given to anonymize data.",
     fromStatic: "erica2",
     lastModified: "25/05/2020",
   },
   {
-    title: "erica3",
-    information: "No sources where given to anonymize data. Ficticious name.",
+    title: "Sample file 1",
+    information: "No sources were given to anonymize data.",
     fromStatic: "erica3",
     lastModified: "26/05/2020",
   },
-  {
-    title: "SmallRandomDataset.fcs",
-    information:
-      "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
-    data: generateRandomData(2, 100, 0, 100),
-    axes: generateRandomAxes(2),
-    lastModified: "Right now!",
-  },
-  {
-    title: "MediumRandomDataset.fcs",
-    information:
-      "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
-    data: generateRandomData(10, 1000, 0, 1),
-    axes: generateRandomAxes(10),
-    lastModified: "Right now!",
-  },
-  {
-    title: "LargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 3000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
-  {
-    title: "ExtremelyLargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 30000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
+  // {
+  //   title: "SmallRandomDataset.fcs",
+  //   information:
+  //     "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
+  //   data: generateRandomData(2, 100, 0, 100),
+  //   axes: generateRandomAxes(2),
+  //   lastModified: "Right now!",
+  // },
+  // {
+  //   title: "MediumRandomDataset.fcs",
+  //   information:
+  //     "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
+  //   data: generateRandomData(10, 1000, 0, 1),
+  //   axes: generateRandomAxes(10),
+  //   lastModified: "Right now!",
+  // },
+  // {
+  //   title: "LargeRandomDataset.fcs",
+  //   information:
+  //     "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
+  //   data: generateRandomData(200, 3000, -10000, 1000000),
+  //   axes: generateRandomAxes(200),
+  //   lastModified: "Right now!",
+  // },
+  // {
+  //   title: "ExtremelyLargeRandomDataset.fcs",
+  //   information:
+  //     "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
+  //   data: generateRandomData(200, 30000, -10000, 1000000),
+  //   axes: generateRandomAxes(200),
+  //   lastModified: "Right now!",
+  // },
 ];
 
 const addToFiles = (data: Array<any>, axes: object[], title: string) => {
@@ -269,7 +269,7 @@ function AddFileModal(props: {
           around!
         </p>
 
-        <div
+        {/* <div
           style={{
             flex: 1,
             flexDirection: "row",
@@ -297,7 +297,7 @@ function AddFileModal(props: {
           >
             Upload file (Anonymous)
           </Button>
-        </div>
+        </div> */}
 
         <p>
           <b>Click on the file you want to open:</b>
