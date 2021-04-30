@@ -77,7 +77,7 @@ export default class HistogramPlotter extends GraphPlotter {
   }
 
   public draw() {
-    this.drawer.drawPlotGraph(
+    super.draw(
       false,
       (this.height - bottomPadding) / 50,
       (this.width - rightPadding) / 50

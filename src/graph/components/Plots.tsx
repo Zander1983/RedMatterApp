@@ -6,18 +6,18 @@ import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 
+import CircularProgress from "@material-ui/core/CircularProgress";
+import ShareIcon from "@material-ui/icons/Share";
+
+import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import GenerateReportModal from "./modals/GenerateReportModal";
-import MessageModal from "./modals/MessageModal";
+import LinkShareModal from "./modals/linkShareModal";
 
 import Workspace from "./workspaces/Workspace";
-import CircularProgress from "@material-ui/core/CircularProgress";
-
-import ShareIcon from "@material-ui/icons/Share";
-import LinkShareModal from "./modals/linkShareModal";
 import dataManager from "graph/dataManagement/dataManager";
-import SideButtons from "./static/SideButtons";
-import Menus from "./static/SideButtons";
+import SideMenus from "./static/SideMenus";
+import { HuePicker } from "react-color";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -295,8 +295,7 @@ function Plots() {
       />
 
       {/* == STATIC ELEMENTS == */}
-      <Menus></Menus>
-      <SideButtons></SideButtons>
+      <SideMenus></SideMenus>
 
       {/* == NOTICES == */}
       {showSmallScreenNotice ? (

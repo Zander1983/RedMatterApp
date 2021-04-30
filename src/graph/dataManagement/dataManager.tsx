@@ -73,6 +73,13 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   @updateWorkspaceDecorator()
   addNewFileToWorkspace(file: FCSFile): FileID {
+    let found: any = null;
+    this.currentWorkspace.files.forEach((e) => {
+      if (e.name === file.name) {
+        found = e.id;
+      }
+    });
+    if (found !== null) return found;
     this.currentWorkspace.files.set(file.id, file);
     return file.id;
   }

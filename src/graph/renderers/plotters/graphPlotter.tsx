@@ -73,8 +73,15 @@ export default class GraphPlotter extends Plotter {
 
   /* === METHODS === */
 
-  public draw(): void {
-    this.drawer.drawPlotGraph();
+  public draw(...drawPlotGraphParams: any): void {
+    if (drawPlotGraphParams === []) this.drawer.drawPlotGraph();
+    else this.drawer.drawPlotGraph(...drawPlotGraphParams);
+    this.drawer.text({
+      x: leftPadding * this.scale,
+      y: 30 * this.scale,
+      text: this.plotData.label,
+      font: "30px Quicksand",
+    });
   }
 
   public update(): void {

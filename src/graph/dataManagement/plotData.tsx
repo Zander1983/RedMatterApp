@@ -54,6 +54,7 @@ export interface PlotDataState {
   xPlotType: string;
   yPlotType: string;
   histogramAxis: "horizontal" | "vertical";
+  label: string;
 }
 
 export default class PlotData extends ObserversFunctionality {
@@ -78,6 +79,7 @@ export default class PlotData extends ObserversFunctionality {
   xPlotType: string = "lin";
   yPlotType: string = "lin";
   histogramAxis: "horizontal" | "vertical" = "vertical";
+  label: string = "";
 
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
@@ -156,6 +158,7 @@ export default class PlotData extends ObserversFunctionality {
   getState(): PlotDataState {
     return {
       id: this.id,
+      label: this.label,
       ranges: this.ranges,
       file: this.file,
       gates: this.gates,
@@ -173,6 +176,7 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   setState(state: PlotDataState) {
+    if (state.label !== undefined) this.label = state.label;
     if (state.ranges !== undefined) this.ranges = state.ranges;
     if (state.file !== undefined) this.file = state.file;
     if (state.gates !== undefined) this.gates = state.gates;
@@ -188,6 +192,10 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+  }
+
+  update(state: any) {
+    if (state.label !== undefined) this.label = state.label;
   }
 
   /* MULTI PLOT INTERACTION */
