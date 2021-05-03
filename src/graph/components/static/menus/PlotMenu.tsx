@@ -15,6 +15,8 @@ import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 
+import Overlays from "./overlays/Overlays";
+
 import dataManager from "graph/dataManagement/dataManager";
 import { LeftCircleOutlined } from "@ant-design/icons";
 import { red } from "@material-ui/core/colors";
@@ -74,6 +76,7 @@ export default function PlotMenu() {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
+            <TableCell>Overlays</TableCell>
             <TableCell>Label</TableCell>
             <TableCell>From file</TableCell>
             <TableCell>Population</TableCell>
@@ -113,6 +116,9 @@ export default function PlotMenu() {
                   </Button>
                 </TableCell>
                 <TableCell>
+                  <Overlays plot={plot}></Overlays>
+                </TableCell>
+                <TableCell>
                   <TextField
                     value={plot.label}
                     inputProps={{ "aria-label": "naked" }}
@@ -138,6 +144,9 @@ export default function PlotMenu() {
                               color: e.gate.color,
                             }}
                           >
+                            {e.inverseGating ? (
+                              <b style={{ color: "#f00" }}>not </b>
+                            ) : null}{" "}
                             {e.gate.name}
                           </b>
                         ))

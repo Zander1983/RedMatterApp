@@ -82,7 +82,7 @@ const AppHeader: FC = (props: any) => {
                 fontSize: 15,
               }}
             >
-              v2.0.1
+              v2.0.3
             </b>
           </NavLink>
         </Typography>

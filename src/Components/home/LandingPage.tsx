@@ -64,6 +64,26 @@ const AppLandingPage = () => {
 
   return (
     <div className="loading-page">
+      <div
+        style={{
+          position: "fixed",
+          right: 0,
+          top: 64,
+          zIndex: 1000,
+          padding: 10,
+        }}
+      >
+        <NavLink to="/terms">
+          <Button
+            style={{
+              backgroundColor: "#0B2E45",
+              color: "white",
+            }}
+          >
+            Terms
+          </Button>
+        </NavLink>
+      </div>
       <video autoPlay muted loop className={classes.video}>
         <source src={loop_analytics} type="video/mp4" />
       </video>

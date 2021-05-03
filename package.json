@@ -97,6 +97,10 @@
     "@types/react-material-ui-form-validator": "^2.1.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-scroll": "^1.8.2",
-    "jqueryui": "^1.11.1"
+    "envify": "^4.1.0",
+    "jqueryui": "^1.11.1",
+    "terser": "^5.7.0",
+    "terser-brunch": "^4.0.0",
+    "uglifyify": "^5.0.2"
   }
 }
