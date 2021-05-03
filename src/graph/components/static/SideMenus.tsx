@@ -45,7 +45,6 @@ export default function SideMenus() {
 
   const handleClickOutside = (event: any) => {
     if (ref === null) return;
-    console.log("testing...");
     const domNode = ref.current;
     if (!domNode || !domNode.contains(event.target)) {
       click(undefined);
@@ -112,7 +111,7 @@ export default function SideMenus() {
         >
           Files
         </Button>
-        {fileMenuOpen || gateMenuOpen ? (
+        {fileMenuOpen || gateMenuOpen || plotMenuOpen ? (
           <Button
             style={{
               marginRight: 0,

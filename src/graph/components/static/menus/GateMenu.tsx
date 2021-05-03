@@ -9,8 +9,13 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { HuePicker } from "react-color";
 
+import Button from "@material-ui/core/Button";
+import Delete from "@material-ui/icons/Delete";
+import FileCopy from "@material-ui/icons/FileCopy";
+
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
+import { chownSync } from "node:fs";
 
 const classes = {
   table: {},
@@ -40,13 +45,23 @@ export default function GateMenu() {
   };
 
   const setGateColor = (gate: Gate, color: any) => {
-    console.log("setGateColor");
     gate.update({
-      color:
-        `rgba(${color.rgb.r},${color.rgb.g},` +
-        `${color.rgb.b},${color.rgb.a})`,
+      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
     });
     resetGates(gate.id);
+  };
+
+  const deleteGate = (gate: Gate) => {
+    dataManager.removeGateFromWorkspace(gate.id);
+  };
+
+  const cloneGate = (gate: Gate) => {
+    const { constructor } = gate;
+    const gateState = JSON.parse(JSON.stringify(gate.getState()));
+    gateState.name = gateState.name + " clone";
+    //@ts-ignore
+    const newGate = new constructor(gateState);
+    dataManager.addNewGateToWorkspace(newGate);
   };
 
   useEffect(() => {
@@ -58,6 +73,9 @@ export default function GateMenu() {
       dataManager.addObserver("removeGateFromWorkspace", () => {
         resetAll();
       });
+      dataManager.addObserver("clearWorkspace", () => {
+        resetAll();
+      });
     }
   }, []);
 
@@ -66,6 +84,8 @@ export default function GateMenu() {
       <Table style={classes.table}>
         <TableHead>
           <TableRow>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
             <TableCell>Type</TableCell>
@@ -76,6 +96,30 @@ export default function GateMenu() {
         <TableBody>
           {gates.map((gate) => (
             <TableRow key={gate.gateID}>
+              <TableCell>
+                <Button
+                  style={{
+                    display: "inline-block",
+                    padding: 0,
+                    minWidth: 0,
+                  }}
+                  onClick={() => deleteGate(gate.gate)}
+                >
+                  <Delete></Delete>
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button
+                  style={{
+                    display: "inline-block",
+                    padding: 0,
+                    minWidth: 0,
+                  }}
+                  onClick={() => cloneGate(gate.gate)}
+                >
+                  <FileCopy></FileCopy>
+                </Button>
+              </TableCell>
               <TableCell>
                 <TextField
                   value={gate.gate.name}
