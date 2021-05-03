@@ -75,6 +75,7 @@ export default function GateBar(props: any) {
   useEffect(() => {
     idPlotGateUpdate = dataManager.addObserver("addNewGateToWorkspace", update);
     idGateUpdate = dataManager.addObserver("linkGateToPlot", update);
+    idGateUpdate = dataManager.addObserver("unlinkGateFromPlot", update);
     update();
   }, []);
 

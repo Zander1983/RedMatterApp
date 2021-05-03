@@ -87,6 +87,13 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   @updateWorkspaceDecorator()
   addNewGateToWorkspace(gate: Gate): GateID {
+    let alreadyPresent = false;
+    this.currentWorkspace.gates.forEach((v, k) => {
+      if (gate.id === k) alreadyPresent = true;
+    });
+    if (alreadyPresent) {
+      throw Error("Adding a gate that already exists in workspace");
+    }
     this.currentWorkspace.gates.set(gate.id, gate);
     return gate.id;
   }
@@ -244,6 +251,15 @@ class DataManager extends ObserversFunctionality {
   removeGateFromWorkspace(gateID: GateID) {
     if (!this.currentWorkspace.gates.has(gateID)) {
       throw Error("Removing non-existent gate");
+    }
+    for (const plot of this.getAllPlots()) {
+      if (plot.plot.population.map((e: any) => e.gate.id).includes(gateID)) {
+        this.removePlotFromWorkspace(plot.plotID);
+        continue;
+      }
+      if (plot.plot.gates.map((e: any) => e.gate.id).includes(gateID)) {
+        this.unlinkGateFromPlot(plot.plotID, gateID);
+      }
     }
     this.currentWorkspace.gates.delete(gateID);
   }

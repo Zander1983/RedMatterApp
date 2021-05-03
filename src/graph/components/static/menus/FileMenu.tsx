@@ -46,6 +46,9 @@ export default function FileMenu() {
       dataManager.addObserver("removeFileFromWorkspace", () => {
         resetAll();
       });
+      dataManager.addObserver("clearWorkspace", () => {
+        resetAll();
+      });
     }
   }, []);
 

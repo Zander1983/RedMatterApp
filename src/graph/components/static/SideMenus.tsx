@@ -45,7 +45,6 @@ export default function SideMenus() {
 
   const handleClickOutside = (event: any) => {
     if (ref === null) return;
-    console.log("testing...");
     const domNode = ref.current;
     if (!domNode || !domNode.contains(event.target)) {
       click(undefined);

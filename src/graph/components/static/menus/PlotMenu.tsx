@@ -11,6 +11,8 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { HuePicker } from "react-color";
 
+import Delete from "@material-ui/icons/Delete";
+import FileCopy from "@material-ui/icons/FileCopy";
 import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 
 import dataManager from "graph/dataManagement/dataManager";
@@ -26,36 +28,33 @@ const classes = {
 };
 
 const statsProvider = new PlotStats();
-const observerListProvider = new ObserverList();
 
 export default function PlotMenu() {
+  const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
 
   const setupObservers = () => {
     observerListProvider.setup(
-      (newList: ObserversFunctionality[]) => setPlots(newList),
+      (newList: ObserversFunctionality[]) => {
+        setPlots(newList);
+      },
       () => dataManager.getAllPlots().map((e) => e.plot),
       (id: string) => dataManager.getPlot(id),
       dataManager,
-      ["addNewPlotToWorkspace", "removePlotFromWorkspace"],
+      ["addNewPlotToWorkspace", "removePlotFromWorkspace", "clearWorkspace"],
       ["plotUpdated"]
     );
   };
 
-  const resetPlots = (plotID: string) => {
-    const subPlot = {
-      plot: dataManager.getPlot(plotID),
-      plotID: plotID,
-    };
-    const newPlots = plots.map((g) => {
-      if (g.plotID === plotID) {
-        return subPlot;
-      } else {
-        return g;
-      }
-    });
-    setPlots(newPlots);
+  const deletePlot = (plot: PlotData) => {
+    dataManager.removePlotFromWorkspace(plot.id);
+  };
+
+  const clonePlot = (plot: PlotData) => {
+    const newPlot = new PlotData();
+    newPlot.setState(plot.getState());
+    dataManager.addNewPlotToWorkspace(newPlot);
   };
 
   useEffect(() => {
@@ -63,6 +62,9 @@ export default function PlotMenu() {
       setupObservers();
       setSetup(true);
     }
+    return () => {
+      observerListProvider.kill();
+    };
   }, []);
 
   return (
@@ -70,6 +72,8 @@ export default function PlotMenu() {
       <Table style={classes.table}>
         <TableHead>
           <TableRow>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
             <TableCell>Label</TableCell>
             <TableCell>From file</TableCell>
             <TableCell>Population</TableCell>
@@ -81,12 +85,36 @@ export default function PlotMenu() {
         </TableHead>
         <TableBody>
           {plots.map((plot) => {
-            let stats = statsProvider.getPlotStats(plot.plot);
+            let stats = statsProvider.getPlotStats(plot);
             return (
-              <TableRow key={plot.plotID}>
+              <TableRow key={plot.id}>
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                    }}
+                    onClick={() => deletePlot(plot)}
+                  >
+                    <Delete></Delete>
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                    }}
+                    onClick={() => clonePlot(plot)}
+                  >
+                    <FileCopy></FileCopy>
+                  </Button>
+                </TableCell>
                 <TableCell>
                   <TextField
-                    value={plot.plot.label}
+                    value={plot.label}
                     inputProps={{ "aria-label": "naked" }}
                     placeholder="Context of the plot"
                     style={{
@@ -94,16 +122,15 @@ export default function PlotMenu() {
                     }}
                     onChange={(e) => {
                       const newLabel = e.target.value;
-                      plot.plot.update({ label: newLabel });
-                      resetPlots(plot.plotID);
+                      plot.update({ label: newLabel });
                     }}
                   />
                 </TableCell>
-                <TableCell>{plot.plot.file.name}</TableCell>
+                <TableCell>{plot.file.name}</TableCell>
                 <TableCell>
-                  {plot.plot.population.length === 0
+                  {plot.population.length === 0
                     ? "All"
-                    : plot.plot.population
+                    : plot.population
                         .map((e: any) => (
                           <b
                             style={{

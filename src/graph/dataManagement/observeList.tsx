@@ -3,6 +3,7 @@
   items that, each, has an observer
 */
 
+import dataManager from "./dataManager";
 import ObserversFunctionality from "./observersFunctionality";
 
 export default class ObserverList {
@@ -17,8 +18,10 @@ export default class ObserverList {
     this.notify = notifier;
     this.listGetter = listGetter;
     this.itemGetter = itemGetter;
-    for (const target in listTargets) {
-      listHolder.addObserver(target, () => this.batchUpdate(listGetter()));
+    for (const target of listTargets) {
+      listHolder.addObserver(target, () => {
+        this.batchUpdate(listGetter());
+      });
     }
     this.listHolder = listHolder;
     this.listTargets = listTargets;
@@ -34,6 +37,10 @@ export default class ObserverList {
     for (const obs of this.listObserverIds) {
       obs.item.removeObserver(obs.target, obs.id);
     }
+  }
+
+  update() {
+    this.notify(this.itemObserverIds.map((e) => e.item));
   }
 
   /* PRIVATE =================================*/
@@ -59,26 +66,57 @@ export default class ObserverList {
   listTargets: string[];
 
   private batchUpdate(newItems: any[]) {
-    let currentitems = this.itemObserverIds.map((e) => e.id);
-    let toAdd = currentitems.filter((g) => !obsIds.includes(g));
-    let toRemove = obsIds.filter((g) => !gateIds.includes(g));
-    toAdd.forEach((e) => {
-      const obsID = dataManager.getGate(e).addObserver("update", () => {
-        this.plotUpdated();
-      });
-      this.gateObservers.push({ observerID: obsID, targetGateID: e });
-    });
+    const newItemsIds = newItems.map((e) => e.id);
+    let currentitems = this.itemObserverIds.map((e: any) => e.item.id);
+    let toAdd = newItemsIds.filter((g) => !currentitems.includes(g));
+    let toRemove = currentitems.filter((g) => !newItemsIds.includes(g));
+
     toRemove.forEach((e) => {
-      dataManager
-        .getGate(e)
-        .removeObserver(
-          "update",
-          this.gateObservers.filter((g) => g.targetGateID === e)[0].observerID
+      // const item = this.itemGetter(e);
+      for (const target of this.itemTargets) {
+        // const obs = this.findObserver(e, target);
+        // item.removeObserver(obs.target, obs.id);
+        this.itemObserverIds = this.itemObserverIds.filter(
+          (g: any) => g.item.id !== e
         );
-      this.gateObservers = this.gateObservers.filter(
-        (g) => g.targetGateID === e
-      );
+      }
     });
+
+    toAdd.forEach((itemID) => {
+      const item = this.itemGetter(itemID);
+      for (const target of this.itemTargets) {
+        const obsID = item.addObserver(target, () => {
+          this.notify(this.itemObserverIds.map((e) => e.item));
+        });
+        this.itemObserverIds.push({
+          id: obsID,
+          item: item,
+          target: target,
+        });
+      }
+    });
+
+    if (toAdd.length > 0 || toRemove.length > 0) {
+      this.update();
+    }
+  }
+
+  private findObserver(itemID: string, target: string) {
+    let listObsMatches = this.listObserverIds.filter(
+      (e: any) => e.item.id === itemID
+    );
+    if (listObsMatches.length > 0) {
+      listObsMatches = listObsMatches.filter((e: any) => e.target === target);
+      if (listObsMatches.length > 0) return listObsMatches[0];
+    }
+    let itemsObsMatches = this.itemObserverIds.filter(
+      (e: any) => e.item.id === itemID
+    );
+    if (itemsObsMatches.length > 0) {
+      itemsObsMatches = itemsObsMatches.filter((e: any) => e.target === target);
+      if (itemsObsMatches.length > 0) return itemsObsMatches[0];
+    }
+    throw Error("Not found observer");
   }
 
   private addItem() {}

@@ -196,6 +196,7 @@ export default class PlotData extends ObserversFunctionality {
 
   update(state: any) {
     if (state.label !== undefined) this.label = state.label;
+    this.plotUpdated();
   }
 
   /* MULTI PLOT INTERACTION */
@@ -439,6 +440,7 @@ export default class PlotData extends ObserversFunctionality {
     let obsIds = this.gateObservers.map((obj) => obj.targetGateID);
     let toAdd = gateIds.filter((g) => !obsIds.includes(g));
     let toRemove = obsIds.filter((g) => !gateIds.includes(g));
+
     toAdd.forEach((e) => {
       const obsID = dataManager.getGate(e).addObserver("update", () => {
         this.plotUpdated();
@@ -453,7 +455,7 @@ export default class PlotData extends ObserversFunctionality {
           this.gateObservers.filter((g) => g.targetGateID === e)[0].observerID
         );
       this.gateObservers = this.gateObservers.filter(
-        (g) => g.targetGateID === e
+        (g) => g.targetGateID != e
       );
     });
     gateIds = this.population.map((obj) => obj.gate.id);
