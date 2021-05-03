@@ -131,6 +131,7 @@ export default function PlotMenu() {
                   {plot.population.length === 0
                     ? "All"
                     : plot.population
+                        .reverse()
                         .map((e: any) => (
                           <b
                             style={{
