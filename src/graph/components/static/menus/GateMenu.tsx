@@ -42,9 +42,7 @@ export default function GateMenu() {
   const setGateColor = (gate: Gate, color: any) => {
     console.log("setGateColor");
     gate.update({
-      color:
-        `rgba(${color.rgb.r},${color.rgb.g},` +
-        `${color.rgb.b},${color.rgb.a})`,
+      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
     });
     resetGates(gate.id);
   };

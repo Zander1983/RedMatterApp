@@ -112,7 +112,7 @@ export default function SideMenus() {
         >
           Files
         </Button>
-        {fileMenuOpen || gateMenuOpen ? (
+        {fileMenuOpen || gateMenuOpen || plotMenuOpen ? (
           <Button
             style={{
               marginRight: 0,
