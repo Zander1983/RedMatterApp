@@ -85,7 +85,7 @@ export default function SideMenus() {
             color: plotMenuOpen ? "#fff" : "#000",
           }}
         >
-          Plots
+          Stats & Plots
         </Button>
         <Button
           variant="contained"
