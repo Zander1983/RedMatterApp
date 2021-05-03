@@ -19,6 +19,7 @@ import Login from "./Components/users/login";
 import Register from "./Components/users/register";
 import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
+import Terms from "Components/home/Terms";
 
 const { Header, Content } = Layout;
 
@@ -86,6 +87,7 @@ const App: FC = () => {
           />
           <Route exact path="/graph" component={Plots} />
           <Route exact path="/workspaces" component={() => <Workspaces />} />
+          <Route exact path="/terms" component={() => <Terms />} />
           <Route
             exact
             path="/files/:workspacesId"
