@@ -159,18 +159,15 @@ const files = [
 ];
 
 const addToFiles = (data: Array<any>, axes: object[], title: string) => {
-  const add = (data: Array<any>) => {
-    files.unshift({
-      title: title,
-      information: "Real anonymous FCS file",
-      data: data,
-      //@ts-ignore
-      axes: axes,
-      lastModified: "??",
-    });
-  };
-
-  add(data);
+  files.unshift({
+    title: title,
+    information: "Real anonymous FCS file",
+    //@ts-ignore
+    data: data,
+    //@ts-ignore
+    axes: axes,
+    lastModified: "??",
+  });
 };
 
 const getLocal = (filename: any, title: string) => {
@@ -232,15 +229,16 @@ function AddFileModal(props: {
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {
       newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        src: "generated",
-        axes: file.axes.map((e) => e.value),
-        data: file.data,
-        plotTypes: file.axes.map((e) => e.display),
-      });
     }
+    // else {
+    //   newFile = new FCSFile({
+    //     name: newFile.name,
+    //     src: "generated",
+    //     axes: newFile.axes.map((e) => e.value),
+    //     data: newFile.data,
+    //     plotTypes: newFile.axes.map((e) => e.display),
+    //   });
+    // }
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);
