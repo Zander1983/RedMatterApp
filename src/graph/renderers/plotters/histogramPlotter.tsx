@@ -2,6 +2,8 @@ import GraphPlotter, {
   GraphPlotterState,
 } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
+import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
+import OverlayPlotterPlugin from "./runtimePlugins/overlayPlotterPlugin";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -13,22 +15,33 @@ interface HistogramPlotterState extends GraphPlotterState {
   bins: number;
 }
 
-export default class HistogramPlotter extends GraphPlotter {
+export default class HistogramPlotter extends PluginGraphPlotter {
   direction: "vertical" | "horizontal" = "vertical";
   bins: number = 1;
   drawer: HistogramDrawer;
 
+  setup(canvasContext: any) {
+    super.setup(canvasContext);
+
+    const overlayPlugin = new OverlayPlotterPlugin();
+    this.addPlugin(overlayPlugin);
+  }
+
   protected setDrawerState(): void {
     const ranges = this.plotData.getXandYRanges();
+    const binListMax = this.plotData.getBins(
+      this.bins,
+      this.direction == "vertical" ? this.xAxisName : this.yAxisName
+    ).max;
     const drawerState = {
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
       ibx: this.direction == "vertical" ? ranges.x[0] : 0,
-      iex: this.direction == "vertical" ? ranges.x[1] : this.getBinList().max,
+      iex: this.direction == "vertical" ? ranges.x[1] : binListMax,
       iby: this.direction == "vertical" ? 0 : ranges.y[0],
-      iey: this.direction == "vertical" ? this.getBinList().max : ranges.y[1],
+      iey: this.direction == "vertical" ? binListMax : ranges.y[1],
       scale: this.scale,
       xpts: this.horizontalBinCount,
       ypts: this.verticalBinCount,
@@ -76,6 +89,7 @@ export default class HistogramPlotter extends GraphPlotter {
     this.drawer = new HistogramDrawer();
   }
 
+  @applyPlugin()
   public draw() {
     super.draw(
       false,
@@ -83,24 +97,12 @@ export default class HistogramPlotter extends GraphPlotter {
       (this.width - rightPadding) / 50
     );
 
-    const { list, max } = this.getBinList();
+    const { list, max } = this.plotData.getBins(
+      this.bins,
+      this.direction == "vertical" ? this.xAxisName : this.yAxisName
+    );
     for (let i = 0; i < this.bins; i++) {
       this.drawer.addBin(i, list[i] / max);
     }
-  }
-
-  private getBinList() {
-    const ranges = this.plotData.getXandYRanges();
-    const axis = this.direction == "vertical" ? this.xAxis : this.yAxis;
-    const range = this.direction == "vertical" ? ranges.x : ranges.y;
-    const binCounts = Array(this.bins).fill(0);
-    const step = (range[1] - range[0]) / this.bins;
-    let mx = 0;
-    for (let i = 0; i < axis.length; i++) {
-      const index = Math.floor((axis[i] - range[0]) / step);
-      binCounts[index]++;
-      if (binCounts[index] > mx) mx = binCounts[index];
-    }
-    return { list: binCounts, max: mx };
   }
 }

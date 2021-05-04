@@ -153,6 +153,39 @@ export default abstract class Drawer {
     else this.ctx.fill();
   }
 
+  @resetStyleAfter()
+  curve(params: {
+    points: { x: number; y: number }[];
+    lineWidth?: number;
+    strokeColor?: string;
+  }) {
+    this.setStrokeColor(params.strokeColor);
+    this.setLineWidth(params.lineWidth);
+    const points = params.points;
+    this.ctx.beginPath();
+    this.ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 0; i < points.length - 1; i++) {
+      let x_mid = (points[i].x + points[i + 1].x) / 2;
+      let y_mid = (points[i].y + points[i + 1].y) / 2;
+      let cp_x1 = (x_mid + points[i].x) / 2;
+      let cp_x2 = (x_mid + points[i + 1].x) / 2;
+      // this.segment({
+      //   x1: points[i].x,
+      //   y1: points[i].y,
+      //   x2: points[i + 1].x,
+      //   y2: points[i + 1].y,
+      // });
+      this.ctx.quadraticCurveTo(cp_x1, points[i].y, x_mid, y_mid);
+      this.ctx.quadraticCurveTo(
+        cp_x2,
+        points[i + 1].y,
+        points[i + 1].x,
+        points[i + 1].y
+      );
+    }
+    this.ctx.stroke();
+  }
+
   protected setFillColor(color: string | undefined) {
     if (color == undefined) return;
     this.ctx.fillStyle = color;

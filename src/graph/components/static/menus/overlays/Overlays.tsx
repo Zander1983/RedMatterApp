@@ -31,7 +31,16 @@ const classes = {
 };
 
 export default function Overlays(props: { plot: PlotData }) {
-  return <h3>Overlays :D</h3>;
+  return (
+    <Button
+      onClick={() => {
+        const plots = dataManager.getAllPlots();
+        props.plot.addOverlay(plots[plots.length - 1].plot);
+      }}
+    >
+      Add last plot as overlay
+    </Button>
+  );
   // const [gates, setGates] = React.useState([]);
   // const [selected, setSelected] = React.useState([]);
   // const [population, setPopulation] = React.useState([]);

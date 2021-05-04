@@ -12,7 +12,7 @@ const kmeansify = (list: Array<Array<number>>, callback: Function): void => {
   });
 };
 
-export default (filename: string): FCSFile => {
+const staticFileReader = (filename: string): FCSFile => {
   const file = require("./" + filename).default;
 
   if (file.axes.length * file.data.length > 10000) {
@@ -27,3 +27,5 @@ export default (filename: string): FCSFile => {
     plotTypes: file.axes.map((e: any) => e.display),
   });
 };
+
+export default staticFileReader;

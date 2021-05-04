@@ -19,10 +19,10 @@ const binSize = 100;
 const graphLineColor = "#888";
 
 export default class GraphDrawer extends Drawer {
-  protected x1: number;
-  protected y1: number;
-  protected x2: number;
-  protected y2: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
   protected ibx: number;
   protected iex: number;
   protected iby: number;
