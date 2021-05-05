@@ -3,7 +3,6 @@ import GraphPlotter, {
 } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
-import OverlayPlotterPlugin from "./runtimePlugins/overlayPlotterPlugin";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -20,11 +19,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   bins: number = 1;
   drawer: HistogramDrawer;
 
+  globalMax: number = 0;
+  rangeMin: number = 0;
+  rangeMax: number = 0;
+
   setup(canvasContext: any) {
     super.setup(canvasContext);
-
-    const overlayPlugin = new OverlayPlotterPlugin();
-    this.addPlugin(overlayPlugin);
   }
 
   protected setDrawerState(): void {
@@ -33,18 +33,26 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.bins,
       this.direction == "vertical" ? this.xAxisName : this.yAxisName
     ).max;
+    let hBins =
+      this.width === undefined ? 2 : Math.round(this.width / (30 * this.scale));
+    let vBins =
+      this.height === undefined
+        ? 2
+        : Math.round(this.height / (30 * this.scale));
+    hBins = Math.max(2, hBins);
+    vBins = Math.max(2, vBins);
     const drawerState = {
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.direction == "vertical" ? ranges.x[0] : 0,
-      iex: this.direction == "vertical" ? ranges.x[1] : binListMax,
-      iby: this.direction == "vertical" ? 0 : ranges.y[0],
-      iey: this.direction == "vertical" ? binListMax : ranges.y[1],
+      ibx: this.direction == "vertical" ? this.rangeMin : 0,
+      iex: this.direction == "vertical" ? this.rangeMax : this.globalMax,
+      iby: this.direction == "vertical" ? 0 : this.rangeMin,
+      iey: this.direction == "vertical" ? this.globalMax : this.rangeMax,
       scale: this.scale,
-      xpts: this.horizontalBinCount,
-      ypts: this.verticalBinCount,
+      xpts: hBins,
+      ypts: vBins,
       bins: this.bins,
       axis: this.direction,
     };
@@ -89,6 +97,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.drawer = new HistogramDrawer();
   }
 
+  private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
     super.draw(
@@ -96,13 +105,60 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       (this.height - bottomPadding) / 50,
       (this.width - rightPadding) / 50
     );
+    const axis =
+      this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
-    const { list, max } = this.plotData.getBins(
-      this.bins,
-      this.direction == "vertical" ? this.xAxisName : this.yAxisName
-    );
+    let mainHist = this.plotData.getBins(this.bins, axis);
+    let globlMax = mainHist.max;
+    let range = this.plotData.ranges.get(axis);
+
+    const overlaysObj = this.plotData.getOverlays();
+    const overlays = [];
+    for (const overlay of overlaysObj) {
+      if (overlay.plot === undefined || overlay.plot === null) continue;
+      const overlayRes = overlay.plot.getBins(
+        Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
+        axis
+      );
+      overlayRes.list = overlayRes.list.map(
+        (e) => e / this.DRAW_DIVISION_CONST
+      );
+      overlays.push({
+        ...overlayRes,
+        color: overlay.color,
+      });
+      const lastMax = overlay.plot.getBins(Math.round(this.bins) - 1, axis).max;
+      if (lastMax > globlMax) globlMax = lastMax;
+      const overlayRanges = overlay.plot.ranges.get(axis);
+      if (overlayRanges[0] < range[0]) range[0] = overlayRanges[0];
+      if (overlayRanges[1] > range[1]) range[1] = overlayRanges[1];
+    }
+
+    this.globalMax = globlMax;
+    this.rangeMin = range[0];
+    this.rangeMax = range[1];
+
     for (let i = 0; i < this.bins; i++) {
-      this.drawer.addBin(i, list[i] / max);
+      this.drawer.addBin(i, mainHist.list[i] / globlMax);
+    }
+
+    for (const overlay of overlays) {
+      const curve = overlay.list
+        .map((e: any, i: number) => {
+          return this.drawer.getBinPos(
+            i,
+            e / globlMax,
+            Math.floor(this.bins / this.DRAW_DIVISION_CONST)
+          );
+        })
+        .sort((a: any, b: any) => {
+          return a.x - b.x;
+        });
+      this.drawer.curve({
+        points: curve,
+        strokeColor: overlay.color,
+        lineWidth: 6,
+      });
     }
   }
 }

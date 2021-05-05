@@ -144,11 +144,9 @@ export default class GraphDrawer extends Drawer {
           lineWidth: 1,
         });
 
-        let textWrite = (
-          (Math.abs(params.ie - params.ib) / this.ypts) * counter +
-          params.ib
-        ).toString();
-        if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
+        let textWrite = this.numToLabelText(
+          (Math.abs(params.ie - params.ib) / this.ypts) * counter + params.ib
+        );
 
         this.text({
           x: op1 - 90,
@@ -168,11 +166,9 @@ export default class GraphDrawer extends Drawer {
           y2: op2 + 14,
           lineWidth: 1,
         });
-        let textWrite = (
-          (Math.abs(params.ie - params.ib) / this.xpts) * counter +
-          params.ib
-        ).toString();
-        if (textWrite.length > 6) textWrite = textWrite.substring(0, 6);
+        let textWrite = this.numToLabelText(
+          (Math.abs(params.ie - params.ib) / this.xpts) * counter + params.ib
+        );
 
         this.text({
           font: "20px Arial",
@@ -184,6 +180,19 @@ export default class GraphDrawer extends Drawer {
         counter--;
       }
     }
+  }
+
+  private numToLabelText(num: number): string {
+    let snum = "";
+    if (Math.abs(num) < 1e6) {
+      snum = num.toString();
+      if (snum.length > 6) snum = snum.substring(0, 6);
+      if (snum[snum.length - 1] == ".")
+        snum = snum.substring(0, snum.length - 1);
+    } else {
+      snum = num.toExponential(2);
+    }
+    return snum;
   }
 
   private drawPlotLines(

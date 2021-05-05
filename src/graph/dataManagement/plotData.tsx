@@ -59,6 +59,8 @@ export interface PlotDataState {
 }
 
 export default class PlotData extends ObserversFunctionality {
+  static instaceCount: number = 1;
+
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
   file: FCSFile;
@@ -100,6 +102,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
+    this.label = "Plot " + PlotData.instaceCount++;
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -216,7 +219,6 @@ export default class PlotData extends ObserversFunctionality {
   /* MULTI PLOT INTERACTION */
 
   addOverlay(plotData: PlotData, color?: string) {
-    console.log("adding overlay");
     if (color === undefined) color = generateColor();
     this.histogramOverlays.push({
       plot: plotData.id,

@@ -82,6 +82,10 @@ export default class HistogramDrawer extends GraphDrawer {
     }
   }
 
+  drawPlotGraph(lines: boolean = true, vbins?: number, hbins?: number): void {
+    super.drawPlotGraph(lines, vbins, hbins);
+  }
+
   /* TODO FIX THIS SHIT WHEN EVERYTHING IS IN PLACE */
   addBin(index: number, heightPercentage: number, color: string = "#66a") {
     if (this.axis === "vertical") {
