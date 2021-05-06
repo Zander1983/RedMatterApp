@@ -227,6 +227,20 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
 
+  removeOverlay(plotDataID: string) {
+    const oldLength = this.histogramOverlays.length;
+    const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
+    if (without.length < oldLength - 1 || without.length === oldLength) {
+      throw Error(
+        "Try to remove " +
+          (oldLength - without.length).toString() +
+          " overlay(s). Should be exactly 1."
+      );
+    }
+    this.histogramOverlays = without;
+    this.plotUpdated();
+  }
+
   createSubpop(inverse: boolean = false) {
     const newGates = this.gates.map((e) => {
       return {

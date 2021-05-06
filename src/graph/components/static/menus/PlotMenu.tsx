@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
@@ -9,17 +8,13 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { HuePicker } from "react-color";
 
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
-import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 
 import Overlays from "./overlays/Overlays";
 
 import dataManager from "graph/dataManagement/dataManager";
-import { LeftCircleOutlined } from "@ant-design/icons";
-import { red } from "@material-ui/core/colors";
 import PlotStats from "graph/dataManagement/stats";
 import ObserverList from "graph/dataManagement/observeList";
 import PlotData from "graph/dataManagement/plotData";

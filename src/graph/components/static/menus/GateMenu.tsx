@@ -24,6 +24,7 @@ const classes = {
 export default function GateMenu() {
   const [gates, setGates] = React.useState(dataManager.getAllGates());
   const [observersSetup, setObserversSetup] = React.useState(false);
+  const [observerIds, setObserverIds] = React.useState([]);
 
   const resetAll = () => {
     setGates(dataManager.getAllGates());
@@ -67,16 +68,32 @@ export default function GateMenu() {
   useEffect(() => {
     if (!observersSetup) {
       setObserversSetup(true);
-      dataManager.addObserver("addNewGateToWorkspace", () => {
-        resetAll();
-      });
-      dataManager.addObserver("removeGateFromWorkspace", () => {
-        resetAll();
-      });
-      dataManager.addObserver("clearWorkspace", () => {
-        resetAll();
-      });
+      setObserverIds([
+        {
+          target: "addNewGateToWorkspace",
+          value: dataManager.addObserver("addNewGateToWorkspace", () => {
+            resetAll();
+          }),
+        },
+        {
+          target: "removeGateFromWorkspace",
+          value: dataManager.addObserver("removeGateFromWorkspace", () => {
+            resetAll();
+          }),
+        },
+        {
+          target: "clearWorkspace",
+          value: dataManager.addObserver("clearWorkspace", () => {
+            resetAll();
+          }),
+        },
+      ]);
     }
+    return () => {
+      observerIds.forEach((e) => {
+        dataManager.removeObserver(e.terget, e.value);
+      });
+    };
   }, []);
 
   return (

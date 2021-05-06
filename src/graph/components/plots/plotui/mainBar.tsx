@@ -130,7 +130,7 @@ export default function MainBar(props: any) {
           style={{ ...classes.iconButtonIcon }}
         ></CancelIcon>
       </Button>
-      <Button
+      {/* <Button
         variant="contained"
         size="medium"
         onClick={() => ovalGatingSetter()}
@@ -140,7 +140,7 @@ export default function MainBar(props: any) {
         }}
       >
         Oval
-      </Button>
+      </Button> */}
       <Button
         variant="contained"
         size="medium"
@@ -150,7 +150,7 @@ export default function MainBar(props: any) {
           backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
         }}
       >
-        Polygon
+        Draw gate
       </Button>
       {/* <Button
             variant="contained"
