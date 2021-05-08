@@ -130,7 +130,7 @@ export default function MainBar(props: any) {
           style={{ ...classes.iconButtonIcon }}
         ></CancelIcon>
       </Button>
-      <Button
+      {/* <Button
         variant="contained"
         size="medium"
         onClick={() => ovalGatingSetter()}
@@ -140,7 +140,7 @@ export default function MainBar(props: any) {
         }}
       >
         Oval
-      </Button>
+      </Button> */}
       <Button
         variant="contained"
         size="medium"
