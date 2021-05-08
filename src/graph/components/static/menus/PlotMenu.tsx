@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
@@ -9,17 +8,13 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { HuePicker } from "react-color";
 
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
-import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 
 import Overlays from "./overlays/Overlays";
 
 import dataManager from "graph/dataManagement/dataManager";
-import { LeftCircleOutlined } from "@ant-design/icons";
-import { red } from "@material-ui/core/colors";
 import PlotStats from "graph/dataManagement/stats";
 import ObserverList from "graph/dataManagement/observeList";
 import PlotData from "graph/dataManagement/plotData";
@@ -77,7 +72,8 @@ export default function PlotMenu() {
             <TableCell></TableCell>
             <TableCell></TableCell>
             <TableCell>Overlays</TableCell>
-            <TableCell>Label</TableCell>
+            <TableCell>Type</TableCell>
+            <TableCell>Name</TableCell>
             <TableCell>From file</TableCell>
             <TableCell>Population</TableCell>
             <TableCell>Brute #</TableCell>
@@ -88,6 +84,8 @@ export default function PlotMenu() {
         </TableHead>
         <TableBody>
           {plots.map((plot) => {
+            const type =
+              plot.xAxis === plot.yAxis ? "histogram" : "scatterplot";
             let stats = statsProvider.getPlotStats(plot);
             return (
               <TableRow key={plot.id}>
@@ -118,6 +116,7 @@ export default function PlotMenu() {
                 <TableCell>
                   <Overlays plot={plot}></Overlays>
                 </TableCell>
+                <TableCell>{type}</TableCell>
                 <TableCell>
                   <TextField
                     value={plot.label}
@@ -157,8 +156,16 @@ export default function PlotMenu() {
                   {stats.gatedFilePopulationSize} / {stats.filePopulationSize}
                 </TableCell>
                 <TableCell>{stats.gatedFilePopulationPercentage}</TableCell>
-                <TableCell>{stats.meanX}</TableCell>
-                <TableCell>{stats.meanY}</TableCell>
+                <TableCell>
+                  {type === "histogram" && plot.histogramAxis === "horizontal"
+                    ? "~"
+                    : stats.meanX}
+                </TableCell>
+                <TableCell>
+                  {type === "histogram" && plot.histogramAxis === "vertical"
+                    ? "~"
+                    : stats.meanY}
+                </TableCell>
               </TableRow>
             );
           })}

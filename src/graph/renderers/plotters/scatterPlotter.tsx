@@ -1,69 +1,12 @@
-import GraphPlotter, {
-  GraphPlotterState,
-} from "graph/renderers/plotters/graphPlotter";
+import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
 import OvalGate from "graph/dataManagement/gate/ovalGate";
 import PolygonGate from "graph/dataManagement/gate/polygonGate";
-import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
+import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 
 interface ScatterPlotterState extends GraphPlotterState {}
-
-const applyPlugin = () => {
-  return function (
-    target: ScatterPlotter,
-    key: string | symbol,
-    descriptor: PropertyDescriptor
-  ) {
-    const original = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      let overwritten = false;
-      let functionList: any[] = ["original"];
-
-      // Let's build a function list of all plugin's function
-      //@ts-ignore
-      if (this.plugins !== undefined && this.plugins.has(key)) {
-        //@ts-ignore
-        this.plugins.get(key).forEach((e) => {
-          if (e.overwrite) {
-            if (overwritten) {
-              throw Error(
-                "Two override plugins in " +
-                  //@ts-ignore
-                  key +
-                  " of " +
-                  this.constructor.name
-              );
-            }
-            overwritten = true;
-            functionList = [e];
-          } else if (!overwritten) {
-            if (e.order == "before") {
-              functionList = [e, ...functionList];
-            } else if (e.order == "after") {
-              functionList = [...functionList, e];
-            } else {
-              throw Error("Unrecognized plugin order " + e.order);
-            }
-          }
-        });
-      }
-
-      // Now call each function in the list, return is last function's return
-      let ret: any = null;
-      for (const e of functionList) {
-        if (typeof e == "string") {
-          ret = original.apply(this, args);
-        } else {
-          ret = e.plugin[e.functionSignature](args, ret);
-        }
-      }
-
-      return ret;
-    };
-  };
-};
 
 /*
   How to use plotters?
@@ -79,7 +22,7 @@ const applyPlugin = () => {
    1. Call setPlotterState(state)
    2. Call update()
 */
-export default class ScatterPlotter extends GraphPlotter {
+export default class ScatterPlotter extends PluginGraphPlotter {
   gates: (OvalGate | PolygonGate)[] = [];
   drawer: ScatterDrawer | null = null;
   plugins: Map<
@@ -96,40 +39,6 @@ export default class ScatterPlotter extends GraphPlotter {
   ovalGatePlugin: ScatterOvalGatePlotter | null = null;
   polygonGatePlugin: ScatterPolygonGatePlotter | null = null;
 
-  public addPlugin(plugin: PlotterPlugin) {
-    const setup = plugin.getPluginSetup();
-    for (const param of setup) {
-      const final = {
-        origin: plugin.constructor.name,
-        ...param,
-      };
-      const targetFunction = param.functionSignature.split("_")[0];
-      if (this.plugins.has(targetFunction)) {
-        const list = this.plugins.get(targetFunction);
-        if (!list.includes(final)) {
-          list.push(final);
-          this.plugins.set(targetFunction, list);
-        }
-      } else {
-        this.plugins.set(targetFunction, [final]);
-      }
-    }
-    plugin.setPlotter(this);
-  }
-
-  public removePlugin(plugin: PlotterPlugin) {
-    const setup = plugin.getPluginSetup();
-    for (const param of setup) {
-      const l = this.plugins.get(param.functionSignature.split("_")[0]);
-      const final = {
-        origin: plugin.constructor.name,
-        ...param,
-      };
-      const nl = l.filter((e) => e !== final);
-      this.plugins.set(param.functionSignature, nl);
-    }
-  }
-
   static instaceIndex = 0;
   instance: number;
 
@@ -139,17 +48,14 @@ export default class ScatterPlotter extends GraphPlotter {
   public setup(canvasContext: any) {
     this.instance = ScatterPlotter.instaceIndex++;
     super.setup(canvasContext);
+
     this.ovalGatePlugin = new ScatterOvalGatePlotter();
-    this.ovalGatePlugin.setPlotter(this);
+    this.addPlugin(this.ovalGatePlugin);
 
     this.polygonGatePlugin = new ScatterPolygonGatePlotter();
-    this.polygonGatePlugin.setPlotter(this);
-
-    this.addPlugin(this.ovalGatePlugin);
     this.addPlugin(this.polygonGatePlugin);
   }
 
-  // @applyPlugin()
   public update() {
     super.update();
     this.ovalGatePlugin.setGates(
@@ -162,12 +68,10 @@ export default class ScatterPlotter extends GraphPlotter {
     );
   }
 
-  // @applyPlugin()
   public setPlotterState(state: ScatterPlotterState) {
     super.setPlotterState(state);
   }
 
-  // @applyPlugin()
   public getPlotterState(): ScatterPlotterState {
     return {
       ...super.getPlotterState(),
@@ -194,22 +98,18 @@ export default class ScatterPlotter extends GraphPlotter {
     }
   }
 
-  // @applyPlugin()
   public setDrawerState(): void {
     super.setDrawerState();
   }
 
-  // @applyPlugin()
   public createDrawer(): void {
     this.drawer = new ScatterDrawer();
   }
 
-  // @applyPlugin()
   public updateDrawer(): void {
     this.drawer.update();
   }
 
-  // @applyPlugin()
   public validateDraw(): void {
     if (this.xAxis.length != this.yAxis.length) {
       throw Error(
@@ -230,7 +130,6 @@ export default class ScatterPlotter extends GraphPlotter {
     this.drawPoints();
   }
 
-  // @applyPlugin()
   public drawPoints() {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors();
@@ -250,7 +149,6 @@ export default class ScatterPlotter extends GraphPlotter {
     return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 
-  // @applyPlugin()
   public getPointColors() {
     return this.plotData.getPointColors();
   }

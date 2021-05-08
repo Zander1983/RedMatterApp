@@ -33,10 +33,8 @@ export default function GateBar(props: any) {
   const [gates, setGates] = React.useState([]);
   const [selected, setSelected] = React.useState([]);
   const [population, setPopulation] = React.useState([]);
+  const [observers, setObservers] = React.useState([]);
   const plot: Plot = props.plot;
-  let idPlotGateUpdate: any = null;
-  let idGateUpdate: any = null;
-  let idLinkNewPlot: any = null;
 
   const changeGatePlotState = (gateName: string, selected: boolean) => {
     const gateID = gates.find((gate) => gate.name === gateName).id;
@@ -73,10 +71,38 @@ export default function GateBar(props: any) {
   };
 
   useEffect(() => {
-    idPlotGateUpdate = dataManager.addObserver("addNewGateToWorkspace", update);
-    idGateUpdate = dataManager.addObserver("linkGateToPlot", update);
-    idGateUpdate = dataManager.addObserver("unlinkGateFromPlot", update);
     update();
+    setObservers([
+      {
+        target: "addNewGateToWorkspace",
+        value: dataManager.addObserver("addNewGateToWorkspace", () => {
+          update();
+        }),
+      },
+      {
+        target: "linkGateToPlot",
+        value: dataManager.addObserver("linkGateToPlot", () => {
+          update();
+        }),
+      },
+      {
+        target: "unlinkGateFromPlot",
+        value: dataManager.addObserver("unlinkGateFromPlot", () => {
+          update();
+        }),
+      },
+      {
+        target: "clearWorkspace",
+        value: dataManager.addObserver("clearWorkspace", () => {
+          update();
+        }),
+      },
+    ]);
+    return () => {
+      observers.forEach((e) => {
+        dataManager.removeObserver(e.terget, e.value);
+      });
+    };
   }, []);
 
   const gateInPopulation = (id: string) => {

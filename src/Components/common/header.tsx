@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
     marginLeft: "10px",
     padding: 6,
-    borderRadius: 5,
+    borderRadius: 3,
     "&:hover": {
       backgroundColor: "rgba(255,255,255,0.2)",
     },

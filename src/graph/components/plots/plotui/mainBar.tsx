@@ -150,7 +150,7 @@ export default function MainBar(props: any) {
           backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
         }}
       >
-        Polygon
+        Draw gate
       </Button>
       {/* <Button
             variant="contained"

@@ -82,6 +82,10 @@ export default class HistogramDrawer extends GraphDrawer {
     }
   }
 
+  drawPlotGraph(lines: boolean = true, vbins?: number, hbins?: number): void {
+    super.drawPlotGraph(lines, vbins, hbins);
+  }
+
   /* TODO FIX THIS SHIT WHEN EVERYTHING IS IN PLACE */
   addBin(index: number, heightPercentage: number, color: string = "#66a") {
     if (this.axis === "vertical") {
@@ -121,6 +125,36 @@ export default class HistogramDrawer extends GraphDrawer {
         fill: true,
         fillColor: color,
       });
+    }
+  }
+
+  getBinPos(index: number, heightPercentage: number, binsOverride?: number) {
+    const bins = binsOverride === undefined ? this.bins : binsOverride;
+    if (this.axis === "vertical") {
+      this.binSize = (this.x2 - this.x1) / bins;
+      if (bins <= index) {
+        throw Error(`Out of bounds index for histogram with ${bins} bins`);
+      }
+      const outterBeginX = this.x1 + index * this.binSize;
+      const innerBeginX = outterBeginX + binPadding;
+      const y = (this.y2 - this.y1) * (1 - heightPercentage) + this.y1;
+
+      return {
+        x: innerBeginX,
+        y: y,
+      };
+    } else {
+      this.binSize = (this.y2 - this.y1) / bins;
+      if (bins <= index) {
+        throw Error(`Out of bounds index for histogram with ${bins} bins`);
+      }
+      const outterBeginY = this.y1 + (bins - 1 - index) * this.binSize;
+      const innerBeginY = outterBeginY + binPadding;
+
+      return {
+        x: this.x1 + (this.x2 - this.x1) * heightPercentage,
+        y: innerBeginY,
+      };
     }
   }
 }

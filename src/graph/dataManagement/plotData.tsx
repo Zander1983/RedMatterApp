@@ -11,6 +11,7 @@ import Gate from "./gate/gate";
 import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
+import { generateColor } from "graph/utils/color";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -58,6 +59,8 @@ export interface PlotDataState {
 }
 
 export default class PlotData extends ObserversFunctionality {
+  static instaceCount: number = 1;
+
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
   file: FCSFile;
@@ -80,6 +83,10 @@ export default class PlotData extends ObserversFunctionality {
   yPlotType: string = "lin";
   histogramAxis: "horizontal" | "vertical" = "vertical";
   label: string = "";
+  histogramOverlays: {
+    color: string;
+    plot: string;
+  }[] = [];
 
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
@@ -95,8 +102,18 @@ export default class PlotData extends ObserversFunctionality {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
+    this.label = "Plot " + PlotData.instaceCount++;
     this.updateGateObservers();
     this.updateRandomSelection();
+  }
+
+  getOverlays() {
+    return this.histogramOverlays.map((e: any) => {
+      return {
+        plot: dataManager.getPlot(e.plot),
+        color: e.color,
+      };
+    });
   }
 
   private updateRandomSelection() {
@@ -200,6 +217,29 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   /* MULTI PLOT INTERACTION */
+
+  addOverlay(plotData: PlotData, color?: string) {
+    if (color === undefined) color = generateColor();
+    this.histogramOverlays.push({
+      plot: plotData.id,
+      color: color,
+    });
+    this.plotUpdated();
+  }
+
+  removeOverlay(plotDataID: string) {
+    const oldLength = this.histogramOverlays.length;
+    const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
+    if (without.length < oldLength - 1 || without.length === oldLength) {
+      throw Error(
+        "Try to remove " +
+          (oldLength - without.length).toString() +
+          " overlay(s). Should be exactly 1."
+      );
+    }
+    this.histogramOverlays = without;
+    this.plotUpdated();
+  }
 
   createSubpop(inverse: boolean = false) {
     const newGates = this.gates.map((e) => {
@@ -366,9 +406,12 @@ export default class PlotData extends ObserversFunctionality {
     return this.yAxis;
   }
 
-  getXandYData(): { xAxis: number[]; yAxis: number[] } {
-    const xAxisName = this.xAxis;
-    const yAxisName = this.yAxis;
+  getXandYData(
+    targetXAxis?: string,
+    targetYAxis?: string
+  ): { xAxis: number[]; yAxis: number[] } {
+    const xAxisName = targetXAxis !== undefined ? targetXAxis : this.xAxis;
+    const yAxisName = targetYAxis !== undefined ? targetYAxis : this.yAxis;
     const xAxis: number[] = [];
     const yAxis: number[] = [];
     this.getAxesData().forEach((e) => {
@@ -378,15 +421,56 @@ export default class PlotData extends ObserversFunctionality {
     return { xAxis, yAxis };
   }
 
-  getXandYRanges(): { x: [number, number]; y: [number, number] } {
+  getAxis(targetAxis: string): number[] {
+    const data: number[] = [];
+    this.getAxesData().forEach((e) => {
+      data.push(e[targetAxis]);
+    });
+    return data;
+  }
+
+  getXandYRanges(
+    targetXAxis?: string,
+    targetYAxis?: string
+  ): { x: [number, number]; y: [number, number] } {
+    targetXAxis = targetXAxis === undefined ? this.xAxis : targetXAxis;
+    targetYAxis = targetYAxis === undefined ? this.yAxis : targetYAxis;
     if (
       this.ranges.constructor.name !== "Map" ||
-      !this.ranges.has(this.xAxis) ||
-      !this.ranges.has(this.yAxis)
+      !this.ranges.has(targetXAxis) ||
+      !this.ranges.has(targetYAxis)
     ) {
       this.findAllRanges();
     }
-    return { x: this.ranges.get(this.xAxis), y: this.ranges.get(this.yAxis) };
+    return { x: this.ranges.get(targetXAxis), y: this.ranges.get(targetYAxis) };
+  }
+
+  private STD_BIN_SIZE = 50;
+  getBins(binCount?: number, targetAxis?: string) {
+    binCount = binCount === undefined ? this.getBinCount() : binCount;
+    const axisName =
+      targetAxis === undefined
+        ? this.histogramAxis === "vertical"
+          ? this.xAxis
+          : this.yAxis
+        : targetAxis;
+    const range = this.ranges.get(axisName);
+    const axis = this.getAxis(axisName);
+    const binCounts = Array(binCount).fill(0);
+    const step = (range[1] - range[0]) / binCount;
+    let mx = 0;
+    for (let i = 0; i < axis.length; i++) {
+      const index = Math.floor((axis[i] - range[0]) / step);
+      binCounts[index]++;
+      if (binCounts[index] > mx) mx = binCounts[index];
+    }
+    return { list: binCounts, max: mx };
+  }
+
+  private getBinCount() {
+    return this.histogramAxis === "horizontal"
+      ? this.plotWidth / this.STD_BIN_SIZE
+      : this.plotHeight / this.STD_BIN_SIZE;
   }
 
   private axisDataCache: null | any[] = null;
