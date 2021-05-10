@@ -124,7 +124,10 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
   @applyPlugin()
   public draw() {
-    super.draw();
+    super.draw({
+      xAxisLabel: this.plotData.xAxis,
+      yAxisLabel: this.plotData.yAxis,
+    });
     this.validateDraw();
 
     this.drawPoints();
