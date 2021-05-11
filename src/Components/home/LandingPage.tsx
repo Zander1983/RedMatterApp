@@ -258,10 +258,8 @@ const AppLandingPage = () => {
               width: 340,
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            Researchers can analyse their FCS files on any device, instantly
+            share, and collaborate with other researchers.
           </p>
         </div>
         <Divider
@@ -299,10 +297,10 @@ const AppLandingPage = () => {
               width: 340,
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            Laboratories can access their data from any device (stored securely
+            in the cloud) and analyse data remotely. Red Matter provides smart
+            algorithms to makes analysis of large amounts of files much more
+            efficient.
           </p>
         </div>
         <Divider
@@ -340,10 +338,9 @@ const AppLandingPage = () => {
               width: 340,
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            Red Matter is designed to flatten the steep learning curve of flow
+            cytometry data analysis, and so makes for a perfect tool for users
+            starting out their journey with flow cytometry.
           </p>
         </div>
       </Grid>
