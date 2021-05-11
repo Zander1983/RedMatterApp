@@ -107,19 +107,12 @@ const AppHeader: FC = (props: any) => {
             <NavLink className={classes.topBarLink} to="/register">
               Register
             </NavLink>
-            {/* <NavLink className={classes.topBarLink} to="/authentication/0">Login</NavLink>
-        <NavLink className={classes.topBarLink} to="/authentication/1">Register</NavLink> */}
           </>
         )}
-        <NavLink className={classes.topBarLink} to="/mailing-list">
+        {/* <NavLink className={classes.topBarLink} to="/mailing-list">
           Mailing list
-        </NavLink>
-        {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>
-        <NavLink className={classes.topBarLink} to="/work">Working &nbsp;</NavLink>
-        <NavLink className={classes.topBarLink} to="/help">Help &nbsp;</NavLink>
-        <NavLink className={classes.topBarLink} to="/contact">Contact &nbsp;</NavLink>
-        <NavLink className={classes.topBarLink} to="/blog">Blog &nbsp;</NavLink>
-        <NavLink className={classes.topBarLink} to="/workspaces">Workspace &nbsp;</NavLink> */}
+        </NavLink> */}
+        {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>*/}
       </Toolbar>
     </AppBar>
   );

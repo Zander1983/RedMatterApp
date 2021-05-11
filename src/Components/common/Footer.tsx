@@ -67,31 +67,43 @@ const useStyles = makeStyles((theme) => ({
 
 const footers = [
   {
-    title: "Company",
-    description: ["Team", "History", "Contact us", "Locations"],
-  },
-  {
-    title: "Features",
+    title: "About us",
     description: [
-      "Cool stuff",
-      "Random feature",
-      "Team feature",
-      "Developer stuff",
-      "Another one",
-    ],
-  },
-  {
-    title: "Resources",
-    description: [
-      "Resource",
-      "Resource name",
-      "Another resource",
-      "Final resource",
+      {
+        name: "Team",
+        path: "/team",
+      },
+      {
+        name: "History",
+        path: "/history",
+      },
     ],
   },
   {
     title: "Legal",
-    description: ["Privacy policy", "Terms of use"],
+    description: [
+      {
+        name: "Privacy policy",
+        path: "/terms",
+      },
+      {
+        name: "Terms of use",
+        path: "/terms",
+      },
+    ],
+  },
+  {
+    title: "Contact",
+    description: [
+      {
+        name: "Contact us",
+        path: "/contact",
+      },
+      {
+        name: "Mailing list",
+        path: "/mailing-list",
+      },
+    ],
   },
 ];
 
@@ -108,9 +120,13 @@ export default function Footer(props: any) {
             </Typography>
             <ul>
               {footer.description.map((item) => (
-                <li key={item}>
-                  <Link href="#" variant="subtitle1" color="textSecondary">
-                    {item}
+                <li key={item.name}>
+                  <Link
+                    href={item.path}
+                    variant="subtitle1"
+                    color="textSecondary"
+                  >
+                    {item.name}
                   </Link>
                 </li>
               ))}
