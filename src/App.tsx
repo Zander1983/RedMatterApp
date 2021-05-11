@@ -20,131 +20,82 @@ import Register from "./Components/users/register";
 import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import Footer from "Components/common/Footer";
 
 const { Header, Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
     marginTop: 64,
+    flex: "1 0 auto",
+  },
+  footer: {
+    flexShrink: 0,
+  },
+  mainLayout: {
+    padding: 0,
+    height: "auto",
+    lineHeight: 1.6,
   },
 }));
 
-const App: FC = () => {
-  const history = useHistory();
+const router = [
+  {
+    path: "/",
+    component: AppLandingPage,
+  },
+  {
+    path: "/questions",
+    component: PrototypeForm,
+  },
+  {
+    path: "/authentication/:tabId",
+    component: SignInOutContainer,
+  },
+  {
+    path: "/login",
+    component: Login,
+  },
+  {
+    path: "/register",
+    component: Register,
+  },
+  {
+    path: "/verify/:verifyStr",
+    component: VerifyEmail,
+  },
+  { path: "/graph", component: Plots },
+  { path: "/workspaces", component: Workspaces },
+  { path: "/terms", component: Terms },
+  {
+    path: "/files/:workspacesId",
+    component: ({ match }: any) => (
+      <WorkspaceAppFiles id={match.params.workspacesId} />
+    ),
+  },
+  {
+    path: "/mailing-list",
+    component: About,
+  },
+];
+
+const App = () => {
   const classes = useStyles();
 
-  const [isLoggedIn, setIsLogged] = useState(false);
-
-  const handleAfterLogin = () => {
-    history.push("/workspaces");
-    setIsLogged((prevData: any) => true);
-  };
-  const handleAfterRegister = () => {
-    history.push("/login");
-  };
-  // const handleAfterLogout = () => {
-  //   localStorage.clear();
-  //   setIsLogged((prevData: any) => false);
-  // };
-  useEffect(() => {}, [isLoggedIn]);
-
   return (
-    <Layout className="mainLayout">
+    <Layout className="mainLayout" style={{ minHeight: "100%" }}>
       <Header className="default-header">
         <AppHeader />
       </Header>
       <Content className={classes.content} style={{ fontFamily: "Quicksand" }}>
         <Switch>
-          {/* <Route exact path="/" component={AppHome}/> */}
-          <Route exact path="/" component={AppLandingPage} />
-          <Route exact path="/questions" component={PrototypeForm} />
-
-          <Route
-            exact
-            path="/authentication/:tabId"
-            component={(props: any) => <SignInOutContainer {...props} />}
-          />
-          <Route
-            exact
-            path="/login"
-            component={(props: any) => (
-              <Login {...props} onLogin={handleAfterLogin} />
-            )}
-          />
-          <Route
-            exact
-            path="/register"
-            component={(props: any) => (
-              <Register {...props} onRegister={handleAfterRegister} />
-            )}
-          />
-          <Route
-            exact
-            path="/verify/:verifyStr"
-            component={({ match }: any) => (
-              <VerifyEmail verifyStr={match.params.verifyStr} />
-            )}
-          />
-          <Route exact path="/graph" component={Plots} />
-          <Route exact path="/workspaces" component={() => <Workspaces />} />
-          <Route exact path="/terms" component={() => <Terms />} />
-          <Route
-            exact
-            path="/files/:workspacesId"
-            component={({ match }: any) => (
-              <WorkspaceAppFiles id={match.params.workspacesId} />
-            )}
-          />
-          <Route
-            exact
-            path="/mailing-list"
-            component={(props: any) => <About {...props} />}
-          />
-
-          {/* <Route exact path="/graph" component={Plots} />
-
-          <Route
-            exact
-            path="/authentication/:tabId"
-            component={(props: any) => <SignInOutContainer {...props} />}
-          />
-          <Route
-            exact
-            path="/login"
-            component={(props: any) => (
-              <Login {...props} onLogin={handleAfterLogin} />
-            )}
-          />
-          <Route
-            exact
-            path="/register"
-            component={(props: any) => (
-              <Register {...props} onRegister={handleAfterRegister} />
-            )}
-          />
-          <Route exact path="/graph" component={Plots} />
-          <Route exact path="/workspaces" component={() => <Workspaces />} />
-          <Route
-            exact
-            path="/files/:workspacesId"
-            component={({ match }: any) => (
-              <WorkspaceAppFiles id={match.params.workspacesId} />
-            )}
-          />
-
-          {/* <Route exact path="/graph" component={Plots} />
-          <Route exact path="/login" component={(props:any)=><Login {...props} onLogin={handleAfterLogin} />} />
-          <Route exact path="/workspaces" component={()=><Workspaces url={requestsUrl.workspaceUrl}/>}/> */}
-
-          {/* <Route exact path="/workspaces" component={()=><Workspaces  url={requestsUrl.workspaceUrl}/>}/> */}
-          {/* <Route exact path="/files/:workspacesId" component={({ match }: any) => <WorkspaceAppFiles id={match.params.workspacesId} url={requestsUrl.fcsfilesUrl} />} /> */}
-          {/* <Route exact path="/analyse/:workspacesId/:fcsfileId" component={({ match }: any) => <Graph fcsfileId={match.params.fcsfileId} workspacesId={match.params.workspacesId} graphsUrl={requestsUrl.graphsUrl} gatesUrl={requestsUrl.gatesUrl} paramsUrl={requestsUrl.paramsUrl} eventsurl={requestsUrl.eventsUrl} />} /> */}
+          {router.map((e) => (
+            // @ts-ignore
+            <Route exact path={e.path} component={e.component} />
+          ))}
         </Switch>
-        {/* <AppHome/> */}
       </Content>
-      {/* <Footer>
-                <AppFooter/>  
-            </Footer>       */}
+      <Footer className={classes.footer} />
     </Layout>
   );
 };

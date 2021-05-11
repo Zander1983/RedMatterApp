@@ -13,6 +13,11 @@
  #resizable { width: 150px; height: 150px; padding: 0.5em;
     text-align: center; margin: 0; } */
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   height: 100vh;
   width: 100vw;
@@ -21,6 +26,8 @@ body {
   line-height: 1.6;
   color: #333;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 
@@ -32,6 +39,8 @@ body {
   line-height: 1.6;
   color: #333;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .container-fluid {
@@ -98,10 +107,10 @@ header
   z-index: 999;
 }
 
-.transparent-header{
+.transparent-header {
   background: transparent;
 }
-.default-header{
+.default-header {
   background: #222;
 }
 
@@ -222,17 +231,17 @@ header
   opacity: 1;
 }
 
-.ant-btn-primary{
-  background:none;
-  border-color:none;
-  color:#000;
+.ant-btn-primary {
+  background: none;
+  border-color: none;
+  color: #000;
 }
-.login-form-button{
-  color:#000;
+.login-form-button {
+  color: #000;
 }
 
-.ant-anchor-link-title{
-  color:#999;
+.ant-anchor-link-title {
+  color: #999;
 }
 
 /* Header navlink ==============*/
@@ -346,8 +355,8 @@ block
 */
 .block {
   /* padding: 60px 0; */
-  padding:10px 0;
-  height:100vh;
+  padding: 10px 0;
+  height: 100vh;
   border-bottom: 1px solid #d9d9d9;
 }
 
@@ -431,7 +440,6 @@ faqs
   margin: 0 10px 0 0;
 }
 
-
 /* workspaceBlock */
 /* .workspaceBlock .ant-list {
   text-align: center;
@@ -443,27 +451,26 @@ faqs
   margin: 10px 0;
 } */
 
-.workspaceBlock .ant-card-body{
+.workspaceBlock .ant-card-body {
   background: #fafafa;
   border: 1px solid #999;
   padding: 0;
   min-height: 100px;
 }
 
-.workspaceBlock .workspaceDetail .ant-btn-primary{
-  margin-bottom:10px;
+.workspaceBlock .workspaceDetail .ant-btn-primary {
+  margin-bottom: 10px;
 }
 
-.workspaceDetail{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
+.workspaceDetail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.workspaceDetail p{
-  margin:0;
+.workspaceDetail p {
+  margin: 0;
 }
-
 
 /* .workspaceBlock .workspaceDetail p{
   background:red;
@@ -474,8 +481,6 @@ faqs
   background:orange;
   color:red;
 } */
-
-
 
 /* .workspaceBlock .ant-row > div:nth-child(2) .ant-list-item {
   box-shadow: 0 0 12px 2px #f3f3f3;
@@ -499,7 +504,6 @@ faqs
 .workspaceBlock .fab {
   margin: 0 10px 0 0;
 } */
-
 
 /* 
 pricing block
@@ -605,8 +609,8 @@ footer
 .mobileHidden {
   display: block;
 }
-.mobileHidden .navlink{
-    margin:10px 0px;
+.mobileHidden .navlink {
+  margin: 10px 0px;
 }
 
 /* 

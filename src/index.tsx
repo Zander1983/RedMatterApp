@@ -14,11 +14,9 @@ axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 console.log("API URL = ", process.env.REACT_APP_API_URL);
 
 ReactDOM.render(
-  <>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </>,
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
   document.getElementById("root")
 );
 
