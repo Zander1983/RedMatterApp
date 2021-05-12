@@ -439,43 +439,28 @@ const AppLandingPage = () => {
           Users all over the world trust{" "}
           <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry
         </h1>
-        <div
-          style={{
-            borderRadius: 10,
-            marginLeft: "auto",
-            marginRight: "auto",
-            backgroundColor: "#303F9F",
-            border: "solid 1px #ddd",
-            boxShadow: "1px 1px 3px 1px #ddd",
-          }}
-        >
-          <Carousel
+        <Grid container className={classes.heroContent}>
+          {/* <Carousel
             autoPlay
-            interval={2000}
+            interval={2500}
             animation="fade"
             swipe
             indicators={false}
-          >
-            {universities
-              .sort(() => 0.5 - Math.random())
-              .map((item, i) => (
-                <div
-                  key={i}
-                  style={{
-                    padding: 10,
-                    paddingTop: 20,
-                    paddingLeft: 40,
-                    paddingRight: 40,
-                  }}
-                >
-                  <h1 style={{ color: "white" }}>{item.name}</h1>
-                  <h3 style={{ color: "white", marginTop: -15 }}>
-                    {item.userCount} Users
-                  </h3>
-                </div>
-              ))}
-          </Carousel>
-        </div>
+          > */}
+          {universities.map((item, i) => (
+            <Grid key={i} xs={4} md={3} lg={2}>
+              <div
+                style={{
+                  backgroundColor: "#fff",
+                  height: 55,
+                }}
+              >
+                <img src={"/universityLogos/" + item.name} height={50} />
+              </div>
+            </Grid>
+          ))}
+          {/* </Carousel> */}
+        </Grid>
       </Grid>
 
       <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
