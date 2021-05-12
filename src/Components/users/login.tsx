@@ -74,9 +74,10 @@ const Login = (props: any) => {
       setSuccess((prev: any) => true);
       localStorage.setItem("token", loginData.token);
       localStorage.setItem("user", JSON.stringify(loginData.userDetails));
-      props.onLogin();
+      // props.onLogin();
       // props.history.push('/workspaces');
     } catch (err) {
+      console.log(err);
       const errMsg = err.response.data.message;
       setErrorMsg((prevMsg: string) => {
         return errMsg;
