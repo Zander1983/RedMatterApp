@@ -20,6 +20,7 @@ import Register from "./Components/users/register";
 import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 
 const { Header, Content } = Layout;
@@ -76,6 +77,10 @@ const router = [
   {
     path: "/mailing-list",
     component: About,
+  },
+  {
+    path: "/credits",
+    component: Credits,
   },
 ];
 

@@ -148,7 +148,7 @@ const Workspaces = () => {
                 width: "100%",
               }}
             >
-              <div>suck tits</div>
+              <div>You workspace is empty!</div>
               {workspaceData.length > 0 &&
                 workspaceData.map((data: any) => {
                   return <WorkspaceCard data={data} />;

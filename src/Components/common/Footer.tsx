@@ -77,6 +77,10 @@ const footers = [
         name: "History",
         path: "/history",
       },
+      {
+        name: "Credits",
+        path: "/credits",
+      },
     ],
   },
   {

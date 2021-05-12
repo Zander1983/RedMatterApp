@@ -13,9 +13,9 @@ import Divider from "@material-ui/core/Divider";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
 import researchers_image from "../../assets/images/researchers.jpg";
-import cooldiagram1 from "../../assets/images/testpics/cooldiagram1.png";
-import cooldiagram2 from "../../assets/images/testpics/cooldiagram2.png";
-import cooldiagram3 from "../../assets/images/testpics/cooldiagram3.png";
+import lab from "../../assets/images/lab.png";
+import researcher from "../../assets/images/researcher.png";
+import uni from "../../assets/images/uni2.jpg";
 
 import icon from "../../assets/images/white_icon.png";
 
@@ -74,16 +74,24 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
   },
   cardHeader: {
-    backgroundColor:
-      theme.palette.type === "light"
-        ? theme.palette.grey[200]
-        : theme.palette.grey[700],
+    backgroundColor: "#303F9F",
+    color: "#fff",
   },
   cardPricing: {
     display: "flex",
     justifyContent: "center",
     alignItems: "baseline",
     marginBottom: theme.spacing(2),
+  },
+  verticalDivider: {
+    marginLeft: 5,
+    marginRight: 5,
+    color: "#000",
+    height: 500,
+  },
+  institutionTitle: {
+    fontWeight: 700,
+    fontSize: "1.8em",
   },
 }));
 
@@ -125,28 +133,33 @@ const featureList = [
     title: "Cloud based storage",
     description:
       "Your files will be stored in the cloud, available anywhere! No more dongles.",
-    icon: <Cloud fontSize="large" />,
+    icon: <Cloud fontSize="large" style={{ color: "#66d" }} />,
   },
   {
     title: "Shared workspaces",
     description: "You may share your workspace with other researchers",
-    icon: <Language fontSize="large" />,
+    icon: <Language fontSize="large" style={{ color: "#8a27b3" }} />,
   },
   {
     title: "Sharable links",
     description:
       "You can also share a simple link for other users to see what you've done",
-    icon: <Share fontSize="large" />,
+    icon: <Share fontSize="large" style={{ color: "#6d6" }} />,
   },
   {
     title: "Report generation",
     description: "You can generate reports of your flow analysis",
-    icon: <Note fontSize="large" />,
+    icon: <Note fontSize="large" style={{ color: "#FF8C00" }} />,
   },
   {
     title: "Highly customizable",
     description: "Make your analysis look however you want it to look",
-    icon: <Settings fontSize="large" />,
+    icon: <Settings fontSize="large" style={{ color: "#D2691E" }} />,
+  },
+  {
+    title: "Many others",
+    description: "Have a play around our tools!",
+    icon: <h1>...</h1>,
   },
 ];
 
@@ -221,8 +234,12 @@ const AppLandingPage = () => {
       <Grid
         container
         direction="row"
+        xs={12}
+        md={9}
+        lg={6}
         style={{
-          flex: 1,
+          marginLeft: "auto",
+          marginRight: "auto",
           flexFlow: "row",
           alignItems: "center",
           justifyContent: "center",
@@ -233,68 +250,70 @@ const AppLandingPage = () => {
         <div>
           <div
             style={{
-              backgroundColor: "red",
               borderRadius: "50%",
-              width: 300,
-              height: 300,
+              width: 270,
+              height: 270,
               margin: 20,
+              marginTop: -40,
+              backgroundColor: "#fafafa",
               padding: 20,
               overflow: "hidden",
+              border: "solid 1px #ddd",
             }}
           >
             <img
               style={{
                 marginTop: -30,
-                marginLeft: -50,
-                width: 370,
-                height: 310,
+                marginLeft: -10,
+                height: 280,
               }}
-              src={cooldiagram1}
+              src={researcher}
             />
           </div>
-          <h1>Researchers</h1>
+
+          <h1 className={classes.institutionTitle}>Researchers</h1>
           <p
             style={{
-              width: 340,
+              width: 300,
             }}
           >
             Researchers can analyse their FCS files on any device, instantly
             share, and collaborate with other researchers.
           </p>
         </div>
+
         <Divider
           orientation="vertical"
-          style={{
-            marginLeft: 1,
-            marginRight: 1,
-          }}
+          className={classes.verticalDivider}
         ></Divider>
+
         <div>
           <div
             style={{
-              backgroundColor: "green",
               borderRadius: "50%",
-              width: 300,
-              height: 300,
+              width: 270,
+              height: 270,
               margin: 20,
+              backgroundColor: "#fafafa",
               padding: 20,
               overflow: "hidden",
+              border: "solid 1px #ddd",
             }}
           >
             <img
               style={{
-                marginTop: -37,
-                marginLeft: -44,
-                width: 345,
-                height: 330,
+                marginTop: -30,
+                marginLeft: -50,
+                height: 420,
               }}
-              src={cooldiagram2}
+              src={lab}
             />
           </div>
-          <h1>Laboratories</h1>
+          <h1 className={classes.institutionTitle}>Laboratories</h1>
           <p
             style={{
-              width: 340,
+              marginLeft: 10,
+              width: 280,
             }}
           >
             Laboratories can access their data from any device (stored securely
@@ -303,39 +322,37 @@ const AppLandingPage = () => {
             efficient.
           </p>
         </div>
+
         <Divider
           orientation="vertical"
-          style={{
-            marginLeft: 1,
-            marginRight: 1,
-          }}
+          className={classes.verticalDivider}
         ></Divider>
+
         <div>
           <div
             style={{
-              backgroundColor: "blue",
               borderRadius: "50%",
-              width: 300,
-              height: 300,
+              width: 270,
+              height: 270,
               margin: 20,
               padding: 20,
+              border: "solid 1px #ddd",
               overflow: "hidden",
             }}
           >
             <img
               style={{
-                marginTop: -35,
-                marginLeft: -33,
-                width: 330,
+                marginTop: -70,
+                marginLeft: -153,
                 height: 330,
               }}
-              src={cooldiagram3}
+              src={uni}
             />
           </div>
-          <h1>Universities</h1>
+          <h1 className={classes.institutionTitle}>Universities</h1>
           <p
             style={{
-              width: 340,
+              width: 300,
             }}
           >
             Red Matter is designed to flatten the steep learning curve of flow
@@ -345,7 +362,13 @@ const AppLandingPage = () => {
         </div>
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
+      <Grid
+        xs={12}
+        md={9}
+        lg={6}
+        className={classes.heroContent}
+        style={{ marginTop: 20 }}
+      >
         <Divider></Divider>
       </Grid>
 
@@ -359,6 +382,7 @@ const AppLandingPage = () => {
           marginLeft: "auto",
           marginRight: "auto",
           textAlign: "center",
+          marginBottom: -20,
         }}
       >
         {featureList.map((e) => (
@@ -398,7 +422,15 @@ const AppLandingPage = () => {
         <Divider></Divider>
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
+      <Grid
+        xs={12}
+        md={9}
+        lg={6}
+        className={classes.heroContent}
+        style={{
+          marginTop: -5,
+        }}
+      >
         <h1
           style={{
             fontSize: "2em",
@@ -421,12 +453,18 @@ const AppLandingPage = () => {
       >
         {serviceTiers.map((tier) => (
           <Grid item key={tier.title} sm={12} md={4} style={{ padding: 10 }}>
-            <Card>
+            <Card
+              style={{
+                backgroundColor: "#fafafa",
+                boxShadow: "1px 1px 3px 1px #ddd",
+              }}
+            >
               <CardHeader
                 title={tier.title}
                 subheader={tier.subheader}
                 titleTypographyProps={{ align: "center" }}
-                subheaderTypographyProps={{ align: "center" }}
+                // @ts-ignore
+                subheaderTypographyProps={{ align: "center", color: "white" }}
                 action={tier.title === "Pro" ? <StarIcon /> : null}
                 className={classes.cardHeader}
               />
