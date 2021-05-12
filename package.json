@@ -37,6 +37,7 @@
     "react-grid-layout": "^1.2.2",
     "react-hook-form": "^6.15.4",
     "react-jquery-plugin": "^1.1.7",
+    "react-material-ui-carousel": "^2.2.6",
     "react-material-ui-form-validator": "^2.1.4",
     "react-redux": "^7.2.3",
     "react-resizable": "^1.11.0",

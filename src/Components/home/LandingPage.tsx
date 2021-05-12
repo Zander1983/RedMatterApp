@@ -10,12 +10,15 @@ import CardActions from "@material-ui/core/CardActions";
 import CardHeader from "@material-ui/core/CardHeader";
 import StarIcon from "@material-ui/icons/StarBorder";
 import Divider from "@material-ui/core/Divider";
+import Paper from "@material-ui/core/Paper";
+import Carousel from "react-material-ui-carousel";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
 import researchers_image from "../../assets/images/researchers.jpg";
 import lab from "../../assets/images/lab.png";
 import researcher from "../../assets/images/researcher.png";
 import uni from "../../assets/images/uni2.jpg";
+import universities from "../../assets/text/universitiesUsingRedMatter";
 
 import icon from "../../assets/images/white_icon.png";
 
@@ -397,6 +400,7 @@ const AppLandingPage = () => {
                 border: "solid 1px #ddd",
                 padding: 10,
                 borderRadius: 5,
+                backgroundColor: "#fafaff",
               }}
             >
               <Grid
@@ -407,15 +411,71 @@ const AppLandingPage = () => {
                   width: 100,
                   height: 100,
                   marginBottom: 20,
+                  backgroundColor: "white",
+                  boxShadow: "1px 1px 3px 1px #ddd",
                 }}
               >
                 {e.icon}
               </Grid>
-              <h1>{e.title}</h1>
-              <p>{e.description}</p>
+              <h1 style={{ color: "#333" }}>{e.title}</h1>
+              <p style={{ color: "#333" }}>{e.description}</p>
             </Grid>
           </Grid>
         ))}
+      </Grid>
+
+      <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
+        <Divider></Divider>
+      </Grid>
+
+      <Grid
+        xs={12}
+        md={9}
+        lg={6}
+        className={classes.heroContent}
+        style={{ marginBottom: -10, marginTop: 0 }}
+      >
+        <h1>
+          Users all over the world trust{" "}
+          <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry
+        </h1>
+        <div
+          style={{
+            borderRadius: 10,
+            marginLeft: "auto",
+            marginRight: "auto",
+            backgroundColor: "#303F9F",
+            border: "solid 1px #ddd",
+            boxShadow: "1px 1px 3px 1px #ddd",
+          }}
+        >
+          <Carousel
+            autoPlay
+            interval={2000}
+            animation="fade"
+            swipe
+            indicators={false}
+          >
+            {universities
+              .sort(() => 0.5 - Math.random())
+              .map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: 10,
+                    paddingTop: 20,
+                    paddingLeft: 40,
+                    paddingRight: 40,
+                  }}
+                >
+                  <h1 style={{ color: "white" }}>{item.name}</h1>
+                  <h3 style={{ color: "white", marginTop: -15 }}>
+                    {item.userCount} Users
+                  </h3>
+                </div>
+              ))}
+          </Carousel>
+        </div>
       </Grid>
 
       <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
