@@ -1,8 +1,6 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
-// Material UI Components
 import { makeStyles } from "@material-ui/core/styles";
 import {
   Avatar,
@@ -14,16 +12,13 @@ import {
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import Typography from "@material-ui/core/Typography";
+import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
-// Material Ui Icons
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import CloseIcon from "@material-ui/icons/Close";
 
-// Material UI validator
-//@ts-ignore
-import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
+import { useDispatch } from "react-redux";
 
-// Style Classes
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -47,6 +42,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Login = (props: any) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
 
   const [isError, setError] = React.useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -72,10 +68,14 @@ const Login = (props: any) => {
       const loginData = res.data;
       setError((prev: any) => false);
       setSuccess((prev: any) => true);
-      localStorage.setItem("token", loginData.token);
-      localStorage.setItem("user", JSON.stringify(loginData.userDetails));
+      // localStorage.setItem("token", loginData.token);
+      // localStorage.setItem("user", JSON.stringify(loginData.userDetails));
       // props.onLogin();
-      // props.history.push('/workspaces');
+      dispatch({
+        type: "LOGIN",
+        payload: { user: { profile: loginData } },
+      });
+      props.history.push("/workspaces");
     } catch (err) {
       console.log(err);
       const errMsg = err.response.data.message;

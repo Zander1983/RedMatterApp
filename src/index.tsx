@@ -9,13 +9,13 @@ import "typeface-roboto";
 import "typeface-raleway";
 import "typeface-quicksand";
 import axios from "axios";
-import configureStore from "./redux/store";
+import configureStore from "./redux/createStore";
 import { Provider } from "react-redux";
+//@ts-ignore
+import store from "redux/store";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 console.log("API URL = ", process.env.REACT_APP_API_URL);
-
-const store = configureStore();
 
 ReactDOM.render(
   <BrowserRouter>

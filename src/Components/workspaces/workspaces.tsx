@@ -7,6 +7,8 @@ import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import WorkspaceCard from "./WorkspaceCard";
 import TextPromptModal from "../modals/TextPromptModal";
 
+// import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+
 const styles = {
   header: {
     textAlign: "center",
@@ -38,6 +40,7 @@ const styles = {
 };
 
 const Workspaces = () => {
+  const [workspaces, setWorkspaces] = React.useState([]);
   let user = JSON.parse(localStorage?.getItem("user"));
   let organizationID = "";
   if (user) {
@@ -69,6 +72,10 @@ const Workspaces = () => {
 
   const [workspaceNameModal, setWorkspaceNameModal] = React.useState(false);
   const [workspaceName, setWorkspaceName] = React.useState("");
+
+  React.useEffect(() => {
+    // WorkspacesApiFetchParamCreator({}).appWorkspace();
+  }, []);
 
   return (
     <>

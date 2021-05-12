@@ -15,8 +15,8 @@ import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
 import Plots from "./graph/components/Plots";
-import Login from "./Components/users/login";
-import Register from "./Components/users/register";
+import Login from "./Components/users/Login";
+import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/verifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";

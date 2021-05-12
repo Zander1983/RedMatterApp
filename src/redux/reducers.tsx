@@ -1,18 +1,20 @@
 import { actionTypes } from "./actionTypes";
 
 const initialState = {
-  profile: {
-    firstName: "",
-  },
+  profile: {},
 };
 
 const reducer = (state = initialState, action: any) => {
   switch (action.type) {
     case actionTypes.LOGIN:
-      console.log("login", action.payload.user);
       return {
         ...state,
-        profile: action.payload.user,
+        profile: action.payload.user.profile,
+      };
+    case actionTypes.LOGOUT:
+      return {
+        ...state,
+        profile: {},
       };
     default:
       return state;

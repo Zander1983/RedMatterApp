@@ -8,6 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 
 import icon from "../../assets/images/white_icon.png";
+import userManager from "Components/users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,13 +43,10 @@ const useStyles = makeStyles((theme) => ({
 
 const AppHeader: FC = (props: any) => {
   const classes = useStyles();
-  const [isLogin, setIsLogin] = useState(true);
-  const history = useHistory();
+  const isLoggedIn = userManager.isLoggedIn();
 
-  let user = localStorage?.getItem("user");
-  let login_logout_button;
   const onLogout = () => {
-    localStorage.clear();
+    userManager.logout();
   };
 
   return (
@@ -90,7 +88,7 @@ const AppHeader: FC = (props: any) => {
           Start graphing
         </NavLink>
 
-        {user ? (
+        {isLoggedIn ? (
           <>
             <NavLink className={classes.topBarLink} to="/workspaces">
               Workspace

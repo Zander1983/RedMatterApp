@@ -10,8 +10,7 @@ import CardActions from "@material-ui/core/CardActions";
 import CardHeader from "@material-ui/core/CardHeader";
 import StarIcon from "@material-ui/icons/StarBorder";
 import Divider from "@material-ui/core/Divider";
-import Paper from "@material-ui/core/Paper";
-import Carousel from "react-material-ui-carousel";
+import { useStore } from "react-redux";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
 import researchers_image from "../../assets/images/researchers.jpg";
@@ -27,6 +26,7 @@ import Cloud from "@material-ui/icons/Cloud";
 import Share from "@material-ui/icons/Share";
 import Language from "@material-ui/icons/Language";
 import Note from "@material-ui/icons/Note";
+import userManager from "Components/users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   topDialogBar: {
@@ -168,7 +168,9 @@ const featureList = [
 
 const AppLandingPage = () => {
   const classes = useStyles();
+  const isLoggedIn = userManager.isLoggedIn();
 
+  console.log("rendering with", isLoggedIn);
   return (
     <div className="loading-page">
       <div className={classes.topDialogBar}>
@@ -209,16 +211,51 @@ const AppLandingPage = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files has never been easier
               </p>
-              <NavLink to="/workspaces">
+              <NavLink to="/questions">
                 <Button
                   variant="contained"
                   size="large"
                   color="primary"
                   className={classes.marginButton}
                 >
-                  Start now
+                  Test Red Matter
                 </Button>
-              </NavLink>
+              </NavLink>{" "}
+              {!isLoggedIn ? (
+                <div>
+                  <NavLink to="/login">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      className={classes.marginButton}
+                    >
+                      Login
+                    </Button>
+                  </NavLink>{" "}
+                  <NavLink to="/register">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      className={classes.marginButton}
+                    >
+                      Register
+                    </Button>
+                  </NavLink>
+                </div>
+              ) : (
+                <NavLink to="/workspaces">
+                  <Button
+                    variant="contained"
+                    size="large"
+                    color="primary"
+                    className={classes.marginButton}
+                  >
+                    Workspaces
+                  </Button>
+                </NavLink>
+              )}
               <br />
               <NavLink to="/mailing-list">
                 <a
