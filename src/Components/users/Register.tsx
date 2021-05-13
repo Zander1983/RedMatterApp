@@ -1,36 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 //@ts-ignore
 import ReCAPTCHA from "react-google-recaptcha";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
-
-// Material UI Components
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Avatar,
-  Grid,
-  Paper,
-  Button,
-  IconButton,
-  Collapse,
-} from "@material-ui/core";
+import { Grid, Button, CircularProgress } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
-import Typography from "@material-ui/core/Typography";
-import Alert from "@material-ui/lab/Alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-
-// Material Ui Icons
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import CloseIcon from "@material-ui/icons/Close";
-
-// Material UI validator
-//@ts-ignore
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
+import { snackbarService } from "uno-material-ui";
 
-// Import Country list
 import { counrtyList } from "./common-data";
 
-// Style Classes
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -48,17 +29,14 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   textFieldWidth: {
-    width: "75%",
+    width: "100%",
   },
 }));
 
 const Register = (props: any) => {
   const classes = useStyles();
 
-  const [isError, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [isSubmit, setIsSubmit] = useState(false);
-  const [isSuccess, setSuccess] = useState(false);
+  const [loading, setLoading] = React.useState(false);
   const [isLocationSelected, setLocationStatus] = useState();
 
   const registerForm = useRef();
@@ -99,190 +77,196 @@ const Register = (props: any) => {
   }
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (formData.location === "") {
       //@ts-ignore
       setLocationStatus((prev: any) => false);
       return;
     }
     try {
-      const res = await axios.post("api/register", formData);
-      const loginData = res.data;
-      setError((prev: any) => false);
-      setSuccess((prev: any) => true);
-      // localStorage.setItem('token',loginData.token)
-      // localStorage.setItem('user',JSON.stringify(loginData.userDetails))
-      // props.onLogin();
-      props.onRegister();
-      // setTimeout(()=>{
-      // props.onRegister();
-      // },3000)
+      await axios.post("api/register", formData);
+      setLoading(false);
+      snackbarService.showSnackbar("Email verification sent!", "success");
     } catch (err) {
+      setLoading(false);
       const errMsg = err.response.data.message;
-      setErrorMsg((prevMsg: string) => {
-        return errMsg;
-      });
-      setError((prev: any) => true);
-      setSuccess((prev: any) => false);
+      snackbarService.showSnackbar(errMsg, "error");
     }
   };
   return (
-    <>
-      <Grid>
-        <Paper elevation={10} className={classes.paperStyle}>
-          {/* @ts-ignore */}
-          <Grid align="center">
-            <div className={classes.root}>
-              <Collapse in={isError}>
-                <Alert
-                  severity="error"
-                  action={
-                    <IconButton
-                      aria-label="close"
-                      color="inherit"
-                      size="small"
-                      onClick={() => {
-                        setError(false);
-                      }}
-                    >
-                      <CloseIcon fontSize="inherit" />
-                    </IconButton>
-                  }
-                >
-                  {errorMsg}
-                </Alert>
-              </Collapse>
+    <Grid
+      container
+      alignContent="center"
+      justify="center"
+      style={{
+        paddingTop: 30,
+        paddingBottom: 50,
+        paddingLeft: 20,
+        paddingRight: 20,
+      }}
+    >
+      <Grid
+        container
+        lg={6}
+        md={9}
+        sm={12}
+        justify="center"
+        direction="column"
+        style={{
+          backgroundColor: "#fafafa",
+          padding: 20,
+          borderRadius: 10,
+          boxShadow: "1px 1px 1px 1px #ddd",
+          border: "solid 1px #ddd",
+          textAlign: "center",
+        }}
+      >
+        <h2>Create you Red Matter account</h2>
+        <ValidatorForm
+          ref={registerForm}
+          onSubmit={() => {
+            handleSubmit();
+          }}
+        >
+          <TextValidator
+            style={{ marginTop: 30, backgroundColor: "white" }}
+            className={classes.textFieldWidth}
+            variant="outlined"
+            label="Organisation"
+            onChange={handleChange}
+            name="organisation"
+            value={formData.organisation}
+            validators={["required"]}
+            errorMessages={["Organisation is required"]}
+          />
 
-              <Collapse in={isSuccess}>
-                <Alert
-                  severity="success"
-                  action={
-                    <IconButton
-                      aria-label="close"
-                      color="inherit"
-                      size="small"
-                      onClick={() => {
-                        setSuccess(false);
-                      }}
-                    >
-                      <CloseIcon fontSize="inherit" />
-                    </IconButton>
+          <Autocomplete
+            id="location"
+            onChange={(event, value) =>
+              handleAutoCompleteField(value, "location")
+            }
+            style={{
+              backgroundColor: "white",
+              marginTop: 30,
+            }}
+            options={counrtyList}
+            autoHighlight
+            getOptionLabel={(option) => option.value}
+            renderInput={(params) => {
+              return (
+                <TextField
+                  {...params}
+                  label="Select Country"
+                  variant="outlined"
+                  error={
+                    isLocationSelected === undefined
+                      ? false
+                      : !isLocationSelected
                   }
-                >
-                  Successfully Registered!!!
-                </Alert>
-              </Collapse>
-            </div>
-            <Avatar className={classes.avatarStyle}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <h2>Sign Up</h2>
-            <div>
-              <ValidatorForm
-                ref={registerForm}
-                onSubmit={() => {
-                  handleSubmit();
-                }}
-              >
-                <TextValidator
-                  className={classes.textFieldWidth}
-                  label="Organisation"
-                  onChange={handleChange}
-                  name="organisation"
-                  value={formData.organisation}
-                  validators={["required"]}
-                  errorMessages={["Organisation is required!!!"]}
-                />
-                <br />
-                <Autocomplete
-                  id="location"
-                  onChange={(event, value) =>
-                    handleAutoCompleteField(value, "location")
+                  helperText={
+                    isLocationSelected === undefined
+                      ? null
+                      : !isLocationSelected
+                      ? "Location is required"
+                      : null
                   }
-                  options={counrtyList}
-                  className={classes.textFieldWidth}
-                  autoHighlight
-                  getOptionLabel={(option) => option.value}
-                  renderInput={(params) => {
-                    return (
-                      <TextField
-                        {...params}
-                        label="Select Country"
-                        error={
-                          isLocationSelected === undefined
-                            ? false
-                            : !isLocationSelected
-                        }
-                        helperText={
-                          isLocationSelected === undefined
-                            ? null
-                            : !isLocationSelected
-                            ? "Location is required"
-                            : null
-                        }
-                        fullWidth
-                      />
-                    );
-                  }}
+                  fullWidth
                 />
-                <br />
-                <TextValidator
-                  className={classes.textFieldWidth}
-                  label="Email"
-                  onChange={handleChange}
-                  name="email"
-                  value={formData.email}
-                  validators={["required", "isEmail"]}
-                  errorMessages={["Email is required!!!", "Email is not valid"]}
-                />
-                <br />
-                <TextValidator
-                  className={classes.textFieldWidth}
-                  label="Password"
-                  type="password"
-                  onChange={handleChange}
-                  name="password"
-                  value={formData.password}
-                  validators={["required"]}
-                  errorMessages={["Password is required"]}
-                />
-                <br />
-                <ReCAPTCHA
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-                  onChange={onChangeCaptcha}
-                  onExpired={() => {
-                    setFormData((prevData: any) => {
-                      return { ...prevData, g_recaptcha_response: "" };
-                    });
-                  }}
-                />
-                <br />
-                <Button
-                  color="primary"
-                  variant="contained"
-                  type="submit"
-                  disabled={isSubmit}
-                  onFocus={() => {
-                    if (formData.location === "") {
-                      //@ts-ignore
-                      setLocationStatus((prev: any) => false);
-                      return;
-                    }
-                  }}
-                >
-                  {(isSubmit && "Your form is submitted!") ||
-                    (!isSubmit && "Submit")}
-                </Button>
-              </ValidatorForm>
+              );
+            }}
+          />
 
-              <Typography>
-                Already registered?
-                <Link to="/login">Sign In</Link>
-              </Typography>
-            </div>
+          <TextValidator
+            style={{ marginTop: 30, backgroundColor: "white" }}
+            className={classes.textFieldWidth}
+            label="Email"
+            onChange={handleChange}
+            variant="outlined"
+            name="email"
+            value={formData.email}
+            validators={["required", "isEmail"]}
+            errorMessages={["Email is required", "Email is not valid"]}
+          />
+
+          <TextValidator
+            style={{ marginTop: 30, backgroundColor: "white" }}
+            className={classes.textFieldWidth}
+            label="Password"
+            variant="outlined"
+            type="password"
+            onChange={handleChange}
+            name="password"
+            value={formData.password}
+            validators={["required", "minStringLength:8"]}
+            errorMessages={[
+              "Password is required",
+              "Password must have at least 8 characters",
+            ]}
+          />
+
+          <Grid
+            container
+            justify="center"
+            alignItems="center"
+            alignContent="center"
+            style={{
+              marginTop: 30,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            <ReCAPTCHA
+              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+              onChange={onChangeCaptcha}
+              onExpired={() => {
+                setFormData((prevData: any) => {
+                  return { ...prevData, g_recaptcha_response: "" };
+                });
+              }}
+            />
           </Grid>
-        </Paper>
+
+          <Grid
+            justify="center"
+            container
+            style={{
+              marginTop: 30,
+            }}
+          >
+            <Button
+              type="submit"
+              style={{
+                height: 50,
+                marginRight: 20,
+                width: 170,
+                backgroundColor: "#66a",
+                color: "white",
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress
+                  style={{
+                    color: "white",
+                    width: 23,
+                    height: 23,
+                  }}
+                />
+              ) : (
+                "Submit"
+              )}
+            </Button>
+          </Grid>
+        </ValidatorForm>
+        <div>
+          <Link to="/login">
+            <h3 style={{ marginLeft: -21, marginTop: 10, color: "#008" }}>
+              Already registred? Sign In
+            </h3>
+          </Link>
+        </div>
       </Grid>
-    </>
+    </Grid>
   );
 };
 export default Register;
