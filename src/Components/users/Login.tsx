@@ -52,6 +52,7 @@ const Login = (props: any) => {
     setLoading(true);
     try {
       const res = await axios.post("api/login", formData);
+      console.log("request succeeded");
       setLoading(false);
       const loginData = res.data;
       dispatch({
@@ -60,6 +61,7 @@ const Login = (props: any) => {
       });
       props.history.push("/workspaces");
     } catch (err) {
+      console.log(err);
       setLoading(false);
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");

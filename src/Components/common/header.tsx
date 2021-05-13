@@ -96,7 +96,7 @@ const AppHeader = (props: any) => {
           </NavLink>
         </Typography>
         <NavLink className={classes.topBarLink} to="/questions">
-          Start graphing
+          Test Red Matter
         </NavLink>
 
         {isLoggedIn ? (

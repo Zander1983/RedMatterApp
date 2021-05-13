@@ -141,7 +141,7 @@ function CreateWorkspaceModal(props: {
             </Button>
             <Button
               variant="contained"
-              style={{ backgroundColor: "#4CCF50", color: "white" }}
+              style={{ backgroundColor: "#43A047", color: "white" }}
               onClick={() => {
                 if (name === "" || name === undefined || name === null) {
                   snackbarService.showSnackbar(

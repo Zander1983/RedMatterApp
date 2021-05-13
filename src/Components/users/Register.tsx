@@ -2,7 +2,7 @@
 import ReCAPTCHA from "react-google-recaptcha";
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Register = (props: any) => {
   const classes = useStyles();
+  const history = useHistory();
 
   const [loading, setLoading] = React.useState(false);
   const [isLocationSelected, setLocationStatus] = useState();
@@ -87,6 +88,7 @@ const Register = (props: any) => {
       await axios.post("api/register", formData);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
+      history.push("/verify");
     } catch (err) {
       setLoading(false);
       const errMsg = err.response.data.message;

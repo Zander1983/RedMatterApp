@@ -22,7 +22,7 @@ import About from "./Components/home/About";
 import Plots from "./graph/components/Plots";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
-import VerifyEmail from "./Components/users/verifyEmail";
+import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
@@ -65,6 +65,10 @@ const router = [
   {
     path: "/register",
     component: Register,
+  },
+  {
+    path: "/verify",
+    component: VerifyEmail,
   },
   {
     path: "/verify/:verifyStr",
