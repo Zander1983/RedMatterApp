@@ -1,13 +1,15 @@
 import React from "react";
 import axios from "axios";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import { Grid, Button } from "@material-ui/core";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
 import WorkspaceCard from "./WorkspaceCard";
-import TextPromptModal from "../modals/TextPromptModal";
+import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
 
-// import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import userManager from "Components/users/userManager";
+import { snackbarService } from "uno-material-ui";
 
 const styles = {
   header: {
@@ -40,76 +42,62 @@ const styles = {
 };
 
 const Workspaces = () => {
-  const [workspaces, setWorkspaces] = React.useState([]);
-  let user = JSON.parse(localStorage?.getItem("user"));
-  let organizationID = "";
-  if (user) {
-    organizationID = user["organisationId"];
+  const history = useHistory();
+  const isLoggedIn = userManager.isLoggedIn();
+  if (!isLoggedIn) {
+    if (history.length > 0) {
+      history.goBack();
+    } else {
+      history.push("/");
+    }
   }
 
-  const [workspaceData, setWorkspaceData] = React.useState<any[]>([]);
+  const [workspaces, setWorkspaces] = React.useState([]);
+  const [createWorkspaceModal, setCreateWorkspaceModal] = React.useState(false);
 
-  const options = {
-    headers: {
-      Token: localStorage.getItem("token"),
-    },
-    onDownloadProgress: (progressEvent: any) => {},
-  };
-
-  const getWorkspaceByOrgid = () => {
-    axios
-      .get(`api/workspaces?organisationId=${organizationID}`, options)
-      .then((res: any) => {
-        const datatemp = res.data.workspaces;
-        setWorkspaceData(datatemp);
-      })
-      .catch((err: any) => {});
+  const fetchWorkspaces = () => {
+    const fetchArgs = WorkspacesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
+    axios.get(fetchArgs.url, fetchArgs.options).then((e) => {
+      setWorkspaces(e.data.workspaces);
+    });
   };
 
   const handleClose = (func: Function) => {
     func(false);
   };
 
-  const [workspaceNameModal, setWorkspaceNameModal] = React.useState(false);
-  const [workspaceName, setWorkspaceName] = React.useState("");
-
   React.useEffect(() => {
-    // WorkspacesApiFetchParamCreator({}).appWorkspace();
+    fetchWorkspaces();
   }, []);
 
   return (
     <>
-      <TextPromptModal
-        open={workspaceNameModal}
+      <CreateWorkspaceModal
+        open={createWorkspaceModal}
         closeCall={{
           f: handleClose,
-          ref: setWorkspaceNameModal,
+          ref: setCreateWorkspaceModal,
         }}
-        title="Workspace name"
-        value={() => workspaceName}
-        setValue={(text: string) => {
-          setWorkspaceName(text);
+        created={() => {
+          fetchWorkspaces();
+          snackbarService.showSnackbar("Workspace created", "success");
         }}
-        placeholder="Name of your workspace"
-        cancel={() => {}}
-        confirm={() => {
-          console.log("Creating workspace with name =", workspaceName);
-        }}
-        validate={(text: string): string => {
-          if (text.length === 0) return "Text may not be empty";
-          return "";
-        }}
-        invalidated={() => {}}
+        workspaces={workspaces.map((e) => e.name)}
       />
       <Grid
         style={{
-          marginLeft: 0,
-          marginRight: 0,
           justifyContent: "center",
           display: "flex",
-          marginBottom: 500,
-          marginTop: 15,
+          marginTop: 30,
+          marginLeft: "auto",
+          marginRight: "auto",
         }}
+        container
+        xs={12}
+        md={10}
+        lg={8}
       >
         <Grid
           style={{
@@ -141,7 +129,7 @@ const Workspaces = () => {
               <Button
                 variant="contained"
                 style={{ ...styles.addButton, backgroundColor: "#fafafa" }}
-                onClick={() => setWorkspaceNameModal(true)}
+                onClick={() => setCreateWorkspaceModal(true)}
               >
                 Create
               </Button>
@@ -155,11 +143,13 @@ const Workspaces = () => {
                 width: "100%",
               }}
             >
-              <div>You workspace is empty!</div>
-              {workspaceData.length > 0 &&
-                workspaceData.map((data: any) => {
-                  return <WorkspaceCard data={data} />;
-                })}
+              {workspaces.length > 0 ? (
+                workspaces.map((data: any) => {
+                  return <WorkspaceCard data={data} update={fetchWorkspaces} />;
+                })
+              ) : (
+                <div>You workspace is empty!</div>
+              )}
             </Grid>
           </Grid>
         </Grid>

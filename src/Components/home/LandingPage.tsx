@@ -27,6 +27,7 @@ import Share from "@material-ui/icons/Share";
 import Language from "@material-ui/icons/Language";
 import Note from "@material-ui/icons/Note";
 import userManager from "Components/users/userManager";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   topDialogBar: {
@@ -170,7 +171,6 @@ const AppLandingPage = () => {
   const classes = useStyles();
   const isLoggedIn = userManager.isLoggedIn();
 
-  console.log("rendering with", isLoggedIn);
   return (
     <div className="loading-page">
       <div className={classes.topDialogBar}>

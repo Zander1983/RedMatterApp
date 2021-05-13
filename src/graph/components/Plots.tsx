@@ -421,7 +421,7 @@ function Plots() {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              {/* <Button
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -431,7 +431,7 @@ function Plots() {
                 }}
               >
                 Print workspace
-              </Button> */}
+              </Button>
               <Button
                 variant="contained"
                 size="large"

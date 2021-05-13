@@ -1,6 +1,6 @@
-import React, { useState, FC } from "react";
+import React from "react";
 
-import { NavLink, useHistory } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -9,6 +9,7 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import icon from "../../assets/images/white_icon.png";
 import userManager from "Components/users/userManager";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,9 +42,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AppHeader: FC = (props: any) => {
+const AppHeader = (props: any) => {
+  const isLoggedIn =
+    Object.keys(
+      useSelector((state: any) => {
+        if (Object.keys(state).includes("user")) {
+          if (Object.keys(state.user).includes("profile")) {
+            return state.user.profile;
+          }
+        }
+        return {};
+      })
+    ).length !== 0;
   const classes = useStyles();
-  const isLoggedIn = userManager.isLoggedIn();
 
   const onLogout = () => {
     userManager.logout();

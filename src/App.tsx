@@ -3,7 +3,12 @@ import { Route, Switch, useLocation, useHistory } from "react-router-dom";
 // import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import { Layout, Image } from "antd";
 
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  createMuiTheme,
+  makeStyles,
+  ThemeProvider,
+} from "@material-ui/core/styles";
+import { SnackbarContainer } from "uno-material-ui";
 import "./App.css";
 import "antd/dist/antd.css";
 
@@ -84,23 +89,31 @@ const router = [
   },
 ];
 
+const theme = createMuiTheme();
+
 const App = () => {
   const classes = useStyles();
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
-      <Header className="default-header">
-        <AppHeader />
-      </Header>
-      <Content className={classes.content} style={{ fontFamily: "Quicksand" }}>
-        <Switch>
-          {router.map((e) => (
-            // @ts-ignore
-            <Route exact path={e.path} component={e.component} />
-          ))}
-        </Switch>
-      </Content>
-      <Footer className={classes.footer} />
+      <ThemeProvider theme={theme}>
+        <SnackbarContainer />
+        <Header className="default-header">
+          <AppHeader />
+        </Header>
+        <Content
+          className={classes.content}
+          style={{ fontFamily: "Quicksand" }}
+        >
+          <Switch>
+            {router.map((e) => (
+              // @ts-ignore
+              <Route exact path={e.path} component={e.component} />
+            ))}
+          </Switch>
+        </Content>
+        <Footer className={classes.footer} />
+      </ThemeProvider>
     </Layout>
   );
 };

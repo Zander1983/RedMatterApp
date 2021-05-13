@@ -3749,7 +3749,6 @@ export class UserApi extends BaseAPI {
       options
     )(this.fetch, this.basePath);
   }
-
 }
 /**
  * WorkspaceFilesApi - fetch parameter creator

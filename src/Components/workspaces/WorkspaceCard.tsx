@@ -1,6 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-
+import { snackbarService } from "uno-material-ui";
+import axios from "axios";
+import userManager from "Components/users/userManager";
+import Alert from "@material-ui/lab/Alert";
 import {
   Grid,
   Card,
@@ -14,6 +17,10 @@ import {
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 
+import { getHumanReadableTimeDifference } from "utils/time";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import MessageModal from "graph/components/modals/MessageModal";
+
 const styles = {
   title: {
     fontSize: 14,
@@ -21,24 +28,71 @@ const styles = {
   },
 };
 
-export default function WorkspaceCard(props: { data: any }) {
+export default function WorkspaceCard(props: { data: any; update: Function }) {
   const getTimeCal = (date: string) => {
-    const date1 = new Date(date);
-    const date2 = new Date();
-    let days = "";
-    let totalDays = Math.floor(
-      (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)
-    );
-    if (Math.floor(totalDays / 31) > 0) {
-      days = `${Math.floor(totalDays / 31)} Months Ago`;
-    } else {
-      days = `${totalDays} Days Ago`;
+    return getHumanReadableTimeDifference(new Date(date), new Date());
+  };
+
+  const deleteWorkspace = () => {
+    const fetchArgs = WorkspacesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).deleteWorkspace(props.data.id, userManager.getToken());
+    axios
+      .delete(fetchArgs.url, fetchArgs.options)
+      .then((e) => {
+        snackbarService.showSnackbar("Workspace deleted", "success");
+        props.update();
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Failure deleting workspace, refresh the page and try again!",
+          "error"
+        );
+      });
+  };
+
+  const editWorkspace = () => {
+    const fetchArgs = WorkspacesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
+    axios.get(fetchArgs.url, fetchArgs.options).then((e) => {});
+  };
+
+  const [open, setOpen] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
+  const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (
+    event: React.SyntheticEvent | React.MouseEvent,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
     }
-    return days;
+
+    setOpen(false);
   };
 
   return (
     <>
+      <MessageModal
+        open={deleteConfirmModal}
+        closeCall={{
+          f: handleClose,
+          ref: setDeleteConfirmModal,
+        }}
+        message={<h2>Are you sure you want to delete this workspace?</h2>}
+        options={{
+          yes: deleteWorkspace,
+          no: () => {
+            setDeleteConfirmModal(false);
+          },
+        }}
+      />
       <Grid item lg={3} md={6} sm={12}>
         <Card>
           <CardContent style={{ textAlign: "center" }}>
@@ -86,6 +140,7 @@ export default function WorkspaceCard(props: { data: any }) {
                 color="secondary"
                 startIcon={<DeleteIcon />}
                 variant="contained"
+                onClick={() => setDeleteConfirmModal(true)}
               >
                 Delete
               </Button>
