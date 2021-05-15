@@ -79,8 +79,9 @@ function Plots() {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] =
-    React.useState(false);
+  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
+    false
+  );
   const [loadModal, setLoadModal] = React.useState(true);
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
@@ -430,7 +431,7 @@ function Plots() {
                   backgroundColor: "#fafafa",
                 }}
               >
-                Print workspace
+                Print Experiment
               </Button>
               <Button
                 variant="contained"
