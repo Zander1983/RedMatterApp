@@ -62,6 +62,10 @@ const useStyles = makeStyles((theme) => ({
       paddingTop: theme.spacing(6),
       paddingBottom: theme.spacing(6),
     },
+    marginLeft: "auto",
+    marginRight: "auto",
+    textAlign: "center",
+    padding: 10,
   },
 }));
 
@@ -115,10 +119,17 @@ export default function Footer(props: any) {
   const classes = useStyles();
 
   return (
-    <Container maxWidth="md" component="footer" className={classes.footer}>
+    <Grid
+      container
+      xs={12}
+      md={9}
+      lg={6}
+      component="footer"
+      className={classes.footer}
+    >
       <Grid container spacing={4} justify="space-evenly">
         {footers.map((footer) => (
-          <Grid item xs={6} sm={3} key={footer.title}>
+          <Grid item xs={4} key={footer.title} style={{ textAlign: "left" }}>
             <Typography variant="h6" color="textPrimary" gutterBottom>
               {footer.title}
             </Typography>
@@ -137,10 +148,10 @@ export default function Footer(props: any) {
             </ul>
           </Grid>
         ))}
+        <Box mt={1}>
+          <Copyright />
+        </Box>
       </Grid>
-      <Box mt={5}>
-        <Copyright />
-      </Box>
-    </Container>
+    </Grid>
   );
 }

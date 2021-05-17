@@ -60,6 +60,7 @@ const Workspaces = () => {
       accessToken: userManager.getToken(),
     }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
     axios.get(fetchArgs.url, fetchArgs.options).then((e) => {
+      e.data.workspaces.fileCount = "Loading...";
       setWorkspaces(e.data.workspaces);
     });
   };
@@ -142,6 +143,7 @@ const Workspaces = () => {
                 margin: "auto",
                 width: "100%",
               }}
+              xs={12}
             >
               {workspaces.length > 0 ? (
                 workspaces.map((data: any) => {

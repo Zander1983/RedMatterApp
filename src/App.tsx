@@ -32,7 +32,6 @@ const { Header, Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    marginTop: 64,
     flex: "1 0 auto",
   },
   footer: {
@@ -102,9 +101,7 @@ const App = () => {
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
-        <Header className="default-header">
-          <AppHeader />
-        </Header>
+        <AppHeader />
         <Content
           className={classes.content}
           style={{ fontFamily: "Quicksand" }}

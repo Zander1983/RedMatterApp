@@ -44,6 +44,7 @@ export default class WorkspaceAssembler {
       delete plot.gateObservers;
       delete plot.popObservers;
       delete plot.observers;
+      delete plot.STD_BIN_SIZE;
       plot.file = plot.file.src + "://" + plot.file.name;
 
       const p = JSON.parse(JSON.stringify(plot));

@@ -52,17 +52,24 @@ const Login = (props: any) => {
     setLoading(true);
     try {
       const res = await axios.post("api/login", formData);
-      console.log("request succeeded");
       setLoading(false);
       const loginData = res.data;
       dispatch({
         type: "LOGIN",
         payload: { user: { profile: loginData } },
       });
+      snackbarService.showSnackbar("Logged in!", "success");
       props.history.push("/workspaces");
     } catch (err) {
       console.log(err);
       setLoading(false);
+      if (err.response === undefined) {
+        snackbarService.showSnackbar(
+          "Couldn't connect to Red Matter servers",
+          "error"
+        );
+        return;
+      }
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");
     }

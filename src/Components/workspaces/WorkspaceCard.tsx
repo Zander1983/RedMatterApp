@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import axios from "axios";
@@ -29,6 +29,8 @@ const styles = {
 };
 
 export default function WorkspaceCard(props: { data: any; update: Function }) {
+  const [files, setFiles] = React.useState([]);
+  const [initLoading, setInitLoading] = React.useState(true);
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
@@ -58,9 +60,14 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
     axios.get(fetchArgs.url, fetchArgs.options).then((e) => {});
   };
 
+  const fetchWorkspaceFiles = () => {
+    setInitLoading(false);
+  };
+
   const [open, setOpen] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
+  const [editodal, setEditodal] = React.useState(false);
 
   const handleClick = () => {
     setOpen(true);
@@ -77,8 +84,19 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
     setOpen(false);
   };
 
+  useEffect(() => {
+    fetchWorkspaceFiles();
+  }, []);
+
   return (
-    <>
+    <Grid
+      style={{
+        padding: 5,
+      }}
+      xs={6}
+      md={4}
+      lg={3}
+    >
       <MessageModal
         open={deleteConfirmModal}
         closeCall={{
@@ -93,7 +111,21 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           },
         }}
       />
-      <Grid item lg={3} md={6} sm={12}>
+      {/* <EditModal
+        open={deleteConfirmModal}
+        closeCall={{
+          f: handleClose,
+          ref: setDeleteConfirmModal,
+        }}
+        message={<h2>Are you sure you want to delete this workspace?</h2>}
+        options={{
+          yes: deleteWorkspace,
+          no: () => {
+            setDeleteConfirmModal(false);
+          },
+        }}
+      /> */}
+      <Grid item>
         <Card>
           <CardContent style={{ textAlign: "center" }}>
             <NavLink
@@ -122,6 +154,13 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
             <Typography style={styles.title} color="textSecondary" gutterBottom>
               {props.data.isPrivate ? "Private" : "Public"}
             </Typography>
+            <Typography style={styles.title} color="textSecondary" gutterBottom>
+              {initLoading
+                ? "Loading files..."
+                : files.length.toString() +
+                  " file" +
+                  (files.length !== 1 ? "s" : "")}
+            </Typography>
           </CardContent>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
             <Tooltip title="Edit workspace">
@@ -148,6 +187,6 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           </CardActions>
         </Card>
       </Grid>
-    </>
+    </Grid>
   );
 }
