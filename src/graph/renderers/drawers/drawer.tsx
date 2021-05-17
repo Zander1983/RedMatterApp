@@ -92,14 +92,25 @@ export default abstract class Drawer {
     text: string;
     font?: string;
     fillColor?: string;
+    rotate?: number;
   }) {
     this.setFillColor(params.fillColor);
 
     if (params.font !== undefined) {
       this.ctx.font = params.font;
     }
+    if (params.rotate !== undefined) {
+      this.ctx.rotate(params.rotate);
+      const bx = params.x;
+      const by = params.y;
+      params.x = -bx * Math.cos(params.rotate) + by * Math.sin(params.rotate);
+      params.y = -bx * Math.sin(params.rotate) - by * Math.cos(params.rotate);
+    }
     this.ctx.fillText(params.text, params.x, params.y);
     this.ctx.font = "Arial";
+    if (params.rotate !== undefined) {
+      this.ctx.rotate(-params.rotate);
+    }
   }
 
   @resetStyleAfter()

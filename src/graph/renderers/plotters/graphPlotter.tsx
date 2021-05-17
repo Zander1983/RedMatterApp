@@ -73,9 +73,8 @@ export default class GraphPlotter extends Plotter {
 
   /* === METHODS === */
 
-  public draw(...drawPlotGraphParams: any): void {
-    if (drawPlotGraphParams === []) this.drawer.drawPlotGraph();
-    else this.drawer.drawPlotGraph(...drawPlotGraphParams);
+  public draw(drawPlotGraphParams?: any): void {
+    this.drawer.drawPlotGraph(drawPlotGraphParams);
     this.drawer.text({
       x: leftPadding * this.scale,
       y: 30 * this.scale,

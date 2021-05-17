@@ -348,7 +348,6 @@ function Plots() {
           marginRight: 0,
           justifyContent: "center",
           display: "flex",
-          marginBottom: 500,
         }}
       >
         <Grid
@@ -423,7 +422,7 @@ function Plots() {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              {/* <Button
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -432,8 +431,8 @@ function Plots() {
                   backgroundColor: "#fafafa",
                 }}
               >
-                Print workspace
-              </Button> */}
+                Print Experiment
+              </Button>
               <Button
                 variant="contained"
                 size="large"

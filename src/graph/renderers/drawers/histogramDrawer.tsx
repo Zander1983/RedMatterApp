@@ -82,8 +82,14 @@ export default class HistogramDrawer extends GraphDrawer {
     }
   }
 
-  drawPlotGraph(lines: boolean = true, vbins?: number, hbins?: number): void {
-    super.drawPlotGraph(lines, vbins, hbins);
+  drawPlotGraph(params: {
+    lines: boolean;
+    vbins?: number;
+    hbins?: number;
+    xAxisLabel?: string;
+    yAxisLabel?: string;
+  }): void {
+    super.drawPlotGraph(params);
   }
 
   /* TODO FIX THIS SHIT WHEN EVERYTHING IS IN PLACE */
@@ -133,7 +139,10 @@ export default class HistogramDrawer extends GraphDrawer {
     if (this.axis === "vertical") {
       this.binSize = (this.x2 - this.x1) / bins;
       if (bins <= index) {
-        throw Error(`Out of bounds index for histogram with ${bins} bins`);
+        if (index >= bins) index = bins - 1;
+        // throw Error(
+        //   `Out of bounds index ${index} for histogram with ${bins} bins`
+        // );
       }
       const outterBeginX = this.x1 + index * this.binSize;
       const innerBeginX = outterBeginX + binPadding;

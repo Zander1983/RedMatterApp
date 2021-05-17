@@ -225,7 +225,37 @@ export default class GraphDrawer extends Drawer {
     }
   }
 
-  drawPlotGraph(lines: boolean = true, vbins?: number, hbins?: number): void {
+  private drawPlotLabel(axis: "x" | "y", label: string) {
+    if (axis === "x") {
+      this.text({
+        x: (this.x2 - this.x1) / 2 - label.length * 5 + 100,
+        y: this.y2 + 70,
+        text: label,
+        font: "25px Quicksand",
+      });
+    }
+
+    if (axis === "y") {
+      const dist = this.text({
+        x: 20,
+        y: (this.y2 - this.y1) / 2 - label.length * 5 + 100,
+        text: label,
+        font: "25px Quicksand",
+        rotate: Math.PI / 2,
+      });
+    }
+  }
+
+  drawPlotGraph(params?: {
+    lines?: boolean;
+    vbins?: number;
+    hbins?: number;
+    xAxisLabel?: string;
+    yAxisLabel?: string;
+  }): void {
+    const lines =
+      params === undefined || params.lines === undefined ? true : params.lines;
+
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
@@ -233,8 +263,14 @@ export default class GraphDrawer extends Drawer {
       y2: this.y2,
       ib: this.iby,
       ie: this.iey,
-      bins: vbins,
+      bins:
+        params === undefined || params.vbins !== undefined
+          ? undefined
+          : params.vbins,
     });
+
+    if (params !== undefined && params.xAxisLabel !== undefined)
+      this.drawPlotLabel("x", params.xAxisLabel);
 
     this.graphLine({
       x1: this.x1,
@@ -243,12 +279,28 @@ export default class GraphDrawer extends Drawer {
       y2: this.y2,
       ib: this.ibx,
       ie: this.iex,
-      bins: hbins,
+      bins:
+        params === undefined || params.hbins !== undefined
+          ? undefined
+          : params.hbins,
     });
 
+    if (params !== undefined && params.yAxisLabel !== undefined)
+      this.drawPlotLabel("y", params.yAxisLabel);
+
     if (lines) {
-      this.drawPlotLines("v", hbins);
-      this.drawPlotLines("h", vbins);
+      this.drawPlotLines(
+        "v",
+        params !== undefined && params.vbins !== undefined
+          ? params.vbins
+          : undefined
+      );
+      this.drawPlotLines(
+        "h",
+        params !== undefined && params.hbins !== undefined
+          ? params.hbins
+          : undefined
+      );
     }
   }
 }

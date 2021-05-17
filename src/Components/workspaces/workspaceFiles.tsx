@@ -95,6 +95,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const WorkspaceAppFiles = ({ id }: any) => {
+  console.log(id);
   const workspacesId = id;
   const location: any = useLocation<any>();
   const classes = useStyles();

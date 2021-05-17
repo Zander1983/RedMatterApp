@@ -100,11 +100,13 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
-    super.draw(
-      false,
-      (this.height - bottomPadding) / 50,
-      (this.width - rightPadding) / 50
-    );
+    super.draw({
+      lines: false,
+      vbins: (this.height - bottomPadding) / 50,
+      hbins: (this.width - rightPadding) / 50,
+      xAxisLabel: this.plotData.xAxis,
+      yAxisLabel: this.plotData.yAxis,
+    });
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 

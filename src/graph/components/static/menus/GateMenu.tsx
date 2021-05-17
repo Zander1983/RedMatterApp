@@ -15,7 +15,6 @@ import FileCopy from "@material-ui/icons/FileCopy";
 
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
-import { chownSync } from "node:fs";
 
 const classes = {
   table: {},
