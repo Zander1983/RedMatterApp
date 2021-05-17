@@ -127,12 +127,15 @@ const Workspaces = () => {
                 justifyContent: "space-between",
               }}
             >
-              <h1 style={{ ...styles.zeroMargin, color: "#ddd" }}>
+              <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
                 Workspaces
-              </h1>
+              </div>
               <Button
                 variant="contained"
-                style={{ ...styles.addButton, backgroundColor: "#fafafa" }}
+                style={{
+                  backgroundColor: "#fafafa",
+                  maxHeight: 40,
+                }}
                 onClick={() => setCreateWorkspaceModal(true)}
               >
                 Create
