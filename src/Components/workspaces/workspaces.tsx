@@ -56,6 +56,7 @@ const Workspaces = () => {
   const [createWorkspaceModal, setCreateWorkspaceModal] = React.useState(false);
 
   const fetchWorkspaces = () => {
+    if (!isLoggedIn) return;
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
@@ -73,7 +74,9 @@ const Workspaces = () => {
     fetchWorkspaces();
   }, []);
 
-  return (
+  return !isLoggedIn ? (
+    <></>
+  ) : (
     <>
       <CreateWorkspaceModal
         open={createWorkspaceModal}
