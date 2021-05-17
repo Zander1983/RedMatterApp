@@ -247,6 +247,62 @@ export interface Body6 {
 /**
  *
  * @export
+ * @interface ExperimentDetailView
+ */
+export interface ExperimentDetailView {
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentDetailView
+   */
+  device?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentDetailView
+   */
+  cellType?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentDetailView
+   */
+  particleSize?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentDetailView
+   */
+  fluorophoresCategory?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentDetailView
+   */
+  description?: string;
+}
+/**
+ *
+ * @export
+ * @interface ExperimentPayload
+ */
+export interface ExperimentPayload {
+  /**
+   *
+   * @type {ExperimentDetailView}
+   * @memberof ExperimentPayload
+   */
+  details?: ExperimentDetailView;
+  /**
+   *
+   * @type {any}
+   * @memberof ExperimentPayload
+   */
+  data?: any;
+}
+/**
+ *
+ * @export
  * @interface GatingCoords
  */
 export interface GatingCoords {
@@ -306,11 +362,97 @@ export interface InlineResponse20010 {
    * @type {string}
    * @memberof InlineResponse20010
    */
+  token?: string;
+  /**
+   *
+   * @type {Array<any>}
+   * @memberof InlineResponse20010
+   */
+  statistics?: Array<any>;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse20011
+ */
+export interface InlineResponse20011 {
+  /**
+   *
+   * @type {Array<any>}
+   * @memberof InlineResponse20011
+   */
+  fileIds?: Array<any>;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse20011
+   */
+  graphName?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof InlineResponse20011
+   */
+  isDotPlot?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse20011
+   */
+  paramX?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse20011
+   */
+  paramY?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse20011
+   */
+  selectedGate?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse20011
+   */
+  xScale?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse20011
+   */
+  yScale?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse20011
+   */
+  height?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse20011
+   */
+  width?: number;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse20012
+ */
+export interface InlineResponse20012 {
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse20012
+   */
   gateName?: string;
   /**
    *
    * @type {string}
-   * @memberof InlineResponse20010
+   * @memberof InlineResponse20012
    */
   token?: string;
 }
@@ -464,78 +606,29 @@ export interface InlineResponse2005 {
  */
 export interface InlineResponse2006 {
   /**
-   * Name of workspace
-   * @type {string}
-   * @memberof InlineResponse2006
-   */
-  workspaceName?: string;
-  /**
-   * number of files remaining for user
-   * @type {number}
-   * @memberof InlineResponse2006
-   */
-  filesRemaining?: number;
-  /**
-   * Exp. Date of workspace
-   * @type {string}
-   * @memberof InlineResponse2006
-   */
-  availableUntil?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2006
-   */
-  monthlyFileCounter?: number;
-  /**
-   *
-   * @type {boolean}
-   * @memberof InlineResponse2006
-   */
-  isOwner?: boolean;
-  /**
    *
    * @type {string}
    * @memberof InlineResponse2006
    */
   token?: string;
   /**
-   *
-   * @type {Array<InlineResponse2006Files>}
-   * @memberof InlineResponse2006
-   */
-  files?: Array<InlineResponse2006Files>;
-}
-/**
- *
- * @export
- * @interface InlineResponse2006Files
- */
-export interface InlineResponse2006Files {
-  /**
-   * Id of file
+   * experiment id
    * @type {string}
-   * @memberof InlineResponse2006Files
+   * @memberof InlineResponse2006
    */
   id?: string;
   /**
-   * Workspace Id
-   * @type {string}
-   * @memberof InlineResponse2006Files
+   * experiment details
+   * @type {any}
+   * @memberof InlineResponse2006
    */
-  workspaceId?: string;
+  details?: any;
   /**
-   * Name of file
+   * experiment data
    * @type {string}
-   * @memberof InlineResponse2006Files
+   * @memberof InlineResponse2006
    */
-  label?: string;
-  /**
-   * Date of creation
-   * @type {string}
-   * @memberof InlineResponse2006Files
-   */
-  createdOn?: string;
+  data?: string;
 }
 /**
  *
@@ -548,203 +641,25 @@ export interface InlineResponse2007 {
    * @type {string}
    * @memberof InlineResponse2007
    */
-  workspaceName?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007
-   */
-  version?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007
-   */
   token?: string;
   /**
-   *
+   * experiment id
    * @type {string}
    * @memberof InlineResponse2007
-   */
-  path?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007
-   */
-  numParams?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007
-   */
-  label?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007
-   */
-  eventCount?: number;
-  /**
-   *
-   * @type {boolean}
-   * @memberof InlineResponse2007
-   */
-  eventWarning?: boolean;
-  /**
-   *
-   * @type {InlineResponse2007Analysis}
-   * @memberof InlineResponse2007
-   */
-  analysis?: InlineResponse2007Analysis;
-  /**
-   *
-   * @type {Array<InlineResponse2007Files>}
-   * @memberof InlineResponse2007
-   */
-  files?: Array<InlineResponse2007Files>;
-  /**
-   *
-   * @type {Array<InlineResponse2007Params>}
-   * @memberof InlineResponse2007
-   */
-  params?: Array<InlineResponse2007Params>;
-  /**
-   *
-   * @type {InlineResponse2007Spillover}
-   * @memberof InlineResponse2007
-   */
-  spillover?: InlineResponse2007Spillover;
-  /**
-   *
-   * @type {any}
-   * @memberof InlineResponse2007
-   */
-  text?: any;
-}
-/**
- *
- * @export
- * @interface InlineResponse2007Analysis
- */
-export interface InlineResponse2007Analysis {
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Analysis
-   */
-  fCSVersion?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  beginAnalysis?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  beginData?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  beginText?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  endAnalysis?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  endData?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Analysis
-   */
-  endText?: number;
-}
-/**
- *
- * @export
- * @interface InlineResponse2007Files
- */
-export interface InlineResponse2007Files {
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Files
-   */
-  createdOn?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Files
    */
   id?: string;
   /**
    *
-   * @type {string}
-   * @memberof InlineResponse2007Files
+   * @type {ExperimentDetailView}
+   * @memberof InlineResponse2007
    */
-  label?: string;
+  details?: ExperimentDetailView;
   /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Files
+   * experiment data
+   * @type {any}
+   * @memberof InlineResponse2007
    */
-  workspaceId?: string;
-}
-/**
- *
- * @export
- * @interface InlineResponse2007Params
- */
-export interface InlineResponse2007Params {
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Params
-   */
-  display?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof InlineResponse2007Params
-   */
-  key?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2007Params
-   */
-  value?: string;
-}
-/**
- *
- * @export
- * @interface InlineResponse2007Spillover
- */
-export interface InlineResponse2007Spillover {
-  /**
-   *
-   * @type {Array<string>}
-   * @memberof InlineResponse2007Spillover
-   */
-  spilloverParamLabels?: Array<string>;
-  /**
-   *
-   * @type {Array<Array<string>>}
-   * @memberof InlineResponse2007Spillover
-   */
-  spilloverValues?: Array<Array<string>>;
+  data?: any;
 }
 /**
  *
@@ -753,6 +668,36 @@ export interface InlineResponse2007Spillover {
  */
 export interface InlineResponse2008 {
   /**
+   * Name of workspace
+   * @type {string}
+   * @memberof InlineResponse2008
+   */
+  workspaceName?: string;
+  /**
+   * number of files remaining for user
+   * @type {number}
+   * @memberof InlineResponse2008
+   */
+  filesRemaining?: number;
+  /**
+   * Exp. Date of workspace
+   * @type {string}
+   * @memberof InlineResponse2008
+   */
+  availableUntil?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2008
+   */
+  monthlyFileCounter?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof InlineResponse2008
+   */
+  isOwner?: boolean;
+  /**
    *
    * @type {string}
    * @memberof InlineResponse2008
@@ -760,10 +705,41 @@ export interface InlineResponse2008 {
   token?: string;
   /**
    *
-   * @type {Array<any>}
+   * @type {Array<InlineResponse2008Files>}
    * @memberof InlineResponse2008
    */
-  statistics?: Array<any>;
+  files?: Array<InlineResponse2008Files>;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse2008Files
+ */
+export interface InlineResponse2008Files {
+  /**
+   * Id of file
+   * @type {string}
+   * @memberof InlineResponse2008Files
+   */
+  id?: string;
+  /**
+   * Workspace Id
+   * @type {string}
+   * @memberof InlineResponse2008Files
+   */
+  workspaceId?: string;
+  /**
+   * Name of file
+   * @type {string}
+   * @memberof InlineResponse2008Files
+   */
+  label?: string;
+  /**
+   * Date of creation
+   * @type {string}
+   * @memberof InlineResponse2008Files
+   */
+  createdOn?: string;
 }
 /**
  *
@@ -773,64 +749,206 @@ export interface InlineResponse2008 {
 export interface InlineResponse2009 {
   /**
    *
-   * @type {Array<any>}
+   * @type {string}
    * @memberof InlineResponse2009
    */
-  fileIds?: Array<any>;
+  workspaceName?: string;
   /**
    *
    * @type {string}
    * @memberof InlineResponse2009
    */
-  graphName?: string;
+  version?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009
+   */
+  token?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009
+   */
+  path?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009
+   */
+  numParams?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009
+   */
+  label?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009
+   */
+  eventCount?: number;
   /**
    *
    * @type {boolean}
    * @memberof InlineResponse2009
    */
-  isDotPlot?: boolean;
+  eventWarning?: boolean;
   /**
    *
-   * @type {number}
+   * @type {InlineResponse2009Analysis}
    * @memberof InlineResponse2009
    */
-  paramX?: number;
+  analysis?: InlineResponse2009Analysis;
   /**
    *
-   * @type {number}
+   * @type {Array<InlineResponse2009Files>}
    * @memberof InlineResponse2009
    */
-  paramY?: number;
+  files?: Array<InlineResponse2009Files>;
+  /**
+   *
+   * @type {Array<InlineResponse2009Params>}
+   * @memberof InlineResponse2009
+   */
+  params?: Array<InlineResponse2009Params>;
+  /**
+   *
+   * @type {InlineResponse2009Spillover}
+   * @memberof InlineResponse2009
+   */
+  spillover?: InlineResponse2009Spillover;
+  /**
+   *
+   * @type {any}
+   * @memberof InlineResponse2009
+   */
+  text?: any;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse2009Analysis
+ */
+export interface InlineResponse2009Analysis {
   /**
    *
    * @type {string}
-   * @memberof InlineResponse2009
+   * @memberof InlineResponse2009Analysis
    */
-  selectedGate?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2009
-   */
-  xScale?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof InlineResponse2009
-   */
-  yScale?: string;
+  fCSVersion?: string;
   /**
    *
    * @type {number}
-   * @memberof InlineResponse2009
+   * @memberof InlineResponse2009Analysis
    */
-  height?: number;
+  beginAnalysis?: number;
   /**
    *
    * @type {number}
-   * @memberof InlineResponse2009
+   * @memberof InlineResponse2009Analysis
    */
-  width?: number;
+  beginData?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009Analysis
+   */
+  beginText?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009Analysis
+   */
+  endAnalysis?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009Analysis
+   */
+  endData?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009Analysis
+   */
+  endText?: number;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse2009Files
+ */
+export interface InlineResponse2009Files {
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Files
+   */
+  createdOn?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Files
+   */
+  id?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Files
+   */
+  label?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Files
+   */
+  workspaceId?: string;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse2009Params
+ */
+export interface InlineResponse2009Params {
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Params
+   */
+  display?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof InlineResponse2009Params
+   */
+  key?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof InlineResponse2009Params
+   */
+  value?: string;
+}
+/**
+ *
+ * @export
+ * @interface InlineResponse2009Spillover
+ */
+export interface InlineResponse2009Spillover {
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof InlineResponse2009Spillover
+   */
+  spilloverParamLabels?: Array<string>;
+  /**
+   *
+   * @type {Array<Array<string>>}
+   * @memberof InlineResponse2009Spillover
+   */
+  spilloverValues?: Array<Array<string>>;
 }
 /**
  *
@@ -1137,6 +1255,381 @@ export class AuthenticationApi extends BaseAPI {
       this.fetch,
       this.basePath
     );
+  }
+}
+/**
+ * ExperimentApi - fetch parameter creator
+ * @export
+ */
+export const ExperimentApiFetchParamCreator = function (
+  configuration?: Configuration
+) {
+  return {
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'body' is not null or undefined
+      if (body === null || body === undefined) {
+        throw new RequiredError(
+          "body",
+          "Required parameter body was null or undefined when calling createExperiment."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling createExperiment."
+        );
+      }
+      // verify required parameter 'workspaceId' is not null or undefined
+      if (workspaceId === null || workspaceId === undefined) {
+        throw new RequiredError(
+          "workspaceId",
+          "Required parameter workspaceId was null or undefined when calling createExperiment."
+        );
+      }
+      const localVarPath = `/api/workspace/{workspaceId}/experiment`.replace(
+        `{${"workspaceId"}}`,
+        encodeURIComponent(String(workspaceId))
+      );
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "POST" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+      const needsSerialization =
+        <any>"ExperimentPayload" !== "string" ||
+        localVarRequestOptions.headers["Content-Type"] === "application/json";
+      localVarRequestOptions.body = needsSerialization
+        ? JSON.stringify(body || {})
+        : body || "";
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      experimentId: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'body' is not null or undefined
+      if (body === null || body === undefined) {
+        throw new RequiredError(
+          "body",
+          "Required parameter body was null or undefined when calling updateExperiment."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling updateExperiment."
+        );
+      }
+      // verify required parameter 'workspaceId' is not null or undefined
+      if (workspaceId === null || workspaceId === undefined) {
+        throw new RequiredError(
+          "workspaceId",
+          "Required parameter workspaceId was null or undefined when calling updateExperiment."
+        );
+      }
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
+        throw new RequiredError(
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling updateExperiment."
+        );
+      }
+      const localVarPath =
+        `/api/workspace/{workspaceId}/experiment/{experimentId}`
+          .replace(
+            `{${"workspaceId"}}`,
+            encodeURIComponent(String(workspaceId))
+          )
+          .replace(
+            `{${"experimentId"}}`,
+            encodeURIComponent(String(experimentId))
+          );
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "PUT" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+      const needsSerialization =
+        <any>"ExperimentPayload" !== "string" ||
+        localVarRequestOptions.headers["Content-Type"] === "application/json";
+      localVarRequestOptions.body = needsSerialization
+        ? JSON.stringify(body || {})
+        : body || "";
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+  };
+};
+
+/**
+ * ExperimentApi - functional programming interface
+ * @export
+ */
+export const ExperimentApiFp = function (configuration?: Configuration) {
+  return {
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      options?: any
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2006> {
+      const localVarFetchArgs = ExperimentApiFetchParamCreator(
+        configuration
+      ).createExperiment(body, token, workspaceId, options);
+      return (
+        fetch: FetchAPI = portableFetch,
+        basePath: string = BASE_PATH
+      ) => {
+        return fetch(
+          basePath + localVarFetchArgs.url,
+          localVarFetchArgs.options
+        ).then((response) => {
+          if (response.status >= 200 && response.status < 300) {
+            return response.json();
+          } else {
+            throw response;
+          }
+        });
+      };
+    },
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      experimentId: string,
+      options?: any
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2007> {
+      const localVarFetchArgs = ExperimentApiFetchParamCreator(
+        configuration
+      ).updateExperiment(body, token, workspaceId, experimentId, options);
+      return (
+        fetch: FetchAPI = portableFetch,
+        basePath: string = BASE_PATH
+      ) => {
+        return fetch(
+          basePath + localVarFetchArgs.url,
+          localVarFetchArgs.options
+        ).then((response) => {
+          if (response.status >= 200 && response.status < 300) {
+            return response.json();
+          } else {
+            throw response;
+          }
+        });
+      };
+    },
+  };
+};
+
+/**
+ * ExperimentApi - factory interface
+ * @export
+ */
+export const ExperimentApiFactory = function (
+  configuration?: Configuration,
+  fetch?: FetchAPI,
+  basePath?: string
+) {
+  return {
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      options?: any
+    ) {
+      return ExperimentApiFp(configuration).createExperiment(
+        body,
+        token,
+        workspaceId,
+        options
+      )(fetch, basePath);
+    },
+    /**
+     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * @summary Creating Experiment
+     * @param {ExperimentPayload} body
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateExperiment(
+      body: ExperimentPayload,
+      token: string,
+      workspaceId: string,
+      experimentId: string,
+      options?: any
+    ) {
+      return ExperimentApiFp(configuration).updateExperiment(
+        body,
+        token,
+        workspaceId,
+        experimentId,
+        options
+      )(fetch, basePath);
+    },
+  };
+};
+
+/**
+ * ExperimentApi - object-oriented interface
+ * @export
+ * @class ExperimentApi
+ * @extends {BaseAPI}
+ */
+export class ExperimentApi extends BaseAPI {
+  /**
+   * To create Experiment, we need to pass workspaceId, data and details in body of request
+   * @summary Creating Experiment
+   * @param {ExperimentPayload} body
+   * @param {string} token Generate token and pass it in header
+   * @param {string} workspaceId Workspace id
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ExperimentApi
+   */
+  public createExperiment(
+    body: ExperimentPayload,
+    token: string,
+    workspaceId: string,
+    options?: any
+  ) {
+    return ExperimentApiFp(this.configuration).createExperiment(
+      body,
+      token,
+      workspaceId,
+      options
+    )(this.fetch, this.basePath);
+  }
+
+  /**
+   * To create Experiment, we need to pass workspaceId, data and details in body of request
+   * @summary Creating Experiment
+   * @param {ExperimentPayload} body
+   * @param {string} token Generate token and pass it in header
+   * @param {string} workspaceId Workspace id
+   * @param {string} experimentId Experiment id
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ExperimentApi
+   */
+  public updateExperiment(
+    body: ExperimentPayload,
+    token: string,
+    workspaceId: string,
+    experimentId: string,
+    options?: any
+  ) {
+    return ExperimentApiFp(this.configuration).updateExperiment(
+      body,
+      token,
+      workspaceId,
+      experimentId,
+      options
+    )(this.fetch, this.basePath);
   }
 }
 /**
@@ -2292,7 +2785,7 @@ export const GraphsGatesApiFp = function (configuration?: Configuration) {
       id: string,
       token: string,
       options?: any
-    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2007> {
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2009> {
       const localVarFetchArgs = GraphsGatesApiFetchParamCreator(
         configuration
       ).fileInfo(organisationId, workspaceId, id, token, options);
@@ -2436,7 +2929,7 @@ export const GraphsGatesApiFp = function (configuration?: Configuration) {
     ): (
       fetch?: FetchAPI,
       basePath?: string
-    ) => Promise<Array<InlineResponse2009>> {
+    ) => Promise<Array<InlineResponse20011>> {
       const localVarFetchArgs = GraphsGatesApiFetchParamCreator(
         configuration
       ).getGraphs(
@@ -2496,7 +2989,7 @@ export const GraphsGatesApiFp = function (configuration?: Configuration) {
       height: number,
       token: string,
       options?: any
-    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse20010> {
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse20012> {
       const localVarFetchArgs = GraphsGatesApiFetchParamCreator(
         configuration
       ).quadGate(
@@ -2647,7 +3140,7 @@ export const GraphsGatesApiFp = function (configuration?: Configuration) {
       id: string,
       token: string,
       options?: any
-    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2008> {
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse20010> {
       const localVarFetchArgs = GraphsGatesApiFetchParamCreator(
         configuration
       ).statistics(organisationId, selectedGate, id, token, options);
@@ -3635,6 +4128,36 @@ export const UserApiFp = function (configuration?: Configuration) {
         });
       };
     },
+    /**
+     *
+     * @summary Getting User Order
+     * @param {string} token token is passed in header
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    userexpertorders(
+      token: string,
+      options?: any
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<Array<Object>> {
+      const localVarFetchArgs = UserApiFetchParamCreator(
+        configuration
+      ).userexpertorders(token, options);
+      return (
+        fetch: FetchAPI = portableFetch,
+        basePath: string = BASE_PATH
+      ) => {
+        return fetch(
+          basePath + localVarFetchArgs.url,
+          localVarFetchArgs.options
+        ).then((response) => {
+          if (response.status >= 200 && response.status < 300) {
+            return response.json();
+          } else {
+            throw response;
+          }
+        });
+      };
+    },
   };
 };
 
@@ -3690,6 +4213,19 @@ export const UserApiFactory = function (
         body,
         options
       )(fetch, basePath);
+    },
+    /**
+     *
+     * @summary Getting User Order
+     * @param {string} token token is passed in header
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    userexpertorders(token: string, options?: any) {
+      return UserApiFp(configuration).userexpertorders(token, options)(
+        fetch,
+        basePath
+      );
     },
   };
 };
@@ -3748,6 +4284,21 @@ export class UserApi extends BaseAPI {
       body,
       options
     )(this.fetch, this.basePath);
+  }
+
+  /**
+   *
+   * @summary Getting User Order
+   * @param {string} token token is passed in header
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof UserApi
+   */
+  public userexpertorders(token: string, options?: any) {
+    return UserApiFp(this.configuration).userexpertorders(token, options)(
+      this.fetch,
+      this.basePath
+    );
   }
 }
 /**
@@ -4192,7 +4743,7 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
       workspaceId: string,
       token: string,
       options?: any
-    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2006> {
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2008> {
       const localVarFetchArgs = WorkspaceFilesApiFetchParamCreator(
         configuration
       ).workspaceFiles(organisationId, workspaceId, token, options);
