@@ -64,9 +64,6 @@ const AppHeader = (props: any) => {
     <div>
       <AppBar className={classes.toolbar} position="fixed">
         <Toolbar>
-          {/* <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-          <MenuIcon />
-        </IconButton> */}
           <Typography variant="h6" className={classes.title}>
             <NavLink style={{ color: "#fafafa" }} to="/">
               <img

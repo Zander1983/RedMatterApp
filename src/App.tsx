@@ -7,8 +7,6 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
-import "./App.css";
-import "antd/dist/antd.css";
 
 import AppHeader from "./Components/common/header";
 import Workspaces from "./Components/workspaces/workspaces";
@@ -26,7 +24,7 @@ import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
