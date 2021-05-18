@@ -113,6 +113,12 @@ export default function Footer(props: any) {
                 <br />
                 <br />
               </li>
+              <li>
+                <b>Dr Alfonso Blanco</b>
+                <br /> Science Advisor
+                <br />
+                <br />
+              </li>
             </ul>
           ),
         },
