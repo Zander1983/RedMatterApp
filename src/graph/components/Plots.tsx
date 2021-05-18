@@ -47,13 +47,15 @@ const useStyles = makeStyles((theme) => ({
   },
   topButton: {
     marginLeft: 20,
+    height: 35,
   },
 }));
 
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 
-function Plots() {
+function Plots(props: { workspaceID: string }) {
+  console.log("WORKSPACE ID = ", props.workspaceID);
   const classes = useStyles();
 
   // == Small screen size notice ==
@@ -79,9 +81,8 @@ function Plots() {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
-    false
-  );
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(true);
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
@@ -319,31 +320,37 @@ function Plots() {
         </div>
       ) : null}
 
-      <div
-        style={{
-          color: "#555",
-          backgroundColor: "#dedede",
-          paddingBottom: 1,
-          paddingTop: 15,
-          marginBottom: 30,
-          textAlign: "center",
-        }}
-      >
-        <p>
-          This is a <b>PROTOTYPE</b> showing basic functionalities we expect to
-          add to Red Matter.
-          <br />
-          You can help us improve or learn more by sending an email to{" "}
-          <a href="mailto:redmatterapp@gmail.com">
-            <b>redmatterapp@gmail.com</b>
-          </a>
-          .
-        </p>
-      </div>
+      {props.workspaceID === undefined ? (
+        <div
+          style={{
+            color: "#555",
+            backgroundColor: "#dedede",
+            paddingBottom: 1,
+            paddingTop: 15,
+            fontSize: "1.1em",
+            textAlign: "center",
+          }}
+        >
+          <p>
+            This is a <b>PROTOTYPE</b> showing functionalities we expect to add
+            to Red Matter.
+            <br />
+            It uses local anonymous files for you to test how the app works
+            quick and easy.
+            <br />
+            You can help us improve or learn more by sending an email to{" "}
+            <a href="mailto:redmatterapp@gmail.com">
+              <b>redmatterapp@gmail.com</b>
+            </a>
+            .
+          </p>
+        </div>
+      ) : null}
 
       {/* == MAIN PANEL == */}
       <Grid
         style={{
+          marginTop: 30,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",
@@ -422,7 +429,7 @@ function Plots() {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              <Button
+              {/* <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -432,7 +439,7 @@ function Plots() {
                 }}
               >
                 Print Experiment
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 size="large"
