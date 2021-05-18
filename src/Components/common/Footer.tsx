@@ -1,16 +1,22 @@
+import React from "react";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
 import Box from "@material-ui/core/Box";
+import Collapse from "@material-ui/core/Collapse";
+import Button from "@material-ui/core/Button";
+import { ArrowDownOutlined } from "@ant-design/icons";
+import { useHistory } from "react-router";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {"Copyright © "}
       <Link color="inherit" href="https://material-ui.com/">
-        Red Matter LTDA.
+        Red Matter Technologies LTD, CRO 690667
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}
@@ -69,55 +75,104 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const footers = [
-  {
-    title: "About us",
-    description: [
-      {
-        name: "Team",
-        path: "/team",
-      },
-      {
-        name: "History",
-        path: "/history",
-      },
-      {
-        name: "Credits",
-        path: "/credits",
-      },
-    ],
-  },
-  {
-    title: "Legal",
-    description: [
-      {
-        name: "Privacy policy",
-        path: "/terms",
-      },
-      {
-        name: "Terms of use",
-        path: "/terms",
-      },
-    ],
-  },
-  {
-    title: "Contact",
-    description: [
-      {
-        name: "Contact us",
-        path: "/contact",
-      },
-      {
-        name: "Mailing list",
-        path: "/mailing-list",
-      },
-    ],
-  },
-];
+//create your forceUpdate hook
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
 
 export default function Footer(props: any) {
+  const forceUpdate = useForceUpdate();
   const classes = useStyles();
+  const history = useHistory();
 
+  const [footers, setFooters] = React.useState([
+    {
+      title: "About us",
+      description: [
+        {
+          name: "Team",
+          open: false,
+          description: (
+            <ul>
+              <li>
+                <b>Mark Kelly</b>
+                <br /> Chief Executive Officer
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Tomaz Einfalt</b>
+                <br /> Chief Science Officer
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Renato Britto Araujo</b>
+                <br /> Chief Technology Officer
+                <br />
+                <br />
+              </li>
+            </ul>
+          ),
+        },
+        {
+          name: "History",
+          open: false,
+          description: (
+            <div>
+              Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly.
+              It was built in conjunction with a local hospital who wanted to be
+              able to access FCS tools remotely and from mobile devices. Red
+              Matter is now used by users in over 2,000 institutes and in over
+              100 countries.
+            </div>
+          ),
+        },
+      ],
+    },
+    {
+      title: "Legal",
+      description: [
+        {
+          name: "Terms of use",
+          open: false,
+          description: (
+            <div>
+              Any FCS data uploaded to Red Matter may be used by Red Matter in
+              an anonymised form. Red Matter defines anonymised FCS data as data
+              that excludes any file metadata, labels, or any other infromation
+              that would identify the FCS file or its source.
+            </div>
+          ),
+        },
+        {
+          name: "Credits",
+          path: "/credits",
+        },
+      ],
+    },
+    {
+      title: "Contact",
+      description: [
+        {
+          name: "Contact us",
+          open: false,
+          description: (
+            <div>
+              Send us an email at <b>admin@redmatterapp.com</b>
+            </div>
+          ),
+        },
+        // {
+        //   name: "Mailing list",
+        //   path: "/mailing-list",
+        // },
+      ],
+    },
+  ]);
+
+  console.log("rerender");
   return (
     <Grid
       container
@@ -128,21 +183,38 @@ export default function Footer(props: any) {
       className={classes.footer}
     >
       <Grid container spacing={4} justify="space-evenly">
-        {footers.map((footer) => (
+        {footers.map((footer, i) => (
           <Grid item xs={4} key={footer.title} style={{ textAlign: "left" }}>
             <Typography variant="h6" color="textPrimary" gutterBottom>
               {footer.title}
             </Typography>
             <ul>
-              {footer.description.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.path}
-                    variant="subtitle1"
-                    color="textSecondary"
-                  >
-                    {item.name}
-                  </Link>
+              {footer.description.map((item, j) => (
+                <li key={item.name} style={{ textAlign: "left" }}>
+                  {item.open != undefined ? (
+                    <>
+                      <Button
+                        onClick={() => {
+                          let newFooter = footers;
+                          newFooter[i].description[j].open = !item.open;
+                          setFooters(newFooter);
+                          forceUpdate();
+                        }}
+                      >
+                        {item.name}
+                        {item.open ? (
+                          <ArrowDropDownIcon></ArrowDropDownIcon>
+                        ) : (
+                          <ArrowRightIcon></ArrowRightIcon>
+                        )}
+                      </Button>
+                      <Collapse in={item.open} children={item.description} />
+                    </>
+                  ) : (
+                    <Button onClick={() => history.push(item.path)}>
+                      {item.name}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
