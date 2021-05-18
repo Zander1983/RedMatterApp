@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   menuButton: {
     marginRight: theme.spacing(2),
   },
-  title: {
+  headertitle: {
     flexGrow: 1,
     fontFamily: "Quicksand",
     fontWeight: 700,
@@ -32,9 +32,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "10px",
     padding: 6,
     borderRadius: 3,
-    "&:hover": {
-      backgroundColor: "rgba(255,255,255,0.2)",
-    },
   },
   toolbar: {
     backgroundColor: "#333",
@@ -64,7 +61,7 @@ const AppHeader = (props: any) => {
     <div>
       <AppBar className={classes.toolbar} position="fixed">
         <Toolbar>
-          <Typography variant="h6" className={classes.title}>
+          <Typography className={classes.headertitle}>
             <NavLink style={{ color: "#fafafa" }} to="/">
               <img
                 src={icon}
