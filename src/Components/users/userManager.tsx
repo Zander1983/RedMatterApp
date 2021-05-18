@@ -1,11 +1,8 @@
-//@ts-ignore
-import store from "redux/store";
+import { store } from "redux/store";
 
 class UserManager {
   state: any = {};
-  constructor() {
-    console.log(store);
-  }
+  constructor() {}
 
   isLoggedIn(): boolean {
     this.state = store.getState();
@@ -31,6 +28,10 @@ class UserManager {
       throw Error("Can't get token of unlogged user");
     }
     return this.state.user.profile.userDetails.organisationId;
+  }
+
+  canAccessWorkspace(id: string) {
+    return true;
   }
 }
 

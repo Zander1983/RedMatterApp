@@ -61,7 +61,6 @@ const Login = (props: any) => {
       snackbarService.showSnackbar("Logged in!", "success");
       props.history.push("/workspaces");
     } catch (err) {
-      console.log(err);
       setLoading(false);
       if (err.response === undefined) {
         snackbarService.showSnackbar(

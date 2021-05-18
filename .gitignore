@@ -1,3 +1,8 @@
 node_modules
 package-lock.json
 .idea
+npm-debug.log
+
+# Remove all json files that are not package.json
+!package.json
+*.json

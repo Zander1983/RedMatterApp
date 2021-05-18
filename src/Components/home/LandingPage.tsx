@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import "./landing.css";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
@@ -70,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
     filter: "blur(5px)",
     transform: "scale(1.3)",
   },
-  heroContent: {
+  majorColumnItem: {
     marginTop: 50,
     marginBottom: 30,
     marginLeft: "auto",
@@ -103,7 +102,7 @@ const serviceTiers = [
   {
     title: "Free",
     price: "0",
-    description: ["10 experiments/month", "public experiments"],
+    description: ["10 experiments/month", "Public experiments"],
     buttonText: "Sign up for free",
     buttonVariant: "outlined",
   },
@@ -111,7 +110,7 @@ const serviceTiers = [
     title: "Premium",
     subheader: "Most popular",
     price: "30",
-    description: ["unlimited experiments/month", "private experiments"],
+    description: ["Unlimited experiments/month", "Private experiments"],
     buttonText: "Get started",
     buttonVariant: "contained",
   },
@@ -119,8 +118,8 @@ const serviceTiers = [
     title: "Enterprise",
     price: "500",
     description: [
-      "unlimited experiments/month",
-      "private experiments",
+      "Unlimited experiments/month",
+      "Private experiments",
       "Custom support",
     ],
     buttonText: "Contact us",
@@ -407,7 +406,7 @@ const AppLandingPage = () => {
         xs={12}
         md={9}
         lg={6}
-        className={classes.heroContent}
+        className={classes.majorColumnItem}
         style={{ marginTop: 20 }}
       >
         <Divider></Divider>
@@ -462,7 +461,7 @@ const AppLandingPage = () => {
         ))}
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
+      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
@@ -470,21 +469,27 @@ const AppLandingPage = () => {
         xs={12}
         md={9}
         lg={6}
-        className={classes.heroContent}
-        style={{ marginBottom: -10, marginTop: 0 }}
+        className={classes.majorColumnItem}
+        style={{
+          marginBottom: -10,
+          marginTop: -10,
+          padding: 10,
+        }}
       >
         <h1>
           Users all over the world trust{" "}
           <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry
         </h1>
-        <Grid container className={classes.heroContent}>
-          {/* <Carousel
-            autoPlay
-            interval={2500}
-            animation="fade"
-            swipe
-            indicators={false}
-          > */}
+        <Grid
+          container
+          className={classes.majorColumnItem}
+          style={{
+            padding: 10,
+            backgroundColor: "#fff",
+            borderRadius: 10,
+            border: "solid 1px #ddd",
+          }}
+        >
           {universities.map((item, i) => (
             <Grid key={i} xs={4} md={3} lg={2}>
               <div
@@ -497,11 +502,10 @@ const AppLandingPage = () => {
               </div>
             </Grid>
           ))}
-          {/* </Carousel> */}
         </Grid>
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.heroContent}>
+      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
@@ -509,7 +513,7 @@ const AppLandingPage = () => {
         xs={12}
         md={9}
         lg={6}
-        className={classes.heroContent}
+        className={classes.majorColumnItem}
         style={{
           marginTop: -5,
         }}

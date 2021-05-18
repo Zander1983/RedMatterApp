@@ -4500,10 +4500,11 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-      const localVarFormParams = new url.URLSearchParams();
+      const localVarFormParams = new FormData();
 
       if (token !== undefined && token !== null) {
         localVarHeaderParameter["token"] = String(token);
+        localVarFormParams.set("token", token as any);
       }
 
       if (workspaceId !== undefined) {
@@ -4518,8 +4519,7 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarFormParams.set("file[0]", file0 as any);
       }
 
-      localVarHeaderParameter["Content-Type"] =
-        "application/x-www-form-urlencoded";
+      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
 
       localVarUrlObj.query = Object.assign(
         {},
@@ -4534,7 +4534,7 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarHeaderParameter,
         options.headers
       );
-      localVarRequestOptions.body = localVarFormParams.toString();
+      localVarRequestOptions.body = localVarFormParams;
 
       return {
         url: url.format(localVarUrlObj),

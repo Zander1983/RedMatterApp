@@ -1,7 +1,5 @@
-import React, { useState, FC, useEffect } from "react";
-import { Route, Switch, useLocation, useHistory } from "react-router-dom";
-// import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import { Layout, Image } from "antd";
+import { Route, Switch } from "react-router-dom";
+import { Layout } from "antd";
 
 import {
   createMuiTheme,
@@ -9,13 +7,11 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
-import "./App.css";
-import "antd/dist/antd.css";
 
 import AppHeader from "./Components/common/header";
 import Workspaces from "./Components/workspaces/workspaces";
 import AppLandingPage from "./Components/home/LandingPage";
-import WorkspaceAppFiles from "./Components/workspaces/workspaceFiles";
+import Workspace from "./Components/workspaces/Workspace";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
@@ -28,7 +24,7 @@ import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -77,10 +73,8 @@ const router = [
   { path: "/workspaces", component: Workspaces },
   { path: "/terms", component: Terms },
   {
-    path: "/files/:workspacesId",
-    component: ({ match }: any) => (
-      <WorkspaceAppFiles id={match.params.workspacesId} />
-    ),
+    path: "/workspace/:workspacesId",
+    component: ({ match }: any) => <Workspace id={match.params.workspacesId} />,
   },
   {
     path: "/mailing-list",
