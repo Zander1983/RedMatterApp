@@ -50,14 +50,8 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           "Failure deleting workspace, refresh the page and try again!",
           "error"
         );
+        userManager.logout();
       });
-  };
-
-  const editWorkspace = () => {
-    const fetchArgs = WorkspacesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
-    axios.get(fetchArgs.url, fetchArgs.options).then((e) => {});
   };
 
   const fetchWorkspaceFiles = () => {
@@ -111,59 +105,70 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           },
         }}
       />
-      {/* <EditModal
-        open={deleteConfirmModal}
-        closeCall={{
-          f: handleClose,
-          ref: setDeleteConfirmModal,
-        }}
-        message={<h2>Are you sure you want to delete this workspace?</h2>}
-        options={{
-          yes: deleteWorkspace,
-          no: () => {
-            setDeleteConfirmModal(false);
-          },
-        }}
-      /> */}
       <Grid item>
         <Card>
-          <CardContent style={{ textAlign: "center" }}>
-            <NavLink
-              to={{
-                pathname: `/files/${props.data.id}`,
-                state: { workspaceName: props.data.name },
-              }}
-            >
-              <Typography
+          <NavLink
+            to={{
+              pathname: `/workspace/${props.data.id}`,
+              state: { workspaceName: props.data.name },
+            }}
+          >
+            <CardContent style={{ margin: 0, padding: 0, textAlign: "center" }}>
+              <div
                 style={{
-                  fontWeight: "bold",
-                  color: "#66a",
-                  marginBottom: "5px",
+                  backgroundColor: "#6666AA",
+                  borderRadius: 10,
+                  borderBottomLeftRadius: 0,
+                  borderBottomRightRadius: 0,
                 }}
-                color="textPrimary"
-                align="center"
-                gutterBottom
-                noWrap
               >
-                {props.data.name}
-              </Typography>
-            </NavLink>
-            <Typography style={styles.title} color="textSecondary" gutterBottom>
-              {getTimeCal(props.data.createdOn)}
-            </Typography>
-            <Typography style={styles.title} color="textSecondary" gutterBottom>
-              {props.data.isPrivate ? "Private" : "Public"}
-            </Typography>
-            <Typography style={styles.title} color="textSecondary" gutterBottom>
-              {initLoading
-                ? "Loading files..."
-                : files.length.toString() +
-                  " file" +
-                  (files.length !== 1 ? "s" : "")}
-            </Typography>
-          </CardContent>
+                <Typography
+                  style={{
+                    fontWeight: "bold",
+                    color: "#fff",
+                    marginBottom: "5px",
+                    fontSize: 18,
+                    padding: 5,
+                  }}
+                  color="textPrimary"
+                  align="center"
+                  gutterBottom
+                  noWrap
+                >
+                  {props.data.name}
+                </Typography>
+              </div>
+              <div>
+                <Typography
+                  style={styles.title}
+                  color="textSecondary"
+                  gutterBottom
+                >
+                  {getTimeCal(props.data.createdOn)}
+                </Typography>
+                <Typography
+                  style={styles.title}
+                  color="textSecondary"
+                  gutterBottom
+                >
+                  {props.data.isPrivate ? "Private" : "Public"}
+                </Typography>
+                <Typography
+                  style={styles.title}
+                  color="textSecondary"
+                  gutterBottom
+                >
+                  {initLoading
+                    ? "Loading files..."
+                    : files.length.toString() +
+                      " file" +
+                      (files.length !== 1 ? "s" : "")}
+                </Typography>
+              </div>
+            </CardContent>
+          </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            <Tooltip title="Edit workspace">
+            {/* <Tooltip title="Edit workspace">
               <Button
                 size="small"
                 color="primary"
@@ -172,13 +177,13 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
               >
                 Edit
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip title="Delete workspace">
               <Button
                 size="small"
                 color="secondary"
                 startIcon={<DeleteIcon />}
-                variant="contained"
+                variant="outlined"
                 onClick={() => setDeleteConfirmModal(true)}
               >
                 Delete

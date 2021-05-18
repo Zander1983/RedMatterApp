@@ -50,9 +50,6 @@ function CreateWorkspaceModal(props: {
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).createWorkspace(userManager.getToken(), data);
-    console.log(fetchArgs.url, fetchArgs.options.body, {
-      headers: fetchArgs.options.headers,
-    });
     axios
       .post(fetchArgs.url, data, {
         headers: fetchArgs.options.headers,

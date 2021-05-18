@@ -9,10 +9,11 @@ import "typeface-roboto";
 import "typeface-raleway";
 import "typeface-quicksand";
 import axios from "axios";
-import configureStore from "./redux/createStore";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+
 //@ts-ignore
-import store from "redux/store";
+import { store, persistor } from "redux/store";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 console.log("API URL = ", process.env.REACT_APP_API_URL);
@@ -20,7 +21,9 @@ console.log("API URL = ", process.env.REACT_APP_API_URL);
 ReactDOM.render(
   <BrowserRouter>
     <Provider store={store}>
-      <App />
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
     </Provider>
   </BrowserRouter>,
   document.getElementById("root")

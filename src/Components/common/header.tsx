@@ -123,10 +123,6 @@ const AppHeader = (props: any) => {
               </NavLink>
             </>
           )}
-          {/* <NavLink className={classes.topBarLink} to="/mailing-list">
-          Mailing list
-        </NavLink> */}
-          {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>*/}
         </Toolbar>
       </AppBar>
       <Toolbar />
