@@ -103,7 +103,7 @@ const serviceTiers = [
   {
     title: "Free",
     price: "0",
-    description: ["10 experiments/month", "public experiments"],
+    description: ["10 experiments/month", "Public experiments"],
     buttonText: "Sign up for free",
     buttonVariant: "outlined",
   },
@@ -111,7 +111,7 @@ const serviceTiers = [
     title: "Premium",
     subheader: "Most popular",
     price: "30",
-    description: ["unlimited experiments/month", "private experiments"],
+    description: ["Unlimited experiments/month", "Private experiments"],
     buttonText: "Get started",
     buttonVariant: "contained",
   },
@@ -119,8 +119,8 @@ const serviceTiers = [
     title: "Enterprise",
     price: "500",
     description: [
-      "unlimited experiments/month",
-      "private experiments",
+      "Unlimited experiments/month",
+      "Private experiments",
       "Custom support",
     ],
     buttonText: "Contact us",
