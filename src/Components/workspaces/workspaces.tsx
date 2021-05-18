@@ -135,7 +135,11 @@ const Workspaces = () => {
                   return <WorkspaceCard data={data} update={fetchWorkspaces} />;
                 })
               ) : (
-                <div>You workspace is empty!</div>
+                <div
+                  style={{ textAlign: "center", width: "100%", padding: 50 }}
+                >
+                  There are no workspaces
+                </div>
               )}
             </Grid>
           </Grid>

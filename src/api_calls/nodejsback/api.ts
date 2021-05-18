@@ -4497,7 +4497,6 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       }
       const localVarPath = `/api/upload`;
       const localVarUrlObj = url.parse(localVarPath, true);
-      console.log(localVarUrlObj);
       const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;

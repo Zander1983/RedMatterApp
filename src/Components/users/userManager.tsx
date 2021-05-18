@@ -2,9 +2,7 @@ import { store } from "redux/store";
 
 class UserManager {
   state: any = {};
-  constructor() {
-    console.log(store);
-  }
+  constructor() {}
 
   isLoggedIn(): boolean {
     this.state = store.getState();

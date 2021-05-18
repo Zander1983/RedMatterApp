@@ -37,8 +37,6 @@ const oldBackFileUploader = (
   localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter);
   localVarRequestOptions.body = localVarFormParams;
 
-  console.log(url, localVarRequestOptions.body, localVarRequestOptions.headers);
-
   return axios.post(url, localVarRequestOptions.body, {
     headers: localVarRequestOptions.headers,
   });

@@ -32,33 +32,40 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
+
+let sum = 0;
 function UploadFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   added: Function;
   workspace: any;
 }): JSX.Element {
-  const forceUpdate = 
+  const forceUpdate = useForceUpdate();
   const classes = useStyles();
 
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [files, setFiles] = React.useState([]);
-  const [filesUploaded, setFilesUploaded] = React.useState([]);
   const [uploading, setUploading] = React.useState(false);
 
   const endFileUpload = () => {
-    console.log("files uploaded!");
+    setTimeout(() => {
+      snackbarService.showSnackbar("Files have been uploaded!", "success");
+      props.added();
+      props.closeCall.f(props.closeCall.ref);
+      sum = 0;
+      setUploading(false);
+    }, Math.random() * 1000); // Feels much better to use with this little detail
   };
 
   const uploadFileToWorkpace = () => {
     setUploading(true);
-    let uploaded = [];
-    for (const file of files) {
-      uploaded.push(false);
-    }
-    setFilesUploaded(uploaded);
+    const addP = 100 / files.length;
     for (let i = 0; i < files.length; i++) {
       oldBackFileUploader(
         userManager.getToken(),
@@ -67,19 +74,19 @@ function UploadFileModal(props: {
         files[i]
       )
         .then((e) => {
-          console.log("success");
-          let nf = filesUploaded;
-          nf[i] = true;
-          setFiles(nf);
-          if (nf.filter((e) => !e).length === 0) {
+          if (sum + addP >= 100) {
             endFileUpload();
           }
+          sum += addP;
+          forceUpdate();
         })
         .catch((e) => {
           snackbarService.showSnackbar(
             "There was an error uploading your file, please try again",
             "error"
           );
+          setUploading(false);
+          forceUpdate();
         });
     }
   };
@@ -96,9 +103,26 @@ function UploadFileModal(props: {
           <h2>Upload a file</h2>
           {uploading ? (
             <div>
-              Uploading files... (
-              {(files.filter((e) => !e).length / files.length).toFixed(2)}
-              %)
+              Uploading files... ({sum.toFixed(0)}%)
+              <div
+                style={{
+                  height: 20,
+                  width: "100%",
+                  backgroundColor: "#aaa",
+                  marginBottom: 20,
+                  borderRadius: 10,
+                  padding: 2,
+                }}
+              >
+                <div
+                  style={{
+                    height: 16,
+                    width: sum + "%",
+                    backgroundColor: "#6666AA",
+                    borderRadius: 10,
+                  }}
+                ></div>
+              </div>
             </div>
           ) : null}
           <DropzoneArea
@@ -106,29 +130,9 @@ function UploadFileModal(props: {
             filesLimit={1000}
             maxFileSize={1073741824} // gigabyte
             onChange={(e: any) => {
-              console.log(e);
               setFiles(e);
             }}
           ></DropzoneArea>
-          {/* 
-          <FormControlLabel
-            style={{
-              marginTop: 10,
-            }}
-            control={
-              <Switch
-                checked={privateWorkspace}
-                onChange={() => setPrivateWorkspace(!privateWorkspace)}
-                name="Private workspace"
-                color="primary"
-              />
-            }
-            label="Private workspace"
-          /> */}
-
-          {privateWorkspace ? (
-            <p>No one in your workspace will be able to see this workspace</p>
-          ) : null}
 
           <Divider
             style={{
@@ -160,6 +164,7 @@ function UploadFileModal(props: {
               style={{ backgroundColor: "#43A047", color: "white" }}
               onClick={() => {
                 uploadFileToWorkpace();
+                forceUpdate();
               }}
             >
               Confirm
