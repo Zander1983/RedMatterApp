@@ -172,7 +172,6 @@ export default function Footer(props: any) {
     },
   ]);
 
-  console.log("rerender");
   return (
     <Grid
       container
