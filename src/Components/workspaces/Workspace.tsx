@@ -121,7 +121,10 @@ const Workspace = (props: any) => {
           updateWorkspace();
           snackbarService.showSnackbar("File added to workspace", "success");
         }}
-        workspace={workspaceData}
+        workspace={{
+          ...workspaceData,
+          id: props.id,
+        }}
       />
       <Grid
         style={{

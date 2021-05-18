@@ -7,9 +7,14 @@ import TextField from "@material-ui/core/TextField";
 import { DropzoneArea } from "material-ui-dropzone";
 
 import userManager from "Components/users/userManager";
-import { WorkspaceFilesApiFetchParamCreator, WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import {
+  WorkspaceFilesApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import { cssNumber } from "jquery";
+import oldBackFileUploader from "utils/oldBackFileUploader";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -39,39 +44,43 @@ function UploadFileModal(props: {
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [files, setFiles] = React.useState([]);
+  const [filesUploaded, setFilesUploaded] = React.useState([]);
+  const [uploading, setUploading] = React.useState(false);
+
+  const endFileUpload = () => {
+    console.log("files uploaded!");
+  };
 
   const uploadFileToWorkpace = () => {
-    for (const file in files) {
-      WorkspaceFilesApiFetchParamCreator({
-        accessToken: userManager.getToken()
-      }).uploadFile(
-        userManager.getToken(),
-        props.workspace.
-      )
+    setUploading(true);
+    let uploaded = [];
+    for (const file of files) {
+      uploaded.push(false);
     }
-
-    const fetchArgs = WorkspacesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).createWorkspace(userManager.getToken(), data);
-    console.log(fetchArgs.url, fetchArgs.options.body, {
-      headers: fetchArgs.options.headers,
-    });
-    axios
-      .post(fetchArgs.url, data, {
-        headers: fetchArgs.options.headers,
-      })
-      .then((e) => {
-        props.closeCall.f(props.closeCall.ref);
-        props.added();
-        setName("");
-        setPrivateWorkspace(false);
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Could not create workspace, reload the page and try again!",
-          "error"
-        );
-      });
+    setFilesUploaded(uploaded);
+    for (let i = 0; i < files.length; i++) {
+      oldBackFileUploader(
+        userManager.getToken(),
+        props.workspace.id,
+        userManager.getOrganiztionID(),
+        files[i]
+      )
+        .then((e) => {
+          console.log("success");
+          let nf = filesUploaded;
+          nf[i] = true;
+          setFiles(nf);
+          if (nf.filter((e) => !e).length === 0) {
+            endFileUpload();
+          }
+        })
+        .catch((e) => {
+          snackbarService.showSnackbar(
+            "There was an error uploading your file, please try again",
+            "error"
+          );
+        });
+    }
   };
 
   return (
@@ -84,7 +93,13 @@ function UploadFileModal(props: {
       >
         <div className={classes.modal}>
           <h2>Upload a file</h2>
-
+          {uploading ? (
+            <div>
+              Uploading files... (
+              {(files.filter((e) => !e).length / files.length).toFixed(2)}
+              %)
+            </div>
+          ) : null}
           <DropzoneArea
             acceptedFiles={[".fcs"]}
             filesLimit={1000}
@@ -135,6 +150,7 @@ function UploadFileModal(props: {
               onClick={() => {
                 props.closeCall.f(props.closeCall.ref);
               }}
+              disabled={uploading}
             >
               Cancel
             </Button>
