@@ -219,6 +219,7 @@ const AppLandingPage = () => {
               </NavLink>{" "}
               {!isLoggedIn ? (
                 <div>
+                  {/*<div>
                   <NavLink to="/login">
                     <Button
                       variant="contained"
@@ -239,18 +240,22 @@ const AppLandingPage = () => {
                       Register
                     </Button>
                   </NavLink>
+                </div> */}
                 </div>
               ) : (
+                <div>
+                  {/* 
                 <NavLink to="/workspaces">
                   <Button
                     variant="contained"
                     size="large"
                     color="primary"
                     className={classes.marginButton}
-                  >
+                    >
                     Workspaces
                   </Button>
-                </NavLink>
+                </NavLink> */}
+                </div>
               )}
               <br />
               <NavLink to="/mailing-list">
