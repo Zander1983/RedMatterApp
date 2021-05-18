@@ -50,14 +50,8 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           "Failure deleting workspace, refresh the page and try again!",
           "error"
         );
+        userManager.logout();
       });
-  };
-
-  const editWorkspace = () => {
-    const fetchArgs = WorkspacesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
-    axios.get(fetchArgs.url, fetchArgs.options).then((e) => {});
   };
 
   const fetchWorkspaceFiles = () => {
@@ -111,20 +105,6 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           },
         }}
       />
-      {/* <EditModal
-        open={deleteConfirmModal}
-        closeCall={{
-          f: handleClose,
-          ref: setDeleteConfirmModal,
-        }}
-        message={<h2>Are you sure you want to delete this workspace?</h2>}
-        options={{
-          yes: deleteWorkspace,
-          no: () => {
-            setDeleteConfirmModal(false);
-          },
-        }}
-      /> */}
       <Grid item>
         <Card>
           <NavLink
@@ -147,7 +127,8 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
                     fontWeight: "bold",
                     color: "#fff",
                     marginBottom: "5px",
-                    fontSize: 20,
+                    fontSize: 18,
+                    padding: 5,
                   }}
                   color="textPrimary"
                   align="center"

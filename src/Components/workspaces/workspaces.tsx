@@ -11,36 +11,6 @@ import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
-const styles = {
-  header: {
-    textAlign: "center",
-  },
-  fileSelectDivider: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  topButton: {
-    marginLeft: 20,
-  },
-  root: {
-    minWidth: 275,
-    flexGrow: 1,
-  },
-  title: {
-    fontSize: 14,
-    color: "#222",
-  },
-  addButton: {
-    marginLeft: 30,
-  },
-  zeroMargin: {
-    margin: 0,
-  },
-  zeroPadding: {
-    padding: 0,
-  },
-};
-
 const Workspaces = () => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -60,10 +30,19 @@ const Workspaces = () => {
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
-    axios.get(fetchArgs.url, fetchArgs.options).then((e) => {
-      e.data.workspaces.fileCount = "Loading...";
-      setWorkspaces(e.data.workspaces);
-    });
+    axios
+      .get(fetchArgs.url, fetchArgs.options)
+      .then((e) => {
+        e.data.workspaces.fileCount = "Loading...";
+        setWorkspaces(e.data.workspaces);
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Failed to find workspace information",
+          "error"
+        );
+        userManager.logout();
+      });
   };
 
   const handleClose = (func: Function) => {

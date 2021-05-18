@@ -21,9 +21,6 @@ import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
 
 const styles = {
-  root: {
-    background: "black",
-  },
   input: {
     color: "white",
     borderBottom: "solid 1px white",
@@ -34,6 +31,12 @@ const styles = {
 const Workspace = (props: any) => {
   const { classes } = props;
   const history = useHistory();
+
+  // const isLoggedIn = userManager.isLoggedIn();
+  // if (!isLoggedIn) {
+
+  //   return <></>
+  // }
 
   const allowedInThisWorkspace = userManager.canAccessWorkspace(props.id);
   if (!allowedInThisWorkspace) {
@@ -68,6 +71,7 @@ const Workspace = (props: any) => {
           "Failed to find this workspace, reload the page to try again!",
           "error"
         );
+        userManager.logout();
       });
   };
 

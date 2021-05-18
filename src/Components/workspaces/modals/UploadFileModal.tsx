@@ -4,9 +4,10 @@ import { Button, FormControlLabel, Switch } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
+import { DropzoneArea } from "material-ui-dropzone";
 
 import userManager from "Components/users/userManager";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import { WorkspaceFilesApiFetchParamCreator, WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 
@@ -37,13 +38,17 @@ function UploadFileModal(props: {
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
+  const [files, setFiles] = React.useState([]);
 
-  const createWorkspace = () => {
-    const data = {
-      name,
-      organisationId: organizationId,
-      isPrivate: privateWorkspace,
-    };
+  const uploadFileToWorkpace = () => {
+    for (const file in files) {
+      WorkspaceFilesApiFetchParamCreator({
+        accessToken: userManager.getToken()
+      }).uploadFile(
+        userManager.getToken(),
+        props.workspace.
+      )
+    }
 
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -78,22 +83,18 @@ function UploadFileModal(props: {
         }}
       >
         <div className={classes.modal}>
-          <h2>Create workspace</h2>
+          <h2>Upload a file</h2>
 
-          <div>
-            <TextField
-              variant="outlined"
-              placeholder="Workspace name"
-              onChange={(textField: any) => {
-                setName(textField.target.value);
-              }}
-              value={name}
-              style={{
-                width: "50%",
-              }}
-            ></TextField>
-          </div>
-
+          <DropzoneArea
+            acceptedFiles={[".fcs"]}
+            filesLimit={1000}
+            maxFileSize={1073741824} // gigabyte
+            onChange={(e: any) => {
+              console.log(e);
+              setFiles(e);
+            }}
+          ></DropzoneArea>
+          {/* 
           <FormControlLabel
             style={{
               marginTop: 10,
@@ -107,7 +108,7 @@ function UploadFileModal(props: {
               />
             }
             label="Private workspace"
-          />
+          /> */}
 
           {privateWorkspace ? (
             <p>No one in your workspace will be able to see this workspace</p>
@@ -141,21 +142,7 @@ function UploadFileModal(props: {
               variant="contained"
               style={{ backgroundColor: "#43A047", color: "white" }}
               onClick={() => {
-                if (name === "" || name === undefined || name === null) {
-                  snackbarService.showSnackbar(
-                    "Workspace name cannot not be empty",
-                    "warning"
-                  );
-                  return;
-                }
-                // if (props.workspaces.includes(name)) {
-                //   snackbarService.showSnackbar(
-                //     "A workspace with this name already exists",
-                //     "warning"
-                //   );
-                //   return;
-                // }
-                createWorkspace();
+                uploadFileToWorkpace();
               }}
             >
               Confirm
