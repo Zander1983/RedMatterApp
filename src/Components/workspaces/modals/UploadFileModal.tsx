@@ -38,6 +38,7 @@ function UploadFileModal(props: {
   added: Function;
   workspace: any;
 }): JSX.Element {
+  const forceUpdate = 
   const classes = useStyles();
 
   const organizationId = userManager.getOrganiztionID();

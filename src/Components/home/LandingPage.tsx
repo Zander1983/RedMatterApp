@@ -103,30 +103,26 @@ const serviceTiers = [
   {
     title: "Free",
     price: "0",
-    description: [
-      "1 GB of storage",
-      "Help center access",
-      "Cloud based storage",
-    ],
+    description: ["10 experiments/month", "public experiments"],
     buttonText: "Sign up for free",
     buttonVariant: "outlined",
   },
   {
     title: "Premium",
     subheader: "Most popular",
-    price: "10",
-    description: [
-      "10 GB of storage",
-      "Help center access",
-      "Priority processing",
-    ],
+    price: "30",
+    description: ["unlimited experiments/month", "private experiments"],
     buttonText: "Get started",
     buttonVariant: "contained",
   },
   {
     title: "Enterprise",
     price: "500",
-    description: ["Unlimited accounts", "100 GB of storage", "Custom support"],
+    description: [
+      "unlimited experiments/month",
+      "private experiments",
+      "Custom support",
+    ],
     buttonText: "Contact us",
     buttonVariant: "outlined",
   },
