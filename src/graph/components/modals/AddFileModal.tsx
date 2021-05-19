@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, Divider } from "@material-ui/core";
@@ -87,7 +87,7 @@ const generateRandomAxes = (dimesionCount: number) => {
   return list;
 };
 
-const files = [
+const staticFiles = [
   {
     title: "transduction_1",
     information: "No sources where given to anonymize data. Ficticious name.",
@@ -160,7 +160,7 @@ const files = [
 
 const addToFiles = (data: Array<any>, axes: object[], title: string) => {
   const add = (data: Array<any>) => {
-    files.unshift({
+    staticFiles.unshift({
       title: title,
       information: "Real anonymous FCS file",
       data: data,
@@ -210,11 +210,45 @@ const getRemotePrototypeFile = (url: string) => {
 //   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
 // );
 
+const getRemoteFiles = () => {
+  return dataManager.remoteFiles.map((e: any) => {
+    const data = e["events"];
+    let treatedData: number[][] = [];
+    for (let i = 0; i < data[0].length; i++) {
+      let row = [];
+      for (let j = 0; j < data.length; j++) {
+        row.push(data[j][i]);
+      }
+      treatedData.push(row);
+    }
+    return {
+      title:
+        "tomaz how does it feel to have software made exclusively for you to use?",
+      information:
+        "tomaz how does it feel to have software made exclusively for you to use?",
+      data: treatedData,
+      axes: e["channels"],
+      lastModified:
+        "tomaz how does it feel to have software made exclusively for you to use?",
+    };
+  });
+};
+
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
+  const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
+  let [files, setFiles] = React.useState(remoteWorkspace ? [] : staticFiles);
+
+  useEffect(() => {
+    if (remoteWorkspace && dataManager.isWorkspaceLoading()) {
+      dataManager.addObserver("setWorkspaceLoading", () => {
+        setFiles(getRemoteFiles());
+      });
+    }
+  }, []);
 
   const [open, setOpen] = React.useState(false);
   const [onHover, setOnHover] = React.useState(-1);
@@ -236,9 +270,9 @@ function AddFileModal(props: {
       newFile = new FCSFile({
         name: file.title,
         src: "generated",
-        axes: file.axes.map((e) => e.value),
+        axes: file.axes.map((e: any) => e.value),
         data: file.data,
-        plotTypes: file.axes.map((e) => e.display),
+        plotTypes: file.axes.map((e: any) => e.display),
       });
     }
     const fileID = dataManager.addNewFileToWorkspace(newFile);
@@ -315,7 +349,7 @@ function AddFileModal(props: {
             borderWidth: 0.3,
           }}
         >
-          {files.map((e, i) => {
+          {files.map((e: any, i: number) => {
             const divider =
               i == files.length - 1 ? null : (
                 <Divider className={classes.fileSelectDivider} />

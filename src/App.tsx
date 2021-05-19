@@ -69,12 +69,18 @@ const router = [
     path: "/verify/:verifyStr",
     component: VerifyEmail,
   },
-  { path: "/graph", component: Plots },
+  { path: "/test-red-matter", component: Plots },
+  {
+    path: "/workspace/:workspaceID/plots",
+    component: ({ match }: any) => (
+      <Plots workspaceID={match.params.workspaceID} />
+    ),
+  },
   { path: "/workspaces", component: Workspaces },
   { path: "/terms", component: Terms },
   {
-    path: "/workspace/:workspacesId",
-    component: ({ match }: any) => <Workspace id={match.params.workspacesId} />,
+    path: "/workspace/:workspaceID",
+    component: ({ match }: any) => <Workspace id={match.params.workspaceID} />,
   },
   {
     path: "/mailing-list",

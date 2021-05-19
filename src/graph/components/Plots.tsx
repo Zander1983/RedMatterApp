@@ -18,6 +18,10 @@ import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
+import axios from "axios";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -47,14 +51,35 @@ const useStyles = makeStyles((theme) => ({
   },
   topButton: {
     marginLeft: 20,
+    height: 35,
   },
 }));
 
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
+let setWorkspaceAlready = false;
 
-function Plots() {
+function Plots(props: { workspaceID: string }) {
+  console.log("WORKSPACE ID = ", props.workspaceID);
+  if (props.workspaceID !== undefined && !setWorkspaceAlready) {
+    setWorkspaceAlready = true;
+    dataManager.setWorkspaceID(props.workspaceID);
+    dataManager.addObserver("setWorkspaceLoading", () => {
+      console.log("hey i loaded!");
+      const isLoading = dataManager.isWorkspaceLoading();
+      setLoading(isLoading);
+      if (!isLoading) {
+        setLoadModal(false);
+      }
+    });
+  }
+  useEffect(() => {
+    return () => {
+      setWorkspaceAlready = false;
+    };
+  }, []);
   const classes = useStyles();
+  const [loading, setLoading] = React.useState(props.workspaceID !== undefined);
 
   // == Small screen size notice ==
   const [showSmallScreenNotice, setShowSmallScreenNotice] = React.useState(
@@ -79,21 +104,13 @@ function Plots() {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
-    false
-  );
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(true);
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const waitTime = Math.random() * 1000 + 500;
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLoadModal(false);
-    }, waitTime);
-  });
-
-  /* POPOVER ELEMENTS */
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handlePopoverOpen = (e: any) => {
@@ -260,10 +277,11 @@ function Plots() {
         closeCall={{ f: handleClose, ref: setLoadModal }}
         message={
           <div>
-            <h2>Loading your new workspace!</h2>
-            <h3 style={{ color: "#777" }}>Please wait</h3>
+            <h2>Loading workspace</h2>
+            <h3 style={{ color: "#777" }}>
+              Please wait, we are collecting your files from the servers...
+            </h3>
             <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-            <p style={{ color: "#777" }}>No more than 10 seconds</p>
           </div>
         }
         noButtons={true}
@@ -319,37 +337,91 @@ function Plots() {
         </div>
       ) : null}
 
-      <div
-        style={{
-          color: "#555",
-          backgroundColor: "#dedede",
-          paddingBottom: 1,
-          paddingTop: 15,
-          marginBottom: 30,
-          textAlign: "center",
-        }}
-      >
-        <p>
-          This is a <b>PROTOTYPE</b> showing basic functionalities we expect to
-          add to Red Matter.
-          <br />
-          You can help us improve or learn more by sending an email to{" "}
-          <a href="mailto:redmatterapp@gmail.com">
-            <b>redmatterapp@gmail.com</b>
-          </a>
-          .
-        </p>
-      </div>
+      {props.workspaceID === undefined ? (
+        <div
+          style={{
+            color: "#555",
+            backgroundColor: "#dedede",
+            paddingBottom: 1,
+            paddingTop: 15,
+            fontSize: "1.1em",
+            textAlign: "center",
+          }}
+        >
+          <p>
+            This is a <b>PROTOTYPE</b> showing functionalities we expect to add
+            to Red Matter.
+            <br />
+            It uses local anonymous files for you to test how the app works
+            quick and easy.
+            <br />
+            You can help us improve or learn more by sending an email to{" "}
+            <a href="mailto:redmatterapp@gmail.com">
+              <b>redmatterapp@gmail.com</b>
+            </a>
+            .
+          </p>
+        </div>
+      ) : null}
 
       {/* == MAIN PANEL == */}
       <Grid
         style={{
+          marginTop: 30,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",
           display: "flex",
+          flexDirection: "column",
         }}
       >
+        <div
+          style={{
+            marginBottom: 30,
+            marginLeft: 40,
+            marginRight: 40,
+            fontWeight: 700,
+          }}
+        >
+          BIG RED BUTTON =&gt;{" "}
+          <Button
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              borderRadius: 10,
+              fontSize: 20,
+              boxShadow: "2px 3px 3px #ddd",
+            }}
+            onClick={() => {
+              const workspaceJSON = dataManager.getWorkspaceJSON();
+              console.log(userManager.getToken());
+              const params = ExperimentApiFetchParamCreator({
+                accessToken: userManager.getToken(),
+              }).createExperiment(
+                { data: workspaceJSON },
+                userManager.getToken(),
+                props.workspaceID
+              );
+              axios
+                .post(params.url, params.options.body, params.options)
+                .then(() => {
+                  snackbarService.showSnackbar(
+                    "!!!!!!!!!11IT WORKED!!!!1!!!!!! 😃😄😁😆😅😂🤣☺️😇🙂🙃😉😍😘😗😙😋😛😝😜🤪🤨🧐🤓😎🤩😏😒😞😔😟😕🙁☹️😣😖😫😩😢😭😤😠😡🤬🤯😳😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲😴🤤😪😵🤐🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾🤲🤲🏻🤲🏼🤲🏽👐🏾🤲🏿👐👐🏻👐🏼👐🏽👐🏾👐🏿🙌🙌🏻🙌🏼🙌🏽🙌🏾🙌🏿👏👏🏻👏🏼👏🏽👏🏾👏🏿🤝👍👍🏻👍🏼👍🏽👍🏾👍🏿👎👎🏻👎🏼👎🏽👎🏾👎🏿👊👊🏻👊🏼👊🏽👊🏾👊🏿✊✊🏻✊🏼✊🏽✊🏾✊🏿🤛🤛🏻🤛🏼🤛🏽🤛🏾🤛🏿🤜🤜🏻🤜🏼🤜🏽🤜🏾🤜🏿🤞🤞🏻🤞🏼🤞🏽🤞🏾🤞🏿✌️✌🏻✌🏼✌🏽✌🏾✌🏿🤟🤟🏻🤟🏼🤟🏽🤟🏾🤟🏿🤘🤘🏻🤘🏼🤘🏽🤘🏾🤘🏿👌👌🏻👌🏼👌🏽👌🏾👌🏿👈👈🏻👈🏼👈🏽👈🏾👈🏿👉👉🏻👉🏼👉🏽👉🏾👉🏿👆👆🏻👆🏼👆🏽👆🏾👆🏿👇👇🏻👇🏼👇🏽👇🏾👇🏿☝️☝🏻☝🏼☝🏽☝🏾☝🏿✋✋🏻✋🏼✋🏽✋👷🏻‍♀️",
+                    "success"
+                  );
+                })
+                .catch((e) => {
+                  snackbarService.showSnackbar(
+                    "Something went wrong tomaz, you might wanna logout and login again...",
+                    "error"
+                  );
+                });
+            }}
+          >
+            Tomaz's big red button that saves everthing to the backend!
+          </Button>{" "}
+          &lt;= BIG RED BUTTON
+        </div>
         <Grid
           style={{
             backgroundColor: "#fafafa",
@@ -422,7 +494,7 @@ function Plots() {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              <Button
+              {/* <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -432,7 +504,7 @@ function Plots() {
                 }}
               >
                 Print Experiment
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 size="large"
@@ -473,7 +545,25 @@ function Plots() {
           </Grid>
 
           <Grid>
-            <Workspace></Workspace>
+            {!loading ? (
+              <Workspace></Workspace>
+            ) : (
+              <Grid
+                container
+                style={{
+                  height: 400,
+                  backgroundColor: "#fff",
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,
+                  textAlign: "center",
+                }}
+                justify="center"
+                alignItems="center"
+                alignContent="center"
+              >
+                <CircularProgress></CircularProgress>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </Grid>

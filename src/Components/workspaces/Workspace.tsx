@@ -231,6 +231,15 @@ const Workspace = (props: any) => {
               <Button
                 variant="contained"
                 style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
+                onClick={() =>
+                  history.push("/workspace/" + props.id + "/plots")
+                }
+              >
+                Plots
+              </Button>
+              <Button
+                variant="contained"
+                style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
                 onClick={() => setUploadFileModalOpen(true)}
               >
                 Upload File

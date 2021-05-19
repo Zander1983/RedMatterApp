@@ -258,7 +258,7 @@ export default function PrototypeForm() {
                 Reset
               </Typography>
             </Button>
-            <NavLink to="/graph" style={{ color: "white" }}>
+            <NavLink to="/test-red-matter" style={{ color: "white" }}>
               <Button variant="contained" className={classes.marginButton}>
                 Start Graphing!
               </Button>
