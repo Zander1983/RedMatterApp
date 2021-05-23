@@ -20,6 +20,7 @@ import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import userManager from "Components/users/userManager";
 
 const uuid = require("uuid");
 
@@ -383,6 +384,10 @@ class DataManager extends ObserversFunctionality {
     return this.remoteWorkspaceID !== undefined;
   }
 
+  getRemoteWorkspaceID() {
+    return this.remoteWorkspaceID;
+  }
+
   /* 
   
   
@@ -411,9 +416,15 @@ class DataManager extends ObserversFunctionality {
     }
     this.setWorkspaceLoading(true);
     axios
-      .get("/api/events/" + this.remoteWorkspaceID)
+      .get("/api/events/" + this.remoteWorkspaceID, {
+        params: {
+          workspaceId: this.remoteWorkspaceID,
+          token: userManager.getToken(),
+          organisationId: userManager.getOrganiztionID(),
+        },
+      })
       .then((e) => {
-        this.remoteFiles = [e.data];
+        this.remoteFiles = e.data;
         this.setWorkspaceLoading(false);
       })
       .catch((e) => {
