@@ -11,6 +11,8 @@ import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
+import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -210,26 +212,15 @@ const getRemotePrototypeFile = (url: string) => {
 //   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
 // );
 
-const getRemoteFiles = () => {
-  return dataManager.remoteFiles.map((e: any) => {
-    const data = e["events"];
-    let treatedData: number[][] = [];
-    for (let i = 0; i < data[0].length; i++) {
-      let row = [];
-      for (let j = 0; j < data.length; j++) {
-        row.push(data[j][i]);
-      }
-      treatedData.push(row);
-    }
+const getRemoteFiles = (): any[] => {
+  return dataManager.remoteFiles.map((e) => {
     return {
-      title:
-        "tomaz how does it feel to have software made exclusively for you to use?",
-      information:
-        "tomaz how does it feel to have software made exclusively for you to use?",
-      data: treatedData,
-      axes: e["channels"],
-      lastModified:
-        "tomaz how does it feel to have software made exclusively for you to use?",
+      title: e.title,
+      id: e.id,
+      data: e.channelsData,
+      axes: e.channels,
+      description: "...",
+      lastModified: "...",
     };
   });
 };
