@@ -170,10 +170,10 @@ export default function Footer(props: any) {
             </div>
           ),
         },
-        // {
-        //   name: "Mailing list",
-        //   path: "/mailing-list",
-        // },
+        {
+          name: "Join our team",
+          path: "/jobs",
+        },
       ],
     },
   ]);

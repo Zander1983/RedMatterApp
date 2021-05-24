@@ -23,6 +23,7 @@ import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
+import Jobs from "Components/home/Jobs";
 
 const { Content } = Layout;
 
@@ -89,6 +90,10 @@ const router = [
   {
     path: "/credits",
     component: Credits,
+  },
+  {
+    path: "/jobs",
+    component: Jobs,
   },
 ];
 
