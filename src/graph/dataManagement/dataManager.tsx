@@ -428,6 +428,7 @@ class DataManager extends ObserversFunctionality {
         this.setWorkspaceLoading(false);
       })
       .catch((e) => {
+        console.log(e);
         snackbarService.showSnackbar(
           "Could not load your remote files, please try again",
           "error"

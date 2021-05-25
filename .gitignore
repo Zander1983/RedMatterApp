@@ -6,3 +6,7 @@ npm-debug.log
 # Remove all json files that are not package.json
 !package.json
 *.json
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
