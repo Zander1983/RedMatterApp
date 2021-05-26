@@ -72,7 +72,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
             "Answer these questions so we can help setup your workspace smartly",
             "info"
           );
-          history.push("/questions", { workspaceID });
+          history.push("/questions/" + workspaceID);
         }}
         workspaces={workspaces.map((e) => e.name)}
       />

@@ -47,8 +47,10 @@ const router = [
     component: AppLandingPage,
   },
   {
-    path: "/questions",
-    component: PrototypeForm,
+    path: "/questions/:workspaceID",
+    component: ({ match }: any) => {
+      return <PrototypeForm workspaceID={match.params.workspaceID} />;
+    },
   },
   {
     path: "/authentication/:tabId",

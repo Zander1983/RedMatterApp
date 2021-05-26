@@ -107,11 +107,9 @@ const Workspace = (props: any) => {
         },
       })
       .then((e) => {
-        console.log(e.data);
+        setExperiments(e.data);
       })
-      .catch((e) => {
-        console.log("err = ", e);
-      });
+      .catch((e) => {});
   };
 
   useEffect(() => {
@@ -272,6 +270,10 @@ const Workspace = (props: any) => {
               }}
             >
               <Grid xs={12} style={{ textAlign: "center" }}>
+                {/*@ts-ignore*/}
+                {experiments.length > 0
+                  ? JSON.stringify(experiments[0].details)
+                  : null}
                 <Grid
                   container
                   direction="row"

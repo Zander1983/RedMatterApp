@@ -99,7 +99,10 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         }}
         message={<h2>Are you sure you want to delete this workspace?</h2>}
         options={{
-          yes: deleteWorkspace,
+          yes: () => {
+            setDeleteConfirmModal(false);
+            deleteWorkspace();
+          },
           no: () => {
             setDeleteConfirmModal(false);
           },

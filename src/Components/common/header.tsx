@@ -101,7 +101,7 @@ const AppHeader = (props: any) => {
           {isLoggedIn ? (
             <>
               <NavLink className={classes.topBarLink} to="/workspaces">
-                Workspace
+                Workspaces
               </NavLink>
               <a className={classes.topBarLink} onClick={onLogout} href="/">
                 Logout

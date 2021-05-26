@@ -11,13 +11,18 @@ import StepLabel from "@material-ui/core/StepLabel";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
 import Avatar from "@material-ui/core/Avatar";
 
 import Done from "@material-ui/icons/Done";
 
 import formSteps from "./FormSteps";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
+import { useDispatch, useStore } from "react-redux";
+import axios from "axios";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -93,6 +98,9 @@ function getStepContent(step: number) {
 }
 
 export default function PrototypeForm(props: { workspaceID: string }) {
+  const history = useHistory();
+  const store = useStore();
+  const dispatch = useDispatch();
   const classes = useStyles();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
@@ -138,6 +146,29 @@ export default function PrototypeForm(props: { workspaceID: string }) {
 
   const handleReset = () => {
     setActiveStep(0);
+  };
+
+  const handleFormEnd = (workspaceID: string) => {
+    // This should create an experiment assigning this data to that experiment
+    const req = ExperimentApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).createExperiment(
+      { details: store.getState().user.experiment },
+      userManager.getToken(),
+      workspaceID
+    );
+    axios
+      .post(req.url, req.options.body, req.options)
+      .then((e) => {
+        snackbarService.showSnackbar(
+          "Your workspace was successfully created",
+          "success"
+        );
+      })
+      .catch((e) => {});
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
   };
 
   return (
@@ -258,17 +289,16 @@ export default function PrototypeForm(props: { workspaceID: string }) {
                 Reset
               </Typography>
             </Button>
-            <NavLink to="/workspaces" style={{ color: "white" }}>
-              <Button
-                variant="contained"
-                className={classes.marginButton}
-                onClick={() => {
-                  console.log("suckpenis");
-                }}
-              >
-                Workspaces
-              </Button>
-            </NavLink>
+            <Button
+              variant="contained"
+              className={classes.marginButton}
+              onClick={() => {
+                handleFormEnd(props.workspaceID);
+                history.push("/workspace/" + props.workspaceID);
+              }}
+            >
+              Workspaces
+            </Button>
           </div>
         ) : (
           <div>
