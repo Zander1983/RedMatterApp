@@ -7,11 +7,11 @@ import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import WorkspaceCard from "./WorkspaceCard";
 import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
 
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
-const Workspaces = () => {
+const Workspaces = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn) {
@@ -51,6 +51,9 @@ const Workspaces = () => {
 
   React.useEffect(() => {
     fetchWorkspaces();
+    if (props.backFromQuestions) {
+      snackbarService.showSnackbar("Workspace created", "success");
+    }
   }, []);
 
   return !isLoggedIn ? (
@@ -63,9 +66,13 @@ const Workspaces = () => {
           f: handleClose,
           ref: setCreateWorkspaceModal,
         }}
-        created={() => {
-          fetchWorkspaces();
-          snackbarService.showSnackbar("Workspace created", "success");
+        created={(workspaceID: string) => {
+          // fetchWorkspaces();
+          snackbarService.showSnackbar(
+            "Answer these questions so we can help setup your workspace smartly",
+            "info"
+          );
+          history.push("/questions/" + workspaceID);
         }}
         workspaces={workspaces.map((e) => e.name)}
       />

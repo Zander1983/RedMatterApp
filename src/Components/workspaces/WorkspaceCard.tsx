@@ -18,7 +18,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
 const styles = {
@@ -99,7 +99,10 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         }}
         message={<h2>Are you sure you want to delete this workspace?</h2>}
         options={{
-          yes: deleteWorkspace,
+          yes: () => {
+            setDeleteConfirmModal(false);
+            deleteWorkspace();
+          },
           no: () => {
             setDeleteConfirmModal(false);
           },

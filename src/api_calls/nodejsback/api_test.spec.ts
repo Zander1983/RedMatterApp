@@ -31,6 +31,32 @@ describe("AuthenticationApi", () => {
   })
 })
 
+describe("ExperimentApi", () => {
+  let instance: api.ExperimentApi
+  beforeEach(function() {
+    instance = new api.ExperimentApi(config)
+  });
+
+  test("createExperiment", () => {
+    const body: api.ExperimentPayload = undefined
+    const token: string = "token_example"
+    const workspaceId: string = "workspaceId_example"
+    return expect(instance.createExperiment(body, token, workspaceId, {})).resolves.toBe(null)
+  })
+  test("getExperiment", () => {
+    const token: string = "token_example"
+    const workspaceId: string = "workspaceId_example"
+    return expect(instance.getExperiment(token, workspaceId, {})).resolves.toBe(null)
+  })
+  test("updateExperiment", () => {
+    const body: api.ExperimentPayload = undefined
+    const token: string = "token_example"
+    const workspaceId: string = "workspaceId_example"
+    const experimentId: string = "experimentId_example"
+    return expect(instance.updateExperiment(body, token, workspaceId, experimentId, {})).resolves.toBe(null)
+  })
+})
+
 describe("GraphsGatesApi", () => {
   let instance: api.GraphsGatesApi
   beforeEach(function() {
