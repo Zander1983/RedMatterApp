@@ -56,7 +56,7 @@ function CreateWorkspaceModal(props: {
       })
       .then((e) => {
         props.closeCall.f(props.closeCall.ref);
-        props.created();
+        props.created(e.data.id);
         setName("");
         setPrivateWorkspace(false);
       })

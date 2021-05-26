@@ -92,7 +92,7 @@ function getStepContent(step: number) {
   }
 }
 
-export default function PrototypeForm() {
+export default function PrototypeForm(props: { workspaceID: string }) {
   const classes = useStyles();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
@@ -242,7 +242,7 @@ export default function PrototypeForm() {
               }}
             >
               The information you've given us will help to better setup your
-              graphs
+              workspace
             </h4>
             <Button
               onClick={handleReset}
@@ -258,9 +258,15 @@ export default function PrototypeForm() {
                 Reset
               </Typography>
             </Button>
-            <NavLink to="/test-red-matter" style={{ color: "white" }}>
-              <Button variant="contained" className={classes.marginButton}>
-                Start Graphing!
+            <NavLink to="/workspaces" style={{ color: "white" }}>
+              <Button
+                variant="contained"
+                className={classes.marginButton}
+                onClick={() => {
+                  console.log("suckpenis");
+                }}
+              >
+                Workspaces
               </Button>
             </NavLink>
           </div>

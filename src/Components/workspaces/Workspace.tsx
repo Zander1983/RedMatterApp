@@ -50,6 +50,7 @@ const Workspace = (props: any) => {
 
   const [workspaceData, setWorkpsaceData] = React.useState(null);
   const [editingName, setEditingName] = React.useState(false);
+  const [experiments, setExperiments] = React.useState([]);
 
   const fetchWorkspaceData = (snack = true) => {
     const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
@@ -98,8 +99,24 @@ const Workspace = (props: any) => {
       });
   };
 
+  const getExperiments = () => {
+    axios
+      .get("/api/workspace/" + props.id + "/experiments/", {
+        headers: {
+          token: userManager.getToken(),
+        },
+      })
+      .then((e) => {
+        console.log(e.data);
+      })
+      .catch((e) => {
+        console.log("err = ", e);
+      });
+  };
+
   useEffect(() => {
     fetchWorkspaceData();
+    getExperiments();
   }, []);
 
   const handleClose = (func: Function) => {
@@ -109,6 +126,7 @@ const Workspace = (props: any) => {
 
   return (
     <>
+      {}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{

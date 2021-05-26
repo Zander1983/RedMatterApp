@@ -94,7 +94,7 @@ const AppHeader = (props: any) => {
               </b>
             </NavLink>
           </Typography>
-          <NavLink className={classes.topBarLink} to="/questions">
+          <NavLink className={classes.topBarLink} to="/test-red-matter">
             Test Red Matter
           </NavLink>
 
