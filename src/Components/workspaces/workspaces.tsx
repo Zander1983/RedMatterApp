@@ -7,7 +7,7 @@ import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import WorkspaceCard from "./WorkspaceCard";
 import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
 
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
