@@ -53,7 +53,7 @@ export default class LinkReconstructor {
   }
 
   private saveToCloud(workspaceJSON: string): string {
-    const newURLID = dataManager.createID().substr(0, 8);
+    const newURLID = dataManager.createID().substr(0, 10);
     firebase.saveToCloud("linkshortening", {
       workspaceJSON: workspaceJSON,
       workspaceID: newURLID,

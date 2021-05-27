@@ -45,23 +45,6 @@ const updateWorkspaceDecorator = () => {
   };
 };
 
-// const workspaceLoadingOverride = () => {
-//   return function (
-//     target: DataManager,
-//     key: string | symbol,
-//     descriptor: PropertyDescriptor
-//   ) {
-//     const original = descriptor.value;
-//     descriptor.value = function (...args: any[]) {
-//       //@ts-ignore
-//       if (this.loading) {
-//         return undefined;
-//       }
-//       return original.apply(this, args);
-//     };
-//   };
-// };
-
 class DataManager extends ObserversFunctionality {
   /* 
 
@@ -428,7 +411,6 @@ class DataManager extends ObserversFunctionality {
         this.setWorkspaceLoading(false);
       })
       .catch((e) => {
-        console.log(e);
         snackbarService.showSnackbar(
           "Could not load your remote files, please try again",
           "error"
