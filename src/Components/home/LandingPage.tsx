@@ -26,7 +26,6 @@ import Share from "@material-ui/icons/Share";
 import Language from "@material-ui/icons/Language";
 import Note from "@material-ui/icons/Note";
 import userManager from "Components/users/userManager";
-import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   topDialogBar: {
@@ -206,7 +205,7 @@ const AppLandingPage = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files has never been easier
               </p>
-              <NavLink to="/questions">
+              <NavLink to="/test-red-matter">
                 <Button
                   variant="contained"
                   size="large"

@@ -50,6 +50,7 @@ const Workspace = (props: any) => {
 
   const [workspaceData, setWorkpsaceData] = React.useState(null);
   const [editingName, setEditingName] = React.useState(false);
+  const [experiments, setExperiments] = React.useState([]);
 
   const fetchWorkspaceData = (snack = true) => {
     const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
@@ -98,8 +99,22 @@ const Workspace = (props: any) => {
       });
   };
 
+  const getExperiments = () => {
+    axios
+      .get("/api/workspace/" + props.id + "/experiments/", {
+        headers: {
+          token: userManager.getToken(),
+        },
+      })
+      .then((e) => {
+        setExperiments(e.data);
+      })
+      .catch((e) => {});
+  };
+
   useEffect(() => {
     fetchWorkspaceData();
+    getExperiments();
   }, []);
 
   const handleClose = (func: Function) => {
@@ -109,6 +124,7 @@ const Workspace = (props: any) => {
 
   return (
     <>
+      {}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{
@@ -254,6 +270,10 @@ const Workspace = (props: any) => {
               }}
             >
               <Grid xs={12} style={{ textAlign: "center" }}>
+                {/*@ts-ignore*/}
+                {experiments.length > 0
+                  ? JSON.stringify(experiments[0].details)
+                  : null}
                 <Grid
                   container
                   direction="row"

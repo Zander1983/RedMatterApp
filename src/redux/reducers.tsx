@@ -1,7 +1,14 @@
 import { actionTypes } from "./actionTypes";
 
-const initialState = {
+const initialState: any = {
   profile: {},
+  experiment: {
+    device: null,
+    cellType: null,
+    particleSize: null,
+    fluorophoresCategory: null,
+    description: null,
+  },
 };
 
 const reducer = (state = initialState, action: any) => {
@@ -15,6 +22,25 @@ const reducer = (state = initialState, action: any) => {
       return {
         ...state,
         profile: {},
+      };
+    case actionTypes.EXPERIMENT_FORM_DATA:
+      let newExperiment: any = state.experiment;
+      newExperiment[action.payload.formitem.key] =
+        action.payload.formitem.value;
+      return {
+        ...state,
+        experiment: newExperiment,
+      };
+    case actionTypes.EXPERIMENT_FORM_DATA_CLEAR:
+      return {
+        ...state,
+        experiment: {
+          device: null,
+          cellType: null,
+          particleSize: null,
+          fluorophoresCategory: null,
+          description: null,
+        },
       };
     default:
       return state;

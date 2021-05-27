@@ -1342,6 +1342,65 @@ export const ExperimentApiFetchParamCreator = function (
       };
     },
     /**
+     * To get experiments, you must pass the target workspaceId
+     * @summary Get experiments
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getExperiment(
+      token: string,
+      workspaceId: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling getExperiment."
+        );
+      }
+      // verify required parameter 'workspaceId' is not null or undefined
+      if (workspaceId === null || workspaceId === undefined) {
+        throw new RequiredError(
+          "workspaceId",
+          "Required parameter workspaceId was null or undefined when calling getExperiment."
+        );
+      }
+      const localVarPath = `/api/workspace/{workspaceId}/experiments`.replace(
+        `{${"workspaceId"}}`,
+        encodeURIComponent(String(workspaceId))
+      );
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * To create Experiment, we need to pass workspaceId, data and details in body of request
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
@@ -1476,6 +1535,38 @@ export const ExperimentApiFp = function (configuration?: Configuration) {
       };
     },
     /**
+     * To get experiments, you must pass the target workspaceId
+     * @summary Get experiments
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getExperiment(
+      token: string,
+      workspaceId: string,
+      options?: any
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2006> {
+      const localVarFetchArgs = ExperimentApiFetchParamCreator(
+        configuration
+      ).getExperiment(token, workspaceId, options);
+      return (
+        fetch: FetchAPI = portableFetch,
+        basePath: string = BASE_PATH
+      ) => {
+        return fetch(
+          basePath + localVarFetchArgs.url,
+          localVarFetchArgs.options
+        ).then((response) => {
+          if (response.status >= 200 && response.status < 300) {
+            return response.json();
+          } else {
+            throw response;
+          }
+        });
+      };
+    },
+    /**
      * To create Experiment, we need to pass workspaceId, data and details in body of request
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
@@ -1547,6 +1638,21 @@ export const ExperimentApiFactory = function (
       )(fetch, basePath);
     },
     /**
+     * To get experiments, you must pass the target workspaceId
+     * @summary Get experiments
+     * @param {string} token Generate token and pass it in header
+     * @param {string} workspaceId Workspace id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getExperiment(token: string, workspaceId: string, options?: any) {
+      return ExperimentApiFp(configuration).getExperiment(
+        token,
+        workspaceId,
+        options
+      )(fetch, basePath);
+    },
+    /**
      * To create Experiment, we need to pass workspaceId, data and details in body of request
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
@@ -1599,6 +1705,23 @@ export class ExperimentApi extends BaseAPI {
   ) {
     return ExperimentApiFp(this.configuration).createExperiment(
       body,
+      token,
+      workspaceId,
+      options
+    )(this.fetch, this.basePath);
+  }
+
+  /**
+   * To get experiments, you must pass the target workspaceId
+   * @summary Get experiments
+   * @param {string} token Generate token and pass it in header
+   * @param {string} workspaceId Workspace id
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof ExperimentApi
+   */
+  public getExperiment(token: string, workspaceId: string, options?: any) {
+    return ExperimentApiFp(this.configuration).getExperiment(
       token,
       workspaceId,
       options
@@ -4138,7 +4261,8 @@ export const UserApiFp = function (configuration?: Configuration) {
     userexpertorders(
       token: string,
       options?: any
-    ): (fetch?: FetchAPI, basePath?: string) => Promise<Array<Object>> {
+      //@ts-ignore
+    ): (fetch?: FetchAPI, basePath?: string) => Promise<Array<ModelObject>> {
       const localVarFetchArgs = UserApiFetchParamCreator(
         configuration
       ).userexpertorders(token, options);
@@ -4500,11 +4624,10 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-      const localVarFormParams = new FormData();
+      const localVarFormParams = new url.URLSearchParams();
 
       if (token !== undefined && token !== null) {
         localVarHeaderParameter["token"] = String(token);
-        localVarFormParams.set("token", token as any);
       }
 
       if (workspaceId !== undefined) {
@@ -4519,7 +4642,8 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarFormParams.set("file[0]", file0 as any);
       }
 
-      localVarHeaderParameter["Content-Type"] = "multipart/form-data";
+      localVarHeaderParameter["Content-Type"] =
+        "application/x-www-form-urlencoded";
 
       localVarUrlObj.query = Object.assign(
         {},
@@ -4534,7 +4658,7 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarHeaderParameter,
         options.headers
       );
-      localVarRequestOptions.body = localVarFormParams;
+      localVarRequestOptions.body = localVarFormParams.toString();
 
       return {
         url: url.format(localVarUrlObj),
