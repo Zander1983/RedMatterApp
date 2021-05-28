@@ -38,6 +38,10 @@ const Workspace = (props: any) => {
     history.replace("/login");
   }
 
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/");
+  }
+
   const allowedInThisWorkspace = userManager.canAccessWorkspace(props.id);
   if (!allowedInThisWorkspace) {
     snackbarService.showSnackbar(

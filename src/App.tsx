@@ -49,6 +49,7 @@ const router = [
   {
     path: "/questions/:workspaceID",
     component: ({ match }: any) => {
+      //@ts-ignore
       return <PrototypeForm workspaceID={match.params.workspaceID} />;
     },
   },
@@ -72,7 +73,14 @@ const router = [
     path: "/verify/:verifyStr",
     component: VerifyEmail,
   },
-  { path: "/test-red-matter", component: Plots },
+  {
+    path:
+      "/" +
+      (process.env.REACT_APP_NO_WORKSPACES === "true"
+        ? "analyse"
+        : "test-red-matter"),
+    component: Plots,
+  },
   {
     path: "/workspace/:workspaceID/plots",
     component: ({ match }: any) => (
@@ -97,7 +105,11 @@ const router = [
     path: "/jobs",
     component: Jobs,
   },
-];
+].filter((e) => {
+  if (process.env.REACT_APP_NO_WORKSPACES) {
+    return e.path.indexOf("workspace") === -1;
+  }
+});
 
 const theme = createMuiTheme();
 

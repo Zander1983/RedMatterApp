@@ -22,6 +22,7 @@ import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import { useHistory } from "react-router";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -60,6 +61,16 @@ let eventListenerSet = false;
 let setWorkspaceAlready = false;
 
 function Plots(props: { workspaceID: string }) {
+  console.log("WORKSPACE ID = ", props.workspaceID);
+  const history = useHistory();
+  const isLoggedIn = userManager.isLoggedIn();
+  if (
+    process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
+    !isLoggedIn
+  ) {
+    history.push("/login");
+  }
+
   if (props.workspaceID !== undefined && !setWorkspaceAlready) {
     setWorkspaceAlready = true;
     dataManager.setWorkspaceID(props.workspaceID);
@@ -104,7 +115,9 @@ function Plots(props: { workspaceID: string }) {
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
     React.useState(false);
-  const [loadModal, setLoadModal] = React.useState(true);
+  const [loadModal, setLoadModal] = React.useState(
+    props.workspaceID !== undefined
+  );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const waitTime = Math.random() * 1000 + 500;
@@ -222,17 +235,19 @@ function Plots(props: { workspaceID: string }) {
                 simple pressing the histogram button. You may change the type of
                 plotting you want (linear, logicel, log...).
               </p>
-              <p>
-                <b>Sharing:</b> To share the workspace, all you have to do it
-                click the "Share Workspace button" located at the top right. In
-                there, you may find a link other people can access to see your
-                current workspace. The shared workspace is a snapshot: it's
-                immutable. As soon as you create it, it stays like that. You may
-                open a shared workspace and edit, but to see that workspace
-                again, you must create another share link. By pressing the
-                "copy" icon to the left of the link sharing button, you may copy
-                the link in a single click.
-              </p>
+              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <p>
+                  <b>Sharing:</b> To share the workspace, all you have to do it
+                  click the "Share Workspace button" located at the top right.
+                  In there, you may find a link other people can access to see
+                  your current workspace. The shared workspace is a snapshot:
+                  it's immutable. As soon as you create it, it stays like that.
+                  You may open a shared workspace and edit, but to see that
+                  workspace again, you must create another share link. By
+                  pressing the "copy" icon to the left of the link sharing
+                  button, you may copy the link in a single click.
+                </p>
+              )}
             </div>
             <h2 style={{ marginTop: 50 }}>
               What is going to be in the full version of Red Matter?
@@ -246,8 +261,6 @@ function Plots(props: { workspaceID: string }) {
                 textAlign: "left",
               }}
             >
-              <li>FCS file uploads</li>
-              <li>Overlays of histograms and scatter plots</li>
               <li>
                 Creating reports (with medians, std. deviation, ...) as .pdf,
                 .csv or .xls
@@ -534,31 +547,33 @@ function Plots(props: { workspaceID: string }) {
                 Clear
               </Button>
             </Grid>
-            <Grid
-              xs={3}
-              style={{
-                textAlign: "right",
-                paddingRight: 20,
-              }}
-            >
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => handleOpen(setLinkShareModalOpen)}
-                className={classes.topButton}
+            {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+              <Grid
+                xs={3}
                 style={{
-                  backgroundColor: "#fafafa",
+                  textAlign: "right",
+                  paddingRight: 20,
                 }}
               >
-                <ShareIcon
-                  fontSize="small"
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => handleOpen(setLinkShareModalOpen)}
+                  className={classes.topButton}
                   style={{
-                    marginRight: 10,
+                    backgroundColor: "#fafafa",
                   }}
-                ></ShareIcon>
-                Share Workspace
-              </Button>
-            </Grid>
+                >
+                  <ShareIcon
+                    fontSize="small"
+                    style={{
+                      marginRight: 10,
+                    }}
+                  ></ShareIcon>
+                  Share Workspace
+                </Button>
+              </Grid>
+            )}
           </Grid>
 
           <Grid>

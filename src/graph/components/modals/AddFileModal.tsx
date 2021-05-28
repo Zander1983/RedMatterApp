@@ -198,20 +198,6 @@ const getRemotePrototypeFile = (url: string) => {
   });
 };
 
-// getLocal(transduction_1, "transduction_1");
-// getLocal(transduction_2, "transduction_2");
-// getLocal(transduction_3, "transduction_3");
-
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
-// );
-
 const getRemoteFiles = (): any[] => {
   return dataManager.remoteFiles.map((e) => {
     return {
@@ -294,35 +280,27 @@ function AddFileModal(props: {
           around!
         </p>
 
-        <div
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <Button
+        {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
+          <div
             style={{
-              backgroundColor: "#66d",
-              color: "white",
-              fontSize: 13,
-              marginLeft: 20,
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 20,
             }}
           >
-            Upload file (<BackupIcon fontSize="small"></BackupIcon>)
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#66d",
-              color: "white",
-              fontSize: 13,
-              marginLeft: 20,
-            }}
-          >
-            Upload file (Anonymous)
-          </Button>
-        </div>
+            <Button
+              style={{
+                backgroundColor: "#66d",
+                color: "white",
+                fontSize: 13,
+                marginLeft: 20,
+              }}
+            >
+              Upload file (Anonymous)
+            </Button>
+          </div>
+        ) : null}
 
         <p>
           <b>Click on the file you want to open:</b>
