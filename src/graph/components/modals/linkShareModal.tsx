@@ -1,7 +1,16 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Scrollbars } from "react-custom-scrollbars";
-import { Button, Grid, Typography } from "@material-ui/core";
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Radio,
+  RadioGroup,
+  Switch,
+  Typography,
+} from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
@@ -69,6 +78,7 @@ function LinkShareModal(props: {
             >
               <p
                 style={{
+                  width: 500,
                   overflowX: "hidden",
                   overflowY: "hidden",
                   textAlign: "center",
@@ -78,7 +88,7 @@ function LinkShareModal(props: {
                   marginTop: 2,
                 }}
               >
-                {link}
+                {link.substring(0, 55)}...
               </p>
             </Grid>
             <Grid
@@ -102,6 +112,32 @@ function LinkShareModal(props: {
               </Button>
             </Grid>
           </Grid>
+          <p style={{ marginTop: 20, fontWeight: 500 }}>
+            NOTICE: Workspaces sharing is exclusively private, for now
+          </p>
+          <RadioGroup style={{ marginLeft: 20, marginTop: -15 }}>
+            <FormControlLabel
+              value="private"
+              control={<Radio />}
+              disabled
+              label="Private (only you can access)"
+              checked={true}
+            />
+            <FormControlLabel
+              value="organization"
+              control={<Radio />}
+              disabled
+              label="Organization (only people in your
+            organization can access)"
+            />
+            <FormControlLabel
+              value="public"
+              control={<Radio />}
+              disabled
+              label="Public (everyone with the link can
+            access)"
+            />
+          </RadioGroup>
         </Grid>
       </div>
     </Modal>

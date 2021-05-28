@@ -15,11 +15,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn) {
-    if (history.length > 0) {
-      history.goBack();
-    } else {
-      history.push("/");
-    }
+    history.replace("/login");
   }
 
   const [workspaces, setWorkspaces] = React.useState([]);

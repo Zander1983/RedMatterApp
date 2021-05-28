@@ -260,7 +260,7 @@ function AddFileModal(props: {
     } else {
       newFile = new FCSFile({
         name: file.title,
-        src: "generated",
+        src: "remote",
         axes: file.axes.map((e: any) => e.value),
         data: file.data,
         plotTypes: file.axes.map((e: any) => e.display),
