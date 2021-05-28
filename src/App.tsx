@@ -107,7 +107,7 @@ const router = [
   },
 ].filter((e) => {
   if (process.env.REACT_APP_NO_WORKSPACES) {
-    return e.path.indexOf("workspace") !== -1;
+    return e.path.indexOf("workspace") === -1;
   }
 });
 
