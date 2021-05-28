@@ -22,6 +22,7 @@ import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import { useHistory } from "react-router";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -61,6 +62,15 @@ let setWorkspaceAlready = false;
 
 function Plots(props: { workspaceID: string }) {
   console.log("WORKSPACE ID = ", props.workspaceID);
+  const history = useHistory();
+  const isLoggedIn = userManager.isLoggedIn();
+  if (
+    process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
+    !isLoggedIn
+  ) {
+    history.push("/login");
+  }
+
   if (props.workspaceID !== undefined && !setWorkspaceAlready) {
     setWorkspaceAlready = true;
     dataManager.setWorkspaceID(props.workspaceID);
@@ -106,7 +116,9 @@ function Plots(props: { workspaceID: string }) {
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
     React.useState(false);
-  const [loadModal, setLoadModal] = React.useState(true);
+  const [loadModal, setLoadModal] = React.useState(
+    props.workspaceID !== undefined
+  );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const waitTime = Math.random() * 1000 + 500;

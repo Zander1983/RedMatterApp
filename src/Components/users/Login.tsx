@@ -64,7 +64,11 @@ const Login = (props: any) => {
         payload: { user: { profile: loginData } },
       });
       snackbarService.showSnackbar("Logged in!", "success");
-      props.history.push("/workspaces");
+      if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+        props.history.push("/analyse");
+      } else {
+        props.history.push("/workspaces");
+      }
     } catch (err) {
       setLoading(false);
       if (err.response === undefined) {

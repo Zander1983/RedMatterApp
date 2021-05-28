@@ -205,14 +205,23 @@ const AppLandingPage = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files has never been easier
               </p>
-              <NavLink to="/test-red-matter">
+              <NavLink
+                to={
+                  "/" +
+                  (process.env.REACT_APP_NO_WORKSPACES === "true"
+                    ? "analyse"
+                    : "test-red-matter")
+                }
+              >
                 <Button
                   variant="contained"
                   size="large"
                   color="primary"
                   className={classes.marginButton}
                 >
-                  Test Red Matter
+                  {process.env.REACT_APP_NO_WORKSPACES === "true"
+                    ? "Start Analysing"
+                    : "Test Red Matter"}
                 </Button>
               </NavLink>{" "}
               {!isLoggedIn ? (
@@ -238,7 +247,7 @@ const AppLandingPage = () => {
                     </Button>
                   </NavLink>
                 </div>
-              ) : (
+              ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <NavLink to="/workspaces">
                   <Button
                     variant="contained"

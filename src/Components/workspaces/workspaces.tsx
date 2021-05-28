@@ -14,12 +14,11 @@ import { snackbarService } from "uno-material-ui";
 const Workspaces = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-  if (!isLoggedIn) {
-    if (history.length > 0) {
-      history.goBack();
-    } else {
-      history.push("/");
-    }
+  if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/login");
+  }
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/");
   }
 
   const [workspaces, setWorkspaces] = React.useState([]);

@@ -33,11 +33,13 @@ const Workspace = (props: any) => {
   const { classes } = props;
   const history = useHistory();
 
-  // const isLoggedIn = userManager.isLoggedIn();
-  // if (!isLoggedIn) {
-
-  //   return <></>
-  // }
+  const isLoggedIn = userManager.isLoggedIn();
+  if (!isLoggedIn) {
+    history.replace("/login");
+  }
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/");
+  }
 
   const allowedInThisWorkspace = userManager.canAccessWorkspace(props.id);
   if (!allowedInThisWorkspace) {
