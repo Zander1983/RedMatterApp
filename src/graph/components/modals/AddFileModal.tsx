@@ -203,7 +203,7 @@ const getRemoteFiles = (): any[] => {
     return {
       title: e.title,
       id: e.id,
-      data: e.channelsData,
+      data: e.events,
       axes: e.channels,
       description: "...",
       lastModified: "...",
