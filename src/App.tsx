@@ -106,9 +106,10 @@ const router = [
     component: Jobs,
   },
 ].filter((e) => {
-  if (process.env.REACT_APP_NO_WORKSPACES) {
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
     return e.path.indexOf("workspace") === -1;
   }
+  return true;
 });
 
 const theme = createMuiTheme();
