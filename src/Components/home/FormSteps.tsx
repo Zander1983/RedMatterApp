@@ -59,11 +59,14 @@ function getSteps() {
 
 function FormDeviceType() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.device;
-  if (defaultValue === undefined) defaultValue = null;
-  if (defaultValue != null) {
-    defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
-  }
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.device;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
   const dispatch = useDispatch();
   const [deviceType, setDeviceType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
@@ -137,14 +140,17 @@ function FormDeviceType() {
 
 function FormCellType() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.cellType;
-  if (defaultValue === undefined) defaultValue = null;
-  if (defaultValue != null) {
-    defaultValue = [
-      { id: 1, key: 1, value: "Single cells" },
-      { id: 2, key: 2, value: "Heterogenous population" },
-    ].filter((e) => e.value === defaultValue)[0];
-  }
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.cellType;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: 1, value: "Single cells" },
+        { id: 2, key: 2, value: "Heterogenous population" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
   const dispatch = useDispatch();
   const [cellType, setCellType] = React.useState(defaultValue);
 
@@ -190,15 +196,18 @@ function FormCellType() {
 
 function FormParticleSize() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.particleSize;
-  if (defaultValue === undefined) defaultValue = null;
-  if (defaultValue != null) {
-    defaultValue = [
-      { id: 1, key: "Below 1µm", value: "Below 1µm" },
-      { id: 2, key: "1-3 µm", value: "1-3 µm" },
-      { id: 3, key: "2µm+", value: "2µm+" },
-    ].filter((e) => e.value === defaultValue)[0];
-  }
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.particleSize;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: "Below 1µm", value: "Below 1µm" },
+        { id: 2, key: "1-3 µm", value: "1-3 µm" },
+        { id: 3, key: "2µm+", value: "2µm+" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
   const dispatch = useDispatch();
   const [particleSize, setParticleSize] = React.useState(defaultValue);
 
@@ -245,11 +254,16 @@ function FormParticleSize() {
 
 function FormFluorophores() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.fluorophoresCategory;
-  if (defaultValue === undefined) defaultValue = null;
-  if (defaultValue != null) {
-    defaultValue = fluorophoresData.filter((e) => e.value === defaultValue)[0];
-  }
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.fluorophoresCategory;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = fluorophoresData.filter(
+        (e) => e.value === defaultValue
+      )[0];
+    }
+  } catch (e) {}
   const dispatch = useDispatch();
   const [fluorophoresType, setFluorophoresType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
@@ -335,8 +349,11 @@ function FormFluorophores() {
 
 function FormDescription() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.description;
-  if (defaultValue === undefined) defaultValue = null;
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.description;
+    if (defaultValue === undefined) defaultValue = null;
+  } catch (e) {}
   const dispatch = useDispatch();
   const [description, setdescription] = React.useState(defaultValue);
 
