@@ -188,7 +188,7 @@ const Workspace = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.goBack();
+                  history.push("/workspaces");
                 }}
               >
                 Back
@@ -256,13 +256,6 @@ const Workspace = (props: any) => {
               >
                 Plots
               </Button>
-              <Button
-                variant="contained"
-                style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
-                onClick={() => setUploadFileModalOpen(true)}
-              >
-                Upload File
-              </Button>
             </Grid>
             <Grid
               style={{
@@ -280,11 +273,37 @@ const Workspace = (props: any) => {
                 <Grid
                   container
                   direction="row"
-                  alignItems="center"
-                  alignContent="center"
-                  justify="center"
+                  style={{
+                    justifyContent: "space-between",
+                  }}
                 >
-                  <h1>Files</h1>
+                  <div style={{ textAlign: "left" }}>
+                    <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                      Workspace Files
+                    </h1>
+                    <p
+                      style={{
+                        fontSize: 14,
+                      }}
+                    >
+                      To upload files, drag and drop them here or click the
+                      upload button
+                    </p>
+                  </div>
+                  <div>
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#6666AA",
+                        maxHeight: 50,
+                        marginTop: 5,
+                        color: "white",
+                      }}
+                      onClick={() => setUploadFileModalOpen(true)}
+                    >
+                      Upload File
+                    </Button>
+                  </div>
                 </Grid>
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {workspaceData === null ? (
@@ -297,18 +316,48 @@ const Workspace = (props: any) => {
                   workspaceData.files.map((e: any, i: number) => {
                     return (
                       <>
-                        <Grid item xs={12} style={{ textAlign: "left" }}>
-                          <h3>File label: {e.label}</h3>
-                          <div style={{ marginLeft: 20 }}>
-                            <h4>
-                              Date:{" "}
+                        <Grid
+                          item
+                          xs={12}
+                          style={{
+                            textAlign: "left",
+                            marginTop: 15,
+                            marginLeft: 10,
+                          }}
+                        >
+                          <h3>
+                            <b
+                              style={{
+                                backgroundColor: "#dfd",
+                                border: "solid 1px #ddd",
+                                borderRadius: 5,
+                                padding: 5,
+                                marginRight: 10,
+                              }}
+                            >
+                              .fcs file
+                            </b>
+                            {e.label}
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              )}
-                            </h4>
-                            {JSON.stringify(e)}
-                          </div>
+                              )}{" "}
+                              {getHumanReadableTimeDifference(
+                                new Date(e.createdOn),
+                                new Date()
+                              ) == "just now"
+                                ? ""
+                                : "ago"}
+                            </b>
+                          </h3>
                         </Grid>
                         {i !== workspaceData.files.length - 1 ? (
                           <Divider
