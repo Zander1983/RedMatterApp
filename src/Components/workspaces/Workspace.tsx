@@ -17,9 +17,15 @@ import {
   WorkspaceFilesApiFetchParamCreator,
   WorkspacesApiFetchParamCreator,
 } from "api_calls/nodejsback";
-import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  DeleteFilled,
+  DeleteOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
+import oldBackFileUploader from "utils/oldBackFileUploader";
 
 const styles = {
   input: {
@@ -32,6 +38,7 @@ const styles = {
 const Workspace = (props: any) => {
   const { classes } = props;
   const history = useHistory();
+  const inputFile = React.useRef(null);
 
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn) {
@@ -53,9 +60,11 @@ const Workspace = (props: any) => {
 
   const [workspaceData, setWorkpsaceData] = React.useState(null);
   const [editingName, setEditingName] = React.useState(false);
+  const [onDropZone, setOnDropZone] = React.useState(false);
+  const [uploadingFiles, setUploadingFiles] = React.useState([]);
   const [experiments, setExperiments] = React.useState([]);
 
-  const fetchWorkspaceData = (snack = true) => {
+  const fetchWorkspaceData = (snack = true, callback?: Function) => {
     const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).workspaceFiles(
@@ -76,6 +85,9 @@ const Workspace = (props: any) => {
             "error"
           );
         userManager.logout();
+      })
+      .finally(() => {
+        if (callback !== undefined) callback();
       });
   };
 
@@ -113,6 +125,44 @@ const Workspace = (props: any) => {
         setExperiments(e.data);
       })
       .catch((e) => {});
+  };
+
+  const uploadFile = (file: File) => {
+    const id = Math.random().toString(36).substring(7);
+    setUploadingFiles([
+      ...uploadingFiles,
+      {
+        name: file.name,
+        id: id,
+      },
+    ]);
+    oldBackFileUploader(
+      userManager.getToken(),
+      props.id,
+      userManager.getOrganiztionID(),
+      file
+    )
+      .then((e) => {
+        snackbarService.showSnackbar("Uploaded " + file.name, "success");
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Error uploading file " +
+            file.name.substring(0, 20) +
+            (file.name.length > 20 ? ",,," : "") +
+            ", please try again",
+          "error"
+        );
+      })
+      .finally(() => {
+        fetchWorkspaceData(false, () => {
+          setUploadingFiles(uploadingFiles.filter((e) => e.id !== id));
+        });
+      });
+  };
+
+  const deleteFile = (file: any) => {
+    console.log(file);
   };
 
   useEffect(() => {
@@ -188,7 +238,7 @@ const Workspace = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.goBack();
+                  history.push("/workspaces");
                 }}
               >
                 Back
@@ -256,20 +306,32 @@ const Workspace = (props: any) => {
               >
                 Plots
               </Button>
-              <Button
-                variant="contained"
-                style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
-                onClick={() => setUploadFileModalOpen(true)}
-              >
-                Upload File
-              </Button>
             </Grid>
             <Grid
               style={{
-                backgroundColor: "#fafafa",
+                backgroundColor: onDropZone ? "#eef" : "#fafafa",
                 borderBottomRightRadius: 10,
                 borderBottomLeftRadius: 10,
                 padding: 10,
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                Array.from(e.dataTransfer.files).forEach((file) =>
+                  uploadFile(file)
+                );
+                setOnDropZone(false);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setOnDropZone(true);
+              }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                setOnDropZone(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                setOnDropZone(false);
               }}
             >
               <Grid xs={12} style={{ textAlign: "center" }}>
@@ -280,11 +342,52 @@ const Workspace = (props: any) => {
                 <Grid
                   container
                   direction="row"
-                  alignItems="center"
-                  alignContent="center"
-                  justify="center"
+                  style={{
+                    justifyContent: "space-between",
+                  }}
                 >
-                  <h1>Files</h1>
+                  <div style={{ textAlign: "left" }}>
+                    <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                      Workspace Files
+                    </h1>
+                    <p
+                      style={{
+                        fontSize: 14,
+                      }}
+                    >
+                      To upload files, drag and drop them here or click the
+                      upload button
+                    </p>
+                  </div>
+                  <div>
+                    <Button
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#6666AA",
+                        maxHeight: 50,
+                        marginTop: 5,
+                        color: "white",
+                      }}
+                      onClick={() => {
+                        inputFile.current.click();
+                      }}
+                    >
+                      <input
+                        type="file"
+                        id="file"
+                        ref={inputFile}
+                        multiple
+                        accept=".fcs"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          Array.from(e.target.files).forEach((file) =>
+                            uploadFile(file)
+                          );
+                        }}
+                      />
+                      Upload File
+                    </Button>
+                  </div>
                 </Grid>
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {workspaceData === null ? (
@@ -297,18 +400,59 @@ const Workspace = (props: any) => {
                   workspaceData.files.map((e: any, i: number) => {
                     return (
                       <>
-                        <Grid item xs={12} style={{ textAlign: "left" }}>
-                          <h3>File label: {e.label}</h3>
-                          <div style={{ marginLeft: 20 }}>
-                            <h4>
-                              Date:{" "}
+                        <Grid
+                          item
+                          xs={12}
+                          style={{
+                            textAlign: "left",
+                            marginTop: 15,
+                            marginLeft: 10,
+                          }}
+                        >
+                          <h3>
+                            <b
+                              style={{
+                                backgroundColor: "#ddf",
+                                border: "solid 1px #ddd",
+                                borderRadius: 5,
+                                padding: 5,
+                              }}
+                            >
+                              .fcs file
+                            </b>
+                            <div style={{ display: "inline", width: 10 }}>
+                              <Button
+                                onClick={() => {
+                                  deleteFile(e);
+                                }}
+                                style={{ marginTop: -3 }}
+                              >
+                                <DeleteFilled
+                                  style={{ color: "#6666aa" }}
+                                ></DeleteFilled>
+                              </Button>
+                            </div>
+                            {e.label}
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              )}
-                            </h4>
-                            {JSON.stringify(e)}
-                          </div>
+                              )}{" "}
+                              {getHumanReadableTimeDifference(
+                                new Date(e.createdOn),
+                                new Date()
+                              ) == "just now"
+                                ? ""
+                                : "ago"}
+                            </b>
+                          </h3>
                         </Grid>
                         {i !== workspaceData.files.length - 1 ? (
                           <Divider
@@ -319,6 +463,56 @@ const Workspace = (props: any) => {
                     );
                   })
                 )}
+                {workspaceData !== null &&
+                uploadingFiles.length > 0 &&
+                workspaceData.files.length > 0 ? (
+                  <Divider
+                    style={{ marginTop: 15, marginBottom: 15 }}
+                  ></Divider>
+                ) : null}
+                {uploadingFiles.map((e: any, i: number) => {
+                  return (
+                    <>
+                      <Grid
+                        item
+                        xs={12}
+                        style={{
+                          textAlign: "left",
+                          marginTop: 15,
+                          marginLeft: 10,
+                        }}
+                      >
+                        <h3>
+                          <b
+                            style={{
+                              backgroundColor: "#dfd",
+                              border: "solid 1px #ddd",
+                              borderRadius: 5,
+                              padding: 5,
+                              marginRight: 10,
+                            }}
+                          >
+                            .fcs file
+                          </b>
+                          {e.name}
+                          <CircularProgress
+                            style={{
+                              height: 16,
+                              width: 16,
+                              marginLeft: 20,
+                              marginBottom: -3,
+                            }}
+                          ></CircularProgress>
+                        </h3>
+                      </Grid>
+                      {i !== uploadingFiles.length - 1 ? (
+                        <Divider
+                          style={{ marginTop: 15, marginBottom: 15 }}
+                        ></Divider>
+                      ) : null}
+                    </>
+                  );
+                })}
               </Grid>
             </Grid>
           </Grid>
