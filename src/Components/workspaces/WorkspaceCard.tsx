@@ -18,7 +18,10 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import {
+  WorkspaceFilesApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
 const styles = {
@@ -56,6 +59,20 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
 
   const fetchWorkspaceFiles = () => {
     setInitLoading(false);
+    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).workspaceFiles(
+      userManager.getOrganiztionID(),
+      props.data.id,
+      userManager.getToken()
+    );
+
+    axios
+      .get(fetchWorkspaces.url, fetchWorkspaces.options)
+      .then((e) => {
+        setFiles(e.data.files);
+      })
+      .catch((e) => {});
   };
 
   const [open, setOpen] = React.useState(false);
