@@ -45,12 +45,12 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
     axios
       .delete(fetchArgs.url, fetchArgs.options)
       .then((e) => {
-        snackbarService.showSnackbar("Workspace deleted", "success");
+        snackbarService.showSnackbar("Experiment deleted", "success");
         props.update();
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Failure deleting workspace, refresh the page and try again!",
+          "Failure deleting experiment, refresh the page and try again!",
           "error"
         );
         userManager.logout();
@@ -114,7 +114,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           f: handleClose,
           ref: setDeleteConfirmModal,
         }}
-        message={<h2>Are you sure you want to delete this workspace?</h2>}
+        message={<h2>Are you sure you want to delete this experiment?</h2>}
         options={{
           yes: () => {
             setDeleteConfirmModal(false);
@@ -129,7 +129,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         <Card>
           <NavLink
             to={{
-              pathname: `/workspace/${props.data.id}`,
+              pathname: `/experiment/${props.data.id}`,
               state: { workspaceName: props.data.name },
             }}
           >
@@ -188,17 +188,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
             </CardContent>
           </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            {/* <Tooltip title="Edit workspace">
-              <Button
-                size="small"
-                color="primary"
-                startIcon={<EditIcon />}
-                variant="contained"
-              >
-                Edit
-              </Button>
-            </Tooltip> */}
-            <Tooltip title="Delete workspace">
+            <Tooltip title="Delete experiment">
               <Button
                 size="small"
                 color="secondary"

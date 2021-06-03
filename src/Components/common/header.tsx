@@ -108,8 +108,8 @@ const AppHeader = (props: any) => {
           {isLoggedIn ? (
             <>
               {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <NavLink className={classes.topBarLink} to="/workspaces">
-                  Workspaces
+                <NavLink className={classes.topBarLink} to="/experiments">
+                  Experiments
                 </NavLink>
               )}
               <a className={classes.topBarLink} onClick={onLogout} href="/">

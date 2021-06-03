@@ -134,8 +134,8 @@ const featureList = [
     icon: <Cloud fontSize="large" style={{ color: "#66d" }} />,
   },
   {
-    title: "Shared workspaces",
-    description: "You may share your workspace with other researchers",
+    title: "Shared experiments",
+    description: "You may share your experiments with other researchers",
     icon: <Language fontSize="large" style={{ color: "#8a27b3" }} />,
   },
   {
@@ -248,14 +248,14 @@ const AppLandingPage = () => {
                   </NavLink>
                 </div>
               ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <NavLink to="/workspaces">
+                <NavLink to="/experiments">
                   <Button
                     variant="contained"
                     size="large"
                     color="primary"
                     className={classes.marginButton}
                   >
-                    Workspaces
+                    Experiments
                   </Button>
                 </NavLink>
               )}

@@ -82,15 +82,15 @@ const router = [
     component: Plots,
   },
   {
-    path: "/workspace/:workspaceID/plots",
+    path: "/experiment/:workspaceID/plots",
     component: ({ match }: any) => (
       <Plots workspaceID={match.params.workspaceID} />
     ),
   },
-  { path: "/workspaces", component: Workspaces },
+  { path: "/experiments", component: Workspaces },
   { path: "/terms", component: Terms },
   {
-    path: "/workspace/:workspaceID",
+    path: "/experiment/:workspaceID",
     component: ({ match }: any) => <Workspace id={match.params.workspaceID} />,
   },
   {
@@ -107,7 +107,7 @@ const router = [
   },
 ].filter((e) => {
   if (process.env.REACT_APP_NO_WORKSPACES === "true") {
-    return e.path.indexOf("workspace") === -1;
+    return e.path.indexOf("experiment") === -1;
   }
   return true;
 });

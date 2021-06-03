@@ -37,7 +37,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Failed to find workspace information",
+          "Failed to find experiment information",
           "error"
         );
         userManager.logout();
@@ -51,7 +51,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
   React.useEffect(() => {
     fetchWorkspaces();
     if (props.backFromQuestions) {
-      snackbarService.showSnackbar("Workspace created", "success");
+      snackbarService.showSnackbar("Experiment created", "success");
     }
   }, []);
 
@@ -68,7 +68,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
         created={(workspaceID: string) => {
           // fetchWorkspaces();
           snackbarService.showSnackbar(
-            "Answer these questions so we can help setup your workspace smartly",
+            "Answer these questions so we can help setup your experiment smartly",
             "info"
           );
           history.push("/questions/" + workspaceID);
@@ -113,7 +113,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
               }}
             >
               <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
-                Workspaces
+                Experiments
               </div>
               <Button
                 variant="contained"
@@ -144,7 +144,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
                 <div
                   style={{ textAlign: "center", width: "100%", padding: 50 }}
                 >
-                  There are no workspaces
+                  There are no experiments
                 </div>
               )}
             </Grid>

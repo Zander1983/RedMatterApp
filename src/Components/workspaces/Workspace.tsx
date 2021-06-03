@@ -19,6 +19,7 @@ import {
 } from "api_calls/nodejsback";
 import {
   ArrowLeftOutlined,
+  ArrowRightOutlined,
   DeleteFilled,
   DeleteOutlined,
   EditOutlined,
@@ -67,10 +68,10 @@ const Workspace = (props: any) => {
   const allowedInThisWorkspace = userManager.canAccessWorkspace(props.id);
   if (!allowedInThisWorkspace) {
     snackbarService.showSnackbar(
-      "You are not allowed in this workspace",
+      "You are not allowed in this experiment",
       "warning"
     );
-    history.replace("/workspaces");
+    history.replace("/experiments");
   }
 
   const fetchWorkspaceData = (snack = true, callback?: Function) => {
@@ -95,7 +96,7 @@ const Workspace = (props: any) => {
       .catch((e) => {
         if (snack)
           snackbarService.showSnackbar(
-            "Failed to find this workspace, reload the page to try again!",
+            "Failed to find this experiment, reload the page to try again!",
             "error"
           );
         userManager.logout();
@@ -117,12 +118,13 @@ const Workspace = (props: any) => {
     axios
       .put(updateWorkspace.url, {}, updateWorkspace.options)
       .then((e) => {
-        if (snack) snackbarService.showSnackbar("Workspace updated", "success");
+        if (snack)
+          snackbarService.showSnackbar("Experiment updated", "success");
       })
       .catch((e) => {
         if (snack)
           snackbarService.showSnackbar(
-            "Failed to update this workspace, reload the page to try again!",
+            "Failed to update this experiment, reload the page to try again!",
             "error"
           );
       });
@@ -161,7 +163,7 @@ const Workspace = (props: any) => {
     }
     if (listSize + workspaceSize > maxWorkspaceSize) {
       snackbarService.showSnackbar(
-        "Files passed go above workspace size limit, total size would be " +
+        "Files passed go above experiment size limit, total size would be " +
           ((listSize + workspaceSize) / 1e6).toFixed(2) +
           "MB",
         "error"
@@ -301,7 +303,7 @@ const Workspace = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.push("/workspaces");
+                  history.push("/experiments");
                 }}
               >
                 Back
@@ -364,10 +366,11 @@ const Workspace = (props: any) => {
                 variant="contained"
                 style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
                 onClick={() =>
-                  history.push("/workspace/" + props.id + "/plots")
+                  history.push("/experiment/" + props.id + "/plots")
                 }
+                endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
-                Plots
+                Workspace
               </Button>
             </Grid>
             <Grid
@@ -397,7 +400,7 @@ const Workspace = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                Workspace size limit: <b>{maxWorkspaceSize / 1e6}MB</b>
+                Experiment size limit: <b>{maxWorkspaceSize / 1e6}MB</b>
               </Grid>
               <Grid
                 xs={12}
@@ -448,7 +451,7 @@ const Workspace = (props: any) => {
                 >
                   <div style={{ textAlign: "left" }}>
                     <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
-                      Workspace Files
+                      Experiment Files
                     </h1>
                     <p
                       style={{
@@ -493,7 +496,7 @@ const Workspace = (props: any) => {
                 ) : workspaceData.files.length === 0 &&
                   uploadingFiles.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
-                    There are no files in this workspace
+                    There are no files in this experiment
                   </h3>
                 ) : (
                   workspaceData.files.map((e: any, i: number) => {
