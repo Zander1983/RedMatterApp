@@ -43,7 +43,13 @@ const Workspace = (props: any) => {
   const [experiments, setExperiments] = useState([]);
 
   const [workspaceSize, setWorkspaceSize] = useState(0);
-  const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(1000000);
+  const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(
+    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
+  );
+  console.log(
+    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES,
+    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
+  );
 
   const { classes } = props;
   const history = useHistory();
@@ -544,6 +550,16 @@ const Workspace = (props: any) => {
                               ) == "just now"
                                 ? ""
                                 : "ago"}
+                            </b>
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
+                              {(e.fileSize / 1e6).toFixed(2) + "MB"}
                             </b>
                           </h3>
                         </Grid>

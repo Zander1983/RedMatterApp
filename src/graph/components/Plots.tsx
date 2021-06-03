@@ -23,6 +23,7 @@ import userManager from "Components/users/userManager";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useHistory } from "react-router";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -386,7 +387,7 @@ function Plots(props: { workspaceID: string }) {
           flexDirection: "column",
         }}
       >
-        <div
+        {/* <div
           style={{
             marginBottom: 30,
             marginLeft: 40,
@@ -451,7 +452,7 @@ function Plots(props: { workspaceID: string }) {
             Tomaz's big red button that saves everthing to the backend!
           </Button>{" "}
           &lt;= BIG RED BUTTON
-        </div>
+        </div> */}
         <Grid
           style={{
             backgroundColor: "#fafafa",
@@ -475,6 +476,21 @@ function Plots(props: { workspaceID: string }) {
           >
             <Grid container xs={9}>
               <Button
+                size="large"
+                variant="contained"
+                style={{
+                  backgroundColor: "#fafafa",
+                  marginLeft: 20,
+                }}
+                className={classes.topButton}
+                startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
+                onClick={() => {
+                  history.goBack();
+                }}
+              >
+                Back
+              </Button>
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => handleOpen(setAddFileModalOpen)}
@@ -485,22 +501,7 @@ function Plots(props: { workspaceID: string }) {
               >
                 + Add new file
               </Button>
-              <Popover
-                open={open}
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "left",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "left",
-                }}
-                onClose={handlePopoverClose}
-                disableRestoreFocus
-              >
-                <Typography>I use Popover.</Typography>
-              </Popover>
+
               <Button
                 variant="contained"
                 size="large"
