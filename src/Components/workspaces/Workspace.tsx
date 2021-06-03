@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 
@@ -36,6 +36,15 @@ const styles = {
 };
 
 const Workspace = (props: any) => {
+  const [workspaceData, setWorkpsaceData] = useState(null);
+  const [editingName, setEditingName] = useState(false);
+  const [onDropZone, setOnDropZone] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState([]);
+  const [experiments, setExperiments] = useState([]);
+
+  const [workspaceSize, setWorkspaceSize] = useState(0);
+  const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(1000000);
+
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
@@ -58,12 +67,6 @@ const Workspace = (props: any) => {
     history.replace("/workspaces");
   }
 
-  const [workspaceData, setWorkpsaceData] = React.useState(null);
-  const [editingName, setEditingName] = React.useState(false);
-  const [onDropZone, setOnDropZone] = React.useState(false);
-  const [uploadingFiles, setUploadingFiles] = React.useState([]);
-  const [experiments, setExperiments] = React.useState([]);
-
   const fetchWorkspaceData = (snack = true, callback?: Function) => {
     const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -77,6 +80,11 @@ const Workspace = (props: any) => {
       .get(fetchWorkspaces.url, fetchWorkspaces.options)
       .then((e) => {
         setWorkpsaceData(e.data);
+        let sizeSum = 0;
+        for (const file of e.data.files) {
+          sizeSum += file.fileSize;
+        }
+        setWorkspaceSize(sizeSum);
       })
       .catch((e) => {
         if (snack)
@@ -127,42 +135,91 @@ const Workspace = (props: any) => {
       .catch((e) => {});
   };
 
-  const uploadFile = (file: File) => {
-    const id = Math.random().toString(36).substring(7);
+  const uploadFiles = (files: FileList) => {
+    const fileList: { tempId: string; file: File }[] = [];
+    let listSize = 0;
+    for (const file of Array.from(files)) {
+      listSize += file.size;
+      if (file.name.split(".")[1] !== "fcs") {
+        snackbarService.showSnackbar(
+          file.name.substring(0, 20) +
+            (file.name.length > 20 ? "..." : "") +
+            '"' +
+            'Is not a .fcs file: "',
+          "error"
+        );
+        continue;
+      }
+      const id = Math.random().toString(36).substring(7);
+      fileList.push({ tempId: id, file });
+    }
+    if (listSize + workspaceSize > maxWorkspaceSize) {
+      snackbarService.showSnackbar(
+        "Files passed go above workspace size limit, total size would be " +
+          ((listSize + workspaceSize) / 1e6).toFixed(2) +
+          "MB",
+        "error"
+      );
+      return;
+    }
     setUploadingFiles([
       ...uploadingFiles,
-      {
-        name: file.name,
-        id: id,
-      },
+      ...fileList.map((e) => {
+        return { name: e.file.name, id: e.tempId };
+      }),
     ]);
-    oldBackFileUploader(
-      userManager.getToken(),
-      props.id,
-      userManager.getOrganiztionID(),
-      file
-    )
+    for (const file of fileList) {
+      oldBackFileUploader(
+        userManager.getToken(),
+        props.id,
+        userManager.getOrganiztionID(),
+        file.file
+      )
+        .then((e) => {
+          snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
+        })
+        .catch((e) => {
+          snackbarService.showSnackbar(
+            "Error uploading file " +
+              file.file.name.substring(0, 20) +
+              (file.file.name.length > 20 ? ",,," : "") +
+              ", please try again",
+            "error"
+          );
+        })
+        .finally(() => {
+          fetchWorkspaceData(false, () => {
+            setUploadingFiles(
+              uploadingFiles.filter((e) => e.id !== file.tempId)
+            );
+          });
+        });
+    }
+  };
+
+  const deleteFile = (file: any) => {
+    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).deleteFile(props.id, file.id, userManager.getToken());
+
+    axios
+      .delete(fetchWorkspaces.url, fetchWorkspaces.options)
       .then((e) => {
-        snackbarService.showSnackbar("Uploaded " + file.name, "success");
+        snackbarService.showSnackbar("File deleted!", "success");
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Error uploading file " +
-            file.name.substring(0, 20) +
-            (file.name.length > 20 ? ",,," : "") +
-            ", please try again",
+          "Failed to delete file, try again.",
           "error"
         );
       })
       .finally(() => {
-        fetchWorkspaceData(false, () => {
-          setUploadingFiles(uploadingFiles.filter((e) => e.id !== id));
-        });
+        fetchWorkspaceData();
       });
   };
 
-  const deleteFile = (file: any) => {
-    console.log(file);
+  const updateSize = (newSize: number) => {
+    setWorkspaceSize(newSize);
   };
 
   useEffect(() => {
@@ -313,12 +370,11 @@ const Workspace = (props: any) => {
                 borderBottomRightRadius: 10,
                 borderBottomLeftRadius: 10,
                 padding: 10,
+                paddingTop: 5,
               }}
               onDrop={(e) => {
                 e.preventDefault();
-                Array.from(e.dataTransfer.files).forEach((file) =>
-                  uploadFile(file)
-                );
+                uploadFiles(e.dataTransfer.files);
                 setOnDropZone(false);
               }}
               onDragOver={(e) => {
@@ -334,6 +390,44 @@ const Workspace = (props: any) => {
                 setOnDropZone(false);
               }}
             >
+              <Grid style={{ textAlign: "center" }}>
+                Workspace size limit: <b>{maxWorkspaceSize / 1e6}MB</b>
+              </Grid>
+              <Grid
+                xs={12}
+                style={{
+                  backgroundColor: "#ddd",
+                  border: "solid 1px #bbb",
+                  height: 22,
+                  borderRadius: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <Grid
+                  xs={12}
+                  style={{
+                    backgroundColor:
+                      workspaceSize === 0
+                        ? "rgba(0,0,0,0)"
+                        : workspaceSize > 0.7 * maxWorkspaceSize
+                        ? workspaceSize > 0.85 * maxWorkspaceSize
+                          ? "#AA66AA"
+                          : "#8866AA"
+                        : "#6666AA",
+                    height: 20,
+                    width:
+                      Math.round((workspaceSize * 100) / maxWorkspaceSize) +
+                      "%",
+                    borderRadius: 10,
+                    textAlign: "center",
+                    color: "white",
+                  }}
+                >
+                  {workspaceSize > 0.1 * maxWorkspaceSize
+                    ? (workspaceSize / 1e6).toFixed(2) + "MB"
+                    : ""}
+                </Grid>
+              </Grid>
               <Grid xs={12} style={{ textAlign: "center" }}>
                 {/*@ts-ignore*/}
                 {experiments.length > 0
@@ -380,9 +474,7 @@ const Workspace = (props: any) => {
                         accept=".fcs"
                         style={{ display: "none" }}
                         onChange={(e) => {
-                          Array.from(e.target.files).forEach((file) =>
-                            uploadFile(file)
-                          );
+                          uploadFiles(e.target.files);
                         }}
                       />
                       Upload File
@@ -392,7 +484,8 @@ const Workspace = (props: any) => {
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {workspaceData === null ? (
                   <CircularProgress />
-                ) : workspaceData.files.length === 0 ? (
+                ) : workspaceData.files.length === 0 &&
+                  uploadingFiles.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
                     There are no files in this workspace
                   </h3>
