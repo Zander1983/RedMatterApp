@@ -622,44 +622,49 @@ const Workspace = (props: any) => {
                     </>
                   );
                 })}
-                <Divider style={{ marginBottom: 10 }}></Divider>
                 {experiments.length > 0 ? (
-                  <Grid
-                    container
-                    direction="row"
-                    style={{
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ textAlign: "left" }}>
-                      <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
-                        Experiment Details
-                      </h1>
-                      {experiments[0].details.device != undefined ? (
-                        <h4>• Device: {experiments[0].details.device}</h4>
-                      ) : null}
-                      {experiments[0].details.cellType != undefined ? (
-                        <h4>• Cell type: {experiments[0].details.cellType}</h4>
-                      ) : null}
-                      {experiments[0].details.particleSize != undefined ? (
-                        <h4>
-                          • Particle size: {experiments[0].details.particleSize}
-                        </h4>
-                      ) : null}
-                      {experiments[0].details.fluorophoresCategory !=
-                      undefined ? (
-                        <h4>
-                          • Fluorophores category:{" "}
-                          {experiments[0].details.fluorophoresCategory}
-                        </h4>
-                      ) : null}
-                      {experiments[0].details.description != undefined ? (
-                        <h4>
-                          • Description: {experiments[0].details.description}
-                        </h4>
-                      ) : null}
-                    </div>
-                  </Grid>
+                  <>
+                    <Divider style={{ marginBottom: 10 }}></Divider>
+                    <Grid
+                      container
+                      direction="row"
+                      style={{
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ textAlign: "left" }}>
+                        <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
+                          Experiment Details
+                        </h1>
+                        {experiments[0].details.device != undefined ? (
+                          <h4>• Device: {experiments[0].details.device}</h4>
+                        ) : null}
+                        {experiments[0].details.cellType != undefined ? (
+                          <h4>
+                            • Cell type: {experiments[0].details.cellType}
+                          </h4>
+                        ) : null}
+                        {experiments[0].details.particleSize != undefined ? (
+                          <h4>
+                            • Particle size:{" "}
+                            {experiments[0].details.particleSize}
+                          </h4>
+                        ) : null}
+                        {experiments[0].details.fluorophoresCategory !=
+                        undefined ? (
+                          <h4>
+                            • Fluorophores category:{" "}
+                            {experiments[0].details.fluorophoresCategory}
+                          </h4>
+                        ) : null}
+                        {experiments[0].details.description != undefined ? (
+                          <h4>
+                            • Description: {experiments[0].details.description}
+                          </h4>
+                        ) : null}
+                      </div>
+                    </Grid>
+                  </>
                 ) : null}
               </Grid>
             </Grid>
