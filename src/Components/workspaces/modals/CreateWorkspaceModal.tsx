@@ -102,7 +102,18 @@ function CreateWorkspaceModal(props: {
         <div className={classes.modal}>
           <h2>Create workspace</h2>
 
-          <div>
+          <PrototypeForm
+            //@ts-ignore
+            onSend={(e) => {
+              setFormData(e);
+            }}
+          ></PrototypeForm>
+
+          <div
+            style={{
+              marginTop: 30,
+            }}
+          >
             <TextField
               variant="outlined"
               placeholder="Workspace name"
@@ -134,13 +145,6 @@ function CreateWorkspaceModal(props: {
           {privateWorkspace ? (
             <p>No one in your workspace will be able to see this workspace</p>
           ) : null}
-
-          <PrototypeForm
-            //@ts-ignore
-            onSend={(e) => {
-              setFormData(e);
-            }}
-          ></PrototypeForm>
 
           <Divider
             style={{

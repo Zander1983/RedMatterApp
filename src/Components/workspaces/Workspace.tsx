@@ -134,7 +134,6 @@ const Workspace = (props: any) => {
         },
       })
       .then((e) => {
-        console.log(e.data[0]);
         setExperiments(e.data);
       })
       .catch((e) => {});
