@@ -67,7 +67,7 @@ const Login = (props: any) => {
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
         props.history.push("/analyse");
       } else {
-        props.history.push("/workspaces");
+        props.history.push("/experiments");
       }
     } catch (err) {
       setLoading(false);
