@@ -97,7 +97,10 @@ function getStepContent(step: number) {
   }
 }
 
-export default function PrototypeForm(props: { workspaceID: string }) {
+export default function PrototypeForm(props: {
+  workspaceID?: string;
+  onSend?: Function;
+}) {
   const history = useHistory();
   const store = useStore();
   const dispatch = useDispatch();
@@ -121,6 +124,9 @@ export default function PrototypeForm(props: { workspaceID: string }) {
       newSkipped.delete(activeStep);
     }
 
+    if (activeStep + 1 === steps.length && props.onSend != undefined) {
+      handleFormEnd(props.onSend);
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
   };
@@ -148,7 +154,12 @@ export default function PrototypeForm(props: { workspaceID: string }) {
     setActiveStep(0);
   };
 
-  const handleFormEnd = (workspaceID: string) => {
+  const handleFormEnd = (input: string | Function) => {
+    if (typeof input === "function") {
+      input(store.getState().user.experiment);
+      return;
+    }
+    const workspaceID = input;
     // This should create an experiment assigning this data to that experiment
     const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -174,22 +185,12 @@ export default function PrototypeForm(props: { workspaceID: string }) {
   return (
     <Grid
       style={{
-        justifyContent: "center",
-        display: "flex",
-        flexDirection: "column",
-        marginLeft: "auto",
-        marginRight: "auto",
-        backgroundColor: "#fafafa",
+        border: "solid 1px #ddd",
         borderRadius: 10,
-        marginBottom: 50,
-        textAlign: "center",
         paddingBottom: 10,
-        marginTop: 30,
+        marginTop: 10,
+        backgroundColor: "#fff",
       }}
-      md={12}
-      lg={9}
-      xl={6}
-      item={true}
     >
       <Stepper
         activeStep={activeStep}
@@ -275,30 +276,36 @@ export default function PrototypeForm(props: { workspaceID: string }) {
               The information you've given us will help to better setup your
               workspace
             </h4>
-            <Button
-              onClick={handleReset}
-              className={classes.emptyButton}
-              style={{
-                border: "solid 2px #379",
-                color: "#379",
-              }}
-            >
-              <Typography
-                style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
-              >
-                Reset
-              </Typography>
-            </Button>
-            <Button
-              variant="contained"
-              className={classes.marginButton}
-              onClick={() => {
-                handleFormEnd(props.workspaceID);
-                history.push("/workspace/" + props.workspaceID);
-              }}
-            >
-              Workspaces
-            </Button>
+            {props.onSend != undefined ? null : (
+              <>
+                <Button
+                  onClick={handleReset}
+                  className={classes.emptyButton}
+                  style={{
+                    border: "solid 2px #379",
+                    color: "#379",
+                  }}
+                >
+                  <Typography
+                    style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
+                  >
+                    Reset
+                  </Typography>
+                </Button>
+                <Button
+                  variant="contained"
+                  className={classes.marginButton}
+                  onClick={() => {
+                    if (props.workspaceID !== undefined) {
+                      handleFormEnd(props.workspaceID);
+                      history.push("/workspace/" + props.workspaceID);
+                    } else handleFormEnd(props.onSend);
+                  }}
+                >
+                  Workspaces
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <div>

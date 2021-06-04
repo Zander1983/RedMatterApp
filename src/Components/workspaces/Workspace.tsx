@@ -47,10 +47,6 @@ const Workspace = (props: any) => {
   const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(
     parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
   );
-  console.log(
-    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES,
-    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
-  );
 
   const { classes } = props;
   const history = useHistory();
@@ -138,6 +134,7 @@ const Workspace = (props: any) => {
         },
       })
       .then((e) => {
+        console.log(e.data[0]);
         setExperiments(e.data);
       })
       .catch((e) => {});
@@ -439,9 +436,9 @@ const Workspace = (props: any) => {
               </Grid>
               <Grid xs={12} style={{ textAlign: "center" }}>
                 {/*@ts-ignore*/}
-                {experiments.length > 0
+                {/* {experiments.length > 0
                   ? JSON.stringify(experiments[0].details)
-                  : null}
+                  : null} */}
                 <Grid
                   container
                   direction="row"
@@ -625,6 +622,45 @@ const Workspace = (props: any) => {
                     </>
                   );
                 })}
+                <Divider style={{ marginBottom: 10 }}></Divider>
+                {experiments.length > 0 ? (
+                  <Grid
+                    container
+                    direction="row"
+                    style={{
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ textAlign: "left" }}>
+                      <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
+                        Experiment Details
+                      </h1>
+                      {experiments[0].details.device != undefined ? (
+                        <h4>• Device: {experiments[0].details.device}</h4>
+                      ) : null}
+                      {experiments[0].details.cellType != undefined ? (
+                        <h4>• Cell type: {experiments[0].details.cellType}</h4>
+                      ) : null}
+                      {experiments[0].details.particleSize != undefined ? (
+                        <h4>
+                          • Particle size: {experiments[0].details.particleSize}
+                        </h4>
+                      ) : null}
+                      {experiments[0].details.fluorophoresCategory !=
+                      undefined ? (
+                        <h4>
+                          • Fluorophores category:{" "}
+                          {experiments[0].details.fluorophoresCategory}
+                        </h4>
+                      ) : null}
+                      {experiments[0].details.description != undefined ? (
+                        <h4>
+                          • Description: {experiments[0].details.description}
+                        </h4>
+                      ) : null}
+                    </div>
+                  </Grid>
+                ) : null}
               </Grid>
             </Grid>
           </Grid>

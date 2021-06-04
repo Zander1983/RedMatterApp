@@ -66,12 +66,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
           ref: setCreateWorkspaceModal,
         }}
         created={(workspaceID: string) => {
-          // fetchWorkspaces();
-          snackbarService.showSnackbar(
-            "Answer these questions so we can help setup your experiment smartly",
-            "info"
-          );
-          history.push("/questions/" + workspaceID);
+          fetchWorkspaces();
         }}
         workspaces={workspaces.map((e) => e.name)}
       />
