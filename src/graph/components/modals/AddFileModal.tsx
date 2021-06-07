@@ -53,150 +53,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const generateRandomData = (
-  dimesionCount: number,
-  maxPoints: number,
-  l: number,
-  r: number
-) => {
-  if (l > r) throw Error("R must be greater than L");
-  const pointCount = Math.round(
-    Math.random() * (maxPoints / 2) + maxPoints / 2
-  );
-  const points: Array<Array<number>> = [];
-  for (let i = 0; i < pointCount; i++) {
-    let dimesion = [];
-    for (let j = 0; j < dimesionCount; j++) {
-      dimesion.push(Math.random() * (r - l) + l);
-    }
-    points.push(dimesion);
-  }
-  return points;
-};
-
-const generateRandomAxes = (dimesionCount: number) => {
-  const list = [];
-  for (let i: number = 0; i < dimesionCount; i++) {
-    list.push({
-      value: Math.random()
-        .toString(36)
-        .replace(/[^a-z]+/g, "")
-        .substr(0, Math.round(Math.random() * 5 + 2)),
-      key: i,
-      display: ["lin", "log"][Math.round(Math.random() * 1.5 - 0.5)],
-    });
-  }
-  return list;
-};
-
 const staticFiles = [
-  {
-    title: "transduction_1",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_1",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_2",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_2",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_3",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_3",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "erica1",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica1",
-    lastModified: "23/05/2020",
-  },
-  {
-    title: "erica2",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica2",
-    lastModified: "25/05/2020",
-  },
-  {
-    title: "erica3",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica3",
-    lastModified: "26/05/2020",
-  },
-  {
-    title: "SmallRandomDataset.fcs",
-    information:
-      "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
-    data: generateRandomData(2, 100, 0, 100),
-    axes: generateRandomAxes(2),
-    lastModified: "Right now!",
-  },
-  {
-    title: "MediumRandomDataset.fcs",
-    information:
-      "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
-    data: generateRandomData(10, 1000, 0, 1),
-    axes: generateRandomAxes(10),
-    lastModified: "Right now!",
-  },
-  {
-    title: "LargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 3000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
-  {
-    title: "ExtremelyLargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 30000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
-];
-
-const addToFiles = (data: Array<any>, axes: object[], title: string) => {
-  const add = (data: Array<any>) => {
-    staticFiles.unshift({
-      title: title,
-      information: "Real anonymous FCS file",
-      data: data,
-      //@ts-ignore
-      axes: axes,
-      lastModified: "??",
-    });
+  "transduction_1",
+  "transduction_2",
+  "transduction_3",
+  "erica1",
+  "erica2",
+  "erica3",
+].map((e) => {
+  return {
+    title: e,
+    information: "...",
+    fromState: e,
+    lastModified: "X/X/X",
   };
-
-  add(data);
-};
-
-const getLocal = (filename: any, title: string) => {
-  addToFiles(filename.data, filename.axes, title);
-};
-
-const getRemotePrototypeFile = (url: string) => {
-  axios.get(url).then((response) => {
-    let text = response.data.slice(0, -3);
-    text += "]]";
-    const filedata = JSON.parse(text);
-    const remoteFileAxes = [
-      "FSC-A",
-      "SSC",
-      "Comp-FITC-A - CD7",
-      "Comp-PE-A - CD3",
-      "Comp-APC-A - CD45",
-      "Time",
-    ].map((e, i) => {
-      return { key: i, value: e, display: "lin" };
-    });
-    addToFiles(filedata, remoteFileAxes, url.split("/")[3].split(".")[0]);
-  });
-};
+});
 
 const getRemoteFiles = (): any[] => {
   return dataManager.remoteFiles.map((e) => {
@@ -207,6 +78,7 @@ const getRemoteFiles = (): any[] => {
       axes: e.channels,
       description: "...",
       lastModified: "...",
+      remoteData: e,
     };
   });
 };
@@ -227,19 +99,10 @@ function AddFileModal(props: {
     }
   }, []);
 
-  const [open, setOpen] = React.useState(false);
   const [onHover, setOnHover] = React.useState(-1);
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const addFile = (index: number) => {
-    const file = files[index];
+    const file: any = files[index];
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {
       newFile = staticFileReader(file.fromStatic);
@@ -250,6 +113,7 @@ function AddFileModal(props: {
         axes: file.axes.map((e: any) => e.value),
         data: file.data,
         plotTypes: file.axes.map((e: any) => e.display),
+        remoteData: file.remoteData,
       });
     }
     const fileID = dataManager.addNewFileToWorkspace(newFile);
