@@ -583,9 +583,7 @@ export default class PlotData extends ObserversFunctionality {
           //@ts-ignore
           axis[axisType + "Maximum"],
         ]);
-        console.log(axis);
       }
-      console.log("remoteData =", this.ranges);
       return;
     }
     if (this.file.name == "erica1") {
