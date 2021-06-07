@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, Divider } from "@material-ui/core";
@@ -11,6 +11,9 @@ import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
+import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
+import { useHistory } from "react-router";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -51,184 +54,69 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const generateRandomData = (
-  dimesionCount: number,
-  maxPoints: number,
-  l: number,
-  r: number
-) => {
-  if (l > r) throw Error("R must be greater than L");
-  const pointCount = Math.round(
-    Math.random() * (maxPoints / 2) + maxPoints / 2
-  );
-  const points: Array<Array<number>> = [];
-  for (let i = 0; i < pointCount; i++) {
-    let dimesion = [];
-    for (let j = 0; j < dimesionCount; j++) {
-      dimesion.push(Math.random() * (r - l) + l);
-    }
-    points.push(dimesion);
-  }
-  return points;
-};
+const staticFiles = [
+  "transduction_1",
+  "transduction_2",
+  "transduction_3",
+  "erica1",
+  "erica2",
+  "erica3",
+].map((e) => {
+  return {
+    title: e,
+    information: "...",
+    fromState: e,
+    lastModified: "X/X/X",
+  };
+});
 
-const generateRandomAxes = (dimesionCount: number) => {
-  const list = [];
-  for (let i: number = 0; i < dimesionCount; i++) {
-    list.push({
-      value: Math.random()
-        .toString(36)
-        .replace(/[^a-z]+/g, "")
-        .substr(0, Math.round(Math.random() * 5 + 2)),
-      key: i,
-      display: ["lin", "log"][Math.round(Math.random() * 1.5 - 0.5)],
-    });
-  }
-  return list;
-};
-
-const files = [
-  // {
-  //   title: "transduction_1",
-  //   information: "No sources where given to anonymize data. Ficticious name.",
-  //   fromStatic: "transduction_1",
-  //   lastModified: "01/03/2021",
-  // },
-  // {
-  //   title: "transduction_2",
-  //   information: "No sources where given to anonymize data. Ficticious name.",
-  //   fromStatic: "transduction_2",
-  //   lastModified: "01/03/2021",
-  // },
-  // {
-  //   title: "transduction_3",
-  //   information: "No sources where given to anonymize data. Ficticious name.",
-  //   fromStatic: "transduction_3",
-  //   lastModified: "01/03/2021",
-  // },
-  {
-    title: "Sample file 1",
-    information: "No sources were given to anonymize data.",
-    fromStatic: "erica1",
-    lastModified: "23/05/2020",
-  },
-  {
-    title: "Sample file 1",
-    information: "No sources were given to anonymize data.",
-    fromStatic: "erica2",
-    lastModified: "25/05/2020",
-  },
-  {
-    title: "Sample file 1",
-    information: "No sources were given to anonymize data.",
-    fromStatic: "erica3",
-    lastModified: "26/05/2020",
-  },
-  // {
-  //   title: "SmallRandomDataset.fcs",
-  //   information:
-  //     "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
-  //   data: generateRandomData(2, 100, 0, 100),
-  //   axes: generateRandomAxes(2),
-  //   lastModified: "Right now!",
-  // },
-  // {
-  //   title: "MediumRandomDataset.fcs",
-  //   information:
-  //     "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
-  //   data: generateRandomData(10, 1000, 0, 1),
-  //   axes: generateRandomAxes(10),
-  //   lastModified: "Right now!",
-  // },
-  // {
-  //   title: "LargeRandomDataset.fcs",
-  //   information:
-  //     "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
-  //   data: generateRandomData(200, 3000, -10000, 1000000),
-  //   axes: generateRandomAxes(200),
-  //   lastModified: "Right now!",
-  // },
-  // {
-  //   title: "ExtremelyLargeRandomDataset.fcs",
-  //   information:
-  //     "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
-  //   data: generateRandomData(200, 30000, -10000, 1000000),
-  //   axes: generateRandomAxes(200),
-  //   lastModified: "Right now!",
-  // },
-];
-
-const addToFiles = (data: Array<any>, axes: object[], title: string) => {
-  files.unshift({
-    title: title,
-    information: "Real anonymous FCS file",
-    //@ts-ignore
-    data: data,
-    //@ts-ignore
-    axes: axes,
-    lastModified: "??",
+const getRemoteFiles = (): any[] => {
+  return dataManager.remoteFiles.map((e) => {
+    return {
+      title: e.title,
+      id: e.id,
+      data: e.events,
+      axes: e.channels,
+      description: "...",
+      lastModified: "...",
+      remoteData: e,
+    };
   });
 };
-
-const getLocal = (filename: any, title: string) => {
-  addToFiles(filename.data, filename.axes, title);
-};
-
-const getRemotePrototypeFile = (url: string) => {
-  axios.get(url).then((response) => {
-    let text = response.data.slice(0, -3);
-    text += "]]";
-    const filedata = JSON.parse(text);
-    const remoteFileAxes = [
-      "FSC-A",
-      "SSC",
-      "Comp-FITC-A - CD7",
-      "Comp-PE-A - CD3",
-      "Comp-APC-A - CD45",
-      "Time",
-    ].map((e, i) => {
-      return { key: i, value: e, display: "lin" };
-    });
-    addToFiles(filedata, remoteFileAxes, url.split("/")[3].split(".")[0]);
-  });
-};
-
-// getLocal(transduction_1, "transduction_1");
-// getLocal(transduction_2, "transduction_2");
-// getLocal(transduction_3, "transduction_3");
-
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
-// );
 
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
+  const history = useHistory();
+  const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
+  let [files, setFiles] = React.useState(remoteWorkspace ? [] : staticFiles);
 
-  const [open, setOpen] = React.useState(false);
+  useEffect(() => {
+    if (remoteWorkspace && dataManager.isWorkspaceLoading()) {
+      dataManager.addObserver("setWorkspaceLoading", () => {
+        setFiles(getRemoteFiles());
+      });
+    }
+  }, []);
+
   const [onHover, setOnHover] = React.useState(-1);
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const addFile = (index: number) => {
-    const file = files[index];
+    const file: any = files[index];
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {
       newFile = staticFileReader(file.fromStatic);
+    } else {
+      newFile = new FCSFile({
+        name: file.title,
+        src: "remote",
+        axes: file.axes.map((e: any) => e.value),
+        data: file.data,
+        plotTypes: file.axes.map((e: any) => e.display),
+        remoteData: file.remoteData,
+      });
     }
     // else {
     //   newFile = new FCSFile({
@@ -254,7 +142,6 @@ function AddFileModal(props: {
     >
       <div className={classes.fileSelectModal}>
         <h2>Open FCS file</h2>
-
         <p
           style={{
             color: "#777",
@@ -266,15 +153,7 @@ function AddFileModal(props: {
           but here we have a selection of 3 real fcs files for you to play
           around!
         </p>
-
-        {/* <div
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
+        <div>
           <Button
             style={{
               backgroundColor: "#66d",
@@ -282,25 +161,17 @@ function AddFileModal(props: {
               fontSize: 13,
               marginLeft: 20,
             }}
-          >
-            Upload file (<BackupIcon fontSize="small"></BackupIcon>)
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#66d",
-              color: "white",
-              fontSize: 13,
-              marginLeft: 20,
-            }}
+            onClick={() =>
+              history.push("/experiment/" + dataManager.getRemoteWorkspaceID())
+            }
           >
             Upload file (Anonymous)
           </Button>
-        </div> */}
-
+        </div>
+        )
         <p>
           <b>Click on the file you want to open:</b>
         </p>
-
         <div
           style={{
             backgroundColor: "#fff",
@@ -313,7 +184,7 @@ function AddFileModal(props: {
             borderWidth: 0.3,
           }}
         >
-          {files.map((e, i) => {
+          {files.map((e: any, i: number) => {
             const divider =
               i == files.length - 1 ? null : (
                 <Divider className={classes.fileSelectDivider} />

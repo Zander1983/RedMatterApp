@@ -11,13 +11,18 @@ import StepLabel from "@material-ui/core/StepLabel";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
 import Avatar from "@material-ui/core/Avatar";
 
 import Done from "@material-ui/icons/Done";
 
 import formSteps from "./FormSteps";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
+import { useDispatch, useStore } from "react-redux";
+import axios from "axios";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -92,7 +97,13 @@ function getStepContent(step: number) {
   }
 }
 
-export default function PrototypeForm() {
+export default function PrototypeForm(props: {
+  workspaceID?: string;
+  onSend?: Function;
+}) {
+  const history = useHistory();
+  const store = useStore();
+  const dispatch = useDispatch();
   const classes = useStyles();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set<number>());
@@ -113,6 +124,9 @@ export default function PrototypeForm() {
       newSkipped.delete(activeStep);
     }
 
+    if (activeStep + 1 === steps.length && props.onSend != undefined) {
+      handleFormEnd(props.onSend);
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
   };
@@ -140,25 +154,43 @@ export default function PrototypeForm() {
     setActiveStep(0);
   };
 
+  const handleFormEnd = (input: string | Function) => {
+    if (typeof input === "function") {
+      input(store.getState().user.experiment);
+      return;
+    }
+    const workspaceID = input;
+    // This should create an experiment assigning this data to that experiment
+    const req = ExperimentApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).createExperiment(
+      { details: store.getState().user.experiment },
+      userManager.getToken(),
+      workspaceID
+    );
+    axios
+      .post(req.url, req.options.body, req.options)
+      .then((e) => {
+        snackbarService.showSnackbar(
+          "Your workspace was successfully created",
+          "success"
+        );
+      })
+      .catch((e) => {});
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
+  };
+
   return (
     <Grid
       style={{
-        justifyContent: "center",
-        display: "flex",
-        flexDirection: "column",
-        marginLeft: "auto",
-        marginRight: "auto",
-        backgroundColor: "#fafafa",
+        border: "solid 1px #ddd",
         borderRadius: 10,
-        marginBottom: 50,
-        textAlign: "center",
         paddingBottom: 10,
-        marginTop: 30,
+        marginTop: 10,
+        backgroundColor: "#fff",
       }}
-      md={12}
-      lg={9}
-      xl={6}
-      item={true}
     >
       <Stepper
         activeStep={activeStep}
@@ -242,27 +274,38 @@ export default function PrototypeForm() {
               }}
             >
               The information you've given us will help to better setup your
-              graphs
+              workspace
             </h4>
-            <Button
-              onClick={handleReset}
-              className={classes.emptyButton}
-              style={{
-                border: "solid 2px #379",
-                color: "#379",
-              }}
-            >
-              <Typography
-                style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
-              >
-                Reset
-              </Typography>
-            </Button>
-            <NavLink to="/graph" style={{ color: "white" }}>
-              <Button variant="contained" className={classes.marginButton}>
-                Start Graphing!
-              </Button>
-            </NavLink>
+            {props.onSend != undefined ? null : (
+              <>
+                <Button
+                  onClick={handleReset}
+                  className={classes.emptyButton}
+                  style={{
+                    border: "solid 2px #379",
+                    color: "#379",
+                  }}
+                >
+                  <Typography
+                    style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
+                  >
+                    Reset
+                  </Typography>
+                </Button>
+                <Button
+                  variant="contained"
+                  className={classes.marginButton}
+                  onClick={() => {
+                    if (props.workspaceID !== undefined) {
+                      handleFormEnd(props.workspaceID);
+                      history.push("/workspace/" + props.workspaceID);
+                    } else handleFormEnd(props.onSend);
+                  }}
+                >
+                  Workspaces
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <div>

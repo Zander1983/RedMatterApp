@@ -26,7 +26,6 @@ import Share from "@material-ui/icons/Share";
 import Language from "@material-ui/icons/Language";
 import Note from "@material-ui/icons/Note";
 import userManager from "Components/users/userManager";
-import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   topDialogBar: {
@@ -135,8 +134,8 @@ const featureList = [
     icon: <Cloud fontSize="large" style={{ color: "#66d" }} />,
   },
   {
-    title: "Shared workspaces",
-    description: "You may share your workspace with other researchers",
+    title: "Shared experiments",
+    description: "You may share your experiments with other researchers",
     icon: <Language fontSize="large" style={{ color: "#8a27b3" }} />,
   },
   {
@@ -206,54 +205,63 @@ const AppLandingPage = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files has never been easier
               </p>
-              <NavLink to="/questions">
+              <NavLink
+                to={
+                  "/" +
+                  (process.env.REACT_APP_NO_WORKSPACES === "true"
+                    ? "analyse"
+                    : "test-red-matter")
+                }
+              >
                 <Button
                   variant="contained"
                   size="large"
                   color="primary"
                   className={classes.marginButton}
                 >
-                  Test Red Matter
+                  {process.env.REACT_APP_NO_WORKSPACES === "true"
+                    ? "Start Analysing"
+                    : "Test Red Matter"}
                 </Button>
               </NavLink>{" "}
               {!isLoggedIn ? (
                 <div>
-                  {/*<div>
-                  <NavLink to="/login">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      color="primary"
-                      className={classes.marginButton}
-                    >
-                      Login
-                    </Button>
-                  </NavLink>{" "}
-                  <NavLink to="/register">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      color="primary"
-                      className={classes.marginButton}
-                    >
-                      Register
-                    </Button>
-                  </NavLink>
-                </div> */}
+                  <div>
+                    <NavLink to="/login">
+                      <Button
+                        variant="contained"
+                        size="large"
+                        color="primary"
+                        className={classes.marginButton}
+                      >
+                        Login
+                      </Button>
+                    </NavLink>{" "}
+                    <NavLink to="/register">
+                      <Button
+                        variant="contained"
+                        size="large"
+                        color="primary"
+                        className={classes.marginButton}
+                      >
+                        Register
+                      </Button>
+                    </NavLink>
+                  </div>
                 </div>
               ) : (
                 <div>
-                  {/* 
-                <NavLink to="/workspaces">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    color="primary"
-                    className={classes.marginButton}
+                  ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                  <NavLink to="/experiments">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      className={classes.marginButton}
                     >
-                    Workspaces
-                  </Button>
-                </NavLink> */}
+                      Experiments
+                    </Button>
+                  </NavLink>
                 </div>
               )}
               <br />

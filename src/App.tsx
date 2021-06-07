@@ -23,6 +23,7 @@ import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
+import Jobs from "Components/home/Jobs";
 
 const { Content } = Layout;
 
@@ -46,8 +47,11 @@ const router = [
     component: AppLandingPage,
   },
   {
-    path: "/questions",
-    component: PrototypeForm,
+    path: "/questions/:workspaceID",
+    component: ({ match }: any) => {
+      //@ts-ignore
+      return <PrototypeForm workspaceID={match.params.workspaceID} />;
+    },
   },
   {
     path: "/authentication/:tabId",
@@ -69,12 +73,25 @@ const router = [
     path: "/verify/:verifyStr",
     component: VerifyEmail,
   },
-  { path: "/graph", component: Plots },
-  { path: "/workspaces", component: Workspaces },
+  {
+    path:
+      "/" +
+      (process.env.REACT_APP_NO_WORKSPACES === "true"
+        ? "analyse"
+        : "test-red-matter"),
+    component: Plots,
+  },
+  {
+    path: "/experiment/:workspaceID/plots",
+    component: ({ match }: any) => (
+      <Plots workspaceID={match.params.workspaceID} />
+    ),
+  },
+  { path: "/experiments", component: Workspaces },
   { path: "/terms", component: Terms },
   {
-    path: "/workspace/:workspacesId",
-    component: ({ match }: any) => <Workspace id={match.params.workspacesId} />,
+    path: "/experiment/:workspaceID",
+    component: ({ match }: any) => <Workspace id={match.params.workspaceID} />,
   },
   {
     path: "/mailing-list",
@@ -84,7 +101,16 @@ const router = [
     path: "/credits",
     component: Credits,
   },
-];
+  {
+    path: "/jobs",
+    component: Jobs,
+  },
+].filter((e) => {
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    return e.path.indexOf("experiment") === -1;
+  }
+  return true;
+});
 
 const theme = createMuiTheme();
 

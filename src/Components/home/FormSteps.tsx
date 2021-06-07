@@ -1,30 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import Grid from "@material-ui/core/Grid";
-import { NavLink } from "react-router-dom";
-import Paper from "@material-ui/core/Paper";
-import InputBase from "@material-ui/core/InputBase";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import SearchIcon from "@material-ui/icons/Search";
-import DirectionsIcon from "@material-ui/icons/Directions";
-import InputLabel from "@material-ui/core/InputLabel";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { FormControlLabel } from "@material-ui/core";
 
 import { fluorophoresData, deviceData } from "./quesData";
+import { useDispatch, useStore } from "react-redux";
+import { store } from "redux/store";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -75,13 +58,18 @@ function getSteps() {
 }
 
 function FormDeviceType() {
-  const classes = useStyles();
-  const [deviceType, setDeviceType] = React.useState(null);
+  const store = useStore();
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.device;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [deviceType, setDeviceType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
-
-  const getData = () => {
-    return deviceType;
-  };
 
   return (
     <div
@@ -98,6 +86,13 @@ function FormDeviceType() {
         id="combo-box-demo"
         options={deviceData}
         getOptionLabel={(option) => option.value}
+        onChange={(e) =>
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            //@ts-ignore
+            payload: { formitem: { key: "device", value: e.target.outerText } },
+          })
+        }
         style={{ width: 400 }}
         renderInput={(params) => (
           <TextField {...params} label="Device" variant="outlined" />
@@ -112,7 +107,14 @@ function FormDeviceType() {
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
-            onChange={(e) => setNotFound(!notFound)}
+            onChange={(e) => {
+              setNotFound(!notFound);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                //@ts-ignore
+                payload: { formitem: { key: "device", value: null } },
+              });
+            }}
           />
         }
         label="Could not find my device"
@@ -137,8 +139,20 @@ function FormDeviceType() {
 }
 
 function FormCellType() {
-  const classes = useStyles();
-  const [cellType, setCellType] = React.useState(null);
+  const store = useStore();
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.cellType;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: 1, value: "Single cells" },
+        { id: 2, key: 2, value: "Heterogenous population" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [cellType, setCellType] = React.useState(defaultValue);
 
   const getData = () => {
     return cellType;
@@ -157,6 +171,15 @@ function FormCellType() {
       <Autocomplete
         value={cellType}
         id="combo-box-demo"
+        onChange={(e) => {
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            payload: {
+              //@ts-ignore
+              formitem: { key: "cellType", value: e.target.outerText },
+            },
+          });
+        }}
         options={[
           { id: 1, key: 1, value: "Single cells" },
           { id: 2, key: 2, value: "Heterogenous population" },
@@ -172,8 +195,21 @@ function FormCellType() {
 }
 
 function FormParticleSize() {
-  const classes = useStyles();
-  const [particleSize, setParticleSize] = React.useState(null);
+  const store = useStore();
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.particleSize;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: "Below 1µm", value: "Below 1µm" },
+        { id: 2, key: "1-3 µm", value: "1-3 µm" },
+        { id: 3, key: "2µm+", value: "2µm+" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [particleSize, setParticleSize] = React.useState(defaultValue);
 
   const getData = () => {
     return particleSize;
@@ -192,6 +228,15 @@ function FormParticleSize() {
       <Autocomplete
         id="combo-box-demo"
         value={particleSize}
+        onChange={(e) => {
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            payload: {
+              //@ts-ignore
+              formitem: { key: "particleSize", value: e.target.outerText },
+            },
+          });
+        }}
         options={[
           { id: 1, key: "Below 1µm", value: "Below 1µm" },
           { id: 2, key: "1-3 µm", value: "1-3 µm" },
@@ -208,8 +253,19 @@ function FormParticleSize() {
 }
 
 function FormFluorophores() {
-  const classes = useStyles();
-  const [fluorophoresType, setFluorophoresType] = React.useState(null);
+  const store = useStore();
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.fluorophoresCategory;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = fluorophoresData.filter(
+        (e) => e.value === defaultValue
+      )[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [fluorophoresType, setFluorophoresType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
 
   const getData = () => {
@@ -232,6 +288,18 @@ function FormFluorophores() {
         options={fluorophoresData}
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
+        onChange={(e) => {
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            payload: {
+              formitem: {
+                key: "fluorophoresCategory",
+                //@ts-ignore
+                value: e.target.outerText,
+              },
+            },
+          });
+        }}
         renderInput={(params) => (
           <TextField {...params} label="Fluorophores" variant="outlined" />
         )}
@@ -245,7 +313,16 @@ function FormFluorophores() {
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
-            onChange={(e) => setNotFound(!notFound)}
+            onChange={(e) => {
+              setNotFound(!notFound);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  //@ts-ignore
+                  formitem: { key: "fluorophoresCategory", value: null },
+                },
+              });
+            }}
           />
         }
         label="Could not find the fluorophores"
@@ -271,8 +348,14 @@ function FormFluorophores() {
 }
 
 function FormDescription() {
-  const classes = useStyles();
-  const [description, setdescription] = React.useState(null);
+  const store = useStore();
+  let defaultValue = null;
+  try {
+    let defaultValue = store.getState().user.experiment.description;
+    if (defaultValue === undefined) defaultValue = null;
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [description, setdescription] = React.useState(defaultValue);
 
   const getData = () => {
     return description;
@@ -284,6 +367,16 @@ function FormDescription() {
       id="outlined-multiline-static"
       label="Description"
       multiline
+      onChange={(e) => {
+        setdescription(e.target.value);
+        dispatch({
+          type: "EXPERIMENT_FORM_DATA",
+          payload: {
+            //@ts-ignore
+            formitem: { key: "description", value: e.target.value },
+          },
+        });
+      }}
       rows={6}
       placeholder="..."
       variant="outlined"

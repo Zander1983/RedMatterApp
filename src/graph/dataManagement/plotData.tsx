@@ -572,6 +572,26 @@ export default class PlotData extends ObserversFunctionality {
     if (typeof this.ranges === "object") {
       this.ranges = new Map();
     }
+    if (this.file.remoteData != undefined) {
+      const remoteData = this.file.remoteData;
+      for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
+        const axisType =
+          //@ts-ignore
+          axis.paramName.toUpperCase().indexOf("FSC") !== -1 ||
+          //@ts-ignore
+          axis.paramName.toUpperCase().indexOf("SSC") !== -1
+            ? "linear"
+            : "biexponential";
+        //@ts-ignore
+        this.ranges.set(axis.paramName, [
+          //@ts-ignore
+          axis[axisType + "Minimum"],
+          //@ts-ignore
+          axis[axisType + "Maximum"],
+        ]);
+      }
+      return;
+    }
     if (this.file.name == "erica1") {
       this.ranges.set("FSC-A", [0, 262144]);
       this.ranges.set("SSC", [0, 262144]);

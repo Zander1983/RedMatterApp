@@ -8,9 +8,14 @@ import Snackbar from "@material-ui/core/Snackbar";
 import Alert from "@material-ui/lab/Alert";
 
 import userManager from "Components/users/userManager";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import {
+  ExperimentApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import PrototypeForm from "Components/home/PrototypeForm";
+import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -34,11 +39,13 @@ function CreateWorkspaceModal(props: {
   created: Function;
   workspaces: string[];
 }): JSX.Element {
+  const dispatch = useDispatch();
   const classes = useStyles();
 
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
+  const [formData, setFormData] = React.useState(null);
 
   const createWorkspace = () => {
     const data = {
@@ -56,9 +63,25 @@ function CreateWorkspaceModal(props: {
       })
       .then((e) => {
         props.closeCall.f(props.closeCall.ref);
-        props.created();
+        props.created(e.data.id);
         setName("");
         setPrivateWorkspace(false);
+        const workspaceID = e.data.id;
+        // This should create an experiment assigning this data to that experiment
+        const req = ExperimentApiFetchParamCreator({
+          accessToken: userManager.getToken(),
+        }).createExperiment(
+          { details: formData },
+          userManager.getToken(),
+          workspaceID
+        );
+        axios
+          .post(req.url, req.options.body, req.options)
+          .then((e) => {})
+          .catch((e) => {});
+        dispatch({
+          type: "EXPERIMENT_FORM_DATA_CLEAR",
+        });
       })
       .catch((e) => {
         snackbarService.showSnackbar(
@@ -79,7 +102,18 @@ function CreateWorkspaceModal(props: {
         <div className={classes.modal}>
           <h2>Create workspace</h2>
 
-          <div>
+          <PrototypeForm
+            //@ts-ignore
+            onSend={(e) => {
+              setFormData(e);
+            }}
+          ></PrototypeForm>
+
+          <div
+            style={{
+              marginTop: 30,
+            }}
+          >
             <TextField
               variant="outlined"
               placeholder="Workspace name"
@@ -138,7 +172,10 @@ function CreateWorkspaceModal(props: {
             </Button>
             <Button
               variant="contained"
-              style={{ backgroundColor: "#43A047", color: "white" }}
+              style={{
+                backgroundColor: formData === null ? "#ddd" : "#43A047",
+                color: "white",
+              }}
               onClick={() => {
                 if (name === "" || name === undefined || name === null) {
                   snackbarService.showSnackbar(
@@ -156,6 +193,7 @@ function CreateWorkspaceModal(props: {
                 }
                 createWorkspace();
               }}
+              disabled={formData === null}
             >
               Confirm
             </Button>

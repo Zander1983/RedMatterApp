@@ -7,19 +7,18 @@ import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import WorkspaceCard from "./WorkspaceCard";
 import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
 
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
-const Workspaces = () => {
+const Workspaces = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-  if (!isLoggedIn) {
-    if (history.length > 0) {
-      history.goBack();
-    } else {
-      history.push("/");
-    }
+  if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/login");
+  }
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    history.replace("/");
   }
 
   const [workspaces, setWorkspaces] = React.useState([]);
@@ -38,7 +37,7 @@ const Workspaces = () => {
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Failed to find workspace information",
+          "Failed to find experiment information",
           "error"
         );
         userManager.logout();
@@ -51,6 +50,9 @@ const Workspaces = () => {
 
   React.useEffect(() => {
     fetchWorkspaces();
+    if (props.backFromQuestions) {
+      snackbarService.showSnackbar("Experiment created", "success");
+    }
   }, []);
 
   return !isLoggedIn ? (
@@ -63,9 +65,8 @@ const Workspaces = () => {
           f: handleClose,
           ref: setCreateWorkspaceModal,
         }}
-        created={() => {
+        created={(workspaceID: string) => {
           fetchWorkspaces();
-          snackbarService.showSnackbar("Workspace created", "success");
         }}
         workspaces={workspaces.map((e) => e.name)}
       />
@@ -107,7 +108,7 @@ const Workspaces = () => {
               }}
             >
               <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
-                Workspaces
+                Experiments
               </div>
               <Button
                 variant="contained"
@@ -138,7 +139,7 @@ const Workspaces = () => {
                 <div
                   style={{ textAlign: "center", width: "100%", padding: 50 }}
                 >
-                  There are no workspaces
+                  There are no experiments
                 </div>
               )}
             </Grid>

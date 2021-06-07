@@ -18,13 +18,11 @@ import ObserversFunctionality, {
 import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
+import axios from "axios";
+import { snackbarService } from "uno-material-ui";
+import userManager from "Components/users/userManager";
 
 const uuid = require("uuid");
-
-const workspaceResourcesURL = "https://suckdick.com/workspaces";
-const fileResourcesURL = "https://suckdick.com/files";
-const gateResourcesURL = "https://suckdick.com/gates";
-const plotResourcesURL = "https://suckdick.com/plots";
 
 type PlotID = string;
 type WorkspaceID = string;
@@ -185,7 +183,7 @@ class DataManager extends ObserversFunctionality {
         linkReconstructor.retrieve((workspaceJSON) => {
           this.rebuildWorkspaceFromJson(workspaceJSON);
         });
-      } else if (this.canLoadFromLocalStorage()) {
+      } else if (this.canLoadFromLocalStorage() && !this.isRemoteWorkspace()) {
         this.loadWorkspaceFromLocalStorage();
       }
     }
@@ -289,7 +287,7 @@ class DataManager extends ObserversFunctionality {
   clearWorkspace() {
     this.removeWorkspace();
     // Clears local storage
-    window.localStorage.removeItem("currentWorkspace");
+    window.localStorage.removeItem(this.lastLocalStorageSave);
     // Clears link shared
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
@@ -320,12 +318,19 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   saveWorkspaceToLocalStorage() {
     const currentWorkspace = this.getWorkspaceJSON();
-    window.localStorage.removeItem("currentWorkspace");
-    window.localStorage.setItem("currentWorkspace", this.getWorkspaceJSON());
+    if (this.lastLocalStorageSave != undefined) {
+      window.localStorage.removeItem(this.lastLocalStorageSave);
+    }
+    window.localStorage.setItem(
+      this.generateLocalStorageName(),
+      this.getWorkspaceJSON()
+    );
   }
 
   loadWorkspaceFromLocalStorage() {
-    const workspaceJSON = window.localStorage.getItem("currentWorkspace");
+    const workspaceJSON = window.localStorage.getItem(
+      this.generateLocalStorageName()
+    );
     this.rebuildWorkspaceFromJson(workspaceJSON);
   }
 
@@ -343,9 +348,27 @@ class DataManager extends ObserversFunctionality {
     /**/
   }
 
-  loading: boolean = false;
+  @publishDecorator()
   setWorkspaceLoading(loading: boolean) {
     this.loading = loading;
+  }
+
+  isWorkspaceLoading() {
+    return this.loading;
+  }
+
+  @publishDecorator()
+  setWorkspaceID(remoteWorkspaceID: string) {
+    this.remoteWorkspaceID = remoteWorkspaceID;
+    this.loadWorkspaceFilesFromRemote();
+  }
+
+  isRemoteWorkspace() {
+    return this.remoteWorkspaceID !== undefined;
+  }
+
+  getRemoteWorkspaceID() {
+    return this.remoteWorkspaceID;
   }
 
   /* 
@@ -356,6 +379,9 @@ class DataManager extends ObserversFunctionality {
   
   */
   private static instance: DataManager;
+  private loading: boolean = false;
+  private remoteWorkspaceID: string;
+  private lastLocalStorageSave: string;
 
   static getInstance(): DataManager {
     if (!DataManager.instance) {
@@ -364,6 +390,32 @@ class DataManager extends ObserversFunctionality {
     }
 
     return DataManager.instance;
+  }
+
+  remoteFiles: any[] = [];
+  private loadWorkspaceFilesFromRemote() {
+    if (this.remoteWorkspaceID === undefined) {
+      throw Error("Cannot load files without a remoteWorkspaceID");
+    }
+    this.setWorkspaceLoading(true);
+    axios
+      .get("/api/events/" + this.remoteWorkspaceID, {
+        params: {
+          workspaceId: this.remoteWorkspaceID,
+          token: userManager.getToken(),
+          organisationId: userManager.getOrganiztionID(),
+        },
+      })
+      .then((e) => {
+        this.remoteFiles = e.data;
+        this.setWorkspaceLoading(false);
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Could not load your remote files, please try again",
+          "error"
+        );
+      });
   }
 
   private setStandardObservers() {}
@@ -381,7 +433,17 @@ class DataManager extends ObserversFunctionality {
   }
 
   private canLoadFromLocalStorage() {
-    return window.localStorage.getItem("currentWorkspace") !== null;
+    return (
+      window.localStorage.getItem(this.generateLocalStorageName()) !== null
+    );
+  }
+
+  private generateLocalStorageName() {
+    this.lastLocalStorageSave = "currentWorkspace";
+    if (this.remoteWorkspaceID != undefined) {
+      this.lastLocalStorageSave += "-" + this.remoteWorkspaceID;
+    }
+    return this.lastLocalStorageSave;
   }
 }
 

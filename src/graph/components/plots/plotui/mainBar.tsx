@@ -188,7 +188,7 @@ export default function MainBar(props: any) {
       >
         Inverse Subpop
       </Button>
-      <Button
+      {/* <Button
         onClick={() => downloadCanvasAsImage()}
         style={{ ...classes.iconButton, marginLeft: 5 }}
       >
@@ -196,7 +196,7 @@ export default function MainBar(props: any) {
           fontSize="small"
           style={classes.iconButtonIcon}
         ></CameraAltIcon>
-      </Button>
+      </Button> */}
     </Grid>
   );
 }

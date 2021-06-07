@@ -8,6 +8,10 @@ import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
+import {
+  AuthenticationApiFetchParamCreator,
+  UserApiFetchParamCreator,
+} from "api_calls/nodejsback";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -51,7 +55,8 @@ const Login = (props: any) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("api/login", formData);
+      const req = AuthenticationApiFetchParamCreator().userLogin(formData);
+      const res = await axios.post(req.url, req.options.body, req.options);
       setLoading(false);
       const loginData = res.data;
       dispatch({
@@ -59,7 +64,11 @@ const Login = (props: any) => {
         payload: { user: { profile: loginData } },
       });
       snackbarService.showSnackbar("Logged in!", "success");
-      props.history.push("/workspaces");
+      if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+        props.history.push("/analyse");
+      } else {
+        props.history.push("/experiments");
+      }
     } catch (err) {
       setLoading(false);
       if (err.response === undefined) {

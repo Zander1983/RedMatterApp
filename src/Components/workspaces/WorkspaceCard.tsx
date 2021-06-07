@@ -18,7 +18,10 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback/api";
+import {
+  WorkspaceFilesApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
 const styles = {
@@ -42,12 +45,12 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
     axios
       .delete(fetchArgs.url, fetchArgs.options)
       .then((e) => {
-        snackbarService.showSnackbar("Workspace deleted", "success");
+        snackbarService.showSnackbar("Experiment deleted", "success");
         props.update();
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Failure deleting workspace, refresh the page and try again!",
+          "Failure deleting experiment, refresh the page and try again!",
           "error"
         );
         userManager.logout();
@@ -56,6 +59,20 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
 
   const fetchWorkspaceFiles = () => {
     setInitLoading(false);
+    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).workspaceFiles(
+      userManager.getOrganiztionID(),
+      props.data.id,
+      userManager.getToken()
+    );
+
+    axios
+      .get(fetchWorkspaces.url, fetchWorkspaces.options)
+      .then((e) => {
+        setFiles(e.data.files);
+      })
+      .catch((e) => {});
   };
 
   const [open, setOpen] = React.useState(false);
@@ -97,9 +114,12 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           f: handleClose,
           ref: setDeleteConfirmModal,
         }}
-        message={<h2>Are you sure you want to delete this workspace?</h2>}
+        message={<h2>Are you sure you want to delete this experiment?</h2>}
         options={{
-          yes: deleteWorkspace,
+          yes: () => {
+            setDeleteConfirmModal(false);
+            deleteWorkspace();
+          },
           no: () => {
             setDeleteConfirmModal(false);
           },
@@ -109,7 +129,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         <Card>
           <NavLink
             to={{
-              pathname: `/workspace/${props.data.id}`,
+              pathname: `/experiment/${props.data.id}`,
               state: { workspaceName: props.data.name },
             }}
           >
@@ -168,17 +188,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
             </CardContent>
           </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            {/* <Tooltip title="Edit workspace">
-              <Button
-                size="small"
-                color="primary"
-                startIcon={<EditIcon />}
-                variant="contained"
-              >
-                Edit
-              </Button>
-            </Tooltip> */}
-            <Tooltip title="Delete workspace">
+            <Tooltip title="Delete experiment">
               <Button
                 size="small"
                 color="secondary"

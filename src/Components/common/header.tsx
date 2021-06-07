@@ -90,19 +90,28 @@ const AppHeader = (props: any) => {
                   fontSize: 15,
                 }}
               >
-                v2.1.0
+                v2.0.7
               </b>
             </NavLink>
           </Typography>
-          <NavLink className={classes.topBarLink} to="/questions">
-            Test Red Matter
-          </NavLink>
+          {process.env.REACT_APP_NO_WORKSPACES !== "true" ? (
+            <NavLink className={classes.topBarLink} to="/test-red-matter">
+              Test Red Matter
+            </NavLink>
+          ) : null}
+          {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
+            <NavLink className={classes.topBarLink} to="/analyse">
+              Start Analysing
+            </NavLink>
+          ) : null}
 
           {isLoggedIn ? (
             <>
-              <NavLink className={classes.topBarLink} to="/workspaces">
-                Workspace
-              </NavLink>
+              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <NavLink className={classes.topBarLink} to="/experiments">
+                  Experiments
+                </NavLink>
+              )}
               <a className={classes.topBarLink} onClick={onLogout} href="/">
                 Logout
               </a>
@@ -110,7 +119,7 @@ const AppHeader = (props: any) => {
           ) : (
             <>
               <NavLink className={classes.topBarLink} to="/login">
-                Sign In
+                Login
               </NavLink>
               <NavLink className={classes.topBarLink} to="/register">
                 Register

@@ -90,9 +90,11 @@ const Register = (props: any) => {
       snackbarService.showSnackbar("Email verification sent!", "success");
       history.push("/verify");
     } catch (err) {
-      setLoading(false);
-      const errMsg = err.response.data.message;
-      snackbarService.showSnackbar(errMsg, "error");
+      try {
+        setLoading(false);
+        const errMsg = err.response.data.message;
+        snackbarService.showSnackbar(errMsg, "error");
+      } catch (e) {}
     }
   };
   return (

@@ -8,6 +8,7 @@ export interface FCSFileInput {
   data: Array<Array<number>>;
   label?: string;
   plotTypes?: string[];
+  remoteData?: any;
 }
 
 export default class FCSFile {
@@ -18,6 +19,7 @@ export default class FCSFile {
   data: Array<Array<number>> = [];
   label?: string = "";
   plotTypes?: string[] = [];
+  remoteData?: any = null;
 
   constructor(file: FCSFileInput) {
     this.id = dataManager.createID();
@@ -27,6 +29,8 @@ export default class FCSFile {
     this.name = file.name;
     this.axes = file.axes;
     this.data = file.data;
+
+    if (file.remoteData !== undefined) this.remoteData = file.remoteData;
 
     if (file.label !== undefined) {
       this.label = file.label;
