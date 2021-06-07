@@ -575,7 +575,13 @@ export default class PlotData extends ObserversFunctionality {
     if (this.file.remoteData != undefined) {
       const remoteData = this.file.remoteData;
       for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
-        const axisType = "lin" ? "linear" : "biexponential";
+        const axisType =
+          //@ts-ignore
+          axis.paramName.toUpperCase().indexOf("FSC") !== -1 ||
+          //@ts-ignore
+          axis.paramName.toUpperCase().indexOf("SSC") !== -1
+            ? "linear"
+            : "biexponential";
         //@ts-ignore
         this.ranges.set(axis.paramName, [
           //@ts-ignore
