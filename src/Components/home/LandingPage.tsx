@@ -249,9 +249,8 @@ const AppLandingPage = () => {
                     </NavLink>
                   </div>
                 </div>
-              ) : (
+              ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <div>
-                  ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <NavLink to="/experiments">
                     <Button
                       variant="contained"

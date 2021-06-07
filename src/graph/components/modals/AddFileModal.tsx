@@ -65,7 +65,7 @@ const staticFiles = [
   return {
     title: e,
     information: "...",
-    fromState: e,
+    fromStatic: e,
     lastModified: "X/X/X",
   };
 });
@@ -105,6 +105,7 @@ function AddFileModal(props: {
 
   const addFile = (index: number) => {
     const file: any = files[index];
+    console.log(file);
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {
       newFile = staticFileReader(file.fromStatic);
@@ -118,15 +119,6 @@ function AddFileModal(props: {
         remoteData: file.remoteData,
       });
     }
-    // else {
-    //   newFile = new FCSFile({
-    //     name: newFile.name,
-    //     src: "generated",
-    //     axes: newFile.axes.map((e) => e.value),
-    //     data: newFile.data,
-    //     plotTypes: newFile.axes.map((e) => e.display),
-    //   });
-    // }
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);
@@ -153,22 +145,6 @@ function AddFileModal(props: {
           but here we have a selection of 3 real fcs files for you to play
           around!
         </p>
-        <div>
-          <Button
-            style={{
-              backgroundColor: "#66d",
-              color: "white",
-              fontSize: 13,
-              marginLeft: 20,
-            }}
-            onClick={() =>
-              history.push("/experiment/" + dataManager.getRemoteWorkspaceID())
-            }
-          >
-            Upload file (Anonymous)
-          </Button>
-        </div>
-        )
         <p>
           <b>Click on the file you want to open:</b>
         </p>
