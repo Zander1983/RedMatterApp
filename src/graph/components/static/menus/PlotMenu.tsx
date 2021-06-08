@@ -8,6 +8,8 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
@@ -78,8 +80,22 @@ export default function PlotMenu() {
             <TableCell>Population</TableCell>
             <TableCell>Brute #</TableCell>
             <TableCell>Percentage</TableCell>
-            <TableCell>Mean X</TableCell>
-            <TableCell>Mean Y</TableCell>
+            <TableCell>
+              <Select
+              value='MedianX'
+              >
+                <MenuItem value='MedianX'>Median X</MenuItem>
+                <MenuItem value='MeanX'>Mean X</MenuItem>
+              </Select>
+            </TableCell>
+            <TableCell>
+              <Select
+              value='MedianY'
+              >
+                <MenuItem value='MedianY'>Median Y</MenuItem>
+                <MenuItem value='MeanY'>Mean X</MenuItem>
+              </Select>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
