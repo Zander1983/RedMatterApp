@@ -141,15 +141,18 @@ const Workspace = (props: any) => {
 
   const uploadFiles = (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
+    const allowedExtensions = ["fcs", "lmd"];
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
-      if (file.name.split(".")[1] !== "fcs") {
+      if (
+        !allowedExtensions.includes(file.name.split(".").pop().toLowerCase())
+      ) {
         snackbarService.showSnackbar(
           file.name.substring(0, 20) +
             (file.name.length > 20 ? "..." : "") +
             '"' +
-            'Is not a .fcs file: "',
+            'Is not a .fcs or .lmd file: "',
           "error"
         );
         continue;
@@ -476,7 +479,7 @@ const Workspace = (props: any) => {
                         id="file"
                         ref={inputFile}
                         multiple
-                        accept=".fcs"
+                        accept=".fcs, .lmd"
                         style={{ display: "none" }}
                         onChange={(e) => {
                           uploadFiles(e.target.files);
@@ -516,7 +519,7 @@ const Workspace = (props: any) => {
                                 padding: 5,
                               }}
                             >
-                              .fcs file
+                              .{e.label?.substr(-3).toLowerCase()} file
                             </b>
                             <div style={{ display: "inline", width: 10 }}>
                               <Button
@@ -600,7 +603,7 @@ const Workspace = (props: any) => {
                               marginRight: 10,
                             }}
                           >
-                            .fcs file
+                            file
                           </b>
                           {e.name}
                           <CircularProgress
