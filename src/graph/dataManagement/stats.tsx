@@ -67,7 +67,7 @@ export default class PlotStats {
     let yAxis = data.yAxis.sort((a,b)=>{
       return a-b;
     });
-    debugger
+    
     let xMedian = this.getMedianValue(xAxis);
     let yMedian = this.getMedianValue(yAxis);
 
