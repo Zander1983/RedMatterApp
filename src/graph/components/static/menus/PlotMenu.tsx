@@ -57,8 +57,7 @@ export default function PlotMenu() {
 
   const getDropdownValue = (e: string) => {
     let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.STATS;
-    let value = statObj[e];
-    return value;
+    return statObj[e];
   }
 
   const deletePlot = (plot: PlotData) => {
