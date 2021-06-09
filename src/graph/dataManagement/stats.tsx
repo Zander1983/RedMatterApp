@@ -78,10 +78,10 @@ export default class PlotStats {
     });
 
     let length = axisSort.length;
-    let n = Math.floor((length/2) - 1);
+    let n = Math.floor(length/2);
     if(length % 2 == 0)
     {
-      return this.parseNum(((axisSort[n]+axisSort[n+1])/2));
+      return this.parseNum(((axisSort[n]+axisSort[n-1])/2));
     }
     else
     {
