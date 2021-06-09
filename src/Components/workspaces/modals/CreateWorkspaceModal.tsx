@@ -15,13 +15,14 @@ import {
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import PrototypeForm from "Components/home/PrototypeForm";
+import PrototypeForm2 from "Components/home/PrototypeForm2";
 import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
     backgroundColor: "#fafafa",
     boxShadow: theme.shadows[6],
-    padding: 20,
+    padding: "0px 0 20px",
     width: "800px",
     position: "absolute",
     left: "50%",
@@ -53,6 +54,8 @@ function CreateWorkspaceModal(props: {
       organisationId: organizationId,
       isPrivate: privateWorkspace,
     };
+
+  
 
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -98,16 +101,33 @@ function CreateWorkspaceModal(props: {
         onClose={() => {
           props.closeCall.f(props.closeCall.ref);
         }}
+        disableScrollLock = {true}
+        style={{
+          overflow: 'scroll',
+          padding: '0'
+        }}
       >
+        
         <div className={classes.modal}>
-          <h2>Create workspace</h2>
+          <div
+            style = {{
+              backgroundColor: "#6666A9",
+              color: "#FFF",
+              padding: "20px 0 10px "
+            }}
+          >
+          <h2 style = {{
+              color: "#FFF",
+            }}>Create Experiment</h2>
+          </div>
+          
 
-          <PrototypeForm
+          <PrototypeForm2
             //@ts-ignore
             onSend={(e) => {
               setFormData(e);
             }}
-          ></PrototypeForm>
+          ></PrototypeForm2>
 
           <div
             style={{
@@ -179,14 +199,14 @@ function CreateWorkspaceModal(props: {
               onClick={() => {
                 if (name === "" || name === undefined || name === null) {
                   snackbarService.showSnackbar(
-                    "Workspace name cannot not be empty",
+                    "Experiment name cannot not be empty",
                     "warning"
                   );
                   return;
                 }
                 if (props.workspaces.includes(name)) {
                   snackbarService.showSnackbar(
-                    "A workspace with this name already exists",
+                    "An experiment with this name already exists",
                     "warning"
                   );
                   return;

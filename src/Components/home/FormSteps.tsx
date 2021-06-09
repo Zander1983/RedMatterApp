@@ -9,6 +9,8 @@ import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
 import { store } from "redux/store";
 
+
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -95,7 +97,11 @@ function FormDeviceType() {
         }
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Device" variant="outlined" />
+          <TextField required
+          helperText="This Field is Required"
+          {...params} 
+          label="Device" 
+          variant="outlined" />
         )}
       />
       <FormControlLabel
@@ -187,7 +193,8 @@ function FormCellType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Cell type" variant="outlined" />
+          <TextField required
+          helperText="This Field is Required" {...params} label="Cell type" variant="outlined" />
         )}
       />
     </div>
@@ -245,7 +252,8 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Cell size" variant="outlined" />
+          <TextField required
+          helperText="This Field is Required" {...params} label="Cell size" variant="outlined" />
         )}
       />
     </div>
@@ -301,7 +309,8 @@ function FormFluorophores() {
           });
         }}
         renderInput={(params) => (
-          <TextField {...params} label="Fluorophores" variant="outlined" />
+          <TextField required
+          helperText="This Field is Required" {...params} label="Fluorophores" variant="outlined" />
         )}
       />
       <FormControlLabel
@@ -363,6 +372,7 @@ function FormDescription() {
 
   return (
     <TextField
+      helperText="This Field is Optional"
       value={description}
       id="outlined-multiline-static"
       label="Description"
