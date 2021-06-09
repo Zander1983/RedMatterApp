@@ -22,6 +22,13 @@ import ObserverList from "graph/dataManagement/observeList";
 import PlotData from "graph/dataManagement/plotData";
 import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
 
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { getValue } from "@amcharts/amcharts4/.internal/core/utils/Type";
+
+interface Dictionary {
+  [key: string]: number
+} 
+
 const classes = {
   table: {},
 };
@@ -32,7 +39,9 @@ export default function PlotMenu() {
   const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
-
+  const [statsX, setStatsX] = React.useState(1);
+  const [statsY, setStatsY] = React.useState(1);
+ 
   const setupObservers = () => {
     observerListProvider.setup(
       (newList: ObserversFunctionality[]) => {
@@ -45,6 +54,12 @@ export default function PlotMenu() {
       ["plotUpdated"]
     );
   };
+
+  const getDropdownValue = (e: string) => {
+    let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.STATS;
+    let value = statObj[e];
+    return value;
+  }
 
   const deletePlot = (plot: PlotData) => {
     dataManager.removePlotFromWorkspace(plot.id);
@@ -82,18 +97,28 @@ export default function PlotMenu() {
             <TableCell>Percentage</TableCell>
             <TableCell>
               <Select
-              value='MedianX'
+              value={statsX}
+              onChange={(e) => {
+                setStatsX(parseInt(e.target.value.toString()));
+                } 
+              }
               >
-                <MenuItem value='MedianX'>Median X</MenuItem>
-                <MenuItem value='MeanX'>Mean X</MenuItem>
+                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map((e: string) => (
+                  <MenuItem value={getDropdownValue(e)}>{`${e}X`}</MenuItem>
+                ))}
               </Select>
             </TableCell>
             <TableCell>
               <Select
-              value='MedianY'
+              value={statsY}
+              onChange={(e) => {
+                setStatsY(parseInt(e.target.value.toString()));
+                } 
+              }
               >
-                <MenuItem value='MedianY'>Median Y</MenuItem>
-                <MenuItem value='MeanY'>Mean X</MenuItem>
+                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map((e: string) => (
+                  <MenuItem value={getDropdownValue(e)}>{`${e}Y`}</MenuItem>
+                ))}
               </Select>
             </TableCell>
           </TableRow>
@@ -102,7 +127,7 @@ export default function PlotMenu() {
           {plots.map((plot) => {
             const type =
               plot.xAxis === plot.yAxis ? "histogram" : "scatterplot";
-            let stats = statsProvider.getPlotStats(plot);
+            let stats = statsProvider.getPlotStats(plot, statsX, statsY);
             return (
               <TableRow key={plot.id}>
                 <TableCell>
@@ -175,12 +200,12 @@ export default function PlotMenu() {
                 <TableCell>
                   {type === "histogram" && plot.histogramAxis === "horizontal"
                     ? "~"
-                    : stats.meanX}
+                    : stats.statX}
                 </TableCell>
                 <TableCell>
                   {type === "histogram" && plot.histogramAxis === "vertical"
                     ? "~"
-                    : stats.meanY}
+                    : stats.statY}
                 </TableCell>
               </TableRow>
             );

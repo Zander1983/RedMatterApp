@@ -1,19 +1,39 @@
 import PlotData from "./plotData";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 export default class PlotStats {
   plot: PlotData;
 
-  getPlotStats(plot: PlotData) {
+  getPlotStats(plot: PlotData, statsX: number, statsY: number) {
     this.plot = plot;
-    const means = this.getMedians();
+    const stat = this.getStats(statsX, statsY);
     const pop = this.getPopulationStats();
     return {
-      meanX: means.x,
-      meanY: means.y,
+      statX: stat.x,
+      statY: stat.y,
       filePopulationSize: pop.fileSize,
       gatedFilePopulationSize: pop.plotSize,
       gatedFilePopulationPercentage: pop.percentage,
     };
+  }
+
+  private getStats(statX: number, statY: number)
+  {
+    const data = this.plot.getXandYData();
+    let x = this.getMedianOrMean(statX, data.xAxis);
+    let y = this.getMedianOrMean(statY, data.yAxis);
+    return { x: x, y: y};
+  }
+
+  private getMedianOrMean(val: number, axis: Array<number>)
+  {
+    switch(val)
+    {
+      case COMMON_CONSTANTS.DROPDOWNS.STATS.Mean:
+          return this.getMean(axis);
+      case COMMON_CONSTANTS.DROPDOWNS.STATS.Median:
+          return this.getMedianValue(axis);
+    }
   }
 
   private getPopulationStats() {
@@ -32,18 +52,11 @@ export default class PlotStats {
     };
   }
 
-  private getMeans() {
-    const data = this.plot.getXandYData();
-    let sumX = 0;
-    let sumY = 0;
-    data.xAxis.forEach((e) => (sumX += e));
-    data.yAxis.forEach((e) => (sumY += e));
-    let countX = data.xAxis.length;
-    let countY = data.yAxis.length;
-    let x: number = sumX / countX;
-    let y: number = sumY / countY;
-    
-    return { x: this.parseNum(x), y: this.parseNum(y) };
+  private getMean(axis: Array<number>) {
+    let sum = 0;
+    axis.forEach((e) => (sum += e));
+    let count = axis.length;
+    return  this.parseNum(sum / count);
   }
 
   private parseNum = (num: number) => {
@@ -58,33 +71,21 @@ export default class PlotStats {
     }
   };
 
-  private getMedians(){
-    const data = this.plot.getXandYData();
-    let xAxis = data.xAxis.sort((a,b)=>{
-      return a-b;
-    });
-
-    let yAxis = data.yAxis.sort((a,b)=>{
-      return a-b;
-    });
-    
-    let xMedian = this.getMedianValue(xAxis);
-    let yMedian = this.getMedianValue(yAxis);
-
-    return { x: this.parseNum(xMedian), y: this.parseNum(yMedian) };
-  }
-
   private getMedianValue(axis: Array<number>)
   {
-    let length = axis.length;
+    let axisSort = axis.sort((a,b)=>{
+          return a-b;
+    });
+
+    let length = axisSort.length;
+    let n = Math.floor((length/2) - 1);
     if(length % 2 == 0)
     {
-      let n = length/2;
-      return ((axis[n]+axis[n+1])/2);
+      return this.parseNum(((axisSort[n]+axisSort[n+1])/2));
     }
     else
     {
-      return axis[length/2];
+      return this.parseNum(axisSort[n]);
     }
   }
 }
