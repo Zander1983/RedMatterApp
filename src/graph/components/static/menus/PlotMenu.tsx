@@ -39,8 +39,8 @@ export default function PlotMenu() {
   const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
-  const [statsX, setStatsX] = React.useState(1);
-  const [statsY, setStatsY] = React.useState(1);
+  const [statsX, setStatsX] = React.useState(COMMON_CONSTANTS.DROPDOWNS.STATS.Median);
+  const [statsY, setStatsY] = React.useState(COMMON_CONSTANTS.DROPDOWNS.STATS.Median);
  
   const setupObservers = () => {
     observerListProvider.setup(
