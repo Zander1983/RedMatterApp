@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { snackbarService } from "uno-material-ui";
 import { Scrollbars } from "react-custom-scrollbars";
 import {
   Button,
@@ -16,6 +17,7 @@ import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import LinkReconstructor from "graph/dataManagement/reconstructors/linkReconstructor";
 import dataManager from "graph/dataManagement/dataManager";
+
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -105,7 +107,20 @@ function LinkShareModal(props: {
                   marginTop: -60,
                 }}
                 onClick={() => {
-                  navigator.clipboard.writeText(link);
+                  try{
+                    navigator.clipboard.writeText(link);
+                    snackbarService.showSnackbar(
+                      "Copied to clipboard.",
+                      "success"
+                    );
+                  }
+                  catch(e)
+                  {
+                    snackbarService.showSnackbar(
+                      "Failed to copy to clipboard. Please try again.",
+                      "error"
+                    );
+                  }
                 }}
               >
                 <FileCopyOutlinedIcon />
