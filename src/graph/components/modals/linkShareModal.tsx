@@ -18,7 +18,6 @@ import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import LinkReconstructor from "graph/dataManagement/reconstructors/linkReconstructor";
 import dataManager from "graph/dataManagement/dataManager";
 
-
 const useStyles = makeStyles((theme) => ({
   modal: {
     backgroundColor: "#fafafa",
@@ -54,6 +53,27 @@ function LinkShareModal(props: {
     link = linkReconstructor.store(dataManager.currentWorkspace);
   }
 
+  function copyToClipBoard() {
+    if (navigator.clipboard != undefined) {
+      navigator.clipboard.writeText(link).then(
+        function () {
+          snackbarService.showSnackbar("Copied to clipboard.", "success");
+        },
+        function (err) {
+          snackbarService.showSnackbar(
+            "Failed to copy to clipboard. Please try again.",
+            "error"
+          );
+        }
+      );
+    } else {
+      snackbarService.showSnackbar(
+        "This functionality doesn't works in this browser",
+        "warning"
+      );
+    }
+  }
+  
   return (
     <Modal
       open={props.open}
@@ -107,20 +127,7 @@ function LinkShareModal(props: {
                   marginTop: -60,
                 }}
                 onClick={() => {
-                  try{
-                    navigator.clipboard.writeText(link);
-                    snackbarService.showSnackbar(
-                      "Copied to clipboard.",
-                      "success"
-                    );
-                  }
-                  catch(e)
-                  {
-                    snackbarService.showSnackbar(
-                      "Failed to copy to clipboard. Please try again.",
-                      "error"
-                    );
-                  }
+                  copyToClipBoard();
                 }}
               >
                 <FileCopyOutlinedIcon />
