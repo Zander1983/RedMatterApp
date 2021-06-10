@@ -363,7 +363,11 @@ const Workspace = (props: any) => {
               </div>
               <Button
                 variant="contained"
-                style={{ backgroundColor: "#fafafa", maxHeight: 50 }}
+                style={{
+                  backgroundColor: "#fafafa",
+                  maxHeight: 50,
+                  visibility: workspaceData.files.length === 0 ? 'hidden' : 'visible',
+                }}
                 onClick={() =>
                   history.push("/experiment/" + props.id + "/plots")
                 }
