@@ -11,8 +11,6 @@ import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
-import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
-import userManager from "Components/users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -78,7 +76,10 @@ const getRemoteFiles = (): any[] => {
       axes: e.channels,
       description: "...",
       lastModified: "...",
-      remoteData: e,
+      remoteData: {
+        ...e,
+        events: null,
+      },
     };
   });
 };
