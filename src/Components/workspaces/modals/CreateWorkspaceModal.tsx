@@ -6,6 +6,11 @@ import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
 import Snackbar from "@material-ui/core/Snackbar";
 import Alert from "@material-ui/lab/Alert";
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 import userManager from "Components/users/userManager";
 import {
@@ -14,9 +19,10 @@ import {
 } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import { useDispatch, useStore} from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import PrototypeForm2 from "Components/home/PrototypeForm2";
-import { useDispatch } from "react-redux";
+import CreateExperimentDialog from "./CreateExperimentDialog";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -34,12 +40,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
+
 function CreateWorkspaceModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
   workspaces: string[];
 }): JSX.Element {
+  const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -47,6 +56,7 @@ function CreateWorkspaceModal(props: {
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
+  const [createExperimentDialog, setCreateExperimentDialog] = React.useState(false);
 
   const createWorkspace = () => {
     const data = {
@@ -54,7 +64,6 @@ function CreateWorkspaceModal(props: {
       organisationId: organizationId,
       isPrivate: privateWorkspace,
     };
-
   
 
     const fetchArgs = WorkspacesApiFetchParamCreator({
@@ -94,8 +103,39 @@ function CreateWorkspaceModal(props: {
       });
   };
 
+
+  
+
+  const handleSubmit = () => {
+    console.log("working handleSubmit")
+    console.log(Object.values(store.getState().user.experiment).every(item => item != null))
+  {/* WHAT THIS  Object.values(store.getState().user.experiment).every(item => item != null) MEANS
+      IS THAT WE IF EVERY VALUE OF THE STATE IS DIFFERENT OF NULL, THEN IT CAN GO ON, ELSE, FILL THE REQUIRED FIELDS
+   */}
+    if(Object.values(store.getState().user.experiment).every(item => item != null)){
+      // alert("All fields filled")
+      setCreateExperimentDialog(true)
+      console.log(createExperimentDialog)
+    } else { 
+      
+      alert("There are still some required fields empty")
+    }
+  };
+
+  const handleClose = (func: Function) => {
+    func(false);
+  };
+
   return (
     <div>
+      <CreateExperimentDialog
+        open = {createExperimentDialog}
+        closeCall={{
+          f: handleClose,
+          ref: setCreateExperimentDialog,
+        }}
+      />
+
       <Modal
         open={props.open}
         onClose={() => {
@@ -216,6 +256,12 @@ function CreateWorkspaceModal(props: {
               disabled={formData === null}
             >
               Confirm
+            </Button>
+            <Button
+            variant="contained"
+            style={{ backgroundColor: "#6666A9", color: "white" }}
+            onClick={() => {handleSubmit();}}>
+            Finish
             </Button>
           </div>
         </div>

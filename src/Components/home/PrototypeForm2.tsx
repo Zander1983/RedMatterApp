@@ -117,6 +117,8 @@ export default function PrototypeForm2(props: {
     return skipped.has(step);
   };
 
+
+
   const handleNext = () => {
     let newSkipped = skipped;
     if (isStepSkipped(activeStep)) {
@@ -200,6 +202,7 @@ export default function PrototypeForm2(props: {
             {/* //THIS IS THE MODAL FORM, EACH TYPOGRAPHY IS THE TITLE FOR THE SELECTION, AND 
             //GET STEPCONTENT(number) GETS THE CONTENT, AS YOU'D EXPECT */}
 
+            <form>
             {/* //DEVICE TYPE */}
             <Typography
               className={classes.instructions}
@@ -249,6 +252,11 @@ export default function PrototypeForm2(props: {
             </Typography>
 
             {getStepContent(4).component}
+            </form>
+
+            <Button onClick={() => {console.log(store.getState().user.experiment)}}>
+            PROBANDO MARIQUERAS
+            </Button>
 
             </div>
     </Grid>
