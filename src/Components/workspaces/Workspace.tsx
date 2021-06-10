@@ -366,7 +366,8 @@ const Workspace = (props: any) => {
                 style={{
                   backgroundColor: "#fafafa",
                   maxHeight: 50,
-                  visibility: workspaceData.files.length === 0 ? 'hidden' : 'visible',
+                  visibility:
+                    workspaceData?.files.length === 0 ? "hidden" : "visible",
                 }}
                 onClick={() =>
                   history.push("/experiment/" + props.id + "/plots")
