@@ -114,8 +114,9 @@ function Plots(props: { workspaceID: string }) {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] =
-    React.useState(false);
+  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
+    false
+  );
   const [loadModal, setLoadModal] = React.useState(
     props.workspaceID !== undefined
   );
@@ -525,7 +526,7 @@ function Plots(props: { workspaceID: string }) {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              {/* <Button
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -535,7 +536,7 @@ function Plots(props: { workspaceID: string }) {
                 }}
               >
                 Print Experiment
-              </Button> */}
+              </Button>
               <Button
                 variant="contained"
                 size="large"
