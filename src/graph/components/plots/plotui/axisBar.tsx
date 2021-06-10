@@ -79,10 +79,15 @@ export default function AxisBar(props: any) {
   };
 
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
-  const handleSelectEvent = (e: any, func: Function) => {
+  const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
     if (lastSelectEvent + 500 < new Date().getTime()) {
       func(e);
       setLastSelectEvent(new Date().getTime());
+    }
+
+    if(xHistogram || yHistogram)
+    {
+      setHistogram(axis, true);
     }
   };
 
@@ -123,7 +128,7 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             onChange={(e) =>
-              handleSelectEvent(e, (e: any) => setAxis("x", e.target.value))
+              handleSelectEvent(e, "x", (e: any) => setAxis("x", e.target.value))
             }
             disabled={isAxisDisabled("x")}
             value={xAxis}
@@ -187,7 +192,7 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             onChange={(e) =>
-              handleSelectEvent(e, (e: any) => setAxis("y", e.target.value))
+              handleSelectEvent(e, "y", (e: any) => setAxis("y", e.target.value))
             }
             disabled={isAxisDisabled("y")}
             value={yAxis}
