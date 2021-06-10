@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import Plot from "graph/renderers/plotRender";
 
 const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
@@ -10,6 +10,9 @@ const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
     if (!useCanvasCalled) {
       canvasRef = canvas.useCanvas(canvasRef);
       setUseCanvasCalled(true);
+    }
+    return () => {
+      canvas.setUseCanvasUsed(false);
     }
   }, []);
 

@@ -53,6 +53,11 @@ export default class Canvas {
 
   render() {}
 
+  setUseCanvasUsed(value: boolean)
+  {
+    this.useCanvasCalled = value;
+  }
+
   useCanvas(ref: any) {
     if (this.useCanvasCalled) {
       throw Error(
