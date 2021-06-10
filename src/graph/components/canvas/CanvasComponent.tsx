@@ -11,6 +11,9 @@ const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
       canvasRef = canvas.useCanvas(canvasRef);
       setUseCanvasCalled(true);
     }
+    return () => {
+      canvas.setUseCanvasUsed(false);
+    }
   }, []);
 
   const id = `canvas-${props.plotIndex}`;
