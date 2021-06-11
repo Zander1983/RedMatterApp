@@ -299,6 +299,12 @@ export interface ExperimentPayload {
    * @memberof ExperimentPayload
    */
   data?: any;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentPayload
+   */
+  name?: string;
 }
 /**
  *
@@ -1277,7 +1283,6 @@ export const ExperimentApiFetchParamCreator = function (
     createExperiment(
       body: ExperimentPayload,
       token: string,
-      workspaceId: string,
       options: any = {}
     ): FetchArgs {
       // verify required parameter 'body' is not null or undefined
@@ -1294,17 +1299,8 @@ export const ExperimentApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling createExperiment."
         );
       }
-      // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
-        throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling createExperiment."
-        );
-      }
-      const localVarPath = `/api/workspace/{workspaceId}/experiment`.replace(
-        `{${"workspaceId"}}`,
-        encodeURIComponent(String(workspaceId))
-      );
+      
+      const localVarPath = `/api/experiment`
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
@@ -1512,12 +1508,11 @@ export const ExperimentApiFp = function (configuration?: Configuration) {
     createExperiment(
       body: ExperimentPayload,
       token: string,
-      workspaceId: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2006> {
       const localVarFetchArgs = ExperimentApiFetchParamCreator(
         configuration
-      ).createExperiment(body, token, workspaceId, options);
+      ).createExperiment(body, token, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -1633,7 +1628,6 @@ export const ExperimentApiFactory = function (
       return ExperimentApiFp(configuration).createExperiment(
         body,
         token,
-        workspaceId,
         options
       )(fetch, basePath);
     },
@@ -1706,7 +1700,6 @@ export class ExperimentApi extends BaseAPI {
     return ExperimentApiFp(this.configuration).createExperiment(
       body,
       token,
-      workspaceId,
       options
     )(this.fetch, this.basePath);
   }
@@ -5141,7 +5134,7 @@ export const WorkspacesApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling appWorkspace."
         );
       }
-      const localVarPath = `/api/workspaces`;
+      const localVarPath = `/api/organization/${organisationId}/experiments`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "GET" }, options);
       const localVarHeaderParameter = {} as any;
@@ -5158,7 +5151,6 @@ export const WorkspacesApiFetchParamCreator = function (
       localVarUrlObj.query = Object.assign(
         {},
         localVarUrlObj.query,
-        localVarQueryParameter,
         options.query
       );
       // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943

@@ -32,8 +32,8 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((e) => {
-        e.data.workspaces.fileCount = "Loading...";
-        setWorkspaces(e.data.workspaces);
+        //e.data.workspaces.fileCount = "Loading...";
+        //setWorkspaces(e.data.workspaces);
       })
       .catch((e) => {
         snackbarService.showSnackbar(

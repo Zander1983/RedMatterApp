@@ -47,48 +47,28 @@ function CreateWorkspaceModal(props: {
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
 
-  const createWorkspace = () => {
-    const data = {
-      name,
-      organisationId: organizationId,
-      isPrivate: privateWorkspace,
-    };
-
-    const fetchArgs = WorkspacesApiFetchParamCreator({
+  const createExperiment = () => {
+    const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).createWorkspace(userManager.getToken(), data);
+    }).createExperiment(
+      { details: formData, name: name },
+      userManager.getToken()
+    );
     axios
-      .post(fetchArgs.url, data, {
-        headers: fetchArgs.options.headers,
-      })
-      .then((e) => {
+      .post(req.url, req.options.body, req.options)
+      .then((e) => {})
+      .catch((e) => {
         props.closeCall.f(props.closeCall.ref);
         props.created(e.data.id);
-        setName("");
-        setPrivateWorkspace(false);
-        const workspaceID = e.data.id;
-        // This should create an experiment assigning this data to that experiment
-        const req = ExperimentApiFetchParamCreator({
-          accessToken: userManager.getToken(),
-        }).createExperiment(
-          { details: formData },
-          userManager.getToken(),
-          workspaceID
-        );
-        axios
-          .post(req.url, req.options.body, req.options)
-          .then((e) => {})
-          .catch((e) => {});
-        dispatch({
-          type: "EXPERIMENT_FORM_DATA_CLEAR",
-        });
-      })
-      .catch((e) => {
         snackbarService.showSnackbar(
-          "Could not create workspace, reload the page and try again!",
+          "Could not create experiment, reload the page and try again!",
           "error"
         );
       });
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
+    
   };
 
   return (
@@ -191,7 +171,7 @@ function CreateWorkspaceModal(props: {
                   );
                   return;
                 }
-                createWorkspace();
+                createExperiment();
               }}
               disabled={formData === null}
             >
