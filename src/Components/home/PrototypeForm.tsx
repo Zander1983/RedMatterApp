@@ -79,7 +79,7 @@ function getSteps() {
     "Description",
   ];
 }
-
+//FUNCTION THAT GETS ALL THE COMBOBOXES FROM FORMSTEPS.TSX
 function getStepContent(step: number) {
   switch (step) {
     case 0:
@@ -96,8 +96,8 @@ function getStepContent(step: number) {
       throw Error("Unknown step");
   }
 }
-
-export default function PrototypeForm(props: {
+//THE COMPILED FORM 
+export default function PrototypeForm2(props: {
   workspaceID?: string;
   onSend?: Function;
 }) {
@@ -105,263 +105,79 @@ export default function PrototypeForm(props: {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [skipped, setSkipped] = React.useState(new Set<number>());
-  const steps = getSteps();
 
-  const isStepOptional = (step: number) => {
-    return getStepContent(step).optional;
-  };
-
-  const isStepSkipped = (step: number) => {
-    return skipped.has(step);
-  };
-
-  const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
-    }
-
-    if (activeStep + 1 === steps.length && props.onSend != undefined) {
-      handleFormEnd(props.onSend);
-    }
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleSkip = () => {
-    if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this,
-      // it should never occur unless someone's actively trying to break something.
-      throw new Error("You can't skip a step that isn't optional.");
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped((prevSkipped) => {
-      const newSkipped = new Set(prevSkipped.values());
-      newSkipped.add(activeStep);
-      return newSkipped;
-    });
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-  };
-
-  const handleFormEnd = (input: string | Function) => {
-    if (typeof input === "function") {
-      input(store.getState().user.experiment);
-      return;
-    }
-    const workspaceID = input;
-    // This should create an experiment assigning this data to that experiment
-    const req = ExperimentApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).createExperiment(
-      { details: store.getState().user.experiment },
-      userManager.getToken(),
-      workspaceID
-    );
-    axios
-      .post(req.url, req.options.body, req.options)
-      .then((e) => {
-        snackbarService.showSnackbar(
-          "Your workspace was successfully created",
-          "success"
-        );
-      })
-      .catch((e) => {});
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA_CLEAR",
-    });
-  };
 
   return (
     <Grid
       style={{
-        border: "solid 1px #ddd",
         borderRadius: 10,
         paddingBottom: 10,
         marginTop: 10,
-        backgroundColor: "#fff",
+        backgroundColor: "#FAFAFA",
       }}
     >
-      <Stepper
-        activeStep={activeStep}
-        style={{
-          backgroundColor: "#66a",
-          borderTopRightRadius: 10,
-          borderTopLeftRadius: 10,
-        }}
-      >
-        {steps.map((label, index) => {
-          const stepProps: { completed?: boolean } = {};
-          const labelProps: { optional?: React.ReactNode } = {};
-          if (isStepOptional(index)) {
-            labelProps.optional = (
-              <Typography
-                variant="caption"
-                style={{
-                  color: "white",
-                  fontSize: 13,
-                  fontFamily: "Quicksand",
-                }}
-              ></Typography>
-            );
-          }
-          if (isStepSkipped(index)) {
-            stepProps.completed = false;
-          }
-          return (
-            <Step key={label} {...stepProps}>
-              <StepLabel
-                {...labelProps}
-                icon={
-                  <Avatar
-                    className={classes.avatar}
-                    style={{
-                      background:
-                        activeStep > index
-                          ? "#eee"
-                          : activeStep == index
-                          ? "#fff"
-                          : "#aad",
-                    }}
-                  >
-                    {activeStep > index ? (
-                      <Done
-                        fontSize="small"
-                        style={{ color: "#333", fontSize: 15 }}
-                      />
-                    ) : (
-                      <b></b>
-                    )}
-                  </Avatar>
-                }
-              >
-                <b
-                  style={{
-                    color: activeStep === index ? "#fff" : "#ddf",
-                    fontWeight: activeStep === index ? 700 : 400,
-                    fontFamily: "Quicksand",
-                  }}
-                >
-                  {label}
-                </b>
-              </StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>
-      <div>
-        {activeStep === steps.length ? (
-          <div>
-            <h1 style={{ fontFamily: "Quicksand", marginTop: 30 }}>
-              All steps completed!
-            </h1>
-            <h4
-              style={{
-                fontFamily: "Quicksand",
-                marginTop: -10,
-                marginBottom: 30,
-                color: "#777",
-              }}
-            >
-              The information you've given us will help to better setup your
-              workspace
-            </h4>
-            {props.onSend != undefined ? null : (
-              <>
-                <Button
-                  onClick={handleReset}
-                  className={classes.emptyButton}
-                  style={{
-                    border: "solid 2px #379",
-                    color: "#379",
-                  }}
-                >
-                  <Typography
-                    style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
-                  >
-                    Reset
-                  </Typography>
-                </Button>
-                <Button
-                  variant="contained"
-                  className={classes.marginButton}
-                  onClick={() => {
-                    if (props.workspaceID !== undefined) {
-                      handleFormEnd(props.workspaceID);
-                      history.push("/workspace/" + props.workspaceID);
-                    } else handleFormEnd(props.onSend);
-                  }}
-                >
-                  Workspaces
-                </Button>
-              </>
-            )}
-          </div>
-        ) : (
-          <div>
+      <div style={{
+            fontFamily: "Quicksand",
+            marginTop: -10,
+            marginBottom: 30,
+            color: "#777",
+          }}>
+            {/* //THIS IS THE MODAL FORM, EACH TYPOGRAPHY IS THE TITLE FOR THE SELECTION, AND 
+            //GET STEPCONTENT(number) GETS THE CONTENT, AS YOU'D EXPECT */}
+
+            <form>
+            {/* //DEVICE TYPE */}
             <Typography
               className={classes.instructions}
               style={{ marginTop: 20 }}
             >
-              <h3>{getStepContent(activeStep).title}</h3>
+              <h3>{getStepContent(0).title}</h3>
             </Typography>
 
-            {getStepContent(activeStep).component}
+            {getStepContent(0).component}
 
-            <div
-              style={{
-                marginTop: 30,
-              }}
+            {/* //TYPE OF CELL TO MEASURE */}
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 20 }}
             >
-              <Divider style={{ margin: 10 }}></Divider>
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                className={classes.emptyButton}
-                style={{
-                  borderColor: activeStep === 0 ? "#ddd" : "#66a",
-                }}
-              >
-                <Typography
-                  style={{
-                    fontSize: 15,
-                    color: activeStep === 0 ? "#ddd" : "#66a",
-                    fontWeight: 500,
-                  }}
-                >
-                  Back
-                </Typography>
-              </Button>
-              {isStepOptional(activeStep) && (
-                <Button
-                  variant="contained"
-                  onClick={handleSkip}
-                  className={classes.filledButton}
-                >
-                  Skip
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                className={classes.filledButton}
-              >
-                {activeStep === steps.length - 1 ? "Finish" : "Next"}
-              </Button>
+            <h3>{getStepContent(1).title}</h3>
+            </Typography>
+
+            {getStepContent(1).component}
+
+            {/* //PARTICLE SIZE */}
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 20 }}
+            >
+            <h3>{getStepContent(2).title}</h3>
+            </Typography>
+
+            {getStepContent(2).component}
+
+            {/* //FLUOROSPHORES CATEGORY */}
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 20 }}
+            >
+            <h3>{getStepContent(3).title}</h3>
+            </Typography>
+
+            {getStepContent(3).component}
+
+            {/* DESCRIPTION */}
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 20 }}
+            >
+            <h3>{getStepContent(4).title}</h3>
+            </Typography>
+
+            {getStepContent(4).component}
+            </form>
+
             </div>
-          </div>
-        )}
-      </div>
     </Grid>
   );
 }

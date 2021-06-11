@@ -21,7 +21,6 @@ import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore} from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
-import PrototypeForm2 from "Components/home/PrototypeForm2";
 import CreateExperimentDialog from "./CreateExperimentDialog";
 
 const useStyles = makeStyles((theme) => ({
@@ -191,12 +190,12 @@ const createExperimentFromSummary  = (func: Function) => {
           </div>
           
 
-          <PrototypeForm2
+          <PrototypeForm
             //@ts-ignore
             onSend={(e) => {
               setFormData(e);
             }}
-          ></PrototypeForm2>
+          ></PrototypeForm>
 
           <div
             style={{
