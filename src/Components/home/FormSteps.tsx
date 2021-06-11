@@ -136,7 +136,7 @@ function FormDeviceType() {
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your device and we will add it to our database!
           </p>
         </div>
@@ -348,7 +348,7 @@ function FormFluorophores() {
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your fluorophores and we will add it to our
             database!
           </p>
@@ -389,13 +389,12 @@ function FormDescription() {
           },
         });
       }}
-      rowsMax={4}
       size="small"
       placeholder="..."
       variant="outlined"
       style={{
         marginTop: 5,
-        width: 600,
+        width: 400,
       }}
     />
   );

@@ -11,6 +11,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
 
 import userManager from "Components/users/userManager";
 import {
@@ -35,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "-400px",
     marginTop: "-150px",
     textAlign: "center",
-    borderRadius: 10,
+    borderRadius: 20,
   },
 }));
 
@@ -206,7 +208,7 @@ const createExperimentFromSummary  = (func: Function) => {
             style = {{
               backgroundColor: "#6666A9",
               color: "#FFF",
-              padding: "2px 0 1px",
+              padding: "6px 0 10px",
             }}
           >
           <h2 style = {{
@@ -227,6 +229,22 @@ const createExperimentFromSummary  = (func: Function) => {
               marginTop: -15,
             }}
           >
+            <Grid container spacing={3}>
+                    <Grid item xs={5}>
+                    <Typography 
+                        style={
+                            {marginTop: 0,
+                             textAlign: 'left',
+                             paddingLeft: 60,
+                             paddingRight: 60
+                            }
+                    }>
+                        <h4>Your Experiment's Name</h4>
+                    </Typography>
+                    </Grid>
+                    </Grid>
+                    <Grid container spacing={3}>
+                    <Grid item xs={12}>
             <TextField
             size="small"
               variant="outlined"
@@ -237,9 +255,13 @@ const createExperimentFromSummary  = (func: Function) => {
               }}
               value={name}
               style={{
-                width: "50%",
+                width: "100%",
+                paddingLeft: 60,
+                paddingRight: 60
               }}
             ></TextField>
+            </Grid>
+            </Grid>
           </div>
 
           <FormControlLabel
