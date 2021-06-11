@@ -59,9 +59,10 @@ function getSteps() {
   ];
 }
 
+
 function FormDeviceType() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.device;
   try {
     let defaultValue = store.getState().user.experiment.device;
     if (defaultValue === undefined) defaultValue = null;
@@ -84,24 +85,21 @@ function FormDeviceType() {
       }}
     >
       <Autocomplete
-        value={deviceType}
         id="combo-box-demo"
         options={deviceData}
-        getOptionLabel={(option) => option.value}
-        onChange={(e) =>
+        onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
-            //@ts-ignore
-            payload: { formitem: { key: "device", value: e.target.outerText } },
-          })
-        }
+            payload: {
+              //@ts-ignore
+              formitem: { key: "device", value: e.target.outerText },
+            },
+          });
+        }}
+        getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required
-          helperText="This Field is Required"
-          {...params} 
-          label="Device" 
-          variant="outlined" />
+          <TextField required {...params} label="Device Type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
@@ -174,9 +172,9 @@ function FormCellType() {
         marginTop: 30,
       }}
     >
+      <form>
       <Autocomplete
-        value={cellType}
-        id="combo-box-demo"
+        id="cell"
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
@@ -193,17 +191,17 @@ function FormCellType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required
-          helperText="This Field is Required" {...params} label="Cell type" variant="outlined" />
+          <TextField required {...params} label="Cell type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
+      </form>
     </div>
   );
 }
 
 function FormParticleSize() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.particleSize;
   try {
     let defaultValue = store.getState().user.experiment.particleSize;
     if (defaultValue === undefined) defaultValue = null;
@@ -233,8 +231,8 @@ function FormParticleSize() {
       }}
     >
       <Autocomplete
-        id="combo-box-demo"
-        value={particleSize}
+        id="particle"
+        //value={particleSize}
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
@@ -252,8 +250,7 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required
-          helperText="This Field is Required" {...params} label="Cell size" variant="outlined" />
+          <TextField required {...params} label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
     </div>
@@ -262,7 +259,7 @@ function FormParticleSize() {
 
 function FormFluorophores() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.fluorophoresCategory;
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
@@ -291,26 +288,25 @@ function FormFluorophores() {
       }}
     >
       <Autocomplete
-        value={fluorophoresType}
-        id="combo-box-demo"
-        options={fluorophoresData}
-        getOptionLabel={(option) => option.value}
-        style={{ width: 400 }}
+        //value={fluorophoresType}
+        id="fluorosphores"
+        
+        
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
             payload: {
-              formitem: {
-                key: "fluorophoresCategory",
-                //@ts-ignore
-                value: e.target.outerText,
-              },
+              //@ts-ignore
+              formitem: { key: "fluorophoresCategory", value: e.target.outerText },
             },
           });
         }}
+
+        options={fluorophoresData}
+        getOptionLabel={(option) => option.value}
+        style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required
-          helperText="This Field is Required" {...params} label="Fluorophores" variant="outlined" />
+          <TextField required {...params} label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
@@ -358,7 +354,7 @@ function FormFluorophores() {
 
 function FormDescription() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.formDescription;
   try {
     let defaultValue = store.getState().user.experiment.description;
     if (defaultValue === undefined) defaultValue = null;

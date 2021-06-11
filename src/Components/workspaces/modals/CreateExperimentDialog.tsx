@@ -7,9 +7,21 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { useDispatch, useStore} from "react-redux";
 
+
+import userManager from "Components/users/userManager";
+import {
+  ExperimentApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
+
+//THIS COMPONENT IS A SUMMARY SO THE USER CAN SEE THEIR EXPERIMENT SETTINGS BERFORE PROCEEDING
 function CreateExperimentDialog(props: {
     open: boolean;
+    //PROP TO CLOSE DIAGLOG
     closeCall: { f: Function; ref: Function };
+    name: string;
+    //THE FUNCTION WE PASSED FROM CREATEWORKSPACEMODAL TO CREATE THE EXPERIMENT FROM THIS COMPONENT
+    sendFunction: { f: Function; ref: Function };
   }): JSX.Element {
     const store = useStore();
     const dispatch = useDispatch();
@@ -22,7 +34,6 @@ function CreateExperimentDialog(props: {
     const handleClose = () => {
       setOpen(false);
     };
-  
     return (
       <div>
         <Button variant="outlined" color="primary" onClick={handleClickOpen}>
@@ -47,11 +58,16 @@ function CreateExperimentDialog(props: {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose} color="primary">
-              Disagree
+            <Button onClick={() => {
+                props.closeCall.f(props.closeCall.ref);
+              }} color="primary">
+              Change
             </Button>
-            <Button onClick={handleClose} color="primary" autoFocus>
-              Agree
+            <Button onClick={() => {
+                props.sendFunction.f(props.sendFunction.ref);
+                props.closeCall.f(props.closeCall.ref);
+              }} color="primary" autoFocus>
+              Create Experiment
             </Button>
           </DialogActions>
         </Dialog>

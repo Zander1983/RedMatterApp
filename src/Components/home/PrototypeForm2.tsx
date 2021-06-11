@@ -79,7 +79,7 @@ function getSteps() {
     "Description",
   ];
 }
-
+//FUNCTION THAT GETS ALL THE COMBOBOXES FROM FORMSTEPS.TSX
 function getStepContent(step: number) {
   switch (step) {
     case 0:
@@ -96,7 +96,7 @@ function getStepContent(step: number) {
       throw Error("Unknown step");
   }
 }
-
+//THE COMPILED FORM 
 export default function PrototypeForm2(props: {
   workspaceID?: string;
   onSend?: Function;
@@ -105,84 +105,7 @@ export default function PrototypeForm2(props: {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [skipped, setSkipped] = React.useState(new Set<number>());
-  const steps = getSteps();
 
-  const isStepOptional = (step: number) => {
-    return getStepContent(step).optional;
-  };
-
-  const isStepSkipped = (step: number) => {
-    return skipped.has(step);
-  };
-
-
-
-  const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
-    }
-
-    if (activeStep + 1 === steps.length && props.onSend != undefined) {
-      handleFormEnd(props.onSend);
-    }
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleSkip = () => {
-    if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this,
-      // it should never occur unless someone's actively trying to break something.
-      throw new Error("You can't skip a step that isn't optional.");
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped((prevSkipped) => {
-      const newSkipped = new Set(prevSkipped.values());
-      newSkipped.add(activeStep);
-      return newSkipped;
-    });
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-  };
-
-  const handleFormEnd = (input: string | Function) => {
-    if (typeof input === "function") {
-      input(store.getState().user.experiment);
-      return;
-    }
-    const workspaceID = input;
-    // This should create an experiment assigning this data to that experiment
-    const req = ExperimentApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).createExperiment(
-      { details: store.getState().user.experiment },
-      userManager.getToken(),
-      workspaceID
-    );
-    axios
-      .post(req.url, req.options.body, req.options)
-      .then((e) => {
-        snackbarService.showSnackbar(
-          "Your workspace was successfully created",
-          "success"
-        );
-      })
-      .catch((e) => {});
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA_CLEAR",
-    });
-  };
 
   return (
     <Grid
@@ -253,10 +176,6 @@ export default function PrototypeForm2(props: {
 
             {getStepContent(4).component}
             </form>
-
-            <Button onClick={() => {console.log(store.getState().user.experiment)}}>
-            PROBANDO MARIQUERAS
-            </Button>
 
             </div>
     </Grid>

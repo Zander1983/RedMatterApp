@@ -102,29 +102,56 @@ function CreateWorkspaceModal(props: {
         );
       });
   };
-
-
   
-
+  
+//THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG 
   const handleSubmit = () => {
-    console.log("working handleSubmit")
-    console.log(Object.values(store.getState().user.experiment).every(item => item != null))
-  {/* WHAT THIS  Object.values(store.getState().user.experiment).every(item => item != null) MEANS
-      IS THAT WE IF EVERY VALUE OF THE STATE IS DIFFERENT OF NULL, THEN IT CAN GO ON, ELSE, FILL THE REQUIRED FIELDS
-   */}
-    if(Object.values(store.getState().user.experiment).every(item => item != null)){
+   if (name === "" || name === undefined || name === null) {
+    snackbarService.showSnackbar(
+      "Experiment name cannot not be empty",
+      "warning"
+    );
+    return;
+  }
+
+
+   if (props.workspaces.includes(name)) {
+    snackbarService.showSnackbar(
+      "An experiment with this name already exists",
+      "warning"
+    );
+    return;
+  }
+
+  const valuesToCheck = {
+    1: store.getState().user.experiment.device,
+    2: store.getState().user.experiment.cellType,
+    3: store.getState().user.experiment.particleSize,
+    4: store.getState().user.experiment.fluorophoresCategory
+  }
+   //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+    if(Object.values(valuesToCheck).every(item => item != null)){
       // alert("All fields filled")
       setCreateExperimentDialog(true)
       console.log(createExperimentDialog)
     } else { 
-      
-      alert("There are still some required fields empty")
+      snackbarService.showSnackbar(
+        "There are still some required fields empty", "error"
+    );
+    return;
     }
+    //SET THE FROM DATA STATE SO WE CAN CREATE THE EXPERIMENT FROM THE CREATEWORKSPACE FUNCTION
+    setFormData(store.getState().user.experiment);
   };
+
 
   const handleClose = (func: Function) => {
     func(false);
   };
+  //FUNCTION THAT WILL BE PASSED AS A PROP TO THE SUMMARY SO WE CAN CREATE THE EXPERIMENT FROM THERE 
+const createExperimentFromSummary  = (func: Function) => {
+  func();
+}
 
   return (
     <div>
@@ -134,13 +161,15 @@ function CreateWorkspaceModal(props: {
           f: handleClose,
           ref: setCreateExperimentDialog,
         }}
+        name = {name}
+        sendFunction ={{
+          f: createExperimentFromSummary,
+          ref: createWorkspace,
+        }}
       />
 
       <Modal
         open={props.open}
-        onClose={() => {
-          props.closeCall.f(props.closeCall.ref);
-        }}
         disableScrollLock = {true}
         style={{
           overflow: 'scroll',
@@ -229,33 +258,6 @@ function CreateWorkspaceModal(props: {
               }}
             >
               Cancel
-            </Button>
-            <Button
-              variant="contained"
-              style={{
-                backgroundColor: formData === null ? "#ddd" : "#43A047",
-                color: "white",
-              }}
-              onClick={() => {
-                if (name === "" || name === undefined || name === null) {
-                  snackbarService.showSnackbar(
-                    "Experiment name cannot not be empty",
-                    "warning"
-                  );
-                  return;
-                }
-                if (props.workspaces.includes(name)) {
-                  snackbarService.showSnackbar(
-                    "An experiment with this name already exists",
-                    "warning"
-                  );
-                  return;
-                }
-                createWorkspace();
-              }}
-              disabled={formData === null}
-            >
-              Confirm
             </Button>
             <Button
             variant="contained"
