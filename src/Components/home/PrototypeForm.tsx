@@ -106,8 +106,8 @@ export default function PrototypeForm2(props : {
         <Grid style={
             {
                 borderRadius: 10,
-                paddingBottom: 10,
-                marginTop: 10,
+                paddingBottom: 0,
+                marginTop: 0,
                 backgroundColor: "#FAFAFA"
             }
         }>
@@ -129,9 +129,9 @@ export default function PrototypeForm2(props : {
                         style={
                             {marginTop: 20}
                     }>
-                        <h3>{
+                        <h4>{
                             getStepContent(0).title
-                        }</h3>
+                        }</h4>
                     </Typography>
 
                     {
@@ -143,11 +143,11 @@ export default function PrototypeForm2(props : {
                             classes.instructions
                         }
                         style={
-                            {marginTop: 20}
+                            {marginTop: 0}
                     }>
-                        <h3>{
+                        <h4>{
                             getStepContent(1).title
-                        }</h3>
+                        }</h4>
                     </Typography>
 
                     {
@@ -159,11 +159,11 @@ export default function PrototypeForm2(props : {
                             classes.instructions
                         }
                         style={
-                            {marginTop: 20}
+                            {marginTop: 10}
                     }>
-                        <h3>{
+                        <h4>{
                             getStepContent(2).title
-                        }</h3>
+                        }</h4>
                     </Typography>
 
                     {
@@ -175,11 +175,11 @@ export default function PrototypeForm2(props : {
                             classes.instructions
                         }
                         style={
-                            {marginTop: 20}
+                            {marginTop: 10}
                     }>
-                        <h3>{
+                        <h4>{
                             getStepContent(3).title
-                        }</h3>
+                        }</h4>
                     </Typography>
 
                     {
@@ -191,11 +191,11 @@ export default function PrototypeForm2(props : {
                             classes.instructions
                         }
                         style={
-                            {marginTop: 20}
+                            {marginTop: 0}
                     }>
-                        <h3>{
+                        <h4>{
                             getStepContent(4).title
-                        }</h3>
+                        }</h4>
                     </Typography>
 
                     {

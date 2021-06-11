@@ -81,7 +81,7 @@ function FormDeviceType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
@@ -99,15 +99,18 @@ function FormDeviceType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} label="Device Type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: 0,
         }}
         control={
           <Checkbox
+          style={{
+            transform: "scale(0.6)",
+        }}
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
@@ -121,7 +124,7 @@ function FormDeviceType() {
             }}
           />
         }
-        label="Could not find my device"
+        label={<span style={{ fontSize: '13px' }}>Could not find my device</span>}
       />
       {notFound ? (
         <div
@@ -169,7 +172,7 @@ function FormCellType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <form>
@@ -191,7 +194,7 @@ function FormCellType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} label="Cell type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} label="Cell type" size="small" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       </form>
@@ -227,7 +230,7 @@ function FormParticleSize() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
@@ -250,7 +253,7 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} size="small" label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
     </div>
@@ -284,7 +287,7 @@ function FormFluorophores() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
@@ -306,16 +309,19 @@ function FormFluorophores() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} size="small" label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: 0
         }}
         control={
           <Checkbox
             color="primary"
+            style={{
+              transform: "scale(0.6)",
+          }}
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
             onChange={(e) => {
@@ -330,7 +336,7 @@ function FormFluorophores() {
             }}
           />
         }
-        label="Could not find the fluorophores"
+        label={<span style={{ fontSize: '13px' }}>Could not find the fluorophores</span>}
       />
       {notFound ? (
         <div
@@ -383,11 +389,12 @@ function FormDescription() {
           },
         });
       }}
-      rows={6}
+      rowsMax={4}
+      size="small"
       placeholder="..."
       variant="outlined"
       style={{
-        marginTop: 30,
+        marginTop: 5,
         width: 600,
       }}
     />

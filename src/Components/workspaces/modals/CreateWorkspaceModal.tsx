@@ -56,6 +56,7 @@ function CreateWorkspaceModal(props: {
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
   const [createExperimentDialog, setCreateExperimentDialog] = React.useState(false);
+  const [disableSubmit, setDisableSubmit] = React.useState(true);
 
   const createWorkspace = () => {
     const data = {
@@ -100,6 +101,7 @@ function CreateWorkspaceModal(props: {
           "error"
         );
       });
+      setDisableSubmit(true)
   };
   
   
@@ -129,8 +131,7 @@ function CreateWorkspaceModal(props: {
     4: store.getState().user.experiment.fluorophoresCategory
   }
    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
-    if(Object.values(valuesToCheck).every(item => item != null)){
-      // alert("All fields filled")
+    if(Object.values(valuesToCheck).every(item => item != null) && name != null){
       setCreateExperimentDialog(true)
       console.log(createExperimentDialog)
     } else { 
@@ -143,6 +144,30 @@ function CreateWorkspaceModal(props: {
     setFormData(store.getState().user.experiment);
   };
 
+  //function that enables the submit button
+  const enableButton = () => {
+    const valuesToCheck = {
+      1: store.getState().user.experiment.device,
+      2: store.getState().user.experiment.cellType,
+      3: store.getState().user.experiment.particleSize,
+      4: store.getState().user.experiment.fluorophoresCategory
+    }
+    console.log(valuesToCheck)
+     //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+      if(Object.values(valuesToCheck).every(item => item != null)){
+        setDisableSubmit(false);
+      } else {
+        setDisableSubmit(true)
+      }
+  }
+
+  const trying = () => {
+    console.log(store.getState().user.experiment)
+  }
+
+  store.subscribe(() => {
+    enableButton();
+  });
 
   const handleClose = (func: Function) => {
     func(false);
@@ -181,7 +206,7 @@ const createExperimentFromSummary  = (func: Function) => {
             style = {{
               backgroundColor: "#6666A9",
               color: "#FFF",
-              padding: "20px 0 10px "
+              padding: "2px 0 1px",
             }}
           >
           <h2 style = {{
@@ -199,14 +224,16 @@ const createExperimentFromSummary  = (func: Function) => {
 
           <div
             style={{
-              marginTop: 30,
+              marginTop: -15,
             }}
           >
             <TextField
+            size="small"
               variant="outlined"
               placeholder="Experiment name"
               onChange={(textField: any) => {
                 setName(textField.target.value);
+                enableButton();
               }}
               value={name}
               style={{
@@ -217,7 +244,7 @@ const createExperimentFromSummary  = (func: Function) => {
 
           <FormControlLabel
             style={{
-              marginTop: 10,
+              marginTop: 0,
             }}
             control={
               <Switch
@@ -236,7 +263,7 @@ const createExperimentFromSummary  = (func: Function) => {
 
           <Divider
             style={{
-              marginTop: 10,
+              marginTop: 0,
               marginBottom: 10,
             }}
           ></Divider>
@@ -260,9 +287,10 @@ const createExperimentFromSummary  = (func: Function) => {
             </Button>
             <Button
             variant="contained"
-            style={{ backgroundColor: "#6666A9", color: "white" }}
+            disabled = {disableSubmit}
+            //style={{ backgroundColor: "#6666A9", color: "white" }}
             onClick={() => {handleSubmit();}}>
-            Finish
+            Create
             </Button>
           </div>
         </div>
