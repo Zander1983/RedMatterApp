@@ -204,7 +204,7 @@ const createExperimentFromSummary  = (func: Function) => {
           >
             <TextField
               variant="outlined"
-              placeholder="Workspace name"
+              placeholder="Experiment name"
               onChange={(textField: any) => {
                 setName(textField.target.value);
               }}
@@ -227,11 +227,11 @@ const createExperimentFromSummary  = (func: Function) => {
                 color="primary"
               />
             }
-            label="Private workspace"
+            label="Private Experiment"
           />
 
           {privateWorkspace ? (
-            <p>No one in your workspace will be able to see this workspace</p>
+            <p>No one in your workspace will be able to see this experiment</p>
           ) : null}
 
           <Divider
