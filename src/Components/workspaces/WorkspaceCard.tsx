@@ -96,7 +96,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
   };
 
   useEffect(() => {
-    fetchWorkspaceFiles();
+    //fetchWorkspaceFiles();
   }, []);
 
   return (

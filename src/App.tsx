@@ -90,8 +90,8 @@ const router = [
   { path: "/experiments", component: Workspaces },
   { path: "/terms", component: Terms },
   {
-    path: "/experiment/:workspaceID",
-    component: ({ match }: any) => <Workspace id={match.params.workspaceID} />,
+    path: "/experiment/:experimentId",
+    component: ({ match }: any) => <Workspace id={match.params.experimentId} />,
   },
   {
     path: "/mailing-list",

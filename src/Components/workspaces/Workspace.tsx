@@ -41,7 +41,7 @@ const Workspace = (props: any) => {
   const [editingName, setEditingName] = useState(false);
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
-  const [experiments, setExperiments] = useState([]);
+  const [experiment, setExperiment] = useState(Object);
 
   const [workspaceSize, setWorkspaceSize] = useState(0);
   const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(
@@ -107,7 +107,7 @@ const Workspace = (props: any) => {
       accessToken: userManager.getToken(),
     }).editWorkspace(
       props.id,
-      workspaceData.workspaceName,
+      experiment.name,
       userManager.getToken()
     );
 
@@ -126,15 +126,14 @@ const Workspace = (props: any) => {
       });
   };
 
-  const getExperiments = () => {
-    axios
-      .get("/api/workspace/" + props.id + "/experiments/", {
+  const getExperiment = () => {
+    axios.post("/api/getExperiment",{experimentId: props.id},{
         headers: {
           token: userManager.getToken(),
         },
       })
       .then((e) => {
-        setExperiments(e.data);
+        setExperiment(e.data);
       })
       .catch((e) => {});
   };
@@ -230,8 +229,8 @@ const Workspace = (props: any) => {
   };
 
   useEffect(() => {
-    fetchWorkspaceData();
-    getExperiments();
+    //fetchWorkspaceData();
+    getExperiment();
   }, []);
 
   const handleClose = (func: Function) => {
@@ -308,7 +307,7 @@ const Workspace = (props: any) => {
                 Back
               </Button>
               <div>
-                {workspaceData === null ? (
+                {experiment === null ? (
                   <CircularProgress
                     style={{ width: 20, height: 20, color: "white" }}
                   />
@@ -327,12 +326,10 @@ const Workspace = (props: any) => {
                         InputProps={{
                           className: classes.input,
                         }}
-                        value={workspaceData.workspaceName}
+                        value={experiment.name}
                         onChange={(e: any) => {
-                          setWorkpsaceData({
-                            ...workspaceData,
-                            workspaceName: e.target.value,
-                          });
+                            experiment.name = e.target.value;
+                            setExperiment({...experiment});
                         }}
                         onKeyDown={(e: any) => {
                           if (e.keyCode === 13) {
@@ -342,7 +339,7 @@ const Workspace = (props: any) => {
                         }}
                       ></TextField>
                     ) : (
-                      workspaceData.workspaceName
+                      experiment.name
                     )}
                     <Button
                       style={{ fontSize: 20, marginLeft: 20 }}
@@ -629,7 +626,7 @@ const Workspace = (props: any) => {
                     </>
                   );
                 })}
-                {experiments.length > 0 ? (
+                {Object.keys(experiment).length > 0 ? (
                   <>
                     <Divider style={{ marginBottom: 10 }}></Divider>
                     <Grid
@@ -643,30 +640,30 @@ const Workspace = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Details
                         </h1>
-                        {experiments[0].details.device != undefined ? (
-                          <h4>• Device: {experiments[0].details.device}</h4>
+                        {experiment.details.device != undefined ? (
+                          <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
-                        {experiments[0].details.cellType != undefined ? (
+                        {experiment.details.cellType != undefined ? (
                           <h4>
-                            • Cell type: {experiments[0].details.cellType}
+                            • Cell type: {experiment.details.cellType}
                           </h4>
                         ) : null}
-                        {experiments[0].details.particleSize != undefined ? (
+                        {experiment.details.particleSize != undefined ? (
                           <h4>
                             • Particle size:{" "}
-                            {experiments[0].details.particleSize}
+                            {experiment.details.particleSize}
                           </h4>
                         ) : null}
-                        {experiments[0].details.fluorophoresCategory !=
+                        {experiment.details.fluorophoresCategory !=
                         undefined ? (
                           <h4>
                             • Fluorophores category:{" "}
-                            {experiments[0].details.fluorophoresCategory}
+                            {experiment.details.fluorophoresCategory}
                           </h4>
                         ) : null}
-                        {experiments[0].details.description != undefined ? (
+                        {experiment.details.description != undefined ? (
                           <h4>
-                            • Description: {experiments[0].details.description}
+                            • Description: {experiment.details.description}
                           </h4>
                         ) : null}
                       </div>

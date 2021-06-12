@@ -5222,21 +5222,21 @@ export const WorkspacesApiFetchParamCreator = function (
     /**
      * To delete workspace, we need to pass workspaceId and workspaceName as query parameters
      * @summary Deleting Workspaces
-     * @param {string} workspaceId WorkspaceId
+     * @param {string} experimentId ExperimentId
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteWorkspace(
-      workspaceId: string,
+      experimentId: string,
       token: string,
       options: any = {}
     ): FetchArgs {
-      // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling deleteWorkspace."
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling deleteWorkspace."
         );
       }
       // verify required parameter 'token' is not null or undefined
@@ -5246,7 +5246,7 @@ export const WorkspacesApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling deleteWorkspace."
         );
       }
-      const localVarPath = `/api/workspace/delete`;
+      const localVarPath = `/api/experiment/delete`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign(
         { method: "DELETE" },
@@ -5255,8 +5255,8 @@ export const WorkspacesApiFetchParamCreator = function (
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (workspaceId !== undefined) {
-        localVarQueryParameter["workspaceId"] = workspaceId;
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
       if (token !== undefined && token !== null) {
@@ -5285,27 +5285,27 @@ export const WorkspacesApiFetchParamCreator = function (
     /**
      * To edit workspace, we need to pass workspaceId and workspaceName as query parameters
      * @summary Editing Workspaces
-     * @param {string} workspaceId WorkspaceId
-     * @param {string} workspaceName workspaceName
+     * @param {string} experimentId WorkspaceId
+     * @param {string} experimentName workspaceName
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     editWorkspace(
-      workspaceId: string,
-      workspaceName: string,
+      experimentId: string,
+      experimentName: string,
       token: string,
       options: any = {}
     ): FetchArgs {
       // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
           "workspaceId",
           "Required parameter workspaceId was null or undefined when calling editWorkspace."
         );
       }
       // verify required parameter 'workspaceName' is not null or undefined
-      if (workspaceName === null || workspaceName === undefined) {
+      if (experimentName === null || experimentName === undefined) {
         throw new RequiredError(
           "workspaceName",
           "Required parameter workspaceName was null or undefined when calling editWorkspace."
@@ -5318,18 +5318,18 @@ export const WorkspacesApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling editWorkspace."
         );
       }
-      const localVarPath = `/api/workspace/edit`;
+      const localVarPath = `/api/experiment/edit/name`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "PUT" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (workspaceId !== undefined) {
-        localVarQueryParameter["workspaceId"] = workspaceId;
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
-      if (workspaceName !== undefined) {
-        localVarQueryParameter["workspaceName"] = workspaceName;
+      if (experimentName !== undefined) {
+        localVarQueryParameter["experimentName"] = experimentName;
       }
 
       if (token !== undefined && token !== null) {

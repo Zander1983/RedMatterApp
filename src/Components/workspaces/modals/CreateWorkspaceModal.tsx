@@ -37,7 +37,7 @@ function CreateWorkspaceModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
-  workspaces: string[];
+  experiments: string[];
 }): JSX.Element {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -56,10 +56,11 @@ function CreateWorkspaceModal(props: {
     );
     axios
       .post(req.url, req.options.body, req.options)
-      .then((e) => {})
-      .catch((e) => {
+      .then((e) => {
         props.closeCall.f(props.closeCall.ref);
         props.created(e.data.id);
+      })
+      .catch((e) => {
         snackbarService.showSnackbar(
           "Could not create experiment, reload the page and try again!",
           "error"
@@ -96,7 +97,7 @@ function CreateWorkspaceModal(props: {
           >
             <TextField
               variant="outlined"
-              placeholder="Workspace name"
+              placeholder="Experiment name"
               onChange={(textField: any) => {
                 setName(textField.target.value);
               }}
@@ -159,14 +160,14 @@ function CreateWorkspaceModal(props: {
               onClick={() => {
                 if (name === "" || name === undefined || name === null) {
                   snackbarService.showSnackbar(
-                    "Workspace name cannot not be empty",
+                    "Experiment name cannot not be empty",
                     "warning"
                   );
                   return;
                 }
-                if (props.workspaces.includes(name)) {
+                if (props.experiments.includes(name)) {
                   snackbarService.showSnackbar(
-                    "A workspace with this name already exists",
+                    "A experiment with this name already exists",
                     "warning"
                   );
                   return;

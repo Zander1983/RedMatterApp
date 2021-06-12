@@ -21,19 +21,18 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
     history.replace("/");
   }
 
-  const [workspaces, setWorkspaces] = React.useState([]);
+  const [experiments, setExperiments] = React.useState([]);
   const [createWorkspaceModal, setCreateWorkspaceModal] = React.useState(false);
 
-  const fetchWorkspaces = () => {
+  const fetchExperiments = () => {
     if (!isLoggedIn) return;
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
     axios
       .get(fetchArgs.url, fetchArgs.options)
-      .then((e) => {
-        //e.data.workspaces.fileCount = "Loading...";
-        //setWorkspaces(e.data.workspaces);
+      .then((response) => {
+        setExperiments(response.data);
       })
       .catch((e) => {
         snackbarService.showSnackbar(
@@ -49,7 +48,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
   };
 
   React.useEffect(() => {
-    fetchWorkspaces();
+    fetchExperiments();
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
@@ -66,9 +65,9 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
           ref: setCreateWorkspaceModal,
         }}
         created={(workspaceID: string) => {
-          fetchWorkspaces();
+          fetchExperiments();
         }}
-        workspaces={workspaces.map((e) => e.name)}
+        experiments={experiments.map((e) => e.name)}
       />
       <Grid
         style={{
@@ -131,9 +130,9 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
               }}
               xs={12}
             >
-              {workspaces.length > 0 ? (
-                workspaces.map((data: any) => {
-                  return <WorkspaceCard data={data} update={fetchWorkspaces} />;
+              {experiments.length > 0 ? (
+                experiments.map((data: any) => {
+                  return <WorkspaceCard data={data} update={fetchExperiments} />;
                 })
               ) : (
                 <div
