@@ -401,7 +401,7 @@ class DataManager extends ObserversFunctionality {
     axios
       .get("/api/events/" + this.remoteWorkspaceID, {
         params: {
-          workspaceId: this.remoteWorkspaceID,
+          experimentId: this.remoteWorkspaceID,
           token: userManager.getToken(),
           organisationId: userManager.getOrganiztionID(),
         },

@@ -305,6 +305,12 @@ export interface ExperimentPayload {
    * @memberof ExperimentPayload
    */
   name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ExperimentPayload
+   */
+   privateExp?: boolean;
 }
 /**
  *
@@ -4427,25 +4433,25 @@ export const WorkspaceFilesApiFetchParamCreator = function (
 ) {
   return {
     /**
-     * To delete workspace file, we need to pass workspaceId and fileId as query parameters
+     * To delete workspace file, we need to pass experimentId and fileId as query parameters
      * @summary Deleting Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * @param {string} experimentId WorkspaceId
      * @param {string} fileId File Id
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteFile(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       token: string,
       options: any = {}
     ): FetchArgs {
-      // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling deleteFile."
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling deleteFile."
         );
       }
       // verify required parameter 'fileId' is not null or undefined
@@ -4471,8 +4477,8 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (workspaceId !== undefined) {
-        localVarQueryParameter["workspaceId"] = workspaceId;
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
       if (fileId !== undefined) {
@@ -4659,17 +4665,17 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       };
     },
     /**
-     * To get workspace files, we need to pass organisationId and workspaceId in query params
+     * To get workspace files, we need to pass organisationId and experimentId in query params
      * @summary Getting Workspace Files
      * @param {string} organisationId Organisation Id of logged in user
-     * @param {string} workspaceId Workspace Id
+     * @param {string} experimentId Workspace Id
      * @param {string} token token is passed in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     workspaceFiles(
       organisationId: string,
-      workspaceId: string,
+      experimentId: string,
       token: string,
       options: any = {}
     ): FetchArgs {
@@ -4680,11 +4686,11 @@ export const WorkspaceFilesApiFetchParamCreator = function (
           "Required parameter organisationId was null or undefined when calling workspaceFiles."
         );
       }
-      // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling workspaceFiles."
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling workspaceFiles."
         );
       }
       // verify required parameter 'token' is not null or undefined
@@ -4704,8 +4710,8 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarQueryParameter["organisationId"] = organisationId;
       }
 
-      if (workspaceId !== undefined) {
-        localVarQueryParameter["workspaceId"] = workspaceId;
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
       if (token !== undefined && token !== null) {

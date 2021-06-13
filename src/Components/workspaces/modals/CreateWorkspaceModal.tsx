@@ -44,14 +44,14 @@ function CreateWorkspaceModal(props: {
 
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
-  const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
+  const [privateExperiment, setPrivateExperiment] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
 
   const createExperiment = () => {
     const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).createExperiment(
-      { details: formData, name: name },
+      { details: formData, name: name, privateExp: privateExperiment  },
       userManager.getToken()
     );
     axios
@@ -59,6 +59,7 @@ function CreateWorkspaceModal(props: {
       .then((e) => {
         props.closeCall.f(props.closeCall.ref);
         props.created(e.data.id);
+        setName("");
       })
       .catch((e) => {
         snackbarService.showSnackbar(
@@ -81,7 +82,7 @@ function CreateWorkspaceModal(props: {
         }}
       >
         <div className={classes.modal}>
-          <h2>Create workspace</h2>
+          <h2>Create experiment</h2>
 
           <PrototypeForm
             //@ts-ignore
@@ -114,17 +115,17 @@ function CreateWorkspaceModal(props: {
             }}
             control={
               <Switch
-                checked={privateWorkspace}
-                onChange={() => setPrivateWorkspace(!privateWorkspace)}
-                name="Private workspace"
+                checked={privateExperiment}
+                onChange={() => setPrivateExperiment(!privateExperiment)}
+                name="Private experiment"
                 color="primary"
               />
             }
-            label="Private workspace"
+            label="Private experiment"
           />
 
-          {privateWorkspace ? (
-            <p>No one in your workspace will be able to see this workspace</p>
+          {privateExperiment ? (
+            <p>No one in your workspace will be able to see this experiment</p>
           ) : null}
 
           <Divider

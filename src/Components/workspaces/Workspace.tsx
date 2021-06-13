@@ -127,7 +127,11 @@ const Workspace = (props: any) => {
   };
 
   const getExperiment = () => {
-    axios.post("/api/getExperiment",{experimentId: props.id},{
+    axios.post("/api/getExperiment",
+        {
+          experimentId: props.id
+        },
+        {
         headers: {
           token: userManager.getToken(),
         },
@@ -229,7 +233,7 @@ const Workspace = (props: any) => {
   };
 
   useEffect(() => {
-    //fetchWorkspaceData();
+    fetchWorkspaceData();
     getExperiment();
   }, []);
 
