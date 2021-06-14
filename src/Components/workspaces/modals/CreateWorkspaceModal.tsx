@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, FormControlLabel, Switch } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
@@ -6,11 +6,11 @@ import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
 import Snackbar from "@material-ui/core/Snackbar";
 import Alert from "@material-ui/lab/Alert";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 
@@ -21,7 +21,7 @@ import {
 } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
-import { useDispatch, useStore} from "react-redux";
+import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import CreateExperimentDialog from "./CreateExperimentDialog";
 
@@ -37,11 +37,9 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "-400px",
     marginTop: "-150px",
     textAlign: "center",
-    borderRadius: 20,
+    borderRadius: 10,
   },
 }));
-
-
 
 function CreateWorkspaceModal(props: {
   open: boolean;
@@ -57,8 +55,13 @@ function CreateWorkspaceModal(props: {
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
-  const [createExperimentDialog, setCreateExperimentDialog] = React.useState(false);
+  const [createExperimentDialog, setCreateExperimentDialog] =
+    React.useState(false);
   const [disableSubmit, setDisableSubmit] = React.useState(true);
+
+  useEffect(() => {
+    enableButton();
+  });
 
   const createWorkspace = () => {
     const data = {
@@ -66,7 +69,6 @@ function CreateWorkspaceModal(props: {
       organisationId: organizationId,
       isPrivate: privateWorkspace,
     };
-  
 
     const fetchArgs = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -103,44 +105,45 @@ function CreateWorkspaceModal(props: {
           "error"
         );
       });
-      setDisableSubmit(true)
+    setDisableSubmit(true);
   };
-  
-  
-//THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG 
+
+  //THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG
   const handleSubmit = () => {
-   if (name === "" || name === undefined || name === null) {
-    snackbarService.showSnackbar(
-      "Experiment name cannot not be empty",
-      "warning"
-    );
-    return;
-  }
-
-
-   if (props.workspaces.includes(name)) {
-    snackbarService.showSnackbar(
-      "An experiment with this name already exists",
-      "warning"
-    );
-    return;
-  }
-
-  const valuesToCheck = {
-    1: store.getState().user.experiment.device,
-    2: store.getState().user.experiment.cellType,
-    3: store.getState().user.experiment.particleSize,
-    4: store.getState().user.experiment.fluorophoresCategory
-  }
-   //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
-    if(Object.values(valuesToCheck).every(item => item != null) && name != null){
-      setCreateExperimentDialog(true)
-      console.log(createExperimentDialog)
-    } else { 
+    if (name === "" || name === undefined || name === null) {
       snackbarService.showSnackbar(
-        "There are still some required fields empty", "error"
-    );
-    return;
+        "Experiment name cannot not be empty",
+        "warning"
+      );
+      return;
+    }
+
+    if (props.workspaces.includes(name)) {
+      snackbarService.showSnackbar(
+        "An experiment with this name already exists",
+        "warning"
+      );
+      return;
+    }
+
+    const valuesToCheck = {
+      1: store.getState().user.experiment.device,
+      2: store.getState().user.experiment.cellType,
+      3: store.getState().user.experiment.particleSize,
+      4: store.getState().user.experiment.fluorophoresCategory,
+    };
+    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+    if (
+      Object.values(valuesToCheck).every((item) => item != null) &&
+      name != null
+    ) {
+      setCreateExperimentDialog(true);
+    } else {
+      snackbarService.showSnackbar(
+        "There are still some required fields empty",
+        "error"
+      );
+      return;
     }
     //SET THE FROM DATA STATE SO WE CAN CREATE THE EXPERIMENT FROM THE CREATEWORKSPACE FUNCTION
     setFormData(store.getState().user.experiment);
@@ -152,20 +155,18 @@ function CreateWorkspaceModal(props: {
       1: store.getState().user.experiment.device,
       2: store.getState().user.experiment.cellType,
       3: store.getState().user.experiment.particleSize,
-      4: store.getState().user.experiment.fluorophoresCategory
+      4: store.getState().user.experiment.fluorophoresCategory,
+      5: name,
+    };
+    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+    if (
+      Object.values(valuesToCheck).every((item) => item != null && item != "")
+    ) {
+      setDisableSubmit(false);
+    } else {
+      setDisableSubmit(true);
     }
-    console.log(valuesToCheck)
-     //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
-      if(Object.values(valuesToCheck).every(item => item != null)){
-        setDisableSubmit(false);
-      } else {
-        setDisableSubmit(true)
-      }
-  }
-
-  const trying = () => {
-    console.log(store.getState().user.experiment)
-  }
+  };
 
   store.subscribe(() => {
     enableButton();
@@ -174,21 +175,21 @@ function CreateWorkspaceModal(props: {
   const handleClose = (func: Function) => {
     func(false);
   };
-  //FUNCTION THAT WILL BE PASSED AS A PROP TO THE SUMMARY SO WE CAN CREATE THE EXPERIMENT FROM THERE 
-const createExperimentFromSummary  = (func: Function) => {
-  func();
-}
+  //FUNCTION THAT WILL BE PASSED AS A PROP TO THE SUMMARY SO WE CAN CREATE THE EXPERIMENT FROM THERE
+  const createExperimentFromSummary = (func: Function) => {
+    func();
+  };
 
   return (
     <div>
       <CreateExperimentDialog
-        open = {createExperimentDialog}
+        open={createExperimentDialog}
         closeCall={{
           f: handleClose,
           ref: setCreateExperimentDialog,
         }}
-        name = {name}
-        sendFunction ={{
+        name={name}
+        sendFunction={{
           f: createExperimentFromSummary,
           ref: createWorkspace,
         }}
@@ -196,26 +197,30 @@ const createExperimentFromSummary  = (func: Function) => {
 
       <Modal
         open={props.open}
-        disableScrollLock = {true}
+        disableScrollLock={true}
         style={{
-          overflow: 'scroll',
-          padding: '0'
+          overflow: "scroll",
+          padding: "0",
+          borderRadius: 10,
         }}
       >
-        
         <div className={classes.modal}>
           <div
-            style = {{
+            style={{
               backgroundColor: "#6666A9",
               color: "#FFF",
               padding: "6px 0 10px",
+              borderRadius: 10,
             }}
           >
-          <h2 style = {{
-              color: "#FFF",
-            }}>Create Experiment</h2>
+            <h2
+              style={{
+                color: "#FFF",
+              }}
+            >
+              Create Experiment
+            </h2>
           </div>
-          
 
           <PrototypeForm
             //@ts-ignore
@@ -230,37 +235,36 @@ const createExperimentFromSummary  = (func: Function) => {
             }}
           >
             <Grid container spacing={3}>
-                    <Grid item xs={5}>
-                    <Typography 
-                        style={
-                            {marginTop: 0,
-                             textAlign: 'left',
-                             paddingLeft: 60,
-                             paddingRight: 60
-                            }
-                    }>
-                        <h4>Your Experiment's Name</h4>
-                    </Typography>
-                    </Grid>
-                    </Grid>
-                    <Grid container spacing={3}>
-                    <Grid item xs={12}>
-            <TextField
-            size="small"
-              variant="outlined"
-              placeholder="Experiment name"
-              onChange={(textField: any) => {
-                setName(textField.target.value);
-                enableButton();
-              }}
-              value={name}
-              style={{
-                width: "100%",
-                paddingLeft: 60,
-                paddingRight: 60
-              }}
-            ></TextField>
+              <Grid item xs={5}>
+                <Typography
+                  style={{
+                    marginTop: 0,
+                    textAlign: "left",
+                    paddingLeft: 60,
+                    paddingRight: 60,
+                  }}
+                >
+                  <h4>Your Experiment's Name</h4>
+                </Typography>
+              </Grid>
             </Grid>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  size="small"
+                  variant="outlined"
+                  placeholder="Experiment name"
+                  onChange={(textField: any) => {
+                    setName(textField.target.value);
+                  }}
+                  value={name}
+                  style={{
+                    width: "100%",
+                    paddingLeft: 60,
+                    paddingRight: 60,
+                  }}
+                ></TextField>
+              </Grid>
             </Grid>
           </div>
 
@@ -308,11 +312,17 @@ const createExperimentFromSummary  = (func: Function) => {
               Cancel
             </Button>
             <Button
-            variant="contained"
-            disabled = {disableSubmit}
-            //style={{ backgroundColor: "#6666A9", color: "white" }}
-            onClick={() => {handleSubmit();}}>
-            Create
+              variant="contained"
+              disabled={disableSubmit}
+              style={{
+                backgroundColor: disableSubmit ? "#aaaadb" : "#6666A9",
+                color: "white",
+              }}
+              onClick={() => {
+                handleSubmit();
+              }}
+            >
+              Create
             </Button>
           </div>
         </div>
