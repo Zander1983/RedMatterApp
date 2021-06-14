@@ -11,6 +11,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import Checkbox from "@material-ui/core/Checkbox";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 
@@ -24,6 +25,7 @@ import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import CreateExperimentDialog from "./CreateExperimentDialog";
+//import { Checkbox } from "antd";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -58,10 +60,48 @@ function CreateWorkspaceModal(props: {
   const [createExperimentDialog, setCreateExperimentDialog] =
     React.useState(false);
   const [disableSubmit, setDisableSubmit] = React.useState(true);
+  const [nameError, setNameError] = React.useState(false);
+
+  
 
   useEffect(() => {
+    //clearing the store so the form is always blank at first
+    console.log(store.getState().user.experiment.cellType,)
+    console.log("aaarririarjoijdsfoihadsjkfhadsfk ")
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "device", value: null },
+      },
+    });
+
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "cellType", value: null },
+      },
+    });
+
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "particleSize", value: null },
+      },
+    });
+
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "fluorophoresCategory", value: null },
+      },
+    });
+    console.log(store.getState().user.experiment.cellType,)
     enableButton();
-  });
+  }, [props.open]);
 
   const createWorkspace = () => {
     const data = {
@@ -127,11 +167,12 @@ function CreateWorkspaceModal(props: {
     }
 
     const valuesToCheck = {
-      1: store.getState().user.experiment.device,
-      2: store.getState().user.experiment.cellType,
-      3: store.getState().user.experiment.particleSize,
-      4: store.getState().user.experiment.fluorophoresCategory,
+      1: store.getState().user.experiment.cellType,
+      2: store.getState().user.experiment.particleSize,
+      3: store.getState().user.experiment.fluorophoresCategory,
     };
+
+
     //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
     if (
       Object.values(valuesToCheck).every((item) => item != null) &&
@@ -152,11 +193,10 @@ function CreateWorkspaceModal(props: {
   //function that enables the submit button
   const enableButton = () => {
     const valuesToCheck = {
-      1: store.getState().user.experiment.device,
-      2: store.getState().user.experiment.cellType,
-      3: store.getState().user.experiment.particleSize,
-      4: store.getState().user.experiment.fluorophoresCategory,
-      5: name,
+      1: store.getState().user.experiment.cellType,
+      2: store.getState().user.experiment.particleSize,
+      3: store.getState().user.experiment.fluorophoresCategory,
+      4: name,
     };
     //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
     if (
@@ -209,8 +249,8 @@ function CreateWorkspaceModal(props: {
             style={{
               backgroundColor: "#6666A9",
               color: "#FFF",
-              padding: "6px 0 10px",
-              borderRadius: 10,
+              padding: "6px 0 1px",
+              borderRadius: '10px 10px 0 0',
             }}
           >
             <h2
@@ -222,6 +262,93 @@ function CreateWorkspaceModal(props: {
             </h2>
           </div>
 
+
+          <div
+            style={{
+              marginTop: 15,
+            }}
+          >
+            <Grid container spacing={3} 
+            style={{
+              paddingLeft: 60,
+                paddingRight: 50,
+            }}
+            >
+              <Grid item xs={5}>
+                <Typography
+                  style={{
+                    marginTop: 0,
+                    textAlign: "left"
+                  }}
+                >
+                  <h4>Your Experiment's Name</h4>
+                </Typography>
+            </Grid>
+              <Grid item xs={7}>
+                <TextField
+                  error = {nameError}
+                  size="small"
+                  variant="outlined"
+                  helperText="This Field is Required"
+                  label="Experiment Name"
+                  onChange={(textField: any) => {
+                    setName(textField.target.value);
+                    if(textField.target.value != null && textField.target.value != ""){
+                      setNameError(false)
+                    }
+                  }}
+                  onBlur={(textField: any) => {
+                    if(textField.target.value == null || textField.target.value == "") {
+                      
+                      setNameError(true)
+                    }
+                  }}
+                  value={name}
+                  style={{
+                    width: "102%",
+                  }}
+                ></TextField>
+</Grid>
+
+<Grid container spacing={3} 
+            style={{
+              paddingLeft: 60,
+                paddingRight: 50,
+            }}
+            >
+              <Grid item xs={5}></Grid>
+              <Grid item xs={7}>
+          <FormControlLabel
+            style={{
+              marginTop: '-27px',
+              marginLeft: '-64%'
+            }}
+            control={
+              <Checkbox
+              //@ts-ignore
+                color="primary"
+                inputProps={{ "aria-label": "secondary checkbox" }}
+                checked={privateWorkspace}
+                onChange={() => setPrivateWorkspace(!privateWorkspace)}
+                name="Private workspace"
+                style={{
+                  transform: "scale(0.6)",
+              }}
+              />
+            }
+            label={<span style={{ fontSize: '13px', marginTop:'-10px' }}><strong>Private Experiment</strong></span>}
+          />
+
+
+
+          {privateWorkspace ? (
+            <p style={{fontSize: 10, marginTop:-13, marginBottom: 15, marginLeft: '-20%'}}>No one in your workspace will be able to see this experiment</p>
+          ) : null}
+          </Grid>
+          </Grid>
+            </Grid>
+          </div>
+
           <PrototypeForm
             //@ts-ignore
             onSend={(e) => {
@@ -229,63 +356,6 @@ function CreateWorkspaceModal(props: {
             }}
           ></PrototypeForm>
 
-          <div
-            style={{
-              marginTop: -15,
-            }}
-          >
-            <Grid container spacing={3}>
-              <Grid item xs={5}>
-                <Typography
-                  style={{
-                    marginTop: 0,
-                    textAlign: "left",
-                    paddingLeft: 60,
-                    paddingRight: 60,
-                  }}
-                >
-                  <h4>Your Experiment's Name</h4>
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  size="small"
-                  variant="outlined"
-                  placeholder="Experiment name"
-                  onChange={(textField: any) => {
-                    setName(textField.target.value);
-                  }}
-                  value={name}
-                  style={{
-                    width: "100%",
-                    paddingLeft: 60,
-                    paddingRight: 60,
-                  }}
-                ></TextField>
-              </Grid>
-            </Grid>
-          </div>
-
-          <FormControlLabel
-            style={{
-              marginTop: 0,
-            }}
-            control={
-              <Switch
-                checked={privateWorkspace}
-                onChange={() => setPrivateWorkspace(!privateWorkspace)}
-                name="Private workspace"
-                color="primary"
-              />
-            }
-            label="Private Experiment"
-          />
-
-          {privateWorkspace ? (
-            <p>No one in your workspace will be able to see this experiment</p>
-          ) : null}
 
           <Divider
             style={{

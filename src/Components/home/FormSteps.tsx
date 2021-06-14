@@ -8,6 +8,8 @@ import { FormControlLabel } from "@material-ui/core";
 import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
 import { store } from "redux/store";
+import { Grid } from "@amcharts/amcharts4/charts";
+
 
 
 
@@ -99,12 +101,13 @@ function FormDeviceType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Optional" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 0,
+          marginTop: -10,
+          marginLeft: '-55%'
         }}
         control={
           <Checkbox
@@ -124,12 +127,16 @@ function FormDeviceType() {
             }}
           />
         }
-        label={<span style={{ fontSize: '13px' }}>Could not find my device</span>}
+        label={<span style={{ fontSize: '13px', marginTop:'-10px' }}>Could not find my device</span>}
       />
       {notFound ? (
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign:'left',
+            marginTop: -10,
+            marginLeft: '-20%'
           }}
         >
           Send us an email at{" "}
@@ -147,6 +154,7 @@ function FormDeviceType() {
 
 function FormCellType() {
   const store = useStore();
+  const [cellTypeError, setCellTypeError] = React.useState(false)
   let defaultValue = null;
   try {
     let defaultValue = store.getState().user.experiment.cellType;
@@ -186,6 +194,14 @@ function FormCellType() {
               formitem: { key: "cellType", value: e.target.outerText },
             },
           });
+          if(store.getState().user.experiment.cellType != '') {
+            setCellTypeError(false)
+          }
+        }}
+        onBlur={(e) => {
+          if(store.getState().user.experiment.cellType == '' || store.getState().user.experiment.cellType == null) {
+            setCellTypeError(true)
+          }
         }}
         options={[
           { id: 1, key: 1, value: "Single cells" },
@@ -194,7 +210,7 @@ function FormCellType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} label="Cell type" size="small" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} error={cellTypeError} label="Cell type" size="small" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       </form>
@@ -204,6 +220,7 @@ function FormCellType() {
 
 function FormParticleSize() {
   const store = useStore();
+  const [particleSizeError, setParticleSizeError] = React.useState(false)
   let defaultValue = store.getState().user.experiment.particleSize;
   try {
     let defaultValue = store.getState().user.experiment.particleSize;
@@ -244,6 +261,15 @@ function FormParticleSize() {
               formitem: { key: "particleSize", value: e.target.outerText },
             },
           });
+
+          if(store.getState().user.experiment.particleSize != '') {
+            setParticleSizeError(false)
+          }
+        }}
+        onBlur={(e) => {
+          if(store.getState().user.experiment.particleSize == null || store.getState().user.experiment.particleSize == "") {
+            setParticleSizeError(true)
+          }
         }}
         options={[
           { id: 1, key: "Below 1µm", value: "Below 1µm" },
@@ -253,7 +279,7 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} size="small" label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} error={particleSizeError} size="small" label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
     </div>
@@ -261,7 +287,8 @@ function FormParticleSize() {
 }
 
 function FormFluorophores() {
-  const store = useStore();
+  const store = useStore();  
+  const [fluorosphoresCategoryError, setFluorosphoresCategoryError] = React.useState(false)
   let defaultValue = store.getState().user.experiment.fluorophoresCategory;
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
@@ -303,18 +330,28 @@ function FormFluorophores() {
               formitem: { key: "fluorophoresCategory", value: e.target.outerText },
             },
           });
+          if(store.getState().user.experiment.fluorophoresCategory != '') {
+            setFluorosphoresCategoryError(false)
+          }
+        }}
+
+        onBlur={(e) => {
+          if(store.getState().user.experiment.fluorophoresCategory == '' || store.getState().user.experiment.fluorophoresCategory == null) {
+            setFluorosphoresCategoryError(true)
+          }
         }}
 
         options={fluorophoresData}
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField required {...params} size="small" label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
+          <TextField required {...params} error={fluorosphoresCategoryError} size="small" label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 0
+          marginTop: -10,
+          marginLeft: '-47%'
         }}
         control={
           <Checkbox
@@ -342,6 +379,10 @@ function FormFluorophores() {
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign:'left',
+            marginTop: -10,
+            marginLeft: '-15%'
           }}
         >
           Send us an email at{" "}

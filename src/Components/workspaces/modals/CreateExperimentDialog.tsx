@@ -67,7 +67,14 @@ function CreateExperimentDialog(props: {
             {store.getState().user.experiment.fluorophoresCategory}
             <br></br>
             <strong>Description:</strong>
+            <p style={{
+              width: '500px',
+              wordWrap: 'break-word',
+              display: 'inline'
+
+            }}>
             {store.getState().user.experiment.description}
+            </p>
             <br></br>
           </DialogContentText>
         </DialogContent>
