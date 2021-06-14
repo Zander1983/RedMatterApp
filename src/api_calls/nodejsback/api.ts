@@ -1277,6 +1277,57 @@ export const ExperimentApiFetchParamCreator = function (
   configuration?: Configuration
 ) {
   return {
+    getAllExperiments(
+      organisationId: string,
+      token: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'organisationId' is not null or undefined
+      if (organisationId === null || organisationId === undefined) {
+        throw new RequiredError(
+          "organisationId",
+          "Required parameter organisationId was null or undefined when calling appWorkspace."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling appWorkspace."
+        );
+      }
+      const localVarPath = `/api/organization/${organisationId}/experiments`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (organisationId !== undefined) {
+        localVarQueryParameter["organisationId"] = organisationId;
+      }
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
     /**
      * To create Experiment, we need to pass workspaceId, data and details in body of request
      * @summary Creating Experiment
@@ -1344,16 +1395,16 @@ export const ExperimentApiFetchParamCreator = function (
       };
     },
     /**
-     * To get experiments, you must pass the target workspaceId
+     * To get experiments, you must pass the target experimentId
      * @summary Get experiments
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     getExperiment(
       token: string,
-      workspaceId: string,
+      experimentId: string,
       options: any = {}
     ): FetchArgs {
       // verify required parameter 'token' is not null or undefined
@@ -1364,18 +1415,15 @@ export const ExperimentApiFetchParamCreator = function (
         );
       }
       // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling getExperiment."
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling getExperiment."
         );
       }
-      const localVarPath = `/api/workspace/{workspaceId}/experiments`.replace(
-        `{${"workspaceId"}}`,
-        encodeURIComponent(String(workspaceId))
-      );
+      const localVarPath = `/api/getExperiment`;
       const localVarUrlObj = url.parse(localVarPath, true);
-      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
+      const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
@@ -1487,6 +1535,142 @@ export const ExperimentApiFetchParamCreator = function (
       localVarRequestOptions.body = needsSerialization
         ? JSON.stringify(body || {})
         : body || "";
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To delete workspace, we need to pass workspaceId and workspaceName as query parameters
+     * @summary Deleting Workspaces
+     * @param {string} experimentId ExperimentId
+     * @param {string} token Generate token and pass it in header
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+     deleteExperiment(
+      experimentId: string,
+      token: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
+        throw new RequiredError(
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling deleteWorkspace."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling deleteWorkspace."
+        );
+      }
+      const localVarPath = `/api/experiment/delete`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign(
+        { method: "DELETE" },
+        options
+      );
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
+      }
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To edit workspace, we need to pass workspaceId and workspaceName as query parameters
+     * @summary Editing Workspaces
+     * @param {string} experimentId WorkspaceId
+     * @param {string} experimentName workspaceName
+     * @param {string} token Generate token and pass it in header
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    editExperimentName(
+      experimentId: string,
+      experimentName: string,
+      token: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'workspaceId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
+        throw new RequiredError(
+          "workspaceId",
+          "Required parameter workspaceId was null or undefined when calling editWorkspace."
+        );
+      }
+      // verify required parameter 'workspaceName' is not null or undefined
+      if (experimentName === null || experimentName === undefined) {
+        throw new RequiredError(
+          "workspaceName",
+          "Required parameter workspaceName was null or undefined when calling editWorkspace."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling editWorkspace."
+        );
+      }
+      const localVarPath = `/api/experiment/edit/name`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "PUT" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
+      }
+
+      if (experimentName !== undefined) {
+        localVarQueryParameter["experimentName"] = experimentName;
+      }
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
 
       return {
         url: url.format(localVarUrlObj),
@@ -4425,17 +4609,17 @@ export class UserApi extends BaseAPI {
   }
 }
 /**
- * WorkspaceFilesApi - fetch parameter creator
+ * ExperimentFilesApi - fetch parameter creator
  * @export
  */
-export const WorkspaceFilesApiFetchParamCreator = function (
+export const ExperimentFilesApiFetchParamCreator = function (
   configuration?: Configuration
 ) {
   return {
     /**
-     * To delete workspace file, we need to pass experimentId and fileId as query parameters
-     * @summary Deleting Workspace File
-     * @param {string} experimentId WorkspaceId
+     * To delete experiment file, we need to pass experimentId and fileId as query parameters
+     * @summary Deleting Experiment File
+     * @param {string} experimentId WxperimentId
      * @param {string} fileId File Id
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
@@ -4509,9 +4693,9 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       };
     },
     /**
-     * To edit workspace file, we need to pass workspaceId, fileId and label as query parameters
-     * @summary Editing Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * To edit experiment file, we need to pass experimentId, fileId and label as query parameters
+     * @summary Editing Experiment File
+     * @param {string} experimentId experimentId
      * @param {string} fileId File Id
      * @param {string} label Edited File Label
      * @param {string} token Generate token and pass it in header
@@ -4519,17 +4703,17 @@ export const WorkspaceFilesApiFetchParamCreator = function (
      * @throws {RequiredError}
      */
     editFiles(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       label: string,
       token: string,
       options: any = {}
     ): FetchArgs {
-      // verify required parameter 'workspaceId' is not null or undefined
-      if (workspaceId === null || workspaceId === undefined) {
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
-          "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling editFiles."
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling editFiles."
         );
       }
       // verify required parameter 'fileId' is not null or undefined
@@ -4559,8 +4743,8 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (workspaceId !== undefined) {
-        localVarQueryParameter["workspaceId"] = workspaceId;
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
       if (fileId !== undefined) {
@@ -4595,10 +4779,10 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       };
     },
     /**
-     * To uplaod fcs file we need to pass organisationId and workspaceId in form data
+     * To uplaod fcs file we need to pass organisationId and experimentId in form data
      * @summary Upload fcs file
      * @param {string} token token is passed in header
-     * @param {string} [workspaceId]
+     * @param {string} [experimentId]
      * @param {string} [organisationId]
      * @param {Blob} [file0]
      * @param {*} [options] Override http request option.
@@ -4606,7 +4790,7 @@ export const WorkspaceFilesApiFetchParamCreator = function (
      */
     uploadFile(
       token: string,
-      workspaceId?: string,
+      experimentId?: string,
       organisationId?: string,
       file0?: Blob,
       options: any = {}
@@ -4629,8 +4813,8 @@ export const WorkspaceFilesApiFetchParamCreator = function (
         localVarHeaderParameter["token"] = String(token);
       }
 
-      if (workspaceId !== undefined) {
-        localVarFormParams.set("workspaceId", workspaceId as any);
+      if (experimentId !== undefined) {
+        localVarFormParams.set("experimentId", experimentId as any);
       }
 
       if (organisationId !== undefined) {
@@ -4665,15 +4849,15 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       };
     },
     /**
-     * To get workspace files, we need to pass organisationId and experimentId in query params
-     * @summary Getting Workspace Files
+     * To get experiment files, we need to pass organisationId and experimentId in query params
+     * @summary Getting Experiment Files
      * @param {string} organisationId Organisation Id of logged in user
-     * @param {string} experimentId Workspace Id
+     * @param {string} experimentId Experiment Id
      * @param {string} token token is passed in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    workspaceFiles(
+    experimentFiles(
       organisationId: string,
       experimentId: string,
       token: string,
@@ -4683,21 +4867,21 @@ export const WorkspaceFilesApiFetchParamCreator = function (
       if (organisationId === null || organisationId === undefined) {
         throw new RequiredError(
           "organisationId",
-          "Required parameter organisationId was null or undefined when calling workspaceFiles."
+          "Required parameter organisationId was null or undefined when calling experimentFiles."
         );
       }
       // verify required parameter 'experimentId' is not null or undefined
       if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
           "experimentId",
-          "Required parameter experimentId was null or undefined when calling workspaceFiles."
+          "Required parameter experimentId was null or undefined when calling experimentFiles."
         );
       }
       // verify required parameter 'token' is not null or undefined
       if (token === null || token === undefined) {
         throw new RequiredError(
           "token",
-          "Required parameter token was null or undefined when calling workspaceFiles."
+          "Required parameter token was null or undefined when calling experimentFiles."
         );
       }
       const localVarPath = `/api/files`;
@@ -4741,29 +4925,29 @@ export const WorkspaceFilesApiFetchParamCreator = function (
 };
 
 /**
- * WorkspaceFilesApi - functional programming interface
+ * ExperimentFilesApi - functional programming interface
  * @export
  */
-export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
+export const ExperimentFilesApiFp = function (configuration?: Configuration) {
   return {
     /**
-     * To delete workspace file, we need to pass workspaceId and fileId as query parameters
-     * @summary Deleting Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * To delete experiment file, we need to pass experimentId and fileId as query parameters
+     * @summary Deleting experiment File
+     * @param {string} experimentId ExperimentId
      * @param {string} fileId File Id
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteFile(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       token: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2005> {
-      const localVarFetchArgs = WorkspaceFilesApiFetchParamCreator(
+      const localVarFetchArgs = ExperimentFilesApiFetchParamCreator(
         configuration
-      ).deleteFile(workspaceId, fileId, token, options);
+      ).deleteFile(experimentId, fileId, token, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -4781,9 +4965,9 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
       };
     },
     /**
-     * To edit workspace file, we need to pass workspaceId, fileId and label as query parameters
-     * @summary Editing Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * To edit experiment file, we need to pass experimentId, fileId and label as query parameters
+     * @summary Editing Experiment File
+     * @param {string} experimentId ExperimentId
      * @param {string} fileId File Id
      * @param {string} label Edited File Label
      * @param {string} token Generate token and pass it in header
@@ -4791,15 +4975,15 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
      * @throws {RequiredError}
      */
     editFiles(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       label: string,
       token: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2005> {
-      const localVarFetchArgs = WorkspaceFilesApiFetchParamCreator(
+      const localVarFetchArgs = ExperimentFilesApiFetchParamCreator(
         configuration
-      ).editFiles(workspaceId, fileId, label, token, options);
+      ).editFiles(experimentId, fileId, label, token, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -4817,10 +5001,10 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
       };
     },
     /**
-     * To uplaod fcs file we need to pass organisationId and workspaceId in form data
+     * To uplaod fcs file we need to pass organisationId and experimentId in form data
      * @summary Upload fcs file
      * @param {string} token token is passed in header
-     * @param {string} [workspaceId]
+     * @param {string} [experimentId]
      * @param {string} [organisationId]
      * @param {Blob} [file0]
      * @param {*} [options] Override http request option.
@@ -4828,14 +5012,14 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
      */
     uploadFile(
       token: string,
-      workspaceId?: string,
+      experimentId?: string,
       organisationId?: string,
       file0?: Blob,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2005> {
-      const localVarFetchArgs = WorkspaceFilesApiFetchParamCreator(
+      const localVarFetchArgs = ExperimentFilesApiFetchParamCreator(
         configuration
-      ).uploadFile(token, workspaceId, organisationId, file0, options);
+      ).uploadFile(token, experimentId, organisationId, file0, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -4853,23 +5037,23 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
       };
     },
     /**
-     * To get workspace files, we need to pass organisationId and workspaceId in query params
-     * @summary Getting Workspace Files
+     * To get experiment files, we need to pass organisationId and experimentId in query params
+     * @summary Getting Experiment Files
      * @param {string} organisationId Organisation Id of logged in user
-     * @param {string} workspaceId Workspace Id
+     * @param {string} experimentId Experiment Id
      * @param {string} token token is passed in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    workspaceFiles(
+    experimentFiles(
       organisationId: string,
-      workspaceId: string,
+      experimentId: string,
       token: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2008> {
-      const localVarFetchArgs = WorkspaceFilesApiFetchParamCreator(
+      const localVarFetchArgs = ExperimentFilesApiFetchParamCreator(
         configuration
-      ).workspaceFiles(organisationId, workspaceId, token, options);
+      ).experimentFiles(organisationId, experimentId, token, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -4890,41 +5074,41 @@ export const WorkspaceFilesApiFp = function (configuration?: Configuration) {
 };
 
 /**
- * WorkspaceFilesApi - factory interface
+ * ExperimentFilesApi - factory interface
  * @export
  */
-export const WorkspaceFilesApiFactory = function (
+export const ExperimentFilesApiFactory = function (
   configuration?: Configuration,
   fetch?: FetchAPI,
   basePath?: string
 ) {
   return {
     /**
-     * To delete workspace file, we need to pass workspaceId and fileId as query parameters
-     * @summary Deleting Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * To delete experiment file, we need to pass experimentId and fileId as query parameters
+     * @summary Deleting experiment File
+     * @param {string} experimentId ExperimentId
      * @param {string} fileId File Id
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteFile(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       token: string,
       options?: any
     ) {
-      return WorkspaceFilesApiFp(configuration).deleteFile(
-        workspaceId,
+      return ExperimentFilesApiFp(configuration).deleteFile(
+        experimentId,
         fileId,
         token,
         options
       )(fetch, basePath);
     },
     /**
-     * To edit workspace file, we need to pass workspaceId, fileId and label as query parameters
-     * @summary Editing Workspace File
-     * @param {string} workspaceId WorkspaceId
+     * To edit experiment file, we need to pass experimentId, fileId and label as query parameters
+     * @summary Editing Experiment File
+     * @param {string} experimentId ExperimentId
      * @param {string} fileId File Id
      * @param {string} label Edited File Label
      * @param {string} token Generate token and pass it in header
@@ -4932,14 +5116,14 @@ export const WorkspaceFilesApiFactory = function (
      * @throws {RequiredError}
      */
     editFiles(
-      workspaceId: string,
+      experimentId: string,
       fileId: string,
       label: string,
       token: string,
       options?: any
     ) {
-      return WorkspaceFilesApiFp(configuration).editFiles(
-        workspaceId,
+      return ExperimentFilesApiFp(configuration).editFiles(
+        experimentId,
         fileId,
         label,
         token,
@@ -4947,10 +5131,10 @@ export const WorkspaceFilesApiFactory = function (
       )(fetch, basePath);
     },
     /**
-     * To uplaod fcs file we need to pass organisationId and workspaceId in form data
+     * To uplaod fcs file we need to pass organisationId and experimentId in form data
      * @summary Upload fcs file
      * @param {string} token token is passed in header
-     * @param {string} [workspaceId]
+     * @param {string} [experimentId]
      * @param {string} [organisationId]
      * @param {Blob} [file0]
      * @param {*} [options] Override http request option.
@@ -4958,37 +5142,37 @@ export const WorkspaceFilesApiFactory = function (
      */
     uploadFile(
       token: string,
-      workspaceId?: string,
+      experimentId?: string,
       organisationId?: string,
       file0?: Blob,
       options?: any
     ) {
-      return WorkspaceFilesApiFp(configuration).uploadFile(
+      return ExperimentFilesApiFp(configuration).uploadFile(
         token,
-        workspaceId,
+        experimentId,
         organisationId,
         file0,
         options
       )(fetch, basePath);
     },
     /**
-     * To get workspace files, we need to pass organisationId and workspaceId in query params
-     * @summary Getting Workspace Files
+     * To get experiment files, we need to pass organisationId and experimentId in query params
+     * @summary Getting Experiment Files
      * @param {string} organisationId Organisation Id of logged in user
-     * @param {string} workspaceId Workspace Id
+     * @param {string} experimentId Experiment Id
      * @param {string} token token is passed in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    workspaceFiles(
+    experimentFiles(
       organisationId: string,
-      workspaceId: string,
+      experimentId: string,
       token: string,
       options?: any
     ) {
-      return WorkspaceFilesApiFp(configuration).workspaceFiles(
+      return ExperimentFilesApiFp(configuration).experimentFiles(
         organisationId,
-        workspaceId,
+        experimentId,
         token,
         options
       )(fetch, basePath);
@@ -4997,30 +5181,30 @@ export const WorkspaceFilesApiFactory = function (
 };
 
 /**
- * WorkspaceFilesApi - object-oriented interface
+ * ExperimentFilesApi - object-oriented interface
  * @export
- * @class WorkspaceFilesApi
+ * @class ExperimentFilesApi
  * @extends {BaseAPI}
  */
-export class WorkspaceFilesApi extends BaseAPI {
+export class ExperimentFilesApi extends BaseAPI {
   /**
-   * To delete workspace file, we need to pass workspaceId and fileId as query parameters
-   * @summary Deleting Workspace File
-   * @param {string} workspaceId WorkspaceId
+   * To delete experiment file, we need to pass experimentId and fileId as query parameters
+   * @summary Deleting Experiment File
+   * @param {string} experimentId ExperimentId
    * @param {string} fileId File Id
    * @param {string} token Generate token and pass it in header
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof WorkspaceFilesApi
+   * @memberof ExperimentFilesApi
    */
   public deleteFile(
-    workspaceId: string,
+    experimentId: string,
     fileId: string,
     token: string,
     options?: any
   ) {
-    return WorkspaceFilesApiFp(this.configuration).deleteFile(
-      workspaceId,
+    return ExperimentFilesApiFp(this.configuration).deleteFile(
+      experimentId,
       fileId,
       token,
       options
@@ -5028,25 +5212,25 @@ export class WorkspaceFilesApi extends BaseAPI {
   }
 
   /**
-   * To edit workspace file, we need to pass workspaceId, fileId and label as query parameters
-   * @summary Editing Workspace File
-   * @param {string} workspaceId WorkspaceId
+   * To edit experiment file, we need to pass experimentId, fileId and label as query parameters
+   * @summary Editing Experiment File
+   * @param {string} experimentId ExperimentId
    * @param {string} fileId File Id
    * @param {string} label Edited File Label
    * @param {string} token Generate token and pass it in header
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof WorkspaceFilesApi
+   * @memberof ExperimenteFilesApi
    */
   public editFiles(
-    workspaceId: string,
+    experimentId: string,
     fileId: string,
     label: string,
     token: string,
     options?: any
   ) {
-    return WorkspaceFilesApiFp(this.configuration).editFiles(
-      workspaceId,
+    return ExperimentFilesApiFp(this.configuration).editFiles(
+      experimentId,
       fileId,
       label,
       token,
@@ -5055,26 +5239,26 @@ export class WorkspaceFilesApi extends BaseAPI {
   }
 
   /**
-   * To uplaod fcs file we need to pass organisationId and workspaceId in form data
+   * To uplaod fcs file we need to pass organisationId and experimentId in form data
    * @summary Upload fcs file
    * @param {string} token token is passed in header
-   * @param {string} [workspaceId]
+   * @param {string} [experimentId]
    * @param {string} [organisationId]
    * @param {Blob} [file0]
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof WorkspaceFilesApi
+   * @memberof ExperimentFilesApi
    */
   public uploadFile(
     token: string,
-    workspaceId?: string,
+    experimentId?: string,
     organisationId?: string,
     file0?: Blob,
     options?: any
   ) {
-    return WorkspaceFilesApiFp(this.configuration).uploadFile(
+    return ExperimentFilesApiFp(this.configuration).uploadFile(
       token,
-      workspaceId,
+      experimentId,
       organisationId,
       file0,
       options
@@ -5082,24 +5266,24 @@ export class WorkspaceFilesApi extends BaseAPI {
   }
 
   /**
-   * To get workspace files, we need to pass organisationId and workspaceId in query params
-   * @summary Getting Workspace Files
+   * To get experiment files, we need to pass organisationId and experimentId in query params
+   * @summary Getting Experiment Files
    * @param {string} organisationId Organisation Id of logged in user
-   * @param {string} workspaceId Workspace Id
+   * @param {string} experimentId Experiment Id
    * @param {string} token token is passed in header
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
-   * @memberof WorkspaceFilesApi
+   * @memberof ExperimentFilesApi
    */
-  public workspaceFiles(
+  public experimentFiles(
     organisationId: string,
-    workspaceId: string,
+    experimentId: string,
     token: string,
     options?: any
   ) {
-    return WorkspaceFilesApiFp(this.configuration).workspaceFiles(
+    return ExperimentFilesApiFp(this.configuration).experimentFiles(
       organisationId,
-      workspaceId,
+      experimentId,
       token,
       options
     )(this.fetch, this.basePath);
@@ -5166,6 +5350,59 @@ export const WorkspacesApiFetchParamCreator = function (
         localVarHeaderParameter,
         options.headers
       );
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To create Workspace, we need to pass organisationId,workspace name and isPrivate in body of request
+     * @summary Creating Workspaces
+     * @param {string} token Generate token and pass it in header
+     * @param {Body3} [body]
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateWorkSpace(token: string, body?: any, options: any = {}): FetchArgs {
+    // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling createWorkspace."
+        );
+      }
+      const localVarPath = `/api/workspace`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "POST" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarHeaderParameter["Content-Type"] = "application/json";
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+      const needsSerialization =
+        <any>"Body3" !== "string" ||
+        localVarRequestOptions.headers["Content-Type"] === "application/json";
+      localVarRequestOptions.body = needsSerialization
+        ? JSON.stringify(body || {})
+        : body || "";
 
       return {
         url: url.format(localVarUrlObj),

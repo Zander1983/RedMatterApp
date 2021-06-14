@@ -82,9 +82,9 @@ const router = [
     component: Plots,
   },
   {
-    path: "/experiment/:workspaceID/plots",
+    path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots workspaceID={match.params.workspaceID} />
+      <Plots experimentId={match.params.experimentId} />
     ),
   },
   { path: "/experiments", component: Workspaces },

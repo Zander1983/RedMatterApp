@@ -14,8 +14,9 @@ import {
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import {
-  WorkspaceFilesApiFetchParamCreator,
+  ExperimentFilesApiFetchParamCreator,
   WorkspacesApiFetchParamCreator,
+  ExperimentApiFetchParamCreator
 } from "api_calls/nodejsback";
 import {
   ArrowLeftOutlined,
@@ -71,9 +72,9 @@ const Workspace = (props: any) => {
   }
 
   const fetchWorkspaceData = (snack = true, callback?: Function) => {
-    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).workspaceFiles(
+    }).experimentFiles(
       userManager.getOrganiztionID(),
       props.id,
       userManager.getToken()
@@ -102,17 +103,17 @@ const Workspace = (props: any) => {
       });
   };
 
-  const updateWorkspace = (snack = true) => {
-    const updateWorkspace = WorkspacesApiFetchParamCreator({
+  const updateExperimentName = (snack = true) => {
+    const updateExperiment = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).editWorkspace(
+    }).editExperimentName(
       props.id,
       experiment.name,
       userManager.getToken()
     );
 
     axios
-      .put(updateWorkspace.url, {}, updateWorkspace.options)
+      .put(updateExperiment.url, {}, updateExperiment.options)
       .then((e) => {
         if (snack)
           snackbarService.showSnackbar("Experiment updated", "success");
@@ -127,7 +128,13 @@ const Workspace = (props: any) => {
   };
 
   const getExperiment = () => {
-    axios.post("/api/getExperiment",
+    const experimentApiObj = ExperimentApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).getExperiment(
+      userManager.getToken(),
+      props.id
+    );
+    axios.post(experimentApiObj.url,
         {
           experimentId: props.id
         },
@@ -208,7 +215,7 @@ const Workspace = (props: any) => {
   };
 
   const deleteFile = (file: any) => {
-    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).deleteFile(props.id, file.id, userManager.getToken());
 
@@ -338,7 +345,7 @@ const Workspace = (props: any) => {
                         onKeyDown={(e: any) => {
                           if (e.keyCode === 13) {
                             setEditingName(false);
-                            updateWorkspace();
+                            updateExperimentName();
                           }
                         }}
                       ></TextField>

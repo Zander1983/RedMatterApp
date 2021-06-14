@@ -7,7 +7,7 @@ import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 import WorkspaceCard from "./WorkspaceCard";
 import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
 
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import { WorkspacesApiFetchParamCreator, ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
@@ -26,9 +26,9 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
-    const fetchArgs = WorkspacesApiFetchParamCreator({
+    const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).appWorkspace(userManager.getOrganiztionID(), userManager.getToken());
+    }).getAllExperiments(userManager.getOrganiztionID(), userManager.getToken());
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {

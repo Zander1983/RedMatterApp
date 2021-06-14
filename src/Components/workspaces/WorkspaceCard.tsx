@@ -19,8 +19,9 @@ import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import {
-  WorkspaceFilesApiFetchParamCreator,
+  ExperimentFilesApiFetchParamCreator,
   WorkspacesApiFetchParamCreator,
+  ExperimentApiFetchParamCreator
 } from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
@@ -39,9 +40,9 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
   };
 
   const deleteWorkspace = () => {
-    const fetchArgs = WorkspacesApiFetchParamCreator({
+    const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).deleteWorkspace(props.data.id, userManager.getToken());
+    }).deleteExperiment(props.data.id, userManager.getToken());
     axios
       .delete(fetchArgs.url, fetchArgs.options)
       .then((e) => {
@@ -59,14 +60,13 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
 
   const fetchWorkspaceFiles = () => {
     setInitLoading(false);
-    const fetchWorkspaces = WorkspaceFilesApiFetchParamCreator({
+    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).workspaceFiles(
+    }).experimentFiles(
       userManager.getOrganiztionID(),
       props.data.id,
       userManager.getToken()
     );
-
     axios
       .get(fetchWorkspaces.url, fetchWorkspaces.options)
       .then((e) => {
