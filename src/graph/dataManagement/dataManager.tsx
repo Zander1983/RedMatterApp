@@ -408,7 +408,6 @@ class DataManager extends ObserversFunctionality {
       })
       .then((e) => {
         let files = e.data;
-        console.log(files);
         const MAX_EVENTS = 4000;
         for (let i = 0; i < files.length; i++) {
           if (files[i].events.length > MAX_EVENTS) {
