@@ -73,7 +73,6 @@ function CreateWorkspaceModal(props: {
   }, [props.open]);
 
   const createWorkspace = () => {
-    console.log("creating workspace with formdata = ", formData);
     const data = {
       name,
       organisationId: organizationId,
