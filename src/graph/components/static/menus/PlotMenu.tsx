@@ -26,8 +26,8 @@ import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { getValue } from "@amcharts/amcharts4/.internal/core/utils/Type";
 
 interface Dictionary {
-  [key: string]: number
-} 
+  [key: string]: number;
+}
 
 const classes = {
   table: {},
@@ -39,9 +39,13 @@ export default function PlotMenu() {
   const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
-  const [statsX, setStatsX] = React.useState(COMMON_CONSTANTS.DROPDOWNS.STATS.Median);
-  const [statsY, setStatsY] = React.useState(COMMON_CONSTANTS.DROPDOWNS.STATS.Median);
- 
+  const [statsX, setStatsX] = React.useState(
+    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  );
+  const [statsY, setStatsY] = React.useState(
+    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  );
+
   const setupObservers = () => {
     observerListProvider.setup(
       (newList: ObserversFunctionality[]) => {
@@ -58,7 +62,7 @@ export default function PlotMenu() {
   const getDropdownValue = (e: string) => {
     let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.STATS;
     return statObj[e];
-  }
+  };
 
   const deletePlot = (plot: PlotData) => {
     dataManager.removePlotFromWorkspace(plot.id);
@@ -96,28 +100,30 @@ export default function PlotMenu() {
             <TableCell>Percentage</TableCell>
             <TableCell>
               <Select
-              value={statsX}
-              onChange={(e) => {
-                setStatsX(parseInt(e.target.value.toString()));
-                } 
-              }
+                value={statsX}
+                onChange={(e) => {
+                  setStatsX(parseInt(e.target.value.toString()));
+                }}
               >
-                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map((e: string) => (
-                  <MenuItem value={getDropdownValue(e)}>{`${e}X`}</MenuItem>
-                ))}
+                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
+                  (e: string) => (
+                    <MenuItem value={getDropdownValue(e)}>{`${e} X`}</MenuItem>
+                  )
+                )}
               </Select>
             </TableCell>
             <TableCell>
               <Select
-              value={statsY}
-              onChange={(e) => {
-                setStatsY(parseInt(e.target.value.toString()));
-                } 
-              }
+                value={statsY}
+                onChange={(e) => {
+                  setStatsY(parseInt(e.target.value.toString()));
+                }}
               >
-                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map((e: string) => (
-                  <MenuItem value={getDropdownValue(e)}>{`${e}Y`}</MenuItem>
-                ))}
+                {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
+                  (e: string) => (
+                    <MenuItem value={getDropdownValue(e)}>{`${e} Y`}</MenuItem>
+                  )
+                )}
               </Select>
             </TableCell>
           </TableRow>
