@@ -310,7 +310,7 @@ export interface ExperimentPayload {
    * @type {string}
    * @memberof ExperimentPayload
    */
-   privateExp?: boolean;
+  privateExp?: boolean;
 }
 /**
  *
@@ -1333,7 +1333,6 @@ export const ExperimentApiFetchParamCreator = function (
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -1356,8 +1355,8 @@ export const ExperimentApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling createExperiment."
         );
       }
-      
-      const localVarPath = `/api/experiment`
+
+      const localVarPath = `/api/experiment`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "POST" }, options);
       const localVarHeaderParameter = {} as any;
@@ -1543,13 +1542,13 @@ export const ExperimentApiFetchParamCreator = function (
     },
     /**
      * To delete workspace, we need to pass workspaceId and workspaceName as query parameters
-     * @summary Deleting Workspaces
+     * @summary Deleting Experiments
      * @param {string} experimentId ExperimentId
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-     deleteExperiment(
+    deleteExperiment(
       experimentId: string,
       token: string,
       options: any = {}
@@ -1558,14 +1557,14 @@ export const ExperimentApiFetchParamCreator = function (
       if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
           "experimentId",
-          "Required parameter experimentId was null or undefined when calling deleteWorkspace."
+          "Required parameter experimentId was null or undefined when calling deleteExperiment."
         );
       }
       // verify required parameter 'token' is not null or undefined
       if (token === null || token === undefined) {
         throw new RequiredError(
           "token",
-          "Required parameter token was null or undefined when calling deleteWorkspace."
+          "Required parameter token was null or undefined when calling deleteExperiment."
         );
       }
       const localVarPath = `/api/experiment/delete`;
@@ -1606,8 +1605,8 @@ export const ExperimentApiFetchParamCreator = function (
     },
     /**
      * To edit workspace, we need to pass workspaceId and workspaceName as query parameters
-     * @summary Editing Workspaces
-     * @param {string} experimentId WorkspaceId
+     * @summary Editing Experiment Name
+     * @param {string} experimentId ExperimentId
      * @param {string} experimentName workspaceName
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
@@ -1623,21 +1622,21 @@ export const ExperimentApiFetchParamCreator = function (
       if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
           "workspaceId",
-          "Required parameter workspaceId was null or undefined when calling editWorkspace."
+          "Required parameter workspaceId was null or undefined when calling editExperiment."
         );
       }
       // verify required parameter 'workspaceName' is not null or undefined
       if (experimentName === null || experimentName === undefined) {
         throw new RequiredError(
           "workspaceName",
-          "Required parameter workspaceName was null or undefined when calling editWorkspace."
+          "Required parameter workspaceName was null or undefined when calling editExperiment."
         );
       }
       // verify required parameter 'token' is not null or undefined
       if (token === null || token === undefined) {
         throw new RequiredError(
           "token",
-          "Required parameter token was null or undefined when calling editWorkspace."
+          "Required parameter token was null or undefined when calling editExperiment."
         );
       }
       const localVarPath = `/api/experiment/edit/name`;
@@ -1720,21 +1719,21 @@ export const ExperimentApiFp = function (configuration?: Configuration) {
       };
     },
     /**
-     * To get experiments, you must pass the target workspaceId
+     * To get experiments, you must pass the target experimentId
      * @summary Get experiments
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     getExperiment(
       token: string,
-      workspaceId: string,
+      experimentId: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2006> {
       const localVarFetchArgs = ExperimentApiFetchParamCreator(
         configuration
-      ).getExperiment(token, workspaceId, options);
+      ).getExperiment(token, experimentId, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -1756,7 +1755,6 @@ export const ExperimentApiFp = function (configuration?: Configuration) {
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
      * @param {string} experimentId Experiment id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1764,13 +1762,12 @@ export const ExperimentApiFp = function (configuration?: Configuration) {
     updateExperiment(
       body: ExperimentPayload,
       token: string,
-      workspaceId: string,
       experimentId: string,
       options?: any
     ): (fetch?: FetchAPI, basePath?: string) => Promise<InlineResponse2007> {
       const localVarFetchArgs = ExperimentApiFetchParamCreator(
         configuration
-      ).updateExperiment(body, token, workspaceId, experimentId, options);
+      ).updateExperiment(body, token, experimentId, options);
       return (
         fetch: FetchAPI = portableFetch,
         basePath: string = BASE_PATH
@@ -1805,16 +1802,10 @@ export const ExperimentApiFactory = function (
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    createExperiment(
-      body: ExperimentPayload,
-      token: string,
-      workspaceId: string,
-      options?: any
-    ) {
+    createExperiment(body: ExperimentPayload, token: string, options?: any) {
       return ExperimentApiFp(configuration).createExperiment(
         body,
         token,
@@ -1822,26 +1813,25 @@ export const ExperimentApiFactory = function (
       )(fetch, basePath);
     },
     /**
-     * To get experiments, you must pass the target workspaceId
+     * To get experiments, you must pass the target experimentId
      * @summary Get experiments
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
+     * @param {string} experimentId Experiment id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getExperiment(token: string, workspaceId: string, options?: any) {
+    getExperiment(token: string, experimentId: string, options?: any) {
       return ExperimentApiFp(configuration).getExperiment(
         token,
-        workspaceId,
+        experimentId,
         options
       )(fetch, basePath);
     },
     /**
-     * To create Experiment, we need to pass workspaceId, data and details in body of request
+     * To create Experiment, we need to pass experimentId, data and details in body of request
      * @summary Creating Experiment
      * @param {ExperimentPayload} body
      * @param {string} token Generate token and pass it in header
-     * @param {string} workspaceId Workspace id
      * @param {string} experimentId Experiment id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1849,14 +1839,12 @@ export const ExperimentApiFactory = function (
     updateExperiment(
       body: ExperimentPayload,
       token: string,
-      workspaceId: string,
       experimentId: string,
       options?: any
     ) {
       return ExperimentApiFp(configuration).updateExperiment(
         body,
         token,
-        workspaceId,
         experimentId,
         options
       )(fetch, basePath);
@@ -1872,11 +1860,11 @@ export const ExperimentApiFactory = function (
  */
 export class ExperimentApi extends BaseAPI {
   /**
-   * To create Experiment, we need to pass workspaceId, data and details in body of request
+   * To create Experiment, we need to pass experimentId, data and details in body of request
    * @summary Creating Experiment
    * @param {ExperimentPayload} body
    * @param {string} token Generate token and pass it in header
-   * @param {string} workspaceId Workspace id
+   * @param {string} experimentId Experiment id
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof ExperimentApi
@@ -1884,7 +1872,6 @@ export class ExperimentApi extends BaseAPI {
   public createExperiment(
     body: ExperimentPayload,
     token: string,
-    workspaceId: string,
     options?: any
   ) {
     return ExperimentApiFp(this.configuration).createExperiment(
@@ -1895,28 +1882,27 @@ export class ExperimentApi extends BaseAPI {
   }
 
   /**
-   * To get experiments, you must pass the target workspaceId
+   * To get experiments, you must pass the target experimentId
    * @summary Get experiments
    * @param {string} token Generate token and pass it in header
-   * @param {string} workspaceId Workspace id
+   * @param {string} experimentId Experiment id
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    * @memberof ExperimentApi
    */
-  public getExperiment(token: string, workspaceId: string, options?: any) {
+  public getExperiment(token: string, experimentId: string, options?: any) {
     return ExperimentApiFp(this.configuration).getExperiment(
       token,
-      workspaceId,
+      experimentId,
       options
     )(this.fetch, this.basePath);
   }
 
   /**
-   * To create Experiment, we need to pass workspaceId, data and details in body of request
+   * To create Experiment, we need to pass experimentId, data and details in body of request
    * @summary Creating Experiment
    * @param {ExperimentPayload} body
    * @param {string} token Generate token and pass it in header
-   * @param {string} workspaceId Workspace id
    * @param {string} experimentId Experiment id
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
@@ -1925,14 +1911,12 @@ export class ExperimentApi extends BaseAPI {
   public updateExperiment(
     body: ExperimentPayload,
     token: string,
-    workspaceId: string,
     experimentId: string,
     options?: any
   ) {
     return ExperimentApiFp(this.configuration).updateExperiment(
       body,
       token,
-      workspaceId,
       experimentId,
       options
     )(this.fetch, this.basePath);
@@ -5298,65 +5282,6 @@ export const WorkspacesApiFetchParamCreator = function (
 ) {
   return {
     /**
-     * To get workspaces, OrganisationId is passed in params
-     * @summary Getting Workspaces
-     * @param {string} organisationId Organisation Id of logged in user
-     * @param {string} token token is passed in header
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    appWorkspace(
-      organisationId: string,
-      token: string,
-      options: any = {}
-    ): FetchArgs {
-      // verify required parameter 'organisationId' is not null or undefined
-      if (organisationId === null || organisationId === undefined) {
-        throw new RequiredError(
-          "organisationId",
-          "Required parameter organisationId was null or undefined when calling appWorkspace."
-        );
-      }
-      // verify required parameter 'token' is not null or undefined
-      if (token === null || token === undefined) {
-        throw new RequiredError(
-          "token",
-          "Required parameter token was null or undefined when calling appWorkspace."
-        );
-      }
-      const localVarPath = `/api/organization/${organisationId}/experiments`;
-      const localVarUrlObj = url.parse(localVarPath, true);
-      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      if (organisationId !== undefined) {
-        localVarQueryParameter["organisationId"] = organisationId;
-      }
-
-      if (token !== undefined && token !== null) {
-        localVarHeaderParameter["token"] = String(token);
-      }
-
-      localVarUrlObj.query = Object.assign(
-        {},
-        localVarUrlObj.query,
-        options.query
-      );
-      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-      delete localVarUrlObj.search;
-      localVarRequestOptions.headers = Object.assign(
-        {},
-        localVarHeaderParameter,
-        options.headers
-      );
-
-      return {
-        url: url.format(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
      * To create Workspace, we need to pass organisationId,workspace name and isPrivate in body of request
      * @summary Creating Workspaces
      * @param {string} token Generate token and pass it in header
@@ -5364,8 +5289,8 @@ export const WorkspacesApiFetchParamCreator = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    updateWorkSpace(token: string, body?: any, options: any = {}): FetchArgs {
-    // verify required parameter 'token' is not null or undefined
+    upsertWorkSpace(token: string, body?: any, options: any = {}): FetchArgs {
+      // verify required parameter 'token' is not null or undefined
       if (token === null || token === undefined) {
         throw new RequiredError(
           "token",
@@ -5403,6 +5328,66 @@ export const WorkspacesApiFetchParamCreator = function (
       localVarRequestOptions.body = needsSerialization
         ? JSON.stringify(body || {})
         : body || "";
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To get workspaces, OrganisationId is passed in params
+     * @summary Getting Workspaces
+     * @param {string} organisationId Organisation Id of logged in user
+     * @param {string} token token is passed in header
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    appWorkspace(
+      organisationId: string,
+      token: string,
+      options: any = {}
+    ): FetchArgs {
+      // verify required parameter 'organisationId' is not null or undefined
+      if (organisationId === null || organisationId === undefined) {
+        throw new RequiredError(
+          "organisationId",
+          "Required parameter organisationId was null or undefined when calling appWorkspace."
+        );
+      }
+      // verify required parameter 'token' is not null or undefined
+      if (token === null || token === undefined) {
+        throw new RequiredError(
+          "token",
+          "Required parameter token was null or undefined when calling appWorkspace."
+        );
+      }
+      const localVarPath = `/api/workspaces`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (organisationId !== undefined) {
+        localVarQueryParameter["organisationId"] = organisationId;
+      }
+
+      if (token !== undefined && token !== null) {
+        localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
 
       return {
         url: url.format(localVarUrlObj),
@@ -5465,21 +5450,21 @@ export const WorkspacesApiFetchParamCreator = function (
     /**
      * To delete workspace, we need to pass workspaceId and workspaceName as query parameters
      * @summary Deleting Workspaces
-     * @param {string} experimentId ExperimentId
+     * @param {string} workspaceId WorkspaceId
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     deleteWorkspace(
-      experimentId: string,
+      workspaceId: string,
       token: string,
       options: any = {}
     ): FetchArgs {
-      // verify required parameter 'experimentId' is not null or undefined
-      if (experimentId === null || experimentId === undefined) {
+      // verify required parameter 'workspaceId' is not null or undefined
+      if (workspaceId === null || workspaceId === undefined) {
         throw new RequiredError(
-          "experimentId",
-          "Required parameter experimentId was null or undefined when calling deleteWorkspace."
+          "workspaceId",
+          "Required parameter workspaceId was null or undefined when calling deleteWorkspace."
         );
       }
       // verify required parameter 'token' is not null or undefined
@@ -5489,7 +5474,7 @@ export const WorkspacesApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling deleteWorkspace."
         );
       }
-      const localVarPath = `/api/experiment/delete`;
+      const localVarPath = `/api/workspace/delete`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign(
         { method: "DELETE" },
@@ -5498,8 +5483,8 @@ export const WorkspacesApiFetchParamCreator = function (
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (experimentId !== undefined) {
-        localVarQueryParameter["experimentId"] = experimentId;
+      if (workspaceId !== undefined) {
+        localVarQueryParameter["workspaceId"] = workspaceId;
       }
 
       if (token !== undefined && token !== null) {
@@ -5528,27 +5513,27 @@ export const WorkspacesApiFetchParamCreator = function (
     /**
      * To edit workspace, we need to pass workspaceId and workspaceName as query parameters
      * @summary Editing Workspaces
-     * @param {string} experimentId WorkspaceId
-     * @param {string} experimentName workspaceName
+     * @param {string} workspaceId WorkspaceId
+     * @param {string} workspaceName workspaceName
      * @param {string} token Generate token and pass it in header
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     editWorkspace(
-      experimentId: string,
-      experimentName: string,
+      workspaceId: string,
+      workspaceName: string,
       token: string,
       options: any = {}
     ): FetchArgs {
       // verify required parameter 'workspaceId' is not null or undefined
-      if (experimentId === null || experimentId === undefined) {
+      if (workspaceId === null || workspaceId === undefined) {
         throw new RequiredError(
           "workspaceId",
           "Required parameter workspaceId was null or undefined when calling editWorkspace."
         );
       }
       // verify required parameter 'workspaceName' is not null or undefined
-      if (experimentName === null || experimentName === undefined) {
+      if (workspaceName === null || workspaceName === undefined) {
         throw new RequiredError(
           "workspaceName",
           "Required parameter workspaceName was null or undefined when calling editWorkspace."
@@ -5561,18 +5546,18 @@ export const WorkspacesApiFetchParamCreator = function (
           "Required parameter token was null or undefined when calling editWorkspace."
         );
       }
-      const localVarPath = `/api/experiment/edit/name`;
+      const localVarPath = `/api/workspace/edit`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "PUT" }, options);
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      if (experimentId !== undefined) {
-        localVarQueryParameter["experimentId"] = experimentId;
+      if (workspaceId !== undefined) {
+        localVarQueryParameter["workspaceId"] = workspaceId;
       }
 
-      if (experimentName !== undefined) {
-        localVarQueryParameter["experimentName"] = experimentName;
+      if (workspaceName !== undefined) {
+        localVarQueryParameter["workspaceName"] = workspaceName;
       }
 
       if (token !== undefined && token !== null) {

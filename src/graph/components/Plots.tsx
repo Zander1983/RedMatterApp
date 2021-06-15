@@ -104,11 +104,11 @@ function Plots(props: { experimentId: string }) {
     });
   }
 
-  const updateWorkSpace = () => {
+  const upsertWorkSpace = () => {
     let stateJson = dataManager.getWorkspaceJSON();
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).updateWorkSpace(
+    }).upsertWorkSpace(
       userManager.getToken(),
       { experimentId : props.experimentId, state: stateJson }
     );
@@ -544,7 +544,7 @@ function Plots(props: { experimentId: string }) {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => updateWorkSpace()}
+                onClick={() => upsertWorkSpace()}
                 className={classes.topButton}
                 style={{
                   backgroundColor: "#fafafa",

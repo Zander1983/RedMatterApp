@@ -30,7 +30,7 @@ class UserManager {
     return this.state.user.profile.userDetails.organisationId;
   }
 
-  canAccessWorkspace(id: string) {
+  canAccessExperiment(id: string) {
     return true;
   }
 }

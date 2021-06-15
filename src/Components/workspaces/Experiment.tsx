@@ -15,7 +15,6 @@ import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import {
   ExperimentFilesApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
   ExperimentApiFetchParamCreator
 } from "api_calls/nodejsback";
 import {
@@ -37,15 +36,15 @@ const styles = {
   },
 };
 
-const Workspace = (props: any) => {
-  const [workspaceData, setWorkpsaceData] = useState(null);
+const Experiment = (props: any) => {
+  const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
 
-  const [workspaceSize, setWorkspaceSize] = useState(0);
-  const [maxWorkspaceSize, setMaxWorkspaceSize] = useState(
+  const [experimentSize, setExperimentSize] = useState(0);
+  const [maxExperimentSize, setMaxExperimentSize] = useState(
     parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
   );
 
@@ -62,8 +61,8 @@ const Workspace = (props: any) => {
     history.replace("/");
   }
 
-  const allowedInThisWorkspace = userManager.canAccessWorkspace(props.id);
-  if (!allowedInThisWorkspace) {
+  const allowedInThisExperiment = userManager.canAccessExperiment(props.id);
+  if (!allowedInThisExperiment) {
     snackbarService.showSnackbar(
       "You are not allowed in this experiment",
       "warning"
@@ -71,8 +70,8 @@ const Workspace = (props: any) => {
     history.replace("/experiments");
   }
 
-  const fetchWorkspaceData = (snack = true, callback?: Function) => {
-    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
+  const fetchExperimentData = (snack = true, callback?: Function) => {
+    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
       userManager.getOrganiztionID(),
@@ -81,14 +80,14 @@ const Workspace = (props: any) => {
     );
 
     axios
-      .get(fetchWorkspaces.url, fetchWorkspaces.options)
+      .get(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
-        setWorkpsaceData(e.data);
+        setExperimentData(e.data);
         let sizeSum = 0;
         for (const file of e.data.files) {
           sizeSum += file.fileSize;
         }
-        setWorkspaceSize(sizeSum);
+        setExperimentSize(sizeSum);
       })
       .catch((e) => {
         if (snack)
@@ -170,10 +169,10 @@ const Workspace = (props: any) => {
       const id = Math.random().toString(36).substring(7);
       fileList.push({ tempId: id, file });
     }
-    if (listSize + workspaceSize > maxWorkspaceSize) {
+    if (listSize + experimentSize > maxExperimentSize) {
       snackbarService.showSnackbar(
         "Files passed go above experiment size limit, total size would be " +
-          ((listSize + workspaceSize) / 1e6).toFixed(2) +
+          ((listSize + experimentSize) / 1e6).toFixed(2) +
           "MB",
         "error"
       );
@@ -205,7 +204,7 @@ const Workspace = (props: any) => {
           );
         })
         .finally(() => {
-          fetchWorkspaceData(false, () => {
+          fetchExperimentData(false, () => {
             setUploadingFiles(
               uploadingFiles.filter((e) => e.id !== file.tempId)
             );
@@ -215,12 +214,12 @@ const Workspace = (props: any) => {
   };
 
   const deleteFile = (file: any) => {
-    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
+    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).deleteFile(props.id, file.id, userManager.getToken());
 
     axios
-      .delete(fetchWorkspaces.url, fetchWorkspaces.options)
+      .delete(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
         snackbarService.showSnackbar("File deleted!", "success");
       })
@@ -231,16 +230,16 @@ const Workspace = (props: any) => {
         );
       })
       .finally(() => {
-        fetchWorkspaceData();
+        fetchExperimentData();
       });
   };
 
   const updateSize = (newSize: number) => {
-    setWorkspaceSize(newSize);
+    setExperimentSize(newSize);
   };
 
   useEffect(() => {
-    fetchWorkspaceData();
+    fetchExperimentData();
     getExperiment();
   }, []);
 
@@ -259,10 +258,10 @@ const Workspace = (props: any) => {
           ref: setUploadFileModalOpen,
         }}
         added={() => {
-          fetchWorkspaceData(false);
+          fetchExperimentData(false);
         }}
-        workspace={{
-          ...workspaceData,
+        experiment={{
+          ...experimentData,
           id: props.id,
         }}
       />
@@ -375,7 +374,7 @@ const Workspace = (props: any) => {
                   backgroundColor: "#fafafa",
                   maxHeight: 50,
                   visibility:
-                    workspaceData?.files.length === 0 ? "hidden" : "visible",
+                    experimentData?.files.length === 0 ? "hidden" : "visible",
                 }}
                 onClick={() =>
                   history.push("/experiment/" + props.id + "/plots")
@@ -412,7 +411,7 @@ const Workspace = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                Experiment size limit: <b>{maxWorkspaceSize / 1e6}MB</b>
+                Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
                 xs={12}
@@ -428,24 +427,24 @@ const Workspace = (props: any) => {
                   xs={12}
                   style={{
                     backgroundColor:
-                      workspaceSize === 0
+                      experimentSize === 0
                         ? "rgba(0,0,0,0)"
-                        : workspaceSize > 0.7 * maxWorkspaceSize
-                        ? workspaceSize > 0.85 * maxWorkspaceSize
+                        : experimentSize > 0.7 * maxExperimentSize
+                        ? experimentSize > 0.85 * maxExperimentSize
                           ? "#AA66AA"
                           : "#8866AA"
                         : "#6666AA",
                     height: 20,
                     width:
-                      Math.round((workspaceSize * 100) / maxWorkspaceSize) +
+                      Math.round((experimentSize * 100) / maxExperimentSize) +
                       "%",
                     borderRadius: 10,
                     textAlign: "center",
                     color: "white",
                   }}
                 >
-                  {workspaceSize > 0.1 * maxWorkspaceSize
-                    ? (workspaceSize / 1e6).toFixed(2) + "MB"
+                  {experimentSize > 0.1 * maxExperimentSize
+                    ? (experimentSize / 1e6).toFixed(2) + "MB"
                     : ""}
                 </Grid>
               </Grid>
@@ -503,15 +502,15 @@ const Workspace = (props: any) => {
                   </div>
                 </Grid>
                 <Divider style={{ marginBottom: 10 }}></Divider>
-                {workspaceData === null ? (
+                {experimentData === null ? (
                   <CircularProgress />
-                ) : workspaceData.files.length === 0 &&
+                ) : experimentData.files.length === 0 &&
                   uploadingFiles.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
                     There are no files in this experiment
                   </h3>
                 ) : (
-                  workspaceData.files.map((e: any, i: number) => {
+                  experimentData.files.map((e: any, i: number) => {
                     return (
                       <>
                         <Grid
@@ -578,7 +577,7 @@ const Workspace = (props: any) => {
                             </b>
                           </h3>
                         </Grid>
-                        {i !== workspaceData.files.length - 1 ? (
+                        {i !== experimentData.files.length - 1 ? (
                           <Divider
                             style={{ marginTop: 15, marginBottom: 15 }}
                           ></Divider>
@@ -587,9 +586,9 @@ const Workspace = (props: any) => {
                     );
                   })
                 )}
-                {workspaceData !== null &&
+                {experimentData !== null &&
                 uploadingFiles.length > 0 &&
-                workspaceData.files.length > 0 ? (
+                experimentData.files.length > 0 ? (
                   <Divider
                     style={{ marginTop: 15, marginBottom: 15 }}
                   ></Divider>
@@ -690,4 +689,4 @@ const Workspace = (props: any) => {
   );
 };
 
-export default withStyles(styles)(Workspace);
+export default withStyles(styles)(Experiment);

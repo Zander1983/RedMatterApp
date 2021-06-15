@@ -9,9 +9,9 @@ import {
 import { SnackbarContainer } from "uno-material-ui";
 
 import AppHeader from "./Components/common/header";
-import Workspaces from "./Components/workspaces/workspaces";
+import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
-import Workspace from "./Components/workspaces/Workspace";
+import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
@@ -87,11 +87,11 @@ const router = [
       <Plots experimentId={match.params.experimentId} />
     ),
   },
-  { path: "/experiments", component: Workspaces },
+  { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
-    component: ({ match }: any) => <Workspace id={match.params.experimentId} />,
+    component: ({ match }: any) => <Experiment id={match.params.experimentId} />,
   },
   {
     path: "/mailing-list",

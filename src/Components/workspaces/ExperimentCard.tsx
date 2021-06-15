@@ -19,8 +19,6 @@ import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import {
-  ExperimentFilesApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
   ExperimentApiFetchParamCreator
 } from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
@@ -32,14 +30,14 @@ const styles = {
   },
 };
 
-export default function WorkspaceCard(props: { data: any; update: Function }) {
+export default function ExperimentCard(props: { data: any; update: Function }) {
   const [files, setFiles] = React.useState([]);
   const [initLoading, setInitLoading] = React.useState(true);
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
 
-  const deleteWorkspace = () => {
+  const deleteExperiment = () => {
     const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).deleteExperiment(props.data.id, userManager.getToken());
@@ -56,23 +54,6 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         );
         userManager.logout();
       });
-  };
-
-  const fetchWorkspaceFiles = () => {
-    setInitLoading(false);
-    const fetchWorkspaces = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      props.data.id,
-      userManager.getToken()
-    );
-    axios
-      .get(fetchWorkspaces.url, fetchWorkspaces.options)
-      .then((e) => {
-        setFiles(e.data.files);
-      })
-      .catch((e) => {});
   };
 
   const [open, setOpen] = React.useState(false);
@@ -95,9 +76,6 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
     setOpen(false);
   };
 
-  useEffect(() => {
-    fetchWorkspaceFiles();
-  }, []);
 
   return (
     <Grid
@@ -118,7 +96,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
         options={{
           yes: () => {
             setDeleteConfirmModal(false);
-            deleteWorkspace();
+            deleteExperiment();
           },
           no: () => {
             setDeleteConfirmModal(false);
@@ -130,7 +108,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
           <NavLink
             to={{
               pathname: `/experiment/${props.data.id}`,
-              state: { workspaceName: props.data.name },
+              state: { experimentName: props.data.name },
             }}
           >
             <CardContent style={{ margin: 0, padding: 0, textAlign: "center" }}>
@@ -178,11 +156,7 @@ export default function WorkspaceCard(props: { data: any; update: Function }) {
                   color="textSecondary"
                   gutterBottom
                 >
-                  {initLoading
-                    ? "Loading files..."
-                    : files.length.toString() +
-                      " file" +
-                      (files.length !== 1 ? "s" : "")}
+                  {props.data.fileCount} files
                 </Typography>
               </div>
             </CardContent>

@@ -9,8 +9,7 @@ import Alert from "@material-ui/lab/Alert";
 
 import userManager from "Components/users/userManager";
 import {
-  ExperimentApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
+  ExperimentApiFetchParamCreator
 } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
@@ -33,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CreateWorkspaceModal(props: {
+function CreateExperimentModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
@@ -186,4 +185,4 @@ function CreateWorkspaceModal(props: {
   );
 }
 
-export default CreateWorkspaceModal;
+export default CreateExperimentModal;

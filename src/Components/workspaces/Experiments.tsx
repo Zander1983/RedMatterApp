@@ -1,17 +1,17 @@
 import React from "react";
 import axios from "axios";
 import { NavLink, useHistory } from "react-router-dom";
-import { Grid, Button } from "@material-ui/core";
+import { Grid, Button, CircularProgress } from "@material-ui/core";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
-import WorkspaceCard from "./WorkspaceCard";
-import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";
+import ExperimentCard from "./ExperimentCard";
+import CreateExperimentModal from "./modals/CreateExperimentModal";
 
-import { WorkspacesApiFetchParamCreator, ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 
-const Workspaces = (props: { backFromQuestions?: boolean }) => {
+const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
@@ -22,7 +22,8 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
   }
 
   const [experiments, setExperiments] = React.useState([]);
-  const [createWorkspaceModal, setCreateWorkspaceModal] = React.useState(false);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] = React.useState(false);
+  const [createExperimentModal, setCreateExperimentModal] = React.useState(false);
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -33,8 +34,10 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
         setExperiments(response.data);
+        setFetchExperimentsComplete(true);
       })
       .catch((e) => {
+        setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
           "Failed to find experiment information",
           "error"
@@ -58,13 +61,13 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
     <></>
   ) : (
     <>
-      <CreateWorkspaceModal
-        open={createWorkspaceModal}
+      <CreateExperimentModal
+        open={createExperimentModal}
         closeCall={{
           f: handleClose,
-          ref: setCreateWorkspaceModal,
+          ref: setCreateExperimentModal,
         }}
-        created={(workspaceID: string) => {
+        created={(experimentID: string) => {
           fetchExperiments();
         }}
         experiments={experiments.map((e) => e.name)}
@@ -115,7 +118,7 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
                   backgroundColor: "#fafafa",
                   maxHeight: 40,
                 }}
-                onClick={() => setCreateWorkspaceModal(true)}
+                onClick={() => setCreateExperimentModal(true)}
               >
                 Create
               </Button>
@@ -132,13 +135,15 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
             >
               {experiments.length > 0 ? (
                 experiments.map((data: any) => {
-                  return <WorkspaceCard data={data} update={fetchExperiments} />;
+                  return <ExperimentCard data={data} update={fetchExperiments} />;
                 })
               ) : (
                 <div
                   style={{ textAlign: "center", width: "100%", padding: 50 }}
                 >
-                  There are no experiments
+                  { !fetchExperimentsComplete ? ( <CircularProgress
+                    style={{ width: 20, height: 20 }}
+                  /> ) : 'There are no experiments' }
                 </div>
               )}
             </Grid>
@@ -148,4 +153,4 @@ const Workspaces = (props: { backFromQuestions?: boolean }) => {
     </>
   );
 };
-export default Workspaces;
+export default Experiments;
