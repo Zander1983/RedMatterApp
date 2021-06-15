@@ -24,6 +24,7 @@ import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useHistory } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import Gate from "graph/dataManagement/gate/gate";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -114,9 +115,8 @@ function Plots(props: { workspaceID: string }) {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
-    false
-  );
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(
     props.workspaceID !== undefined
   );
@@ -135,6 +135,23 @@ function Plots(props: { workspaceID: string }) {
   };
 
   const open = Boolean(anchorEl);
+  // const [observerAdded, setObserverAdded] = React.useSTate(fasle);
+
+  // useEffect(() => {
+  //   if (observerAdded === false) {
+  //     setObserverAdded(true)
+  //     dataManager.addObserver(
+  //       "addNewGateToWorkspace",
+  //       (gate: Gate) => {
+  //         // call a modal
+  //         // .then (
+  //         //     whne modal is returned, assign name to gate with id = gate.id
+  //         // )
+  //       },
+  //       true
+  //     );
+  //   }
+  // }, []);
 
   return (
     <div
