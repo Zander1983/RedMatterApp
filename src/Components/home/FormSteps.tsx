@@ -8,6 +8,10 @@ import { FormControlLabel } from "@material-ui/core";
 import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
 import { store } from "redux/store";
+import { Grid } from "@amcharts/amcharts4/charts";
+
+
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -57,9 +61,10 @@ function getSteps() {
   ];
 }
 
+
 function FormDeviceType() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.device;
   try {
     let defaultValue = store.getState().user.experiment.device;
     if (defaultValue === undefined) defaultValue = null;
@@ -78,32 +83,37 @@ function FormDeviceType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        value={deviceType}
         id="combo-box-demo"
         options={deviceData}
-        getOptionLabel={(option) => option.value}
-        onChange={(e) =>
+        onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
-            //@ts-ignore
-            payload: { formitem: { key: "device", value: e.target.outerText } },
-          })
-        }
+            payload: {
+              //@ts-ignore
+              formitem: { key: "device", value: e.target.outerText },
+            },
+          });
+        }}
+        getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Device" variant="outlined" />
+          <TextField {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Optional" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: -10,
+          marginLeft: '-55%'
         }}
         control={
           <Checkbox
+          style={{
+            transform: "scale(0.6)",
+        }}
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
@@ -117,19 +127,23 @@ function FormDeviceType() {
             }}
           />
         }
-        label="Could not find my device"
+        label={<span style={{ fontSize: '13px', marginTop:'-10px' }}>Could not find my device</span>}
       />
       {notFound ? (
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign:'left',
+            marginTop: -10,
+            marginLeft: '-20%'
           }}
         >
           Send us an email at{" "}
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your device and we will add it to our database!
           </p>
         </div>
@@ -140,6 +154,7 @@ function FormDeviceType() {
 
 function FormCellType() {
   const store = useStore();
+  const [cellTypeError, setCellTypeError] = React.useState(false)
   let defaultValue = null;
   try {
     let defaultValue = store.getState().user.experiment.cellType;
@@ -165,12 +180,12 @@ function FormCellType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
+      <form>
       <Autocomplete
-        value={cellType}
-        id="combo-box-demo"
+        id="cell"
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
@@ -179,6 +194,14 @@ function FormCellType() {
               formitem: { key: "cellType", value: e.target.outerText },
             },
           });
+          if(store.getState().user.experiment.cellType != '') {
+            setCellTypeError(false)
+          }
+        }}
+        onBlur={(e) => {
+          if(store.getState().user.experiment.cellType == '' || store.getState().user.experiment.cellType == null) {
+            setCellTypeError(true)
+          }
         }}
         options={[
           { id: 1, key: 1, value: "Single cells" },
@@ -187,16 +210,18 @@ function FormCellType() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Cell type" variant="outlined" />
+          <TextField required {...params} error={cellTypeError} label="Cell type" size="small" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
+      </form>
     </div>
   );
 }
 
 function FormParticleSize() {
   const store = useStore();
-  let defaultValue = null;
+  const [particleSizeError, setParticleSizeError] = React.useState(false)
+  let defaultValue = store.getState().user.experiment.particleSize;
   try {
     let defaultValue = store.getState().user.experiment.particleSize;
     if (defaultValue === undefined) defaultValue = null;
@@ -222,12 +247,12 @@ function FormParticleSize() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        id="combo-box-demo"
-        value={particleSize}
+        id="particle"
+        //value={particleSize}
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
@@ -236,6 +261,15 @@ function FormParticleSize() {
               formitem: { key: "particleSize", value: e.target.outerText },
             },
           });
+
+          if(store.getState().user.experiment.particleSize != '') {
+            setParticleSizeError(false)
+          }
+        }}
+        onBlur={(e) => {
+          if(store.getState().user.experiment.particleSize == null || store.getState().user.experiment.particleSize == "") {
+            setParticleSizeError(true)
+          }
         }}
         options={[
           { id: 1, key: "Below 1µm", value: "Below 1µm" },
@@ -245,7 +279,7 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Cell size" variant="outlined" />
+          <TextField required {...params} error={particleSizeError} size="small" label="Particle Size" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
     </div>
@@ -253,8 +287,9 @@ function FormParticleSize() {
 }
 
 function FormFluorophores() {
-  const store = useStore();
-  let defaultValue = null;
+  const store = useStore();  
+  const [fluorosphoresCategoryError, setFluorosphoresCategoryError] = React.useState(false)
+  let defaultValue = store.getState().user.experiment.fluorophoresCategory;
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
@@ -279,38 +314,51 @@ function FormFluorophores() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        value={fluorophoresType}
-        id="combo-box-demo"
-        options={fluorophoresData}
-        getOptionLabel={(option) => option.value}
-        style={{ width: 400 }}
+        //value={fluorophoresType}
+        id="fluorosphores"
+        
+        
         onChange={(e) => {
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
             payload: {
-              formitem: {
-                key: "fluorophoresCategory",
-                //@ts-ignore
-                value: e.target.outerText,
-              },
+              //@ts-ignore
+              formitem: { key: "fluorophoresCategory", value: e.target.outerText },
             },
           });
+          if(store.getState().user.experiment.fluorophoresCategory != '') {
+            setFluorosphoresCategoryError(false)
+          }
         }}
+
+        onBlur={(e) => {
+          if(store.getState().user.experiment.fluorophoresCategory == '' || store.getState().user.experiment.fluorophoresCategory == null) {
+            setFluorosphoresCategoryError(true)
+          }
+        }}
+
+        options={fluorophoresData}
+        getOptionLabel={(option) => option.value}
+        style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Fluorophores" variant="outlined" />
+          <TextField required {...params} error={fluorosphoresCategoryError} size="small" label="Fluorosphores" placeholder="Placeholder" helperText="This Field is Required" variant="outlined" />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: -10,
+          marginLeft: '-47%'
         }}
         control={
           <Checkbox
             color="primary"
+            style={{
+              transform: "scale(0.6)",
+          }}
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
             onChange={(e) => {
@@ -325,19 +373,23 @@ function FormFluorophores() {
             }}
           />
         }
-        label="Could not find the fluorophores"
+        label={<span style={{ fontSize: '13px' }}>Could not find the fluorophores</span>}
       />
       {notFound ? (
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign:'left',
+            marginTop: -10,
+            marginLeft: '-15%'
           }}
         >
           Send us an email at{" "}
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your fluorophores and we will add it to our
             database!
           </p>
@@ -349,7 +401,7 @@ function FormFluorophores() {
 
 function FormDescription() {
   const store = useStore();
-  let defaultValue = null;
+  let defaultValue = store.getState().user.experiment.formDescription;
   try {
     let defaultValue = store.getState().user.experiment.description;
     if (defaultValue === undefined) defaultValue = null;
@@ -363,6 +415,7 @@ function FormDescription() {
 
   return (
     <TextField
+      helperText="This Field is Optional"
       value={description}
       id="outlined-multiline-static"
       label="Description"
@@ -377,12 +430,12 @@ function FormDescription() {
           },
         });
       }}
-      rows={6}
+      size="small"
       placeholder="..."
       variant="outlined"
       style={{
-        marginTop: 30,
-        width: 600,
+        marginTop: 5,
+        width: 400,
       }}
     />
   );
