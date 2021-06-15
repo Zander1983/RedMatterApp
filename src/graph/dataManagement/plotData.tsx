@@ -612,7 +612,10 @@ export default class PlotData extends ObserversFunctionality {
       }
     }
     if (allDone) return;
-    if (this.file.remoteData != undefined) {
+    if (
+      this.file.remoteData != undefined &&
+      this.file.remoteData.paramsAnalysis !== undefined
+    ) {
       for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
         const axisType =
           //@ts-ignore
