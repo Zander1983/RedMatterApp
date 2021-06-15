@@ -392,6 +392,22 @@ class DataManager extends ObserversFunctionality {
     return DataManager.instance;
   }
 
+  private handleRemoteFiles(files: any[]) {
+    const MAX_EVENTS = 4000;
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].events.length > MAX_EVENTS) {
+        for (let j = 0; j < files[i].events.length; j++) {
+          const nindex = Math.floor(Math.random() * files[i].events.length);
+          const temp = files[i].events[nindex];
+          files[i].events[nindex] = files[i].events[j];
+          files[i].events[j] = temp;
+        }
+        files[i].events = files[i].events.slice(0, MAX_EVENTS);
+      }
+    }
+    this.remoteFiles = files;
+  }
+
   remoteFiles: any[] = [];
   private loadWorkspaceFilesFromRemote() {
     if (this.remoteWorkspaceID === undefined) {
@@ -406,28 +422,13 @@ class DataManager extends ObserversFunctionality {
           organisationId: userManager.getOrganiztionID(),
         },
       })
-      .then((e) => {
-        let files = e.data;
-        const MAX_EVENTS = 4000;
-        for (let i = 0; i < files.length; i++) {
-          if (files[i].events.length > MAX_EVENTS) {
-            for (let j = 0; j < files[i].events.length; j++) {
-              const nindex = Math.floor(Math.random() * files[i].events.length);
-              const temp = files[i].events[nindex];
-              files[i].events[nindex] = files[i].events[j];
-              files[i].events[j] = temp;
-            }
-            files[i].events = files[i].events.slice(0, MAX_EVENTS);
-          }
-        }
-        this.remoteFiles = files;
-        this.setWorkspaceLoading(false);
-      })
+      .then((e) => this.handleRemoteFiles(e.data))
       .catch((e) => {
-        snackbarService.showSnackbar(
-          "Could not load your remote files, please try again",
-          "error"
-        );
+        document.location.reload(true);
+        // snackbarService.showSnackbar(e.response.data.error, "error", 1000000);
+      })
+      .finally(() => {
+        this.setWorkspaceLoading(false);
       });
   }
 
