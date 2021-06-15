@@ -4,13 +4,6 @@ import { Button, FormControlLabel, Switch } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
-import Snackbar from "@material-ui/core/Snackbar";
-import Alert from "@material-ui/lab/Alert";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import Checkbox from "@material-ui/core/Checkbox";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
@@ -25,7 +18,6 @@ import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import CreateExperimentDialog from "./CreateExperimentDialog";
-//import { Checkbox } from "antd";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -62,48 +54,26 @@ function CreateWorkspaceModal(props: {
   const [disableSubmit, setDisableSubmit] = React.useState(true);
   const [nameError, setNameError] = React.useState(false);
 
-  
-
   useEffect(() => {
-    //clearing the store so the form is always blank at first
-    console.log(store.getState().user.experiment.cellType,)
-    console.log("aaarririarjoijdsfoihadsjkfhadsfk ")
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA",
-      payload: {
-        //@ts-ignore
-        formitem: { key: "device", value: null },
-      },
-    });
-
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA",
-      payload: {
-        //@ts-ignore
-        formitem: { key: "cellType", value: null },
-      },
-    });
-
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA",
-      payload: {
-        //@ts-ignore
-        formitem: { key: "particleSize", value: null },
-      },
-    });
-
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA",
-      payload: {
-        //@ts-ignore
-        formitem: { key: "fluorophoresCategory", value: null },
-      },
-    });
-    console.log(store.getState().user.experiment.cellType,)
+    for (const item of [
+      "device",
+      "cellType",
+      "particleSize",
+      "fluorophoresCategory",
+      "description",
+    ]) {
+      dispatch({
+        type: "EXPERIMENT_FORM_DATA",
+        payload: {
+          formitem: { key: item, value: null },
+        },
+      });
+    }
     enableButton();
   }, [props.open]);
 
   const createWorkspace = () => {
+    console.log("creating workspace with formdata = ", formData);
     const data = {
       name,
       organisationId: organizationId,
@@ -118,8 +88,6 @@ function CreateWorkspaceModal(props: {
         headers: fetchArgs.options.headers,
       })
       .then((e) => {
-        props.closeCall.f(props.closeCall.ref);
-        props.created(e.data.id);
         setName("");
         setPrivateWorkspace(false);
         const workspaceID = e.data.id;
@@ -138,6 +106,8 @@ function CreateWorkspaceModal(props: {
         dispatch({
           type: "EXPERIMENT_FORM_DATA_CLEAR",
         });
+        props.closeCall.f(props.closeCall.ref);
+        props.created(e.data.id);
       })
       .catch((e) => {
         snackbarService.showSnackbar(
@@ -171,7 +141,6 @@ function CreateWorkspaceModal(props: {
       2: store.getState().user.experiment.particleSize,
       3: store.getState().user.experiment.fluorophoresCategory,
     };
-
 
     //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
     if (
@@ -250,7 +219,8 @@ function CreateWorkspaceModal(props: {
               backgroundColor: "#6666A9",
               color: "#FFF",
               padding: "6px 0 1px",
-              borderRadius: '10px 10px 0 0',
+              borderRadius: "10px 10px 0 0",
+              paddingTop: 15,
             }}
           >
             <h2
@@ -262,45 +232,51 @@ function CreateWorkspaceModal(props: {
             </h2>
           </div>
 
-
           <div
             style={{
               marginTop: 15,
             }}
           >
-            <Grid container spacing={3} 
-            style={{
-              paddingLeft: 60,
+            <Grid
+              container
+              spacing={3}
+              style={{
+                paddingLeft: 60,
                 paddingRight: 50,
-            }}
+              }}
             >
               <Grid item xs={5}>
                 <Typography
                   style={{
                     marginTop: 0,
-                    textAlign: "left"
+                    textAlign: "left",
                   }}
                 >
-                  <h4>Your Experiment's Name</h4>
+                  <h4 style={{ fontWeight: 300 }}>Your Experiment's Name</h4>
                 </Typography>
-            </Grid>
+              </Grid>
               <Grid item xs={7}>
                 <TextField
-                  error = {nameError}
+                  error={nameError}
                   size="small"
                   variant="outlined"
                   helperText="This Field is Required"
                   label="Experiment Name"
                   onChange={(textField: any) => {
                     setName(textField.target.value);
-                    if(textField.target.value != null && textField.target.value != ""){
-                      setNameError(false)
+                    if (
+                      textField.target.value != null &&
+                      textField.target.value != ""
+                    ) {
+                      setNameError(false);
                     }
                   }}
                   onBlur={(textField: any) => {
-                    if(textField.target.value == null || textField.target.value == "") {
-                      
-                      setNameError(true)
+                    if (
+                      textField.target.value == null ||
+                      textField.target.value == ""
+                    ) {
+                      setNameError(true);
                     }
                   }}
                   value={name}
@@ -308,44 +284,62 @@ function CreateWorkspaceModal(props: {
                     width: "102%",
                   }}
                 ></TextField>
-</Grid>
+              </Grid>
 
-<Grid container spacing={3} 
-            style={{
-              paddingLeft: 60,
-                paddingRight: 50,
-            }}
-            >
-              <Grid item xs={5}></Grid>
+              <Divider style={{ width: "90%" }}></Divider>
+
+              <Grid item xs={5}>
+                <Typography
+                  style={{
+                    marginTop: 0,
+                    textAlign: "left",
+                  }}
+                >
+                  <h4 style={{ fontWeight: 300 }}>Private experiment</h4>
+                </Typography>
+              </Grid>
               <Grid item xs={7}>
-          <FormControlLabel
-            style={{
-              marginTop: '-27px',
-              marginLeft: '-64%'
-            }}
-            control={
-              <Checkbox
-              //@ts-ignore
-                color="primary"
-                inputProps={{ "aria-label": "secondary checkbox" }}
-                checked={privateWorkspace}
-                onChange={() => setPrivateWorkspace(!privateWorkspace)}
-                name="Private workspace"
-                style={{
-                  transform: "scale(0.6)",
-              }}
-              />
-            }
-            label={<span style={{ fontSize: '13px', marginTop:'-10px' }}><strong>Private Experiment</strong></span>}
-          />
+                <FormControlLabel
+                  style={{
+                    marginTop: "-10px",
+                    marginLeft: "-64%",
+                  }}
+                  control={
+                    <Checkbox
+                      //@ts-ignore
+                      color="primary"
+                      inputProps={{ "aria-label": "secondary checkbox" }}
+                      checked={privateWorkspace}
+                      onChange={() => setPrivateWorkspace(!privateWorkspace)}
+                      name="Private workspace"
+                      style={{}}
+                    />
+                  }
+                  label={
+                    <span style={{ fontSize: "13px" }}>
+                      <strong style={{ fontWeight: 300 }}>
+                        Private Experiment
+                      </strong>
+                    </span>
+                  }
+                />
 
-
-
-          {privateWorkspace ? (
-            <p style={{fontSize: 10, marginTop:-13, marginBottom: 15, marginLeft: '-20%'}}>No one in your workspace will be able to see this experiment</p>
-          ) : null}
-          </Grid>
-          </Grid>
+                {privateWorkspace ? (
+                  <p
+                    style={{
+                      fontSize: 10,
+                      marginTop: -13,
+                      marginBottom: 15,
+                      marginLeft: "-20%",
+                    }}
+                  >
+                    No one in your workspace will be able to see this experiment
+                  </p>
+                ) : null}
+              </Grid>
+              <Divider
+                style={{ width: "90%", marginTop: -7, marginBottom: 10 }}
+              ></Divider>
             </Grid>
           </div>
 
@@ -356,13 +350,12 @@ function CreateWorkspaceModal(props: {
             }}
           ></PrototypeForm>
 
-
           <Divider
             style={{
-              marginTop: 0,
               marginBottom: 10,
             }}
           ></Divider>
+
           <div
             style={{
               display: "flex",
