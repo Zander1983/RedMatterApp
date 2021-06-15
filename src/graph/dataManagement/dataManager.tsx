@@ -407,7 +407,21 @@ class DataManager extends ObserversFunctionality {
         },
       })
       .then((e) => {
-        this.remoteFiles = e.data;
+        let files = e.data;
+        console.log(files);
+        const MAX_EVENTS = 4000;
+        for (let i = 0; i < files.length; i++) {
+          if (files[i].events.length > MAX_EVENTS) {
+            for (let j = 0; j < files[i].events.length; j++) {
+              const nindex = Math.floor(Math.random() * files[i].events.length);
+              const temp = files[i].events[nindex];
+              files[i].events[nindex] = files[i].events[j];
+              files[i].events[j] = temp;
+            }
+            files[i].events = files[i].events.slice(0, MAX_EVENTS);
+          }
+        }
+        this.remoteFiles = files;
         this.setWorkspaceLoading(false);
       })
       .catch((e) => {
