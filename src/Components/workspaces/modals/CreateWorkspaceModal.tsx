@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, FormControlLabel, Switch } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
-import Snackbar from "@material-ui/core/Snackbar";
-import Alert from "@material-ui/lab/Alert";
+import Checkbox from "@material-ui/core/Checkbox";
+import Typography from "@material-ui/core/Typography";
+import Grid from "@material-ui/core/Grid";
 
 import userManager from "Components/users/userManager";
 import {
@@ -14,14 +15,15 @@ import {
 } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
+import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
-import { useDispatch } from "react-redux";
+import CreateExperimentDialog from "./CreateExperimentDialog";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
     backgroundColor: "#fafafa",
     boxShadow: theme.shadows[6],
-    padding: 20,
+    padding: "0px 0 20px",
     width: "800px",
     position: "absolute",
     left: "50%",
@@ -39,6 +41,7 @@ function CreateWorkspaceModal(props: {
   created: Function;
   workspaces: string[];
 }): JSX.Element {
+  const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
 
@@ -46,8 +49,31 @@ function CreateWorkspaceModal(props: {
   const [name, setName] = React.useState("");
   const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
+  const [createExperimentDialog, setCreateExperimentDialog] =
+    React.useState(false);
+  const [disableSubmit, setDisableSubmit] = React.useState(true);
+  const [nameError, setNameError] = React.useState(false);
+
+  useEffect(() => {
+    for (const item of [
+      "device",
+      "cellType",
+      "particleSize",
+      "fluorophoresCategory",
+      "description",
+    ]) {
+      dispatch({
+        type: "EXPERIMENT_FORM_DATA",
+        payload: {
+          formitem: { key: item, value: null },
+        },
+      });
+    }
+    enableButton();
+  }, [props.open]);
 
   const createWorkspace = () => {
+    console.log("creating workspace with formdata = ", formData);
     const data = {
       name,
       organisationId: organizationId,
@@ -62,8 +88,6 @@ function CreateWorkspaceModal(props: {
         headers: fetchArgs.options.headers,
       })
       .then((e) => {
-        props.closeCall.f(props.closeCall.ref);
-        props.created(e.data.id);
         setName("");
         setPrivateWorkspace(false);
         const workspaceID = e.data.id;
@@ -82,6 +106,8 @@ function CreateWorkspaceModal(props: {
         dispatch({
           type: "EXPERIMENT_FORM_DATA_CLEAR",
         });
+        props.closeCall.f(props.closeCall.ref);
+        props.created(e.data.id);
       })
       .catch((e) => {
         snackbarService.showSnackbar(
@@ -89,18 +115,233 @@ function CreateWorkspaceModal(props: {
           "error"
         );
       });
+    setDisableSubmit(true);
+  };
+
+  //THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG
+  const handleSubmit = () => {
+    if (name === "" || name === undefined || name === null) {
+      snackbarService.showSnackbar(
+        "Experiment name cannot not be empty",
+        "warning"
+      );
+      return;
+    }
+
+    if (props.workspaces.includes(name)) {
+      snackbarService.showSnackbar(
+        "An experiment with this name already exists",
+        "warning"
+      );
+      return;
+    }
+
+    const valuesToCheck = {
+      1: store.getState().user.experiment.cellType,
+      2: store.getState().user.experiment.particleSize,
+      3: store.getState().user.experiment.fluorophoresCategory,
+    };
+
+    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+    if (
+      Object.values(valuesToCheck).every((item) => item != null) &&
+      name != null
+    ) {
+      setCreateExperimentDialog(true);
+    } else {
+      snackbarService.showSnackbar(
+        "There are still some required fields empty",
+        "error"
+      );
+      return;
+    }
+    //SET THE FROM DATA STATE SO WE CAN CREATE THE EXPERIMENT FROM THE CREATEWORKSPACE FUNCTION
+    setFormData(store.getState().user.experiment);
+  };
+
+  //function that enables the submit button
+  const enableButton = () => {
+    const valuesToCheck = {
+      1: store.getState().user.experiment.cellType,
+      2: store.getState().user.experiment.particleSize,
+      3: store.getState().user.experiment.fluorophoresCategory,
+      4: name,
+    };
+    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
+    if (
+      Object.values(valuesToCheck).every((item) => item != null && item != "")
+    ) {
+      setDisableSubmit(false);
+    } else {
+      setDisableSubmit(true);
+    }
+  };
+
+  store.subscribe(() => {
+    enableButton();
+  });
+
+  const handleClose = (func: Function) => {
+    func(false);
+  };
+  //FUNCTION THAT WILL BE PASSED AS A PROP TO THE SUMMARY SO WE CAN CREATE THE EXPERIMENT FROM THERE
+  const createExperimentFromSummary = (func: Function) => {
+    func();
   };
 
   return (
     <div>
+      <CreateExperimentDialog
+        open={createExperimentDialog}
+        closeCall={{
+          f: handleClose,
+          ref: setCreateExperimentDialog,
+        }}
+        name={name}
+        sendFunction={{
+          f: createExperimentFromSummary,
+          ref: createWorkspace,
+        }}
+      />
+
       <Modal
         open={props.open}
-        onClose={() => {
-          props.closeCall.f(props.closeCall.ref);
+        disableScrollLock={true}
+        style={{
+          overflow: "scroll",
+          padding: "0",
+          borderRadius: 10,
         }}
       >
         <div className={classes.modal}>
-          <h2>Create workspace</h2>
+          <div
+            style={{
+              backgroundColor: "#6666A9",
+              color: "#FFF",
+              padding: "6px 0 1px",
+              borderRadius: "10px 10px 0 0",
+              paddingTop: 15,
+            }}
+          >
+            <h2
+              style={{
+                color: "#FFF",
+              }}
+            >
+              Create Experiment
+            </h2>
+          </div>
+
+          <div
+            style={{
+              marginTop: 15,
+            }}
+          >
+            <Grid
+              container
+              spacing={3}
+              style={{
+                paddingLeft: 60,
+                paddingRight: 50,
+              }}
+            >
+              <Grid item xs={5}>
+                <Typography
+                  style={{
+                    marginTop: 0,
+                    textAlign: "left",
+                  }}
+                >
+                  <h4 style={{ fontWeight: 300 }}>Your Experiment's Name</h4>
+                </Typography>
+              </Grid>
+              <Grid item xs={7}>
+                <TextField
+                  error={nameError}
+                  size="small"
+                  variant="outlined"
+                  helperText="This Field is Required"
+                  label="Experiment Name"
+                  onChange={(textField: any) => {
+                    setName(textField.target.value);
+                    if (
+                      textField.target.value != null &&
+                      textField.target.value != ""
+                    ) {
+                      setNameError(false);
+                    }
+                  }}
+                  onBlur={(textField: any) => {
+                    if (
+                      textField.target.value == null ||
+                      textField.target.value == ""
+                    ) {
+                      setNameError(true);
+                    }
+                  }}
+                  value={name}
+                  style={{
+                    width: "102%",
+                  }}
+                ></TextField>
+              </Grid>
+
+              <Divider style={{ width: "90%" }}></Divider>
+
+              <Grid item xs={5}>
+                <Typography
+                  style={{
+                    marginTop: 0,
+                    textAlign: "left",
+                  }}
+                >
+                  <h4 style={{ fontWeight: 300 }}>Private experiment</h4>
+                </Typography>
+              </Grid>
+              <Grid item xs={7}>
+                <FormControlLabel
+                  style={{
+                    marginTop: "-10px",
+                    marginLeft: "-64%",
+                  }}
+                  control={
+                    <Checkbox
+                      //@ts-ignore
+                      color="primary"
+                      inputProps={{ "aria-label": "secondary checkbox" }}
+                      checked={privateWorkspace}
+                      onChange={() => setPrivateWorkspace(!privateWorkspace)}
+                      name="Private workspace"
+                      style={{}}
+                    />
+                  }
+                  label={
+                    <span style={{ fontSize: "13px" }}>
+                      <strong style={{ fontWeight: 300 }}>
+                        Private Experiment
+                      </strong>
+                    </span>
+                  }
+                />
+
+                {privateWorkspace ? (
+                  <p
+                    style={{
+                      fontSize: 10,
+                      marginTop: -13,
+                      marginBottom: 15,
+                      marginLeft: "-20%",
+                    }}
+                  >
+                    No one in your workspace will be able to see this experiment
+                  </p>
+                ) : null}
+              </Grid>
+              <Divider
+                style={{ width: "90%", marginTop: -7, marginBottom: 10 }}
+              ></Divider>
+            </Grid>
+          </div>
 
           <PrototypeForm
             //@ts-ignore
@@ -109,49 +350,12 @@ function CreateWorkspaceModal(props: {
             }}
           ></PrototypeForm>
 
-          <div
-            style={{
-              marginTop: 30,
-            }}
-          >
-            <TextField
-              variant="outlined"
-              placeholder="Workspace name"
-              onChange={(textField: any) => {
-                setName(textField.target.value);
-              }}
-              value={name}
-              style={{
-                width: "50%",
-              }}
-            ></TextField>
-          </div>
-
-          <FormControlLabel
-            style={{
-              marginTop: 10,
-            }}
-            control={
-              <Switch
-                checked={privateWorkspace}
-                onChange={() => setPrivateWorkspace(!privateWorkspace)}
-                name="Private workspace"
-                color="primary"
-              />
-            }
-            label="Private workspace"
-          />
-
-          {privateWorkspace ? (
-            <p>No one in your workspace will be able to see this workspace</p>
-          ) : null}
-
           <Divider
             style={{
-              marginTop: 10,
               marginBottom: 10,
             }}
           ></Divider>
+
           <div
             style={{
               display: "flex",
@@ -172,30 +376,16 @@ function CreateWorkspaceModal(props: {
             </Button>
             <Button
               variant="contained"
+              disabled={disableSubmit}
               style={{
-                backgroundColor: formData === null ? "#ddd" : "#43A047",
+                backgroundColor: disableSubmit ? "#aaaadb" : "#6666A9",
                 color: "white",
               }}
               onClick={() => {
-                if (name === "" || name === undefined || name === null) {
-                  snackbarService.showSnackbar(
-                    "Workspace name cannot not be empty",
-                    "warning"
-                  );
-                  return;
-                }
-                if (props.workspaces.includes(name)) {
-                  snackbarService.showSnackbar(
-                    "A workspace with this name already exists",
-                    "warning"
-                  );
-                  return;
-                }
-                createWorkspace();
+                handleSubmit();
               }}
-              disabled={formData === null}
             >
-              Confirm
+              Create
             </Button>
           </div>
         </div>
