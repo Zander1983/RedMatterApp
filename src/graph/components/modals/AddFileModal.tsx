@@ -11,6 +11,7 @@ import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
+import { snackbarService } from "uno-material-ui";
 import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { useHistory } from "react-router";
@@ -79,7 +80,10 @@ const getRemoteFiles = (): any[] => {
       axes: e.channels,
       description: "...",
       lastModified: "...",
-      remoteData: e,
+      remoteData: {
+        ...e,
+        events: null,
+      },
     };
   });
 };
@@ -96,7 +100,14 @@ function AddFileModal(props: {
   useEffect(() => {
     if (remoteWorkspace && dataManager.isWorkspaceLoading()) {
       dataManager.addObserver("setWorkspaceLoading", () => {
-        setFiles(getRemoteFiles());
+        if (dataManager.remoteFiles !== undefined) {
+          const remoteFiles = getRemoteFiles();
+          setFiles(remoteFiles);
+        }
+      });
+      dataManager.addObserver("clearWorkspace", () => {
+        setFiles(remoteWorkspace ? [] : staticFiles);
+        dataManager.setWorkspaceLoading(false);
       });
     }
   }, []);
@@ -104,6 +115,10 @@ function AddFileModal(props: {
   const [onHover, setOnHover] = React.useState(-1);
 
   const addFile = (index: number) => {
+    if (!dataManager.ready()) {
+      snackbarService.showSnackbar("Something went wrong, try again!", "error");
+      return;
+    }
     const file: any = files[index];
     console.log(file);
     let newFile: FCSFile;

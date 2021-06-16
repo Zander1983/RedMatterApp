@@ -216,7 +216,7 @@ export const counrtyList = [
   { key: "SE", value: "Sweden" },
   { key: "CH", value: "Switzerland" },
   { key: "SY", value: "Syrian Arab Republic" },
-  { key: "TW", value: "Taiwan (Republic of China)" },
+  { key: "TW", value: "Taiwan, a Province of China" },
   { key: "TJ", value: "Tajikistan" },
   { key: "TZ", value: "Tanzania, United Republic of" },
   { key: "TH", value: "Thailand" },

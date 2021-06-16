@@ -86,6 +86,7 @@ function Plots(props: { workspaceID: string }) {
   useEffect(() => {
     return () => {
       setWorkspaceAlready = false;
+      dataManager.clearWorkspace();
     };
   }, []);
   const classes = useStyles();
@@ -121,19 +122,6 @@ function Plots(props: { workspaceID: string }) {
   );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const waitTime = Math.random() * 1000 + 500;
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handlePopoverOpen = (e: any) => {
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
 
   return (
     <div
@@ -316,7 +304,7 @@ function Plots(props: { workspaceID: string }) {
         }
         options={{
           yes: () => {
-            dataManager.clearWorkspace();
+            dataManager.clearWorkspace(true);
           },
           no: () => {
             handleClose(setClearModal);
@@ -525,7 +513,7 @@ function Plots(props: { workspaceID: string }) {
                 Learn More
               </Button>
               {/* Uncomment below to have a "print state" button */}
-              {/* <Button
+              <Button
                 variant="contained"
                 size="large"
                 onClick={() => console.log(dataManager.getWorkspaceJSON())}
@@ -535,7 +523,7 @@ function Plots(props: { workspaceID: string }) {
                 }}
               >
                 Print Experiment
-              </Button> */}
+              </Button>
               <Button
                 variant="contained"
                 size="large"

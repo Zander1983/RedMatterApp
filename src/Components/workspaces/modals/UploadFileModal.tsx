@@ -126,7 +126,7 @@ function UploadFileModal(props: {
             </div>
           ) : null}
           <DropzoneArea
-            acceptedFiles={[".fcs"]}
+            acceptedFiles={[".fcs", ".lmd"]}
             filesLimit={1000}
             maxFileSize={1073741824} // gigabyte
             onChange={(e: any) => {

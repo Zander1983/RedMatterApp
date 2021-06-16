@@ -100,12 +100,20 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
+    const hideY =
+      this.plotData.xAxis === this.plotData.yAxis &&
+      this.plotData.histogramAxis === "vertical";
+
+    const hideX =
+      this.plotData.xAxis === this.plotData.yAxis &&
+      this.plotData.histogramAxis === "horizontal";
+
     super.draw({
       lines: false,
       vbins: (this.height - bottomPadding) / 50,
       hbins: (this.width - rightPadding) / 50,
-      xAxisLabel: this.plotData.xAxis,
-      yAxisLabel: this.plotData.yAxis,
+      xAxisLabel: !hideX ? this.plotData.xAxis : "",
+      yAxisLabel: !hideY ? this.plotData.yAxis : "",
     });
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;

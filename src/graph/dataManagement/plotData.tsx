@@ -99,12 +99,41 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   setupPlot() {
+    try {
+      const fscssc = this.getFSCandSSCAxis();
+      if (this.xAxis === "" && this.yAxis === "") {
+        this.xAxis = this.file.axes[fscssc.fsc];
+        this.yAxis = this.file.axes[fscssc.ssc];
+      }
+    } catch {}
+
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
     this.updateGateObservers();
     this.updateRandomSelection();
+  }
+
+  getFSCandSSCAxis(): { fsc: number; ssc: number } {
+    let hasFSC: null | number = null;
+    let hasSSC: null | number = null;
+    for (
+      let i = 0;
+      i < this.file.axes.length && (hasFSC === null || hasSSC === null);
+      i++
+    ) {
+      const axis = this.file.axes[i];
+      if (axis.toUpperCase().indexOf("FSC") != -1) {
+        hasFSC = i;
+      } else if (axis.toUpperCase().indexOf("SSC") != -1) {
+        hasSSC = i;
+      }
+    }
+    if (hasSSC === null || hasFSC === null) {
+      throw Error("FSC or SSC axis not found");
+    }
+    return { fsc: hasFSC, ssc: hasSSC };
   }
 
   getOverlays() {
@@ -442,7 +471,10 @@ export default class PlotData extends ObserversFunctionality {
     ) {
       this.findAllRanges();
     }
-    return { x: this.ranges.get(targetXAxis), y: this.ranges.get(targetYAxis) };
+    return {
+      x: this.ranges.get(targetXAxis),
+      y: this.ranges.get(targetYAxis),
+    };
   }
 
   private STD_BIN_SIZE = 50;
@@ -572,8 +604,18 @@ export default class PlotData extends ObserversFunctionality {
     if (typeof this.ranges === "object") {
       this.ranges = new Map();
     }
-    if (this.file.remoteData != undefined) {
-      const remoteData = this.file.remoteData;
+    let allDone = true;
+    for (const axis of this.file.axes) {
+      if (!this.ranges.has(axis)) {
+        allDone = false;
+        break;
+      }
+    }
+    if (allDone) return;
+    if (
+      this.file.remoteData != undefined &&
+      this.file.remoteData.paramsAnalysis !== undefined
+    ) {
       for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
         const axisType =
           //@ts-ignore
@@ -585,27 +627,18 @@ export default class PlotData extends ObserversFunctionality {
         //@ts-ignore
         this.ranges.set(axis.paramName, [
           //@ts-ignore
-          axis[axisType + "Minimum"],
+          axisType === "biexponential" ? 0 : axis[axisType + "Minimum"],
           //@ts-ignore
-          axis[axisType + "Maximum"],
+          axisType === "biexponential" ? 1 : axis[axisType + "Maximum"],
         ]);
       }
-      return;
-    }
-    if (this.file.name == "erica1") {
-      this.ranges.set("FSC-A", [0, 262144]);
-      this.ranges.set("SSC", [0, 262144]);
-      this.ranges.set("Comp-FITC-A - CD7", [0, 1]);
-      this.ranges.set("Comp-PE-A - CD3", [0, 1]);
-      this.ranges.set("Comp-APC-A - CD45", [0, 1]);
-      this.ranges.set("Time", [0, 1]);
-      return;
-    }
-    const axesData = this.getAxesData();
-    for (const axis of this.file.axes) {
-      if (this.ranges.has(axis)) continue;
-      const data = axesData.map((e) => e[axis]);
-      this.ranges.set(axis, this.findRangeBoundries(data));
+    } else {
+      const axesData = this.getAxesData();
+      for (const axis of this.file.axes) {
+        if (this.ranges.has(axis)) continue;
+        const data = axesData.map((e) => e[axis]);
+        this.ranges.set(axis, this.findRangeBoundries(data));
+      }
     }
   }
 
