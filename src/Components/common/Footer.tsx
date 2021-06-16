@@ -102,7 +102,7 @@ export default function Footer(props: any) {
                 <br />
               </li>
               <li>
-                <b>Tomaz Einfalt</b>
+                <b>Dr. Tomaz Einfalt</b>
                 <br /> Chief Product Officer
                 <br />
                 <br />
@@ -114,7 +114,7 @@ export default function Footer(props: any) {
                 <br />
               </li>
               <li>
-                <b>Dr Alfonso Blanco</b>
+                <b>Dr. Alfonso Blanco</b>
                 <br /> Science Advisor
                 <br />
                 <br />

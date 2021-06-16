@@ -12,6 +12,9 @@ import axios from "axios";
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
 import { snackbarService } from "uno-material-ui";
+import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import userManager from "Components/users/userManager";
+import { useHistory } from "react-router";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -63,7 +66,7 @@ const staticFiles = [
   return {
     title: e,
     information: "...",
-    fromState: e,
+    fromStatic: e,
     lastModified: "X/X/X",
   };
 });
@@ -89,6 +92,7 @@ function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
+  const history = useHistory();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
   let [files, setFiles] = React.useState(remoteWorkspace ? [] : staticFiles);
@@ -116,6 +120,7 @@ function AddFileModal(props: {
       return;
     }
     const file: any = files[index];
+    console.log(file);
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {
       newFile = staticFileReader(file.fromStatic);
@@ -144,7 +149,6 @@ function AddFileModal(props: {
     >
       <div className={classes.fileSelectModal}>
         <h2>Open FCS file</h2>
-
         <p
           style={{
             color: "#777",
@@ -156,33 +160,9 @@ function AddFileModal(props: {
           but here we have a selection of 3 real fcs files for you to play
           around!
         </p>
-
-        {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
-          <div
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 20,
-            }}
-          >
-            <Button
-              style={{
-                backgroundColor: "#66d",
-                color: "white",
-                fontSize: 13,
-                marginLeft: 20,
-              }}
-            >
-              Upload file (Anonymous)
-            </Button>
-          </div>
-        ) : null}
-
         <p>
           <b>Click on the file you want to open:</b>
         </p>
-
         <div
           style={{
             backgroundColor: "#fff",
