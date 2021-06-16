@@ -42,6 +42,7 @@ const Experiment = (props: any) => {
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
+  const [fileUploadInputValue, setFileUploadInputValue] = useState('');
 
   const [experimentSize, setExperimentSize] = useState(0);
   const [maxExperimentSize, setMaxExperimentSize] = useState(
@@ -151,6 +152,7 @@ const Experiment = (props: any) => {
   const uploadFiles = (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
+    
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
@@ -209,6 +211,7 @@ const Experiment = (props: any) => {
               uploadingFiles.filter((e) => e.id !== file.tempId)
             );
           });
+          setFileUploadInputValue('');
         });
     }
   };
@@ -490,6 +493,7 @@ const Experiment = (props: any) => {
                         type="file"
                         id="file"
                         ref={inputFile}
+                        value={fileUploadInputValue}
                         multiple
                         accept=".fcs, .lmd"
                         style={{ display: "none" }}
