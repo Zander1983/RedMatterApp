@@ -80,7 +80,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     for (let i = 0; i < pointCount; i++) {
       const p = this.plotter.transformer.toConcretePoint(this.points[i]);
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
-      if (i == pointCount - 1) {
+      if (i === pointCount - 1) {
         const mouse = this.plotter.transformer.toConcretePoint(
           this.lastMousePos
         );

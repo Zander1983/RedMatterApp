@@ -36,7 +36,7 @@ export default class HistogramDrawer extends GraphDrawer {
   drawLines() {
     const vl = (this.y2 - this.y1) / this.binSize;
     const hl = (this.x2 - this.x1) / this.binSize;
-    if (this.axis == "horizontal") {
+    if (this.axis === "horizontal") {
       // Horizontal hist lines
       for (let i = 0; i < vl; i++) {
         const height =

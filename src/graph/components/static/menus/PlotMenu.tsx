@@ -23,7 +23,6 @@ import PlotData from "graph/dataManagement/plotData";
 import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { getValue } from "@amcharts/amcharts4/.internal/core/utils/Type";
 
 interface Dictionary {
   [key: string]: number;

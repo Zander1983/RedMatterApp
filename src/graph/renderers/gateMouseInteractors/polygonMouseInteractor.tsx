@@ -7,7 +7,6 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 const maxPolygonDist = 10;
 
@@ -55,9 +54,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     }
     if (this.targetEditGate !== null && type === "mousemove") {
       const gateState = this.targetEditGate.getState();
-      gateState.points[
-        this.targetPointIndex
-      ] = this.plotter.transformer.toAbstractPoint(mouse);
+      gateState.points[this.targetPointIndex] =
+        this.plotter.transformer.toAbstractPoint(mouse);
       this.targetEditGate.update(gateState);
     }
   }

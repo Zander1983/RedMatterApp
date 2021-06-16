@@ -1,8 +1,7 @@
 import React from "react";
 import axios from "axios";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Grid, Button } from "@material-ui/core";
-import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
 import WorkspaceCard from "./WorkspaceCard";
 import CreateWorkspaceModal from "./modals/CreateWorkspaceModal";

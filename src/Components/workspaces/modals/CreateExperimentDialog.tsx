@@ -1,17 +1,11 @@
 import React from "react";
-import { Button, FormControlLabel, Switch } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { useDispatch, useStore } from "react-redux";
-
-import userManager from "Components/users/userManager";
-import {
-  ExperimentApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
-} from "api_calls/nodejsback";
 
 // THIS COMPONENT IS A SUMMARY SO THE USER CAN SEE THEIR EXPERIMENT SETTINGS BERFORE PROCEEDING
 function CreateExperimentDialog(props: {
@@ -67,13 +61,14 @@ function CreateExperimentDialog(props: {
             {store.getState().user.experiment.fluorophoresCategory}
             <br></br>
             <strong>Description:</strong>
-            <p style={{
-              width: '500px',
-              wordWrap: 'break-word',
-              display: 'inline'
-
-            }}>
-            {store.getState().user.experiment.description}
+            <p
+              style={{
+                width: "500px",
+                wordWrap: "break-word",
+                display: "inline",
+              }}
+            >
+              {store.getState().user.experiment.description}
             </p>
             <br></br>
           </DialogContentText>

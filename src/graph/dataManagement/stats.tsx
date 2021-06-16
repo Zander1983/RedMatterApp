@@ -17,22 +17,19 @@ export default class PlotStats {
     };
   }
 
-  private getStats(statX: number, statY: number)
-  {
+  private getStats(statX: number, statY: number) {
     const data = this.plot.getXandYData();
     let x = this.getMedianOrMean(statX, data.xAxis);
     let y = this.getMedianOrMean(statY, data.yAxis);
-    return { x: x, y: y};
+    return { x: x, y: y };
   }
 
-  private getMedianOrMean(val: number, axis: Array<number>)
-  {
-    switch(val)
-    {
+  private getMedianOrMean(val: number, axis: Array<number>) {
+    switch (val) {
       case COMMON_CONSTANTS.DROPDOWNS.STATS.Mean:
-          return this.getMean(axis);
+        return this.getMean(axis);
       case COMMON_CONSTANTS.DROPDOWNS.STATS.Median:
-          return this.getMedianValue(axis);
+        return this.getMedianValue(axis);
     }
   }
 
@@ -56,7 +53,7 @@ export default class PlotStats {
     let sum = 0;
     axis.forEach((e) => (sum += e));
     let count = axis.length;
-    return  this.parseNum(sum / count);
+    return this.parseNum(sum / count);
   }
 
   private parseNum = (num: number) => {
@@ -71,20 +68,16 @@ export default class PlotStats {
     }
   };
 
-  private getMedianValue(axis: Array<number>)
-  {
-    let axisSort = axis.sort((a,b)=>{
-          return a-b;
+  private getMedianValue(axis: Array<number>) {
+    let axisSort = axis.sort((a, b) => {
+      return a - b;
     });
 
     let length = axisSort.length;
-    let n = Math.floor(length/2);
-    if(length % 2 == 0)
-    {
-      return this.parseNum(((axisSort[n]+axisSort[n-1])/2));
-    }
-    else
-    {
+    let n = Math.floor(length / 2);
+    if (length % 2 === 0) {
+      return this.parseNum((axisSort[n] + axisSort[n - 1]) / 2);
+    } else {
       return this.parseNum(axisSort[n]);
     }
   }

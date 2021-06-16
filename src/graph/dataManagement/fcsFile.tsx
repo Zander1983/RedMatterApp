@@ -109,7 +109,7 @@ export default class FCSFile {
       return this.axisIndexCache.get(axisName);
     }
     for (let i = 0; i < this.axes.length; i++) {
-      if (this.axes[i] == axisName) {
+      if (this.axes[i] === axisName) {
         this.axisIndexCache.set(axisName, i);
         return i;
       }

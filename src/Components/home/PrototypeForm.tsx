@@ -1,29 +1,11 @@
-import React from "react";
-import {
-  makeStyles,
-  Theme,
-  createStyles,
-  withStyles,
-} from "@material-ui/core/styles";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import Button from "@material-ui/core/Button";
+import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
-import Avatar from "@material-ui/core/Avatar";
-
-import Done from "@material-ui/icons/Done";
 
 import formSteps from "./FormSteps";
-import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
-import userManager from "Components/users/userManager";
 import { useDispatch, useStore } from "react-redux";
-import axios from "axios";
-import { snackbarService } from "uno-material-ui";
-import TextArea from "antd/lib/input/TextArea";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {

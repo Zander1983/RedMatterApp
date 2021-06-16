@@ -1,6 +1,4 @@
-import GraphPlotter, {
-  GraphPlotterState,
-} from "graph/renderers/plotters/graphPlotter";
+import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 
@@ -31,7 +29,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     const ranges = this.plotData.getXandYRanges();
     const binListMax = this.plotData.getBins(
       this.bins,
-      this.direction == "vertical" ? this.xAxisName : this.yAxisName
+      this.direction === "vertical" ? this.xAxisName : this.yAxisName
     ).max;
     let hBins =
       this.width === undefined ? 2 : Math.round(this.width / (30 * this.scale));
@@ -46,10 +44,10 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.direction == "vertical" ? this.rangeMin : 0,
-      iex: this.direction == "vertical" ? this.rangeMax : this.globalMax,
-      iby: this.direction == "vertical" ? 0 : this.rangeMin,
-      iey: this.direction == "vertical" ? this.globalMax : this.rangeMax,
+      ibx: this.direction === "vertical" ? this.rangeMin : 0,
+      iex: this.direction === "vertical" ? this.rangeMax : this.globalMax,
+      iby: this.direction === "vertical" ? 0 : this.rangeMin,
+      iey: this.direction === "vertical" ? this.globalMax : this.rangeMax,
       scale: this.scale,
       xpts: hBins,
       ypts: vBins,

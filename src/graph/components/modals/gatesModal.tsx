@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Scrollbars } from "react-custom-scrollbars";
-import { Button, Grid, Typography } from "@material-ui/core";
+import { Button, Grid } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";

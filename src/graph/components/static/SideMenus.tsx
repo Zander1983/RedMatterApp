@@ -13,7 +13,7 @@ const classes = {
 
 export default function SideMenus() {
   const ref = React.useRef(null);
-  // == General modal logic ==
+  // === General modal logic ==
 
   const [fileMenuOpen, setFileMenuOpen] = React.useState(false);
   const [gateMenuOpen, setGateMenuOpen] = React.useState(false);

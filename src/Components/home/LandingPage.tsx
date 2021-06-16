@@ -9,10 +9,8 @@ import CardActions from "@material-ui/core/CardActions";
 import CardHeader from "@material-ui/core/CardHeader";
 import StarIcon from "@material-ui/icons/StarBorder";
 import Divider from "@material-ui/core/Divider";
-import { useStore } from "react-redux";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
-import researchers_image from "../../assets/images/researchers.jpg";
 import lab from "../../assets/images/lab.png";
 import researcher from "../../assets/images/researcher.png";
 import uni from "../../assets/images/uni2.jpg";

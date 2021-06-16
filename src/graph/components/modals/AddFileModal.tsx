@@ -2,12 +2,9 @@ import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, Divider } from "@material-ui/core";
-import BackupIcon from "@material-ui/icons/Backup";
 
 import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
-
-import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
@@ -185,7 +182,7 @@ function AddFileModal(props: {
         >
           {files.map((e: any, i: number) => {
             const divider =
-              i == files.length - 1 ? null : (
+              i === files.length - 1 ? null : (
                 <Divider className={classes.fileSelectDivider} />
               );
 
@@ -195,7 +192,7 @@ function AddFileModal(props: {
                   onMouseEnter={() => setOnHover(i)}
                   onMouseLeave={() => setOnHover(-1)}
                   className={
-                    onHover == i
+                    onHover === i
                       ? classes.fileSelectFileContainerHover
                       : classes.fileSelectFileContainer
                   }

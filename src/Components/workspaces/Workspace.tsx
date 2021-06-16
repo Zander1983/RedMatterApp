@@ -554,7 +554,7 @@ const Workspace = (props: any) => {
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              ) == "just now"
+                              ) === "just now"
                                 ? ""
                                 : "ago"}
                             </b>

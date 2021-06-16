@@ -1,9 +1,3 @@
-const particlesSizeList = [
-  { id: 1, key: "Below 1µm", value: "Below 1µm" },
-  { id: 2, key: "1-3 µm", value: "1-3 µm" },
-  { id: 3, key: "2µm+", value: "2µm+" },
-];
-
 export const deviceData = [
   { key: 16294, value: "ACEA NovoCyte 1000" },
   { key: 16295, value: "ACEA NovoCyte 2000" },
@@ -1207,38 +1201,3 @@ const machinesData = [
   { key: 517438, value: "IntelliCyt iQue 3 VYB" },
   { key: "Custom Instrument", value: "Custom Instrument" },
 ];
-
-// export const sectionList = [
-//   {
-//     id: 1,
-//     name: "device",
-//     label: "To optimize analysis please select your Device",
-//     dataList: machinesData,
-//     placeholder: "Please select a device",
-//     optKey: "device",
-//   },
-//   {
-//     id: 2,
-//     name: "cell_type",
-//     label: "What is the cell type are you measuring?",
-//     dataList: cellTypeList,
-//     placeholder: "Please select a Cell Type",
-//     optKey: "cell_type",
-//   },
-//   {
-//     id: 3,
-//     name: "particles_size",
-//     label: "How big are the particles you are measuring?",
-//     dataList: particlesSizeList,
-//     placeholder: "Please select a Particle Size",
-//     optKey: "particles_size",
-//   },
-//   {
-//     id: 4,
-//     name: "fluorophores",
-//     label: "Select the fluorophores in your analysis",
-//     dataList: fluorophoresData,
-//     placeholder: "Please select a fluorophores",
-//     optKey: "fluorophores",
-//   },
-// ];

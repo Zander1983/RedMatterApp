@@ -24,8 +24,8 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
     for (const hm of this.heatMapCache) {
       const { xAxis, yAxis, colors } = hm;
       if (
-        plotter.xAxisName == xAxis &&
-        plotter.yAxisName == yAxis &&
+        plotter.xAxisName === xAxis &&
+        plotter.yAxisName === yAxis &&
         plotter.xAxis.length === colors.length
       ) {
         return colors;

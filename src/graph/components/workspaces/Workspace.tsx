@@ -1,11 +1,10 @@
-import React, { useRef } from "react";
+import React from "react";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
 import dataManager from "../../dataManagement/dataManager";
-import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";

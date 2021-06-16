@@ -1,19 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel, Switch } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
-import TextField from "@material-ui/core/TextField";
 import { DropzoneArea } from "material-ui-dropzone";
 
 import userManager from "Components/users/userManager";
-import {
-  WorkspaceFilesApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
-} from "api_calls/nodejsback";
-import axios from "axios";
 import { snackbarService } from "uno-material-ui";
-import { cssNumber } from "jquery";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 
 const useStyles = makeStyles((theme) => ({

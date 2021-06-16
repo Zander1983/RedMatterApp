@@ -4,13 +4,10 @@ import { snackbarService } from "uno-material-ui";
 import { Scrollbars } from "react-custom-scrollbars";
 import {
   Button,
-  Checkbox,
   FormControlLabel,
   Grid,
   Radio,
   RadioGroup,
-  Switch,
-  Typography,
 } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
@@ -73,7 +70,7 @@ function LinkShareModal(props: {
       );
     }
   }
-  
+
   return (
     <Modal
       open={props.open}

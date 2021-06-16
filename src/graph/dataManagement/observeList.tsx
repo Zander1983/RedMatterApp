@@ -3,7 +3,6 @@
   items that, each, has an observer
 */
 
-import dataManager from "./dataManager";
 import ObserversFunctionality from "./observersFunctionality";
 
 export default class ObserverList {

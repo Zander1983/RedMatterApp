@@ -2,7 +2,6 @@ import { Button } from "@material-ui/core";
 import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import CancelIcon from "@material-ui/icons/Cancel";
-import CameraAltIcon from "@material-ui/icons/CameraAlt";
 
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";

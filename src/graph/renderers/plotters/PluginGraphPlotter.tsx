@@ -32,9 +32,9 @@ export const applyPlugin = () => {
             overwritten = true;
             functionList = [e];
           } else if (!overwritten) {
-            if (e.order == "before") {
+            if (e.order === "before") {
               functionList = [e, ...functionList];
-            } else if (e.order == "after") {
+            } else if (e.order === "after") {
               functionList = [...functionList, e];
             } else {
               throw Error("Unrecognized plugin order " + e.order);
@@ -46,7 +46,7 @@ export const applyPlugin = () => {
       // Now call each function in the list, return is last function's return
       let ret: any = null;
       for (const e of functionList) {
-        if (typeof e == "string") {
+        if (typeof e === "string") {
           ret = original.apply(this, args);
         } else {
           ret = e.plugin[e.functionSignature](args, ret);

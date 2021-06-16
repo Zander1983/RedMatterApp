@@ -3,7 +3,6 @@ import { NavLink } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import axios from "axios";
 import userManager from "Components/users/userManager";
-import Alert from "@material-ui/lab/Alert";
 import {
   Grid,
   Card,
@@ -15,7 +14,6 @@ import {
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import {

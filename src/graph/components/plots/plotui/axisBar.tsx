@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Grid from "@material-ui/core/Grid";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
@@ -62,18 +62,18 @@ export default function AxisBar(props: any) {
   };
 
   const setAxis = (axis: "x" | "y", value: string) => {
-    const otherAxisValue = axis == "x" ? yAxis : xAxis;
-    if (value == otherAxisValue && !isPlotHistogram()) {
-      setHistogram(axis == "x" ? "y" : "x", true);
+    const otherAxisValue = axis === "x" ? yAxis : xAxis;
+    if (value === otherAxisValue && !isPlotHistogram()) {
+      setHistogram(axis === "x" ? "y" : "x", true);
     } else {
-      axis == "x"
+      axis === "x"
         ? props.plot.plotData.setXAxis(value)
         : props.plot.plotData.setYAxis(value);
     }
   };
 
   const setPlotType = (axis: "x" | "y", value: string) => {
-    axis == "x"
+    axis === "x"
       ? props.plot.plotData.setXAxisPlotType(value)
       : props.plot.plotData.setYAxisPlotType(value);
   };
@@ -85,8 +85,7 @@ export default function AxisBar(props: any) {
       setLastSelectEvent(new Date().getTime());
     }
 
-    if(xHistogram || yHistogram)
-    {
+    if (xHistogram || yHistogram) {
       setHistogram(axis, true);
     }
   };
@@ -128,7 +127,9 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             onChange={(e) =>
-              handleSelectEvent(e, "x", (e: any) => setAxis("x", e.target.value))
+              handleSelectEvent(e, "x", (e: any) =>
+                setAxis("x", e.target.value)
+              )
             }
             disabled={isAxisDisabled("x")}
             value={xAxis}
@@ -192,7 +193,9 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             onChange={(e) =>
-              handleSelectEvent(e, "y", (e: any) => setAxis("y", e.target.value))
+              handleSelectEvent(e, "y", (e: any) =>
+                setAxis("y", e.target.value)
+              )
             }
             disabled={isAxisDisabled("y")}
             value={yAxis}

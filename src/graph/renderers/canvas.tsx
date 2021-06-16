@@ -1,6 +1,3 @@
-import FCSFile from "graph/dataManagement/fcsFile";
-import dataManager from "graph/dataManagement/dataManager";
-import Plotter from "graph/renderers/plotters/plotter";
 import Plot from "./plotRender";
 
 interface CanvasState {
@@ -53,8 +50,7 @@ export default class Canvas {
 
   render() {}
 
-  setUseCanvasUsed(value: boolean)
-  {
+  setUseCanvasUsed(value: boolean) {
     this.useCanvasCalled = value;
   }
 

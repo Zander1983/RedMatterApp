@@ -19,7 +19,6 @@ import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
 import axios from "axios";
-import { snackbarService } from "uno-material-ui";
 import userManager from "Components/users/userManager";
 
 const uuid = require("uuid");
@@ -158,7 +157,7 @@ class DataManager extends ObserversFunctionality {
     }
     const plotGates = this.currentWorkspace.plots.get(plotID).gates;
     for (let indx in plotGates) {
-      if (plotGates[indx].gate.id == gateID) {
+      if (plotGates[indx].gate.id === gateID) {
         this.currentWorkspace.plots
           .get(plotID)
           .removeGate(plotGates[indx].gate);

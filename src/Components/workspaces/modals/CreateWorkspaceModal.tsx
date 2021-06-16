@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel, Switch } from "@material-ui/core";
+import { Button, FormControlLabel } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
@@ -272,8 +272,8 @@ function CreateWorkspaceModal(props: {
                   }}
                   onBlur={(textField: any) => {
                     if (
-                      textField.target.value == null ||
-                      textField.target.value == ""
+                      textField.target.value === null ||
+                      textField.target.value === ""
                     ) {
                       setNameError(true);
                     }

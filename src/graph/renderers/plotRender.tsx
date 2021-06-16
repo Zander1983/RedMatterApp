@@ -16,11 +16,8 @@ import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInter
 import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gateMouseInteractorFactory";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import dataManager from "graph/dataManagement/dataManager";
-import { controllers } from "chart.js";
 
 const plotterFactory = new PlotterFactory();
-const mouseInteractorFactory = new GateMouseInteractorFactory();
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
