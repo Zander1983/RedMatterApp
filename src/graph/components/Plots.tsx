@@ -116,8 +116,17 @@ function Plots(props: { experimentId: string }) {
     axios
       .post(updateWorkSpace.url, updateWorkSpace.options.body, updateWorkSpace.options)
       .then((e) => {
+        snackbarService.showSnackbar(
+          "Workspace saved successfully.",
+          "success"
+        );
       })
-      .catch((e) => {});
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Could not save the workspace, reload the page and try again!",
+          "error"
+        );
+      });
   }
   // == General modal logic ==
   const handleOpen = (func: Function) => {
@@ -537,7 +546,7 @@ function Plots(props: { experimentId: string }) {
                   backgroundColor: "#fafafa",
                 }}
               >
-                Print Experiment
+                Save Workspace
               </Button>
               <Button
                 variant="contained"
