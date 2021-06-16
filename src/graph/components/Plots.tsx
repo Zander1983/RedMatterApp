@@ -5,12 +5,12 @@ import Grid from "@material-ui/core/Grid";
 import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
+import GatetNamePrompt from "./modals/GateNamePrompt"
 import GenerateReportModal from "./modals/GenerateReportModal";
 import LinkShareModal from "./modals/linkShareModal";
 
@@ -135,23 +135,30 @@ function Plots(props: { workspaceID: string }) {
   };
 
   const open = Boolean(anchorEl);
-  // const [observerAdded, setObserverAdded] = React.useSTate(fasle);
+  const [observerAdded, setObserverAdded] = React.useState(false);
+  const [gateToSend, setGateToSend] = React.useState(null);
+  const [namePromptOpen, setNamePromptOpen] = React.useState(false);
 
-  // useEffect(() => {
-  //   if (observerAdded === false) {
-  //     setObserverAdded(true)
-  //     dataManager.addObserver(
-  //       "addNewGateToWorkspace",
-  //       (gate: Gate) => {
-  //         // call a modal
-  //         // .then (
-  //         //     whne modal is returned, assign name to gate with id = gate.id
-  //         // )
-  //       },
-  //       true
-  //     );
-  //   }
-  // }, []);
+
+const getNameAndOpenModal = (gate:Gate) => {
+  setNamePromptOpen(true);
+  setGateToSend(gate);
+}
+
+const renameGate = (newName: String) => {
+  dataManager.getGate(gateToSend[0].id).update({ name: newName });
+  setNamePromptOpen(false);
+}
+
+  useEffect(() => {
+    if (observerAdded === false) {
+      setObserverAdded(true)
+      dataManager.addObserver(
+        "addNewGateToWorkspace",getNameAndOpenModal,
+        true
+      );
+    }
+  }, []);
 
   return (
     <div
@@ -161,6 +168,8 @@ function Plots(props: { workspaceID: string }) {
       }}
     >
       {/* == MODALS == */}
+      <GatetNamePrompt open={namePromptOpen} sendName={renameGate}/>
+
       <AddFileModal
         open={addFileModalOpen}
         closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
