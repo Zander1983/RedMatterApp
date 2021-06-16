@@ -19,7 +19,6 @@ import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
 import axios from "axios";
-import { snackbarService } from "uno-material-ui";
 import userManager from "Components/users/userManager";
 
 const uuid = require("uuid");
@@ -55,6 +54,20 @@ class DataManager extends ObserversFunctionality {
     */
 
   // ======== General
+
+  ready(): boolean {
+    if (
+      this.currentWorkspace === null ||
+      this.currentWorkspace === undefined ||
+      this.plotRenderers === undefined ||
+      this.plotRenderers === null
+    ) {
+      // console.log("is not ready");
+      return false;
+    }
+    // console.log("is ready");
+    return true;
+  }
 
   createID(): string {
     const newObjectInstaceID = uuid.v4();
@@ -278,13 +291,29 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   removeWorkspace() {
-    this.plotRenderers.forEach((_, k) => this.plotRenderers.delete(k));
-    this.currentWorkspace = null;
+    if (this.plotRenderers !== undefined && this.plotRenderers !== null) {
+      this.plotRenderers.forEach((e) => {
+        delete e.canvas;
+        delete e.plotData;
+      });
+      delete this.plotRenderers;
+      this.plotRenderers = new Map();
+    }
+    this.getAllPlots().map((e) => delete e.plot);
+    this.currentWorkspace.plots.clear();
+    this.getAllGates().map((e) => delete e.gate);
+    this.currentWorkspace.gates.clear();
+    this.getAllFiles().map((e) => delete e.file);
+    this.currentWorkspace.files.clear();
+    delete this.currentWorkspace;
   }
 
   @updateWorkspaceDecorator()
   @publishDecorator()
-  clearWorkspace() {
+  clearWorkspace(keepFiles: boolean = false) {
+    if (!keepFiles) {
+      delete this.remoteFiles;
+    }
     this.removeWorkspace();
     // Clears local storage
     window.localStorage.removeItem(this.lastLocalStorageSave);
@@ -292,9 +321,7 @@ class DataManager extends ObserversFunctionality {
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
     }
-    // Removing all heavy weight references to files forcebly
-    delete this.remoteFiles;
-    delete this.getWorkspace().workspace.files;
+    DataManager.resetInstance();
     // Creates brand new workspace
     this.createWorkspace();
     // Informs everyone of the change
@@ -393,6 +420,14 @@ class DataManager extends ObserversFunctionality {
     }
 
     return DataManager.instance;
+  }
+
+  private static resetInstance() {
+    if (DataManager.instance) {
+      delete DataManager.instance;
+      DataManager.instance = new DataManager();
+      DataManager.instance.setStandardObservers();
+    }
   }
 
   private handleRemoteFiles(files: any[]) {

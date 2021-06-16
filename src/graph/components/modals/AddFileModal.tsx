@@ -11,6 +11,7 @@ import axios from "axios";
 
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -110,6 +111,10 @@ function AddFileModal(props: {
   const [onHover, setOnHover] = React.useState(-1);
 
   const addFile = (index: number) => {
+    if (!dataManager.ready()) {
+      snackbarService.showSnackbar("Something went wrong, try again!", "error");
+      return;
+    }
     const file: any = files[index];
     let newFile: FCSFile;
     if (file.fromStatic !== undefined) {

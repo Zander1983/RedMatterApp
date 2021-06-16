@@ -29,6 +29,7 @@
     "lodash": "^4.17.21",
     "material-ui-dropzone": "^3.5.0",
     "node-kmeans": "^1.1.9",
+    "numeral": "^2.0.6",
     "portable-fetch": "^3.0.0",
     "react": "^17.0.1",
     "react-chartjs-2": "^2.11.1",
@@ -99,6 +100,7 @@
   "devDependencies": {
     "@types/chart.js": "^2.9.30",
     "@types/jquery": "^3.5.5",
+    "@types/numeral": "^2.0.1",
     "@types/react-color": "^3.0.4",
     "@types/react-custom-scrollbars": "^4.0.7",
     "@types/react-material-ui-form-validator": "^2.1.0",

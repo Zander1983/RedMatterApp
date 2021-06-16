@@ -304,7 +304,7 @@ function Plots(props: { workspaceID: string }) {
         }
         options={{
           yes: () => {
-            dataManager.clearWorkspace();
+            dataManager.clearWorkspace(true);
           },
           no: () => {
             handleClose(setClearModal);
