@@ -87,6 +87,7 @@ function Plots(props: { experimentId: string }) {
   useEffect(() => {
     return () => {
       setWorkspaceAlready = false;
+      dataManager.clearWorkspace();
     };
   }, []);
   const classes = useStyles();
@@ -129,27 +130,13 @@ function Plots(props: { experimentId: string }) {
   // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
-    false
-  );
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(
     props.experimentId !== undefined
   );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const waitTime = Math.random() * 1000 + 500;
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handlePopoverOpen = (e: any) => {
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
 
   return (
     <div
@@ -332,7 +319,7 @@ function Plots(props: { experimentId: string }) {
         }
         options={{
           yes: () => {
-            dataManager.clearWorkspace();
+            dataManager.clearWorkspace(true);
           },
           no: () => {
             handleClose(setClearModal);

@@ -123,7 +123,14 @@ export default class Plot {
   }
 
   draw() {
-    if (!this.shouldDraw() || !this.validateReady()) return;
+    if (
+      !dataManager.ready() ||
+      this.plotData === undefined ||
+      this.plotData === null ||
+      !this.shouldDraw() ||
+      !this.validateReady()
+    )
+      return;
 
     this.setCanvasState();
     this.setPlotterState();

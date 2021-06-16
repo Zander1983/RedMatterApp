@@ -47,6 +47,12 @@ export default function GateBar(props: any) {
   };
 
   const update = () => {
+    if (
+      !dataManager.ready() ||
+      plot === undefined ||
+      plot.plotData === undefined
+    )
+      return;
     let gates = plot.plotData.gates.map((e) => e.gate);
     const pop = plot.plotData.population.map((e) => e.gate);
     setPopulation(pop);

@@ -99,12 +99,41 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   setupPlot() {
+    try {
+      const fscssc = this.getFSCandSSCAxis();
+      if (this.xAxis === "" && this.yAxis === "") {
+        this.xAxis = this.file.axes[fscssc.fsc];
+        this.yAxis = this.file.axes[fscssc.ssc];
+      }
+    } catch {}
+
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
     this.updateGateObservers();
     this.updateRandomSelection();
+  }
+
+  getFSCandSSCAxis(): { fsc: number; ssc: number } {
+    let hasFSC: null | number = null;
+    let hasSSC: null | number = null;
+    for (
+      let i = 0;
+      i < this.file.axes.length && (hasFSC === null || hasSSC === null);
+      i++
+    ) {
+      const axis = this.file.axes[i];
+      if (axis.toUpperCase().indexOf("FSC") != -1) {
+        hasFSC = i;
+      } else if (axis.toUpperCase().indexOf("SSC") != -1) {
+        hasSSC = i;
+      }
+    }
+    if (hasSSC === null || hasFSC === null) {
+      throw Error("FSC or SSC axis not found");
+    }
+    return { fsc: hasFSC, ssc: hasSSC };
   }
 
   getOverlays() {
@@ -583,7 +612,10 @@ export default class PlotData extends ObserversFunctionality {
       }
     }
     if (allDone) return;
-    if (this.file.remoteData != undefined) {
+    if (
+      this.file.remoteData != undefined &&
+      this.file.remoteData.paramsAnalysis !== undefined
+    ) {
       for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
         const axisType =
           //@ts-ignore

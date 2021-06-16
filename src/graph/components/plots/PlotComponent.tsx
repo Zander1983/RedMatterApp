@@ -56,8 +56,10 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   };
 
   const plotUpdater = () => {
-    updatePlotSize();
-    plot.draw();
+    if (dataManager.ready()) {
+      updatePlotSize();
+      plot.draw();
+    }
   };
 
   const tryKillComponent = () => {
@@ -80,6 +82,10 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       dataManager.addObserver("removePlotFromWorkspace", () =>
         tryKillComponent()
       );
+      dataManager.addObserver("clearWorkspace", () => {
+        clearInterval(interval[props.plotIndex]);
+        interval[props.plotIndex] = undefined;
+      });
       plot.setup();
       setPlotSetup(true);
     }
