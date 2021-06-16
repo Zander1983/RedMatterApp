@@ -95,7 +95,14 @@ function AddFileModal(props: {
   useEffect(() => {
     if (remoteWorkspace && dataManager.isWorkspaceLoading()) {
       dataManager.addObserver("setWorkspaceLoading", () => {
-        setFiles(getRemoteFiles());
+        if (dataManager.remoteFiles !== undefined) {
+          const remoteFiles = getRemoteFiles();
+          setFiles(remoteFiles);
+        }
+      });
+      dataManager.addObserver("clearWorkspace", () => {
+        setFiles(remoteWorkspace ? [] : staticFiles);
+        dataManager.setWorkspaceLoading(false);
       });
     }
   }, []);

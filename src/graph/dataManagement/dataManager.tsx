@@ -292,6 +292,9 @@ class DataManager extends ObserversFunctionality {
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
     }
+    // Removing all heavy weight references to files forcebly
+    delete this.remoteFiles;
+    delete this.getWorkspace().workspace.files;
     // Creates brand new workspace
     this.createWorkspace();
     // Informs everyone of the change
