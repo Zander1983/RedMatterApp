@@ -22,7 +22,7 @@ export const publishDecorator = () => {
     descriptor.value = function (...args: any[]) {
       const ret = original.apply(this, args);
       //@ts-ignore
-      this.publish(key);
+      this.publish(key, args);
       return ret;
     };
   };
@@ -52,16 +52,23 @@ export const publishDecorator = () => {
 */
 
 export default abstract class ObserversFunctionality {
-  private observers: Map<string, { id: string; func: Function }[]> = new Map();
+  private observers: Map<
+    string,
+    { id: string; func: Function; receiveArguments: boolean }[]
+  > = new Map();
 
   private createOberserverID(): string {
     const newObjectInstaceID = uuid.v4();
     return newObjectInstaceID;
   }
 
-  addObserver(type: string, callback: Function): string {
+  addObserver(
+    type: string,
+    callback: Function,
+    receiveArguments: boolean = false
+  ): string {
     const observerID = this.createOberserverID();
-    const observer = { id: observerID, func: callback };
+    const observer = { id: observerID, func: callback, receiveArguments };
     if (this.observers.has(type)) {
       this.observers.set(type, [...this.observers.get(type), observer]);
     } else {
@@ -83,8 +90,14 @@ export default abstract class ObserversFunctionality {
     }
   }
 
-  private publish(type: string) {
+  private publish(type: string, args?: any) {
     if (!this.observers.has(type)) return;
-    this.observers.get(type).forEach((e) => e.func());
+    this.observers.get(type).forEach((observer) => {
+      if (observer.receiveArguments) {
+        observer.func(args);
+      } else {
+        observer.func();
+      }
+    });
   }
 }

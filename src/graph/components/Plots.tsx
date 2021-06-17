@@ -5,12 +5,12 @@ import Grid from "@material-ui/core/Grid";
 import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
-
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
+import GatetNamePrompt from "./modals/GateNamePrompt";
 import GenerateReportModal from "./modals/GenerateReportModal";
 import LinkShareModal from "./modals/linkShareModal";
 
@@ -18,12 +18,16 @@ import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
-import { ExperimentApiFetchParamCreator, WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import {
+  ExperimentApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useHistory } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import Gate from "graph/dataManagement/gate/gate";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -91,7 +95,9 @@ function Plots(props: { experimentId: string }) {
     };
   }, []);
   const classes = useStyles();
-  const [loading, setLoading] = React.useState(props.experimentId !== undefined);
+  const [loading, setLoading] = React.useState(
+    props.experimentId !== undefined
+  );
 
   // == Small screen size notice ==
   const [showSmallScreenNotice, setShowSmallScreenNotice] = React.useState(
@@ -109,12 +115,16 @@ function Plots(props: { experimentId: string }) {
     let stateJson = dataManager.getWorkspaceJSON();
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).upsertWorkSpace(
-      userManager.getToken(),
-      { experimentId : props.experimentId, state: stateJson }
-    );
+    }).upsertWorkSpace(userManager.getToken(), {
+      experimentId: props.experimentId,
+      state: stateJson,
+    });
     axios
-      .post(updateWorkSpace.url, updateWorkSpace.options.body, updateWorkSpace.options)
+      .post(
+        updateWorkSpace.url,
+        updateWorkSpace.options.body,
+        updateWorkSpace.options
+      )
       .then((e) => {
         snackbarService.showSnackbar(
           "Workspace saved successfully.",
@@ -127,7 +137,7 @@ function Plots(props: { experimentId: string }) {
           "error"
         );
       });
-  }
+  };
   // == General modal logic ==
   const handleOpen = (func: Function) => {
     func(true);
@@ -146,6 +156,43 @@ function Plots(props: { experimentId: string }) {
   );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
+  const waitTime = Math.random() * 1000 + 500;
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handlePopoverOpen = (e: any) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const [observerAdded, setObserverAdded] = React.useState(false);
+  const [gateToSend, setGateToSend] = React.useState(null);
+  const [namePromptOpen, setNamePromptOpen] = React.useState(false);
+
+  const getNameAndOpenModal = (gate: Gate) => {
+    setNamePromptOpen(true);
+    setGateToSend(gate);
+  };
+
+  const renameGate = (newName: String) => {
+    dataManager.getGate(gateToSend[0].id).update({ name: newName });
+    setNamePromptOpen(false);
+  };
+
+  useEffect(() => {
+    if (observerAdded === false) {
+      setObserverAdded(true);
+      dataManager.addObserver(
+        "addNewGateToWorkspace",
+        getNameAndOpenModal,
+        true
+      );
+    }
+  }, []);
 
   return (
     <div
@@ -155,6 +202,8 @@ function Plots(props: { experimentId: string }) {
       }}
     >
       {/* == MODALS == */}
+      <GatetNamePrompt open={namePromptOpen} sendName={renameGate} />
+
       <AddFileModal
         open={addFileModalOpen}
         closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
@@ -399,72 +448,6 @@ function Plots(props: { experimentId: string }) {
           flexDirection: "column",
         }}
       >
-        {/* <div
-          style={{
-            marginBottom: 30,
-            marginLeft: 40,
-            marginRight: 40,
-            fontWeight: 700,
-          }}
-        >
-          BIG RED BUTTON =&gt;{" "}
-          <Button
-            style={{
-              backgroundColor: "red",
-              color: "white",
-              borderRadius: 10,
-              fontSize: 20,
-              boxShadow: "2px 3px 3px #ddd",
-            }}
-            onClick={() => {
-              const workspaceJSON = dataManager.getWorkspaceJSON();
-              const experimentsCreator = ExperimentApiFetchParamCreator({
-                accessToken: userManager.getToken(),
-              });
-              const fetchCreator = experimentsCreator.getExperiment(
-                userManager.getToken(),
-                props.workspaceID
-              );
-              axios
-                .get(fetchCreator.url, fetchCreator.options)
-                .then((e) => {
-                  const createParams = experimentsCreator.updateExperiment(
-                    { data: workspaceJSON },
-                    userManager.getToken(),
-                    props.workspaceID,
-                    e.data[0]["_id"]
-                  );
-                  axios
-                    .put(
-                      createParams.url,
-                      createParams.options.body,
-                      createParams.options
-                    )
-                    .then(() => {
-                      snackbarService.showSnackbar(
-                        "!!!!!!!!!11IT WORKED!!!!1!!!!!! 😃😄😁😆😅😂🤣☺️😇🙂🙃😉😍😘😗😙😋😛😝😜🤪🤨🧐🤓😎🤩😏😒😞😔😟😕🙁☹️😣😖😫😩😢😭😤😠😡🤬🤯😳😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲😴🤤😪😵🤐🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾🤲🤲🏻🤲🏼🤲🏽👐🏾🤲🏿👐👐🏻👐🏼👐🏽👐🏾👐🏿🙌🙌🏻🙌🏼🙌🏽🙌🏾🙌🏿👏👏🏻👏🏼👏🏽👏🏾👏🏿🤝👍👍🏻👍🏼👍🏽👍🏾👍🏿👎👎🏻👎🏼👎🏽👎🏾👎🏿👊👊🏻👊🏼👊🏽👊🏾👊🏿✊✊🏻✊🏼✊🏽✊🏾✊🏿🤛🤛🏻🤛🏼🤛🏽🤛🏾🤛🏿🤜🤜🏻🤜🏼🤜🏽🤜🏾🤜🏿🤞🤞🏻🤞🏼🤞🏽🤞🏾🤞🏿✌️✌🏻✌🏼✌🏽✌🏾✌🏿🤟🤟🏻🤟🏼🤟🏽🤟🏾🤟🏿🤘🤘🏻🤘🏼🤘🏽🤘🏾🤘🏿👌👌🏻👌🏼👌🏽👌🏾👌🏿👈👈🏻👈🏼👈🏽👈🏾👈🏿👉👉🏻👉🏼👉🏽👉🏾👉🏿👆👆🏻👆🏼👆🏽👆🏾👆🏿👇👇🏻👇🏼👇🏽👇🏾👇🏿☝️☝🏻☝🏼☝🏽☝🏾☝🏿✋✋🏻✋🏼✋🏽✋👷🏻‍♀️",
-                        "success"
-                      );
-                    })
-                    .catch((e) => {
-                      snackbarService.showSnackbar(
-                        "Something went wrong tomaz, you might wanna logout and login again...",
-                        "error"
-                      );
-                    });
-                })
-                .catch((e) => {
-                  snackbarService.showSnackbar(
-                    "Something went wrong tomaz, you might wanna logout and login again...",
-                    "error"
-                  );
-                });
-            }}
-          >
-            Tomaz's big red button that saves everthing to the backend!
-          </Button>{" "}
-          &lt;= BIG RED BUTTON
-        </div> */}
         <Grid
           style={{
             backgroundColor: "#fafafa",
