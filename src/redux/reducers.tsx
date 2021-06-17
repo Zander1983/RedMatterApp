@@ -42,6 +42,8 @@ const reducer = (state = initialState, action: any) => {
           description: null,
         },
       };
+    case actionTypes.RESET:
+      return initialState;
     default:
       return state;
   }
