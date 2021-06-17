@@ -18,7 +18,7 @@ import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
-import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
+import { ExperimentApiFetchParamCreator, WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
@@ -61,8 +61,8 @@ const useStyles = makeStyles((theme) => ({
 let eventListenerSet = false;
 let setWorkspaceAlready = false;
 
-function Plots(props: { workspaceID: string }) {
-  console.log("WORKSPACE ID = ", props.workspaceID);
+function Plots(props: { experimentId: string }) {
+  console.log("EXPERIMENT ID = ", props.experimentId);
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   if (
@@ -72,9 +72,9 @@ function Plots(props: { workspaceID: string }) {
     history.push("/login");
   }
 
-  if (props.workspaceID !== undefined && !setWorkspaceAlready) {
+  if (props.experimentId !== undefined && !setWorkspaceAlready) {
     setWorkspaceAlready = true;
-    dataManager.setWorkspaceID(props.workspaceID);
+    dataManager.setWorkspaceID(props.experimentId);
     dataManager.addObserver("setWorkspaceLoading", () => {
       const isLoading = dataManager.isWorkspaceLoading();
       setLoading(isLoading);
@@ -83,6 +83,7 @@ function Plots(props: { workspaceID: string }) {
       }
     });
   }
+
   useEffect(() => {
     return () => {
       setWorkspaceAlready = false;
@@ -90,7 +91,7 @@ function Plots(props: { workspaceID: string }) {
     };
   }, []);
   const classes = useStyles();
-  const [loading, setLoading] = React.useState(props.workspaceID !== undefined);
+  const [loading, setLoading] = React.useState(props.experimentId !== undefined);
 
   // == Small screen size notice ==
   const [showSmallScreenNotice, setShowSmallScreenNotice] = React.useState(
@@ -104,6 +105,29 @@ function Plots(props: { workspaceID: string }) {
     });
   }
 
+  const upsertWorkSpace = () => {
+    let stateJson = dataManager.getWorkspaceJSON();
+    const updateWorkSpace = WorkspacesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).upsertWorkSpace(
+      userManager.getToken(),
+      { experimentId : props.experimentId, state: stateJson }
+    );
+    axios
+      .post(updateWorkSpace.url, updateWorkSpace.options.body, updateWorkSpace.options)
+      .then((e) => {
+        snackbarService.showSnackbar(
+          "Workspace saved successfully.",
+          "success"
+        );
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Could not save the workspace, reload the page and try again!",
+          "error"
+        );
+      });
+  }
   // == General modal logic ==
   const handleOpen = (func: Function) => {
     func(true);
@@ -118,7 +142,7 @@ function Plots(props: { workspaceID: string }) {
   const [generateReportModalOpen, setGenerateReportModalOpen] =
     React.useState(false);
   const [loadModal, setLoadModal] = React.useState(
-    props.workspaceID !== undefined
+    props.experimentId !== undefined
   );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
@@ -337,7 +361,7 @@ function Plots(props: { workspaceID: string }) {
         </div>
       ) : null}
 
-      {props.workspaceID === undefined ? (
+      {props.experimentId === undefined ? (
         <div
           style={{
             color: "#555",
@@ -516,13 +540,13 @@ function Plots(props: { workspaceID: string }) {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => console.log(dataManager.getWorkspaceJSON())}
+                onClick={() => upsertWorkSpace()}
                 className={classes.topButton}
                 style={{
                   backgroundColor: "#fafafa",
                 }}
               >
-                Print Experiment
+                Save Workspace
               </Button>
               <Button
                 variant="contained"
