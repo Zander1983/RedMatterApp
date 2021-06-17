@@ -73,7 +73,7 @@ function CreateExperimentModal(props: {
     const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).createExperiment(
-      { details: formData, name: name, privateExp: privateExperiment },
+      { details: formData, name: name, privateExp: privateExperiment, organisationId: organizationId },
       userManager.getToken()
     );
     axios

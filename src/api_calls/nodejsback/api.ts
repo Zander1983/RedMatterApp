@@ -307,10 +307,16 @@ export interface ExperimentPayload {
   name?: string;
   /**
    *
-   * @type {string}
+   * @type {boolean}
    * @memberof ExperimentPayload
    */
   privateExp?: boolean;
+/**
+   *
+   * @type {string}
+   * @memberof ExperimentPayload
+   */
+ organisationId?: string;
 }
 /**
  *
