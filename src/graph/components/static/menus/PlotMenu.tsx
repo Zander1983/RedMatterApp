@@ -214,8 +214,8 @@ export default function PlotMenu() {
                     ? "~"
                     : stats.statY}
                 </TableCell>
-                <TableCell>{stats.pointsOutSideRange.count}</TableCell>
-                <TableCell>{stats.pointsOutSideRange.percentage}</TableCell>
+                <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
+                <TableCell>{stats.pointsOutSideOfRangeObj.percentage}</TableCell>
               </TableRow>
             );
           })}

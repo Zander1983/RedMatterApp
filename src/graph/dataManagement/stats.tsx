@@ -8,12 +8,12 @@ export default class PlotStats {
   getPlotStats(plot: PlotData, statsX: number, statsY: number) {
     this.plot = plot;
     const stat = this.getStats(statsX, statsY);
-    const pointsOutSideRange = this.getPointsOutOfRange();
+    const pointsOutSideOfRangeObj = this.getPointsOutOfRange();
     const pop = this.getPopulationStats();
     return {
       statX: stat.x,
       statY: stat.y,
-      pointsOutSideRange: pointsOutSideRange,
+      pointsOutSideOfRangeObj: pointsOutSideOfRangeObj,
       filePopulationSize: pop.fileSize,
       gatedFilePopulationSize: pop.plotSize,
       gatedFilePopulationPercentage: pop.percentage,
