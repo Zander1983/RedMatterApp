@@ -63,7 +63,7 @@ const staticFiles = [
   return {
     title: e,
     information: "...",
-    fromState: e,
+    fromStatic: e,
     lastModified: "X/X/X",
   };
 });
