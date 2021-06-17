@@ -24,6 +24,8 @@ import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 const { Content } = Layout;
 
@@ -115,7 +117,14 @@ const router = [
 const theme = createMuiTheme();
 
 const App = () => {
+  const dispatch = useDispatch();
   const classes = useStyles();
+
+  useEffect(() => {
+    dispatch({
+      type: "RESET",
+    });
+  }, []);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
