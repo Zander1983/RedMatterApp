@@ -616,12 +616,10 @@ export default class PlotData extends ObserversFunctionality {
       this.file.remoteData != undefined &&
       this.file.remoteData.paramsAnalysis !== undefined
     ) {
-      for (const axis of Object.values(this.file.remoteData.paramsAnalysis)) {
+      //@ts-ignore
+      Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
         const axisType =
-          //@ts-ignore
-          axis.paramName.toUpperCase().indexOf("FSC") !== -1 ||
-          //@ts-ignore
-          axis.paramName.toUpperCase().indexOf("SSC") !== -1
+          this.file.remoteData.channels[i].display !== "bi"
             ? "linear"
             : "biexponential";
         //@ts-ignore
@@ -631,7 +629,7 @@ export default class PlotData extends ObserversFunctionality {
           //@ts-ignore
           axisType === "biexponential" ? 1 : axis[axisType + "Maximum"],
         ]);
-      }
+      });
     } else {
       const axesData = this.getAxesData();
       for (const axis of this.file.axes) {
