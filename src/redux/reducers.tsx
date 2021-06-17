@@ -43,7 +43,18 @@ const reducer = (state = initialState, action: any) => {
         },
       };
     case actionTypes.RESET:
-      return initialState;
+      try {
+        if (
+          state !== undefined &&
+          state.profile != undefined &&
+          state.experiment !== undefined &&
+          state.experiment.device !== undefined
+        )
+          return state;
+        throw Error();
+      } catch {
+        return initialState;
+      }
     default:
       return state;
   }
