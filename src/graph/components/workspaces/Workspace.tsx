@@ -67,6 +67,10 @@ class Workspace extends React.Component {
   }
 
   update() {
+    if (!dataManager.ready()) {
+      this.plots = [];
+      this.forceUpdate();
+    }
     const plotMap = dataManager.getAllPlots();
     const plotList: {
       plotData: PlotData;

@@ -1,3 +1,5 @@
+import numeral from "numeral";
+
 import Drawer, { DrawerState } from "graph/renderers/drawers/drawer";
 
 export interface GraphDrawerState extends DrawerState {
@@ -184,13 +186,11 @@ export default class GraphDrawer extends Drawer {
 
   private numToLabelText(num: number): string {
     let snum = "";
-    if (Math.abs(num) < 1e6) {
-      snum = num.toString();
-      if (snum.length > 6) snum = snum.substring(0, 6);
-      if (snum[snum.length - 1] == ".")
-        snum = snum.substring(0, snum.length - 1);
+    if (num < 2) {
+      snum = numeral(num.toFixed(2)).format("0.0a");
     } else {
-      snum = num.toExponential(2);
+      snum = num.toFixed(2);
+      snum = numeral(snum).format("0a");
     }
     return snum;
   }

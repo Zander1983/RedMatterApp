@@ -2,7 +2,7 @@ import axios from "axios";
 
 const oldBackFileUploader = (
   token: string,
-  workspaceId?: string,
+  experimentId?: string,
   organisationId?: string,
   file0?: Blob,
   options?: any
@@ -10,7 +10,7 @@ const oldBackFileUploader = (
   if (token === null || token === undefined) {
     throw new Error("No token no request... what did you expect???");
   }
-  const url = "/api/upload/" + workspaceId;
+  const url = "/api/upload/" + experimentId;
   const localVarRequestOptions = Object.assign({ method: "POST" }, options);
   const localVarHeaderParameter = {} as any;
   const localVarFormParams = new FormData();
@@ -20,14 +20,13 @@ const oldBackFileUploader = (
     localVarFormParams.set("token", token as any);
   }
 
-  if (workspaceId !== undefined) {
-    localVarFormParams.set("workspaceId", workspaceId as any);
+  if (experimentId !== undefined) {
+    localVarFormParams.set("experimentId", experimentId as any);
   }
 
   if (organisationId !== undefined) {
     localVarFormParams.set("organisationId", organisationId as any);
   }
-
   if (file0 !== undefined) {
     localVarFormParams.set("file[0]", file0 as any);
   }

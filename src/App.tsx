@@ -9,9 +9,9 @@ import {
 import { SnackbarContainer } from "uno-material-ui";
 
 import AppHeader from "./Components/common/header";
-import Workspaces from "./Components/workspaces/workspaces";
+import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
-import Workspace from "./Components/workspaces/Workspace";
+import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
@@ -24,6 +24,8 @@ import Terms from "Components/home/Terms";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 const { Content } = Layout;
 
@@ -82,16 +84,16 @@ const router = [
     component: Plots,
   },
   {
-    path: "/experiment/:workspaceID/plots",
+    path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots workspaceID={match.params.workspaceID} />
+      <Plots experimentId={match.params.experimentId} />
     ),
   },
-  { path: "/experiments", component: Workspaces },
+  { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
-    path: "/experiment/:workspaceID",
-    component: ({ match }: any) => <Workspace id={match.params.workspaceID} />,
+    path: "/experiment/:experimentId",
+    component: ({ match }: any) => <Experiment id={match.params.experimentId} />,
   },
   {
     path: "/mailing-list",
@@ -115,7 +117,14 @@ const router = [
 const theme = createMuiTheme();
 
 const App = () => {
+  const dispatch = useDispatch();
   const classes = useStyles();
+
+  useEffect(() => {
+    dispatch({
+      type: "RESET",
+    });
+  }, []);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

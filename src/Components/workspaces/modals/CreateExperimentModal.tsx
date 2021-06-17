@@ -9,10 +9,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 
 import userManager from "Components/users/userManager";
-import {
-  ExperimentApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
-} from "api_calls/nodejsback";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
@@ -35,11 +32,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CreateWorkspaceModal(props: {
+function CreateExperimentModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
-  workspaces: string[];
+  experiments: string[];
 }): JSX.Element {
   const store = useStore();
   const dispatch = useDispatch();
@@ -47,7 +44,7 @@ function CreateWorkspaceModal(props: {
 
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
-  const [privateWorkspace, setPrivateWorkspace] = React.useState(false);
+  const [privateExperiment, setPrivateExperiment] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
   const [createExperimentDialog, setCreateExperimentDialog] =
     React.useState(false);
@@ -72,49 +69,29 @@ function CreateWorkspaceModal(props: {
     enableButton();
   }, [props.open]);
 
-  const createWorkspace = () => {
-    const data = {
-      name,
-      organisationId: organizationId,
-      isPrivate: privateWorkspace,
-    };
-
-    const fetchArgs = WorkspacesApiFetchParamCreator({
+  const createExperiment = () => {
+    const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).createWorkspace(userManager.getToken(), data);
+    }).createExperiment(
+      { details: formData, name: name, privateExp: privateExperiment },
+      userManager.getToken()
+    );
     axios
-      .post(fetchArgs.url, data, {
-        headers: fetchArgs.options.headers,
-      })
+      .post(req.url, req.options.body, req.options)
       .then((e) => {
-        setName("");
-        setPrivateWorkspace(false);
-        const workspaceID = e.data.id;
-        // This should create an experiment assigning this data to that experiment
-        const req = ExperimentApiFetchParamCreator({
-          accessToken: userManager.getToken(),
-        }).createExperiment(
-          { details: formData },
-          userManager.getToken(),
-          workspaceID
-        );
-        axios
-          .post(req.url, req.options.body, req.options)
-          .then((e) => {})
-          .catch((e) => {});
-        dispatch({
-          type: "EXPERIMENT_FORM_DATA_CLEAR",
-        });
         props.closeCall.f(props.closeCall.ref);
         props.created(e.data.id);
+        setName("");
       })
       .catch((e) => {
         snackbarService.showSnackbar(
-          "Could not create workspace, reload the page and try again!",
+          "Could not create experiment, reload the page and try again!",
           "error"
         );
       });
-    setDisableSubmit(true);
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
   };
 
   //THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG
@@ -127,7 +104,7 @@ function CreateWorkspaceModal(props: {
       return;
     }
 
-    if (props.workspaces.includes(name)) {
+    if (props.experiments.includes(name)) {
       snackbarService.showSnackbar(
         "An experiment with this name already exists",
         "warning"
@@ -158,7 +135,6 @@ function CreateWorkspaceModal(props: {
     setFormData(store.getState().user.experiment);
   };
 
-  //function that enables the submit button
   const enableButton = () => {
     const valuesToCheck = {
       1: store.getState().user.experiment.cellType,
@@ -183,11 +159,9 @@ function CreateWorkspaceModal(props: {
   const handleClose = (func: Function) => {
     func(false);
   };
-  //FUNCTION THAT WILL BE PASSED AS A PROP TO THE SUMMARY SO WE CAN CREATE THE EXPERIMENT FROM THERE
   const createExperimentFromSummary = (func: Function) => {
     func();
   };
-
   return (
     <div>
       <CreateExperimentDialog
@@ -199,7 +173,7 @@ function CreateWorkspaceModal(props: {
         name={name}
         sendFunction={{
           f: createExperimentFromSummary,
-          ref: createWorkspace,
+          ref: createExperiment,
         }}
       />
 
@@ -308,8 +282,8 @@ function CreateWorkspaceModal(props: {
                       //@ts-ignore
                       color="primary"
                       inputProps={{ "aria-label": "secondary checkbox" }}
-                      checked={privateWorkspace}
-                      onChange={() => setPrivateWorkspace(!privateWorkspace)}
+                      checked={privateExperiment}
+                      onChange={() => setPrivateExperiment(!privateExperiment)}
                       name="Private workspace"
                       style={{}}
                     />
@@ -323,7 +297,7 @@ function CreateWorkspaceModal(props: {
                   }
                 />
 
-                {privateWorkspace ? (
+                {privateExperiment ? (
                   <p
                     style={{
                       fontSize: 10,
@@ -393,4 +367,4 @@ function CreateWorkspaceModal(props: {
   );
 }
 
-export default CreateWorkspaceModal;
+export default CreateExperimentModal;
