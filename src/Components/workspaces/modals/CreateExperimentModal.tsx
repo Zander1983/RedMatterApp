@@ -32,6 +32,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+//create your forceUpdate hook
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
+
 function CreateExperimentModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
@@ -41,6 +47,7 @@ function CreateExperimentModal(props: {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
+  const forceUpdate = useForceUpdate();
 
   const organizationId = userManager.getOrganiztionID();
   const [name, setName] = React.useState("");
@@ -48,7 +55,6 @@ function CreateExperimentModal(props: {
   const [formData, setFormData] = React.useState(null);
   const [createExperimentDialog, setCreateExperimentDialog] =
     React.useState(false);
-  const [disableSubmit, setDisableSubmit] = React.useState(true);
   const [nameError, setNameError] = React.useState(false);
 
   useEffect(() => {
@@ -66,7 +72,6 @@ function CreateExperimentModal(props: {
         },
       });
     }
-    enableButton();
   }, [props.open]);
 
   const createExperiment = () => {
@@ -135,25 +140,20 @@ function CreateExperimentModal(props: {
     setFormData(store.getState().user.experiment);
   };
 
-  const enableButton = () => {
+  const confirmEnabled = () => {
     const valuesToCheck = {
       1: store.getState().user.experiment.cellType,
       2: store.getState().user.experiment.particleSize,
       3: store.getState().user.experiment.fluorophoresCategory,
       4: name,
     };
-    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
-    if (
-      Object.values(valuesToCheck).every((item) => item != null && item != "")
-    ) {
-      setDisableSubmit(false);
-    } else {
-      setDisableSubmit(true);
-    }
+    return Object.values(valuesToCheck).every(
+      (item) => item != null && item != ""
+    );
   };
 
   store.subscribe(() => {
-    enableButton();
+    forceUpdate();
   });
 
   const handleClose = (func: Function) => {
@@ -349,9 +349,9 @@ function CreateExperimentModal(props: {
             </Button>
             <Button
               variant="contained"
-              disabled={disableSubmit}
+              disabled={!confirmEnabled()}
               style={{
-                backgroundColor: disableSubmit ? "#aaaadb" : "#6666A9",
+                backgroundColor: confirmEnabled() ? "#6666A9" : "#aaaadb",
                 color: "white",
               }}
               onClick={() => {
