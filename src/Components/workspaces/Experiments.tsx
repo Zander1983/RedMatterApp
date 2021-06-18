@@ -147,8 +147,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               xs={12}
             >
               {pvtExperiments.length > 0 ? (
-                pvtExperiments.map((data: any) => {
-                  return <ExperimentCard data={data} update={fetchExperiments} />;
+                pvtExperiments.map((data: any, index: number) => {
+                  return <ExperimentCard key={`pvt${index}`} data={data} update={fetchExperiments} />;
                 })
               ) : (
                 <div
@@ -190,8 +190,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               xs={12}
             >
               {experiments.length > 0 ? (
-                experiments.map((data: any) => {
-                  return <ExperimentCard data={data} update={fetchExperiments} />;
+                experiments.map((data: any, index: number) => {
+                  return <ExperimentCard key={`org${index}`} data={data} update={fetchExperiments} />;
                 })
               ) : (
                 <div
