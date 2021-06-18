@@ -12,7 +12,7 @@ import axios from "axios";
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "./staticFCSFiles/staticFileReader";
 import { snackbarService } from "uno-material-ui";
-import { WorkspaceFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { useHistory } from "react-router";
 
