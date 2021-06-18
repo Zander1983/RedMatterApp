@@ -23,6 +23,13 @@ class UserManager {
     return this.state.user.profile.token;
   }
 
+  getUid() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get uid of unlogged user");
+    }
+    return this.state.user.profile.userDetails.userUid;
+  }
+
   getOrganiztionID() {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");

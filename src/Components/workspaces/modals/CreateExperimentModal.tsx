@@ -225,7 +225,7 @@ function CreateExperimentModal(props: {
                     textAlign: "left",
                   }}
                 >
-                  <h4 style={{ fontWeight: 300 }}>Your Experiment's Name</h4>
+                  <span style={{ fontWeight: 300 }}>Your Experiment's Name</span>
                 </Typography>
               </Grid>
               <Grid item xs={7}>
@@ -268,7 +268,7 @@ function CreateExperimentModal(props: {
                     textAlign: "left",
                   }}
                 >
-                  <h4 style={{ fontWeight: 300 }}>Private experiment</h4>
+                  <span style={{ fontWeight: 300 }}>Private experiment</span>
                 </Typography>
               </Grid>
               <Grid item xs={7}>
