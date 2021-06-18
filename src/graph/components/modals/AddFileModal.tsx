@@ -77,6 +77,11 @@ const staticFiles = [
   };
 });
 
+function useForceUpdate() {
+  const [value, setValue] = React.useState(0); // integer state
+  return () => setValue((value) => value + 1); // update the state to force render
+}
+
 const getRemoteFiles = (workspaceId: string): Promise<any[]> => {
   return axios.get("/api/events/" + workspaceId, {
     params: {
@@ -112,25 +117,29 @@ const getRemoteFileMetadata = (experimentId: string): Promise<any> => {
   return axios.get(params.url, params.options);
 };
 
+let downloading: any[] = [];
+let downloaded: any[] = [];
+
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
+  const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
-  const [files, setFiles] = React.useState(remoteWorkspace ? [] : staticFiles);
   const [filesMetadata, setFilesMetadata] = React.useState(
     remoteWorkspace ? [] : staticFiles
   );
-  const [dowloadingFiles, setDownloadingFiles] = React.useState([]);
 
   useEffect(() => {
+    downloaded = [];
+    downloading = [];
     if (remoteWorkspace) {
       getRemoteFileMetadata(dataManager.getRemoteWorkspaceID())
         .then((e) => setFilesMetadata(e.data.files))
         .catch((e) => console.log("[ERROR] ", e, e.response));
       dataManager.addObserver("clearWorkspace", () => {
-        setFiles(remoteWorkspace ? [] : staticFiles);
+        downloaded = remoteWorkspace ? [] : staticFiles;
         dataManager.setWorkspaceLoading(false);
       });
     }
@@ -143,14 +152,13 @@ function AddFileModal(props: {
       snackbarService.showSnackbar("Something went wrong, try again!", "error");
       return;
     }
-    const file: any = files[index];
+    const file: any = downloaded[index];
     let newFile: FCSFile;
-    console.log("trying to add file = ", file);
-    if (file.fromStatic !== undefined) {
+    if (file?.fromStatic) {
       newFile = staticFileReader(file.fromStatic);
     } else {
       newFile = new FCSFile({
-        name: file.label,
+        name: file.title,
         id: file.id,
         src: "remote",
         axes: file.channels.map((e: any) => e.value),
@@ -166,9 +174,14 @@ function AddFileModal(props: {
   };
 
   const downloadFile = (fileId: string) => {
-    setDownloadingFiles(dowloadingFiles.concat(fileId));
+    //@ts-ignore
+    if (downloaded.filter((e) => e.id === fileId).length > 0) {
+      snackbarService.showSnackbar("File already downloaded", "warning");
+      return;
+    }
+    downloading = downloading.concat(fileId);
     getRemoteFile(dataManager.getRemoteWorkspaceID(), fileId)
-      .then((e: any) => setFiles(files.concat(e.data)))
+      .then((e: any) => (downloaded = downloaded.concat(e.data)))
       .catch((e: any) => {
         snackbarService.showSnackbar(
           "File download failed, try again",
@@ -176,24 +189,28 @@ function AddFileModal(props: {
         );
       })
       .finally(() => {
-        setDownloadingFiles(dowloadingFiles.filter((e) => e !== fileId));
+        downloading = downloading.filter((e) => e !== fileId);
+        forceUpdate();
       });
   };
 
   const downloadAll = () => {
     //@ts-ignore
-    setDownloadingFiles(filesMetadata.map((e) => e.id));
+    downloading = filesMetadata.map((e) => e.id);
     getRemoteFiles(dataManager.getRemoteWorkspaceID())
       .then((e: any[]) => {
         //@ts-ignore
-        setFiles(e.data);
-        setDownloadingFiles([]);
+        downloaded = e.data;
       })
       .catch((e) => {
         snackbarService.showSnackbar(
           "Failed to dowload files, try again!",
           "error"
         );
+      })
+      .finally(() => {
+        downloading = [];
+        forceUpdate();
       });
   };
 
@@ -278,9 +295,9 @@ function AddFileModal(props: {
               );
             let isDownloaded =
               //@ts-ignore
-              files.filter((e) => e.id === fileMetadata.id).length > 0;
+              downloaded.filter((e) => e.id === fileMetadata.id).length > 0;
             const isDownloading =
-              dowloadingFiles.filter((e) => e === fileMetadata.id).length > 0;
+              downloading.filter((e) => e === fileMetadata.id).length > 0;
 
             return (
               <div key={i.toString() + fileMetadata.title}>
@@ -288,7 +305,7 @@ function AddFileModal(props: {
                   onMouseEnter={() => setOnHover(i)}
                   onMouseLeave={() => setOnHover(-1)}
                   className={
-                    onHover == i
+                    onHover === i
                       ? classes.fileSelectFileContainerHover
                       : classes.fileSelectFileContainer
                   }
@@ -408,24 +425,28 @@ function AddFileModal(props: {
                             "Download"
                           )}
                         </Button>
-                      ) : (
-                        <Button
-                          style={{
-                            backgroundColor: "#d66",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            setFiles(
-                              //@ts-ignore
-                              files.filter((e) => e.id != fileMetadata.id)
-                            );
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      )
+                      ) : // <Button
+                      //   style={{
+                      //     backgroundColor: "#d66",
+                      //     color: "white",
+                      //     fontSize: 13,
+                      //     marginLeft: 20,
+                      //   }}
+                      //   onClick={() => {
+                      //     downloaded =
+                      //       //@ts-ignore
+                      //       downloaded.filter(
+                      //         (e) => e.id !== fileMetadata.id
+                      //       );
+                      //     dataManager.removeFileFromWorkspace(
+                      //       fileMetadata.id
+                      //     );
+                      //     forceUpdate();
+                      //   }}
+                      // >
+                      //   Remove
+                      // </Button>
+                      null
                     ) : null}
                     {isDownloaded ? (
                       <Button
@@ -437,9 +458,9 @@ function AddFileModal(props: {
                         }}
                         onClick={() => {
                           let index: number;
-                          for (let i = 0; i < files.length; i++) {
+                          for (let i = 0; i < downloaded.length; i++) {
                             //@ts-ignore
-                            if (files[i].id === fileMetadata.id) {
+                            if (downloaded[i].id === fileMetadata.id) {
                               index = i;
                               break;
                             }
@@ -451,7 +472,7 @@ function AddFileModal(props: {
                             );
                             return;
                           }
-                          addFile(i);
+                          addFile(index);
                           props.closeCall.f(props.closeCall.ref);
                         }}
                         disabled={!isDownloaded}
