@@ -22,6 +22,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   }
 
   const [experiments, setExperiments] = React.useState([]);
+  const [pvtExperiments, setPrivateExperiments] = React.useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] = React.useState(false);
   const [createExperimentModal, setCreateExperimentModal] = React.useState(false);
 
@@ -33,7 +34,19 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
-        setExperiments(response.data);
+        let tempPrivate = [];
+        let tempOrg = [];
+        
+        for(let exp of response.data) {
+          if(userManager.getUid() === exp.owner)
+            tempPrivate.push(exp);
+          else
+            tempOrg.push(exp);
+        }
+
+
+        setExperiments(tempOrg);
+        setPrivateExperiments(tempPrivate);
         setFetchExperimentsComplete(true);
       })
       .catch((e) => {
@@ -110,7 +123,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               }}
             >
               <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
-                Experiments
+                My Experiments
               </div>
               <Button
                 variant="contained"
@@ -122,6 +135,49 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               >
                 Create
               </Button>
+            </Grid>
+
+            <Grid
+              container
+              style={{
+                padding: "10px",
+                margin: "auto",
+                width: "100%",
+              }}
+              xs={12}
+            >
+              {pvtExperiments.length > 0 ? (
+                pvtExperiments.map((data: any) => {
+                  return <ExperimentCard data={data} update={fetchExperiments} />;
+                })
+              ) : (
+                <div
+                  style={{ textAlign: "center", width: "100%", padding: 50 }}
+                >
+                  { !fetchExperimentsComplete ? ( <CircularProgress
+                    style={{ width: 20, height: 20 }}
+                  /> ) : 'There are no experiments' }
+                </div>
+              )}
+            </Grid>
+          </Grid>
+          <Grid style={{ borderRadius: 5 }}>
+            <Grid
+              container
+              lg={12}
+              sm={12}
+              style={{
+                backgroundColor: "#66a",
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                padding: 20,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
+                Organization Experiments
+              </div>              
             </Grid>
 
             <Grid
