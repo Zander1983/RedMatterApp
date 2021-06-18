@@ -2,7 +2,6 @@ import Gate from "../dataManagement/gate/gate";
 import dataManager from "./dataManager";
 
 export interface FCSFileInput {
-  id?: string;
   name: string;
   src: string;
   axes: string[];
@@ -23,8 +22,7 @@ export default class FCSFile {
   remoteData?: any = null;
 
   constructor(file: FCSFileInput) {
-    if (file?.id) this.id = file.id;
-    else this.id = dataManager.createID();
+    this.id = dataManager.createID();
 
     this.src = file.src;
 

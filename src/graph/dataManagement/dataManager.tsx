@@ -431,6 +431,18 @@ class DataManager extends ObserversFunctionality {
   }
 
   private handleRemoteFiles(files: any[]) {
+    // const MAX_EVENTS = 4000;
+    // for (let i = 0; i < files.length; i++) {
+    //   if (files[i].events.length > MAX_EVENTS) {
+    //     for (let j = 0; j < files[i].events.length; j++) {
+    //       const nindex = Math.floor(Math.random() * files[i].events.length);
+    //       const temp = files[i].events[nindex];
+    //       files[i].events[nindex] = files[i].events[j];
+    //       files[i].events[j] = temp;
+    //     }
+    //     files[i].events = files[i].events.slice(0, MAX_EVENTS);
+    //   }
+    // }
     this.remoteFiles = files;
   }
 
@@ -439,6 +451,23 @@ class DataManager extends ObserversFunctionality {
     if (this.remoteWorkspaceID === undefined) {
       throw Error("Cannot load files without a remoteWorkspaceID");
     }
+    this.setWorkspaceLoading(true);
+    axios
+      .get("/api/events/" + this.remoteWorkspaceID, {
+        params: {
+          experimentId: this.remoteWorkspaceID,
+          token: userManager.getToken(),
+          organisationId: userManager.getOrganiztionID(),
+        },
+      })
+      .then((e) => this.handleRemoteFiles(e.data))
+      .catch((e) => {
+        document.location.reload(true);
+        // snackbarService.showSnackbar(e.response.data.error, "error", 1000000);
+      })
+      .finally(() => {
+        this.setWorkspaceLoading(false);
+      });
   }
 
   private setStandardObservers() {}

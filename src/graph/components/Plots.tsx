@@ -95,7 +95,9 @@ function Plots(props: { experimentId: string }) {
     };
   }, []);
   const classes = useStyles();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(
+    props.experimentId !== undefined
+  );
 
   // == Small screen size notice ==
   const [showSmallScreenNotice, setShowSmallScreenNotice] = React.useState(
@@ -149,7 +151,9 @@ function Plots(props: { experimentId: string }) {
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
     React.useState(false);
-  const [loadModal, setLoadModal] = React.useState(false);
+  const [loadModal, setLoadModal] = React.useState(
+    props.experimentId !== undefined
+  );
   const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const waitTime = Math.random() * 1000 + 500;
