@@ -1,5 +1,6 @@
 import PlotData from "./plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import dataManager from "../dataManagement/dataManager";
 
 export default class PlotStats {
   plot: PlotData;
@@ -7,14 +8,46 @@ export default class PlotStats {
   getPlotStats(plot: PlotData, statsX: number, statsY: number) {
     this.plot = plot;
     const stat = this.getStats(statsX, statsY);
+    const pointsOutSideOfRangeObj = this.getPointsOutOfRange();
     const pop = this.getPopulationStats();
     return {
       statX: stat.x,
       statY: stat.y,
+      pointsOutSideOfRangeObj: pointsOutSideOfRangeObj,
       filePopulationSize: pop.fileSize,
       gatedFilePopulationSize: pop.plotSize,
       gatedFilePopulationPercentage: pop.percentage,
     };
+  }
+
+  getPointsOutOfRange()
+  {
+    let xyRange = this.plot.getXandYRanges();
+    let xRange = xyRange.x;
+    let yRange = xyRange.y;
+
+    let xMin = xRange[0];
+    let xMax = xRange[1];
+    let yMin = yRange[0];
+    let yMax = yRange[1];
+
+    let data = this.plot.getXandYData();
+    
+    let length = Object.keys(data.xAxis).length;
+
+    let count = 0;
+
+    for(let i=0; i<length ; i++)
+    {
+      let x = data.xAxis[i];
+      let y = data.yAxis[i];
+
+      if(x < xMin || x > xMax || y < yMin || y > yMax)
+      {
+        count++;
+      }
+    }
+    return { count: count, percentage: count ? this.parseNum(((count/length)*100)) : 0 }
   }
 
   private getStats(statX: number, statY: number)
