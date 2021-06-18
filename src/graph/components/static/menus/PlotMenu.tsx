@@ -126,6 +126,8 @@ export default function PlotMenu() {
                 )}
               </Select>
             </TableCell>
+            <TableCell>Points outside</TableCell>
+            <TableCell>% of Points outside</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -212,6 +214,8 @@ export default function PlotMenu() {
                     ? "~"
                     : stats.statY}
                 </TableCell>
+                <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
+                <TableCell>{stats.pointsOutSideOfRangeObj.percentage}</TableCell>
               </TableRow>
             );
           })}
