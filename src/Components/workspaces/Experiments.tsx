@@ -34,19 +34,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
-        let tempPrivate = [];
-        let tempOrg = [];
-        
-        for(let exp of response.data) {
-          if(userManager.getUid() === exp.owner)
-            tempPrivate.push(exp);
-          else
-            tempOrg.push(exp);
-        }
-
-
-        setExperiments(tempOrg);
-        setPrivateExperiments(tempPrivate);
+        setExperiments(response.data.organisationExperiments);
+        setPrivateExperiments(response.data.userExperiments);
         setFetchExperimentsComplete(true);
       })
       .catch((e) => {
