@@ -17,6 +17,9 @@ export const COMMON_CONSTANTS = {
         "",
         "Points outside",
         "% of Points outside"
+        ],
+        GATE: [
+            "Name", "Color", "Type", "X Axis", "Y Axis" 
         ]
     }
 }

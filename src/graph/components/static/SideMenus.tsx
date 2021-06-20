@@ -27,21 +27,23 @@ export default function SideMenus() {
   const [plotMenuOpen, setPlotMenuOpen] = React.useState(false);
   const [downloadFileName, setDownloadFileName] = React.useState("");
   const [downloadFileUrl, setDownloadFileUrl] = React.useState("");
+  const [statsX, setStatsX] = React.useState(
+    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  );
+  const [statsY, setStatsY] = React.useState(
+    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  );
   const downloadFile = React.useRef(null);
 
   const downloadCsv = () => {
+    setDownloadFileUrl(URL.createObjectURL(new Blob([])));
     let statsProvider = new PlotStats();
 
     let plots = dataManager.getAllPlots();
-    debugger
     let statsArray = [];
     for (let i = 0; i < plots.length; i++) {
       let plot = plots[i].plot;
-      let stats = statsProvider.getPlotStats(
-        plot,
-        COMMON_CONSTANTS.DROPDOWNS.STATS.Median,
-        COMMON_CONSTANTS.DROPDOWNS.STATS.Median
-      );
+      let stats = statsProvider.getPlotStats(plot, statsX, statsY);
       const histogram = plot.xAxis === plot.yAxis ? true : false;
       let type = histogram ? "histogram" : "scatterplot";
       let furbishedStats = {
@@ -59,22 +61,65 @@ export default function SideMenus() {
                 ),
         Brute: `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`,
         Percentage: stats.gatedFilePopulationPercentage,
-        MedianX: histogram ? `~` : stats.statY,
+        MedianX: histogram ? `~` : stats.statX,
         MedianY: histogram ? `~` : stats.statY,
         "Points outside": stats.pointsOutSideOfRangeObj.count,
-        "% of Points outside": stats.pointsOutSideOfRangeObj.percentage
+        "% of Points outside": stats.pointsOutSideOfRangeObj.percentage,
       };
       statsArray.push(furbishedStats);
     }
 
-    let output = COMMON_SERVICE.downloadCsvFile(statsArray, COMMON_CONSTANTS.SIDE_MENU.STATS);
-    const blob = new Blob([output]);
-    setDownloadFileName('stats.csv');
-    setDownloadFileUrl(URL.createObjectURL(blob));
-    downloadFile.current.click();
+    let statsHeader = COMMON_CONSTANTS.SIDE_MENU.STATS;
+    let keys = Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS);
+    statsHeader[6] = `${
+      statsX == COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+    } X`;
+    statsHeader[7] = `${
+      statsY == COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+    } Y`;
+    let output = "Plots data \n";
+    output += COMMON_SERVICE.downloadCsvFile(statsArray, statsHeader);
 
-    // let gates = dataManager.getAllGates();
-    // let files = dataManager.getAllFiles();
+    let gates = dataManager.getAllGates();
+
+    let plotsArray = [];
+    for (let i = 0; i < gates.length; i++) {
+      let gate = gates[i];
+      let furbishedPlots = {
+        Name: gate.gate.name,
+        Color: gate.gate.color,
+        Type: gate.gate.getGateType(),
+        "X Axiz": gate.gate.xAxis,
+        "Y Axis": gate.gate.yAxis,
+      };
+      plotsArray.push(furbishedPlots);
+    }
+    output += "Gates data \n";
+    output += COMMON_SERVICE.downloadCsvFile(
+      plotsArray,
+      COMMON_CONSTANTS.SIDE_MENU.GATE
+    );
+
+    let files = dataManager.getAllFiles();
+    let filesArray = [];
+    for (let i = 0; i < files.length; i++) {
+      let fileObj = files[i];
+      let furbishedFiles = {
+        Name: fileObj.file.name,
+      };
+      filesArray.push(furbishedFiles);
+    }
+    output += "Files data \n";
+    output += COMMON_SERVICE.downloadCsvFile(filesArray, ["Name"]);
+
+    const blob = new Blob([output]);
+    var link = document.createElement("A");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", "data.csv");
+    link.setAttribute("target", "_blank");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const click = (target: string | undefined) => {
@@ -187,26 +232,24 @@ export default function SideMenus() {
           ) : null}
         </div>
         <div>
-          {fileMenuOpen || plotMenuOpen || gateMenuOpen ? (
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => downloadCsv()}
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => downloadCsv()}
+            style={{
+              marginLeft: 10,
+              backgroundColor: "#fff",
+              color: "#000",
+            }}
+          >
+            <GetAppIcon
+              fontSize="small"
               style={{
-                marginLeft: 10,
-                backgroundColor: "#fff",
-                color: "#000",
+                marginRight: 10,
               }}
-            >
-              <GetAppIcon
-                fontSize="small"
-                style={{
-                  marginRight: 10,
-                }}
-              ></GetAppIcon>
-              Download all
-            </Button>
-          ) : null}
+            ></GetAppIcon>
+            Download all
+          </Button>
         </div>
       </div>
       <div
@@ -218,7 +261,13 @@ export default function SideMenus() {
       >
         {fileMenuOpen ? <FileMenu /> : null}
         {gateMenuOpen ? <GateMenu /> : null}
-        {plotMenuOpen ? <PlotMenu /> : null}
+        {plotMenuOpen ? (
+          <PlotMenu
+            onStatChange={(e) => {
+              e["x"] ? setStatsX(e["value"]) : setStatsY(e["value"]);
+            }}
+          />
+        ) : null}
       </div>
       <a
         style={{
