@@ -28,6 +28,7 @@ import { snackbarService } from "uno-material-ui";
 import { useHistory } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
+import { useLocation } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -69,31 +70,79 @@ function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-  if (
-    process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
-    !isLoggedIn
-  ) {
-    history.push("/login");
-  }
+  
+  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [workspaceState, setWorkspaceState] = React.useState(false);
+  const [newWorkspaceId, setNewWorkspaceId] = React.useState(false);
 
-  if (props.experimentId !== undefined && !setWorkspaceAlready) {
-    setWorkspaceAlready = true;
-    dataManager.setWorkspaceID(props.experimentId);
-    dataManager.addObserver("setWorkspaceLoading", () => {
-      const isLoading = dataManager.isWorkspaceLoading();
-      setLoading(isLoading);
-      if (!isLoading) {
-        setLoadModal(false);
+  const location = useLocation();
+  const verifyWorkspace = async (workspaceId: string) => {
+      try {
+        let workspaceData = await axios.post(
+          "/api/verifyWorkspace",
+          {
+            workspaceId: workspaceId,
+            experimentId: props.experimentId,
+          },
+          {}
+        );
+        setSharedWorkspace(workspaceData.data['isShared']);
+        setWorkspaceState(workspaceData.data['state']);
+        setNewWorkspaceId(workspaceData.data['newWorkSpaceId']);
+      } catch (e) {
+        snackbarService.showSnackbar(
+          "Could not save the workspace, reload the page and try again!",
+          "error"
+        );
       }
-    });
-  }
+
+      initPlots();
+  };
 
   useEffect(() => {
+    if (observerAdded === false) {
+      setObserverAdded(true);
+      dataManager.addObserver(
+        "addNewGateToWorkspace",
+        getNameAndOpenModal,
+        true
+      );
+    }
+    let workspaceId = new URLSearchParams(location.search).get("id");
+    if (workspaceId) {
+      verifyWorkspace(workspaceId);
+    }
+    else
+    {
+      initPlots();
+    }
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
     };
   }, []);
+
+  const initPlots = () => {
+    if (props.experimentId !== undefined && !setWorkspaceAlready) {
+      setWorkspaceAlready = true;
+      dataManager.setWorkspaceID(props.experimentId);
+      dataManager.addObserver("setWorkspaceLoading", () => {
+        const isLoading = dataManager.isWorkspaceLoading();
+        setLoading(isLoading);
+        if (!isLoading) {
+          setLoadModal(false);
+        }
+      });
+    }
+
+    if ( !sharedWorkspace &&
+      process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
+      !isLoggedIn
+    ) {
+      history.push("/login");
+    }
+  }
+
   const classes = useStyles();
   const [loading, setLoading] = React.useState(
     props.experimentId !== undefined
@@ -182,17 +231,6 @@ function Plots(props: { experimentId: string }) {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
   };
-
-  useEffect(() => {
-    if (observerAdded === false) {
-      setObserverAdded(true);
-      dataManager.addObserver(
-        "addNewGateToWorkspace",
-        getNameAndOpenModal,
-        true
-      );
-    }
-  }, []);
 
   return (
     <div

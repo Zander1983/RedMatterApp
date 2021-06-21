@@ -1,6 +1,7 @@
 import PlotData from "./plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import dataManager from "../dataManagement/dataManager";
+import numeral from "numeral";
 
 export default class PlotStats {
   plot: PlotData;
@@ -89,7 +90,7 @@ export default class PlotStats {
     let sum = 0;
     axis.forEach((e) => (sum += e));
     let count = axis.length;
-    return  this.parseNum(sum / count);
+    return  numeral(this.parseNum(sum / count)).format("0a");
   }
 
   private parseNum = (num: number) => {
@@ -112,13 +113,17 @@ export default class PlotStats {
 
     let length = axisSort.length;
     let n = Math.floor(length/2);
+    let value;
+    
     if(length % 2 == 0)
     {
-      return this.parseNum(((axisSort[n]+axisSort[n-1])/2));
+       value = this.parseNum(((axisSort[n]+axisSort[n-1])/2));
     }
     else
     {
-      return this.parseNum(axisSort[n]);
+       value = this.parseNum(axisSort[n]);
     }
+    
+    return numeral(value).format("0a");
   }
 }
