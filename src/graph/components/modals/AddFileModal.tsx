@@ -105,14 +105,21 @@ const getRemoteFile = (experimentId: string, fileId: string): any => {
   });
 };
 
-const getRemoteFileMetadata = (experimentId: string): Promise<any> => {
-  const params = ExperimentFilesApiFetchParamCreator({
-    accessToken: userManager.getToken(),
-  }).experimentFiles(
-    userManager.getOrganiztionID(),
-    experimentId,
-    userManager.getToken()
-  );
+const getRemoteFileMetadata = (
+  experimentId: string,
+  isShared: boolean
+): Promise<any> => {
+  var params;
+  if (isShared)
+    params = ExperimentFilesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).experimentFiles(
+      userManager.getOrganiztionID(),
+      experimentId,
+      userManager.getToken()
+    );
+  else {
+  }
 
   return axios.get(params.url, params.options);
 };
@@ -123,6 +130,7 @@ let downloaded: any[] = [];
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
+  isShared: boolean;
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -135,7 +143,7 @@ function AddFileModal(props: {
     downloaded = [];
     downloading = [];
     if (remoteWorkspace) {
-      getRemoteFileMetadata(dataManager.getRemoteWorkspaceID())
+      getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
         .then((e) => setFilesMetadata(e.data.files))
         .catch((e) => console.log("[ERROR] ", e, e.response));
       dataManager.addObserver("clearWorkspace", () => {

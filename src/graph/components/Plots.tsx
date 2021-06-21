@@ -70,50 +70,41 @@ function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-  
+
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState(false);
+  const [initPlot, setInitPlot] = React.useState(false);
 
   const location = useLocation();
   const verifyWorkspace = async (workspaceId: string) => {
-      try {
-        let workspaceData = await axios.post(
-          "/api/verifyWorkspace",
-          {
-            workspaceId: workspaceId,
-            experimentId: props.experimentId,
-          },
-          {}
-        );
-        setSharedWorkspace(workspaceData.data['isShared']);
-        setWorkspaceState(workspaceData.data['state']);
-        setNewWorkspaceId(workspaceData.data['newWorkSpaceId']);
-      } catch (e) {
-        snackbarService.showSnackbar(
-          "Could not save the workspace, reload the page and try again!",
-          "error"
-        );
-      }
+    try {
+      let workspaceData = await axios.post(
+        "/api/verifyWorkspace",
+        {
+          workspaceId: workspaceId,
+          experimentId: props.experimentId,
+        },
+        {}
+      );
+      setSharedWorkspace(workspaceData.data["isShared"]);
+      setWorkspaceState(workspaceData.data["state"]);
+      setNewWorkspaceId(workspaceData.data["newWorkSpaceId"]);
+    } catch (e) {
+      snackbarService.showSnackbar(
+        "Could not save the workspace, reload the page and try again!",
+        "error"
+      );
+    }
 
-      initPlots();
+    initPlots();
   };
 
   useEffect(() => {
-    if (observerAdded === false) {
-      setObserverAdded(true);
-      dataManager.addObserver(
-        "addNewGateToWorkspace",
-        getNameAndOpenModal,
-        true
-      );
-    }
     let workspaceId = new URLSearchParams(location.search).get("id");
     if (workspaceId) {
       verifyWorkspace(workspaceId);
-    }
-    else
-    {
+    } else {
       initPlots();
     }
     return () => {
@@ -123,6 +114,14 @@ function Plots(props: { experimentId: string }) {
   }, []);
 
   const initPlots = () => {
+    if (observerAdded === false) {
+      setObserverAdded(true);
+      dataManager.addObserver(
+        "addNewGateToWorkspace",
+        getNameAndOpenModal,
+        true
+      );
+    }
     if (props.experimentId !== undefined && !setWorkspaceAlready) {
       setWorkspaceAlready = true;
       dataManager.setWorkspaceID(props.experimentId);
@@ -135,13 +134,15 @@ function Plots(props: { experimentId: string }) {
       });
     }
 
-    if ( !sharedWorkspace &&
+    if (
+      !sharedWorkspace &&
       process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
       !isLoggedIn
     ) {
       history.push("/login");
     }
-  }
+    setInitPlot(true);
+  };
 
   const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
@@ -236,22 +237,27 @@ function Plots(props: { experimentId: string }) {
       }}
     >
       {/* == MODALS == */}
-      <GatetNamePrompt open={namePromptOpen} sendName={renameGate} />
+      {initPlot ? (
+        <div>
+          <GatetNamePrompt open={namePromptOpen} sendName={renameGate} />
 
-      <AddFileModal
-        open={addFileModalOpen}
-        closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-      />
+          <AddFileModal
+            open={addFileModalOpen}
+            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+            isShared={sharedWorkspace}
+          />
 
-      <GenerateReportModal
-        open={generateReportModalOpen}
-        closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
-      />
+          <GenerateReportModal
+            open={generateReportModalOpen}
+            closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+          />
 
-      <LinkShareModal
-        open={linkShareModalOpen}
-        closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-      />
+          <LinkShareModal
+            open={linkShareModalOpen}
+            closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+          />
+        </div>
+      ) : null}
 
       <MessageModal
         open={helpModal}
