@@ -226,38 +226,42 @@ const AppLandingPage = () => {
               </NavLink>{" "}
               {!isLoggedIn ? (
                 <div>
-                  <NavLink to="/login">
+                  <div>
+                    <NavLink to="/login">
+                      <Button
+                        variant="contained"
+                        size="large"
+                        color="primary"
+                        className={classes.marginButton}
+                      >
+                        Login
+                      </Button>
+                    </NavLink>{" "}
+                    <NavLink to="/register">
+                      <Button
+                        variant="contained"
+                        size="large"
+                        color="primary"
+                        className={classes.marginButton}
+                      >
+                        Register
+                      </Button>
+                    </NavLink>
+                  </div>
+                </div>
+              ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <div>
+                  <NavLink to="/experiments">
                     <Button
                       variant="contained"
                       size="large"
                       color="primary"
                       className={classes.marginButton}
                     >
-                      Login
-                    </Button>
-                  </NavLink>{" "}
-                  <NavLink to="/register">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      color="primary"
-                      className={classes.marginButton}
-                    >
-                      Register
+                      Experiments
                     </Button>
                   </NavLink>
                 </div>
-              ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <NavLink to="/experiments">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    color="primary"
-                    className={classes.marginButton}
-                  >
-                    Experiments
-                  </Button>
-                </NavLink>
               )}
               <br />
               <NavLink to="/mailing-list">

@@ -90,7 +90,7 @@ const AppHeader = (props: any) => {
                   fontSize: 15,
                 }}
               >
-                v2.0.7
+                {process.env.REACT_APP_CURRENT_APP_VERSION || "v2"}
               </b>
             </NavLink>
           </Typography>
