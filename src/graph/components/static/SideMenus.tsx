@@ -25,18 +25,14 @@ export default function SideMenus() {
   const [fileMenuOpen, setFileMenuOpen] = React.useState(false);
   const [gateMenuOpen, setGateMenuOpen] = React.useState(false);
   const [plotMenuOpen, setPlotMenuOpen] = React.useState(false);
-  const [downloadFileName, setDownloadFileName] = React.useState("");
-  const [downloadFileUrl, setDownloadFileUrl] = React.useState("");
   const [statsX, setStatsX] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
   const [statsY, setStatsY] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
-  const downloadFile = React.useRef(null);
 
   const downloadCsv = () => {
-    setDownloadFileUrl(URL.createObjectURL(new Blob([])));
     let statsProvider = new PlotStats();
 
     let plots = dataManager.getAllPlots();
@@ -57,8 +53,8 @@ export default function SideMenus() {
                 .reverse()
                 .map(
                   (e: any) =>
-                    `${e.inverseGating ? "not " : null} ${e.gate.name}`
-                ),
+                    `${e.inverseGating ? "not " : ''} ${e.gate.name}`
+                ).reduce((prev, curr) => `${prev} & ${curr}`),
         Brute: `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`,
         Percentage: stats.gatedFilePopulationPercentage,
         MedianX: histogram ? `~` : stats.statX,
@@ -269,16 +265,6 @@ export default function SideMenus() {
           />
         ) : null}
       </div>
-      <a
-        style={{
-          display: "none",
-        }}
-        download={downloadFileName}
-        href={downloadFileUrl}
-        ref={downloadFile}
-      >
-        download it
-      </a>
     </div>
   );
 }
