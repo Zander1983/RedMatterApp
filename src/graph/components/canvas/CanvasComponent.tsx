@@ -22,8 +22,8 @@ const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
       style={{
         backgroundColor: "#fff",
         textAlign: "center",
-        width: canvas.width,
-        height: canvas.height,
+        width: canvas.width - 80,
+        height: canvas.height - 20,
         borderRadius: 5,
         boxShadow: "1px 3px 4px #bbd",
         flexGrow: 1,

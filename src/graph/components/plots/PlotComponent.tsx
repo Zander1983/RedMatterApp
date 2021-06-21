@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Divider } from "@material-ui/core";
+import { Divider, MenuItem, Select } from "@material-ui/core";
 
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
@@ -40,8 +40,11 @@ let interval: any = {};
 
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const [plotSetup, setPlotSetup] = React.useState(false);
+
   const rerender = useForceUpdate();
   const plot = props.plot;
+  const xAxis = plot.plotData.xAxis;
+  const yAxis = plot.plotData.yAxis;
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
@@ -68,6 +71,25 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     } catch {
       clearInterval(interval[props.plotIndex]);
       interval[props.plotIndex] = undefined;
+    }
+  };
+
+  const isAxisDisabled = (axis: "x" | "y") => {
+    return false;
+  };
+
+  const setAxis = (axis: "x" | "y", value: string) => {
+    const otherAxisValue = axis == "x" ? yAxis : xAxis;
+    axis == "x"
+      ? props.plot.plotData.setXAxis(value)
+      : props.plot.plotData.setYAxis(value);
+  };
+
+  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
+  const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
+    if (lastSelectEvent + 500 < new Date().getTime()) {
+      func(e);
+      setLastSelectEvent(new Date().getTime());
     }
   };
 
@@ -104,7 +126,49 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
         <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
       </div>
 
-      <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
+      <div className="plot-canvas" style={{display:"flex", justifyContent: 'center', alignItems: 'center'}}>
+        <div className="pc-y" style={{ transform: "rotate(270deg)", height: 'min-content', width: '2%' }}>
+          <Select
+            style={{ width: 100, marginLeft: 10 }}
+            onChange={(e) =>
+              handleSelectEvent(e, "y", (e: any) =>
+                setAxis("y", e.target.value)
+              )
+            }
+            disabled={isAxisDisabled("y")}
+            value={yAxis}
+          >
+            {plot.plotData.file.axes.map((e: any) => (
+              <MenuItem value={e}>{e}</MenuItem>
+            ))}
+          </Select>
+        </div>
+        <div
+          className="pc-x"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
+          <Select
+            style={{ width: 100, marginLeft: 10 }}
+            onChange={(e) =>
+              handleSelectEvent(e, "x", (e: any) =>
+                setAxis("x", e.target.value)
+              )
+            }
+            disabled={isAxisDisabled("x")}
+            value={xAxis}
+          >
+            {plot.plotData.file.axes.map((e: any) => (
+              <MenuItem value={e}>{e}</MenuItem>
+            ))}
+          </Select>
+        </div>
+      </div>
     </div>
   );
 }
