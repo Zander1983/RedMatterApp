@@ -58,7 +58,6 @@ function UploadFileModal(props: {
 
   const uploadFileToWorkpace = () => {
     setUploading(true);
-    debugger
     const addP = 100 / files.length;
     for (let i = 0; i < files.length; i++) {
       oldBackFileUploader(
