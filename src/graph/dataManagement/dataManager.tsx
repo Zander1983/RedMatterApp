@@ -281,9 +281,10 @@ class DataManager extends ObserversFunctionality {
     if (!this.currentWorkspace.files.has(fileID)) {
       throw Error("Removing non-existent gate");
     }
+
     this.currentWorkspace.plots.forEach((e) => {
       if (e.file.id === fileID) {
-        throw Error("Removing file currently in use by workspace.");
+        this.removePlotFromWorkspace(e.id);
       }
     });
     this.currentWorkspace.files.delete(fileID);
