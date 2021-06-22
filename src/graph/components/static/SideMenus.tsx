@@ -11,8 +11,8 @@ import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
 import PlotMenu from "./menus/PlotMenu";
 
-import { COMMON_SERVICE } from "services/commonService";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { CSVCreator, CSVObject } from "services/CSVCreator";
 
 const classes = {
   table: {},
@@ -34,6 +34,15 @@ export default function SideMenus() {
 
   const downloadCsv = () => {
     let statsProvider = new PlotStats();
+    let tableNames = ['Stats data', 'Gates data', 'Files data'];
+    let csvCreator = new CSVCreator(tableNames);
+
+    let tables = [];
+
+    let table: CSVObject = {
+      headers: [],
+      body: [],
+    };
 
     let plots = dataManager.getAllPlots();
     let statsArray = [];
@@ -52,9 +61,9 @@ export default function SideMenus() {
             : plot.population
                 .reverse()
                 .map(
-                  (e: any) =>
-                    `${e.inverseGating ? "not " : ''} ${e.gate.name}`
-                ).reduce((prev, curr) => `${prev} & ${curr}`),
+                  (e: any) => `${e.inverseGating ? "not " : ""} ${e.gate.name}`
+                )
+                .reduce((prev, curr) => `${prev} & ${curr}`),
         Brute: `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`,
         Percentage: stats.gatedFilePopulationPercentage,
         MedianX: histogram ? `~` : stats.statX,
@@ -73,8 +82,10 @@ export default function SideMenus() {
     statsHeader[7] = `${
       statsY == COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
     } Y`;
-    let output = "Plots data \n";
-    output += COMMON_SERVICE.downloadCsvFile(statsArray, statsHeader);
+
+    table.headers = statsHeader;
+    table.body = statsArray;
+    tables.push(JSON.parse(JSON.stringify(table)));
 
     let gates = dataManager.getAllGates();
 
@@ -90,11 +101,10 @@ export default function SideMenus() {
       };
       plotsArray.push(furbishedPlots);
     }
-    output += "Gates data \n";
-    output += COMMON_SERVICE.downloadCsvFile(
-      plotsArray,
-      COMMON_CONSTANTS.SIDE_MENU.GATE
-    );
+
+    table.headers = COMMON_CONSTANTS.SIDE_MENU.GATE;
+    table.body = plotsArray;
+    tables.push(JSON.parse(JSON.stringify(table)));
 
     let files = dataManager.getAllFiles();
     let filesArray = [];
@@ -105,17 +115,12 @@ export default function SideMenus() {
       };
       filesArray.push(furbishedFiles);
     }
-    output += "Files data \n";
-    output += COMMON_SERVICE.downloadCsvFile(filesArray, ["Name"]);
 
-    const blob = new Blob([output]);
-    var link = document.createElement("A");
-    link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", "data.csv");
-    link.setAttribute("target", "_blank");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    table.headers = ["Name"];
+    table.body = filesArray;
+    tables.push(JSON.parse(JSON.stringify(table)));
+
+    csvCreator.exportToCSV(tables);
   };
 
   const click = (target: string | undefined) => {
