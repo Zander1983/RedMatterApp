@@ -311,12 +311,12 @@ export interface ExperimentPayload {
    * @memberof ExperimentPayload
    */
   privateExp?: boolean;
-/**
+  /**
    *
    * @type {string}
    * @memberof ExperimentPayload
    */
- organisationId?: string;
+  organisationId?: string;
 }
 /**
  *
@@ -351,10 +351,10 @@ export interface InlineResponse200 {
   token?: string;
   /**
    *
-   * @type {InlineResponse200UserDetails}
+   * @type {String}
    * @memberof InlineResponse200
    */
-  userDetails?: InlineResponse200UserDetails;
+  organisationId?: string;
 }
 /**
  *

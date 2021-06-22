@@ -35,7 +35,9 @@ const classes = {
 
 const statsProvider = new PlotStats();
 
-export default function PlotMenu() {
+export default function PlotMenu(props: {
+  onStatChange: (statObj: any) => void
+}) : JSX.Element {
   const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
@@ -103,6 +105,7 @@ export default function PlotMenu() {
                 value={statsX}
                 onChange={(e) => {
                   setStatsX(parseInt(e.target.value.toString()));
+                  props.onStatChange({x: true, value: parseInt(e.target.value.toString())});
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
@@ -117,6 +120,7 @@ export default function PlotMenu() {
                 value={statsY}
                 onChange={(e) => {
                   setStatsY(parseInt(e.target.value.toString()));
+                  props.onStatChange({x: false, value: parseInt(e.target.value.toString())});
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
