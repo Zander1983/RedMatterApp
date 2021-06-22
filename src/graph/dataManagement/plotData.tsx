@@ -75,6 +75,8 @@ export default class PlotData extends ObserversFunctionality {
   }[] = [];
   xAxis: string = "";
   yAxis: string = "";
+  yHistogram: boolean = false;
+  xHistogram: boolean = false;
   positionInWorkspace: [number, number];
   plotWidth: number = 0;
   plotHeight: number = 0;
@@ -353,6 +355,7 @@ export default class PlotData extends ObserversFunctionality {
   xAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.yAxis = this.xAxis;
+    this.xHistogram = true;
     this.histogramAxis = "vertical";
   }
 
@@ -360,6 +363,7 @@ export default class PlotData extends ObserversFunctionality {
   yAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.xAxis = this.yAxis;
+    this.yHistogram = true;
     this.histogramAxis = "horizontal";
   }
 
@@ -373,6 +377,14 @@ export default class PlotData extends ObserversFunctionality {
   setYAxis(yAxis: string) {
     this.changed = this.changed || yAxis !== this.yAxis;
     this.yAxis = yAxis;
+  }
+
+  @conditionalUpdateDecorator()
+  disableHistogram(axis: "x" | "y") {
+    if(axis === "x")
+      this.xHistogram = false;
+    else
+      this.yHistogram = false;    
   }
 
   /* PLOT STATE GETTERS */
