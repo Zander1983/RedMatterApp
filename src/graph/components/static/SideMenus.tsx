@@ -249,7 +249,7 @@ export default function SideMenus() {
                 marginRight: 10,
               }}
             ></GetAppIcon>
-            Download all
+            Download .csv
           </Button>
         </div>
       </div>
