@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
@@ -9,7 +9,90 @@ import CreateExperimentModal from "./modals/CreateExperimentModal";
 
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
+import { withStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { purple } from "@material-ui/core/colors";
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch, { SwitchClassKey, SwitchProps } from "@material-ui/core/Switch";
+import Typography from "@material-ui/core/Typography";
 import { snackbarService } from "uno-material-ui";
+
+interface Styles extends Partial<Record<SwitchClassKey, string>> {
+  focusVisible?: string;
+}
+
+interface Props extends SwitchProps {
+  classes: Styles;
+}
+
+interface RemoteExperiment {
+  id: string;
+  details: {
+    description: string;
+    fluorophoresCategory: string;
+    particleSize: string;
+    cellType: string;
+    device: string;
+  };
+  name: string;
+  fileCount: number;
+  source: string;
+}
+
+const IOSSwitch = withStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      width: 42,
+      height: 26,
+      padding: 0,
+      margin: theme.spacing(1),
+    },
+    switchBase: {
+      padding: 1,
+      "&$checked": {
+        transform: "translateX(16px)",
+        color: theme.palette.common.white,
+        "& + $track": {
+          backgroundColor: "#bbd",
+          opacity: 1,
+          border: "none",
+        },
+      },
+      "&$focusVisible $thumb": {
+        color: "#ddd",
+        border: "6px solid #fafafa",
+      },
+    },
+    thumb: {
+      width: 24,
+      height: 24,
+    },
+    track: {
+      borderRadius: 26 / 2,
+      border: `1px solid ${theme.palette.grey[400]}`,
+      backgroundColor: "#ddd",
+      opacity: 1,
+      transition: theme.transitions.create(["background-color", "border"]),
+    },
+    checked: {},
+    focusVisible: {},
+  })
+)(({ classes, ...props }: Props) => {
+  return (
+    <Switch
+      focusVisibleClassName={classes.focusVisible}
+      disableRipple
+      classes={{
+        root: classes.root,
+        switchBase: classes.switchBase,
+        thumb: classes.thumb,
+        track: classes.track,
+        checked: classes.checked,
+      }}
+      {...props}
+    />
+  );
+});
 
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
@@ -21,16 +104,28 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     history.replace("/");
   }
 
-  const [experiments, setExperiments] = React.useState([]);
-  const [pvtExperiments, setPrivateExperiments] = React.useState([]);
-  const [fetchExperimentsComplete, setFetchExperimentsComplete] = React.useState(false);
-  const [createExperimentModal, setCreateExperimentModal] = React.useState(false);
+  const [organizationExperiments, setExperiments] = React.useState([]);
+  const [privateExperiments, setPrivateExperiments] = React.useState([]);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] =
+    React.useState(false);
+  const [createExperimentModal, setCreateExperimentModal] =
+    React.useState(false);
+
+  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
+    React.useState(true);
+  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
+    React.useState(false);
+
+  const [displayExperiments, setDisplayExperiments] = React.useState([]);
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
     const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).getAllExperiments(userManager.getOrganiztionID(), userManager.getToken());
+    }).getAllExperiments(
+      userManager.getOrganiztionID(),
+      userManager.getToken()
+    );
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
@@ -59,6 +154,34 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     }
   }, []);
 
+  React.useEffect(() => {
+    setExperimentsToBeDisplayed();
+  }, [
+    privateExperimentsSwitch,
+    organizationExperimentsSwitch,
+    privateExperiments,
+    organizationExperiments,
+  ]);
+
+  const setExperimentsToBeDisplayed = () => {
+    let toDisplay: RemoteExperiment[] = [];
+    if (privateExperimentsSwitch) {
+      toDisplay = toDisplay.concat(
+        privateExperiments.map((e) => {
+          return { ...e, source: "private" };
+        })
+      );
+    }
+    if (organizationExperimentsSwitch) {
+      toDisplay = toDisplay.concat(
+        organizationExperiments.map((e) => {
+          return { ...e, source: "organization" };
+        })
+      );
+    }
+    setDisplayExperiments(toDisplay);
+  };
+
   return !isLoggedIn ? (
     <></>
   ) : (
@@ -72,7 +195,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         created={(experimentID: string) => {
           fetchExperiments();
         }}
-        experiments={experiments.map((e) => e.name)}
+        experiments={organizationExperiments
+          .concat(privateExperiments)
+          .map((e) => e.name)}
       />
       <Grid
         style={{
@@ -112,7 +237,33 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               }}
             >
               <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
-                My Experiments
+                <FormControlLabel
+                  label={"My Experiments (" + privateExperiments.length + ")"}
+                  control={
+                    <IOSSwitch
+                      checked={privateExperimentsSwitch}
+                      onChange={() =>
+                        setPrivateExperimentsSwitch(!privateExperimentsSwitch)
+                      }
+                    />
+                  }
+                />{" "}
+                <FormControlLabel
+                  label={
+                    "Organization Experiments (" +
+                    organizationExperiments.length +
+                    ")"
+                  }
+                  control={
+                    <IOSSwitch
+                      onChange={() =>
+                        setOrganizationExperimentsSwitch(
+                          !organizationExperimentsSwitch
+                        )
+                      }
+                    />
+                  }
+                />{" "}
               </div>
               <Button
                 variant="contained"
@@ -135,60 +286,25 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               }}
               xs={12}
             >
-              {pvtExperiments.length > 0 ? (
-                pvtExperiments.map((data: any, index: number) => {
-                  return <ExperimentCard key={`pvt${index}`} data={data} update={fetchExperiments} />;
+              {displayExperiments.length > 0 ? (
+                displayExperiments.map((data: any, index: number) => {
+                  return (
+                    <ExperimentCard
+                      key={`pvt${index}`}
+                      data={data}
+                      update={fetchExperiments}
+                    />
+                  );
                 })
               ) : (
                 <div
                   style={{ textAlign: "center", width: "100%", padding: 50 }}
                 >
-                  { !fetchExperimentsComplete ? ( <CircularProgress
-                    style={{ width: 20, height: 20 }}
-                  /> ) : 'There are no experiments' }
-                </div>
-              )}
-            </Grid>
-          </Grid>
-          <Grid style={{ borderRadius: 5 }}>
-            <Grid
-              container
-              lg={12}
-              sm={12}
-              style={{
-                backgroundColor: "#66a",
-                borderTopLeftRadius: 10,
-                borderTopRightRadius: 10,
-                padding: 20,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
-                Organization Experiments
-              </div>              
-            </Grid>
-
-            <Grid
-              container
-              style={{
-                padding: "10px",
-                margin: "auto",
-                width: "100%",
-              }}
-              xs={12}
-            >
-              {experiments.length > 0 ? (
-                experiments.map((data: any, index: number) => {
-                  return <ExperimentCard key={`org${index}`} data={data} update={fetchExperiments} />;
-                })
-              ) : (
-                <div
-                  style={{ textAlign: "center", width: "100%", padding: 50 }}
-                >
-                  { !fetchExperimentsComplete ? ( <CircularProgress
-                    style={{ width: 20, height: 20 }}
-                  /> ) : 'There are no experiments' }
+                  {!fetchExperimentsComplete ? (
+                    <CircularProgress style={{ width: 20, height: 20 }} />
+                  ) : (
+                    "There are no experiments"
+                  )}
                 </div>
               )}
             </Grid>
