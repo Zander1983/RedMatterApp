@@ -18,9 +18,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
-import {
-  ExperimentApiFetchParamCreator
-} from "api_calls/nodejsback";
+import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
 const styles = {
@@ -75,7 +73,6 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
 
     setOpen(false);
   };
-
 
   return (
     <Grid
@@ -137,6 +134,13 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
                 </Typography>
               </div>
               <div>
+                <Typography
+                  style={styles.title}
+                  color="textSecondary"
+                  gutterBottom
+                >
+                  Source: {props.data.source}
+                </Typography>
                 <Typography
                   style={styles.title}
                   color="textSecondary"
