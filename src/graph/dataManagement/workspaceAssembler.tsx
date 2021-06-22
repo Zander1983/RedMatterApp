@@ -15,7 +15,7 @@ export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
     const files: string[] = [];
     workspace.files.forEach((e) => {
-      files.push(e.src + "://" + e.name);
+      files.push(e.src + "://" + e.id);
     });
     const gates: Gate[] = [];
     workspace.gates.forEach((e) => {

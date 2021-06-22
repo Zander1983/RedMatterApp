@@ -16,6 +16,8 @@ import LinkShareModal from "./modals/linkShareModal";
 
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
+import WorkspaceStateReload, { WorkspaceStateReloadObj } from "graph/dataManagement/workspaceStateReload";
+
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
 import {
@@ -72,12 +74,13 @@ function Plots(props: { experimentId: string }) {
   const isLoggedIn = userManager.isLoggedIn();
 
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
-  const [workspaceState, setWorkspaceState] = React.useState(false);
-  const [newWorkspaceId, setNewWorkspaceId] = React.useState(false);
+  const [workspaceState, setWorkspaceState] = React.useState();
+  const [newWorkspaceId, setNewWorkspaceId] = React.useState('');
   const [initPlot, setInitPlot] = React.useState(false);
 
   const location = useLocation();
   const verifyWorkspace = async (workspaceId: string) => {
+    
     try {
       let workspaceData = await axios.post(
         "/api/verifyWorkspace",
@@ -229,6 +232,15 @@ function Plots(props: { experimentId: string }) {
     setNamePromptOpen(false);
   };
 
+  const loadWorkspaceStatsToDM = (files: Array<any>) => {
+    debugger
+    if(sharedWorkspace && workspaceState)
+    {
+      let workspaceStateReload = new WorkspaceStateReload(workspaceState);
+      workspaceStateReload.loadWorkspace(files);
+    }
+  }
+
   return (
     <div
       style={{
@@ -245,6 +257,10 @@ function Plots(props: { experimentId: string }) {
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
+            onFiledFetched={(files) => {
+              debugger
+              loadWorkspaceStatsToDM(files);
+            }}
           />
 
           <GenerateReportModal

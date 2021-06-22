@@ -111,6 +111,13 @@ const getRemoteFileMetadata = (
 ): Promise<any> => {
   var params;
   if (isShared)
+  {
+    params = ExperimentFilesApiFetchParamCreator({
+    }).experimentFilesWithoutToken(
+      experimentId,
+    );
+  }
+  else {
     params = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -118,9 +125,7 @@ const getRemoteFileMetadata = (
       experimentId,
       userManager.getToken()
     );
-  else {
   }
-
   return axios.get(params.url, params.options);
 };
 
@@ -131,6 +136,7 @@ function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
+  onFiledFetched: (fileFetch: any) => void;
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -138,13 +144,18 @@ function AddFileModal(props: {
   const [filesMetadata, setFilesMetadata] = React.useState(
     remoteWorkspace ? [] : staticFiles
   );
-
+  const isLoggedIn = userManager.isLoggedIn();
   useEffect(() => {
     downloaded = [];
     downloading = [];
     if (remoteWorkspace) {
       getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
-        .then((e) => setFilesMetadata(e.data.files))
+        .then((e) => 
+        {
+          setFilesMetadata(e.data.files);
+          debugger
+          props.onFiledFetched(e.data.files);
+        })
         .catch((e) => console.log("[ERROR] ", e, e.response));
       dataManager.addObserver("clearWorkspace", () => {
         downloaded = remoteWorkspace ? [] : staticFiles;
