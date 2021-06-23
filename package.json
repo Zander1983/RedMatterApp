@@ -63,7 +63,11 @@
     "uno-material-ui": "^2.0.10",
     "uuid": "^8.3.2",
     "web-vitals": "^1.1.0",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "fcs": "0.0.5",
+    "q": "*",
+    "memoizee": "*",
+    "mathjs": "*"
   },
   "scripts": {
     "start:dev": "env-cmd -f .env.development react-scripts start",

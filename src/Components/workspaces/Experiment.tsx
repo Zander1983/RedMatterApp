@@ -15,7 +15,7 @@ import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import {
   ExperimentFilesApiFetchParamCreator,
-  ExperimentApiFetchParamCreator
+  ExperimentApiFetchParamCreator,
 } from "api_calls/nodejsback";
 import {
   ArrowLeftOutlined,
@@ -27,6 +27,7 @@ import {
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
+import FCSServices from "services/FCSServices/FCSServices";
 
 const styles = {
   input: {
@@ -42,7 +43,7 @@ const Experiment = (props: any) => {
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
-  const [fileUploadInputValue, setFileUploadInputValue] = useState('');
+  const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
   const [experimentSize, setExperimentSize] = useState(0);
   const [maxExperimentSize, setMaxExperimentSize] = useState(
@@ -106,11 +107,7 @@ const Experiment = (props: any) => {
   const updateExperimentName = (snack = true) => {
     const updateExperiment = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).editExperimentName(
-      props.id,
-      experiment.name,
-      userManager.getToken()
-    );
+    }).editExperimentName(props.id, experiment.name, userManager.getToken());
 
     axios
       .put(updateExperiment.url, {}, updateExperiment.options)
@@ -130,19 +127,19 @@ const Experiment = (props: any) => {
   const getExperiment = () => {
     const experimentApiObj = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).getExperiment(
-      userManager.getToken(),
-      props.id
-    );
-    axios.post(experimentApiObj.url,
+    }).getExperiment(userManager.getToken(), props.id);
+    axios
+      .post(
+        experimentApiObj.url,
         {
-          experimentId: props.id
+          experimentId: props.id,
         },
         {
-        headers: {
-          token: userManager.getToken(),
-        },
-      })
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      )
       .then((e) => {
         setExperiment(e.data);
       })
@@ -152,7 +149,7 @@ const Experiment = (props: any) => {
   const uploadFiles = (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
-    
+
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
@@ -186,34 +183,52 @@ const Experiment = (props: any) => {
         return { name: e.file.name, id: e.tempId };
       }),
     ]);
+    const fcsservice = new FCSServices();
     for (const file of fileList) {
-      oldBackFileUploader(
-        userManager.getToken(),
-        props.id,
-        userManager.getOrganiztionID(),
-        file.file
-      )
-        .then((e) => {
-          snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
-        })
-        .catch((e) => {
-          snackbarService.showSnackbar(
-            "Error uploading file " +
-              file.file.name.substring(0, 20) +
-              (file.file.name.length > 20 ? ",,," : "") +
-              ", please try again",
-            "error"
-          );
-        })
-        .finally(() => {
-          fetchExperimentData(false, () => {
-            setUploadingFiles(
-              uploadingFiles.filter((e) => e.id !== file.tempId)
-            );
+      new Promise(async () => {
+        let fcs = await file.file.arrayBuffer().then(async (e) => {
+          const buf = Buffer.from(e);
+          return await fcsservice.loadFileMetadata(buf).then((e) => {
+            return e;
           });
-          setFileUploadInputValue('');
         });
+        oldBackFileUploader(
+          userManager.getToken(),
+          props.id,
+          userManager.getOrganiztionID(),
+          file.file
+        )
+          .then((e) => {
+            snackbarService.showSnackbar(
+              "Uploaded " + file.file.name,
+              "success"
+            );
+          })
+          .catch((e) => {
+            snackbarService.showSnackbar(
+              "Error uploading file " +
+                file.file.name.substring(0, 20) +
+                (file.file.name.length > 20 ? ",,," : "") +
+                ", please try again",
+              "error"
+            );
+          })
+          .finally(() => {
+            fetchExperimentData(false, () => {
+              setUploadingFiles(
+                uploadingFiles.filter((e) => e.id !== file.tempId)
+              );
+            });
+            setFileUploadInputValue("");
+          });
+      });
     }
+  };
+
+  const getExperimentChannels = async (): Promise<string[]> => {
+    console.log(experimentData);
+    if (experimentData === null || experimentData.files.length === 0) return [];
+    console.log(experimentData.files);
   };
 
   const deleteFile = (file: any) => {
@@ -250,6 +265,10 @@ const Experiment = (props: any) => {
     func(false);
   };
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
+
+  useEffect(() => {
+    getExperimentChannels();
+  }, [experimentData]);
 
   return (
     <>
@@ -341,8 +360,8 @@ const Experiment = (props: any) => {
                         }}
                         value={experiment.name}
                         onChange={(e: any) => {
-                            experiment.name = e.target.value;
-                            setExperiment({...experiment});
+                          experiment.name = e.target.value;
+                          setExperiment({ ...experiment });
                         }}
                         onKeyDown={(e: any) => {
                           if (e.keyCode === 13) {
@@ -658,14 +677,11 @@ const Experiment = (props: any) => {
                           <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
                         {experiment.details.cellType != undefined ? (
-                          <h4>
-                            • Cell type: {experiment.details.cellType}
-                          </h4>
+                          <h4>• Cell type: {experiment.details.cellType}</h4>
                         ) : null}
                         {experiment.details.particleSize != undefined ? (
                           <h4>
-                            • Particle size:{" "}
-                            {experiment.details.particleSize}
+                            • Particle size: {experiment.details.particleSize}
                           </h4>
                         ) : null}
                         {experiment.details.fluorophoresCategory !=
