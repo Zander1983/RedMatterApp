@@ -44,13 +44,14 @@ const useStyles = makeStyles((theme) => ({
 
 function LinkShareModal(props: {
   open: boolean;
+  workspaceId: string;
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
   const classes = useStyles();
   const linkReconstructor = new LinkReconstructor();
   let link = "";
   if (props.open) {
-    link = linkReconstructor.store(dataManager.currentWorkspace);
+    link = linkReconstructor.store(dataManager.currentWorkspace, props.workspaceId);
   }
 
   function copyToClipBoard() {
