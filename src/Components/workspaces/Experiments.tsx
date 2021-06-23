@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { NavLink, useHistory, Redirect } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
@@ -73,16 +73,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       });
   };
 
-
-  const redirect = (organizationId:any) => {
-    if(organizationId == null){
-      //return <Redirect to='/login'/>;
-      history.push('/login');
-    } else{
-      return
-    }
-  }
-
   const handleClose = (func: Function) => {
     func(false);
   };
@@ -92,11 +82,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
-  }, [organizationId]);
+  }, []);
 
   if(organizationId !== undefined){
     return !isLoggedIn ? (
-      <div><h1>HELLO WORLD</h1></div>
+      <></>
     ) : (
       <>
         <CreateExperimentModal
@@ -109,7 +99,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             fetchExperiments();
           }}
           experiments={experiments.map((e) => e.name)}
-          redirectIfTokenExpired={redirect}
           organizationId = {organizationId}
         />
         <Grid
@@ -236,11 +225,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       </>
     );
   } 
-  else{
-    return(
-      <h1>HELLO WORLD</h1>
-    )
-  }
   }
 
 export default Experiments;

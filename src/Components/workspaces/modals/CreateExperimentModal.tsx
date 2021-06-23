@@ -47,7 +47,6 @@ function CreateExperimentModal(props: {
   closeCall: { f: Function; ref: Function };
   created: Function;
   experiments: string[];
-  redirectIfTokenExpired: Function;
   organizationId: any;
 }): JSX.Element {
   const store = useStore();

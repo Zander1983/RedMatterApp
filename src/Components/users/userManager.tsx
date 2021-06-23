@@ -7,7 +7,6 @@ class UserManager {
   isLoggedIn(): boolean {
     this.state = store.getState();
     const ret = Object.keys(this.state.user.profile).length !== 0;
-    console.log("RET", ret)
     return ret;
   }
 
@@ -18,7 +17,7 @@ class UserManager {
   }
 
   getToken() {
-    if (this.isLoggedIn() === false) {
+    if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
     }
     return this.state.user.profile.token;
