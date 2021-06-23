@@ -65,7 +65,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       .catch((e) => {
         setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
-          "Failed to find experiment information",
+          "Failed to find experiment information or Session Expired",
           "error"
         );
         userManager.logout();
@@ -98,6 +98,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             fetchExperiments();
           }}
           experiments={experiments.map((e) => e.name)}
+          organizationId = {organizationId}
         />
         <Grid
           style={{

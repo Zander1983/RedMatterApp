@@ -11,6 +11,7 @@ import Grid from "@material-ui/core/Grid";
 import userManager from "Components/users/userManager";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
+import { useHistory } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
@@ -46,12 +47,13 @@ function CreateExperimentModal(props: {
   closeCall: { f: Function; ref: Function };
   created: Function;
   experiments: string[];
+  organizationId: any;
 }): JSX.Element {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
-  const organizationId = userManager.getOrganiztionID();;
+  const organizationId = props.organizationId;
   const [name, setName] = React.useState("");
   const [privateExperiment, setPrivateExperiment] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
@@ -63,6 +65,7 @@ function CreateExperimentModal(props: {
 
 
   useEffect(() => {
+    //props.redirectIfTokenExpired(organizationId);
     for (const item of [
       "device",
       "cellType",
