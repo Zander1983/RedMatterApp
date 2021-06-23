@@ -178,6 +178,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            paddingRight: 0
           }}
         >
           <CanvasComponent plot={plot} plotIndex={props.plotIndex} />

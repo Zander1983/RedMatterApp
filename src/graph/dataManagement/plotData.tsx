@@ -335,8 +335,8 @@ export default class PlotData extends ObserversFunctionality {
   @conditionalUpdateDecorator()
   setWidthAndHeight(w: number, h: number) {
     this.changed = this.changed || this.plotWidth != w || this.plotHeight != h;
-    this.plotWidth = w;
-    this.plotHeight = h;
+    this.plotWidth = w - 40;
+    this.plotHeight = h - 30;
   }
 
   @conditionalUpdateDecorator()
