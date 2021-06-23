@@ -47,13 +47,12 @@ function CreateExperimentModal(props: {
   closeCall: { f: Function; ref: Function };
   created: Function;
   experiments: string[];
-  organizationId: any;
 }): JSX.Element {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
-  const organizationId = props.organizationId;
+  const organizationId = userManager.getOrganiztionID();;
   const [name, setName] = React.useState("");
   const [privateExperiment, setPrivateExperiment] = React.useState(false);
   const [formData, setFormData] = React.useState(null);

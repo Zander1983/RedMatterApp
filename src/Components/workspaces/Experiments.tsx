@@ -98,7 +98,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             fetchExperiments();
           }}
           experiments={experiments.map((e) => e.name)}
-          organizationId = {organizationId}
         />
         <Grid
           style={{
