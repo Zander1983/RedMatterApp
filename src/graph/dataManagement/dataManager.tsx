@@ -452,23 +452,6 @@ class DataManager extends ObserversFunctionality {
     if (this.remoteWorkspaceID === undefined) {
       throw Error("Cannot load files without a remoteWorkspaceID");
     }
-    this.setWorkspaceLoading(true);
-    axios
-      .get("/api/events/" + this.remoteWorkspaceID, {
-        params: {
-          experimentId: this.remoteWorkspaceID,
-          token: userManager.getToken(),
-          organisationId: userManager.getOrganiztionID(),
-        },
-      })
-      .then((e) => this.handleRemoteFiles(e.data))
-      .catch((e) => {
-        document.location.reload(true);
-        // snackbarService.showSnackbar(e.response.data.error, "error", 1000000);
-      })
-      .finally(() => {
-        this.setWorkspaceLoading(false);
-      });
   }
 
   private setStandardObservers() {}
