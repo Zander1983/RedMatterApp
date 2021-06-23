@@ -11,7 +11,6 @@ import Grid from "@material-ui/core/Grid";
 import userManager from "Components/users/userManager";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
@@ -64,7 +63,6 @@ function CreateExperimentModal(props: {
 
 
   useEffect(() => {
-    //props.redirectIfTokenExpired(organizationId);
     for (const item of [
       "device",
       "cellType",
