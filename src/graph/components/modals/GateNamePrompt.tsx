@@ -12,6 +12,7 @@ export default function GetNamePrompt(props : {
     open : boolean
 }) {
     const [name, setName] = React.useState(null);
+    const [nameError, setNameError] = React.useState(false)
 
     const handleClose = () => { // setOpen(false);
     };
@@ -30,7 +31,7 @@ export default function GetNamePrompt(props : {
                         <b> Gate </b>
                         to continue.
                     </DialogContentText>
-                    <TextField autoFocus margin="dense" id="name" label="Gate Name" type="email"
+                    <TextField error={nameError} helperText="This Field Is Required" autoFocus margin="dense" id="name" label="Gate Name" type="email"
                         onChange={
                             (textField : any) => {
                                 setName(textField.target.value);
@@ -39,7 +40,13 @@ export default function GetNamePrompt(props : {
                 </DialogContent>
             <DialogActions>
                 <Button onClick={
-                        () => props.sendName(name)
+                        () => {
+                            if(name == "" || name == null) {
+                                setNameError(true)
+                            } else {
+                                props.sendName(name)
+                            }
+                            }
                     }
                     color="primary">
                     Continue
