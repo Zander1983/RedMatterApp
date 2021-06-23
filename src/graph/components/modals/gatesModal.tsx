@@ -40,7 +40,7 @@ function GatesModal(props: {
   const linkReconstructor = new LinkReconstructor();
   let link = "";
   if (props.open) {
-    link = linkReconstructor.store(dataManager.currentWorkspace);
+    //link = linkReconstructor.store(dataManager.currentWorkspace);
   }
 
   return (

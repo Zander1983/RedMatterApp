@@ -16,7 +16,7 @@ import LinkShareModal from "./modals/linkShareModal";
 
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
-import WorkspaceStateReload, { WorkspaceStateReloadObj } from "graph/dataManagement/workspaceStateReload";
+import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
@@ -75,14 +75,14 @@ function Plots(props: { experimentId: string }) {
 
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState();
-  const [newWorkspaceId, setNewWorkspaceId] = React.useState('');
+  const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
 
   const location = useLocation();
   const verifyWorkspace = async (workspaceId: string) => {
-    
+    let workspaceData;
     try {
-      let workspaceData = await axios.post(
+      workspaceData = await axios.post(
         "/api/verifyWorkspace",
         {
           workspaceId: workspaceId,
@@ -91,16 +91,20 @@ function Plots(props: { experimentId: string }) {
         {}
       );
       setSharedWorkspace(workspaceData.data["isShared"]);
-      setWorkspaceState(workspaceData.data["state"]);
-      setNewWorkspaceId(workspaceData.data["newWorkSpaceId"]);
+      setWorkspaceState(JSON.parse(workspaceData.data["state"]));
     } catch (e) {
       snackbarService.showSnackbar(
-        "Could not save the workspace, reload the page and try again!",
+        "Could not verify the workspace, reload the page and try again!",
         "error"
       );
     }
 
     initPlots();
+    if (workspaceData)
+       loadWorkspaceStatsToDM(
+        workspaceData.data["isShared"],
+        JSON.parse(workspaceData.data["state"])
+    );
   };
 
   useEffect(() => {
@@ -162,13 +166,14 @@ function Plots(props: { experimentId: string }) {
     });
   }
 
-  const upsertWorkSpace = () => {
+  const upsertWorkSpace = (isShared: boolean = false) => {
     let stateJson = dataManager.getWorkspaceJSON();
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).upsertWorkSpace(userManager.getToken(), {
       experimentId: props.experimentId,
       state: stateJson,
+      isShared: isShared,
     });
     axios
       .post(
@@ -177,6 +182,7 @@ function Plots(props: { experimentId: string }) {
         updateWorkSpace.options
       )
       .then((e) => {
+        setNewWorkspaceId(e.data.workspaceId);
         snackbarService.showSnackbar(
           "Workspace saved successfully.",
           "success"
@@ -221,7 +227,8 @@ function Plots(props: { experimentId: string }) {
   const [observerAdded, setObserverAdded] = React.useState(false);
   const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
-
+  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
+  
   const getNameAndOpenModal = (gate: Gate) => {
     setNamePromptOpen(true);
     setGateToSend(gate);
@@ -231,15 +238,65 @@ function Plots(props: { experimentId: string }) {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
   };
+  var getSharedRemoteFiles = async (fileIds: Array<string>) => {
+    let datas = await axios.post(
+      "/api/sharedEvents",
+      {
+        experimentId: props.experimentId,
+        fileIds: fileIds,
+      },
+      {}
+    );
 
-  const loadWorkspaceStatsToDM = (files: Array<any>) => {
-    debugger
-    if(sharedWorkspace && workspaceState)
-    {
-      let workspaceStateReload = new WorkspaceStateReload(workspaceState);
-      workspaceStateReload.loadWorkspace(files);
+    return datas.data;
+  };
+  var loadWorkspaceStatsToDM = async (
+    sharedWorkspacearg: boolean,
+    workspaceStatearg: any
+  ) => {
+    if (sharedWorkspacearg && workspaceStatearg) {
+      setLoading(true);
+      let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
+      let stateFileIds = workspaceStateReload.getFileIds();
+      
+      let eventFiles = await getSharedRemoteFiles(stateFileIds);
+
+      setDownloadedFiles(eventFiles);
+
+      for (let i = 0; i < eventFiles.length; i++) {
+        workspaceStateReload.addFile(eventFiles[i]);
+      }
+      dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
     }
-  }
+    setLoading(false);
+  };
+
+  var onLinkShareClick = async () => {
+    if (isLoggedIn) {
+      upsertWorkSpace(true);
+    } else if (sharedWorkspace) {
+      let stateJson = dataManager.getWorkspaceJSON();
+      let newWorkspaceDB;
+      try {
+        newWorkspaceDB = await axios.post(
+          "/api/upsertSharedWorkspace",
+          {
+            workspaceId: newWorkspaceId,
+            experimentId: props.experimentId,
+            state: stateJson,
+          },
+          {}
+        );
+        setNewWorkspaceId(newWorkspaceDB.data);
+      } catch (e) {
+        snackbarService.showSnackbar(
+          "Could not save shared workspace, reload the page and try again!",
+          "error"
+        );
+      }
+    }
+    handleOpen(setLinkShareModalOpen);
+  };
 
   return (
     <div
@@ -257,10 +314,7 @@ function Plots(props: { experimentId: string }) {
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
-            onFiledFetched={(files) => {
-              debugger
-              loadWorkspaceStatsToDM(files);
-            }}
+            downloaded={downloadedFiles}
           />
 
           <GenerateReportModal
@@ -270,6 +324,7 @@ function Plots(props: { experimentId: string }) {
 
           <LinkShareModal
             open={linkShareModalOpen}
+            workspaceId={newWorkspaceId}
             closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
           />
         </div>
@@ -514,141 +569,155 @@ function Plots(props: { experimentId: string }) {
           }}
           xs={12}
         >
-          <Grid
-            style={{
-              backgroundColor: "#66a",
-              paddingTop: 20,
-              paddingBottom: 19,
-              borderRadius: 10,
-              WebkitBorderBottomLeftRadius: 0,
-              WebkitBorderBottomRightRadius: 0,
-            }}
-            container
-          >
-            <Grid container xs={9}>
-              <Button
-                size="large"
-                variant="contained"
-                style={{
-                  backgroundColor: "#fafafa",
-                  marginLeft: 20,
-                }}
-                className={classes.topButton}
-                startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                onClick={() => {
-                  history.goBack();
-                }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => handleOpen(setAddFileModalOpen)}
-                className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                + Add new file
-              </Button>
-
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => handleOpen(setGenerateReportModalOpen)}
-                className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                Generate report
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => handleOpen(setHelpModal)}
-                className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                Learn More
-              </Button>
-              {/* Uncomment below to have a "print state" button */}
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => upsertWorkSpace()}
-                className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                Save Workspace
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => handleOpen(setClearModal)}
-                className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                Clear
-              </Button>
-            </Grid>
-            {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+          {initPlot ? (
+            <div>
               <Grid
-                xs={3}
                 style={{
-                  textAlign: "right",
-                  paddingRight: 20,
+                  backgroundColor: "#66a",
+                  paddingTop: 20,
+                  paddingBottom: 19,
+                  borderRadius: 10,
+                  WebkitBorderBottomLeftRadius: 0,
+                  WebkitBorderBottomRightRadius: 0,
                 }}
-              >
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => handleOpen(setLinkShareModalOpen)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <ShareIcon
-                    fontSize="small"
-                    style={{
-                      marginRight: 10,
-                    }}
-                  ></ShareIcon>
-                  Share Workspace
-                </Button>
-              </Grid>
-            )}
-          </Grid>
-
-          <Grid>
-            {!loading ? (
-              <Workspace></Workspace>
-            ) : (
-              <Grid
                 container
-                style={{
-                  height: 400,
-                  backgroundColor: "#fff",
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                  textAlign: "center",
-                }}
-                justify="center"
-                alignItems="center"
-                alignContent="center"
               >
-                <CircularProgress></CircularProgress>
+                <Grid container xs={9}>
+                  {sharedWorkspace ? null : (
+                    <Button
+                      size="large"
+                      variant="contained"
+                      style={{
+                        backgroundColor: "#fafafa",
+                        marginLeft: 20,
+                      }}
+                      className={classes.topButton}
+                      startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
+                      onClick={() => {
+                        history.goBack();
+                      }}
+                    >
+                      Back
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => handleOpen(setAddFileModalOpen)}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    + Add new file
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => handleOpen(setGenerateReportModalOpen)}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    Generate report
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => handleOpen(setHelpModal)}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    Learn More
+                  </Button>
+                  {/* Uncomment below to have a "print state" button */}
+
+                  { sharedWorkspace ? null : (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => upsertWorkSpace()}
+                      className={classes.topButton}
+                      style={{
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
+                      Save Workspace
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => handleOpen(setClearModal)}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </Grid>
+                {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                  <Grid
+                    xs={3}
+                    style={{
+                      textAlign: "right",
+                      paddingRight: 20,
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => onLinkShareClick()}
+                      className={classes.topButton}
+                      style={{
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
+                      <ShareIcon
+                        fontSize="small"
+                        style={{
+                          marginRight: 10,
+                        }}
+                      ></ShareIcon>
+                      Share Workspace
+                    </Button>
+                  </Grid>
+                )}
               </Grid>
-            )}
-          </Grid>
+
+              <Grid>
+                {!loading ? (
+                  <Workspace></Workspace>
+                ) : (
+                  <Grid
+                    container
+                    style={{
+                      height: 400,
+                      backgroundColor: "#fff",
+                      borderBottomLeftRadius: 10,
+                      borderBottomRightRadius: 10,
+                      textAlign: "center",
+                    }}
+                    justify="center"
+                    alignItems="center"
+                    alignContent="center"
+                  >
+                    <CircularProgress></CircularProgress>
+                  </Grid>
+                )}
+              </Grid>
+            </div>
+          ) : (
+            <div style={{display: "flex", justifyContent: "center", padding: "100px"}}>
+              <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
+            </div>
+          )}
         </Grid>
       </Grid>
     </div>

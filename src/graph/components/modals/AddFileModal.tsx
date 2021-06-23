@@ -92,17 +92,29 @@ const getRemoteFiles = (workspaceId: string): Promise<any[]> => {
   });
 };
 
-const getRemoteFile = (experimentId: string, fileId: string): any => {
-  return axios.get("/api/events/" + experimentId + "/" + fileId, {
-    params: {
-      experimentId: experimentId,
-      organisationId: userManager.getOrganiztionID(),
-      fileId: fileId,
-    },
-    headers: {
-      token: userManager.getToken(),
-    },
-  });
+const getRemoteFile = (
+  experimentId: string,
+  fileId: string,
+  isShared: boolean
+): any => {
+  if (isShared) {
+    return axios.post(
+      "/api/sharedEvents",
+      { experimentId: experimentId, fileIds: [fileId] },
+      {}
+    );
+  } else {
+    return axios.get("/api/events/" + experimentId + "/" + fileId, {
+      params: {
+        experimentId: experimentId,
+        organisationId: userManager.getOrganiztionID(),
+        fileId: fileId,
+      },
+      headers: {
+        token: userManager.getToken(),
+      },
+    });
+  }
 };
 
 const getRemoteFileMetadata = (
@@ -110,14 +122,11 @@ const getRemoteFileMetadata = (
   isShared: boolean
 ): Promise<any> => {
   var params;
-  if (isShared)
-  {
-    params = ExperimentFilesApiFetchParamCreator({
-    }).experimentFilesWithoutToken(
-      experimentId,
-    );
-  }
-  else {
+  if (isShared) {
+    params = ExperimentFilesApiFetchParamCreator(
+      {}
+    ).experimentFilesWithoutToken(experimentId);
+  } else {
     params = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -136,7 +145,7 @@ function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
-  onFiledFetched: (fileFetch: any) => void;
+  downloaded: any[];
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -146,15 +155,12 @@ function AddFileModal(props: {
   );
   const isLoggedIn = userManager.isLoggedIn();
   useEffect(() => {
-    downloaded = [];
+    downloaded = props.downloaded ? props.downloaded : [];
     downloading = [];
     if (remoteWorkspace) {
       getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
-        .then((e) => 
-        {
+        .then((e) => {
           setFilesMetadata(e.data.files);
-          debugger
-          props.onFiledFetched(e.data.files);
         })
         .catch((e) => console.log("[ERROR] ", e, e.response));
       dataManager.addObserver("clearWorkspace", () => {
@@ -165,7 +171,7 @@ function AddFileModal(props: {
   }, []);
 
   const [onHover, setOnHover] = React.useState(-1);
-
+  const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
   const addFile = (index: number) => {
     if (!dataManager.ready()) {
       snackbarService.showSnackbar("Something went wrong, try again!", "error");
@@ -199,7 +205,7 @@ function AddFileModal(props: {
       return;
     }
     downloading = downloading.concat(fileId);
-    getRemoteFile(dataManager.getRemoteWorkspaceID(), fileId)
+    getRemoteFile(dataManager.getRemoteWorkspaceID(), fileId, props.isShared)
       .then((e: any) => (downloaded = downloaded.concat(e.data)))
       .catch((e: any) => {
         snackbarService.showSnackbar(
@@ -238,6 +244,12 @@ function AddFileModal(props: {
       open={props.open}
       onClose={() => {
         props.closeCall.f(props.closeCall.ref);
+      }}
+      onRendered={() => {
+        if (!downloadCopied) {
+          downloaded = downloaded.concat(props.downloaded);
+          setDownloadCopied(true);
+        }
       }}
     >
       <div className={classes.fileSelectModal}>
@@ -307,204 +319,208 @@ function AddFileModal(props: {
             borderWidth: 0.3,
           }}
         >
-          {filesMetadata.map((fileMetadata: any, i: number) => {
-            const divider =
-              i == filesMetadata.length - 1 ? null : (
-                <Divider className={classes.fileSelectDivider} />
-              );
-            let isDownloaded =
-              //@ts-ignore
-              downloaded.filter((e) => e.id === fileMetadata.id).length > 0;
-            const isDownloading =
-              downloading.filter((e) => e === fileMetadata.id).length > 0;
+          {downloadCopied ? (
+            filesMetadata.map((fileMetadata: any, i: number) => {
+              const divider =
+                i == filesMetadata.length - 1 ? null : (
+                  <Divider className={classes.fileSelectDivider} />
+                );
+              let isDownloaded =
+                //@ts-ignore
+                downloaded.filter((e) => e.id === fileMetadata.id).length > 0;
+              const isDownloading =
+                downloading.filter((e) => e === fileMetadata.id).length > 0;
 
-            return (
-              <div key={i.toString() + fileMetadata.title}>
-                <div
-                  onMouseEnter={() => setOnHover(i)}
-                  onMouseLeave={() => setOnHover(-1)}
-                  className={
-                    onHover === i
-                      ? classes.fileSelectFileContainerHover
-                      : classes.fileSelectFileContainer
-                  }
-                >
-                  <Grid container xs={12} direction="row">
-                    <Grid direction="row">
-                      <p>
-                        <b>Title:</b>{" "}
-                        <a
-                          style={{
-                            color: "#777",
-                            fontSize: 14,
-                          }}
-                        >
-                          {fileMetadata.label}
-                        </a>
-                      </p>
-                      <p style={{ marginTop: -6 }}>
-                        <b>Date:</b>{" "}
-                        <a
-                          style={{
-                            color: "#777",
-                            fontSize: 14,
-                          }}
-                        >
-                          {getHumanReadableTimeDifference(
-                            new Date(fileMetadata.createdOn),
-                            new Date()
-                          )}
-                        </a>
-                      </p>
-                      <p style={{ marginTop: -6 }}>
-                        <b>Size:</b>{" "}
-                        <a
-                          style={{
-                            color: "#777",
-                            fontSize: 14,
-                          }}
-                        >
-                          {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                        </a>
-                      </p>
-                    </Grid>
-                    {/* <Grid
+              return (
+                <div key={i.toString() + fileMetadata.title}>
+                  <div
+                    onMouseEnter={() => setOnHover(i)}
+                    onMouseLeave={() => setOnHover(-1)}
+                    className={
+                      onHover === i
+                        ? classes.fileSelectFileContainerHover
+                        : classes.fileSelectFileContainer
+                    }
+                  >
+                    <Grid container xs={12} direction="row">
+                      <Grid direction="row">
+                        <p>
+                          <b>Title:</b>{" "}
+                          <a
+                            style={{
+                              color: "#777",
+                              fontSize: 14,
+                            }}
+                          >
+                            {fileMetadata.label}
+                          </a>
+                        </p>
+                        <p style={{ marginTop: -6 }}>
+                          <b>Date:</b>{" "}
+                          <a
+                            style={{
+                              color: "#777",
+                              fontSize: 14,
+                            }}
+                          >
+                            {getHumanReadableTimeDifference(
+                              new Date(fileMetadata.createdOn),
+                              new Date()
+                            )}
+                          </a>
+                        </p>
+                        <p style={{ marginTop: -6 }}>
+                          <b>Size:</b>{" "}
+                          <a
+                            style={{
+                              color: "#777",
+                              fontSize: 14,
+                            }}
+                          >
+                            {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                          </a>
+                        </p>
+                      </Grid>
+                      {/* <Grid
                       direction="row"
                       style={{
                         flexGrow: 1,
                       }}
                     ></Grid> */}
-                    <Grid
-                      style={{
-                        float: "right",
-                        textAlign: "right",
-                        flex: 1,
-                        flexDirection: "row",
-                        display: "inline-block",
-                      }}
-                    >
-                      <Grid style={{ display: "inline-block" }}>
-                        {remoteWorkspace
-                          ? isDownloaded
-                            ? "Downloaded"
-                            : isDownloading
-                            ? "Dowloading..."
-                            : "Remote"
-                          : "Local"}
-                      </Grid>
                       <Grid
                         style={{
+                          float: "right",
+                          textAlign: "right",
+                          flex: 1,
+                          flexDirection: "row",
                           display: "inline-block",
                         }}
                       >
+                        <Grid style={{ display: "inline-block" }}>
+                          {remoteWorkspace
+                            ? isDownloaded
+                              ? "Downloaded"
+                              : isDownloading
+                              ? "Dowloading..."
+                              : "Remote"
+                            : "Local"}
+                        </Grid>
                         <Grid
                           style={{
-                            borderRadius: "100%",
-                            width: 13,
-                            height: 13,
-                            marginLeft: 10,
-                            backgroundColor:
-                              isDownloaded || !remoteWorkspace
-                                ? "green"
-                                : isDownloading
-                                ? "#66d"
-                                : "#d66",
+                            display: "inline-block",
                           }}
-                        ></Grid>
+                        >
+                          <Grid
+                            style={{
+                              borderRadius: "100%",
+                              width: 13,
+                              height: 13,
+                              marginLeft: 10,
+                              backgroundColor:
+                                isDownloaded || !remoteWorkspace
+                                  ? "green"
+                                  : isDownloading
+                                  ? "#66d"
+                                  : "#d66",
+                            }}
+                          ></Grid>
+                        </Grid>
                       </Grid>
                     </Grid>
-                  </Grid>
-                  <div
-                    style={{
-                      marginBottom: 10,
-                      marginLeft: -20,
-                      textAlign: "right",
-                    }}
-                  >
-                    {remoteWorkspace ? (
-                      !isDownloaded ? (
+                    <div
+                      style={{
+                        marginBottom: 10,
+                        marginLeft: -20,
+                        textAlign: "right",
+                      }}
+                    >
+                      {remoteWorkspace ? (
+                        !isDownloaded ? (
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                            onClick={() => downloadFile(fileMetadata.id)}
+                          >
+                            {isDownloading ? (
+                              <CircularProgress
+                                style={{
+                                  color: "white",
+                                  width: 23,
+                                  height: 23,
+                                }}
+                              />
+                            ) : (
+                              "Download"
+                            )}
+                          </Button>
+                        ) : // <Button
+                        //   style={{
+                        //     backgroundColor: "#d66",
+                        //     color: "white",
+                        //     fontSize: 13,
+                        //     marginLeft: 20,
+                        //   }}
+                        //   onClick={() => {
+                        //     downloaded =
+                        //       //@ts-ignore
+                        //       downloaded.filter(
+                        //         (e) => e.id !== fileMetadata.id
+                        //       );
+                        //     dataManager.removeFileFromWorkspace(
+                        //       fileMetadata.id
+                        //     );
+                        //     forceUpdate();
+                        //   }}
+                        // >
+                        //   Remove
+                        // </Button>
+                        null
+                      ) : null}
+                      {isDownloaded ? (
                         <Button
                           style={{
-                            backgroundColor: "#66d",
+                            backgroundColor: isDownloaded ? "#66d" : "#99d",
                             color: "white",
                             fontSize: 13,
                             marginLeft: 20,
                           }}
-                          onClick={() => downloadFile(fileMetadata.id)}
-                        >
-                          {isDownloading ? (
-                            <CircularProgress
-                              style={{
-                                color: "white",
-                                width: 23,
-                                height: 23,
-                              }}
-                            />
-                          ) : (
-                            "Download"
-                          )}
-                        </Button>
-                      ) : // <Button
-                      //   style={{
-                      //     backgroundColor: "#d66",
-                      //     color: "white",
-                      //     fontSize: 13,
-                      //     marginLeft: 20,
-                      //   }}
-                      //   onClick={() => {
-                      //     downloaded =
-                      //       //@ts-ignore
-                      //       downloaded.filter(
-                      //         (e) => e.id !== fileMetadata.id
-                      //       );
-                      //     dataManager.removeFileFromWorkspace(
-                      //       fileMetadata.id
-                      //     );
-                      //     forceUpdate();
-                      //   }}
-                      // >
-                      //   Remove
-                      // </Button>
-                      null
-                    ) : null}
-                    {isDownloaded ? (
-                      <Button
-                        style={{
-                          backgroundColor: isDownloaded ? "#66d" : "#99d",
-                          color: "white",
-                          fontSize: 13,
-                          marginLeft: 20,
-                        }}
-                        onClick={() => {
-                          let index: number;
-                          for (let i = 0; i < downloaded.length; i++) {
-                            //@ts-ignore
-                            if (downloaded[i].id === fileMetadata.id) {
-                              index = i;
-                              break;
+                          onClick={() => {
+                            let index: number;
+                            for (let i = 0; i < downloaded.length; i++) {
+                              //@ts-ignore
+                              if (downloaded[i].id === fileMetadata.id) {
+                                index = i;
+                                break;
+                              }
                             }
-                          }
-                          if (index === undefined) {
-                            snackbarService.showSnackbar(
-                              "File is not dowloaded",
-                              "error"
-                            );
-                            return;
-                          }
-                          addFile(index);
-                          props.closeCall.f(props.closeCall.ref);
-                        }}
-                        disabled={!isDownloaded}
-                      >
-                        Add to Workspace
-                      </Button>
-                    ) : null}
+                            if (index === undefined) {
+                              snackbarService.showSnackbar(
+                                "File is not dowloaded",
+                                "error"
+                              );
+                              return;
+                            }
+                            addFile(index);
+                            props.closeCall.f(props.closeCall.ref);
+                          }}
+                          disabled={!isDownloaded}
+                        >
+                          Add to Workspace
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
+                  {divider}
                 </div>
-                {divider}
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
+          )}
         </div>
       </div>
     </Modal>

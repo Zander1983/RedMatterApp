@@ -4,34 +4,30 @@ import { snackbarService } from "uno-material-ui";
 import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "../components/modals/staticFCSFiles/staticFileReader";
 
-export interface WorkspaceStateReloadObj {
+export interface WorkspaceStateHelperObj {
   name: string;
   files: Array<any>;
   gates: Array<any>;
   plots: Array<any>;
 }
 
-export class WorkspaceStateReload {
-  state: WorkspaceStateReloadObj;
+export class WorkspaceStateHelper {
+  state: WorkspaceStateHelperObj;
 
-  constructor(state: WorkspaceStateReloadObj) {
+  constructor(state: WorkspaceStateHelperObj) {
     this.state = state;
   }
 
-  loadWorkspace(files: Array<any>) {
+  getFileIds()
+  {
     let filesLength = this.state.files.length;
+    let fileIds = [];
+
     for (let i = 0; i < filesLength; i++) {
-      let fileId = this.state.files[i].split("://")[1];
-      let file = files.find((file) => file.id == fileId);
-      this.addFile(file);
+       fileIds.push(this.state.files[i].split("://")[1]);
     }
 
-    let plotLength = this.state.plots.length;
-    for (let i = 0; i < plotLength; i++) {
-      const plot = new PlotData();
-      plot.file = dataManager.getFile(this.state.plots[i].file);
-      dataManager.addNewPlotToWorkspace(plot);
-    }
+    return fileIds;
   }
 
   addFile = (file: any) => {
@@ -57,4 +53,4 @@ export class WorkspaceStateReload {
   };
 }
 
-export default WorkspaceStateReload;
+export default WorkspaceStateHelper;

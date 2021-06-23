@@ -10,6 +10,7 @@ import PolygonGate from "./gate/polygonGate";
 import PlotData from "./plotData";
 import WorkspaceData from "./workspaceData";
 import lodash from "lodash";
+import dataManager from "./dataManager";
 
 export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
@@ -45,7 +46,7 @@ export default class WorkspaceAssembler {
       delete plot.popObservers;
       delete plot.observers;
       delete plot.STD_BIN_SIZE;
-      plot.file = plot.file.src + "://" + plot.file.name;
+      plot.file = plot.file.src + "://" + plot.file.id;
 
       const p = JSON.parse(JSON.stringify(plot));
 
@@ -69,7 +70,7 @@ export default class WorkspaceAssembler {
 
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
     const inp = JSON.parse(workspaceJSON);
-    const files = new Map();
+    const files = new Map();   
     const gates = new Map();
     const plots = new Map();
     const fileMappings: any = {};
@@ -78,7 +79,7 @@ export default class WorkspaceAssembler {
 
     for (const fileString of inp.files) {
       const src = fileString.split("://");
-      let file = null;
+      let file = dataManager.getFile(src[1]);
       if (src[0] === "local") {
         file = staticFileReader(src[1]);
       }

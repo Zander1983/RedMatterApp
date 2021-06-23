@@ -3,7 +3,7 @@ import WorkspaceData from "../workspaceData";
 import firebase from "utils/firebase";
 
 export default class LinkReconstructor {
-  store(workspace: WorkspaceData): string {
+  store(workspace: WorkspaceData, newWorkSpaceId: string): string {
     if (workspace === null || workspace === undefined) return "";
     let workspaceJSON = workspace.export();
     let currentHost = window.location.href;
@@ -12,7 +12,7 @@ export default class LinkReconstructor {
     }
     currentHost += "?id=";
     const workpaceID = this.saveToCloud(workspaceJSON);
-    return currentHost + workpaceID;
+    return currentHost + newWorkSpaceId;
   }
 
   retrieve(callback: (workspaceJSON: string) => void) {
