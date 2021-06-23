@@ -84,7 +84,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     }
   }, []);
 
-  if(organizationId !== undefined){
     return !isLoggedIn ? (
       <></>
     ) : (
@@ -224,7 +223,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         </Grid>
       </>
     );
-  } 
   }
 
 export default Experiments;
