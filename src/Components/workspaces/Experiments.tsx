@@ -129,6 +129,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     React.useState(false);
 
   const [displayExperiments, setDisplayExperiments] = React.useState([]);
+  const organizationId = gettingOrganizationId();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -152,6 +153,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           "error"
         );
         userManager.logout();
+        history.replace('/login');
       });
   };
 
