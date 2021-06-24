@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
@@ -104,6 +104,18 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     history.replace("/");
   }
 
+  const gettingOrganizationId = () => {
+    try {
+      let orgID = userManager.getOrganiztionID();
+      return orgID;
+    } catch (error) {
+      let orgID = null;
+      history.replace("/login");
+      return orgID;
+    }
+    
+  }
+
   const [organizationExperiments, setExperiments] = React.useState([]);
   const [privateExperiments, setPrivateExperiments] = React.useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] =
@@ -117,6 +129,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     React.useState(false);
 
   const [displayExperiments, setDisplayExperiments] = React.useState([]);
+  const organizationId = gettingOrganizationId();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -136,10 +149,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       .catch((e) => {
         setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
-          "Failed to find experiment information",
+          "Failed to find experiment information or Session Expired",
           "error"
         );
         userManager.logout();
+        history.replace("/login");
       });
   };
 
@@ -198,6 +212,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         experiments={organizationExperiments
           .concat(privateExperiments)
           .map((e) => e.name)}
+        organizationId={organizationId}
       />
       <Grid
         style={{
@@ -315,3 +330,4 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   );
 };
 export default Experiments;
+
