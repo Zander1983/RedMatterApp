@@ -104,6 +104,18 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     history.replace("/");
   }
 
+  const gettingOrganizationId = () => {
+    try {
+      let orgID = userManager.getOrganiztionID();
+      return orgID;
+    } catch (error) {
+      let orgID = null;
+      history.replace("/login");
+      return orgID;
+    }
+    
+  }
+
   const [organizationExperiments, setExperiments] = React.useState([]);
   const [privateExperiments, setPrivateExperiments] = React.useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] =
