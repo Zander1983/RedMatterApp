@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
@@ -149,11 +149,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       .catch((e) => {
         setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
-          "Failed to find experiment information",
+          "Failed to find experiment information or Session Expired",
           "error"
         );
         userManager.logout();
-        history.replace('/login');
+        history.replace("/login");
       });
   };
 
@@ -199,7 +199,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   return !isLoggedIn ? (
     <></>
   ) : (
-    <>
+    <div>
       <CreateExperimentModal
         open={createExperimentModal}
         closeCall={{
@@ -229,13 +229,16 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       >
         <Grid
           style={{
-            backgroundColor: "#fafafa",
-            borderRadius: 10,
-            marginLeft: 40,
-            marginRight: 40,
-            boxShadow: "2px 3px 3px #ddd",
+            justifyContent: "center",
+            display: "flex",
+            marginTop: 30,
+            marginLeft: "auto",
+            marginRight: "auto",
           }}
+          container
           xs={12}
+          md={10}
+          lg={8}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
@@ -283,10 +286,13 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               <Button
                 variant="contained"
                 style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 40,
+                  backgroundColor: "#66a",
+                  borderTopLeftRadius: 10,
+                  borderTopRightRadius: 10,
+                  padding: 20,
+                  display: "flex",
+                  justifyContent: "space-between",
                 }}
-                onClick={() => setCreateExperimentModal(true)}
               >
                 Create
               </Button>
@@ -326,7 +332,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           </Grid>
         </Grid>
       </Grid>
-    </>
-  );
-};
+      </div>
+    );
+                  }
 export default Experiments;
