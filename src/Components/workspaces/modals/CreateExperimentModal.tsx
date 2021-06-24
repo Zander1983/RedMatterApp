@@ -47,20 +47,12 @@ function CreateExperimentModal(props: {
   closeCall: { f: Function; ref: Function };
   created: Function;
   experiments: string[];
-<<<<<<< HEAD
-  organizationId:any;
-=======
   organizationId: any;
->>>>>>> 117-exceptions-on-expired-login-token
 }): JSX.Element {
   const store = useStore();
   const dispatch = useDispatch();
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
-<<<<<<< HEAD
-
-=======
->>>>>>> 117-exceptions-on-expired-login-token
   const organizationId = props.organizationId;
   const [name, setName] = React.useState("");
   const [privateExperiment, setPrivateExperiment] = React.useState(false);
