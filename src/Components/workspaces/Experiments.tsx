@@ -212,6 +212,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         experiments={organizationExperiments
           .concat(privateExperiments)
           .map((e) => e.name)}
+        organizationId={organizationId}
       />
       <Grid
         style={{
