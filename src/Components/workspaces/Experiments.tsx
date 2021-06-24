@@ -199,7 +199,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   return !isLoggedIn ? (
     <></>
   ) : (
-    <div>
+    <>
       <CreateExperimentModal
         open={createExperimentModal}
         closeCall={{
@@ -229,16 +229,13 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       >
         <Grid
           style={{
-            justifyContent: "center",
-            display: "flex",
-            marginTop: 30,
-            marginLeft: "auto",
-            marginRight: "auto",
+            backgroundColor: "#fafafa",
+            borderRadius: 10,
+            marginLeft: 40,
+            marginRight: 40,
+            boxShadow: "2px 3px 3px #ddd",
           }}
-          container
           xs={12}
-          md={10}
-          lg={8}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
@@ -286,13 +283,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               <Button
                 variant="contained"
                 style={{
-                  backgroundColor: "#66a",
-                  borderTopLeftRadius: 10,
-                  borderTopRightRadius: 10,
-                  padding: 20,
-                  display: "flex",
-                  justifyContent: "space-between",
+                  backgroundColor: "#fafafa",
+                  maxHeight: 40,
                 }}
+                onClick={() => setCreateExperimentModal(true)}
               >
                 Create
               </Button>
@@ -332,7 +326,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           </Grid>
         </Grid>
       </Grid>
-      </div>
-    );
-                  }
+    </>
+  );
+};
 export default Experiments;
+
