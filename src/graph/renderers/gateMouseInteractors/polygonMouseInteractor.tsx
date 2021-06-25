@@ -29,11 +29,15 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   private points: Point[] = [];
   xAxis: string;
   yAxis: string;
+  isDragging: boolean = false;
 
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
   editGateEvent(type: string, mouse: Point) {
     if (this.targetEditGate === null && type === "mousedown" && !this.started) {
+      this.isDragging = true;
+    }
+    else if (this.targetEditGate === null && type === "mousemove" && !this.started && this.isDragging) {      
       this.plotter.gates.forEach((gate) => {
         if (gate instanceof PolygonGate && this.targetEditGate === null)
           gate.points.forEach((p, i) => {
@@ -49,7 +53,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
             }
           });
       });
-    } else if (this.targetEditGate !== null && type === "mousedown") {
+    } else if (this.targetEditGate !== null && type === "mouseup") {
+      this.isDragging = false;
       this.targetEditGate = null;
       this.targetPointIndex = null;
     }
