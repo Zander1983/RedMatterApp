@@ -621,6 +621,16 @@ const Experiment = (props: any) => {
                             >
                               {(e.fileSize / 1e6).toFixed(2) + "MB"}
                             </b>
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
+                              {e.eventCount + " events"}
+                            </b>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
