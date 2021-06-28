@@ -146,7 +146,15 @@ const Experiment = (props: any) => {
       .catch((e) => {});
   };
 
-  const uploadFiles = (files: FileList) => {
+  function setContaineSet(superSet: Set<any>, set: Set<any>) {
+    //@ts-ignore
+    if (superSet.size !== set.size) return false;
+    //@ts-ignore
+    for (var a of set) if (!superSet.has(a)) return false;
+    return true;
+  }
+
+  const uploadFiles = async (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
 
@@ -184,51 +192,68 @@ const Experiment = (props: any) => {
       }),
     ]);
     const fcsservice = new FCSServices();
+    let channelSet = new Set();
     for (const file of fileList) {
-      new Promise(async () => {
-        let fcs = await file.file.arrayBuffer().then(async (e) => {
-          const buf = Buffer.from(e);
-          return await fcsservice.loadFileMetadata(buf).then((e) => {
-            return e;
-          });
+      let fcsFile = await file.file.arrayBuffer().then(async (e) => {
+        const buf = Buffer.from(e);
+        return await fcsservice.loadFileMetadata(buf).then((e) => {
+          return e;
         });
-        oldBackFileUploader(
-          userManager.getToken(),
-          props.id,
-          userManager.getOrganiztionID(),
-          file.file
-        )
-          .then((e) => {
-            snackbarService.showSnackbar(
-              "Uploaded " + file.file.name,
-              "success"
-            );
-          })
-          .catch((e) => {
-            snackbarService.showSnackbar(
-              "Error uploading file " +
-                file.file.name.substring(0, 20) +
-                (file.file.name.length > 20 ? ",,," : "") +
-                ", please try again",
-              "error"
-            );
-          })
-          .finally(() => {
-            fetchExperimentData(false, () => {
-              setUploadingFiles(
-                uploadingFiles.filter((e) => e.id !== file.tempId)
-              );
-            });
-            setFileUploadInputValue("");
-          });
       });
+      if (channelSet.size === 0) channelSet = new Set(fcsFile.channels);
+      if (
+        (getExperimentChannels().length > 0 &&
+          !setContaineSet(
+            new Set(fcsFile.channels),
+            new Set(getExperimentChannels())
+          )) ||
+        (channelSet.size > 0 &&
+          !setContaineSet(new Set(fcsFile.channels), channelSet))
+      ) {
+        snackbarService.showSnackbar(
+          "Channels of uploaded file " +
+            file.file.name +
+            " don't match experiments channels",
+          "error"
+        );
+        fetchExperimentData(false, () => {
+          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
+        });
+        setFileUploadInputValue("");
+        return;
+      }
+      oldBackFileUploader(
+        userManager.getToken(),
+        props.id,
+        userManager.getOrganiztionID(),
+        file.file
+      )
+        .then((e) => {
+          snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
+        })
+        .catch((e) => {
+          snackbarService.showSnackbar(
+            "Error uploading file " +
+              file.file.name.substring(0, 20) +
+              (file.file.name.length > 20 ? ",,," : "") +
+              ", please try again",
+            "error"
+          );
+        })
+        .finally(() => {
+          fetchExperimentData(false, () => {
+            setUploadingFiles(
+              uploadingFiles.filter((e) => e.id !== file.tempId)
+            );
+          });
+          setFileUploadInputValue("");
+        });
     }
   };
 
-  const getExperimentChannels = async (): Promise<string[]> => {
-    console.log(experimentData);
+  const getExperimentChannels = (): string[] => {
     if (experimentData === null || experimentData.files.length === 0) return [];
-    console.log(experimentData.files);
+    return experimentData.files[0].channels;
   };
 
   const deleteFile = (file: any) => {
@@ -266,9 +291,7 @@ const Experiment = (props: any) => {
   };
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
-  useEffect(() => {
-    getExperimentChannels();
-  }, [experimentData]);
+  useEffect(() => {}, [experimentData]);
 
   return (
     <>
@@ -598,6 +621,16 @@ const Experiment = (props: any) => {
                             >
                               {(e.fileSize / 1e6).toFixed(2) + "MB"}
                             </b>
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
+                              {e.eventCount + " events"}
+                            </b>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
@@ -696,6 +729,27 @@ const Experiment = (props: any) => {
                             • Description: {experiment.details.description}
                           </h4>
                         ) : null}
+                      </div>
+                    </Grid>
+                  </>
+                ) : null}
+                {getExperimentChannels().length > 0 ? (
+                  <>
+                    <Divider style={{ marginBottom: 10 }}></Divider>
+                    <Grid
+                      container
+                      direction="row"
+                      style={{
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ textAlign: "left" }}>
+                        <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
+                          Experiment Channels
+                        </h1>
+                        {getExperimentChannels().map((e) => (
+                          <h4>{"• " + e}</h4>
+                        ))}
                       </div>
                     </Grid>
                   </>

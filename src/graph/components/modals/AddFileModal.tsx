@@ -355,31 +355,61 @@ function AddFileModal(props: {
                             {fileMetadata.label}
                           </a>
                         </p>
-                        <p style={{ marginTop: -6 }}>
-                          <b>Date:</b>{" "}
-                          <a
+                        <div style={{ display: "inline-block" }}>
+                          <p
                             style={{
-                              color: "#777",
-                              fontSize: 14,
+                              marginTop: -6,
+                              display: "inline-block",
                             }}
                           >
-                            {getHumanReadableTimeDifference(
-                              new Date(fileMetadata.createdOn),
-                              new Date()
-                            )}
-                          </a>
-                        </p>
-                        <p style={{ marginTop: -6 }}>
-                          <b>Size:</b>{" "}
-                          <a
+                            <b>Date:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {getHumanReadableTimeDifference(
+                                new Date(fileMetadata.createdOn),
+                                new Date()
+                              )}
+                            </a>
+                          </p>
+                          <p
                             style={{
-                              color: "#777",
-                              fontSize: 14,
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
                             }}
                           >
-                            {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                          </a>
-                        </p>
+                            <b>Size:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                            </a>
+                          </p>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
+                            }}
+                          >
+                            <b>Events:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {fileMetadata.eventCount}
+                            </a>
+                          </p>
+                        </div>
                       </Grid>
                       {/* <Grid
                       direction="row"
