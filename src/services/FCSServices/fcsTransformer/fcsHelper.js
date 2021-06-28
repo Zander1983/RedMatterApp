@@ -129,3 +129,14 @@ export const getMaxesFromFile = function (fcs) {
 
   return generalHelper.removeNulls(maxArray);
 };
+
+export default {
+  getParamMax,
+  getLogicles,
+  getLogicle,
+  getTMWA,
+  getMaxForParam,
+  getMinForParam,
+  getMaxesFromDb,
+  getMaxesFromFile,
+};
