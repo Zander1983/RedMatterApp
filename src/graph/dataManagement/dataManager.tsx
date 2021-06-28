@@ -314,6 +314,7 @@ class DataManager extends ObserversFunctionality {
   clearWorkspace(keepFiles: boolean = false) {
     if (!keepFiles) {
       delete this.remoteFiles;
+      delete this.remoteWorkspaceID;
     }
     this.removeWorkspace();
     // Clears local storage

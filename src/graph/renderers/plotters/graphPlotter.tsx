@@ -76,7 +76,9 @@ export default class GraphPlotter extends Plotter {
     const label = this.plotData.label;
     const filename = this.plotData.file.name;
     let text = label + " | " + filename;
-    const maxLength = Math.round(this.width / 11);
+    const maxLength = Math.round(
+      (this.width - leftPadding / 2 - rightPadding / 2 + 10) / 10
+    );
     if (text.length > maxLength) {
       text = text.substring(0, maxLength) + "...";
     }

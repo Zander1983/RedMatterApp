@@ -70,9 +70,11 @@ const staticFiles = [
   "erica3",
 ].map((e) => {
   return {
-    title: e,
+    label: e,
     information: "...",
     fromStatic: e,
+    fileSize: 0,
+    eventCount: 0,
     lastModified: "X/X/X",
   };
 });
@@ -168,6 +170,10 @@ function AddFileModal(props: {
         dataManager.setWorkspaceLoading(false);
       });
     }
+    return () => {
+      downloading = [];
+      downloaded = [];
+    };
   }, []);
 
   const [onHover, setOnHover] = React.useState(-1);
@@ -177,7 +183,7 @@ function AddFileModal(props: {
       snackbarService.showSnackbar("Something went wrong, try again!", "error");
       return;
     }
-    const file: any = downloaded[index];
+    const file: any = remoteWorkspace ? downloaded[index] : staticFiles[index];
     let newFile: FCSFile;
     if (file?.fromStatic) {
       newFile = staticFileReader(file.fromStatic);
@@ -510,24 +516,43 @@ function AddFileModal(props: {
                         // </Button>
                         null
                       ) : null}
-                      {isDownloaded ? (
+                      {isDownloaded || !remoteWorkspace ? (
                         <Button
                           style={{
-                            backgroundColor: isDownloaded ? "#66d" : "#99d",
+                            backgroundColor:
+                              isDownloaded || !remoteWorkspace
+                                ? "#66d"
+                                : "#99d",
                             color: "white",
                             fontSize: 13,
                             marginLeft: 20,
                           }}
                           onClick={() => {
                             let index: number;
-                            for (let i = 0; i < downloaded.length; i++) {
-                              //@ts-ignore
-                              if (downloaded[i].id === fileMetadata.id) {
+                            for (
+                              let i = 0;
+                              i <
+                              (remoteWorkspace
+                                ? downloaded.length
+                                : staticFiles.length);
+                              i++
+                            ) {
+                              if (
+                                remoteWorkspace &&
+                                downloaded[i].id === fileMetadata.id
+                              ) {
+                                index = i;
+                                break;
+                              }
+                              if (
+                                !remoteWorkspace &&
+                                fileMetadata.label === staticFiles[i].label
+                              ) {
                                 index = i;
                                 break;
                               }
                             }
-                            if (index === undefined) {
+                            if (index === undefined && remoteWorkspace) {
                               snackbarService.showSnackbar(
                                 "File is not dowloaded",
                                 "error"
@@ -537,7 +562,7 @@ function AddFileModal(props: {
                             addFile(index);
                             props.closeCall.f(props.closeCall.ref);
                           }}
-                          disabled={!isDownloaded}
+                          disabled={!isDownloaded && remoteWorkspace}
                         >
                           Add to Workspace
                         </Button>
