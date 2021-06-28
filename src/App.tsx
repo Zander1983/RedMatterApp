@@ -21,6 +21,7 @@ import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import Plans from "./Components/plans/Plans";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
@@ -66,6 +67,10 @@ const router = [
   {
     path: "/register",
     component: Register,
+  },
+  {
+    path: "/plans",
+    component: Plans,
   },
   {
     path: "/verify",
