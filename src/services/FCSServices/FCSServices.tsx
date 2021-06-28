@@ -1,4 +1,5 @@
 import fcsModel from "./fcsTransformer/fcsModel";
+import logicleTransformer from "./logicleTransformer.js";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
@@ -27,6 +28,10 @@ class FCSServices {
       .catch(function (err) {
         throw err;
       });
+  }
+
+  logicleTransformer(wtf: any) {
+    return logicleTransformer(wtf);
   }
 }
 
