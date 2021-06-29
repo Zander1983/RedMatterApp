@@ -1,8 +1,6 @@
 import Logicle from "./logicle";
 
 class LogicleAPI {
-  constructor() {}
-
   logicleTransform(
     input: number[],
     T: number,

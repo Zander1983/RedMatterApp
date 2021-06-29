@@ -126,12 +126,12 @@ class Logicle {
     tol = Tol;
 
     /* First test if we have found a root at an endpoint */
-    if (fa == 0.0) {
+    if (fa === 0.0) {
       Tol = 0.0;
       Maxit = 0;
       return a;
     }
-    if (fb == 0.0) {
+    if (fb === 0.0) {
       Tol = 0.0;
       Maxit = 0;
       return b;
@@ -161,7 +161,7 @@ class Logicle {
       tol_act = 2 * this.EPSILON * Math.abs(b) + tol / 2;
       new_step = (c - b) / 2;
 
-      if (Math.abs(new_step) <= tol_act || fb == 0) {
+      if (Math.abs(new_step) <= tol_act || fb === 0) {
         Maxit -= maxit;
         Tol = Math.abs(c - b);
         return b; /* Acceptable approx. is found	*/
@@ -176,7 +176,7 @@ class Logicle {
          * Interpolation may be tried	*/
         let t1, cb, t2;
         cb = c - b;
-        if (a == c) {
+        if (a === c) {
           /* If we have only two distinct	*/
           /* points linear interpolation	*/
           t1 = fb / fa; /* can only be applied		*/
@@ -235,8 +235,8 @@ class Logicle {
   //  * use R built-in root finder API :R_zeroin
   //  */
   solve(b: number, w: number) {
-    // w == 0 means its really arcsinh
-    if (w == 0) return b;
+    // w === 0 means its really arcsinh
+    if (w === 0) return b;
 
     // precision is the same as that of b
     let tolerance = 2 * b * this.EPSILON;
@@ -278,7 +278,7 @@ class Logicle {
 
   scale(value: number) {
     // handle true zero separately
-    if (value == 0) return this.x1;
+    if (value === 0) return this.x1;
 
     // reflect negative values
     let negative = value < 0;
