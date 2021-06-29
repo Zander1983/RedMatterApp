@@ -1,6 +1,5 @@
 import fcsModel from "./fcsTransformer/fcsModel";
-import logicleTransformer from "./logicleTransformer.js";
-import api from "./logicle-js/exports";
+import LogicleAPI from "./new-logicle-js/logicleApi";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
@@ -50,11 +49,11 @@ class FCSServices {
   }
 
   logicleTransformer(data: number[]) {
-    return api.LogicleTransform(
+    return new LogicleAPI().logicleTransform(
       data,
       this.logicleT,
-      this.logicleM,
       this.logicleW,
+      this.logicleM,
       this.logicleA
     );
   }

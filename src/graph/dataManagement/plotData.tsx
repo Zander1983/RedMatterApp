@@ -458,12 +458,16 @@ export default class PlotData extends ObserversFunctionality {
       xAxis.push(e[xAxisName]);
       yAxis.push(e[yAxisName]);
     });
-    console.log(
-      "just as a test, here is logicle transform of axis: ",
-      xAxis,
-      "transform:",
-      new FCSServices().logicleTransformer(xAxis)
-    );
+    // console.log(
+    //   "just as a test, here is logicle transform of axis: ",
+    //   xAxis,
+    //   "transform:",
+    //   new FCSServices().logicleTransformer([...xAxis])
+    // );
+
+    new FCSServices().logicleTransformer([...xAxis]);
+    new FCSServices().logicleTransformer([...yAxis]);
+
     return { xAxis, yAxis };
   }
 
