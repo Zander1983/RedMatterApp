@@ -75,8 +75,8 @@ const useStyles = makeStyles((theme) => ({
 export default function Plans(props:any) {
     const classes = useStyles();
 
-    var createCheckoutSession = (priceId:any) => {
-        return fetch("/create-checkout-session", {
+    const createCheckoutSession = (priceId:any) => {
+        return axios.post("/create-checkout-session", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -85,9 +85,23 @@ export default function Plans(props:any) {
             priceId: priceId
           })
         }).then(function(result) {
-          return result.json();
+          return result.data();
         });
       };
+
+    // var createCheckoutSession = (priceId:any) => {
+    //     return fetch("/create-checkout-session", {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json"
+    //       },
+    //       body: JSON.stringify({
+    //         priceId: priceId
+    //       })
+    //     }).then(function(result) {
+    //       return result.json();
+    //     });
+    //   };
 
     const handleClick = async (event:any) => {
         // Get Stripe.js instance
@@ -95,24 +109,16 @@ export default function Plans(props:any) {
     
         // Call your backend to create the Checkout Session
         //const response = await fetch('/create-checkout-session', { method: 'POST' });
-        const response = await axios.post('/create-checkout-session', {
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              priceId: "price_1J7UmZFYFs5GcbAXvPronXSX"
-            })
-          }).then(function(result) {
-            return result.data();
-          }).then(function(data) {
+        createCheckoutSession('price_1J7UmZFYFs5GcbAXvPronXSX').then(function(data) {
             // Call Stripe.js method to redirect to the new Checkout page
             stripe
               .redirectToCheckout({
                 sessionId: data.sessionId
               })
-              .then(() => {console.log('handleResult')});
-          });
-      };
+              .then(()=>{console.log('handleResult')});
+          })
+          };
+      ;
   return (
     <Grid
       container
@@ -224,4 +230,4 @@ export default function Plans(props:any) {
       
     </Grid>
   );
-};
+}
