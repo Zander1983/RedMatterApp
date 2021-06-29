@@ -12,6 +12,7 @@ import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
 import { generateColor } from "graph/utils/color";
+import FCSServices from "services/FCSServices/FCSServices";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -381,10 +382,8 @@ export default class PlotData extends ObserversFunctionality {
 
   @conditionalUpdateDecorator()
   disableHistogram(axis: "x" | "y") {
-    if(axis === "x")
-      this.xHistogram = false;
-    else
-      this.yHistogram = false;    
+    if (axis === "x") this.xHistogram = false;
+    else this.yHistogram = false;
   }
 
   /* PLOT STATE GETTERS */
@@ -459,6 +458,12 @@ export default class PlotData extends ObserversFunctionality {
       xAxis.push(e[xAxisName]);
       yAxis.push(e[yAxisName]);
     });
+    console.log(
+      "just as a test, here is logicle transform of axis: ",
+      xAxis,
+      "transform:",
+      new FCSServices().logicleTransformer(xAxis)
+    );
     return { xAxis, yAxis };
   }
 
