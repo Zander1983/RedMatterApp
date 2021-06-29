@@ -13,6 +13,11 @@ import {
   UserApiFetchParamCreator,
 } from "api_calls/nodejsback";
 
+import { loadStripe } from '@stripe/stripe-js';
+// Make sure to call `loadStripe` outside of a component’s render to avoid
+// recreating the `Stripe` object on every render.
+const stripePromise = loadStripe('pk_test_51J7UfrFYFs5GcbAXBxHANlj0XASMfZV5TfxzkaKSDTTOeJTmlaIa60Uk5WlizFQ2JTSqZuhn9nJauzNGKmC1dR3700t0UTXOdy');
+
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -69,6 +74,29 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Plans(props:any) {
     const classes = useStyles();
+
+
+    const handleClick = async (event:any) => {
+        // Get Stripe.js instance
+        const stripe = await stripePromise;
+    
+        // Call your backend to create the Checkout Session
+        const response = await fetch('/create-checkout-session', { method: 'POST' });
+    
+        const session = await response.json();
+    
+        // When the customer clicks on the button, redirect them to Checkout.
+        const result = await stripe.redirectToCheckout({
+          sessionId: session.id,
+        });
+    
+        if (result.error) {
+            console.log("MAJOR STRIPE ERROR")
+          // If `redirectToCheckout` fails due to a browser or network
+          // error, display the localized error message to your customer
+          // using `result.error.message`.
+        }
+      };
   return (
     <Grid
       container
@@ -145,7 +173,7 @@ export default function Plans(props:any) {
                         <p>Unlimited experiments/month <br></br>Private experiments</p>
                     </div>
 
-                    <button className={classes.get}>
+                    <button className={classes.get} role="link" onClick={handleClick}>
                         Get Started!
                     </button>
                     </div>      

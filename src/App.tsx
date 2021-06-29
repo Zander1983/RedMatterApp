@@ -22,6 +22,9 @@ import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import Plans from "./Components/plans/Plans";
+import PremiumCheckout from "./Components/plans/PremiumCheckout";
+import Cancel from "./Components/plans/Cancel";
+import Success from "./Components/plans/Success";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
@@ -75,6 +78,18 @@ const router = [
   {
     path: "/verify",
     component: VerifyEmail,
+  },
+  {
+    path: "/premium-checkout",
+    component: PremiumCheckout,
+  },
+  {
+    path: "/cancel",
+    component: Cancel,
+  },
+  {
+    path: "/success",
+    component: Success,
   },
   {
     path: "/verify/:verifyStr",
