@@ -75,27 +75,43 @@ const useStyles = makeStyles((theme) => ({
 export default function Plans(props:any) {
     const classes = useStyles();
 
+    var createCheckoutSession = (priceId:any) => {
+        return fetch("/create-checkout-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            priceId: priceId
+          })
+        }).then(function(result) {
+          return result.json();
+        });
+      };
 
     const handleClick = async (event:any) => {
         // Get Stripe.js instance
         const stripe = await stripePromise;
     
         // Call your backend to create the Checkout Session
-        const response = await fetch('/create-checkout-session', { method: 'POST' });
-    
-        const session = await response.json();
-    
-        // When the customer clicks on the button, redirect them to Checkout.
-        const result = await stripe.redirectToCheckout({
-          sessionId: session.id,
-        });
-    
-        if (result.error) {
-            console.log("MAJOR STRIPE ERROR")
-          // If `redirectToCheckout` fails due to a browser or network
-          // error, display the localized error message to your customer
-          // using `result.error.message`.
-        }
+        //const response = await fetch('/create-checkout-session', { method: 'POST' });
+        const response = await axios.post('/create-checkout-session', {
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              priceId: "price_1J7UmZFYFs5GcbAXvPronXSX"
+            })
+          }).then(function(result) {
+            return result.data();
+          }).then(function(data) {
+            // Call Stripe.js method to redirect to the new Checkout page
+            stripe
+              .redirectToCheckout({
+                sessionId: data.sessionId
+              })
+              .then(() => {console.log('handleResult')});
+          });
       };
   return (
     <Grid

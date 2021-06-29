@@ -3,15 +3,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
-import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 
-import { useDispatch } from "react-redux";
-import { snackbarService } from "uno-material-ui";
-import { LockFilled } from "@ant-design/icons";
-import {
-  AuthenticationApiFetchParamCreator,
-  UserApiFetchParamCreator,
-} from "api_calls/nodejsback";
+import { loadStripe } from '@stripe/stripe-js';
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -68,6 +61,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function Plans(props:any) {
+
+
     const classes = useStyles();
   return (
       
@@ -174,7 +169,18 @@ export default function Plans(props:any) {
             <Grid item lg={3}
         md={6}
         sm={12}>
-            <button id="checkout-button">Checkout</button>
+            <form id="payment-form">
+      <div id="card-element"></div>
+      <button id="submit">
+        <div className="spinner hidden" id="spinner"></div>
+        <span id="button-text">Pay now</span>
+      </button>
+      <p id="card-error" role="alert"></p>
+      <p className="result-message hidden">
+        Payment succeeded, see the result in your
+        <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
+      </p>
+    </form>
 
         </Grid>
 
