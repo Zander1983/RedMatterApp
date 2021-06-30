@@ -1,8 +1,8 @@
-import fcsModel from "./fcsTransformer/fcsModel";
-import Scale from "./fcsTransformer/scale";
-import fcsHelper from "./fcsTransformer/fcsHelper";
-import generalHelper from "./fcsTransformer/generalHelper";
-import fcs from "fcs";
+import fcsModel from "../fcsTransformer/fcsModel";
+import Scale from "../fcsTransformer/scale";
+import fcsHelper from "../fcsTransformer/fcsHelper";
+import generalHelper from "../fcsTransformer/generalHelper";
+import fcs from "../fcs/fcs";
 import { min } from "mathjs";
 
 const logicleTransformer = (event) => {

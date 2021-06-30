@@ -42,8 +42,14 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   const [plotSetup, setPlotSetup] = React.useState(false);
   const [oldAxis, setOldAxis] = React.useState({
     x: null,
-    y: null
-  })
+    y: null,
+  });
+
+  const setPlotType = (axis: "x" | "y", value: string) => {
+    axis == "x"
+      ? props.plot.plotData.setXAxisPlotType(value)
+      : props.plot.plotData.setYAxisPlotType(value);
+  };
 
   const rerender = useForceUpdate();
   const plot = props.plot;
@@ -52,6 +58,9 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
+
+  const yPlotType = plot.plotData.yPlotType;
+  const xPlotType = plot.plotData.xPlotType;
 
   const updatePlotSize = () => {
     if (displayRef === null || displayRef.current === null) return;
@@ -78,34 +87,40 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     }
   };
 
-  const setHistogram = (axis: "x" | "y", value: boolean) => {    
+  const setHistogram = (axis: "x" | "y", value: boolean) => {
     if (value) {
-      axis === "x" ? setOldAxis({...oldAxis, y: yAxis}) : setOldAxis({...oldAxis, x: xAxis});
+      axis === "x"
+        ? setOldAxis({ ...oldAxis, y: yAxis })
+        : setOldAxis({ ...oldAxis, x: xAxis });
       axis === "x"
         ? props.plot.plotData.xAxisToHistogram()
         : props.plot.plotData.yAxisToHistogram();
     } else {
-      axis === "x" ?
-        props.plot.plotData.setYAxis(oldAxis.y) :
-        props.plot.plotData.setXAxis(oldAxis.x);        
+      axis === "x"
+        ? props.plot.plotData.setYAxis(oldAxis.y)
+        : props.plot.plotData.setXAxis(oldAxis.x);
 
       props.plot.plotData.disableHistogram(axis);
     }
   };
 
   const isPlotHistogram = () => {
-    return plot.plotData.xHistogram ||plot.plotData.yHistogram;
-  }
+    return xAxis === yAxis;
+  };
 
   const setAxis = (axis: "x" | "y", value: string) => {
-    const otherAxisValue = axis == "x" ? yAxis : xAxis;    
+    const otherAxisValue = axis == "x" ? yAxis : xAxis;
     if (value == otherAxisValue && !isPlotHistogram()) {
-      setHistogram(axis == "x" ? "y" : "x", true);      
+      setHistogram(axis == "x" ? "y" : "x", true);
     } else {
       axis == "x"
         ? props.plot.plotData.setXAxis(value)
         : props.plot.plotData.setYAxis(value);
     }
+  };
+
+  const isAxisDisabled = (axis: "x" | "y") => {
+    return axis === "x" ? plot.plotData.yHistogram : plot.plotData.xHistogram;
   };
 
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
@@ -115,10 +130,8 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       setLastSelectEvent(new Date().getTime());
     }
 
-    if(plot.plotData.xHistogram)
-      setHistogram('x', true);
-    else if(plot.plotData.yHistogram)
-      setHistogram('y', true);
+    if (plot.plotData.xHistogram) setHistogram("x", true);
+    else if (plot.plotData.yHistogram) setHistogram("y", true);
   };
 
   useEffect(() => {
@@ -141,6 +154,37 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     }
   }, []);
 
+  let oldXAxisValue: string | null = null;
+  let oldYAxisValue: string | null = null;
+
+  const handleHist = (targetAxis: "x" | "y") => {
+    if (isPlotHistogram()) {
+      if (targetAxis === "x") {
+        const axis =
+          oldYAxisValue && oldYAxisValue !== xAxis
+            ? oldYAxisValue
+            : plot.plotData.file.axes.filter((e) => e !== xAxis)[0];
+        plot.plotData.xHistogram = false;
+        setAxis("y", axis);
+      } else {
+        const axis =
+          oldXAxisValue && oldXAxisValue !== yAxis
+            ? oldXAxisValue
+            : plot.plotData.file.axes.filter((e) => e !== yAxis)[0];
+        plot.plotData.yHistogram = false;
+        setAxis("x", axis);
+      }
+    } else {
+      if (targetAxis === "x") {
+        oldYAxisValue = yAxis;
+        setAxis("y", xAxis);
+      } else {
+        oldXAxisValue = xAxis;
+        setAxis("x", yAxis);
+      }
+    }
+  };
+
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>
@@ -148,27 +192,71 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
         <Divider></Divider>
 
         <GateBar plot={plot}></GateBar>
-        <Divider></Divider>
+        <Divider style={{ marginBottom: 10 }}></Divider>
 
-        <AxisBar plot={plot} oldAxis={oldAxis} histogramCallback={setHistogram}></AxisBar>
-        <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
+        {/* <AxisBar
+          plot={plot}
+          oldAxis={oldAxis}
+          histogramCallback={setHistogram}
+        ></AxisBar> */}
+        {/* <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider> */}
       </div>
 
-      <div className="plot-canvas" style={{display:"flex", justifyContent: 'center', alignItems: 'center'}}>
-        <div className="pc-y" style={{ transform: "rotate(270deg)", height: 'min-content', width: '2%', marginRight: '10px' }}>
+      <div
+        className="plot-canvas"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <div
+          className="pc-y"
+          style={{
+            transform: "rotate(270deg)",
+            height: "min-content",
+            width: "2%",
+            marginRight: "10px",
+            display: "flex",
+          }}
+        >
           <Select
-            style={{ width: 100, marginRight: 10 }}
-            onChange={(e) =>
+            style={{
+              width: 100,
+              marginRight: 15,
+              flex: "1 1 auto",
+            }}
+            onChange={(e) => {
+              if (e.target.value == "hist") {
+                handleHist("y");
+                return;
+              }
               handleSelectEvent(e, "y", (e: any) =>
                 setAxis("y", e.target.value)
-              )
-            }
+              );
+            }}
             disabled={plot.plotData.xHistogram}
             value={yAxis}
           >
             {plot.plotData.file.axes.map((e: any) => (
               <MenuItem value={e}>{e}</MenuItem>
             ))}
+            <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
+            <MenuItem value={"hist"}>Histogram</MenuItem>
+          </Select>
+          <Select
+            style={{
+              width: 100,
+              marginRight: 15,
+              flex: "1 1 auto",
+            }}
+            value={yPlotType}
+            disabled={isAxisDisabled("y")}
+            //@ts-ignore
+            onChange={(e) => setPlotType("y", e.target.value)}
+          >
+            <MenuItem value={"lin"}>Linear</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
           </Select>
         </div>
         <div
@@ -178,24 +266,56 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            paddingRight: 0
+            paddingRight: 0,
           }}
         >
           <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
-          <Select
-            style={{ width: 100, marginTop: '10px' }}
-            onChange={(e) =>
-              handleSelectEvent(e, "x", (e: any) =>
-                setAxis("x", e.target.value)
-              )
-            }
-            disabled={plot.plotData.yHistogram}
-            value={xAxis}
+          <div
+            style={{
+              flex: "1 1 auto",
+            }}
           >
-            {plot.plotData.file.axes.map((e: any) => (
-              <MenuItem value={e}>{e}</MenuItem>
-            ))}
-          </Select>
+            <Select
+              style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
+              onChange={(e) => {
+                if (e.target.value == "hist") {
+                  handleHist("x");
+                  return;
+                }
+                handleSelectEvent(e, "x", (e: any) =>
+                  setAxis("x", e.target.value)
+                );
+              }}
+              disabled={plot.plotData.yHistogram}
+              value={xAxis}
+            >
+              {plot.plotData.file.axes.map((e: any) => (
+                <MenuItem value={e}>{e}</MenuItem>
+              ))}
+              <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
+              <MenuItem
+                value={"hist"}
+                style={{ backgroundColor: isPlotHistogram() ? "#ddf" : "#fff" }}
+              >
+                Histogram
+              </MenuItem>
+            </Select>
+            <Select
+              style={{
+                width: 100,
+                marginTop: "10px",
+                marginLeft: 10,
+                flex: "1 1 auto",
+              }}
+              value={xPlotType}
+              disabled={isAxisDisabled("x")}
+              //@ts-ignore
+              onChange={(e) => setPlotType("x", e.target.value)}
+            >
+              <MenuItem value={"lin"}>Linear</MenuItem>
+              <MenuItem value={"bi"}>Logicle</MenuItem>
+            </Select>
+          </div>
         </div>
       </div>
     </div>

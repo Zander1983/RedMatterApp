@@ -420,7 +420,9 @@ class DataManager extends ObserversFunctionality {
       DataManager.instance = new DataManager();
       DataManager.instance.setStandardObservers();
     }
-
+    window.addEventListener("beforeunload", () =>
+      DataManager.instance.clearWorkspace()
+    );
     return DataManager.instance;
   }
 

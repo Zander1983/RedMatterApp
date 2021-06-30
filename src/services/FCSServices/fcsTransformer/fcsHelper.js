@@ -101,18 +101,6 @@ export const getMaxForParam = (params) => {
 
 export const getMinForParam = (params) => {
   return 0;
-
-  // TODO: this should be used
-
-  var fcsFileDb = params.fcsFileDb;
-  var param = params.param;
-  var scaleType = params.scaleType;
-
-  if (scaleType === "bi") {
-    return fcsFileDb.paramsAnaylsis[param].scaledMinBi;
-  } else {
-    return fcsFileDb.paramsAnaylsis[param].scaledMinLin;
-  }
 };
 
 export const getMaxesFromDb = function (params) {

@@ -120,17 +120,93 @@ export default function MainBar(props: any) {
           </h2>
         }
       />
-
-      <Button
-        onClick={() => setDeleteModalOpen(true)}
-        style={{ ...classes.iconButton, backgroundColor: "#c45" }}
+      <Grid
+        container
+        style={{
+          width: "100%",
+          // border: "1px solid black",
+          // display: "table",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+        direction="row"
       >
-        <CancelIcon
-          fontSize="small"
-          style={{ ...classes.iconButtonIcon }}
-        ></CancelIcon>
-      </Button>
-      {/* <Button
+        <Button
+          onClick={() => setDeleteModalOpen(true)}
+          style={{
+            backgroundColor: "#c45",
+            fontSize: 12,
+            marginRight: 5,
+            marginLeft: 5,
+            flex: "1 1 auto",
+          }}
+        >
+          <CancelIcon
+            fontSize="small"
+            style={{
+              ...classes.iconButtonIcon,
+            }}
+          ></CancelIcon>
+        </Button>
+        <Button
+          variant="contained"
+          size="medium"
+          onClick={() => polygonGatingSetter()}
+          style={{
+            flex: "1 1 auto",
+            fontSize: 12,
+            color: "white",
+            marginRight: 5,
+            marginLeft: 5,
+            backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
+          }}
+        >
+          Draw gate
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#66a",
+            flex: "1 1 auto",
+            color: "white",
+            marginRight: 5,
+            marginLeft: 5,
+            fontSize: 12,
+          }}
+          variant="contained"
+          size="medium"
+          onClick={() => {
+            if (plot.plotData.gates.length === 0) {
+              setEmptySubpopModalOpen(true);
+              return;
+            }
+            dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
+          }}
+        >
+          Subpop
+        </Button>
+        <Button
+          style={{
+            ...classes.mainButton,
+            flex: "1 1 auto",
+            marginRight: 5,
+            marginLeft: 5,
+            color: "white",
+            fontSize: 12,
+          }}
+          variant="contained"
+          size="medium"
+          onClick={() => {
+            if (plot.plotData.gates.length === 0) {
+              setEmptySubpopModalOpen(true);
+              return;
+            }
+            dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
+          }}
+        >
+          Inverse Subpop
+        </Button>
+      </Grid>
+      {/* <Button style={{ display: "inline-block"}}
         variant="contained"
         size="medium"
         onClick={() => ovalGatingSetter()}
@@ -138,57 +214,18 @@ export default function MainBar(props: any) {
           ...classes.mainButton,
           backgroundColor: ovalGating ? "#6666ee" : "#6666aa",
         }}
-      >
+        >
         Oval
       </Button> */}
-      <Button
-        variant="contained"
-        size="medium"
-        onClick={() => polygonGatingSetter()}
-        style={{
-          ...classes.mainButton,
-          backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
-        }}
-      >
-        Draw gate
-      </Button>
-      {/* <Button
-            variant="contained"
-            size="medium"
-            // onClick={}
-            style={classes.mainButton}
-          >
-            Quadrant
-          </Button> */}
-      <Button
-        variant="contained"
-        size="medium"
-        onClick={() => {
-          if (plot.plotData.gates.length === 0) {
-            setEmptySubpopModalOpen(true);
-            return;
-          }
-          dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
-        }}
-        style={classes.mainButton}
-      >
-        Subpop
-      </Button>
-      <Button
-        variant="contained"
-        size="medium"
-        onClick={() => {
-          if (plot.plotData.gates.length === 0) {
-            setEmptySubpopModalOpen(true);
-            return;
-          }
-          dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
-        }}
-        style={classes.mainButton}
-      >
-        Inverse Subpop
-      </Button>
-      {/* <Button
+      {/* <Button style={{ display: "inline-block"}}
+              variant="contained"
+              size="medium"
+              // onClick={}
+              style={classes.mainButton}
+            >
+              Quadrant
+            </Button> */}
+      {/* <Button style={{ display: "inline-block"}}
         onClick={() => downloadCanvasAsImage()}
         style={{ ...classes.iconButton, marginLeft: 5 }}
       >
