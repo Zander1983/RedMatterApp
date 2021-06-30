@@ -8,6 +8,7 @@ import GateMouseInteractor, {
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
+import OvalGate from "graph/dataManagement/gate/ovalGate";
 
 const maxPolygonDist = 10;
 
@@ -17,7 +18,7 @@ export interface PolygonGateState extends GateState {
   yAxis: string;
 }
 
-export interface PolygonMouseInteractorState extends MouseInteractorState {}
+export interface PolygonMouseInteractorState extends MouseInteractorState { }
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
   static targetGate: PolygonGate;
@@ -29,15 +30,28 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   private points: Point[] = [];
   xAxis: string;
   yAxis: string;
-  isDragging: boolean = false;
+  isDraggingVertex: boolean = false;
+  isDraggingGate: boolean = false;
+  gatePivot: Point;
 
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
-  editGateEvent(type: string, mouse: Point) {
-    if (this.targetEditGate === null && type === "mousedown" && !this.started) {
-      this.isDragging = true;
+
+  canMove(points: Point[], offset: Point) {
+    let canMove = true;
+    const bounds = this.plotter.plotData.getXandYRanges();
+    for (let i = 0; i < points.length; i++) {
+      let x = points[i].x + offset.x;
+      let y = points[i].y + offset.y;
+      if ((x < bounds.x[0]) || (y < bounds.y[0]) || (x > bounds.x[1]) || (y > bounds.y[1]))
+        canMove = false;
     }
-    else if (this.targetEditGate === null && type === "mousemove" && !this.started && this.isDragging) {      
+    return canMove;
+  }
+
+  editGateEvent(type: string, mouse: Point) {
+
+    if (this.targetEditGate === null && type === "mousedown" && !this.started && !this.isDraggingGate) {
       this.plotter.gates.forEach((gate) => {
         if (gate instanceof PolygonGate && this.targetEditGate === null)
           gate.points.forEach((p, i) => {
@@ -50,21 +64,67 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
             ) {
               this.targetEditGate = gate;
               this.targetPointIndex = i;
+              this.isDraggingVertex = true;
             }
           });
       });
     } else if (this.targetEditGate !== null && type === "mouseup") {
-      this.isDragging = false;
+      this.isDraggingVertex = false;
       this.targetEditGate = null;
       this.targetPointIndex = null;
     }
-    if (this.targetEditGate !== null && type === "mousemove") {
+
+    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingGate && !this.isDraggingVertex) {
+      const absPoint = this.plotter.transformer.toAbstractPoint(mouse);
+      const gateState = this.targetEditGate.getState();
+      const bounds = this.plotter.plotData.getXandYRanges();
+
+      if ((absPoint.x < bounds.x[0] || absPoint.y < bounds.y[0]) || (absPoint.x > bounds.x[1] || absPoint.y > bounds.y[1]))
+        return this.isDraggingGate = false;
+
+      for (let index = 0; index < gateState.points.length; index++) {
+        let offsetX = ((absPoint.x - this.gatePivot.x) / 5);
+        let offsetY = ((absPoint.y - this.gatePivot.y) / 5);
+
+        let newX = gateState.points[index].x + offsetX;
+        let newY = gateState.points[index].y + offsetY;
+
+        if (!this.canMove(gateState.points, { x: offsetX, y: offsetY })) {          
+          index = gateState.points.length;
+          this.isDraggingGate = false;
+          return;
+        } else {
+          gateState.points[index] = { x: newX, y: newY }
+        }
+      }
+
+      this.targetEditGate.update(gateState);
+    }
+
+
+    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingVertex && !this.isDraggingGate) {
       const gateState = this.targetEditGate.getState();
       gateState.points[
         this.targetPointIndex
       ] = this.plotter.transformer.toAbstractPoint(mouse);
       this.targetEditGate.update(gateState);
     }
+
+    if (type === "mousedown" && this.plotter.gates.length > 0) {
+      this.plotter.gates.forEach((gate) => {
+        if (gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))) {
+          this.isDraggingGate = true;
+          this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
+          this.targetEditGate = gate as PolygonGate;
+          return;
+        }
+      });
+    }
+
+    if (type === "mouseup" && this.isDraggingVertex)
+      this.isDraggingVertex = false;
+    else if (type === "mouseup" && this.isDraggingGate)
+      this.isDraggingGate = false;
   }
 
   protected instanceGate(): PolygonGate {
