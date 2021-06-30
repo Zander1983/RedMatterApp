@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
-
+import cancel from './img/multiply.png';
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
@@ -96,7 +96,7 @@ export default function Plans(props:any) {
           border: "solid 1px #ddd",
           textAlign: "center",
         }}>
-            <img src="./img/check.png" alt="success icon"></img>
+             <img src={cancel} alt="success icon" style={{height:'4em', width:'4em', margin:'15px auto 20px'}}></img>
             <h1>Payment Cancelled</h1>
             <p> Redirecting you to Homepage</p>
 

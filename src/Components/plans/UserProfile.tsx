@@ -107,7 +107,8 @@ export default function Plans(props:any) {
           textAlign: "left",
         }}>
             <h1 style={{
-                marginBottom:'2em'
+                marginBottom:'1.5em',
+                fontSize: '36px'
             }}>My profile</h1>
             <h2>The user's name</h2>
 

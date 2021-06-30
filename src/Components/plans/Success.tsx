@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
+import check from './img/check.png';
 
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
@@ -12,6 +13,7 @@ import {
   AuthenticationApiFetchParamCreator,
   UserApiFetchParamCreator,
 } from "api_calls/nodejsback";
+import session from "redux-persist/lib/storage/session";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -67,7 +69,15 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-export default function Plans(props:any) {
+export default function Plans(props:{
+  session_id:any
+}) {
+  const [sessionId, setSessionId] = useState('');
+  useEffect(()=>{
+    axios.get(`/checkout-session?id=${props.session_id}`)
+    .then((response) => response.data)
+    .then((session) => setSessionId(JSON.stringify(session, null, 2)))
+  });
     const classes = useStyles();
   return (
     <Grid
@@ -96,8 +106,8 @@ export default function Plans(props:any) {
           border: "solid 1px #ddd",
           textAlign: "center",
         }}>
-            <img src="./img/check.png" alt="success icon"></img>
-            <h1>Your payment has been Received!</h1>
+            <img src={check} alt="success icon" style={{height:'4em', width:'4em', margin:'15px auto 20px'}}></img>
+            <h1>Your payment has been Received! {sessionId}</h1>
             <p> Redirecting you to your profile Page</p>
 
            

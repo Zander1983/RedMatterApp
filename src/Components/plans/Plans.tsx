@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Plans(props:any) {
     const classes = useStyles();
 
-    const createCheckoutSession = (priceId:any) => {
+    const createCheckoutSession = async (priceId:string) => {
         return axios.post("/create-checkout-session", {
           method: "POST",
           headers: {
@@ -85,7 +85,7 @@ export default function Plans(props:any) {
             priceId: priceId
           })
         }).then(function(result) {
-          return result.data();
+          return result.data;
         });
       };
 
