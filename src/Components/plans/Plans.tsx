@@ -144,7 +144,7 @@ export default function Plans(props:any) {
           borderRadius: 10,
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
-          textAlign: "center",
+          textAlign: "left",
         }}>
             <h1>Choose Your Plan</h1>
 
