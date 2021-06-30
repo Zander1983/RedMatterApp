@@ -1,5 +1,5 @@
 import fcsModel from "./fcsTransformer/fcsModel";
-import LogicleAPI from "./new-logicle-js/logicleApi";
+import LogicleAPI from "./logicle/logicleApi";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
