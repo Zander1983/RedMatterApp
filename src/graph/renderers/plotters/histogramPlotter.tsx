@@ -142,6 +142,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     const overlaysObj = this.plotData.getOverlays();
     const overlays = [];
+    //console.log(overlaysObj);
     for (const overlay of overlaysObj) {
       if (overlay.plot === undefined || overlay.plot === null) continue;
       const overlayRes = overlay.plot.getBins(
@@ -166,10 +167,17 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.rangeMin = range[0];
     this.rangeMax = range[1];
 
+    
+
     for (let i = 0; i < this.bins; i++) {
       this.drawer.addBin(i, mainHist.list[i] / globlMax);
     }
 
+
+    console.log(this.plotData.gates);
+
+
+    console.log(overlays);
     for (const overlay of overlays) {
       const curve = overlay.list
         .map((e: any, i: number) => {

@@ -115,6 +115,7 @@ class Workspace extends React.Component {
                     <PlotComponent
                       plot={e.plotRender}
                       plotIndex={e.plotData.id}
+                      plots={this.plots}
                     />
                   </div>
                 </div>

@@ -38,7 +38,7 @@ function useForceUpdate() {
 const minDrawInterval = 30;
 let interval: any = {};
 
-function PlotComponent(props: { plot: Plot; plotIndex: string }) {
+function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
   const [plotSetup, setPlotSetup] = React.useState(false);
   const [oldAxis, setOldAxis] = React.useState({
     x: null,
@@ -152,10 +152,15 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
       plot.setup();
       setPlotSetup(true);
     }
+    
   }, []);
 
   let oldXAxisValue: string | null = null;
   let oldYAxisValue: string | null = null;
+
+  const handleMultiPlotHistogram = ( plot: any ) => {
+    
+  }
 
   const handleHist = (targetAxis: "x" | "y") => {
     if (isPlotHistogram()) {
@@ -272,49 +277,72 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
           <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
           <div
             style={{
-              flex: "1 1 auto",
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
-            <Select
-              style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
-              onChange={(e) => {
-                if (e.target.value == "hist") {
-                  handleHist("x");
-                  return;
-                }
-                handleSelectEvent(e, "x", (e: any) =>
-                  setAxis("x", e.target.value)
-                );
-              }}
-              disabled={plot.plotData.yHistogram}
-              value={xAxis}
-            >
-              {plot.plotData.file.axes.map((e: any) => (
-                <MenuItem value={e}>{e}</MenuItem>
-              ))}
-              <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
-              <MenuItem
-                value={"hist"}
-                style={{ backgroundColor: isPlotHistogram() ? "#ddf" : "#fff" }}
+            <div></div>
+            <div>
+              <Select
+                style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
+                onChange={(e) => {
+                  if (e.target.value == "hist") {
+                    handleHist("x");
+                    return;
+                  }
+                  handleSelectEvent(e, "x", (e: any) =>
+                    setAxis("x", e.target.value)
+                  );
+                }}
+                disabled={plot.plotData.yHistogram}
+                value={xAxis}
               >
-                Histogram
-              </MenuItem>
-            </Select>
-            <Select
-              style={{
-                width: 100,
-                marginTop: "10px",
-                marginLeft: 10,
-                flex: "1 1 auto",
-              }}
-              value={xPlotType}
-              disabled={isAxisDisabled("x")}
-              //@ts-ignore
-              onChange={(e) => setPlotType("x", e.target.value)}
-            >
-              <MenuItem value={"lin"}>Linear</MenuItem>
-              <MenuItem value={"bi"}>Logicle</MenuItem>
-            </Select>
+                {plot.plotData.file.axes.map((e: any) => (
+                  <MenuItem value={e}>{e}</MenuItem>
+                ))}
+                <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
+                <MenuItem
+                  value={"hist"}
+                  style={{
+                    backgroundColor: isPlotHistogram() ? "#ddf" : "#fff",
+                  }}
+                >
+                  Histogram
+                </MenuItem>
+              </Select>
+              <Select
+                style={{
+                  width: 100,
+                  marginTop: "10px",
+                  marginLeft: 10,
+                  flex: "1 1 auto",
+                }}
+                value={xPlotType}
+                disabled={isAxisDisabled("x")}
+                //@ts-ignore
+                onChange={(e) => setPlotType("x", e.target.value)}
+              >
+                <MenuItem value={"lin"}>Linear</MenuItem>
+                <MenuItem value={"bi"}>Logicle</MenuItem>
+              </Select>
+            </div>
+            <div>
+              {isPlotHistogram() ? (
+                <Select
+                  style={{
+                    marginTop: "10px",
+                  }}
+                  placeholder="Select"
+                  //@ts-ignore
+                  onChange={(e) => handleMultiPlotHistogram(e.target.value)}
+                >
+                  {props.plots.map((e: any) => (
+                  <MenuItem value={e}>{e.plotData.label}</MenuItem>
+                ))}
+                </Select>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
