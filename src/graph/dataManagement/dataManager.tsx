@@ -281,9 +281,10 @@ class DataManager extends ObserversFunctionality {
     if (!this.currentWorkspace.files.has(fileID)) {
       throw Error("Removing non-existent gate");
     }
+
     this.currentWorkspace.plots.forEach((e) => {
       if (e.file.id === fileID) {
-        throw Error("Removing file currently in use by workspace.");
+        this.removePlotFromWorkspace(e.id);
       }
     });
     this.currentWorkspace.files.delete(fileID);
@@ -313,6 +314,7 @@ class DataManager extends ObserversFunctionality {
   clearWorkspace(keepFiles: boolean = false) {
     if (!keepFiles) {
       delete this.remoteFiles;
+      delete this.remoteWorkspaceID;
     }
     this.removeWorkspace();
     // Clears local storage
@@ -390,7 +392,7 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   setWorkspaceID(remoteWorkspaceID: string) {
     this.remoteWorkspaceID = remoteWorkspaceID;
-    this.loadWorkspaceFilesFromRemote();
+    //this.loadWorkspaceFilesFromRemote();
   }
 
   isRemoteWorkspace() {
@@ -418,7 +420,9 @@ class DataManager extends ObserversFunctionality {
       DataManager.instance = new DataManager();
       DataManager.instance.setStandardObservers();
     }
-
+    window.addEventListener("beforeunload", () =>
+      DataManager.instance.clearWorkspace()
+    );
     return DataManager.instance;
   }
 
@@ -451,23 +455,6 @@ class DataManager extends ObserversFunctionality {
     if (this.remoteWorkspaceID === undefined) {
       throw Error("Cannot load files without a remoteWorkspaceID");
     }
-    this.setWorkspaceLoading(true);
-    axios
-      .get("/api/events/" + this.remoteWorkspaceID, {
-        params: {
-          experimentId: this.remoteWorkspaceID,
-          token: userManager.getToken(),
-          organisationId: userManager.getOrganiztionID(),
-        },
-      })
-      .then((e) => this.handleRemoteFiles(e.data))
-      .catch((e) => {
-        document.location.reload(true);
-        // snackbarService.showSnackbar(e.response.data.error, "error", 1000000);
-      })
-      .finally(() => {
-        this.setWorkspaceLoading(false);
-      });
   }
 
   private setStandardObservers() {}

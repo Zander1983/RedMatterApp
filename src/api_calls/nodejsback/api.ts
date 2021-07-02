@@ -311,12 +311,12 @@ export interface ExperimentPayload {
    * @memberof ExperimentPayload
    */
   privateExp?: boolean;
-/**
+  /**
    *
    * @type {string}
    * @memberof ExperimentPayload
    */
- organisationId?: string;
+  organisationId?: string;
 }
 /**
  *
@@ -351,10 +351,10 @@ export interface InlineResponse200 {
   token?: string;
   /**
    *
-   * @type {InlineResponse200UserDetails}
+   * @type {String}
    * @memberof InlineResponse200
    */
-  userDetails?: InlineResponse200UserDetails;
+  organisationId?: string;
 }
 /**
  *
@@ -4890,6 +4890,55 @@ export const ExperimentFilesApiFetchParamCreator = function (
 
       if (token !== undefined && token !== null) {
         localVarHeaderParameter["token"] = String(token);
+      }
+
+      localVarUrlObj.query = Object.assign(
+        {},
+        localVarUrlObj.query,
+        localVarQueryParameter,
+        options.query
+      );
+      // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+      delete localVarUrlObj.search;
+      localVarRequestOptions.headers = Object.assign(
+        {},
+        localVarHeaderParameter,
+        options.headers
+      );
+
+      return {
+        url: url.format(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * To get experiment files, we need to pass organisationId and experimentId in query params
+     * @summary Getting Experiment Files
+     * @param {string} experimentId Experiment Id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+     experimentFilesWithoutToken(
+      experimentId: string,
+      options: any = {}
+    ): FetchArgs {
+    
+      // verify required parameter 'experimentId' is not null or undefined
+      if (experimentId === null || experimentId === undefined) {
+        throw new RequiredError(
+          "experimentId",
+          "Required parameter experimentId was null or undefined when calling experimentFiles."
+        );
+      }
+     
+      const localVarPath = `/api/getSharedExperimentFiles`;
+      const localVarUrlObj = url.parse(localVarPath, true);
+      const localVarRequestOptions = Object.assign({ method: "GET" }, options);
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      if (experimentId !== undefined) {
+        localVarQueryParameter["experimentId"] = experimentId;
       }
 
       localVarUrlObj.query = Object.assign(

@@ -225,27 +225,6 @@ export default class GraphDrawer extends Drawer {
     }
   }
 
-  private drawPlotLabel(axis: "x" | "y", label: string) {
-    if (axis === "x") {
-      this.text({
-        x: (this.x2 - this.x1) / 2 - label.length * 5 + 100,
-        y: this.y2 + 70,
-        text: label,
-        font: "25px Quicksand",
-      });
-    }
-
-    if (axis === "y") {
-      const dist = this.text({
-        x: 20,
-        y: (this.y2 - this.y1) / 2 - label.length * 5 + 100,
-        text: label,
-        font: "25px Quicksand",
-        rotate: Math.PI / 2,
-      });
-    }
-  }
-
   drawPlotGraph(params?: {
     lines?: boolean;
     vbins?: number;
@@ -269,9 +248,6 @@ export default class GraphDrawer extends Drawer {
           : params.vbins,
     });
 
-    if (params !== undefined && params.xAxisLabel !== undefined)
-      this.drawPlotLabel("x", params.xAxisLabel);
-
     this.graphLine({
       x1: this.x1,
       y1: this.y2,
@@ -284,9 +260,6 @@ export default class GraphDrawer extends Drawer {
           ? undefined
           : params.hbins,
     });
-
-    if (params !== undefined && params.yAxisLabel !== undefined)
-      this.drawPlotLabel("y", params.yAxisLabel);
 
     if (lines) {
       this.drawPlotLines(

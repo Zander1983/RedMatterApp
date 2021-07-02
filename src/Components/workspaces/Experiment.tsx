@@ -15,7 +15,7 @@ import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import {
   ExperimentFilesApiFetchParamCreator,
-  ExperimentApiFetchParamCreator
+  ExperimentApiFetchParamCreator,
 } from "api_calls/nodejsback";
 import {
   ArrowLeftOutlined,
@@ -27,6 +27,7 @@ import {
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
+import FCSServices from "services/FCSServices/FCSServices";
 
 const styles = {
   input: {
@@ -42,7 +43,7 @@ const Experiment = (props: any) => {
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
-  const [fileUploadInputValue, setFileUploadInputValue] = useState('');
+  const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
   const [experimentSize, setExperimentSize] = useState(0);
   const [maxExperimentSize, setMaxExperimentSize] = useState(
@@ -106,11 +107,7 @@ const Experiment = (props: any) => {
   const updateExperimentName = (snack = true) => {
     const updateExperiment = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).editExperimentName(
-      props.id,
-      experiment.name,
-      userManager.getToken()
-    );
+    }).editExperimentName(props.id, experiment.name, userManager.getToken());
 
     axios
       .put(updateExperiment.url, {}, updateExperiment.options)
@@ -130,29 +127,37 @@ const Experiment = (props: any) => {
   const getExperiment = () => {
     const experimentApiObj = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).getExperiment(
-      userManager.getToken(),
-      props.id
-    );
-    axios.post(experimentApiObj.url,
+    }).getExperiment(userManager.getToken(), props.id);
+    axios
+      .post(
+        experimentApiObj.url,
         {
-          experimentId: props.id
+          experimentId: props.id,
         },
         {
-        headers: {
-          token: userManager.getToken(),
-        },
-      })
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      )
       .then((e) => {
         setExperiment(e.data);
       })
       .catch((e) => {});
   };
 
-  const uploadFiles = (files: FileList) => {
+  function setContaineSet(superSet: Set<any>, set: Set<any>) {
+    //@ts-ignore
+    if (superSet.size !== set.size) return false;
+    //@ts-ignore
+    for (var a of set) if (!superSet.has(a)) return false;
+    return true;
+  }
+
+  const uploadFiles = async (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
-    
+
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
@@ -186,7 +191,37 @@ const Experiment = (props: any) => {
         return { name: e.file.name, id: e.tempId };
       }),
     ]);
+    const fcsservice = new FCSServices();
+    let channelSet = new Set();
     for (const file of fileList) {
+      let fcsFile = await file.file.arrayBuffer().then(async (e) => {
+        const buf = Buffer.from(e);
+        return await fcsservice.loadFileMetadata(buf).then((e) => {
+          return e;
+        });
+      });
+      if (channelSet.size === 0) channelSet = new Set(fcsFile.channels);
+      if (
+        (getExperimentChannels().length > 0 &&
+          !setContaineSet(
+            new Set(fcsFile.channels),
+            new Set(getExperimentChannels())
+          )) ||
+        (channelSet.size > 0 &&
+          !setContaineSet(new Set(fcsFile.channels), channelSet))
+      ) {
+        snackbarService.showSnackbar(
+          "Channels of uploaded file " +
+            file.file.name +
+            " don't match experiments channels",
+          "error"
+        );
+        fetchExperimentData(false, () => {
+          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
+        });
+        setFileUploadInputValue("");
+        return;
+      }
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
@@ -211,9 +246,14 @@ const Experiment = (props: any) => {
               uploadingFiles.filter((e) => e.id !== file.tempId)
             );
           });
-          setFileUploadInputValue('');
+          setFileUploadInputValue("");
         });
     }
+  };
+
+  const getExperimentChannels = (): string[] => {
+    if (experimentData === null || experimentData.files.length === 0) return [];
+    return experimentData.files[0].channels;
   };
 
   const deleteFile = (file: any) => {
@@ -250,6 +290,8 @@ const Experiment = (props: any) => {
     func(false);
   };
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
+
+  useEffect(() => {}, [experimentData]);
 
   return (
     <>
@@ -341,8 +383,8 @@ const Experiment = (props: any) => {
                         }}
                         value={experiment.name}
                         onChange={(e: any) => {
-                            experiment.name = e.target.value;
-                            setExperiment({...experiment});
+                          experiment.name = e.target.value;
+                          setExperiment({ ...experiment });
                         }}
                         onKeyDown={(e: any) => {
                           if (e.keyCode === 13) {
@@ -579,6 +621,16 @@ const Experiment = (props: any) => {
                             >
                               {(e.fileSize / 1e6).toFixed(2) + "MB"}
                             </b>
+                            {"   "}•{"   "}
+                            <b
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 500,
+                                color: "#777",
+                              }}
+                            >
+                              {e.eventCount + " events"}
+                            </b>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
@@ -658,14 +710,11 @@ const Experiment = (props: any) => {
                           <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
                         {experiment.details.cellType != undefined ? (
-                          <h4>
-                            • Cell type: {experiment.details.cellType}
-                          </h4>
+                          <h4>• Cell type: {experiment.details.cellType}</h4>
                         ) : null}
                         {experiment.details.particleSize != undefined ? (
                           <h4>
-                            • Particle size:{" "}
-                            {experiment.details.particleSize}
+                            • Particle size: {experiment.details.particleSize}
                           </h4>
                         ) : null}
                         {experiment.details.fluorophoresCategory !=
@@ -680,6 +729,27 @@ const Experiment = (props: any) => {
                             • Description: {experiment.details.description}
                           </h4>
                         ) : null}
+                      </div>
+                    </Grid>
+                  </>
+                ) : null}
+                {getExperimentChannels().length > 0 ? (
+                  <>
+                    <Divider style={{ marginBottom: 10 }}></Divider>
+                    <Grid
+                      container
+                      direction="row"
+                      style={{
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div style={{ textAlign: "left" }}>
+                        <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
+                          Experiment Channels
+                        </h1>
+                        {getExperimentChannels().map((e) => (
+                          <h4>{"• " + e}</h4>
+                        ))}
                       </div>
                     </Grid>
                   </>

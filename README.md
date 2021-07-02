@@ -1,3 +1,9 @@
+# How to run
+
+```
+npm run start:local
+```
+
 # How to set it up
 
 ## The database
@@ -5,27 +11,31 @@
 First, download and install mongo. This step is very error prone, and dependent on your system, so good luck! If you are using Ubuntu, ask help for Renato, if Mac, Mark, if neither, ask Google.
 
 At the end, you should be able to do this:
+
 ```bash
 $ mongo
 ```
 
 And see this:
+
 ```
 $ mongo
 MongoDB shell version v4.4.4
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("f6611da5-f9e0-4f12-9cb8-d75187718569") }
 MongoDB server version: 3.6.8
-$ > 
-````
+$ >
+```
 
 Now you can create the `redmatter` database by typing, inside mongo shell:
+
 ```bash
 $ > use redmatter
 $ > db.whatever.insert({ any: "new item" })
 ```
 
 Typing `$ > show dbs`, you should now be able to see this:
+
 ```
 $ > show dbs
 admin       0.000GB
@@ -41,12 +51,14 @@ You are done here!
 First, install `nvm` on you machine. [RedMatterAppNodeJSBackend](https://github.com/RedMatterApplication/RedMatterAppNodeJSBackend/) is the one currently being used on branch `integration`.
 
 Current node version in use is `8.16.0`, With nvm, you can open a terminal and type:
+
 ```bash
 $ nvm install 8.16.0
 $ nvm use 8.16.0
 ```
 
 Now go inside backend folder cloned and install dependencies:
+
 ```
 $ npm i
 ```
@@ -54,15 +66,18 @@ $ npm i
 Most likely, you will encounter a problem involving bcrypt. A few google searches will solve your problem.
 
 Now that you have the back installed, you should be able to run it with:
+
 ```
 $ nodemon server.js nougly
 ```
 
 You, most likely, will be able to run the server, but there are still to problems to fix:
+
 1. CORS errors.
 2. ENV variables.
 
 The first, you can fix by changing `const corsOpts` in `server.js` to:
+
 ```js
 const corsOpts = {
   origin: "*",
@@ -74,11 +89,13 @@ const corsOpts = {
 ```
 
 The second, the approach I prefer is installing `dotenv` and adding a line to `server.js` like so:
+
 ```js
 require("dotenv").config();
 ```
 
 The`.env` file's template here:
+
 ```
 SEND_IN_BLUE_API_KEY=
 EMAIL_FROM=
@@ -106,12 +123,14 @@ After this, backend should be usable. Alongside this tutorial, there is a Postma
 ## The frontend
 
 Just clone [RedMatterAppFrontend](https://github.com/RedMatterApplication/RedMatterAppFrontend), install and run:
+
 ```
 $ npm i
 $ npm run start:[environment]
 ```
 
 There are 2 used environments:
+
 - `dev`: For remote connection to current live app (in the future, we hope to have a replica of the backend for development purposes)
 - `local`: That connects to localhost:8080, your local backend.
 
