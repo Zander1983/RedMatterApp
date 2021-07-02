@@ -118,6 +118,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
+    console.log(this.plotData);
     const hideY =
       this.plotData.xAxis === this.plotData.yAxis &&
       this.plotData.histogramAxis === "vertical";
@@ -137,6 +138,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
     let mainHist = this.plotData.getBins(this.bins, axis);
+
     let globlMax = mainHist.max;
     let range = this.plotData.ranges.get(axis);
 
@@ -166,40 +168,47 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.globalMax = globlMax;
     this.rangeMin = range[0];
     this.rangeMax = range[1];
-
-    
-
+    const barOverlays = this.plotData.histogramBarOverlays;
+    let binsArray = [];
+    let parentBinsArray = [];
     for (let i = 0; i < this.bins; i++) {
-      this.drawer.addBin(i, mainHist.list[i] / globlMax);
-    }
-
-
-    console.log(this.plotData.gates);
-
-
-    console.log(overlays);
-    for (const overlay of overlays) {
-      const curve = overlay.list
-        .map((e: any, i: number) => {
-          return this.drawer.getBinPos(
-            i,
-            e / globlMax,
-            Math.floor(this.bins / this.DRAW_DIVISION_CONST)
-          );
-        })
-        .sort((a: any, b: any) => {
-          return a.x - b.x;
-        });
-      this.drawer.curve({
-        points: curve,
-        strokeColor: overlay.color,
-        lineWidth: 6,
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: "",
       });
     }
 
-    this.drawer.axis = "horizontal";
-    for (let i = 0; i < this.bins; i++) {
-      this.drawer.addBin(i, mainHist.list[i] / globlMax);
+    if (barOverlays) {
+      for (let i = 0; i < barOverlays.length; i++) {
+        let overlayMainHist = barOverlays[i].plot.getBins(this.bins, axis);
+        let binsArray = [];
+        let overlayGloblMax = overlayMainHist.max;
+        for (let j = 0; j < this.bins; j++) {
+          binsArray.push({
+            value: overlayMainHist.list[j] / overlayGloblMax,
+            color: barOverlays[i].color,
+          });
+        }
+        parentBinsArray.push(binsArray);
+        binsArray = [];
+      }
+    }
+
+    for (let i = 0; i < binsArray.length; i++) {
+      let binsAscArray = [];
+      binsAscArray.push(binsArray[i]);
+      for (let j = 0; j < parentBinsArray.length; j++) {
+        binsAscArray.push(parentBinsArray[j][i]);
+      }
+      binsAscArray.sort((a, b) => {
+        return b.value - a.value;
+      });
+      for (let j = 0; j < binsAscArray.length; j++) {
+        if(binsAscArray[j].color)
+          this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
+        else
+          this.drawer.addBin(i, binsAscArray[j].value);
+      }
     }
 
     for (const overlay of overlays) {

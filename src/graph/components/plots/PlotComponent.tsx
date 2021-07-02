@@ -52,7 +52,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
   };
 
   const rerender = useForceUpdate();
-  const plot = props.plot;
+  var plot = props.plot;
   const xAxis = plot.plotData.xAxis;
   const yAxis = plot.plotData.yAxis;
 
@@ -152,14 +152,38 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
       plot.setup();
       setPlotSetup(true);
     }
-    
   }, []);
 
   let oldXAxisValue: string | null = null;
   let oldYAxisValue: string | null = null;
 
-  const handleMultiPlotHistogram = ( plot: any ) => {
-    
+  const handleMultiPlotHistogram = (plot: any) => {
+    if (plot) 
+    {
+      if(isHistogramSelected(plot.plotData.id))
+      {
+        props.plot.plotData.removeBarOverlay(plot.plotData.id);
+      }
+      else
+      {
+        props.plot.plotData.addBarOverlay(plot.plotData);
+      }
+    }
+  };
+  const isHistogramSelected = (plotId: string) => {
+    return props.plot.plotData.histogramBarOverlays.find(
+      (x) => x.plot.id == plotId
+    );
+  };
+
+  const getHistogramSelectedColor = (plotId: string) : string => {
+    let plot = isHistogramSelected(plotId);
+    if(plot)
+    {
+      return plot.color;
+    }
+
+    return "#fff";
   }
 
   const handleHist = (targetAxis: "x" | "y") => {
@@ -247,7 +271,14 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
               <MenuItem value={e}>{e}</MenuItem>
             ))}
             <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
-            <MenuItem value={"hist"}>Histogram</MenuItem>
+            <MenuItem
+              value={"hist"}
+              style={{
+                backgroundColor: isPlotHistogram() ? "#ddf" : "#fff",
+              }}
+            >
+              Histogram
+            </MenuItem>
           </Select>
           <Select
             style={{
@@ -333,13 +364,20 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
                   style={{
                     marginTop: "10px",
                   }}
-                  placeholder="Select"
-                  //@ts-ignore
+                  value={'0'}
                   onChange={(e) => handleMultiPlotHistogram(e.target.value)}
                 >
+                  <MenuItem value={'0'}>Select for multi histogram</MenuItem>
                   {props.plots.map((e: any) => (
-                  <MenuItem value={e}>{e.plotData.label}</MenuItem>
-                ))}
+                    <MenuItem
+                      value={e}
+                      style={{
+                        backgroundColor: getHistogramSelectedColor(e.plotData.id)
+                      }}
+                    >
+                      {e.plotData.label}
+                    </MenuItem>
+                  ))}
                 </Select>
               ) : null}
             </div>
