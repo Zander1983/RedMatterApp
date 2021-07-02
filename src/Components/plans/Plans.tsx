@@ -1,11 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
+import { useHistory } from "react-router-dom";
+import userManager from "Components/users/userManager";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
-
-import { useDispatch } from "react-redux";
+import { useDispatch, useStore } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
 import {
@@ -73,7 +74,23 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function Plans(props:any) {
+    const [userId, setUserId] = useState(null);
+    const store = useStore();
+
     const classes = useStyles();
+
+    const gettingUserToken = () => {
+        try {
+          let token = userManager.getToken();
+          return token;
+        } catch (error) {
+          let token = null;
+          return token;
+        }
+        
+      }
+
+      let userToken = gettingUserToken();
 
     const createCheckoutSession = async (priceId:string) => {
         return axios.post("/create-checkout-session", {
@@ -88,20 +105,6 @@ export default function Plans(props:any) {
           return result.data;
         });
       };
-
-    // var createCheckoutSession = (priceId:any) => {
-    //     return fetch("/create-checkout-session", {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json"
-    //       },
-    //       body: JSON.stringify({
-    //         priceId: priceId
-    //       })
-    //     }).then(function(result) {
-    //       return result.json();
-    //     });
-    //   };
 
     const handleClick = async (event:any) => {
         // Get Stripe.js instance
@@ -118,7 +121,16 @@ export default function Plans(props:any) {
               .then(()=>{console.log('handleResult')});
           })
           };
-      ;
+        
+      useEffect(()=>{
+          try{
+              axios.post(`/api/getuserId`, {Token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc09yZ2FuaXNhdGlvbkFkbWluIjp0cnVlLCJpc0FkbWluIjpmYWxzZSwiaXNEZW1vVXNlciI6ZmFsc2UsImVtYWlsIjoibHVpc0ByZWRtYXR0ZXJhcHAuY29tIiwiaWQiOiI2MGMxMmVjMjcxMWQ2YTA3ZTdiOTI1Y2MiLCJpYXQiOjE2MjUxNzQ3OTksImV4cCI6MTYyNTE3NDgwNX0.djVEY3xh0-WCLu8ebq46uWyj_tMrRJyMxXgMVo9EXU4"
+            })
+              .then((response) => {console.log(response.data)}).finally(()=>{console.log('did i just do something?')}) 
+            }catch(err){
+                console.log(err)
+            }
+      });
   return (
     <Grid
       container
@@ -144,8 +156,9 @@ export default function Plans(props:any) {
           borderRadius: 10,
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
-          textAlign: "left",
+          textAlign: "center",
         }}>
+            <span>{JSON.stringify(userToken, null, 2)}</span>
             <h1>Choose Your Plan</h1>
 
             <Grid
