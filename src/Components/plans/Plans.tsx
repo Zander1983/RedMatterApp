@@ -92,18 +92,22 @@ export default function Plans(props:any) {
 
       let userToken = gettingUserToken();
 
-    const createCheckoutSession = async (priceId:string) => {
-        return axios.post("/create-checkout-session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            priceId: priceId
-          })
-        }).then(function(result) {
-          return result.data;
-        });
+      const createCheckoutSession = async (priceId: string) => {
+        return axios
+          .post(
+            "/create-checkout-session",
+            {
+              priceId: priceId,
+            },
+            {
+              headers: {
+                Token: userManager.getToken(),
+              },
+            }
+          )
+          .then(function (result) {
+            return result.data;
+          });
       };
 
     const handleClick = async (event:any) => {
