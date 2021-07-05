@@ -1,4 +1,5 @@
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
+import numeral from "numeral";
 
 export interface GraphPoint extends Point {
   x: number;
@@ -16,6 +17,11 @@ export interface GraphTransformerState {
   iey: number;
   scale: number;
 }
+
+export type Label = {
+  name: string;
+  pos: number;
+};
 
 export default class GraphTransformer extends Transformer {
   private x1: number;
@@ -81,4 +87,54 @@ export default class GraphTransformer extends Transformer {
         this.iey - ((this.y1 / this.scale - p.y) / plotYRange) * abstractYRange,
     };
   };
+
+  getAxisLabels(
+    format: "bi" | "lin",
+    linRange: [number, number],
+    binsCount: number = 10
+  ): Label[] {
+    let labels = [];
+    if (format === "lin") {
+      const binSize = (linRange[1] - linRange[0]) / binsCount;
+
+      for (let i = linRange[0]; i <= linRange[1]; i += binSize)
+        labels.push({
+          pos: i,
+          name: this.numToLabelText(i),
+        });
+    }
+    if (format === "bi") {
+      let mx = linRange[1];
+      let mi = linRange[0];
+      let pt = 1e100;
+      const ptlist = [];
+      while (pt > mx) pt = pt / 10;
+      while (pt <= mx && pt > mi) {
+        ptlist.push(pt);
+        pt = pt / 10;
+      }
+      labels = ptlist.map((e) => {
+        return {
+          pos: e,
+          name: numeral(e).format("0,0e+0"),
+        };
+      });
+    }
+    return labels;
+  }
+
+  // logicleToAbstractPoint(p: GraphPoint): GraphPoint {
+  //   const logicle;
+  // }
+
+  private numToLabelText(num: number): string {
+    let snum = "";
+    if (num < 2) {
+      snum = numeral(num.toFixed(2)).format("0.0a");
+    } else {
+      snum = num.toFixed(2);
+      snum = numeral(snum).format("0a");
+    }
+    return snum;
+  }
 }

@@ -96,7 +96,21 @@ export default class GraphPlotter extends Plotter {
   }
 
   public update(): void {
+    const ranges = this.plotData.getXandYRanges();
     this.getBins();
+
+    const xLabels = this.transformer.getAxisLabels(
+      "bi",
+      ranges.x,
+      this.width / 10
+    );
+    const yLabels = this.transformer.getAxisLabels(
+      "lin",
+      ranges.y,
+      this.height / 10
+    );
+
+    // console.log(xLabels, yLabels);
 
     this.xLabels = this.createRangeArray("x");
     this.yLabels = this.createRangeArray("y");

@@ -460,15 +460,25 @@ export default class PlotData extends ObserversFunctionality {
       yAxis.push(e[yAxisName]);
     });
 
-    // if (this.xPlotType === "bi") {
-    //   xAxis = new FCSServices().logicleTransformer([...xAxis]);
-    // }
+    if (this.xPlotType === "bi") {
+      const rb = this.findRangeBoundries(xAxis);
+      xAxis = new FCSServices().logicleMarkTransformer(
+        [...xAxis],
+        rb[0],
+        rb[1]
+      );
+    }
 
-    // if (this.yPlotType === "bi") {
-    //   yAxis = new FCSServices().logicleTransformer([...yAxis]);
-    // }
+    if (this.yPlotType === "bi") {
+      const rb = this.findRangeBoundries(yAxis);
+      yAxis = new FCSServices().logicleMarkTransformer(
+        [...yAxis],
+        rb[0],
+        rb[1]
+      );
+    }
 
-    // this.updateRanges();
+    this.updateRanges();
     return { xAxis, yAxis };
   }
 
@@ -478,6 +488,11 @@ export default class PlotData extends ObserversFunctionality {
     if (!xChanged && !yChanged) {
       return;
     }
+    if (
+      this.rangePlotType.get(this.xAxis) === undefined ||
+      this.rangePlotType.get(this.yAxis) === undefined
+    )
+      return;
     if (xChanged) {
       if (this.xPlotType === "bi") {
         this.rangePlotType.set(this.xAxis, "bi");
