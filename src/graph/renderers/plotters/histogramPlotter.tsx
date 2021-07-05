@@ -118,7 +118,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
-    console.log(this.plotData);
     const hideY =
       this.plotData.xAxis === this.plotData.yAxis &&
       this.plotData.histogramAxis === "vertical";
@@ -144,7 +143,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     const overlaysObj = this.plotData.getOverlays();
     const overlays = [];
-    //console.log(overlaysObj);
+    
     for (const overlay of overlaysObj) {
       if (overlay.plot === undefined || overlay.plot === null) continue;
       const overlayRes = overlay.plot.getBins(

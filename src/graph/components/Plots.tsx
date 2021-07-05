@@ -17,7 +17,7 @@ import LinkShareModal from "./modals/linkShareModal";
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
-
+import { FileService } from "services/FileService";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
 import {
@@ -72,12 +72,11 @@ function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
-
+  const fileService = new FileService(props.experimentId);
   const location = useLocation();
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
@@ -120,7 +119,8 @@ function Plots(props: { experimentId: string }) {
     };
   }, []);
 
-  const initPlots = () => {
+  const initPlots = async () => {
+
     if (observerAdded === false) {
       setObserverAdded(true);
       dataManager.addObserver(
@@ -148,6 +148,9 @@ function Plots(props: { experimentId: string }) {
     ) {
       history.push("/login");
     }
+
+    await fileService.downloadFileMetadata(sharedWorkspace);
+    console.log(fileService.getFiles());
     setInitPlot(true);
   };
 
@@ -164,6 +167,11 @@ function Plots(props: { experimentId: string }) {
     window.addEventListener("resize", () => {
       setShowSmallScreenNotice(window.innerWidth < 1165);
     });
+  }
+
+  const getFilesMetadata = () => {
+    let files = fileService.getFiles();
+    return files;
   }
 
   const upsertWorkSpace = (isShared: boolean = false) => {
@@ -238,18 +246,7 @@ function Plots(props: { experimentId: string }) {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
   };
-  var getSharedRemoteFiles = async (fileIds: Array<string>) => {
-    let datas = await axios.post(
-      "/api/sharedEvents",
-      {
-        experimentId: props.experimentId,
-        fileIds: fileIds,
-      },
-      {}
-    );
-
-    return datas.data;
-  };
+  
   var loadWorkspaceStatsToDM = async (
     sharedWorkspacearg: boolean,
     workspaceStatearg: any
@@ -259,7 +256,7 @@ function Plots(props: { experimentId: string }) {
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
       
-      let eventFiles = await getSharedRemoteFiles(stateFileIds);
+      let eventFiles = await fileService.downloadFileEvents(sharedWorkspace, stateFileIds);
 
       setDownloadedFiles(eventFiles);
 
@@ -315,6 +312,7 @@ function Plots(props: { experimentId: string }) {
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
             downloaded={downloadedFiles}
+            filesMetadata={getFilesMetadata()}
           />
 
           <GenerateReportModal

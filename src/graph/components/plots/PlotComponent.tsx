@@ -204,6 +204,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
         setAxis("x", axis);
       }
     } else {
+      props.plot.plotData.histogramBarOverlays = [];
       if (targetAxis === "x") {
         oldYAxisValue = yAxis;
         setAxis("y", xAxis);
@@ -367,7 +368,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
                   value={'0'}
                   onChange={(e) => handleMultiPlotHistogram(e.target.value)}
                 >
-                  <MenuItem value={'0'}>Select for multi histogram</MenuItem>
+                  <MenuItem value={'0'}>Histogram overlays</MenuItem>
                   {props.plots.map((e: any) => (
                     <MenuItem
                       value={e}

@@ -21,6 +21,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getHumanReadableTimeDifference } from "utils/time";
+import { FileService } from "services/FileService";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -148,6 +149,7 @@ function AddFileModal(props: {
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
   downloaded: any[];
+  filesMetadata: any[];
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -160,11 +162,7 @@ function AddFileModal(props: {
     downloaded = props.downloaded ? props.downloaded : [];
     downloading = [];
     if (remoteWorkspace) {
-      getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
-        .then((e) => {
-          setFilesMetadata(e.data.files);
-        })
-        .catch((e) => console.log("[ERROR] ", e, e.response));
+      setFilesMetadata(props.filesMetadata);
       dataManager.addObserver("clearWorkspace", () => {
         downloaded = remoteWorkspace ? [] : staticFiles;
         dataManager.setWorkspaceLoading(false);
