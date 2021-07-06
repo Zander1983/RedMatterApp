@@ -85,6 +85,7 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
+
 let downloading: any[] = [];
 let downloaded: any[] = [];
 
@@ -96,6 +97,7 @@ function AddFileModal(props: {
   filesMetadata: any[];
   downloading: any[];
   onDownloadFileEvents: (fileIds: any[]) => void;
+  addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -122,26 +124,26 @@ function AddFileModal(props: {
       snackbarService.showSnackbar("Something went wrong, try again!", "error");
       return;
     }
-
-    const file: any = remoteWorkspace ? props.downloaded[index] : staticFiles[index];
-    let newFile: FCSFile;
-    if (file?.fromStatic) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    dataManager.addNewPlotToWorkspace(plot);
+    props.addFileToWorkspace(index);
+    // const file: any = remoteWorkspace ? props.downloaded[index] : staticFiles[index];
+    // let newFile: FCSFile;
+    // if (file?.fromStatic) {
+    //   newFile = staticFileReader(file.fromStatic);
+    // } else {
+    //   newFile = new FCSFile({
+    //     name: file.title,
+    //     id: file.id,
+    //     src: "remote",
+    //     axes: file.channels.map((e: any) => e.value),
+    //     data: file.events,
+    //     plotTypes: file.channels.map((e: any) => e.display),
+    //     remoteData: file,
+    //   });
+    // }
+    // const fileID = dataManager.addNewFileToWorkspace(newFile);
+    // const plot = new PlotData();
+    // plot.file = dataManager.getFile(fileID);
+    // dataManager.addNewPlotToWorkspace(plot);
   };
 
   const downloadFile = (fileId: string) => {
@@ -448,13 +450,13 @@ function AddFileModal(props: {
                               let i = 0;
                               i <
                               (remoteWorkspace
-                                ? downloaded.length
+                                ? props.downloaded.length
                                 : staticFiles.length);
                               i++
                             ) {
                               if (
                                 remoteWorkspace &&
-                                downloaded[i].id === fileMetadata.id
+                                props.downloaded[i].id === fileMetadata.id
                               ) {
                                 index = i;
                                 break;

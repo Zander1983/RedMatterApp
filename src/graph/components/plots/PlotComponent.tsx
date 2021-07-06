@@ -5,6 +5,7 @@ import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
 
+import fileService from "services/FileService";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
@@ -135,6 +136,9 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
   };
 
   useEffect(() => {
+
+    let files = fileService.files;
+    
     if (interval[props.plotIndex] === undefined) {
       interval[props.plotIndex] = setInterval(() => {
         plotUpdater();

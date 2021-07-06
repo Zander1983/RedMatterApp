@@ -7,13 +7,13 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
-
+import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import GatetNamePrompt from "./modals/GateNamePrompt";
 import GenerateReportModal from "./modals/GenerateReportModal";
 import LinkShareModal from "./modals/linkShareModal";
-
+import FCSFile from "graph/dataManagement/fcsFile";
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
@@ -31,6 +31,7 @@ import { useHistory } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import { useLocation } from "react-router-dom";
+import PlotData from "graph/dataManagement/plotData";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -67,9 +68,26 @@ const useStyles = makeStyles((theme) => ({
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 let setWorkspaceAlready = false;
-
+const staticFiles = [
+  "transduction_1",
+  "transduction_2",
+  "transduction_3",
+  "erica1",
+  "erica2",
+  "erica3",
+].map((e) => {
+  return {
+    label: e,
+    information: "...",
+    fromStatic: e,
+    fileSize: 0,
+    eventCount: 0,
+    lastModified: "X/X/X",
+  };
+});
 function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
+  const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
@@ -277,6 +295,33 @@ function Plots(props: { experimentId: string }) {
     fileService.downloadFileEvents(sharedWorkspace, fileIds, props.experimentId);
   }
 
+  const addFile = (index: number) => {
+    if (!dataManager.ready()) {
+      snackbarService.showSnackbar("Something went wrong, try again!", "error");
+      return;
+    }
+
+    const file: any = remoteWorkspace ? downloadedFiles[index] : staticFiles[index];
+    let newFile: FCSFile;
+    if (file?.fromStatic) {
+      newFile = staticFileReader(file.fromStatic);
+    } else {
+      newFile = new FCSFile({
+        name: file.title,
+        id: file.id,
+        src: "remote",
+        axes: file.channels.map((e: any) => e.value),
+        data: file.events,
+        plotTypes: file.channels.map((e: any) => e.display),
+        remoteData: file,
+      });
+    }
+    const fileID = dataManager.addNewFileToWorkspace(newFile);
+    const plot = new PlotData();
+    plot.file = dataManager.getFile(fileID);
+    dataManager.addNewPlotToWorkspace(plot);
+  };
+
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
       upsertWorkSpace(true);
@@ -324,6 +369,7 @@ function Plots(props: { experimentId: string }) {
             downloading={downloadingFiles}
             filesMetadata={fileService.files}
             onDownloadFileEvents={(fileIds) => {handleDownLoadFileEvents(fileIds)}}
+            addFileToWorkspace={(index) => { addFile(index);}}
           />
 
           <GenerateReportModal
