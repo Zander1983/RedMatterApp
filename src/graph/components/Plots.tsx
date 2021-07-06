@@ -17,7 +17,7 @@ import LinkShareModal from "./modals/linkShareModal";
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
-import { FileService } from "services/FileService";
+import fileService from "services/FileService";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
 import {
@@ -76,8 +76,8 @@ function Plots(props: { experimentId: string }) {
   const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
-  const fileService = new FileService(props.experimentId);
   const location = useLocation();
+  
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -113,6 +113,15 @@ function Plots(props: { experimentId: string }) {
     } else {
       initPlots();
     }
+
+    fileService.addObserver("updateDownloaded", () => {
+      setDownloadedFiles(fileService.downloaded);
+    });
+
+    fileService.addObserver("updateDownloadingFiles", () => {
+      setDownloadingFiles(fileService.downloadingFiles);
+    });
+
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
@@ -149,8 +158,8 @@ function Plots(props: { experimentId: string }) {
       history.push("/login");
     }
 
-    await fileService.downloadFileMetadata(sharedWorkspace);
-    console.log(fileService.getFiles());
+    await fileService.downloadFileMetadata(sharedWorkspace, props.experimentId);
+    
     setInitPlot(true);
   };
 
@@ -167,11 +176,6 @@ function Plots(props: { experimentId: string }) {
     window.addEventListener("resize", () => {
       setShowSmallScreenNotice(window.innerWidth < 1165);
     });
-  }
-
-  const getFilesMetadata = () => {
-    let files = fileService.getFiles();
-    return files;
   }
 
   const upsertWorkSpace = (isShared: boolean = false) => {
@@ -236,6 +240,7 @@ function Plots(props: { experimentId: string }) {
   const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
+  const [downloadingFiles, setDownloadingFiles] = React.useState([]);
   
   const getNameAndOpenModal = (gate: Gate) => {
     setNamePromptOpen(true);
@@ -246,7 +251,7 @@ function Plots(props: { experimentId: string }) {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
   };
-  
+
   var loadWorkspaceStatsToDM = async (
     sharedWorkspacearg: boolean,
     workspaceStatearg: any
@@ -256,9 +261,9 @@ function Plots(props: { experimentId: string }) {
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
       
-      let eventFiles = await fileService.downloadFileEvents(sharedWorkspace, stateFileIds);
+      let eventFiles = await fileService.downloadFileEvents(sharedWorkspace, stateFileIds, props.experimentId);
 
-      setDownloadedFiles(eventFiles);
+      setDownloadedFiles(fileService.downloaded);
 
       for (let i = 0; i < eventFiles.length; i++) {
         workspaceStateReload.addFile(eventFiles[i]);
@@ -267,6 +272,10 @@ function Plots(props: { experimentId: string }) {
     }
     setLoading(false);
   };
+
+  const handleDownLoadFileEvents = async (fileIds: any[]) => {
+    fileService.downloadFileEvents(sharedWorkspace, fileIds, props.experimentId);
+  }
 
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
@@ -312,7 +321,9 @@ function Plots(props: { experimentId: string }) {
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
             downloaded={downloadedFiles}
-            filesMetadata={getFilesMetadata()}
+            downloading={downloadingFiles}
+            filesMetadata={fileService.files}
+            onDownloadFileEvents={(fileIds) => {handleDownLoadFileEvents(fileIds)}}
           />
 
           <GenerateReportModal

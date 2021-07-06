@@ -1,28 +1,30 @@
 import axios from "axios";
 import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import ObserversFunctionality, {
+  publishDecorator,
+} from "../graph/dataManagement/observersFunctionality";
 
-export class FileService {
-  fileEvents: any[] = [];
-  private files: any[] = [];
-  experimentId: string = "";
-
-  constructor(experimentId: string) {
-    this.experimentId = experimentId;
+export class FileService extends ObserversFunctionality {
+  files: any[] = [];
+  downloaded: any[] = [];
+  downloadingFiles: Array<string> = [];
+  constructor() {
+    super();
   }
 
-  async downloadFileMetadata(workspaceIsShared: boolean) {
+  async downloadFileMetadata(workspaceIsShared: boolean, experimentId: string) {
     let params;
     if (workspaceIsShared) {
       params = ExperimentFilesApiFetchParamCreator(
         {}
-      ).experimentFilesWithoutToken(this.experimentId);
+      ).experimentFilesWithoutToken(experimentId);
     } else {
       params = ExperimentFilesApiFetchParamCreator({
         accessToken: userManager.getToken(),
       }).experimentFiles(
         userManager.getOrganiztionID(),
-        this.experimentId,
+        experimentId,
         userManager.getToken()
       );
     }
@@ -30,20 +32,63 @@ export class FileService {
     this.files = this.files.concat(response.data.files);
   }
 
-  async downloadFileEvents(workspaceIsShared: boolean, fileIds: Array<string>) {
+  async downloadFileEvents(
+    workspaceIsShared: boolean,
+    fileIds: Array<string>,
+    experimentId: string
+  ) {
+    let downloadedFileIds = this.downloaded.map((x) => x.id);
+    let newFileIds = fileIds.filter((x) => !downloadedFileIds.includes(x));
+    this.updateDownloadingFiles(newFileIds);
+
+    let data: any[] = [];
+    for (let i = 0; i < newFileIds.length; i++) {
+      let fileId = newFileIds[i];
+
+      let response = await this.downloadFileEvent(
+        workspaceIsShared,
+        fileId,
+        experimentId
+      );
+      
+      let index = this.downloadingFiles.indexOf(fileId);
+      delete this.downloadingFiles[index];  
+      this.updateDownloadingFiles(this.downloadingFiles);
+      this.updateDownloaded(response);
+      data = data.concat(response);
+    }
+
+    return data;
+  }
+
+  @publishDecorator()
+  updateDownloaded(data: any[]) {
+    this.downloaded = this.downloaded.concat(data);
+  }
+
+  @publishDecorator()
+  updateDownloadingFiles(fieldIds: any[]) {
+    this.downloadingFiles = fieldIds;
+  }
+
+  async downloadFileEvent(
+    workspaceIsShared: boolean,
+    fileId: string,
+    experimentId: string
+  ) {
     let response;
     if (workspaceIsShared) {
       response = await axios.post(
-        "/api/sharedEvents",
-        { experimentId: this.experimentId, fileIds: fileIds },
+        "/api/sharedEvent",
+        { experimentId: experimentId, fileId: fileId },
         {}
       );
     } else {
       response = await axios.post(
-        "/api/events",
+        "/api/event",
         {
-          experimentId: this.experimentId,
-          fileIds: fileIds,
+          experimentId: experimentId,
+          fileId: fileId,
           organisationId: userManager.getOrganiztionID(),
         },
         {
@@ -54,16 +99,20 @@ export class FileService {
       );
     }
 
-    this.fileEvents = this.fileEvents.concat(response.data);
-
     return response.data;
   }
 
   getFileEvent(fileId: string) {
-    return this.fileEvents.find((x) => x.id === fileId);
+    return this.downloaded.find((x) => x.id === fileId);
   }
 
-  getFiles() {
-      return this.files;
+  private static instance: FileService;
+  static getInstance(): FileService {
+    if (!FileService.instance) {
+      FileService.instance = new FileService();
+    }
+    return FileService.instance;
   }
 }
+
+export default FileService.getInstance();
