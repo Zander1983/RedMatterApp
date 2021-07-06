@@ -8,6 +8,7 @@ import AxisBar from "./plotui/axisBar";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
+import RangeResizeModal from "../modals/rangeResizeModal";
 
 const classes = {
   mainContainer: {
@@ -185,6 +186,34 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
     }
   };
 
+  const [rangeResizeModalOpen, setRangeResizeModalOpen] = React.useState(false);
+  const [rangeResizeModalAxis, setRangeResizeModalAxis] = React.useState("");
+  const [rangeResizeModalTargetMin, setRangeResizeModalTargetMin] =
+    React.useState(0);
+  const [rangeResizeModalTargetMax, setRangeResizeModalTargetMax] =
+    React.useState(0);
+
+  const handleClose = (func: Function) => {
+    func(false);
+  };
+
+  const setAxisRange = (min: number, max: number, axis: string) => {
+    props.plot.plotData.ranges.set(axis, [min, max]);
+  };
+
+  const [oldPos, setOldPos] = React.useState(69420);
+  const calculateDragRangeChange = (
+    min: number,
+    max: number,
+    dragValue: number,
+    closerToMin: boolean
+  ) => {
+    const diff = dragValue - oldPos;
+    setOldPos(dragValue);
+    console.log(min, max, dragValue, closerToMin, diff);
+    return [min, max];
+  };
+
   return (
     <div style={classes.mainContainer} ref={displayRef}>
       <div style={classes.utilityBar} ref={barRef}>
@@ -269,6 +298,87 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
             paddingRight: 0,
           }}
         >
+          <RangeResizeModal
+            open={rangeResizeModalOpen}
+            closeCall={{
+              f: handleClose,
+              ref: setRangeResizeModalOpen,
+            }}
+            inits={{
+              axis: rangeResizeModalAxis,
+              min: rangeResizeModalTargetMin,
+              max: rangeResizeModalTargetMax,
+            }}
+            callback={setAxisRange}
+          ></RangeResizeModal>
+          <div
+            style={{
+              backgroundColor: "rgba(0,0,0,0.15)",
+              width: 50,
+              height: plot.plotData.plotHeight - 100,
+              cursor: "s-resize",
+              position: "absolute",
+              zIndex: 10000,
+              left: 65,
+              bottom: 100,
+            }}
+            onDoubleClick={() => {
+              const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
+              setRangeResizeModalTargetMin(ranges[0]);
+              setRangeResizeModalTargetMax(ranges[1]);
+              setRangeResizeModalOpen(true);
+              setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
+            }}
+            onDrag={(e) => {
+              let [oldMin, oldMax] = plot.plotData.ranges.get(
+                plot.plotData.yAxis
+              );
+              const dragValue = -e.nativeEvent.offsetY;
+              const closerToMin =
+                dragValue > (plot.plotData.plotHeight - 100) / 2;
+              const [newMin, newMax] = calculateDragRangeChange(
+                oldMin,
+                oldMax,
+                dragValue,
+                closerToMin
+              );
+              setAxisRange(newMin, newMax, plot.plotData.yAxis);
+            }}
+          ></div>
+          <div
+            style={{
+              backgroundColor: "rgba(0,0,0,0.15)",
+              width: plot.plotData.plotWidth - 120,
+              cursor: "e-resize",
+              height: 50,
+              position: "absolute",
+              zIndex: 10000,
+              left: 115,
+              bottom: 50,
+            }}
+            onDoubleClick={() => {
+              const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
+              setRangeResizeModalTargetMin(ranges[0]);
+              setRangeResizeModalTargetMax(ranges[1]);
+              setRangeResizeModalOpen(true);
+              setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
+            }}
+            onDrag={(e) => {
+              let [oldMin, oldMax] = plot.plotData.ranges.get(
+                plot.plotData.xAxis
+              );
+              const dragValue = e.nativeEvent.offsetX;
+              const closerToMin =
+                dragValue < (plot.plotData.plotWidth - 120) / 2;
+              const [newMin, newMax] = calculateDragRangeChange(
+                oldMin,
+                oldMax,
+                dragValue,
+                closerToMin
+              );
+              setAxisRange(newMin, newMax, plot.plotData.xAxis);
+            }}
+          ></div>
           <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
           <div
             style={{
