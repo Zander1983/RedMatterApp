@@ -18,7 +18,7 @@ export interface PolygonGateState extends GateState {
   yAxis: string;
 }
 
-export interface PolygonMouseInteractorState extends MouseInteractorState { }
+export interface PolygonMouseInteractorState extends MouseInteractorState {}
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
   static targetGate: PolygonGate;
@@ -43,17 +43,27 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     for (let i = 0; i < points.length; i++) {
       let x = points[i].x + offset.x;
       let y = points[i].y + offset.y;
-      if ((x < bounds.x[0]) || (y < bounds.y[0]) || (x > bounds.x[1]) || (y > bounds.y[1]))
+      if (
+        x < bounds.x[0] ||
+        y < bounds.y[0] ||
+        x > bounds.x[1] ||
+        y > bounds.y[1]
+      )
         canMove = false;
     }
     return canMove;
   }
 
   editGateEvent(type: string, mouse: Point) {
-
-    if (type === "mousedown" && this.plotter.gates.length > 0 && !this.isDraggingVertex) {      
+    if (
+      type === "mousedown" &&
+      this.plotter.gates.length > 0 &&
+      !this.isDraggingVertex
+    ) {
       this.plotter.gates.forEach((gate) => {
-        if (gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))) {
+        if (
+          gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))
+        ) {
           this.isDraggingGate = true;
           this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
           this.targetEditGate = gate as PolygonGate;
@@ -62,7 +72,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       });
     }
 
-    if (this.targetEditGate === null && type === "mousedown" && !this.started && !this.isDraggingGate) {      
+    if (
+      this.targetEditGate === null &&
+      type === "mousedown" &&
+      !this.started &&
+      !this.isDraggingGate
+    ) {
       this.plotter.gates.forEach((gate) => {
         if (gate instanceof PolygonGate && this.targetEditGate === null)
           gate.points.forEach((p, i) => {
@@ -85,36 +100,46 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.targetPointIndex = null;
     }
 
-    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingGate && !this.isDraggingVertex) {
+    if (
+      this.targetEditGate !== null &&
+      type === "mousemove" &&
+      this.isDraggingGate &&
+      !this.isDraggingVertex
+    ) {
       const absPoint = this.plotter.transformer.toAbstractPoint(mouse);
-      const gateState = this.targetEditGate.getState();      
+      const gateState = this.targetEditGate.getState();
 
-      let offsetX = ((absPoint.x - this.gatePivot.x) / 8.5);
-      let offsetY = ((absPoint.y - this.gatePivot.y) / 8.5);
+      let offsetX = absPoint.x - this.gatePivot.x;
+      let offsetY = absPoint.y - this.gatePivot.y;
 
-      if (!this.canMove(gateState.points, { x: offsetX, y: offsetY })) {         
-        this.isDraggingGate = false;
-        return;
-      } else{
-        for (let index = 0; index < gateState.points.length; index++) {        
-          let newX = gateState.points[index].x + offsetX;
-          let newY = gateState.points[index].y + offsetY;
-          
-          gateState.points[index] = { x: newX, y: newY }          
-        }
+      // if (!this.canMove(gateState.points, { x: offsetX, y: offsetY })) {
+      //   this.isDraggingGate = false;
+      //   return;
+      // } else {
+      for (let index = 0; index < gateState.points.length; index++) {
+        let newX = gateState.points[index].x + offsetX;
+        let newY = gateState.points[index].y + offsetY;
+
+        gateState.points[index] = { x: newX, y: newY };
       }
-      
+      this.gatePivot.x += offsetX;
+      this.gatePivot.y += offsetY;
+      // }
+
       this.targetEditGate.update(gateState);
     }
 
-
-    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingVertex && !this.isDraggingGate) {
+    if (
+      this.targetEditGate !== null &&
+      type === "mousemove" &&
+      this.isDraggingVertex &&
+      !this.isDraggingGate
+    ) {
       const gateState = this.targetEditGate.getState();
-      gateState.points[
-        this.targetPointIndex
-      ] = this.plotter.transformer.toAbstractPoint(mouse);
+      gateState.points[this.targetPointIndex] =
+        this.plotter.transformer.toAbstractPoint(mouse);
       this.targetEditGate.update(gateState);
-    }    
+    }
 
     if (type === "mouseup" && this.isDraggingVertex)
       this.isDraggingVertex = false;
