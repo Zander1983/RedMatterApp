@@ -1,6 +1,7 @@
 import GraphDrawer, {
   GraphDrawerState,
 } from "graph/renderers/drawers/graphDrawer";
+import { Label } from "../transformers/graphTransformer";
 
 const binPadding = 0;
 
@@ -88,6 +89,8 @@ export default class HistogramDrawer extends GraphDrawer {
     hbins?: number;
     xAxisLabel?: string;
     yAxisLabel?: string;
+    xLabels: Label[];
+    yLabels: Label[];
   }): void {
     super.drawPlotGraph(params);
   }

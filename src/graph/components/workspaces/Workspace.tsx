@@ -27,7 +27,7 @@ const classes = {
 };
 
 const MINW = 10;
-const MINH = 18;
+const MINH = 14;
 const STDW = 15;
 
 const standardGridPlotItem = (x: number, y: number) => {

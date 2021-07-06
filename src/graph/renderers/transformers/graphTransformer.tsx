@@ -1,6 +1,8 @@
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
 import numeral from "numeral";
 
+const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
 export interface GraphPoint extends Point {
   x: number;
   y: number;
@@ -89,7 +91,7 @@ export default class GraphTransformer extends Transformer {
   };
 
   getAxisLabels(
-    format: "bi" | "lin",
+    format: string,
     linRange: [number, number],
     binsCount: number = 10
   ): Label[] {
@@ -97,28 +99,45 @@ export default class GraphTransformer extends Transformer {
     if (format === "lin") {
       const binSize = (linRange[1] - linRange[0]) / binsCount;
 
-      for (let i = linRange[0]; i <= linRange[1]; i += binSize)
+      for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
         labels.push({
           pos: i,
           name: this.numToLabelText(i),
         });
     }
     if (format === "bi") {
-      let mx = linRange[1];
-      let mi = linRange[0];
-      let pt = 1e100;
-      const ptlist = [];
-      while (pt > mx) pt = pt / 10;
-      while (pt <= mx && pt > mi) {
-        ptlist.push(pt);
-        pt = pt / 10;
+      let min = 1.01;
+      let max = 1e5;
+      while (labels.length != binsCount) {
+        let div = (min + max) / 2;
+        let mx = linRange[1];
+        let mi = linRange[0];
+        let pt = 1e100;
+        const ptlist = [];
+        while (pt > mx) pt = pt / div;
+        while (pt <= mx && pt > mi) {
+          ptlist.push(pt);
+          pt = pt / div;
+        }
+        labels = ptlist.map((e) => {
+          let name = numeral(e).format("0,0e+0");
+          const str = name.includes("e+") ? "e+" : "e-";
+          let ts = name.split(str)[1];
+          name = name.split(str)[0];
+          let ev = "";
+          for (const l of ts) ev += EXP_NUMS[parseInt(l)];
+          name = name + ".10" + ev;
+          return {
+            pos: e,
+            name,
+          };
+        });
+        if (labels.length < binsCount) {
+          max = (min + max) / 2;
+        } else {
+          min = (min + max) / 2;
+        }
       }
-      labels = ptlist.map((e) => {
-        return {
-          pos: e,
-          name: numeral(e).format("0,0e+0"),
-        };
-      });
     }
     return labels;
   }

@@ -3,7 +3,6 @@ import { Divider, MenuItem, Select } from "@material-ui/core";
 
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
-import AxisBar from "./plotui/axisBar";
 
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
@@ -26,16 +25,11 @@ const classes = {
   },
 };
 
-const nullOrUndefined = (obj: any) => {
-  return obj === null || obj === undefined;
-};
-
 function useForceUpdate() {
   const [value, setValue] = React.useState(0); // integer state
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-const minDrawInterval = 30;
 let interval: any = {};
 
 function PlotComponent(props: { plot: Plot; plotIndex: string }) {
@@ -193,13 +187,6 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
 
         <GateBar plot={plot}></GateBar>
         <Divider style={{ marginBottom: 10 }}></Divider>
-
-        {/* <AxisBar
-          plot={plot}
-          oldAxis={oldAxis}
-          histogramCallback={setHistogram}
-        ></AxisBar> */}
-        {/* <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider> */}
       </div>
 
       <div

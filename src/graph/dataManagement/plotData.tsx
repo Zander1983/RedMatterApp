@@ -64,6 +64,7 @@ export default class PlotData extends ObserversFunctionality {
 
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
+  linearRanges: Map<string, [number, number]> = new Map();
   rangePlotType: Map<string, string> = new Map();
   file: FCSFile;
   gates: {
@@ -373,12 +374,14 @@ export default class PlotData extends ObserversFunctionality {
   setXAxis(xAxis: string) {
     this.changed = this.changed || xAxis !== this.xAxis;
     this.xAxis = xAxis;
+    this.xPlotType = this.rangePlotType.get(xAxis);
   }
 
   @conditionalUpdateDecorator()
   setYAxis(yAxis: string) {
     this.changed = this.changed || yAxis !== this.yAxis;
     this.yAxis = yAxis;
+    this.yPlotType = this.rangePlotType.get(yAxis);
   }
 
   @conditionalUpdateDecorator()
@@ -478,11 +481,11 @@ export default class PlotData extends ObserversFunctionality {
       );
     }
 
-    this.updateRanges();
+    this.updateRanges(xAxis, yAxis);
     return { xAxis, yAxis };
   }
 
-  updateRanges() {
+  updateRanges(xAxis: number[], yAxis: number[]) {
     const xChanged = this.xPlotType !== this.rangePlotType.get(this.xAxis);
     const yChanged = this.yPlotType !== this.rangePlotType.get(this.yAxis);
     if (!xChanged && !yChanged) {
@@ -496,7 +499,8 @@ export default class PlotData extends ObserversFunctionality {
     if (xChanged) {
       if (this.xPlotType === "bi") {
         this.rangePlotType.set(this.xAxis, "bi");
-        this.ranges.set(this.xAxis, [0.5, 1]);
+        const xMin = 0.5; //xAxis.reduce((o, e) => (e = e < o ? e : o));
+        this.ranges.set(this.xAxis, [xMin, 1]);
       } else {
         this.ranges.delete(this.xAxis);
       }
@@ -504,7 +508,8 @@ export default class PlotData extends ObserversFunctionality {
     if (yChanged) {
       if (this.yPlotType === "bi") {
         this.rangePlotType.set(this.yAxis, "bi");
-        this.ranges.set(this.yAxis, [0.5, 1]);
+        const yMin = 0.5; //yAxis.reduce((o, e) => (e = e < o ? e : o));
+        this.ranges.set(this.yAxis, [yMin, 1]);
       } else {
         this.ranges.delete(this.yAxis);
       }
@@ -682,13 +687,16 @@ export default class PlotData extends ObserversFunctionality {
           axis.paramName,
           axisType === "linear" ? "lin" : "bi"
         );
+        const min =
+          //@ts-ignore
+          axisType === "biexponential" ? 0 : axis[axisType + "Minimum"];
+        const max =
+          //@ts-ignore
+          axisType === "biexponential" ? 1 : axis[axisType + "Maximum"];
         //@ts-ignore
-        this.ranges.set(axis.paramName, [
-          //@ts-ignore
-          axisType === "biexponential" ? 0 : axis[axisType + "Minimum"],
-          //@ts-ignore
-          axisType === "biexponential" ? 1 : axis[axisType + "Maximum"],
-        ]);
+        this.ranges.set(axis.paramName, [min, max]);
+        //@ts-ignore
+        this.linearRanges.set(axis.paramName, [min, max]);
       });
     } else {
       const axesData = this.getAxesData();
@@ -697,11 +705,12 @@ export default class PlotData extends ObserversFunctionality {
         this.rangePlotType.set(axis, "lin");
         const data = axesData.map((e) => e[axis]);
         this.ranges.set(axis, this.findRangeBoundries(data));
+        this.linearRanges.set(axis, this.findRangeBoundries(data));
       }
     }
   }
 
-  private findRangeBoundries(axisData: number[]): [number, number] {
+  findRangeBoundries(axisData: number[]): [number, number] {
     let min = axisData[0],
       max = axisData[0];
     for (const p of axisData) {

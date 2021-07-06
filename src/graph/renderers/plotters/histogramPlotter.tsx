@@ -91,6 +91,37 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
   public update() {
     super.update();
+    // const ranges = this.plotData.getXandYRanges();
+    // if (this.plotData.histogramAxis === "vertical") {
+    //   const xRange =
+    //     this.plotData.xPlotType === "lin"
+    //       ? ranges.x
+    //       : this.plotData.findRangeBoundries(
+    //           this.plotData.getAxesData().map((e) => e[this.plotData.xAxis])
+    //         );
+    //   this.xLabels = this.transformer.getAxisLabels(
+    //     this.plotData.xPlotType,
+    //     xRange,
+    //     this.plotData.xPlotType === "bi"
+    //       ? Math.round(this.horizontalBinCount / 2)
+    //       : this.horizontalBinCount
+    //   );
+    // } else {
+    //   const yRange =
+    //     this.plotData.yPlotType === "lin"
+    //       ? ranges.y
+    //       : this.plotData.findRangeBoundries(
+    //           this.plotData.getAxesData().map((e) => e[this.plotData.yAxis])
+    //         );
+
+    //   const yLabels = this.transformer.getAxisLabels(
+    //     this.plotData.yPlotType,
+    //     yRange,
+    //     this.plotData.yPlotType === "bi"
+    //       ? Math.round(this.verticalBinCount / 2)
+    //       : this.verticalBinCount
+    //   );
+    // }
   }
 
   public createDrawer(): void {
