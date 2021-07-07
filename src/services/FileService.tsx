@@ -9,6 +9,7 @@ export class FileService extends ObserversFunctionality {
   files: any[] = [];
   downloaded: any[] = [];
   downloadingFiles: Array<string> = [];
+  downloadHappening: boolean = false;
   constructor() {
     super();
   }
@@ -37,26 +38,19 @@ export class FileService extends ObserversFunctionality {
     fileIds: Array<string>,
     experimentId: string
   ) {
+
     let downloadedFileIds = this.downloaded.map((x) => x.id);
-    let newFileIds = fileIds.filter((x) => !downloadedFileIds.includes(x));
-    this.updateDownloadingFiles(newFileIds);
+    
+    let newFileIds = fileIds.filter(
+      (x) =>
+        !downloadedFileIds.includes(x) && !this.downloadingFiles.includes(x)
+    );
+    
+    let newDownloadingFileIds = this.downloadingFiles.concat(newFileIds);
+
+    this.updateDownloadingFiles(workspaceIsShared, newDownloadingFileIds, experimentId);
 
     let data: any[] = [];
-    for (let i = 0; i < newFileIds.length; i++) {
-      let fileId = newFileIds[i];
-
-      let response = await this.downloadFileEvent(
-        workspaceIsShared,
-        fileId,
-        experimentId
-      );
-      
-      let index = this.downloadingFiles.indexOf(fileId);
-      delete this.downloadingFiles[index];  
-      this.updateDownloadingFiles(this.downloadingFiles);
-      this.updateDownloaded(response);
-      data = data.concat(response);
-    }
 
     return data;
   }
@@ -67,8 +61,20 @@ export class FileService extends ObserversFunctionality {
   }
 
   @publishDecorator()
-  updateDownloadingFiles(fieldIds: any[]) {
-    this.downloadingFiles = fieldIds;
+  updateDownloadingFiles(
+    workspaceIsShared: boolean,
+    fileIds: Array<string>,
+    experimentId: string
+  ) {
+    this.downloadingFiles = fileIds;
+    if (this.downloadingFiles.length > 0 && !this.downloadHappening) {
+      let fileId = this.downloadingFiles[0];
+      this.downloadFileEvent(
+        workspaceIsShared,
+        fileId,
+        experimentId
+      );
+    }
   }
 
   async downloadFileEvent(
@@ -77,25 +83,39 @@ export class FileService extends ObserversFunctionality {
     experimentId: string
   ) {
     let response;
-    if (workspaceIsShared) {
-      response = await axios.post(
-        "/api/sharedEvent",
-        { experimentId: experimentId, fileId: fileId },
-        {}
-      );
-    } else {
-      response = await axios.post(
-        "/api/event",
-        {
-          experimentId: experimentId,
-          fileId: fileId,
-          organisationId: userManager.getOrganiztionID(),
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
+    try {
+      this.downloadHappening = true;
+      if (workspaceIsShared) {
+        response = await axios.post(
+          "/api/sharedEvents",
+          { experimentId: experimentId, fileIds: [fileId] },
+          {}
+        );
+      } else {
+        response = await axios.post(
+          "/api/event",
+          {
+            experimentId: experimentId,
+            fileId: fileId,
+            organisationId: userManager.getOrganiztionID(),
           },
-        }
+          {
+            headers: {
+              token: userManager.getToken(),
+            },
+          }
+        );
+      }
+      this.updateDownloaded(response.data);
+    } catch (e) {
+
+    } finally {
+      this.downloadHappening = false;
+      this.downloadingFiles.shift();
+      this.updateDownloadingFiles(
+        workspaceIsShared,
+        this.downloadingFiles,
+        experimentId
       );
     }
 

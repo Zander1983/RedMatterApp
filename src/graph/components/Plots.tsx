@@ -270,6 +270,19 @@ function Plots(props: { experimentId: string }) {
     setNamePromptOpen(false);
   };
 
+  var getSharedRemoteFiles = async (fileIds: Array<string>) => {
+    let datas = await axios.post(
+      "/api/sharedEvents",
+      {
+        experimentId: props.experimentId,
+        fileIds: fileIds,
+      },
+      {}
+    );
+
+    return datas.data;
+  };
+
   var loadWorkspaceStatsToDM = async (
     sharedWorkspacearg: boolean,
     workspaceStatearg: any
@@ -279,9 +292,9 @@ function Plots(props: { experimentId: string }) {
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
       
-      let eventFiles = await fileService.downloadFileEvents(sharedWorkspace, stateFileIds, props.experimentId);
+      let eventFiles = await getSharedRemoteFiles(stateFileIds);
 
-      setDownloadedFiles(fileService.downloaded);
+      fileService.updateDownloaded(eventFiles);
 
       for (let i = 0; i < eventFiles.length; i++) {
         workspaceStateReload.addFile(eventFiles[i]);
