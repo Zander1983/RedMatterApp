@@ -4,6 +4,7 @@ import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import ObserversFunctionality, {
   publishDecorator,
 } from "../graph/dataManagement/observersFunctionality";
+import { snackbarService } from "uno-material-ui";
 
 export class FileService extends ObserversFunctionality {
   files: any[] = [];
@@ -30,7 +31,7 @@ export class FileService extends ObserversFunctionality {
       );
     }
     let response = await axios.get(params.url, params.options);
-    this.files = this.files.concat(response.data.files);
+    this.files = response.data.files;
   }
 
   async downloadFileEvents(
@@ -104,7 +105,8 @@ export class FileService extends ObserversFunctionality {
       }
       this.updateDownloaded(response.data);
     } catch (e) {
-
+      let file = this.files.find(x => x.id == fileId);
+      snackbarService.showSnackbar(`Error download file ${file.label} please try again`, "error");
     } finally {
       this.downloadHappening = false;
       this.downloadingFiles.shift();

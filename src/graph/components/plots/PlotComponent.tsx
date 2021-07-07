@@ -6,7 +6,7 @@ import {
   CircularProgress,
   Button,
 } from "@material-ui/core";
-
+import { snackbarService } from "uno-material-ui";
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
@@ -45,6 +45,8 @@ function useForceUpdate() {
 
 const minDrawInterval = 30;
 let interval: any = {};
+var plotDownloadingFiles: any[] = [];
+var filePlotIdDict: any = {};
 
 function PlotComponent(props: {
   plot: Plot;
@@ -157,68 +159,37 @@ function PlotComponent(props: {
     fileService.downloadingFiles
   );
 
-  const [plotDownloadingFiles, setPlotDownloadingFiles] = React.useState([]);
-  const [keepMultiHistogramOpen, setKeepMultiHistogramOpen] =
-    React.useState(false);
-
   var files = fileService.files.filter((x) => x.id != props.plotFileId);
-  var filePlotIdDict: any = {};
+
   const addFile = (file: any) => {
-    // const file: any = remoteWorkspace
-    //   ? downloadedFiles[index]
-    //   : staticFiles[index];
-    let newFile: FCSFile;
-    if (file?.fromStatic) {
-      //newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
-    //const fileID = dataManager.addNewFileToWorkspace(newFile);
+    let newFile = new FCSFile({
+      name: file.title,
+      id: file.id,
+      src: "remote",
+      axes: file.channels.map((e: any) => e.value),
+      data: file.events,
+      plotTypes: file.channels.map((e: any) => e.display),
+      remoteData: file,
+    });
+
     const plot = new PlotData();
     plot.file = newFile;
     plot.setupPlot();
-    props.plot.plotData.addBarOverlay(plot);
     if (!filePlotIdDict[newFile.id]) filePlotIdDict[newFile.id] = "";
     filePlotIdDict[newFile.id] = plot.id;
-    //dataManager.addNewPlotToWorkspace(plot);
+    props.plot.plotData.addBarOverlay(plot);
   };
 
-  fileService.addObserver("updateDownloaded", () => {
-    setDownloadedFiles(fileService.downloaded);
-    // setTimeout(()=>{
-    //   if (plotDownloadingFiles.length > 0) {
-    //     let files = fileService.downloaded.filter((x) =>
-    //       plotDownloadingFiles.includes(x.id)
-    //     );
-    //     if (files && files.length > 0 && !filePlotIdDict[files[0].id]) {
-    //       addFile(files[0]);
-    //       // let newplotDownloadingFiles = plotDownloadingFiles.filter(
-    //       //   (x) => x != files[0].id
-    //       // );
-    //       // setPlotDownloadingFiles(newplotDownloadingFiles);
-    //     }
-    //   }
-    // }, 0)
-  });
-
-  fileService.addObserver("updateDownloadingFiles", () => {
-    setDownloadingFiles(fileService.downloadingFiles);
-  });
-
   const downloadFile = (fileId: string) => {
-    setPlotDownloadingFiles(plotDownloadingFiles.concat(fileId));
     fileService.downloadFileEvents(
       props.sharedWorkspace,
       [fileId],
       props.experimentId
+    );
+    plotDownloadingFiles = plotDownloadingFiles.concat(fileId);
+    snackbarService.showSnackbar(
+      "Overlay will be added after file events download",
+      "warning"
     );
   };
 
@@ -252,6 +223,26 @@ function PlotComponent(props: {
       plot.setup();
       setPlotSetup(true);
     }
+
+    fileService.addObserver("updateDownloaded", () => {
+      if (plotDownloadingFiles.length > 0) {
+        let files = fileService.downloaded.filter((x) =>
+          plotDownloadingFiles.includes(x.id)
+        );
+        if (files && files.length > 0) {
+          snackbarService.showSnackbar("Overlay added", "success");
+          addFile(files[0]);
+          plotDownloadingFiles = plotDownloadingFiles.filter(
+            (x) => x != files[0].id
+          );
+        }
+      }
+      setDownloadedFiles(fileService.downloaded);
+    });
+
+    fileService.addObserver("updateDownloadingFiles", () => {
+      setDownloadingFiles(fileService.downloadingFiles);
+    });
   }, []);
 
   let oldXAxisValue: string | null = null;
@@ -503,12 +494,10 @@ function PlotComponent(props: {
                             filePlotIdDict[e.id] = "";
                           } else {
                             if (isDownloaded(e.id)) {
-                              setKeepMultiHistogramOpen(false);
                               addFile(
                                 downloadedFiles.find((x) => x.id == e.id)
                               );
                             } else {
-                              setKeepMultiHistogramOpen(true);
                               downloadFile(e.id);
                             }
                           }
