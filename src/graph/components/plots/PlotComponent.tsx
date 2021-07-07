@@ -184,7 +184,7 @@ function PlotComponent(props: {
     //const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = newFile;
-    plot.setupPlot(true);
+    plot.setupPlot();
     props.plot.plotData.addBarOverlay(plot);
     if (!filePlotIdDict[newFile.id]) filePlotIdDict[newFile.id] = "";
     filePlotIdDict[newFile.id] = plot.id;

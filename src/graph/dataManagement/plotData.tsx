@@ -105,7 +105,7 @@ export default class PlotData extends ObserversFunctionality {
     this.id = dataManager.createID();
   }
 
-  setupPlot(dontObserve = false) {
+  setupPlot() {
     try {
       const fscssc = this.getFSCandSSCAxis();
       if (this.xAxis === "" && this.yAxis === "") {
@@ -118,8 +118,8 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
-    if(!dontObserve)
-      this.updateGateObservers();
+    
+    this.updateGateObservers();
     this.updateRandomSelection();
   }
 
