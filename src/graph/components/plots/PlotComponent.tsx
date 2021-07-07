@@ -210,7 +210,15 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
   ) => {
     const diff = dragValue - oldPos;
     setOldPos(dragValue);
-    console.log(min, max, dragValue, closerToMin, diff);
+    const absolute = max - min;
+    const dragV = 0.01;
+    if (closerToMin) {
+      if (diff < 0) min += absolute * dragV;
+      else min -= absolute * dragV;
+    } else {
+      if (diff < 0) max -= absolute * dragV;
+      else max += absolute * dragV;
+    }
     return [min, max];
   };
 
@@ -222,13 +230,6 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
 
         <GateBar plot={plot}></GateBar>
         <Divider style={{ marginBottom: 10 }}></Divider>
-
-        {/* <AxisBar
-          plot={plot}
-          oldAxis={oldAxis}
-          histogramCallback={setHistogram}
-        ></AxisBar> */}
-        {/* <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider> */}
       </div>
 
       <div
@@ -312,11 +313,13 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
             callback={setAxisRange}
           ></RangeResizeModal>
           <div
+            draggable="true"
             style={{
-              backgroundColor: "rgba(0,0,0,0.15)",
+              backgroundColor: "rgba(0,0,0,0.0)",
               width: 50,
               height: plot.plotData.plotHeight - 100,
               cursor: "s-resize",
+
               position: "absolute",
               zIndex: 10000,
               left: 65,
@@ -330,24 +333,28 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
               setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
             }}
             onDrag={(e) => {
+              if (e.clientX === 0 && e.clientY === 0) {
+                return;
+              }
               let [oldMin, oldMax] = plot.plotData.ranges.get(
                 plot.plotData.yAxis
               );
-              const dragValue = -e.nativeEvent.offsetY;
+              const dragValue = e.nativeEvent.offsetY;
               const closerToMin =
                 dragValue > (plot.plotData.plotHeight - 100) / 2;
               const [newMin, newMax] = calculateDragRangeChange(
                 oldMin,
                 oldMax,
-                dragValue,
+                (closerToMin ? -1 : 1) * dragValue,
                 closerToMin
               );
               setAxisRange(newMin, newMax, plot.plotData.yAxis);
             }}
           ></div>
           <div
+            draggable="true"
             style={{
-              backgroundColor: "rgba(0,0,0,0.15)",
+              backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
               cursor: "e-resize",
               height: 50,
@@ -364,6 +371,9 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
               setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
             }}
             onDrag={(e) => {
+              if (e.clientX === 0 && e.clientY === 0) {
+                return;
+              }
               let [oldMin, oldMax] = plot.plotData.ranges.get(
                 plot.plotData.xAxis
               );
@@ -373,7 +383,7 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
               const [newMin, newMax] = calculateDragRangeChange(
                 oldMin,
                 oldMax,
-                dragValue,
+                (closerToMin ? 1 : -1) * dragValue,
                 closerToMin
               );
               setAxisRange(newMin, newMax, plot.plotData.xAxis);
