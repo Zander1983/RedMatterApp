@@ -1,15 +1,22 @@
 import React, { useEffect } from "react";
-import { Divider, MenuItem, Select } from "@material-ui/core";
+import {
+  Divider,
+  MenuItem,
+  Select,
+  CircularProgress,
+  Button,
+} from "@material-ui/core";
 
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
-
+import GetAppIcon from "@material-ui/icons/GetApp";
 import fileService from "services/FileService";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
-
+import FCSFile from "graph/dataManagement/fcsFile";
+import PlotData from "graph/dataManagement/plotData";
 const classes = {
   mainContainer: {
     width: "100%",
@@ -39,7 +46,14 @@ function useForceUpdate() {
 const minDrawInterval = 30;
 let interval: any = {};
 
-function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
+function PlotComponent(props: {
+  plot: Plot;
+  plotIndex: string;
+  plotFileId: string;
+  plots: any;
+  sharedWorkspace: boolean;
+  experimentId: string;
+}) {
   const [plotSetup, setPlotSetup] = React.useState(false);
   const [oldAxis, setOldAxis] = React.useState({
     x: null,
@@ -135,10 +149,92 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
     else if (plot.plotData.yHistogram) setHistogram("y", true);
   };
 
-  useEffect(() => {
+  const [downloadedFiles, setDownloadedFiles] = React.useState(
+    fileService.downloaded
+  );
 
-    let files = fileService.files;
-    
+  const [downloadingFiles, setDownloadingFiles] = React.useState(
+    fileService.downloadingFiles
+  );
+
+  const [plotDownloadingFiles, setPlotDownloadingFiles] = React.useState([]);
+  const [keepMultiHistogramOpen, setKeepMultiHistogramOpen] =
+    React.useState(false);
+
+  var files = fileService.files.filter((x) => x.id != props.plotFileId);
+  var filePlotIdDict: any = {};
+  const addFile = (file: any) => {
+    // const file: any = remoteWorkspace
+    //   ? downloadedFiles[index]
+    //   : staticFiles[index];
+    let newFile: FCSFile;
+    if (file?.fromStatic) {
+      //newFile = staticFileReader(file.fromStatic);
+    } else {
+      newFile = new FCSFile({
+        name: file.title,
+        id: file.id,
+        src: "remote",
+        axes: file.channels.map((e: any) => e.value),
+        data: file.events,
+        plotTypes: file.channels.map((e: any) => e.display),
+        remoteData: file,
+      });
+    }
+    //const fileID = dataManager.addNewFileToWorkspace(newFile);
+    const plot = new PlotData();
+    plot.file = newFile;
+    plot.setupPlot(true);
+    props.plot.plotData.addBarOverlay(plot);
+    if (!filePlotIdDict[newFile.id]) filePlotIdDict[newFile.id] = "";
+    filePlotIdDict[newFile.id] = plot.id;
+    //dataManager.addNewPlotToWorkspace(plot);
+  };
+
+  fileService.addObserver("updateDownloaded", () => {
+    setDownloadedFiles(fileService.downloaded);
+    // setTimeout(()=>{
+    //   if (plotDownloadingFiles.length > 0) {
+    //     let files = fileService.downloaded.filter((x) =>
+    //       plotDownloadingFiles.includes(x.id)
+    //     );
+    //     if (files && files.length > 0 && !filePlotIdDict[files[0].id]) {
+    //       addFile(files[0]);
+    //       // let newplotDownloadingFiles = plotDownloadingFiles.filter(
+    //       //   (x) => x != files[0].id
+    //       // );
+    //       // setPlotDownloadingFiles(newplotDownloadingFiles);
+    //     }
+    //   }
+    // }, 0)
+  });
+
+  fileService.addObserver("updateDownloadingFiles", () => {
+    setDownloadingFiles(fileService.downloadingFiles);
+  });
+
+  const downloadFile = (fileId: string) => {
+    setPlotDownloadingFiles(plotDownloadingFiles.concat(fileId));
+    fileService.downloadFileEvents(
+      props.sharedWorkspace,
+      [fileId],
+      props.experimentId
+    );
+  };
+
+  const isDownloading = (fileId: string) => {
+    let downloadingFileId = downloadingFiles.find((x) => x == fileId);
+    if (downloadingFileId) return true;
+    return false;
+  };
+
+  const isDownloaded = (fileId: string) => {
+    let donwloadedFileId = downloadedFiles.find((x) => x.id == fileId);
+    if (donwloadedFileId) return true;
+    return false;
+  };
+
+  useEffect(() => {
     if (interval[props.plotIndex] === undefined) {
       interval[props.plotIndex] = setInterval(() => {
         plotUpdater();
@@ -162,14 +258,10 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
   let oldYAxisValue: string | null = null;
 
   const handleMultiPlotHistogram = (plot: any) => {
-    if (plot) 
-    {
-      if(isHistogramSelected(plot.plotData.id))
-      {
+    if (plot) {
+      if (isHistogramSelected(plot.plotData.id)) {
         props.plot.plotData.removeBarOverlay(plot.plotData.id);
-      }
-      else
-      {
+      } else {
         props.plot.plotData.addBarOverlay(plot.plotData);
       }
     }
@@ -180,15 +272,18 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
     );
   };
 
-  const getHistogramSelectedColor = (plotId: string) : string => {
+  const getHistogramSelectedColor = (plotId: string): string => {
     let plot = isHistogramSelected(plotId);
-    if(plot)
-    {
+    if (plot) {
       return plot.color;
     }
 
     return "#fff";
-  }
+  };
+
+  const getHistograValue = (e: any, type: string): any => {
+    return { val: e, type: type };
+  };
 
   const handleHist = (targetAxis: "x" | "y") => {
     if (isPlotHistogram()) {
@@ -369,18 +464,80 @@ function PlotComponent(props: { plot: Plot; plotIndex: string; plots: any }) {
                   style={{
                     marginTop: "10px",
                   }}
-                  value={'0'}
-                  onChange={(e) => handleMultiPlotHistogram(e.target.value)}
+                  value={"0"}
+                  onChange={(e) => {
+                    let data: any = e.target.value;
+                    if (data["type"] == "plot") {
+                      handleMultiPlotHistogram(data["val"]);
+                    }
+                  }}
                 >
-                  <MenuItem value={'0'}>Histogram overlays</MenuItem>
+                  <MenuItem value={"0"}>Histogram overlays</MenuItem>
                   {props.plots.map((e: any) => (
                     <MenuItem
-                      value={e}
+                      value={getHistograValue(e, "plot")}
                       style={{
-                        backgroundColor: getHistogramSelectedColor(e.plotData.id)
+                        backgroundColor: getHistogramSelectedColor(
+                          e.plotData.id
+                        ),
                       }}
                     >
                       {e.plotData.label}
+                    </MenuItem>
+                  ))}
+                  {files.map((e: any) => (
+                    <MenuItem
+                      value={getHistograValue(e, "file")}
+                      style={{
+                        backgroundColor: getHistogramSelectedColor(
+                          filePlotIdDict[e.id]
+                        ),
+                      }}
+                    >
+                      <div
+                        onClick={() => {
+                          if (filePlotIdDict[e.id]) {
+                            props.plot.plotData.removeBarOverlay(
+                              filePlotIdDict[e.id]
+                            );
+                            filePlotIdDict[e.id] = "";
+                          } else {
+                            if (isDownloaded(e.id)) {
+                              setKeepMultiHistogramOpen(false);
+                              addFile(
+                                downloadedFiles.find((x) => x.id == e.id)
+                              );
+                            } else {
+                              setKeepMultiHistogramOpen(true);
+                              downloadFile(e.id);
+                            }
+                          }
+                        }}
+                      >
+                        {e.label}
+                        {isDownloaded(e.id) ? null : (
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                          >
+                            {isDownloading(e.id) ? (
+                              <CircularProgress
+                                style={{
+                                  color: "white",
+                                  width: 23,
+                                  height: 23,
+                                }}
+                              />
+                            ) : (
+                              <GetAppIcon fontSize="small"></GetAppIcon>
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </MenuItem>
                   ))}
                 </Select>

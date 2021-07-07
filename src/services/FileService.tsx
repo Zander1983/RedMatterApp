@@ -49,14 +49,10 @@ export class FileService extends ObserversFunctionality {
     let newDownloadingFileIds = this.downloadingFiles.concat(newFileIds);
 
     this.updateDownloadingFiles(workspaceIsShared, newDownloadingFileIds, experimentId);
-
-    let data: any[] = [];
-
-    return data;
   }
 
   @publishDecorator()
-  updateDownloaded(data: any[]) {
+  updateDownloaded(data: any) {
     this.downloaded = this.downloaded.concat(data);
   }
 

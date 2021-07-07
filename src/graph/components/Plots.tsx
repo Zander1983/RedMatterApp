@@ -95,7 +95,7 @@ function Plots(props: { experimentId: string }) {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
-  
+
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -118,10 +118,10 @@ function Plots(props: { experimentId: string }) {
 
     initPlots();
     if (workspaceData)
-       loadWorkspaceStatsToDM(
+      loadWorkspaceStatsToDM(
         workspaceData.data["isShared"],
         JSON.parse(workspaceData.data["state"])
-    );
+      );
   };
 
   useEffect(() => {
@@ -147,7 +147,6 @@ function Plots(props: { experimentId: string }) {
   }, []);
 
   const initPlots = async () => {
-
     if (observerAdded === false) {
       setObserverAdded(true);
       dataManager.addObserver(
@@ -177,7 +176,7 @@ function Plots(props: { experimentId: string }) {
     }
 
     await fileService.downloadFileMetadata(sharedWorkspace, props.experimentId);
-    
+
     setInitPlot(true);
   };
 
@@ -259,7 +258,7 @@ function Plots(props: { experimentId: string }) {
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-  
+
   const getNameAndOpenModal = (gate: Gate) => {
     setNamePromptOpen(true);
     setGateToSend(gate);
@@ -291,7 +290,7 @@ function Plots(props: { experimentId: string }) {
       setLoading(true);
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
-      
+
       let eventFiles = await getSharedRemoteFiles(stateFileIds);
 
       fileService.updateDownloaded(eventFiles);
@@ -305,8 +304,12 @@ function Plots(props: { experimentId: string }) {
   };
 
   const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    fileService.downloadFileEvents(sharedWorkspace, fileIds, props.experimentId);
-  }
+    fileService.downloadFileEvents(
+      sharedWorkspace,
+      fileIds,
+      props.experimentId
+    );
+  };
 
   const addFile = (index: number) => {
     if (!dataManager.ready()) {
@@ -314,7 +317,9 @@ function Plots(props: { experimentId: string }) {
       return;
     }
 
-    const file: any = remoteWorkspace ? downloadedFiles[index] : staticFiles[index];
+    const file: any = remoteWorkspace
+      ? downloadedFiles[index]
+      : staticFiles[index];
     let newFile: FCSFile;
     if (file?.fromStatic) {
       newFile = staticFileReader(file.fromStatic);
@@ -381,8 +386,12 @@ function Plots(props: { experimentId: string }) {
             downloaded={downloadedFiles}
             downloading={downloadingFiles}
             filesMetadata={fileService.files}
-            onDownloadFileEvents={(fileIds) => {handleDownLoadFileEvents(fileIds)}}
-            addFileToWorkspace={(index) => { addFile(index);}}
+            onDownloadFileEvents={(fileIds) => {
+              handleDownLoadFileEvents(fileIds);
+            }}
+            addFileToWorkspace={(index) => {
+              addFile(index);
+            }}
           />
 
           <GenerateReportModal
@@ -705,7 +714,7 @@ function Plots(props: { experimentId: string }) {
                   </Button>
                   {/* Uncomment below to have a "print state" button */}
 
-                  { sharedWorkspace ? null : (
+                  {sharedWorkspace ? null : (
                     <Button
                       variant="contained"
                       size="large"
@@ -761,7 +770,12 @@ function Plots(props: { experimentId: string }) {
 
               <Grid>
                 {!loading ? (
-                  <Workspace></Workspace>
+                  <Workspace
+                    {...{
+                      sharedWorkspace: sharedWorkspace,
+                      experimentId: props.experimentId,
+                    }}
+                  ></Workspace>
                 ) : (
                   <Grid
                     container
@@ -782,7 +796,13 @@ function Plots(props: { experimentId: string }) {
               </Grid>
             </div>
           ) : (
-            <div style={{display: "flex", justifyContent: "center", padding: "100px"}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "100px",
+              }}
+            >
               <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
             </div>
           )}
