@@ -179,6 +179,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {
+        let barRanges = barOverlays[i].plot.getXandYRanges();
         let overlayMainHist = barOverlays[i].plot.getBins(this.bins, axis);
         let binsArray = [];
         let overlayGloblMax = overlayMainHist.max;

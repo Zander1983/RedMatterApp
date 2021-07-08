@@ -479,15 +479,15 @@ export default class PlotData extends ObserversFunctionality {
       yAxis.push(e[yAxisName]);
     });
 
-    if (this.xPlotType === "bi") {
-      xAxis = new FCSServices().logicleTransformer([...xAxis]);
-    }
+    // if (this.xPlotType === "bi") {
+    //   xAxis = new FCSServices().logicleTransformer([...xAxis]);
+    // }
 
-    if (this.yPlotType === "bi") {
-      yAxis = new FCSServices().logicleTransformer([...yAxis]);
-    }
+    // if (this.yPlotType === "bi") {
+    //   yAxis = new FCSServices().logicleTransformer([...yAxis]);
+    // }
 
-    this.updateRanges();
+    // this.updateRanges();
     return { xAxis, yAxis };
   }
 
@@ -555,6 +555,8 @@ export default class PlotData extends ObserversFunctionality {
     const range = this.ranges.get(axisName);
     const axis = this.getAxis(axisName);
     const binCounts = Array(binCount).fill(0);
+    console.log(this.ranges);
+    console.log(range);
     const step = (range[1] - range[0]) / binCount;
     let mx = 0;
     for (let i = 0; i < axis.length; i++) {

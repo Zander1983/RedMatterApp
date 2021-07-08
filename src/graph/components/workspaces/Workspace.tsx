@@ -57,7 +57,6 @@ class Workspace extends React.Component<WorkspaceProps> {
 
   constructor(props: WorkspaceProps) {
     super(props);
-
     this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();
@@ -105,6 +104,7 @@ class Workspace extends React.Component<WorkspaceProps> {
           cols={{ lg: 30 }}
           rows={{ lg: 30 }}
           rowHeight={30}
+          isDraggable={false}
         >
           {
             //@ts-ignore

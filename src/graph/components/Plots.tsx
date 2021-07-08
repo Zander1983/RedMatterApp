@@ -116,7 +116,7 @@ function Plots(props: { experimentId: string }) {
       );
     }
 
-    initPlots();
+    initPlots(workspaceData.data["isShared"]);
     if (workspaceData)
       loadWorkspaceStatsToDM(
         workspaceData.data["isShared"],
@@ -146,7 +146,7 @@ function Plots(props: { experimentId: string }) {
     };
   }, []);
 
-  const initPlots = async () => {
+  const initPlots = async (workSpaceShared: boolean = false) => {
     if (observerAdded === false) {
       setObserverAdded(true);
       dataManager.addObserver(
@@ -168,14 +168,14 @@ function Plots(props: { experimentId: string }) {
     }
 
     if (
-      !sharedWorkspace &&
+      !workSpaceShared &&
       process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
       !isLoggedIn
     ) {
       history.push("/login");
     }
 
-    await fileService.downloadFileMetadata(sharedWorkspace, props.experimentId);
+    await fileService.downloadFileMetadata(workSpaceShared, props.experimentId);
 
     setInitPlot(true);
   };
@@ -291,13 +291,17 @@ function Plots(props: { experimentId: string }) {
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
 
+      setDownloadingFiles(stateFileIds);
       let eventFiles = await getSharedRemoteFiles(stateFileIds);
-
       fileService.updateDownloaded(eventFiles);
-
+      if(!dataManager.ready())
+      {
+        dataManager.createWorkspace();
+      }
       for (let i = 0; i < eventFiles.length; i++) {
         workspaceStateReload.addFile(eventFiles[i]);
       }
+
       dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
     }
     setLoading(false);
