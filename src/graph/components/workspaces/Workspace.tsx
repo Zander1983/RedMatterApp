@@ -105,6 +105,7 @@ class Workspace extends React.Component<WorkspaceProps> {
           cols={{ lg: 30 }}
           rows={{ lg: 30 }}
           rowHeight={30}
+          isDraggable={false}
         >
           {
             //@ts-ignore

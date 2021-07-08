@@ -479,15 +479,15 @@ export default class PlotData extends ObserversFunctionality {
       yAxis.push(e[yAxisName]);
     });
 
-    if (this.xPlotType === "bi") {
-      xAxis = new FCSServices().logicleTransformer([...xAxis]);
-    }
+    // if (this.xPlotType === "bi") {
+    //   xAxis = new FCSServices().logicleTransformer([...xAxis]);
+    // }
 
-    if (this.yPlotType === "bi") {
-      yAxis = new FCSServices().logicleTransformer([...yAxis]);
-    }
+    // if (this.yPlotType === "bi") {
+    //   yAxis = new FCSServices().logicleTransformer([...yAxis]);
+    // }
 
-    this.updateRanges();
+    // this.updateRanges();
     return { xAxis, yAxis };
   }
 
