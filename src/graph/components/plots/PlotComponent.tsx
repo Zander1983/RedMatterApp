@@ -227,7 +227,6 @@ function PlotComponent(props: {
             }
           }
         }
-
         tryKillComponent();
       });
       dataManager.addObserver("clearWorkspace", () => {
