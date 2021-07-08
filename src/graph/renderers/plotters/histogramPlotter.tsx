@@ -57,23 +57,8 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       bins: this.bins,
       axis: this.direction,
     };
-    const drawerState1 = {
-      x1: leftPadding * this.scale,
-      y1: topPadding * this.scale,
-      x2: (this.width - rightPadding) * this.scale,
-      y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.direction == "horizontal" ? this.rangeMin : 0,
-      iex: this.direction == "horizontal" ? this.rangeMax : this.globalMax,
-      iby: this.direction == "horizontal" ? 0 : this.rangeMin,
-      iey: this.direction == "horizontal" ? this.globalMax : this.rangeMax,
-      scale: this.scale,
-      xpts: hBins,
-      ypts: vBins,
-      bins: this.bins,
-      axis: this.direction,
-    };
+    
     this.drawer.setDrawerState(drawerState);
-    //this.drawer1.setDrawerState(drawerState1);
   }
 
   public getPlotterState() {
@@ -179,7 +164,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {
-        let barRanges = barOverlays[i].plot.getXandYRanges();
+        barOverlays[i].plot.ranges.set(axis, [range[0], range[1]]);
         let overlayMainHist = barOverlays[i].plot.getBins(this.bins, axis);
         let binsArray = [];
         let overlayGloblMax = overlayMainHist.max;
