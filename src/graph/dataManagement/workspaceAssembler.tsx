@@ -48,6 +48,8 @@ export default class WorkspaceAssembler {
       delete plot.STD_BIN_SIZE;
       plot.file = plot.file.src + "://" + plot.file.id;
 
+      debugger;
+
       const p = JSON.parse(JSON.stringify(plot));
 
       const ranges: any = {};
@@ -68,9 +70,40 @@ export default class WorkspaceAssembler {
     });
   }
 
+  parsePlot(plot: any) {
+    plot = lodash.cloneDeep(plot);
+    plot.gates = plot.gates.map((e: any) => {
+      e.gate = e.gate.id;
+      return e;
+    });
+    plot.population = plot.population.map((e: any) => {
+      e.gate = e.gate.id;
+      return e;
+    });
+
+    delete plot.axisDataCache;
+    delete plot.randomSelection;
+    delete plot.changed;
+    delete plot.gateObservers;
+    delete plot.popObservers;
+    delete plot.observers;
+    delete plot.STD_BIN_SIZE;
+    plot.file = plot.file.src + "://" + plot.file.id;
+
+    const p = JSON.parse(JSON.stringify(plot));
+
+    const ranges: any = {};
+    plot.ranges.forEach((v: [number, number], k: string) => {
+      ranges[k] = v;
+    });
+    p.ranges = ranges;
+
+    return p;
+  }
+
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
     const inp = JSON.parse(workspaceJSON);
-    const files = new Map();   
+    const files = new Map();
     const gates = new Map();
     const plots = new Map();
     const fileMappings: any = {};

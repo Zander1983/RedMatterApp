@@ -18,6 +18,7 @@ import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
+import { keys } from "lodash";
 
 const classes = {
   mainContainer: {
@@ -174,7 +175,8 @@ function PlotComponent(props: {
       remoteData: file,
     });
 
-    addHistogrmOverlay(newFile.id, newFile);
+    const fileID = dataManager.addNewFileToWorkspace(newFile);
+    addHistogrmOverlay(newFile.id, dataManager.getFile(fileID));
   };
 
   const downloadFile = (fileId: string) => {
@@ -210,9 +212,24 @@ function PlotComponent(props: {
     }
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
-      dataManager.addObserver("removePlotFromWorkspace", () =>
-        tryKillComponent()
-      );
+      dataManager.addObserver("removePlotFromWorkspace", () => {
+        if (filePlotIdDict) {
+          let keys = Object.keys(filePlotIdDict);
+          if (keys.length > 0) {
+            let fileIds = files.map((x: any) => x.id);
+            let plotDataIds: any[] = props.plots.map((x: any) => x.plotData.id);
+            let key = keys.filter(
+              (x) => !plotDataIds.includes(x) && !fileIds.includes(x)
+            );
+            if (key && key.length > 0) {
+              props.plot.plotData.removeBarOverlay(filePlotIdDict[key[0]]);
+              delete filePlotIdDict[key[0]];
+            }
+          }
+        }
+
+        tryKillComponent();
+      });
       dataManager.addObserver("clearWorkspace", () => {
         clearInterval(interval[props.plotIndex]);
         interval[props.plotIndex] = undefined;
@@ -262,8 +279,8 @@ function PlotComponent(props: {
 
   const handleMultiPlotHistogram = (plot: any) => {
     if (plot) {
-      if (isHistogramSelected(plot.plotData.id)) {
-        props.plot.plotData.removeBarOverlay(plot.plotData.id);
+      if (isHistogramSelected(filePlotIdDict[plot.plotData.id])) {
+        props.plot.plotData.removeBarOverlay(filePlotIdDict[plot.plotData.id]);
       } else {
         addHistogrmOverlay(plot.plotData.id, plot.plotData.file);
       }
@@ -271,7 +288,6 @@ function PlotComponent(props: {
   };
 
   const addHistogrmOverlay = (id: string, file: any) => {
-
     const newPlotData = new PlotData();
     newPlotData.file = file;
     newPlotData.setupPlot();
