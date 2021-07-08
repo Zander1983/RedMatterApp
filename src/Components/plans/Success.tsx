@@ -72,11 +72,31 @@ const useStyles = makeStyles((theme) => ({
 export default function Plans(props:{
   session_id:any
 }) {
-  const [sessionId, setSessionId] = useState('');
+  const [session, setSession] = useState(null);
   useEffect(()=>{
     axios.get(`/checkout-session?id=${props.session_id}`)
     .then((response) => response.data)
-    .then((session) => setSessionId(JSON.stringify(session, null, 2)))
+    .then((session) => setSession(JSON.stringify(session, null, 2)))
+    .then (() => {
+      alert('HABLALOOOO'+session);
+      let data = JSON.parse(session)
+      if (session){
+          console.log('sdfkl')
+        
+      axios.post(`/save-checkout`, { 
+        body:{
+          user: data.metadata.userId,
+          subscription: data.subscription,
+          customer: data.customer,
+        }
+        
+      })
+      .then(() => console.log("customer saved succesfully"))
+      }
+    })
+    
+
+
   });
     const classes = useStyles();
   return (
@@ -107,7 +127,7 @@ export default function Plans(props:{
           textAlign: "center",
         }}>
             <img src={check} alt="success icon" style={{height:'4em', width:'4em', margin:'15px auto 20px'}}></img>
-            <h1>Your payment has been Received! {sessionId}</h1>
+            <h1>Your payment has been Received! {session}</h1>
             <p> Redirecting you to your profile Page</p>
 
            
