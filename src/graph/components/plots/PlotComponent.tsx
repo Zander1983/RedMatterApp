@@ -173,7 +173,7 @@ function PlotComponent(props: {
       plotTypes: file.channels.map((e: any) => e.display),
       remoteData: file,
     });
-    
+
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);
@@ -227,7 +227,7 @@ function PlotComponent(props: {
       setPlotSetup(true);
     }
 
-    fileService.addObserver("updateDownloaded", () => {
+    var downloadedListner = fileService.addObserver("updateDownloaded", () => {
       if (plotDownloadingFiles.length > 0) {
         let files = fileService.downloaded.filter((x) =>
           plotDownloadingFiles.includes(x.id)
@@ -245,9 +245,13 @@ function PlotComponent(props: {
       setDownloadedFiles(fileService.downloaded);
     });
 
-    fileService.addObserver("updateDownloadingFiles", () => {
+    var downloadingListner = fileService.addObserver("updateDownloadingFiles", () => {
       setDownloadingFiles(fileService.downloadingFiles);
     });
+    return () => {
+      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
+      fileService.removeObserver("updateDownloaded", downloadedListner);
+    };
   }, []);
 
   let oldXAxisValue: string | null = null;

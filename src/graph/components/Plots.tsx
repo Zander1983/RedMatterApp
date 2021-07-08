@@ -85,6 +85,7 @@ const staticFiles = [
     lastModified: "X/X/X",
   };
 });
+
 function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
   const remoteWorkspace = dataManager.isRemoteWorkspace();
@@ -132,17 +133,19 @@ function Plots(props: { experimentId: string }) {
       initPlots();
     }
 
-    fileService.addObserver("updateDownloaded", () => {
+    var downloadedListner = fileService.addObserver("updateDownloaded", () => {
       setDownloadedFiles(fileService.downloaded);
     });
 
-    fileService.addObserver("updateDownloadingFiles", () => {
+    var downloadingListner = fileService.addObserver("updateDownloadingFiles", () => {
       setDownloadingFiles(fileService.downloadingFiles);
     });
 
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
+      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
+      fileService.removeObserver("updateDownloaded", downloadedListner);
     };
   }, []);
 

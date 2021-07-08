@@ -349,14 +349,14 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   saveWorkspaceToLocalStorage() {
-    const currentWorkspace = this.getWorkspaceJSON();
-    if (this.lastLocalStorageSave != undefined) {
-      window.localStorage.removeItem(this.lastLocalStorageSave);
-    }
-    window.localStorage.setItem(
-      this.generateLocalStorageName(),
-      this.getWorkspaceJSON()
-    );
+    // const currentWorkspace = this.getWorkspaceJSON();
+    // if (this.lastLocalStorageSave != undefined) {
+    //   window.localStorage.removeItem(this.lastLocalStorageSave);
+    // }
+    // window.localStorage.setItem(
+    //   this.generateLocalStorageName(),
+    //   this.getWorkspaceJSON()
+    // );
   }
 
   loadWorkspaceFromLocalStorage() {
