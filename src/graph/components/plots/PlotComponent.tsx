@@ -176,7 +176,7 @@ function PlotComponent(props: {
     });
 
     const fileID = dataManager.addNewFileToWorkspace(newFile);
-    addHistogrmOverlay(newFile.id, dataManager.getFile(fileID));
+    addHistogrmOverlay(fileID, dataManager.getFile(fileID), true);
   };
 
   const downloadFile = (fileId: string) => {
@@ -213,20 +213,18 @@ function PlotComponent(props: {
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
-        if (filePlotIdDict) {
-          let keys = Object.keys(filePlotIdDict);
-          if (keys.length > 0) {
-            let fileIds = files.map((x: any) => x.id);
-            let plotDataIds: any[] = props.plots.map((x: any) => x.plotData.id);
-            let key = keys.filter(
-              (x) => !plotDataIds.includes(x) && !fileIds.includes(x)
-            );
-            if (key && key.length > 0) {
-              props.plot.plotData.removeBarOverlay(filePlotIdDict[key[0]]);
-              delete filePlotIdDict[key[0]];
-            }
-          }
-        }
+        let filePlotDataIds: any[] = filePlotIdDict
+          ? Object.values(filePlotIdDict)
+          : [];
+        let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
+        let plotData = props.plot.plotData.histogramBarOverlays.filter(
+          (x: any) =>
+            !existingPlotDataIds.includes(x.plot.id) &&
+            !filePlotDataIds.includes(x.plot.id)
+        );
+        if (plotData && plotData.length > 0)
+          props.plot.plotData.removeBarOverlay(plotData[0].plot.id);
+
         tryKillComponent();
       });
       dataManager.addObserver("clearWorkspace", () => {
@@ -278,19 +276,34 @@ function PlotComponent(props: {
 
   const handleMultiPlotHistogram = (plot: any) => {
     if (plot) {
-      if (isHistogramSelected(filePlotIdDict[plot.plotData.id])) {
-        props.plot.plotData.removeBarOverlay(filePlotIdDict[plot.plotData.id]);
+      if (isHistogramSelected(plot.plotData.id)) {
+        props.plot.plotData.removeBarOverlay(plot.plotData.id);
       } else {
-        addHistogrmOverlay(plot.plotData.id, plot.plotData.file);
+        addHistogrmOverlay(
+          plot.plotData.id,
+          plot.plotData.file,
+          false,
+          plot.plotData
+        );
       }
     }
   };
 
-  const addHistogrmOverlay = (id: string, file: any) => {
-    const newPlotData = new PlotData();
-    newPlotData.file = file;
-    newPlotData.setupPlot();
-    newPlotData.getXandYRanges();
+  const addHistogrmOverlay = (
+    id: string,
+    file: any,
+    addNewPlot: boolean,
+    plotData: any = {}
+  ) => {
+    let newPlotData;
+    if (addNewPlot) {
+      newPlotData = new PlotData();
+      newPlotData.file = file;
+      newPlotData.setupPlot();
+      newPlotData.getXandYRanges();
+    } else {
+      newPlotData = plotData;
+    }
 
     let plotRanges = props.plot.plotData.ranges.get(props.plot.plotData.xAxis);
     let newPlotRanges = newPlotData.ranges.get(props.plot.plotData.xAxis);
@@ -300,8 +313,10 @@ function PlotComponent(props: {
 
     props.plot.plotData.addBarOverlay(newPlotData);
 
-    if (!filePlotIdDict[id]) filePlotIdDict[id] = "";
-    filePlotIdDict[id] = newPlotData.id;
+    if (addNewPlot) {
+      if (!filePlotIdDict[id]) filePlotIdDict[id] = "";
+      filePlotIdDict[id] = newPlotData.id;
+    }
   };
 
   const isHistogramSelected = (plotId: string) => {
@@ -490,10 +505,13 @@ function PlotComponent(props: {
             draggable="true"
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
-              width: 50,
+              width: isPlotHistogram()
+                ? props.plot.plotData.histogramAxis === "vertical"
+                  ? 0
+                  : 50
+                : 50,
               height: plot.plotData.plotHeight - 100,
               cursor: "s-resize",
-
               position: "absolute",
               zIndex: 10000,
               left: 65,
@@ -531,7 +549,11 @@ function PlotComponent(props: {
               backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
               cursor: "e-resize",
-              height: 50,
+              height: isPlotHistogram()
+                ? props.plot.plotData.histogramAxis === "horizontal"
+                  ? 0
+                  : 50
+                : 50,
               position: "absolute",
               zIndex: 10000,
               left: 115,
@@ -636,7 +658,7 @@ function PlotComponent(props: {
                       value={getHistograValue(e, "plot")}
                       style={{
                         backgroundColor: getHistogramSelectedColor(
-                          filePlotIdDict[e.plotData.id]
+                          e.plotData.id
                         ),
                       }}
                     >
