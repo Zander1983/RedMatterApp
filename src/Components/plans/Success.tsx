@@ -81,7 +81,7 @@ export default function Plans(props:{
       alert('HABLALOOOO'+session);
       let data = JSON.parse(session)
       if (session){
-          console.log('sdfkl')
+          console.log('sdfklrr')
         
       axios.post(`/save-checkout`, { 
         body:{
