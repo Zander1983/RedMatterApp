@@ -237,7 +237,7 @@ function PlotComponent(props: {
       setPlotSetup(true);
     }
 
-    var downloadedListner = fileService.addObserver("updateDownloaded", () => {
+    let downloadedListner = fileService.addObserver("updateDownloaded", () => {
       if (plotDownloadingFiles.length > 0) {
         let files = fileService.downloaded.filter((x) =>
           plotDownloadingFiles.includes(x.id)
@@ -255,13 +255,14 @@ function PlotComponent(props: {
       setDownloadedFiles(fileService.downloaded);
     });
 
-    var downloadingListner = fileService.addObserver(
+    let downloadingListner = fileService.addObserver(
       "updateDownloadingFiles",
       () => {
         setDownloadingFiles(fileService.downloadingFiles);
       }
     );
     return () => {
+      debugger
       fileService.removeObserver("updateDownloadingFiles", downloadingListner);
       fileService.removeObserver("updateDownloaded", downloadedListner);
     };

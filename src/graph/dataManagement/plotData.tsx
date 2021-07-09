@@ -555,8 +555,6 @@ export default class PlotData extends ObserversFunctionality {
     const range = this.ranges.get(axisName);
     const axis = this.getAxis(axisName);
     const binCounts = Array(binCount).fill(0);
-    console.log(this.ranges);
-    console.log(range);
     const step = (range[1] - range[0]) / binCount;
     let mx = 0;
     for (let i = 0; i < axis.length; i++) {

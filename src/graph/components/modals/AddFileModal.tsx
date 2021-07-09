@@ -120,30 +120,7 @@ function AddFileModal(props: {
   const [onHover, setOnHover] = React.useState(-1);
   const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
   const addFile = (index: number) => {
-    if (!dataManager.ready()) {
-      snackbarService.showSnackbar("Something went wrong, try again!", "error");
-      return;
-    }
     props.addFileToWorkspace(index);
-    // const file: any = remoteWorkspace ? props.downloaded[index] : staticFiles[index];
-    // let newFile: FCSFile;
-    // if (file?.fromStatic) {
-    //   newFile = staticFileReader(file.fromStatic);
-    // } else {
-    //   newFile = new FCSFile({
-    //     name: file.title,
-    //     id: file.id,
-    //     src: "remote",
-    //     axes: file.channels.map((e: any) => e.value),
-    //     data: file.events,
-    //     plotTypes: file.channels.map((e: any) => e.display),
-    //     remoteData: file,
-    //   });
-    // }
-    // const fileID = dataManager.addNewFileToWorkspace(newFile);
-    // const plot = new PlotData();
-    // plot.file = dataManager.getFile(fileID);
-    // dataManager.addNewPlotToWorkspace(plot);
   };
 
   const downloadFile = (fileId: string) => {
