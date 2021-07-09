@@ -213,7 +213,6 @@ function PlotComponent(props: {
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
-        debugger
         let filePlotDataIds: any[] = filePlotIdDict
           ? Object.values(filePlotIdDict)
           : [];
@@ -223,7 +222,6 @@ function PlotComponent(props: {
             !existingPlotDataIds.includes(x.plot.id) &&
             !filePlotDataIds.includes(x.plot.id)
         );
-        debugger
         if (plotData && plotData.length > 0)
           props.plot.plotData.removeBarOverlay(plotData[0].plot.id);
 
