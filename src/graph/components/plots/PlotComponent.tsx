@@ -262,7 +262,6 @@ function PlotComponent(props: {
       }
     );
     return () => {
-      debugger
       fileService.removeObserver("updateDownloadingFiles", downloadingListner);
       fileService.removeObserver("updateDownloaded", downloadedListner);
     };
