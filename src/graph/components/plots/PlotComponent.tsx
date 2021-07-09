@@ -18,6 +18,7 @@ import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
+import { keys } from "lodash";
 
 const classes = {
   mainContainer: {
@@ -174,12 +175,8 @@ function PlotComponent(props: {
       remoteData: file,
     });
 
-    const plot = new PlotData();
-    plot.file = newFile;
-    plot.setupPlot();
-    if (!filePlotIdDict[newFile.id]) filePlotIdDict[newFile.id] = "";
-    filePlotIdDict[newFile.id] = plot.id;
-    props.plot.plotData.addBarOverlay(plot);
+    const fileID = dataManager.addNewFileToWorkspace(newFile);
+    addHistogrmOverlay(newFile.id, dataManager.getFile(fileID));
   };
 
   const downloadFile = (fileId: string) => {
@@ -215,9 +212,23 @@ function PlotComponent(props: {
     }
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
-      dataManager.addObserver("removePlotFromWorkspace", () =>
-        tryKillComponent()
-      );
+      dataManager.addObserver("removePlotFromWorkspace", () => {
+        if (filePlotIdDict) {
+          let keys = Object.keys(filePlotIdDict);
+          if (keys.length > 0) {
+            let fileIds = files.map((x: any) => x.id);
+            let plotDataIds: any[] = props.plots.map((x: any) => x.plotData.id);
+            let key = keys.filter(
+              (x) => !plotDataIds.includes(x) && !fileIds.includes(x)
+            );
+            if (key && key.length > 0) {
+              props.plot.plotData.removeBarOverlay(filePlotIdDict[key[0]]);
+              delete filePlotIdDict[key[0]];
+            }
+          }
+        }
+        tryKillComponent();
+      });
       dataManager.addObserver("clearWorkspace", () => {
         clearInterval(interval[props.plotIndex]);
         interval[props.plotIndex] = undefined;
@@ -226,14 +237,16 @@ function PlotComponent(props: {
       setPlotSetup(true);
     }
 
-    fileService.addObserver("updateDownloaded", () => {
+    let downloadedListner = fileService.addObserver("updateDownloaded", () => {
       if (plotDownloadingFiles.length > 0) {
         let files = fileService.downloaded.filter((x) =>
           plotDownloadingFiles.includes(x.id)
         );
         if (files && files.length > 0) {
           snackbarService.showSnackbar("Overlay added", "success");
-          addFile(files[0]);
+          setTimeout(() => {
+            addFile(files[0]);
+          }, 0);
           plotDownloadingFiles = plotDownloadingFiles.filter(
             (x) => x != files[0].id
           );
@@ -242,23 +255,55 @@ function PlotComponent(props: {
       setDownloadedFiles(fileService.downloaded);
     });
 
-    fileService.addObserver("updateDownloadingFiles", () => {
-      setDownloadingFiles(fileService.downloadingFiles);
-    });
+    let downloadingListner = fileService.addObserver(
+      "updateDownloadingFiles",
+      () => {
+        setDownloadingFiles(fileService.downloadingFiles);
+      }
+    );
+    return () => {
+      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
+      fileService.removeObserver("updateDownloaded", downloadedListner);
+    };
   }, []);
 
   let oldXAxisValue: string | null = null;
   let oldYAxisValue: string | null = null;
 
+  const getMinMax = (ranges: [number, number], newRanges: [number, number]) => {
+    let min = ranges[0] > newRanges[0] ? newRanges[0] : ranges[0];
+    let max = ranges[1] > newRanges[1] ? ranges[1] : newRanges[1];
+    return { min: min, max: max };
+  };
+
   const handleMultiPlotHistogram = (plot: any) => {
     if (plot) {
-      if (isHistogramSelected(plot.plotData.id)) {
-        props.plot.plotData.removeBarOverlay(plot.plotData.id);
+      if (isHistogramSelected(filePlotIdDict[plot.plotData.id])) {
+        props.plot.plotData.removeBarOverlay(filePlotIdDict[plot.plotData.id]);
       } else {
-        props.plot.plotData.addBarOverlay(plot.plotData);
+        addHistogrmOverlay(plot.plotData.id, plot.plotData.file);
       }
     }
   };
+
+  const addHistogrmOverlay = (id: string, file: any) => {
+    const newPlotData = new PlotData();
+    newPlotData.file = file;
+    newPlotData.setupPlot();
+    newPlotData.getXandYRanges();
+
+    let plotRanges = props.plot.plotData.ranges.get(props.plot.plotData.xAxis);
+    let newPlotRanges = newPlotData.ranges.get(props.plot.plotData.xAxis);
+
+    let obj = getMinMax(plotRanges, newPlotRanges);
+    setAxisRange(obj.min, obj.max, props.plot.plotData.xAxis);
+
+    props.plot.plotData.addBarOverlay(newPlotData);
+
+    if (!filePlotIdDict[id]) filePlotIdDict[id] = "";
+    filePlotIdDict[id] = newPlotData.id;
+  };
+
   const isHistogramSelected = (plotId: string) => {
     return props.plot.plotData.histogramBarOverlays.find(
       (x) => x.plot.id == plotId
@@ -296,6 +341,7 @@ function PlotComponent(props: {
         setAxis("x", axis);
       }
     } else {
+      filePlotIdDict = {};
       props.plot.plotData.histogramBarOverlays = [];
       if (targetAxis === "x") {
         oldYAxisValue = yAxis;
@@ -590,7 +636,7 @@ function PlotComponent(props: {
                       value={getHistograValue(e, "plot")}
                       style={{
                         backgroundColor: getHistogramSelectedColor(
-                          e.plotData.id
+                          filePlotIdDict[e.plotData.id]
                         ),
                       }}
                     >

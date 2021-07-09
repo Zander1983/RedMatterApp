@@ -57,7 +57,6 @@ class Workspace extends React.Component<WorkspaceProps> {
 
   constructor(props: WorkspaceProps) {
     super(props);
-
     this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();

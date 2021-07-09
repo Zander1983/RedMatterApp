@@ -392,7 +392,7 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   setWorkspaceID(remoteWorkspaceID: string) {
     this.remoteWorkspaceID = remoteWorkspaceID;
-    //this.loadWorkspaceFilesFromRemote();
+    this.loadWorkspaceFilesFromRemote();
   }
 
   isRemoteWorkspace() {
