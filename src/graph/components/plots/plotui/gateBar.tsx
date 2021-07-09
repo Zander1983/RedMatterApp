@@ -67,12 +67,6 @@ export default function GateBar(props: any) {
     dataManager.getAllGates().forEach((v) => {
       cgates.push(v.gate);
     });
-    // cgates = cgates.filter((e: any) => {
-    //   for (const gate of pop) {
-    //     if (gate.id === e.id) return false;
-    //   }
-    //   return true;
-    // });
     setGates(cgates);
   };
 
