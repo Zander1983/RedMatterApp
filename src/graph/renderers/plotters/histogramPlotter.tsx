@@ -156,10 +156,11 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     const barOverlays = this.plotData.histogramBarOverlays;
     let binsArray = [];
     let parentBinsArray = [];
+    let mainPlotColor = this.plotData.population && this.plotData.population.length > 0 ? this.plotData.population[0].gate.color : "";
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
         value: mainHist.list[i] / globlMax,
-        color: "",
+        color: mainPlotColor,
       });
     }
 
