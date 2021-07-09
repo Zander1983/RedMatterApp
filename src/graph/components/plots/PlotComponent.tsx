@@ -316,10 +316,13 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
             draggable="true"
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
-              width: 50,
+              width: isPlotHistogram()
+                ? props.plot.plotData.histogramAxis === "vertical"
+                  ? 0
+                  : 50
+                : 50,
               height: plot.plotData.plotHeight - 100,
               cursor: "s-resize",
-
               position: "absolute",
               zIndex: 10000,
               left: 65,
@@ -357,7 +360,11 @@ function PlotComponent(props: { plot: Plot; plotIndex: string }) {
               backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
               cursor: "e-resize",
-              height: 50,
+              height: isPlotHistogram()
+                ? props.plot.plotData.histogramAxis === "horizontal"
+                  ? 0
+                  : 50
+                : 50,
               position: "absolute",
               zIndex: 10000,
               left: 115,
