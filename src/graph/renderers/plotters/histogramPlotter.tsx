@@ -3,6 +3,7 @@ import GraphPlotter, {
 } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
+import PlotData from "graph/dataManagement/plotData";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -57,7 +58,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       bins: this.bins,
       axis: this.direction,
     };
-    
+
     this.drawer.setDrawerState(drawerState);
   }
 
@@ -128,7 +129,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     const overlaysObj = this.plotData.getOverlays();
     const overlays = [];
-    
+
     for (const overlay of overlaysObj) {
       if (overlay.plot === undefined || overlay.plot === null) continue;
       const overlayRes = overlay.plot.getBins(
@@ -164,8 +165,13 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {
-        barOverlays[i].plot.ranges.set(axis, [range[0], range[1]]);
-        let overlayMainHist = barOverlays[i].plot.getBins(this.bins, axis);
+        let newPlotData = new PlotData();
+        newPlotData.file = barOverlays[i].plot.file;
+        newPlotData.population = barOverlays[i].plot.population;
+        newPlotData.setupPlot();
+        newPlotData.getXandYRanges();
+        newPlotData.ranges.set(axis, [range[0], range[1]]);
+        let overlayMainHist = newPlotData.getBins(this.bins, axis);
         let binsArray = [];
         let overlayGloblMax = overlayMainHist.max;
         for (let j = 0; j < this.bins; j++) {
@@ -189,10 +195,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         return b.value - a.value;
       });
       for (let j = 0; j < binsAscArray.length; j++) {
-        if(binsAscArray[j].color)
+        if (binsAscArray[j].color)
           this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
-        else
-          this.drawer.addBin(i, binsAscArray[j].value);
+        else this.drawer.addBin(i, binsAscArray[j].value);
       }
     }
 
