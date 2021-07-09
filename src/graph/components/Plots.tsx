@@ -17,7 +17,6 @@ import FCSFile from "graph/dataManagement/fcsFile";
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
-import fileService from "services/FileService";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
 import {
@@ -108,6 +107,7 @@ function Plots(props: { experimentId: string }) {
         },
         {}
       );
+      dataManager.setWorkspaceIsShared(workspaceData.data["isShared"]);
       setSharedWorkspace(workspaceData.data["isShared"]);
       setWorkspaceState(JSON.parse(workspaceData.data["state"]));
     } catch (e) {
@@ -126,6 +126,9 @@ function Plots(props: { experimentId: string }) {
   };
 
   useEffect(() => {
+
+    dataManager.setExperimentId(props.experimentId);
+
     let workspaceId = new URLSearchParams(location.search).get("id");
     if (workspaceId) {
       verifyWorkspace(workspaceId);
@@ -133,19 +136,19 @@ function Plots(props: { experimentId: string }) {
       initPlots();
     }
 
-    var downloadedListner = fileService.addObserver("updateDownloaded", () => {
-      setDownloadedFiles(fileService.downloaded);
+    var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
+      setDownloadedFiles(dataManager.downloaded);
     });
 
-    var downloadingListner = fileService.addObserver("updateDownloadingFiles", () => {
-      setDownloadingFiles(fileService.downloadingFiles);
+    var downloadingListner = dataManager.addObserver("updateDownloadingFiles", () => {
+      setDownloadingFiles(dataManager.downloadingFiles);
     });
 
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
-      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
-      fileService.removeObserver("updateDownloaded", downloadedListner);
+      dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
+      dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
   }, []);
 
@@ -178,7 +181,7 @@ function Plots(props: { experimentId: string }) {
       history.push("/login");
     }
 
-    await fileService.downloadFileMetadata(workSpaceShared, props.experimentId);
+    await dataManager.downloadFileMetadata();
 
     setInitPlot(true);
   };
@@ -296,7 +299,7 @@ function Plots(props: { experimentId: string }) {
 
       setDownloadingFiles(stateFileIds);
       let eventFiles = await getSharedRemoteFiles(stateFileIds);
-      fileService.updateDownloaded(eventFiles);
+      dataManager.updateDownloaded(eventFiles);
       if(!dataManager.ready())
       {
         dataManager.createWorkspace();
@@ -311,10 +314,8 @@ function Plots(props: { experimentId: string }) {
   };
 
   const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    fileService.downloadFileEvents(
-      sharedWorkspace,
-      fileIds,
-      props.experimentId
+    dataManager.downloadFileEvents(
+      fileIds
     );
   };
 
@@ -392,7 +393,7 @@ function Plots(props: { experimentId: string }) {
             isShared={sharedWorkspace}
             downloaded={downloadedFiles}
             downloading={downloadingFiles}
-            filesMetadata={fileService.files}
+            filesMetadata={dataManager.files}
             onDownloadFileEvents={(fileIds) => {
               handleDownLoadFileEvents(fileIds);
             }}

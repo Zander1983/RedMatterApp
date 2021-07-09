@@ -20,6 +20,8 @@ import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
 import axios from "axios";
 import userManager from "Components/users/userManager";
+import { FileService } from "services/FileService";
+import { snackbarService } from "uno-material-ui";
 
 const uuid = require("uuid");
 
@@ -414,6 +416,102 @@ class DataManager extends ObserversFunctionality {
   private loading: boolean = false;
   private remoteWorkspaceID: string;
   private lastLocalStorageSave: string;
+  private workspaceIsShared: boolean = false;
+  private experimentId: string = "";
+  files: any[] = [];
+  downloaded: any[] = [];
+  downloadingFiles: Array<string> = [];
+  downloadHappening: boolean = false;
+
+  setWorkspaceIsShared(workspaceIsShared: boolean) {
+    this.workspaceIsShared = workspaceIsShared;
+  }
+
+  getWorkspaceIsShared() {
+    return this.workspaceIsShared;
+  }
+
+  setExperimentId(experimentId: string) {
+    this.experimentId = experimentId;
+  }
+
+  getExperimentId() {
+    return this.experimentId;
+  }
+
+  async downloadFileMetadata() {
+    let response: any = await FileService.downloadFileMetadata(
+      this.workspaceIsShared,
+      this.experimentId
+    );
+    this.files = response.data.files;
+  }
+
+  async downloadFileEvents(fileIds: Array<string>) {
+    let downloadedFileIds = this.downloaded.map((x) => x.id);
+
+    let newFileIds = fileIds.filter(
+      (x) =>
+        !downloadedFileIds.includes(x) && !this.downloadingFiles.includes(x)
+    );
+
+    let newDownloadingFileIds = this.downloadingFiles.concat(newFileIds);
+
+    this.updateDownloadingFiles(newDownloadingFileIds);
+  }
+
+  @publishDecorator()
+  updateDownloaded(data: any) {
+    this.downloaded = this.downloaded.concat(data);
+  }
+
+  @publishDecorator()
+  updateDownloadingFiles(fileIds: Array<string>) {
+    this.downloadingFiles = fileIds;
+    if (this.downloadingFiles.length > 0 && !this.downloadHappening) {
+      let fileId = this.downloadingFiles[0];
+      this.downloadFileEvent(fileId);
+    }
+  }
+
+  async downloadFileEvent(fileId: string) {
+    let response;
+    try {
+      this.downloadHappening = true;
+      let response = await FileService.downloadFileEvent(
+        this.workspaceIsShared,
+        fileId,
+        this.experimentId
+      );
+      if(!this.ready())
+      {
+        this.createWorkspace();
+      }
+      let file = response[0];
+      let newFile = new FCSFile({
+        name: file.title,
+        id: file.id,
+        src: "remote",
+        axes: file.channels.map((e: any) => e.value),
+        data: file.events,
+        plotTypes: file.channels.map((e: any) => e.display),
+        remoteData: file
+      });
+      this.addNewFileToWorkspace(newFile);
+      this.updateDownloaded(response);
+    } catch (e) {
+      let file = this.files.find((x) => x.id == fileId);
+      snackbarService.showSnackbar(
+        `Error download file ${file.label} please try again`,
+        "error"
+      );
+    } finally {
+      this.downloadHappening = false;
+      this.downloadingFiles.shift();
+      this.updateDownloadingFiles(this.downloadingFiles);
+    }
+    return response;
+  }
 
   static getInstance(): DataManager {
     if (!DataManager.instance) {

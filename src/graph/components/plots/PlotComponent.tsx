@@ -11,7 +11,6 @@ import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
 import AxisBar from "./plotui/axisBar";
 import GetAppIcon from "@material-ui/icons/GetApp";
-import fileService from "services/FileService";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
@@ -155,14 +154,14 @@ function PlotComponent(props: {
   };
 
   const [downloadedFiles, setDownloadedFiles] = React.useState(
-    fileService.downloaded
+    dataManager.downloaded
   );
 
   const [downloadingFiles, setDownloadingFiles] = React.useState(
-    fileService.downloadingFiles
+    dataManager.downloadingFiles
   );
 
-  var files = fileService.files.filter((x) => x.id != props.plotFileId);
+  var files = dataManager.files.filter((x) => x.id != props.plotFileId);
 
   const addFile = (file: any) => {
     let newFile = new FCSFile({
@@ -180,10 +179,8 @@ function PlotComponent(props: {
   };
 
   const downloadFile = (fileId: string) => {
-    fileService.downloadFileEvents(
-      props.sharedWorkspace,
-      [fileId],
-      props.experimentId
+    dataManager.downloadFileEvents(
+      [fileId]
     );
     plotDownloadingFiles = plotDownloadingFiles.concat(fileId);
     snackbarService.showSnackbar(
@@ -235,9 +232,9 @@ function PlotComponent(props: {
       setPlotSetup(true);
     }
 
-    let downloadedListner = fileService.addObserver("updateDownloaded", () => {
+    let downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       if (plotDownloadingFiles.length > 0) {
-        let files = fileService.downloaded.filter((x) =>
+        let files = dataManager.downloaded.filter((x) =>
           plotDownloadingFiles.includes(x.id)
         );
         if (files && files.length > 0) {
@@ -250,18 +247,18 @@ function PlotComponent(props: {
           );
         }
       }
-      setDownloadedFiles(fileService.downloaded);
+      setDownloadedFiles(dataManager.downloaded);
     });
 
-    let downloadingListner = fileService.addObserver(
+    let downloadingListner = dataManager.addObserver(
       "updateDownloadingFiles",
       () => {
-        setDownloadingFiles(fileService.downloadingFiles);
+        setDownloadingFiles(dataManager.downloadingFiles);
       }
     );
     return () => {
-      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
-      fileService.removeObserver("updateDownloaded", downloadedListner);
+      dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
+      dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
   }, []);
 
