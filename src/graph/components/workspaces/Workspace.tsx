@@ -42,7 +42,12 @@ const standardGridPlotItem = (x: number, y: number) => {
   };
 };
 
-class Workspace extends React.Component {
+interface WorkspaceProps {
+  sharedWorkspace: boolean;
+  experimentId: string;
+}
+
+class Workspace extends React.Component<WorkspaceProps> {
   private static renderCalls = 0;
   workspace: WorkspaceData;
   plots: {
@@ -50,9 +55,8 @@ class Workspace extends React.Component {
     plotRender: Plot;
   }[] = [];
 
-  constructor(props: any) {
+  constructor(props: WorkspaceProps) {
     super(props);
-
     this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();
@@ -116,6 +120,10 @@ class Workspace extends React.Component {
                     <PlotComponent
                       plot={e.plotRender}
                       plotIndex={e.plotData.id}
+                      plotFileId={e.plotData.file.id}
+                      plots={this.plots.filter(x=> x.plotData.id != e.plotData.id)}
+                      sharedWorkspace={this.props.sharedWorkspace}
+                      experimentId={this.props.experimentId}
                     />
                   </div>
                 </div>

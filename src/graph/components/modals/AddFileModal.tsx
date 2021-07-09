@@ -21,6 +21,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getHumanReadableTimeDifference } from "utils/time";
+import { FileService } from "services/FileService";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -84,61 +85,6 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-const getRemoteFiles = (workspaceId: string): Promise<any[]> => {
-  return axios.get("/api/events/" + workspaceId, {
-    params: {
-      experimentId: workspaceId,
-      token: userManager.getToken(),
-      organisationId: userManager.getOrganiztionID(),
-    },
-  });
-};
-
-const getRemoteFile = (
-  experimentId: string,
-  fileId: string,
-  isShared: boolean
-): any => {
-  if (isShared) {
-    return axios.post(
-      "/api/sharedEvents",
-      { experimentId: experimentId, fileIds: [fileId] },
-      {}
-    );
-  } else {
-    return axios.get("/api/events/" + experimentId + "/" + fileId, {
-      params: {
-        experimentId: experimentId,
-        organisationId: userManager.getOrganiztionID(),
-        fileId: fileId,
-      },
-      headers: {
-        token: userManager.getToken(),
-      },
-    });
-  }
-};
-
-const getRemoteFileMetadata = (
-  experimentId: string,
-  isShared: boolean
-): Promise<any> => {
-  var params;
-  if (isShared) {
-    params = ExperimentFilesApiFetchParamCreator(
-      {}
-    ).experimentFilesWithoutToken(experimentId);
-  } else {
-    params = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      experimentId,
-      userManager.getToken()
-    );
-  }
-  return axios.get(params.url, params.options);
-};
 
 let downloading: any[] = [];
 let downloaded: any[] = [];
@@ -148,23 +94,18 @@ function AddFileModal(props: {
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
   downloaded: any[];
+  filesMetadata: any[];
+  downloading: any[];
+  onDownloadFileEvents: (fileIds: any[]) => void;
+  addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
   const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
-  const [filesMetadata, setFilesMetadata] = React.useState(
-    remoteWorkspace ? [] : staticFiles
-  );
-  const isLoggedIn = userManager.isLoggedIn();
+  const [filesMetadata, setFilesMetadata] = React.useState([]);
   useEffect(() => {
-    downloaded = props.downloaded ? props.downloaded : [];
-    downloading = [];
     if (remoteWorkspace) {
-      getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
-        .then((e) => {
-          setFilesMetadata(e.data.files);
-        })
-        .catch((e) => console.log("[ERROR] ", e, e.response));
+      setFilesMetadata(props.filesMetadata);
       dataManager.addObserver("clearWorkspace", () => {
         downloaded = remoteWorkspace ? [] : staticFiles;
         dataManager.setWorkspaceLoading(false);
@@ -179,70 +120,16 @@ function AddFileModal(props: {
   const [onHover, setOnHover] = React.useState(-1);
   const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
   const addFile = (index: number) => {
-    if (!dataManager.ready()) {
-      snackbarService.showSnackbar("Something went wrong, try again!", "error");
-      return;
-    }
-    const file: any = remoteWorkspace ? downloaded[index] : staticFiles[index];
-    let newFile: FCSFile;
-    if (file?.fromStatic) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    dataManager.addNewPlotToWorkspace(plot);
+    props.addFileToWorkspace(index);
   };
 
   const downloadFile = (fileId: string) => {
-    //@ts-ignore
-    if (downloaded.filter((e) => e.id === fileId).length > 0) {
-      snackbarService.showSnackbar("File already downloaded", "warning");
-      return;
-    }
-    downloading = downloading.concat(fileId);
-    getRemoteFile(dataManager.getRemoteWorkspaceID(), fileId, props.isShared)
-      .then((e: any) => (downloaded = downloaded.concat(e.data)))
-      .catch((e: any) => {
-        snackbarService.showSnackbar(
-          "File download failed, try again",
-          "error"
-        );
-      })
-      .finally(() => {
-        downloading = downloading.filter((e) => e !== fileId);
-        forceUpdate();
-      });
+    props.onDownloadFileEvents([fileId]);
   };
 
   const downloadAll = () => {
-    //@ts-ignore
-    downloading = filesMetadata.map((e) => e.id);
-    getRemoteFiles(dataManager.getRemoteWorkspaceID())
-      .then((e: any[]) => {
-        //@ts-ignore
-        downloaded = e.data;
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to dowload files, try again!",
-          "error"
-        );
-      })
-      .finally(() => {
-        downloading = [];
-        forceUpdate();
-      });
+    let downloadingFileIds = filesMetadata.map((e) => e.id);
+    props.onDownloadFileEvents(downloadingFileIds);
   };
 
   return (
@@ -333,9 +220,16 @@ function AddFileModal(props: {
                 );
               let isDownloaded =
                 //@ts-ignore
-                downloaded.filter((e) => e.id === fileMetadata.id).length > 0;
+                props.downloaded.length > 0
+                  ? props.downloaded.filter((e) => e.id === fileMetadata.id)
+                      .length > 0
+                  : false;
+
               const isDownloading =
-                downloading.filter((e) => e === fileMetadata.id).length > 0;
+                props.downloading.length > 0
+                  ? props.downloading.filter((e) => e === fileMetadata.id)
+                      .length > 0
+                  : false;
 
               return (
                 <div key={i.toString() + fileMetadata.title}>
@@ -533,13 +427,13 @@ function AddFileModal(props: {
                               let i = 0;
                               i <
                               (remoteWorkspace
-                                ? downloaded.length
+                                ? props.downloaded.length
                                 : staticFiles.length);
                               i++
                             ) {
                               if (
                                 remoteWorkspace &&
-                                downloaded[i].id === fileMetadata.id
+                                props.downloaded[i].id === fileMetadata.id
                               ) {
                                 index = i;
                                 break;
