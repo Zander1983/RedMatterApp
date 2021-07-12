@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Grid, Button, CircularProgress} from "@material-ui/core";
@@ -7,6 +7,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import userManager from "Components/users/userManager";
 import NativeSelect from '@material-ui/core/NativeSelect';
 
 import { loadStripe } from '@stripe/stripe-js';
@@ -77,6 +78,44 @@ export default function Plans(props:any) {
 
 
     const classes = useStyles();
+
+    const [userObj, setuserObj] = useState(null);
+    const [sub, setSub] = useState(null);
+    const [product, setProduct] = useState(null);
+    useEffect(() => {
+      if(typeof userObj != 'object' || userObj == null){
+        axios.get(`/profile-info`, {
+        headers: {
+          Token: userManager.getToken(),
+        },
+      })
+    .then((response) => response.data)
+    .then((user) => {
+      setuserObj(user);
+      alert(JSON.stringify(userObj, null, 2))
+    })
+    .then(() => {
+      
+    })
+    }
+
+    if(typeof userObj === 'object' && userObj != null){
+      alert("executing this line of code");
+      //alert(JSON.stringify(userObj, null, 2));
+      axios.get(`/get-subscription?id=${userObj.userDetails.subscriptionId}`)
+      .then((response) => response.data)
+      .then((subscription) => {setSub(subscription)}).then(() => {alert(JSON.stringify(sub, null, 2))})
+    }
+
+    if(typeof sub === 'object' && sub != null){
+      alert("executing subs line");
+      //alert(JSON.stringify(sub.items.data[0].plan.product, null, 2));
+      axios.get(`/get-product?id=${sub.items.data[0].plan.product}`)
+      .then((response) => response.data)
+      .then((product) => {setSub(product)}).then(() => {alert(JSON.stringify(product, null, 2))})
+    }
+
+    }, [userObj, sub, product])
   return (
       
     <Grid
@@ -110,7 +149,7 @@ export default function Plans(props:any) {
                 marginBottom:'1.5em',
                 fontSize: '36px'
             }}>My profile</h1>
-            <h2>The user's name</h2>
+            <h2>{userObj == null ? 'user email' : userObj.userDetails.email}</h2>
 
             <Grid
         container
@@ -125,7 +164,7 @@ export default function Plans(props:any) {
             <Grid item lg={6}
         md={6}
         sm={6}>
-            <h3>Next Billing Date: <span>[billing date]</span></h3>
+            <h3>Next Billing Date: <span>{userObj == null ? 'user email' : userObj.userDetails.email}</span></h3>
 
         </Grid>
 
@@ -149,7 +188,7 @@ export default function Plans(props:any) {
         sm={6}>
             <h3 style={{
                 marginBottom:'1.5em'
-            }}>Current Subscription: <span>[current subscription]</span></h3>
+            }}>Current Subscription: <span>{product == null ? 'Product Name' : product.name}</span></h3>
 
             <h3>Change Subscription</h3>
             <div>

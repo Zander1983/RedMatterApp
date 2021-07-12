@@ -92,6 +92,16 @@ export default function Plans(props:{
         
       })
       .then(() => console.log("customer saved succesfully"))
+      .then(() => {
+        axios.post(`/add-subscription`, { 
+          body:{
+            user: data.metadata.userId,
+            subscription: data.subscription,
+            customer: data.customer,
+          }
+          
+        })
+      })
       }
     })
     
