@@ -403,6 +403,18 @@ class DataManager extends ObserversFunctionality {
     return this.remoteWorkspaceID;
   }
 
+  dragLock: boolean = false;
+  @publishDecorator()
+  workspaceDragLock(dragLock?: boolean) {
+    if (dragLock != undefined) {
+      this.dragLock = dragLock;
+      if (this.dragLock === true) {
+        setTimeout(() => this.workspaceDragLock(false), 1000);
+      }
+    }
+    return this.dragLock;
+  }
+
   /* 
   
   
