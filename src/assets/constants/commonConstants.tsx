@@ -4,6 +4,11 @@ export const COMMON_CONSTANTS = {
             Median : 1,
             Mean : 2
         },
+        HISTOGRAM_OVERLAY_TYPE:{
+            Bar: "Bar",
+            Line: "Line",
+            Both: "Both"
+        }
     },
     SIDE_MENU:{
         STATS: [

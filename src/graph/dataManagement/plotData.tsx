@@ -89,7 +89,7 @@ export default class PlotData extends ObserversFunctionality {
   label: string = "";
   histogramOverlays: {
     color: string;
-    plot: string;
+    plot: any;
   }[] = [];
   histogramBarOverlays: {
     color: string;
@@ -225,7 +225,7 @@ export default class PlotData extends ObserversFunctionality {
       plotScale: this.plotScale,
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
-      histogramAxis: this.histogramAxis,
+      histogramAxis: this.histogramAxis
     };
   }
 

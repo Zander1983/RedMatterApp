@@ -17,7 +17,14 @@ import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { keys } from "lodash";
+import { generateColor } from "graph/utils/color";
+
+interface overlayHistogram {
+  color: string;
+  plot: any;
+}
 
 const classes = {
   mainContainer: {
@@ -36,6 +43,8 @@ const classes = {
   },
 };
 
+const histogramOverlayType = COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE;
+
 const nullOrUndefined = (obj: any) => {
   return obj === null || obj === undefined;
 };
@@ -43,6 +52,10 @@ const nullOrUndefined = (obj: any) => {
 function useForceUpdate() {
   const [value, setValue] = React.useState(0); // integer state
   return () => setValue((value) => value + 1); // update the state to force render
+}
+
+interface Dictionary {
+  [key: string]: string;
 }
 
 const minDrawInterval = 30;
@@ -143,6 +156,9 @@ function PlotComponent(props: {
   };
 
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
+  const [histogramOverlayTypeValue, setHistogramOverlayTypeValue] =
+    React.useState(histogramOverlayType.Bar);
+
   const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
     if (lastSelectEvent + 500 < new Date().getTime()) {
       func(e);
@@ -179,14 +195,17 @@ function PlotComponent(props: {
   };
 
   const downloadFile = (fileId: string) => {
-    dataManager.downloadFileEvents(
-      [fileId]
-    );
+    dataManager.downloadFileEvents([fileId]);
     plotDownloadingFiles = plotDownloadingFiles.concat(fileId);
     snackbarService.showSnackbar(
       "Overlay will be added after file events download",
       "warning"
     );
+  };
+
+  const getDropdownValue = (e: string) => {
+    let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE;
+    return statObj[e];
   };
 
   const isDownloading = (fileId: string) => {
@@ -308,7 +327,9 @@ function PlotComponent(props: {
     let obj = getMinMax(plotRanges, newPlotRanges);
     setAxisRange(obj.min, obj.max, props.plot.plotData.xAxis);
 
-    props.plot.plotData.addBarOverlay(newPlotData);
+    addOverlayAsPerType(histogramOverlayTypeValue, [
+      { plot: newPlotData, color: generateColor() },
+    ]);
 
     if (addNewPlot) {
       if (!filePlotIdDict[id]) filePlotIdDict[id] = "";
@@ -317,9 +338,19 @@ function PlotComponent(props: {
   };
 
   const isHistogramSelected = (plotId: string) => {
-    return props.plot.plotData.histogramBarOverlays.find(
+    let plot1 = props.plot.plotData.histogramBarOverlays.find(
       (x) => x.plot.id == plotId
     );
+    let plot2 = props.plot.plotData.histogramOverlays.find(
+      (x) => x.plot.id == plotId
+    );
+
+    if (plot1) {
+      return plot1;
+    } else if (plot2) {
+      return plot2;
+    }
+    return null;
   };
 
   const getHistogramSelectedColor = (plotId: string): string => {
@@ -374,6 +405,52 @@ function PlotComponent(props: {
 
   const handleClose = (func: Function) => {
     func(false);
+  };
+
+  const addOverlayAsPerType = (type: string, overLaysObjects: any[]) => {
+    switch (type) {
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Bar:
+        props.plot.plotData.histogramBarOverlays =
+          props.plot.plotData.histogramBarOverlays.concat(overLaysObjects);
+        break;
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Line:
+        props.plot.plotData.histogramOverlays =
+          props.plot.plotData.histogramOverlays.concat(overLaysObjects);
+        break;
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Both:
+        props.plot.plotData.histogramBarOverlays =
+          props.plot.plotData.histogramBarOverlays.concat(overLaysObjects);
+        props.plot.plotData.histogramOverlays =
+          props.plot.plotData.histogramOverlays.concat(overLaysObjects);
+        break;
+    }
+    props.plot.plotData.plotUpdated();
+  };
+
+  const changeHistOverlayType = (type: string) => {
+    let plotData = props.plot.plotData;
+
+    if (histogramOverlayTypeValue == type) return;
+
+    let overLaysObjects: overlayHistogram[];
+
+    switch (histogramOverlayTypeValue) {
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Bar:
+        overLaysObjects = plotData.histogramBarOverlays;
+        plotData.histogramOverlays = [];
+        plotData.histogramBarOverlays = [];
+        break;
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Line:
+      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Both:
+        overLaysObjects = plotData.histogramOverlays;
+        plotData.histogramBarOverlays = [];
+        plotData.histogramOverlays = [];
+        break;
+    }
+
+    setHistogramOverlayTypeValue(type);
+    debugger;
+    addOverlayAsPerType(type, overLaysObjects);
   };
 
   const setAxisRange = (min: number, max: number, axis: string) => {
@@ -637,85 +714,100 @@ function PlotComponent(props: {
             </div>
             <div>
               {isPlotHistogram() ? (
-                <Select
-                  style={{
-                    marginTop: "10px",
-                  }}
-                  value={"0"}
-                  onChange={(e) => {
-                    let data: any = e.target.value;
-                    if (data["type"] == "plot") {
-                      handleMultiPlotHistogram(data["val"]);
-                    }
-                  }}
-                >
-                  <MenuItem value={"0"}>Histogram overlays</MenuItem>
-                  {props.plots.map((e: any) => (
-                    <MenuItem
-                      value={getHistograValue(e, "plot")}
-                      style={{
-                        backgroundColor: getHistogramSelectedColor(
-                          e.plotData.id
-                        ),
-                      }}
-                    >
-                      {e.plotData.label}
-                    </MenuItem>
-                  ))}
-                  {files.map((e: any) => (
-                    <MenuItem
-                      value={getHistograValue(e, "file")}
-                      style={{
-                        backgroundColor: getHistogramSelectedColor(
-                          filePlotIdDict[e.id]
-                        ),
-                      }}
-                    >
-                      <div
-                        onClick={() => {
-                          if (filePlotIdDict[e.id]) {
-                            props.plot.plotData.removeBarOverlay(
-                              filePlotIdDict[e.id]
-                            );
-                            filePlotIdDict[e.id] = "";
-                          } else {
-                            if (isDownloaded(e.id)) {
-                              addFile(
-                                downloadedFiles.find((x) => x.id == e.id)
-                              );
-                            } else {
-                              downloadFile(e.id);
-                            }
-                          }
+                <div>
+                  <Select
+                    value={histogramOverlayTypeValue}
+                    onChange={(e) => {
+                      changeHistOverlayType(e.target.value.toString());
+                    }}
+                  >
+                    {Object.keys(
+                      COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE
+                    ).map((e: string) => (
+                      <MenuItem value={getDropdownValue(e)}>{e}</MenuItem>
+                    ))}
+                  </Select>
+                  <Select
+                    style={{
+                      marginTop: "10px",
+                      marginLeft: "10px",
+                    }}
+                    value={"0"}
+                    onChange={(e) => {
+                      let data: any = e.target.value;
+                      if (data["type"] == "plot") {
+                        handleMultiPlotHistogram(data["val"]);
+                      }
+                    }}
+                  >
+                    <MenuItem value={"0"}>Histogram overlays</MenuItem>
+                    {props.plots.map((e: any) => (
+                      <MenuItem
+                        value={getHistograValue(e, "plot")}
+                        style={{
+                          backgroundColor: getHistogramSelectedColor(
+                            e.plotData.id
+                          ),
                         }}
                       >
-                        {e.label}
-                        {isDownloaded(e.id) ? null : (
-                          <Button
-                            style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
-                            }}
-                          >
-                            {isDownloading(e.id) ? (
-                              <CircularProgress
-                                style={{
-                                  color: "white",
-                                  width: 23,
-                                  height: 23,
-                                }}
-                              />
-                            ) : (
-                              <GetAppIcon fontSize="small"></GetAppIcon>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </MenuItem>
-                  ))}
-                </Select>
+                        {e.plotData.label}
+                      </MenuItem>
+                    ))}
+                    {files.map((e: any) => (
+                      <MenuItem
+                        value={getHistograValue(e, "file")}
+                        style={{
+                          backgroundColor: getHistogramSelectedColor(
+                            filePlotIdDict[e.id]
+                          ),
+                        }}
+                      >
+                        <div
+                          onClick={() => {
+                            if (filePlotIdDict[e.id]) {
+                              props.plot.plotData.removeBarOverlay(
+                                filePlotIdDict[e.id]
+                              );
+                              filePlotIdDict[e.id] = "";
+                            } else {
+                              if (isDownloaded(e.id)) {
+                                addFile(
+                                  downloadedFiles.find((x) => x.id == e.id)
+                                );
+                              } else {
+                                downloadFile(e.id);
+                              }
+                            }
+                          }}
+                        >
+                          {e.label}
+                          {isDownloaded(e.id) ? null : (
+                            <Button
+                              style={{
+                                backgroundColor: "#66d",
+                                color: "white",
+                                fontSize: 13,
+                                marginLeft: 20,
+                              }}
+                            >
+                              {isDownloading(e.id) ? (
+                                <CircularProgress
+                                  style={{
+                                    color: "white",
+                                    width: 23,
+                                    height: 23,
+                                  }}
+                                />
+                              ) : (
+                                <GetAppIcon fontSize="small"></GetAppIcon>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
               ) : null}
             </div>
           </div>
