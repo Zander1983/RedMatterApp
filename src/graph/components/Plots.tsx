@@ -7,17 +7,17 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
-
+import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import GatetNamePrompt from "./modals/GateNamePrompt";
 import GenerateReportModal from "./modals/GenerateReportModal";
 import LinkShareModal from "./modals/linkShareModal";
-
+import FCSFile from "graph/dataManagement/fcsFile";
 import Workspace from "./workspaces/Workspace";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
-
+import fileService from "services/FileService";
 import SideMenus from "./static/SideMenus";
 import { HuePicker } from "react-color";
 import {
@@ -31,6 +31,7 @@ import { useHistory } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import { useLocation } from "react-router-dom";
+import PlotData from "graph/dataManagement/plotData";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -67,18 +68,35 @@ const useStyles = makeStyles((theme) => ({
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 let setWorkspaceAlready = false;
+const staticFiles = [
+  "transduction_1",
+  "transduction_2",
+  "transduction_3",
+  "erica1",
+  "erica2",
+  "erica3",
+].map((e) => {
+  return {
+    label: e,
+    information: "...",
+    fromStatic: e,
+    fileSize: 0,
+    eventCount: 0,
+    lastModified: "X/X/X",
+  };
+});
 
 function Plots(props: { experimentId: string }) {
   console.log("EXPERIMENT ID = ", props.experimentId);
+  const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
-
   const location = useLocation();
+
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -99,12 +117,12 @@ function Plots(props: { experimentId: string }) {
       );
     }
 
-    initPlots();
+    initPlots(workspaceData.data["isShared"]);
     if (workspaceData)
-       loadWorkspaceStatsToDM(
+      loadWorkspaceStatsToDM(
         workspaceData.data["isShared"],
         JSON.parse(workspaceData.data["state"])
-    );
+      );
   };
 
   useEffect(() => {
@@ -114,13 +132,24 @@ function Plots(props: { experimentId: string }) {
     } else {
       initPlots();
     }
+
+    var downloadedListner = fileService.addObserver("updateDownloaded", () => {
+      setDownloadedFiles(fileService.downloaded);
+    });
+
+    var downloadingListner = fileService.addObserver("updateDownloadingFiles", () => {
+      setDownloadingFiles(fileService.downloadingFiles);
+    });
+
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
+      fileService.removeObserver("updateDownloadingFiles", downloadingListner);
+      fileService.removeObserver("updateDownloaded", downloadedListner);
     };
   }, []);
 
-  const initPlots = () => {
+  const initPlots = async (workSpaceShared: boolean = false) => {
     if (observerAdded === false) {
       setObserverAdded(true);
       dataManager.addObserver(
@@ -142,12 +171,15 @@ function Plots(props: { experimentId: string }) {
     }
 
     if (
-      !sharedWorkspace &&
+      !workSpaceShared &&
       process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
       !isLoggedIn
     ) {
       history.push("/login");
     }
+
+    await fileService.downloadFileMetadata(workSpaceShared, props.experimentId);
+
     setInitPlot(true);
   };
 
@@ -228,7 +260,8 @@ function Plots(props: { experimentId: string }) {
   const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
-  
+  const [downloadingFiles, setDownloadingFiles] = React.useState([]);
+
   const getNameAndOpenModal = (gate: Gate) => {
     setNamePromptOpen(true);
     setGateToSend(gate);
@@ -238,6 +271,7 @@ function Plots(props: { experimentId: string }) {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
   };
+
   var getSharedRemoteFiles = async (fileIds: Array<string>) => {
     let datas = await axios.post(
       "/api/sharedEvents",
@@ -250,6 +284,7 @@ function Plots(props: { experimentId: string }) {
 
     return datas.data;
   };
+
   var loadWorkspaceStatsToDM = async (
     sharedWorkspacearg: boolean,
     workspaceStatearg: any
@@ -258,17 +293,58 @@ function Plots(props: { experimentId: string }) {
       setLoading(true);
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
-      
+
+      setDownloadingFiles(stateFileIds);
       let eventFiles = await getSharedRemoteFiles(stateFileIds);
-
-      setDownloadedFiles(eventFiles);
-
+      fileService.updateDownloaded(eventFiles);
+      if(!dataManager.ready())
+      {
+        dataManager.createWorkspace();
+      }
       for (let i = 0; i < eventFiles.length; i++) {
         workspaceStateReload.addFile(eventFiles[i]);
       }
+
       dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
     }
     setLoading(false);
+  };
+
+  const handleDownLoadFileEvents = async (fileIds: any[]) => {
+    fileService.downloadFileEvents(
+      sharedWorkspace,
+      fileIds,
+      props.experimentId
+    );
+  };
+
+  const addFile = (index: number) => {
+    if (!dataManager.ready()) {
+      snackbarService.showSnackbar("Something went wrong, try again!", "error");
+      return;
+    }
+
+    const file: any = remoteWorkspace
+      ? downloadedFiles[index]
+      : staticFiles[index];
+    let newFile: FCSFile;
+    if (file?.fromStatic) {
+      newFile = staticFileReader(file.fromStatic);
+    } else {
+      newFile = new FCSFile({
+        name: file.title,
+        id: file.id,
+        src: "remote",
+        axes: file.channels.map((e: any) => e.value),
+        data: file.events,
+        plotTypes: file.channels.map((e: any) => e.display),
+        remoteData: file,
+      });
+    }
+    const fileID = dataManager.addNewFileToWorkspace(newFile);
+    const plot = new PlotData();
+    plot.file = dataManager.getFile(fileID);
+    dataManager.addNewPlotToWorkspace(plot);
   };
 
   var onLinkShareClick = async () => {
@@ -315,6 +391,14 @@ function Plots(props: { experimentId: string }) {
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
             downloaded={downloadedFiles}
+            downloading={downloadingFiles}
+            filesMetadata={fileService.files}
+            onDownloadFileEvents={(fileIds) => {
+              handleDownLoadFileEvents(fileIds);
+            }}
+            addFileToWorkspace={(index) => {
+              addFile(index);
+            }}
           />
 
           <GenerateReportModal
@@ -637,7 +721,7 @@ function Plots(props: { experimentId: string }) {
                   </Button>
                   {/* Uncomment below to have a "print state" button */}
 
-                  { sharedWorkspace ? null : (
+                  {sharedWorkspace ? null : (
                     <Button
                       variant="contained"
                       size="large"
@@ -693,7 +777,12 @@ function Plots(props: { experimentId: string }) {
 
               <Grid>
                 {!loading ? (
-                  <Workspace></Workspace>
+                  <Workspace
+                    {...{
+                      sharedWorkspace: sharedWorkspace,
+                      experimentId: props.experimentId,
+                    }}
+                  ></Workspace>
                 ) : (
                   <Grid
                     container
@@ -714,7 +803,13 @@ function Plots(props: { experimentId: string }) {
               </Grid>
             </div>
           ) : (
-            <div style={{display: "flex", justifyContent: "center", padding: "100px"}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "100px",
+              }}
+            >
               <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
             </div>
           )}

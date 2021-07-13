@@ -14,7 +14,7 @@ interface HistogramDrawerState extends GraphDrawerState {
 export default class HistogramDrawer extends GraphDrawer {
   private binSize: number;
   private bins: number;
-  private axis: "vertical" | "horizontal" = "vertical";
+  public axis: "vertical" | "horizontal" = "vertical";
 
   update() {
     super.update();

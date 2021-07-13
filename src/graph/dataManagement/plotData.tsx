@@ -92,7 +92,10 @@ export default class PlotData extends ObserversFunctionality {
     color: string;
     plot: string;
   }[] = [];
-
+  histogramBarOverlays: {
+    color: string;
+    plot: any;
+  }[] = [];
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -116,6 +119,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
+    
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -261,6 +265,21 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
 
+  addBarOverlay(plotData: PlotData, color?: string) {
+    if (color === undefined) color = generateColor();
+    this.histogramBarOverlays.push({
+      plot: plotData,
+      color: color,
+    });
+    this.plotUpdated();
+  }
+
+  removeBarOverlay(ploDataID: string)
+  {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+    this.plotUpdated();
+  }
+  
   removeOverlay(plotDataID: string) {
     const oldLength = this.histogramOverlays.length;
     const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);

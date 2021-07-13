@@ -53,8 +53,7 @@ export default class Canvas {
 
   render() {}
 
-  setUseCanvasUsed(value: boolean)
-  {
+  setUseCanvasUsed(value: boolean) {
     this.useCanvasCalled = value;
   }
 
@@ -72,7 +71,8 @@ export default class Canvas {
     let frameCount = 0;
     let animationFrameId = 0;
 
-    const sendMouseInteraction = (event: Event) => {
+    const sendMouseInteraction = (event: Event, lock?: boolean) => {
+      if (lock !== undefined) dataManager.workspaceDragLock(lock);
       //@ts-ignore
       const x = event.offsetX;
       //@ts-ignore
@@ -88,9 +88,9 @@ export default class Canvas {
       }
     };
 
-    addCanvasListener("mousedown", sendMouseInteraction);
-    addCanvasListener("mouseup", sendMouseInteraction);
-    addCanvasListener("mousemove", sendMouseInteraction);
+    addCanvasListener("mousedown", (e: Event) => sendMouseInteraction(e, true));
+    addCanvasListener("mouseup", (e: Event) => sendMouseInteraction(e, false));
+    addCanvasListener("mousemove", (e: Event) => sendMouseInteraction(e));
 
     this.canvasRender = () => {
       frameCount++;

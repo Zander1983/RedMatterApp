@@ -392,7 +392,7 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   setWorkspaceID(remoteWorkspaceID: string) {
     this.remoteWorkspaceID = remoteWorkspaceID;
-    //this.loadWorkspaceFilesFromRemote();
+    this.loadWorkspaceFilesFromRemote();
   }
 
   isRemoteWorkspace() {
@@ -401,6 +401,18 @@ class DataManager extends ObserversFunctionality {
 
   getRemoteWorkspaceID() {
     return this.remoteWorkspaceID;
+  }
+
+  dragLock: boolean = false;
+  @publishDecorator()
+  workspaceDragLock(dragLock?: boolean) {
+    if (dragLock != undefined) {
+      this.dragLock = dragLock;
+      if (this.dragLock === true) {
+        setTimeout(() => this.workspaceDragLock(false), 1000);
+      }
+    }
+    return this.dragLock;
   }
 
   /* 

@@ -29,33 +29,11 @@ export default class WorkspaceAssembler {
     });
     const plots: object[] = [];
     workspace.plots.forEach((plot: any) => {
-      plot = lodash.cloneDeep(plot);
-      plot.gates = plot.gates.map((e: any) => {
-        e.gate = e.gate.id;
-        return e;
+      let nplot = lodash.cloneDeep(plot);
+      nplot.histogramBarOverlays.forEach((x: any) => {
+        x.plot = this.parsePlot(x.plot);
       });
-      plot.population = plot.population.map((e: any) => {
-        e.gate = e.gate.id;
-        return e;
-      });
-
-      delete plot.axisDataCache;
-      delete plot.randomSelection;
-      delete plot.changed;
-      delete plot.gateObservers;
-      delete plot.popObservers;
-      delete plot.observers;
-      delete plot.STD_BIN_SIZE;
-      plot.file = plot.file.src + "://" + plot.file.id;
-
-      const p = JSON.parse(JSON.stringify(plot));
-
-      const ranges: any = {};
-      plot.ranges.forEach((v: [number, number], k: string) => {
-        ranges[k] = v;
-      });
-      p.ranges = ranges;
-
+      let p = this.parsePlot(nplot);
       plots.push(p);
     });
     const name =
@@ -67,10 +45,39 @@ export default class WorkspaceAssembler {
       plots: plots === null || plots === undefined ? [] : plots,
     });
   }
+  parsePlot(plot: any) {
+    plot = lodash.cloneDeep(plot);
+    plot.gates = plot.gates.map((e: any) => {
+      e.gate = e.gate.id;
+      return e;
+    });
+    plot.population = plot.population.map((e: any) => {
+      e.gate = e.gate.id;
+      return e;
+    });
 
+    delete plot.axisDataCache;
+    delete plot.randomSelection;
+    delete plot.changed;
+    delete plot.gateObservers;
+    delete plot.popObservers;
+    delete plot.observers;
+    delete plot.STD_BIN_SIZE;
+    plot.file = plot.file.src + "://" + plot.file.id;
+
+    const p = JSON.parse(JSON.stringify(plot));
+
+    const ranges: any = {};
+    plot.ranges.forEach((v: [number, number], k: string) => {
+      ranges[k] = v;
+    });
+    p.ranges = ranges;
+
+    return p;
+  }
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
     const inp = JSON.parse(workspaceJSON);
-    const files = new Map();   
+    const files = new Map();
     const gates = new Map();
     const plots = new Map();
     const fileMappings: any = {};
