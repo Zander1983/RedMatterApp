@@ -238,7 +238,7 @@ export default function Plans(props : any) {
                         sm={6}>
                         <h3>Next Billing Date:
                             <span>{
-                                date == null ? 'Not Active' : (JSON.stringify(date).substring(1, 11))
+                                date == null ? 'Not Active' : (" "+JSON.stringify(date).substring(1, 11))
                             }</span>
                         </h3>
 
@@ -265,12 +265,12 @@ export default function Plans(props : any) {
                             {marginBottom: '1.5em'}
                         }>Current Subscription:
                             <span>{
-                                product == null ? 'Your Subscription Type' : product.name
+                                product == null ? 'Your Subscription Type' : (" "+product.name)
                             }</span>
                         </h3>
                         {product == null ? null : (product.name == "You are not currently Subscribed" ? null : (
                           <div>
-                            <h3>Change Subscription</h3>
+                            <h3><strong>Change Subscription</strong></h3>
                           <FormControl className={
                               classes.formControl
                           }>
