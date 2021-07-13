@@ -156,6 +156,7 @@ function PlotComponent(props: {
   };
 
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
+  const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
   const [histogramOverlayTypeValue, setHistogramOverlayTypeValue] =
     React.useState(histogramOverlayType.Bar);
 
@@ -275,6 +276,15 @@ function PlotComponent(props: {
         setDownloadingFiles(dataManager.downloadingFiles);
       }
     );
+
+    window.addEventListener("click", (e) => {
+      let event: any = e.target;
+      console.log(event);
+      if (event && event.id != "hist_overlay") {
+        setHistogramOverlayOpen(false);
+      }
+    });
+
     return () => {
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
@@ -449,7 +459,7 @@ function PlotComponent(props: {
     }
 
     setHistogramOverlayTypeValue(type);
-    debugger;
+
     addOverlayAsPerType(type, overLaysObjects);
   };
 
@@ -716,18 +726,11 @@ function PlotComponent(props: {
               {isPlotHistogram() ? (
                 <div>
                   <Select
-                    value={histogramOverlayTypeValue}
-                    onChange={(e) => {
-                      changeHistOverlayType(e.target.value.toString());
+                    id="hist_overlay"
+                    open={histogramOverlayOpen}
+                    onClick={() => {
+                      if (!histogramOverlayOpen) setHistogramOverlayOpen(true);
                     }}
-                  >
-                    {Object.keys(
-                      COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE
-                    ).map((e: string) => (
-                      <MenuItem value={getDropdownValue(e)}>{e}</MenuItem>
-                    ))}
-                  </Select>
-                  <Select
                     style={{
                       marginTop: "10px",
                       marginLeft: "10px",
@@ -743,6 +746,7 @@ function PlotComponent(props: {
                     <MenuItem value={"0"}>Histogram overlays</MenuItem>
                     {props.plots.map((e: any) => (
                       <MenuItem
+                        id="hist_overlay"
                         value={getHistograValue(e, "plot")}
                         style={{
                           backgroundColor: getHistogramSelectedColor(
@@ -750,11 +754,34 @@ function PlotComponent(props: {
                           ),
                         }}
                       >
-                        {e.plotData.label}
+                        <div id="hist_overlay">
+                          {e.plotData.label}
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                          >
+                            Bar
+                          </Button>
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                          >
+                            line
+                          </Button>
+                        </div>
                       </MenuItem>
                     ))}
                     {files.map((e: any) => (
                       <MenuItem
+                        id="hist_overlay"
                         value={getHistograValue(e, "file")}
                         style={{
                           backgroundColor: getHistogramSelectedColor(
@@ -763,6 +790,7 @@ function PlotComponent(props: {
                         }}
                       >
                         <div
+                          id="hist_overlay"
                           onClick={() => {
                             if (filePlotIdDict[e.id]) {
                               props.plot.plotData.removeBarOverlay(
@@ -781,7 +809,65 @@ function PlotComponent(props: {
                           }}
                         >
                           {e.label}
-                          {isDownloaded(e.id) ? null : (
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                          >
+                            Bar
+                            {isDownloaded(e.id) ? null : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                }}
+                              >
+                                {isDownloading(e.id) ? (
+                                  <CircularProgress
+                                    style={{
+                                      color: "white",
+                                      width: 23,
+                                      height: 23,
+                                    }}
+                                  />
+                                ) : (
+                                  <GetAppIcon fontSize="small"></GetAppIcon>
+                                )}
+                              </div>
+                            )}
+                          </Button>
+                          <Button
+                            style={{
+                              backgroundColor: "#66d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                          >
+                            line
+                            {isDownloaded(e.id) ? null : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                }}
+                              >
+                                {isDownloading(e.id) ? (
+                                  <CircularProgress
+                                    style={{
+                                      color: "white",
+                                      width: 23,
+                                      height: 23,
+                                    }}
+                                  />
+                                ) : (
+                                  <GetAppIcon fontSize="small"></GetAppIcon>
+                                )}
+                              </div>
+                            )}
+                          </Button>
+                          {/* {isDownloaded(e.id) ? null : (
                             <Button
                               style={{
                                 backgroundColor: "#66d",
@@ -790,19 +876,9 @@ function PlotComponent(props: {
                                 marginLeft: 20,
                               }}
                             >
-                              {isDownloading(e.id) ? (
-                                <CircularProgress
-                                  style={{
-                                    color: "white",
-                                    width: 23,
-                                    height: 23,
-                                  }}
-                                />
-                              ) : (
-                                <GetAppIcon fontSize="small"></GetAppIcon>
-                              )}
+                              
                             </Button>
-                          )}
+                          )} */}
                         </div>
                       </MenuItem>
                     ))}

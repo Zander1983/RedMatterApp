@@ -19,7 +19,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   direction: "vertical" | "horizontal" = "vertical";
   bins: number = 1;
   drawer: HistogramDrawer;
-  drawer1: HistogramDrawer;
 
   globalMax: number = 0;
   rangeMin: number = 0;
@@ -98,7 +97,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
   public createDrawer(): void {
     this.drawer = new HistogramDrawer();
-    this.drawer1 = new HistogramDrawer();
   }
 
   private DRAW_DIVISION_CONST = 3;
@@ -130,7 +128,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     const overlaysObj = this.plotData.histogramOverlays;
     const overlays = [];
 
-    this.globalMax = globlMax;
     this.rangeMin = range[0];
     this.rangeMax = range[1];
 
@@ -147,14 +144,16 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         axis
       );
       overlayRes.list = overlayRes.list.map(
-        (e : any) => e / this.DRAW_DIVISION_CONST
+        (e: any) => e / this.DRAW_DIVISION_CONST
       );
       overlays.push({
         ...overlayRes,
         color: overlay.color,
       });
+      const lastMax = overlay.plot.getBins(Math.round(this.bins) - 1, axis).max;
+      if (lastMax > globlMax) globlMax = lastMax;
     }
-
+    this.globalMax = globlMax;
     const barOverlays = this.plotData.histogramBarOverlays;
     let binsArray = [];
     let parentBinsArray = [];
@@ -162,14 +161,16 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.plotData.population && this.plotData.population.length > 0
         ? this.plotData.population[0].gate.color
         : "";
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: mainHist.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
 
     if (barOverlays) {
+      for (let i = 0; i < barOverlays.length; i++) {
+        const lastMax = barOverlays[i].plot.getBins(
+          Math.round(this.bins) - 1,
+          axis
+        ).max;
+        if (lastMax > globlMax) globlMax = lastMax;
+      }
+      this.globalMax = globlMax;
       for (let i = 0; i < barOverlays.length; i++) {
         let newPlotData = new PlotData();
         newPlotData.file = barOverlays[i].plot.file;
@@ -179,10 +180,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         newPlotData.ranges.set(axis, [range[0], range[1]]);
         let overlayMainHist = newPlotData.getBins(this.bins, axis);
         let binsArray = [];
-        let overlayGloblMax = overlayMainHist.max;
         for (let j = 0; j < this.bins; j++) {
           binsArray.push({
-            value: overlayMainHist.list[j] / overlayGloblMax,
+            value: overlayMainHist.list[j] / globlMax,
             color: barOverlays[i].color,
           });
         }
@@ -190,7 +190,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         binsArray = [];
       }
     }
-
+    for (let i = 0; i < this.bins; i++) {
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: mainPlotColor,
+      });
+    }
     for (let i = 0; i < binsArray.length; i++) {
       let binsAscArray = [];
       binsAscArray.push(binsArray[i]);
