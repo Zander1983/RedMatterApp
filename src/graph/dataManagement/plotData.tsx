@@ -119,7 +119,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
-    
+
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -274,12 +274,13 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
 
-  removeBarOverlay(ploDataID: string)
-  {
-    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+  removeBarOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plot.id != ploDataID
+    );
     this.plotUpdated();
   }
-  
+
   removeOverlay(plotDataID: string) {
     const oldLength = this.histogramOverlays.length;
     const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
@@ -482,58 +483,7 @@ export default class PlotData extends ObserversFunctionality {
       yAxis.push(e[yAxisName]);
     });
 
-    if (this.xPlotType === "bi") {
-      const rb = this.findRangeBoundries(xAxis);
-      xAxis = new FCSServices().logicleMarkTransformer(
-        [...xAxis],
-        rb[0],
-        rb[1]
-      );
-    }
-
-    if (this.yPlotType === "bi") {
-      const rb = this.findRangeBoundries(yAxis);
-      yAxis = new FCSServices().logicleMarkTransformer(
-        [...yAxis],
-        rb[0],
-        rb[1]
-      );
-    }
-
-    this.updateRanges(xAxis, yAxis);
     return { xAxis, yAxis };
-  }
-
-  updateRanges(xAxis: number[], yAxis: number[]) {
-    const xChanged = this.xPlotType !== this.rangePlotType.get(this.xAxis);
-    const yChanged = this.yPlotType !== this.rangePlotType.get(this.yAxis);
-    if (!xChanged && !yChanged) {
-      return;
-    }
-    if (
-      this.rangePlotType.get(this.xAxis) === undefined ||
-      this.rangePlotType.get(this.yAxis) === undefined
-    )
-      return;
-    if (xChanged) {
-      if (this.xPlotType === "bi") {
-        this.rangePlotType.set(this.xAxis, "bi");
-        const xMin = 0.5; //xAxis.reduce((o, e) => (e = e < o ? e : o));
-        this.ranges.set(this.xAxis, [xMin, 1]);
-      } else {
-        this.ranges.delete(this.xAxis);
-      }
-    }
-    if (yChanged) {
-      if (this.yPlotType === "bi") {
-        this.rangePlotType.set(this.yAxis, "bi");
-        const yMin = 0.5; //yAxis.reduce((o, e) => (e = e < o ? e : o));
-        this.ranges.set(this.yAxis, [yMin, 1]);
-      } else {
-        this.ranges.delete(this.yAxis);
-      }
-    }
-    this.findAllRanges();
   }
 
   getAxis(targetAxis: string): number[] {

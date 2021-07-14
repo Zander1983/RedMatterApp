@@ -101,38 +101,40 @@ export default class GraphPlotter extends Plotter {
     this.drawHeader();
   }
 
-  public update(): void {
+  public update(noLabels: boolean = false): void {
     const ranges = this.plotData.getXandYRanges();
     this.getBins();
 
-    const xRange =
-      this.plotData.xPlotType === "lin"
-        ? ranges.x
-        : this.plotData.linearRanges.get(this.plotData.xAxis);
+    if (noLabels === false) {
+      const xRange =
+        this.plotData.xPlotType === "lin"
+          ? ranges.x
+          : this.plotData.linearRanges.get(this.plotData.xAxis);
 
-    const yRange =
-      this.plotData.yPlotType === "lin"
-        ? ranges.y
-        : this.plotData.linearRanges.get(this.plotData.yAxis);
+      const yRange =
+        this.plotData.yPlotType === "lin"
+          ? ranges.y
+          : this.plotData.linearRanges.get(this.plotData.yAxis);
 
-    const xLabels = this.transformer.getAxisLabels(
-      this.plotData.xPlotType,
-      xRange,
-      this.plotData.xPlotType === "bi"
-        ? Math.round(this.horizontalBinCount / 2)
-        : this.horizontalBinCount
-    );
+      const xLabels = this.transformer.getAxisLabels(
+        this.plotData.xPlotType,
+        xRange,
+        this.plotData.xPlotType === "bi"
+          ? Math.round(this.horizontalBinCount / 2)
+          : this.horizontalBinCount
+      );
 
-    const yLabels = this.transformer.getAxisLabels(
-      this.plotData.yPlotType,
-      yRange,
-      this.plotData.yPlotType === "bi"
-        ? Math.round(this.verticalBinCount / 2)
-        : this.verticalBinCount
-    );
+      const yLabels = this.transformer.getAxisLabels(
+        this.plotData.yPlotType,
+        yRange,
+        this.plotData.yPlotType === "bi"
+          ? Math.round(this.verticalBinCount / 2)
+          : this.verticalBinCount
+      );
 
-    this.xLabels = xLabels;
-    this.yLabels = yLabels;
+      this.xLabels = xLabels;
+      this.yLabels = yLabels;
+    }
 
     super.update();
   }

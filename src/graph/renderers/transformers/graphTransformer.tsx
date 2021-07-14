@@ -1,5 +1,6 @@
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
 import numeral from "numeral";
+import FCSServices from "services/FCSServices/FCSServices";
 
 const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
@@ -66,14 +67,24 @@ export default class GraphTransformer extends Transformer {
     };
   }
 
-  toConcretePoint = (p: GraphPoint): GraphPoint => {
+  toConcretePoint = (
+    p: GraphPoint,
+    customRanges?: [[number, number], [number, number]]
+  ): GraphPoint => {
+    let { ibx, iby, iex, iey } = this;
+    if (customRanges !== undefined) {
+      ibx = customRanges[0][0];
+      iex = customRanges[0][1];
+      iby = customRanges[1][0];
+      iey = customRanges[1][1];
+    }
     const w = Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2);
     const h = Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
     const xBegin = Math.min(this.x1, this.x2);
     const yEnd = Math.max(this.y1, this.y2);
     return {
-      x: (((p.x - this.ibx) / (this.iex - this.ibx)) * w + xBegin) / this.scale,
-      y: (yEnd - ((p.y - this.iby) / (this.iey - this.iby)) * h) / this.scale,
+      x: (((p.x - ibx) / (iex - ibx)) * w + xBegin) / this.scale,
+      y: (yEnd - ((p.y - iby) / (iey - iby)) * h) / this.scale,
     };
   };
 
@@ -102,51 +113,48 @@ export default class GraphTransformer extends Transformer {
       for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
         labels.push({
           pos: i,
-          name: this.numToLabelText(i),
+          name: this.linLabel(i),
         });
     }
     if (format === "bi") {
-      let min = 1.01;
-      let max = 1e5;
-      while (labels.length != binsCount) {
-        let div = (min + max) / 2;
-        let mx = linRange[1];
-        let mi = linRange[0];
-        let pt = 1e100;
-        const ptlist = [];
-        while (pt > mx) pt = pt / div;
-        while (pt <= mx && pt > mi) {
-          ptlist.push(pt);
-          pt = pt / div;
-        }
-        labels = ptlist.map((e) => {
-          let name = numeral(e).format("0,0e+0");
-          const str = name.includes("e+") ? "e+" : "e-";
-          let ts = name.split(str)[1];
-          name = name.split(str)[0];
-          let ev = "";
-          for (const l of ts) ev += EXP_NUMS[parseInt(l)];
-          name = name + ".10" + ev;
-          return {
-            pos: e,
-            name,
-          };
-        });
-        if (labels.length < binsCount) {
-          max = (min + max) / 2;
-        } else {
-          min = (min + max) / 2;
-        }
+      const binSize = 1.0 / binsCount;
+      const fcsServices = new FCSServices();
+
+      let oldBinSize = 0;
+      for (let i = 0, j = 0; j <= binsCount; i += binSize, j++) {
+        const inverse = fcsServices.logicleInverseMarkTransformer(
+          [i],
+          linRange[0],
+          linRange[1]
+        )[0];
+        const name = this.expLabel(inverse);
+        const pos = i;
+        labels.push({ pos, name });
+        oldBinSize = pos;
       }
     }
     return labels;
+  }
+
+  private expLabel(num: number): string {
+    // EG.: A number such as "2,342" turns to "2.10³" or "-77" to "-7.10¹"
+    let name = numeral(num).format("0,0e+0");
+    const str = name.includes("e+") ? "e+" : "e-";
+    let ts = name.split(str)[1];
+    name = name.split(str)[0];
+    let ev = "";
+    for (const l of ts) ev += EXP_NUMS[parseInt(l)];
+    name = name + ".10" + ev;
+    if (!name.includes("-") && num < 0) name = "-" + name;
+    return name;
   }
 
   // logicleToAbstractPoint(p: GraphPoint): GraphPoint {
   //   const logicle;
   // }
 
-  private numToLabelText(num: number): string {
+  private linLabel(num: number): string {
+    // EG.: A number such as "2,342" turns to "2k"
     let snum = "";
     if (num < 2) {
       snum = numeral(num.toFixed(2)).format("0.0a");

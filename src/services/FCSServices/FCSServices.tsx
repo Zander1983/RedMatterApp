@@ -67,6 +67,15 @@ class FCSServices {
     const logicle = new MarkLogicle(rangeBegin, rangeEnd);
     return data.map((e) => logicle.scale(e));
   }
+
+  logicleInverseMarkTransformer(
+    data: number[],
+    rangeBegin?: number,
+    rangeEnd?: number
+  ): number[] {
+    const logicle = new MarkLogicle(rangeBegin, rangeEnd);
+    return data.map((e) => logicle.inverse(e));
+  }
 }
 
 export default FCSServices;
