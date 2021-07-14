@@ -240,6 +240,7 @@ export default class GraphPlotter extends Plotter {
       iby: ranges.y[0],
       iey: ranges.y[1],
       scale: this.scale,
+      plotData: this.plotData,
     });
   }
 

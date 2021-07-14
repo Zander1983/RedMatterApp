@@ -102,32 +102,6 @@ export default abstract class GateMouseInteractor {
   }
 
   private convertMouseClickToAbstract(p: Point): Point {
-    p = this.plugin.plotter.transformer.toAbstractPoint(p);
-    let ranges = [
-      this.plugin.plotter.plotData.linearRanges.get(
-        this.plugin.plotter.plotData.xAxis
-      ),
-      this.plugin.plotter.plotData.linearRanges.get(
-        this.plugin.plotter.plotData.yAxis
-      ),
-    ];
-    const fcsService = new FCSServices();
-    if (this.plugin.plotter.plotData.xPlotType === "bi") {
-      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
-      p.x = fcsService.logicleInverseMarkTransformer(
-        [p.x],
-        ranges[0][0],
-        ranges[0][1]
-      )[0];
-    }
-    if (this.plugin.plotter.plotData.yPlotType === "bi") {
-      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
-      p.y = fcsService.logicleInverseMarkTransformer(
-        [p.y],
-        ranges[0][0],
-        ranges[0][1]
-      )[0];
-    }
-    return p;
+    return this.plugin.plotter.transformer.toAbstractPoint(p);
   }
 }

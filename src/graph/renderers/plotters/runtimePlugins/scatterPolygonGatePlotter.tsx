@@ -47,7 +47,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     const pointCount = gate.points.length;
     const scale = this.plotter.scale;
     const newPoints = gate.points;
-    let { points, newRanges } = this.pointsToBi(newPoints);
+    let { points, newRanges } = this.pointsToBi([...newPoints]);
     for (let i = 0; i < pointCount; i++) {
       const p = this.plotter.transformer.toConcretePoint(points[i], newRanges);
       const pp = this.plotter.transformer.toConcretePoint(
@@ -156,10 +156,15 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     abstract: boolean = false,
     otherPointToCompare: Point = undefined
   ) {
+    const { points, newRanges } = this.pointsToBi([{ ...this.points[0] }]);
     const p1 = this.plotter.transformer.toConcretePoint(
-      otherPointToCompare === undefined ? this.points[0] : otherPointToCompare
+      otherPointToCompare === undefined ? points[0] : otherPointToCompare,
+      newRanges
     );
-    const p2 = abstract ? this.plotter.transformer.toConcretePoint(p) : p;
+    const p2 = abstract
+      ? this.plotter.transformer.toConcretePoint(p, undefined, false)
+      : p;
+    // console.log(p1, p2);
     const dist = euclidianDistance2D(p1, p2);
     if (dist <= 10) {
       return true;

@@ -7,10 +7,8 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
-import OvalGate from "graph/dataManagement/gate/ovalGate";
 
-const maxPolygonDist = 10;
+const maxPolygonDist = 15;
 
 export interface PolygonGateState extends GateState {
   points: Point[];
@@ -60,6 +58,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.plotter.gates.length > 0 &&
       !this.isDraggingVertex
     ) {
+      console.log("a");
       this.plotter.gates.forEach((gate) => {
         if (
           gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))
@@ -78,6 +77,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.started &&
       !this.isDraggingGate
     ) {
+      console.log("b");
       this.plotter.gates.forEach((gate) => {
         if (gate instanceof PolygonGate && this.targetEditGate === null)
           gate.points.forEach((p, i) => {
@@ -85,9 +85,14 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
               this.targetEditGate === null &&
               euclidianDistance2D(
                 mouse,
-                this.plotter.transformer.toConcretePoint(p)
+                this.plotter.transformer.toConcretePoint(
+                  { ...p },
+                  undefined,
+                  false
+                )
               ) <= maxPolygonDist
             ) {
+              console.log(this.gateEvent.)
               this.targetEditGate = gate;
               this.targetPointIndex = i;
               this.isDraggingVertex = true;
@@ -95,9 +100,21 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
           });
       });
     } else if (this.targetEditGate !== null && type === "mouseup") {
+      console.log("c");
       this.isDraggingVertex = false;
       this.targetEditGate = null;
       this.targetPointIndex = null;
+    } else if (
+      this.targetEditGate !== null &&
+      type === "mousemove" &&
+      this.isDraggingVertex &&
+      !this.isDraggingGate
+    ) {
+      console.log("d");
+      const gateState = this.targetEditGate.getState();
+      gateState.points[this.targetPointIndex] =
+        this.plotter.transformer.toAbstractPoint(mouse);
+      this.targetEditGate.update(gateState);
     }
 
     if (
@@ -106,38 +123,23 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.isDraggingGate &&
       !this.isDraggingVertex
     ) {
-      const absPoint = this.plotter.transformer.toAbstractPoint(mouse);
+      console.log("e");
+      const absMouse = this.plotter.transformer.toAbstractPoint(mouse);
+
+      let offset = {
+        x: absMouse.x - this.gatePivot.x,
+        y: absMouse.y - this.gatePivot.y,
+      };
+      this.gatePivot = absMouse;
+
       const gateState = this.targetEditGate.getState();
-
-      let offsetX = absPoint.x - this.gatePivot.x;
-      let offsetY = absPoint.y - this.gatePivot.y;
-
-      // if (!this.canMove(gateState.points, { x: offsetX, y: offsetY })) {
-      //   this.isDraggingGate = false;
-      //   return;
-      // } else {
       for (let index = 0; index < gateState.points.length; index++) {
-        let newX = gateState.points[index].x + offsetX;
-        let newY = gateState.points[index].y + offsetY;
-
-        gateState.points[index] = { x: newX, y: newY };
+        gateState.points[index] = {
+          x: gateState.points[index].x + offset.x,
+          y: gateState.points[index].y + offset.y,
+        };
       }
-      this.gatePivot.x += offsetX;
-      this.gatePivot.y += offsetY;
-      // }
 
-      this.targetEditGate.update(gateState);
-    }
-
-    if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingVertex &&
-      !this.isDraggingGate
-    ) {
-      const gateState = this.targetEditGate.getState();
-      gateState.points[this.targetPointIndex] =
-        this.plotter.transformer.toAbstractPoint(mouse);
       this.targetEditGate.update(gateState);
     }
 
@@ -227,8 +229,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     if (this.points.length < 2) {
       return false;
     }
-    const p1 = this.plotter.transformer.toConcretePoint(this.points[0]);
-    const p2 = this.plotter.transformer.toConcretePoint(p);
+    const p1 = this.plotter.transformer.toConcretePoint(
+      this.points[0],
+      undefined,
+      false
+    );
+    const p2 = this.plotter.transformer.toConcretePoint(p, undefined, false);
     if (euclidianDistance2D(p1, p2) <= maxPolygonDist) {
       return true;
     }

@@ -1,3 +1,4 @@
+import PlotData from "graph/dataManagement/plotData";
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
 import numeral from "numeral";
 import FCSServices from "services/FCSServices/FCSServices";
@@ -19,6 +20,7 @@ export interface GraphTransformerState {
   iby: number;
   iey: number;
   scale: number;
+  plotData?: PlotData;
 }
 
 export type Label = {
@@ -36,6 +38,7 @@ export default class GraphTransformer extends Transformer {
   private iby: number;
   private iey: number;
   private scale: number;
+  private plotData: PlotData;
 
   update() {
     super.update();
@@ -51,6 +54,7 @@ export default class GraphTransformer extends Transformer {
     this.iby = state.iby;
     this.iey = state.iey;
     this.scale = state.scale;
+    if (state.plotData !== undefined) this.plotData = state.plotData;
   }
 
   getTransformerState() {
@@ -64,12 +68,14 @@ export default class GraphTransformer extends Transformer {
       iby: this.iby,
       iey: this.iey,
       scale: this.scale,
+      plotData: this.plotData,
     };
   }
 
   toConcretePoint = (
     p: GraphPoint,
-    customRanges?: [[number, number], [number, number]]
+    customRanges?: [[number, number], [number, number]],
+    alreadyLogicleConverted: boolean = true
   ): GraphPoint => {
     let { ibx, iby, iex, iey } = this;
     if (customRanges !== undefined) {
@@ -77,6 +83,29 @@ export default class GraphTransformer extends Transformer {
       iex = customRanges[0][1];
       iby = customRanges[1][0];
       iey = customRanges[1][1];
+    }
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    if (!alreadyLogicleConverted && (xBi || yBi)) {
+      let ranges = [
+        this.plotData.linearRanges.get(this.plotData.xAxis),
+        this.plotData.linearRanges.get(this.plotData.yAxis),
+      ];
+      const fcsService = new FCSServices();
+      if (xBi) {
+        p.x = fcsService.logicleInverseMarkTransformer(
+          [p.x],
+          ranges[0][0],
+          ranges[0][1]
+        )[0];
+      }
+      if (yBi) {
+        p.y = fcsService.logicleInverseMarkTransformer(
+          [p.y],
+          ranges[0][0],
+          ranges[0][1]
+        )[0];
+      }
     }
     const w = Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2);
     const h = Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
@@ -88,18 +117,108 @@ export default class GraphTransformer extends Transformer {
     };
   };
 
-  toAbstractPoint = (p: GraphPoint): GraphPoint => {
+  toAbstractPoint = (
+    p: GraphPoint,
+    noConversionFromLogicle: boolean = false
+  ): GraphPoint => {
     const plotXRange = this.x2 / this.scale - this.x1 / this.scale;
     const plotYRange = this.y1 / this.scale - this.y2 / this.scale;
     const abstractXRange = this.iex - this.ibx;
     const abstractYRange = this.iey - this.iby;
-    return {
+    let ret = {
       x:
         ((p.x - this.x1 / this.scale) / plotXRange) * abstractXRange + this.ibx,
       y:
         this.iey - ((this.y1 / this.scale - p.y) / plotYRange) * abstractYRange,
     };
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    if (noConversionFromLogicle || (!xBi && !yBi)) return ret;
+    let ranges = [
+      this.plotData.ranges.get(this.plotData.xAxis),
+      this.plotData.ranges.get(this.plotData.yAxis),
+    ];
+    const fcsService = new FCSServices();
+    if (xBi) {
+      ret.x = 1 - (ranges[0][1] - ret.x) / (ranges[0][1] - ranges[0][0]);
+      ret.x = fcsService.logicleInverseMarkTransformer(
+        [ret.x],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    if (yBi) {
+      ret.y = 1 - (ranges[1][1] - ret.y) / (ranges[1][1] - ranges[1][0]);
+      ret.y = fcsService.logicleInverseMarkTransformer(
+        [ret.y],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    return ret;
   };
+
+  abstractLinearToLogicle(p: { x: number; y: number }): {
+    x: number;
+    y: number;
+  } {
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    if (!xBi && !yBi) return p;
+    let ranges = [
+      this.plotData.linearRanges.get(this.plotData.xAxis),
+      this.plotData.linearRanges.get(this.plotData.yAxis),
+    ];
+    const fcsService = new FCSServices();
+    if (xBi) {
+      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
+      p.x = fcsService.logicleMarkTransformer(
+        [p.x],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    if (yBi) {
+      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
+      p.y = fcsService.logicleMarkTransformer(
+        [p.y],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    return p;
+  }
+
+  abstractLogicleToLinear(p: { x: number; y: number }): {
+    x: number;
+    y: number;
+  } {
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    if (!xBi && !yBi) return p;
+    let ranges = [
+      this.plotData.linearRanges.get(this.plotData.xAxis),
+      this.plotData.linearRanges.get(this.plotData.yAxis),
+    ];
+    const fcsService = new FCSServices();
+    if (xBi) {
+      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
+      p.x = fcsService.logicleInverseMarkTransformer(
+        [p.x],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    if (yBi) {
+      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
+      p.y = fcsService.logicleInverseMarkTransformer(
+        [p.y],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    return p;
+  }
 
   getAxisLabels(
     format: string,
@@ -148,10 +267,6 @@ export default class GraphTransformer extends Transformer {
     if (!name.includes("-") && num < 0) name = "-" + name;
     return name;
   }
-
-  // logicleToAbstractPoint(p: GraphPoint): GraphPoint {
-  //   const logicle;
-  // }
 
   private linLabel(num: number): string {
     // EG.: A number such as "2,342" turns to "2k"
