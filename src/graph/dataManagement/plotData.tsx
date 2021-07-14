@@ -37,6 +37,7 @@ const MAX_EVENT_SIZE = 100000;
 export interface PlotDataState {
   id: string;
   ranges: Map<string, [number, number]>;
+  linRanges: Map<string, [number, number]>;
   file: FCSFile;
   gates: {
     gate: Gate;
@@ -227,6 +228,7 @@ export default class PlotData extends ObserversFunctionality {
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
+      linRanges: this.linearRanges,
     };
   }
 
@@ -247,6 +249,7 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+    if (state.linRanges !== undefined) this.linearRanges = state.linRanges;
   }
 
   update(state: any) {

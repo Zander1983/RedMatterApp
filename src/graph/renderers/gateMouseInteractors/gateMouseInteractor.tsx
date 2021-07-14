@@ -2,6 +2,7 @@ import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import ScatterPlotter from "../plotters/scatterPlotter";
+import FCSServices from "services/FCSServices/FCSServices";
 
 export interface Point {
   x: number;
@@ -84,7 +85,7 @@ export default abstract class GateMouseInteractor {
 
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
-    const p = this.plugin.plotter.transformer.toAbstractPoint({ x: x, y: y });
+    const p = this.convertMouseClickToAbstract({ x, y });
     this.lastMousePos = this.plugin.lastMousePos = p;
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, { x: x, y: y });
@@ -98,5 +99,35 @@ export default abstract class GateMouseInteractor {
         this.rerender();
       }
     }
+  }
+
+  private convertMouseClickToAbstract(p: Point): Point {
+    p = this.plugin.plotter.transformer.toAbstractPoint(p);
+    let ranges = [
+      this.plugin.plotter.plotData.linearRanges.get(
+        this.plugin.plotter.plotData.xAxis
+      ),
+      this.plugin.plotter.plotData.linearRanges.get(
+        this.plugin.plotter.plotData.yAxis
+      ),
+    ];
+    const fcsService = new FCSServices();
+    if (this.plugin.plotter.plotData.xPlotType === "bi") {
+      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
+      p.x = fcsService.logicleInverseMarkTransformer(
+        [p.x],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    if (this.plugin.plotter.plotData.yPlotType === "bi") {
+      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
+      p.y = fcsService.logicleInverseMarkTransformer(
+        [p.y],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    }
+    return p;
   }
 }

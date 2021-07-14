@@ -5,6 +5,7 @@ import {
   euclidianDistance2D,
   getVectorAngle2D,
 } from "graph/dataManagement/math/euclidianPlane";
+import FCSServices from "services/FCSServices/FCSServices";
 
 export interface ScatterPolygonGatePlotterState {}
 
@@ -44,12 +45,14 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
   protected drawGate(gate: PolygonGate) {
     const pointCount = gate.points.length;
-    let lastPoint = null;
     const scale = this.plotter.scale;
+    const newPoints = gate.points;
+    let { points, newRanges } = this.pointsToBi(newPoints);
     for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(gate.points[i]);
+      const p = this.plotter.transformer.toConcretePoint(points[i], newRanges);
       const pp = this.plotter.transformer.toConcretePoint(
-        gate.points[(i + 1) % gate.points.length]
+        points[(i + 1) % points.length],
+        newRanges
       );
       let color = "#f00";
       let size = 2;
@@ -72,17 +75,57 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     }
   }
 
+  protected pointsToBi(pts: Point[]): {
+    points: Point[];
+    newRanges: [[number, number], [number, number]];
+  } {
+    let ranges: any = this.plotter.plotData.getXandYRanges();
+    const xBi = this.plotter.plotData.xPlotType === "bi";
+    const yBi = this.plotter.plotData.yPlotType === "bi";
+    if (xBi || yBi) {
+      const fcsServices = new FCSServices();
+      pts = pts.map((e) => {
+        const logiclizedx = fcsServices.logicleMarkTransformer(
+          [e.x],
+          ranges.x[0],
+          ranges.x[1]
+        )[0];
+        const logiclizedy = fcsServices.logicleMarkTransformer(
+          [e.y],
+          ranges.y[0],
+          ranges.y[1]
+        )[0];
+        return {
+          x: xBi ? logiclizedx : e.x,
+          y: yBi ? logiclizedy : e.y,
+        };
+      });
+      ranges = [xBi ? [0, 1] : ranges.x, yBi ? [0, 1] : ranges.y];
+    } else {
+      ranges = [ranges.x, ranges.y];
+    }
+    return {
+      points: pts,
+      newRanges: ranges,
+    };
+  }
+
   protected drawGating() {
     if (this.points === undefined) return;
-    const pointCount = this.points.length;
+    let lastMousePos = { ...this.lastMousePos };
+    const newPoints = [...this.points, lastMousePos];
+    const { points, newRanges } = this.pointsToBi(newPoints);
+    const pointCount = points.length - 1;
+    lastMousePos = points[pointCount];
     let lastPoint = null;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(this.points[i]);
+      const p = this.plotter.transformer.toConcretePoint(points[i], newRanges);
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
       if (i == pointCount - 1) {
         const mouse = this.plotter.transformer.toConcretePoint(
-          this.lastMousePos
+          lastMousePos,
+          newRanges
         );
         this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
         this.plotter.drawer.segment({
