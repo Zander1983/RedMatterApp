@@ -43,8 +43,6 @@ const classes = {
   },
 };
 
-const histogramOverlayType = COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE;
-
 const nullOrUndefined = (obj: any) => {
   return obj === null || obj === undefined;
 };
@@ -157,8 +155,6 @@ function PlotComponent(props: {
 
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
-  const [histogramOverlayTypeValue, setHistogramOverlayTypeValue] =
-    React.useState(histogramOverlayType.Bar);
 
   const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
     if (lastSelectEvent + 500 < new Date().getTime()) {
@@ -180,19 +176,8 @@ function PlotComponent(props: {
 
   var files = dataManager.files.filter((x) => x.id != props.plotFileId);
 
-  const addFile = (file: any) => {
-    let newFile = new FCSFile({
-      name: file.title,
-      id: file.id,
-      src: "remote",
-      axes: file.channels.map((e: any) => e.value),
-      data: file.events,
-      plotTypes: file.channels.map((e: any) => e.display),
-      remoteData: file,
-    });
-
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    addHistogrmOverlay(fileID, dataManager.getFile(fileID), true);
+  const addFile = (fileId: string, type: string) => {
+    addHistogrmOverlay(fileId, dataManager.getFile(fileId), true, {}, type);
   };
 
   const downloadFile = (fileId: string) => {
@@ -202,11 +187,6 @@ function PlotComponent(props: {
       "Overlay will be added after file events download",
       "warning"
     );
-  };
-
-  const getDropdownValue = (e: string) => {
-    let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE;
-    return statObj[e];
   };
 
   const isDownloading = (fileId: string) => {
@@ -232,6 +212,8 @@ function PlotComponent(props: {
       dataManager.addObserver("removePlotFromWorkspace", () => {
         let filePlotDataIds: any[] = filePlotIdDict
           ? Object.values(filePlotIdDict)
+            ? Object.values(filePlotIdDict).map((x: any) => x.id)
+            : []
           : [];
         let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
         let plotData = props.plot.plotData.histogramBarOverlays.filter(
@@ -240,7 +222,7 @@ function PlotComponent(props: {
             !filePlotDataIds.includes(x.plot.id)
         );
         if (plotData && plotData.length > 0)
-          props.plot.plotData.removeBarOverlay(plotData[0].plot.id);
+          props.plot.plotData.removeAnyOverlay(plotData[0].plot.id);
 
         tryKillComponent();
       });
@@ -260,7 +242,7 @@ function PlotComponent(props: {
         if (files && files.length > 0) {
           snackbarService.showSnackbar("Overlay added", "success");
           setTimeout(() => {
-            addFile(files[0]);
+            addFile(files[0].id, filePlotIdDict[files[0].id].type);
           }, 0);
           plotDownloadingFiles = plotDownloadingFiles.filter(
             (x) => x != files[0].id
@@ -300,18 +282,57 @@ function PlotComponent(props: {
     return { min: min, max: max };
   };
 
-  const handleMultiPlotHistogram = (plot: any) => {
-    if (plot) {
-      if (isHistogramSelected(plot.plotData.id)) {
-        props.plot.plotData.removeBarOverlay(plot.plotData.id);
-      } else {
-        addHistogrmOverlay(
-          plot.plotData.id,
-          plot.plotData.file,
-          false,
-          plot.plotData
-        );
-      }
+  const handleMultiPlotHistogram = (
+    plotSource: string,
+    plotType: string,
+    pltFlObj: any
+  ) => {
+    setHistogramOverlayOpen(false);
+    switch (plotSource) {
+      case COMMON_CONSTANTS.FILE:
+        if (filePlotIdDict[pltFlObj.id] && filePlotIdDict[pltFlObj.id].id) {
+          let plotObj = isHistogramSelected(filePlotIdDict[pltFlObj.id].id);
+          let plotData = plotObj.plot.plot;
+          if (plotObj.type == plotType) {
+            removeOverlayAsPerType(plotType, plotData);
+            filePlotIdDict[pltFlObj.id] = null;
+          } else {
+            addOverlayAsPerType(plotType, plotData, plotObj.plot.color);
+          }
+        } else {
+          if (isDownloaded(pltFlObj.id)) {
+            addFile(pltFlObj.id, plotType);
+          } else {
+            if (!filePlotIdDict[pltFlObj.id])
+              filePlotIdDict[pltFlObj.id] = { id: "", type: plotType };
+            downloadFile(pltFlObj.id);
+            return;
+          }
+        }
+        break;
+      case COMMON_CONSTANTS.PLOT:
+        let plotData = pltFlObj.plotData;
+        let plotObj = isHistogramSelected(plotData.id);
+        if (plotObj) {
+          if (plotObj.type == plotType) {
+            removeOverlayAsPerType(plotType, plotData);
+          } else {
+            addOverlayAsPerType(
+              plotType,
+              pltFlObj.plotData,
+              plotObj.plot.color
+            );
+          }
+        } else {
+          addHistogrmOverlay(
+            plotData.id,
+            plotData.file,
+            false,
+            pltFlObj.plotData,
+            plotType
+          );
+        }
+        break;
     }
   };
 
@@ -319,7 +340,8 @@ function PlotComponent(props: {
     id: string,
     file: any,
     addNewPlot: boolean,
-    plotData: any = {}
+    plotData: any = {},
+    plotType: string
   ) => {
     let newPlotData;
     if (addNewPlot) {
@@ -337,13 +359,11 @@ function PlotComponent(props: {
     let obj = getMinMax(plotRanges, newPlotRanges);
     setAxisRange(obj.min, obj.max, props.plot.plotData.xAxis);
 
-    addOverlayAsPerType(histogramOverlayTypeValue, [
-      { plot: newPlotData, color: generateColor() },
-    ]);
+    addOverlayAsPerType(plotType, newPlotData);
 
     if (addNewPlot) {
-      if (!filePlotIdDict[id]) filePlotIdDict[id] = "";
-      filePlotIdDict[id] = newPlotData.id;
+      if (!filePlotIdDict[id]) filePlotIdDict[id] = {};
+      filePlotIdDict[id] = { id: newPlotData.id, type: plotType };
     }
   };
 
@@ -356,24 +376,31 @@ function PlotComponent(props: {
     );
 
     if (plot1) {
-      return plot1;
+      return { type: COMMON_CONSTANTS.Bar, plot: plot1 };
     } else if (plot2) {
-      return plot2;
+      return { type: COMMON_CONSTANTS.Line, plot: plot2 };
     }
     return null;
   };
 
-  const getHistogramSelectedColor = (plotId: string): string => {
+  const getHistogramSelectedColor = (
+    plotId: string,
+    type: string = ""
+  ): string => {
     let plot = isHistogramSelected(plotId);
     if (plot) {
-      return plot.color;
+      if (type) {
+        if (type == plot.type) {
+          return plot.plot.color;
+        } else {
+          return "#fff";
+        }
+      }
+
+      return plot.plot.color;
     }
 
     return "#fff";
-  };
-
-  const getHistograValue = (e: any, type: string): any => {
-    return { val: e, type: type };
   };
 
   const handleHist = (targetAxis: "x" | "y") => {
@@ -417,50 +444,32 @@ function PlotComponent(props: {
     func(false);
   };
 
-  const addOverlayAsPerType = (type: string, overLaysObjects: any[]) => {
+  const addOverlayAsPerType = (
+    type: string,
+    plotData: PlotData,
+    color: string = ""
+  ) => {
     switch (type) {
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Bar:
-        props.plot.plotData.histogramBarOverlays =
-          props.plot.plotData.histogramBarOverlays.concat(overLaysObjects);
+      case COMMON_CONSTANTS.Bar:
+        props.plot.plotData.removeOverlay(plotData.id);
+        props.plot.plotData.addBarOverlay(plotData, color);
         break;
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Line:
-        props.plot.plotData.histogramOverlays =
-          props.plot.plotData.histogramOverlays.concat(overLaysObjects);
-        break;
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Both:
-        props.plot.plotData.histogramBarOverlays =
-          props.plot.plotData.histogramBarOverlays.concat(overLaysObjects);
-        props.plot.plotData.histogramOverlays =
-          props.plot.plotData.histogramOverlays.concat(overLaysObjects);
+      case COMMON_CONSTANTS.Line:
+        props.plot.plotData.removeBarOverlay(plotData.id);
+        props.plot.plotData.addOverlay(plotData, color);
         break;
     }
-    props.plot.plotData.plotUpdated();
   };
 
-  const changeHistOverlayType = (type: string) => {
-    let plotData = props.plot.plotData;
-
-    if (histogramOverlayTypeValue == type) return;
-
-    let overLaysObjects: overlayHistogram[];
-
-    switch (histogramOverlayTypeValue) {
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Bar:
-        overLaysObjects = plotData.histogramBarOverlays;
-        plotData.histogramOverlays = [];
-        plotData.histogramBarOverlays = [];
+  const removeOverlayAsPerType = (type: string, plotData: PlotData) => {
+    switch (type) {
+      case COMMON_CONSTANTS.Bar:
+        props.plot.plotData.removeBarOverlay(plotData.id);
         break;
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Line:
-      case COMMON_CONSTANTS.DROPDOWNS.HISTOGRAM_OVERLAY_TYPE.Both:
-        overLaysObjects = plotData.histogramOverlays;
-        plotData.histogramBarOverlays = [];
-        plotData.histogramOverlays = [];
+      case COMMON_CONSTANTS.Line:
+        props.plot.plotData.removeOverlay(plotData.id);
         break;
     }
-
-    setHistogramOverlayTypeValue(type);
-
-    addOverlayAsPerType(type, overLaysObjects);
   };
 
   const setAxisRange = (min: number, max: number, axis: string) => {
@@ -736,85 +745,161 @@ function PlotComponent(props: {
                       marginLeft: "10px",
                     }}
                     value={"0"}
-                    onChange={(e) => {
-                      let data: any = e.target.value;
-                      if (data["type"] == "plot") {
-                        handleMultiPlotHistogram(data["val"]);
-                      }
-                    }}
                   >
                     <MenuItem value={"0"}>Histogram overlays</MenuItem>
                     {props.plots.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"
-                        value={getHistograValue(e, "plot")}
+                        value={e}
                         style={{
                           backgroundColor: getHistogramSelectedColor(
                             e.plotData.id
                           ),
                         }}
                       >
-                        <div id="hist_overlay">
-                          {e.plotData.label}
-                          <Button
+                        <div
+                          id="hist_overlay"
+                          style={{
+                            margin: -16,
+                            paddingTop: 5,
+                            paddingBottom: 5,
+                            paddingRight: 10,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            width: "100%",
+                          }}
+                        >
+                          <span
+                            id="hist_overlay"
                             style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
+                              padding: 16,
+                              width: "100%",
+                            }}
+                            onClick={() => {
+                              let plotObj = isHistogramSelected(e.plotData.id);
+                              if (plotObj && Object.keys(plotObj).length > 0) {
+                                removeOverlayAsPerType(
+                                  plotObj.type,
+                                  plotObj.plot.plot
+                                );
+                                setHistogramOverlayOpen(false);
+                              }
                             }}
                           >
-                            Bar
-                          </Button>
-                          <Button
-                            style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
-                            }}
-                          >
-                            line
-                          </Button>
+                            {e.plotData.label}
+                          </span>
+                          <span>
+                            <Button
+                              style={{
+                                backgroundColor: "#66d",
+                                color: getHistogramSelectedColor(
+                                  e.plotData.id,
+                                  COMMON_CONSTANTS.Bar
+                                ),
+                                fontSize: 13,
+                              }}
+                              onClick={() => {
+                                handleMultiPlotHistogram(
+                                  COMMON_CONSTANTS.PLOT,
+                                  COMMON_CONSTANTS.Bar,
+                                  e
+                                );
+                              }}
+                            >
+                              Bar
+                            </Button>
+                            <Button
+                              style={{
+                                backgroundColor: "#66d",
+                                color: getHistogramSelectedColor(
+                                  e.plotData.id,
+                                  COMMON_CONSTANTS.Line
+                                ),
+                                fontSize: 13,
+                                marginLeft: 20,
+                              }}
+                              onClick={() => {
+                                handleMultiPlotHistogram(
+                                  COMMON_CONSTANTS.PLOT,
+                                  COMMON_CONSTANTS.Line,
+                                  e
+                                );
+                              }}
+                            >
+                              line
+                            </Button>
+                          </span>
                         </div>
                       </MenuItem>
                     ))}
                     {files.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"
-                        value={getHistograValue(e, "file")}
+                        value={e}
                         style={{
                           backgroundColor: getHistogramSelectedColor(
-                            filePlotIdDict[e.id]
+                            filePlotIdDict[e.id] ? filePlotIdDict[e.id].id : ""
                           ),
                         }}
                       >
                         <div
                           id="hist_overlay"
-                          onClick={() => {
-                            if (filePlotIdDict[e.id]) {
-                              props.plot.plotData.removeBarOverlay(
-                                filePlotIdDict[e.id]
-                              );
-                              filePlotIdDict[e.id] = "";
-                            } else {
-                              if (isDownloaded(e.id)) {
-                                addFile(
-                                  downloadedFiles.find((x) => x.id == e.id)
-                                );
-                              } else {
-                                downloadFile(e.id);
-                              }
-                            }
+                          style={{
+                            margin: -16,
+                            paddingTop: 5,
+                            paddingBottom: 5,
+                            paddingRight: 10,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            width: "100%",
                           }}
                         >
-                          {e.label}
+                          <span
+                            id="hist_overlay"
+                            style={{
+                              padding: 16,
+                              width: "100%",
+                            }}
+                            onClick={() => {
+                              if (
+                                filePlotIdDict[e.id] &&
+                                filePlotIdDict[e.id].id
+                              ) {
+                                let plotObj = isHistogramSelected(
+                                  filePlotIdDict[e.id].id
+                                );
+                                if (plotObj) {
+                                  removeOverlayAsPerType(
+                                    plotObj.type,
+                                    plotObj.plot.plot
+                                  );
+                                  setHistogramOverlayOpen(false);
+                                }
+                                filePlotIdDict[e.id] = null;
+                              }
+                            }}
+                          >
+                            {e.label}
+                          </span>
                           <Button
                             style={{
                               backgroundColor: "#66d",
-                              color: "white",
+                              color: getHistogramSelectedColor(
+                                filePlotIdDict[e.id]
+                                  ? filePlotIdDict[e.id].id
+                                  : "",
+                                COMMON_CONSTANTS.Bar
+                              ),
                               fontSize: 13,
-                              marginLeft: 20,
+                            }}
+                            onClick={() => {
+                              handleMultiPlotHistogram(
+                                COMMON_CONSTANTS.FILE,
+                                COMMON_CONSTANTS.Bar,
+                                e
+                              );
                             }}
                           >
                             Bar
@@ -830,6 +915,7 @@ function PlotComponent(props: {
                                       color: "white",
                                       width: 23,
                                       height: 23,
+                                      marginLeft: 5,
                                     }}
                                   />
                                 ) : (
@@ -841,9 +927,21 @@ function PlotComponent(props: {
                           <Button
                             style={{
                               backgroundColor: "#66d",
-                              color: "white",
+                              color: getHistogramSelectedColor(
+                                filePlotIdDict[e.id]
+                                  ? filePlotIdDict[e.id].id
+                                  : "",
+                                COMMON_CONSTANTS.Line
+                              ),
                               fontSize: 13,
                               marginLeft: 20,
+                            }}
+                            onClick={() => {
+                              handleMultiPlotHistogram(
+                                COMMON_CONSTANTS.FILE,
+                                COMMON_CONSTANTS.Line,
+                                e
+                              );
                             }}
                           >
                             line
@@ -859,6 +957,7 @@ function PlotComponent(props: {
                                       color: "white",
                                       width: 23,
                                       height: 23,
+                                      marginLeft: 5,
                                     }}
                                   />
                                 ) : (
@@ -867,18 +966,6 @@ function PlotComponent(props: {
                               </div>
                             )}
                           </Button>
-                          {/* {isDownloaded(e.id) ? null : (
-                            <Button
-                              style={{
-                                backgroundColor: "#66d",
-                                color: "white",
-                                fontSize: 13,
-                                marginLeft: 20,
-                              }}
-                            >
-                              
-                            </Button>
-                          )} */}
                         </div>
                       </MenuItem>
                     ))}
