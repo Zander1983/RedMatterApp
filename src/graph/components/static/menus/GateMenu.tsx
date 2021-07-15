@@ -15,6 +15,7 @@ import FileCopy from "@material-ui/icons/FileCopy";
 
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
+import PlotData from "graph/dataManagement/plotData";
 
 const classes = {
   table: {},
@@ -95,11 +96,39 @@ export default function GateMenu() {
     };
   }, []);
 
+  const applyGateToAllFiles = (params: { gateID: string; gate: Gate }) => {
+    const { gate, gateID } = params;
+    let files = dataManager.getAllFiles();
+    const plots = dataManager.getAllPlots();
+    // Check gates that already
+    plots.forEach((plot) => {
+      if (
+        plot.plot.population.length === 1 &&
+        plot.plot.population.filter((plotGate) => plotGate.gate.id === gateID)
+          .length > 0
+      ) {
+        files = files.filter((file) => file.fileID !== plot.plot.file.id);
+      }
+    });
+    for (const file of files) {
+      const plot = new PlotData();
+      plot.file = file.file;
+      plot.population = [
+        {
+          inverseGating: false,
+          gate: gate,
+        },
+      ];
+      dataManager.addNewPlotToWorkspace(plot);
+    }
+  };
+
   return (
     <TableContainer component={Paper}>
       <Table style={classes.table}>
         <TableHead>
           <TableRow>
+            <TableCell></TableCell>
             <TableCell></TableCell>
             <TableCell></TableCell>
             <TableCell>Name</TableCell>
@@ -134,6 +163,18 @@ export default function GateMenu() {
                   onClick={() => cloneGate(gate.gate)}
                 >
                   <FileCopy></FileCopy>
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button
+                  style={{
+                    display: "inline-block",
+                    padding: 0,
+                    minWidth: 0,
+                  }}
+                  onClick={() => applyGateToAllFiles(gate)}
+                >
+                  Apply to all files
                 </Button>
               </TableCell>
               <TableCell>

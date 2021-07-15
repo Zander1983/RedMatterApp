@@ -72,15 +72,27 @@ export default class GraphPlotter extends Plotter {
   binSize: number = 30;
 
   /* === METHODS === */
-
-  public draw(drawPlotGraphParams?: any): void {
-    this.drawer.drawPlotGraph(drawPlotGraphParams);
+  private drawHeader() {
+    const label = this.plotData.label;
+    const filename = this.plotData.file.name;
+    let text = label + " | " + filename;
+    const maxLength = Math.round(
+      (this.width - leftPadding / 2 - rightPadding / 2 + 10) / 10
+    );
+    if (text.length > maxLength) {
+      text = text.substring(0, maxLength) + "...";
+    }
     this.drawer.text({
       x: leftPadding * this.scale,
       y: 30 * this.scale,
-      text: this.plotData.label,
-      font: "30px Quicksand",
+      text,
+      font: "500 30px Quicksand",
     });
+  }
+
+  public draw(drawPlotGraphParams?: any): void {
+    this.drawer.drawPlotGraph(drawPlotGraphParams);
+    this.drawHeader();
   }
 
   public update(): void {

@@ -12,6 +12,7 @@ import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
 import { generateColor } from "graph/utils/color";
+import FCSServices from "services/FCSServices/FCSServices";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -63,6 +64,7 @@ export default class PlotData extends ObserversFunctionality {
 
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
+  rangePlotType: Map<string, string> = new Map();
   file: FCSFile;
   gates: {
     displayOnlyPointsInGate: boolean;
@@ -89,7 +91,10 @@ export default class PlotData extends ObserversFunctionality {
     color: string;
     plot: string;
   }[] = [];
-
+  histogramBarOverlays: {
+    color: string;
+    plot: any;
+  }[] = [];
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -113,6 +118,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
+    
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -258,6 +264,21 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
 
+  addBarOverlay(plotData: PlotData, color?: string) {
+    if (color === undefined) color = generateColor();
+    this.histogramBarOverlays.push({
+      plot: plotData,
+      color: color,
+    });
+    this.plotUpdated();
+  }
+
+  removeBarOverlay(ploDataID: string)
+  {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+    this.plotUpdated();
+  }
+  
   removeOverlay(plotDataID: string) {
     const oldLength = this.histogramOverlays.length;
     const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
@@ -381,10 +402,8 @@ export default class PlotData extends ObserversFunctionality {
 
   @conditionalUpdateDecorator()
   disableHistogram(axis: "x" | "y") {
-    if(axis === "x")
-      this.xHistogram = false;
-    else
-      this.yHistogram = false;    
+    if (axis === "x") this.xHistogram = false;
+    else this.yHistogram = false;
   }
 
   /* PLOT STATE GETTERS */
@@ -453,13 +472,48 @@ export default class PlotData extends ObserversFunctionality {
   ): { xAxis: number[]; yAxis: number[] } {
     const xAxisName = targetXAxis !== undefined ? targetXAxis : this.xAxis;
     const yAxisName = targetYAxis !== undefined ? targetYAxis : this.yAxis;
-    const xAxis: number[] = [];
-    const yAxis: number[] = [];
+    let xAxis: number[] = [];
+    let yAxis: number[] = [];
     this.getAxesData().forEach((e) => {
       xAxis.push(e[xAxisName]);
       yAxis.push(e[yAxisName]);
     });
+
+    // if (this.xPlotType === "bi") {
+    //   xAxis = new FCSServices().logicleTransformer([...xAxis]);
+    // }
+
+    // if (this.yPlotType === "bi") {
+    //   yAxis = new FCSServices().logicleTransformer([...yAxis]);
+    // }
+
+    // this.updateRanges();
     return { xAxis, yAxis };
+  }
+
+  updateRanges() {
+    const xChanged = this.xPlotType !== this.rangePlotType.get(this.xAxis);
+    const yChanged = this.yPlotType !== this.rangePlotType.get(this.yAxis);
+    if (!xChanged && !yChanged) {
+      return;
+    }
+    if (xChanged) {
+      if (this.xPlotType === "bi") {
+        this.rangePlotType.set(this.xAxis, "bi");
+        this.ranges.set(this.xAxis, [0.5, 1]);
+      } else {
+        this.ranges.delete(this.xAxis);
+      }
+    }
+    if (yChanged) {
+      if (this.yPlotType === "bi") {
+        this.rangePlotType.set(this.yAxis, "bi");
+        this.ranges.set(this.yAxis, [0.5, 1]);
+      } else {
+        this.ranges.delete(this.yAxis);
+      }
+    }
+    this.findAllRanges();
   }
 
   getAxis(targetAxis: string): number[] {
@@ -613,17 +667,10 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private findAllRanges() {
-    if (typeof this.ranges === "object") {
+    if (!(this.ranges instanceof Map)) {
       this.ranges = new Map();
     }
-    let allDone = true;
-    for (const axis of this.file.axes) {
-      if (!this.ranges.has(axis)) {
-        allDone = false;
-        break;
-      }
-    }
-    if (allDone) return;
+    if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
     if (
       this.file.remoteData != undefined &&
       this.file.remoteData.paramsAnalysis !== undefined
@@ -634,6 +681,11 @@ export default class PlotData extends ObserversFunctionality {
           this.file.remoteData.channels[i].display !== "bi"
             ? "linear"
             : "biexponential";
+        this.rangePlotType.set(
+          //@ts-ignore
+          axis.paramName,
+          axisType === "linear" ? "lin" : "bi"
+        );
         //@ts-ignore
         this.ranges.set(axis.paramName, [
           //@ts-ignore
@@ -646,6 +698,7 @@ export default class PlotData extends ObserversFunctionality {
       const axesData = this.getAxesData();
       for (const axis of this.file.axes) {
         if (this.ranges.has(axis)) continue;
+        this.rangePlotType.set(axis, "lin");
         const data = axesData.map((e) => e[axis]);
         this.ranges.set(axis, this.findRangeBoundries(data));
       }

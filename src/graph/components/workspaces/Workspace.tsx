@@ -42,17 +42,22 @@ const standardGridPlotItem = (x: number, y: number) => {
   };
 };
 
-class Workspace extends React.Component {
+interface WorkspaceProps {
+  sharedWorkspace: boolean;
+  experimentId: string;
+}
+
+class Workspace extends React.Component<WorkspaceProps> {
   private static renderCalls = 0;
   workspace: WorkspaceData;
   plots: {
     plotData: PlotData;
     plotRender: Plot;
   }[] = [];
+  plotMoving: boolean = true;
 
-  constructor(props: any) {
+  constructor(props: WorkspaceProps) {
     super(props);
-
     this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();
@@ -60,6 +65,9 @@ class Workspace extends React.Component {
     dataManager.addObserver("addNewPlotToWorkspace", () => this.update());
     dataManager.addObserver("removePlotFromWorkspace", () => this.update());
     dataManager.addObserver("updateWorkspace", () => this.update());
+    dataManager.addObserver("workspaceDragLock", () =>
+      this.updatePlotMovement()
+    );
 
     this.state = {
       plots: [],
@@ -86,6 +94,11 @@ class Workspace extends React.Component {
     this.forceUpdate();
   }
 
+  updatePlotMovement() {
+    this.plotMoving = !dataManager.dragLock;
+    this.forceUpdate();
+  }
+
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
      significatively */
@@ -100,6 +113,7 @@ class Workspace extends React.Component {
           cols={{ lg: 30 }}
           rows={{ lg: 30 }}
           rowHeight={30}
+          isDraggable={this.plotMoving}
         >
           {
             //@ts-ignore
@@ -115,6 +129,12 @@ class Workspace extends React.Component {
                     <PlotComponent
                       plot={e.plotRender}
                       plotIndex={e.plotData.id}
+                      plotFileId={e.plotData.file.id}
+                      plots={this.plots.filter(
+                        (x) => x.plotData.id != e.plotData.id
+                      )}
+                      sharedWorkspace={this.props.sharedWorkspace}
+                      experimentId={this.props.experimentId}
                     />
                   </div>
                 </div>

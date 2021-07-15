@@ -28,7 +28,7 @@ function useForceUpdate() {
 export default function AxisBar(props: any) {
   const plot = props.plot;
   const rerender = useForceUpdate();
-  
+
   const xPlotType = plot.plotData.xPlotType;
   const yPlotType = plot.plotData.yPlotType;
 
@@ -68,13 +68,13 @@ export default function AxisBar(props: any) {
           <b>Type:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            disabled={true || isAxisDisabled("x") || isPlotHistogram()}
+            disabled={isAxisDisabled("x") || isPlotHistogram()}
             value={xPlotType}
             //@ts-ignore
             onChange={(e) => setPlotType("x", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
-            <MenuItem value={"log"}>Log</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
             {/* <MenuItem value={"bin"}>Bilinear</MenuItem> */}
           </Select>
         </Grid>
@@ -119,14 +119,14 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             value={yPlotType}
-            disabled={true || isAxisDisabled("y") || isPlotHistogram()}
+            disabled={isAxisDisabled("y") || isPlotHistogram()}
             //@ts-ignore
             onChange={(e) => setPlotType("y", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
-            <MenuItem value={"log"}>Log</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
           </Select>
-        </Grid>        
+        </Grid>
         <Grid>
           <b
             style={{
