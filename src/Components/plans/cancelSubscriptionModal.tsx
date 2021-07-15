@@ -45,6 +45,7 @@ export default function CancelSubscriptionModal(props : {
                     <Button onClick={
                             () => {
                                 props.cancelSubscription(props.subscription);
+                                props.refresh();
                                 // props.refresh()
                             }
                         }

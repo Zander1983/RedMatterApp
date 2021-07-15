@@ -1,385 +1,392 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {useState, useRef, useEffect, useCallback} from "react";
 import axios from "axios";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import {Grid, Button, CircularProgress} from "@material-ui/core";
+import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import { NavLink } from "react-router-dom";
+import {NavLink} from "react-router-dom";
 import FormControl from "@material-ui/core/FormControl";
 import ChangeSubscriptionModal from "./changeSubscriptionModal";
 import CancelSubscriptionModal from "./cancelSubscriptionModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
-import { snackbarService } from "uno-material-ui";
-import { width } from "@amcharts/amcharts4/.internal/core/utils/Utils";
+import {snackbarService} from "uno-material-ui";
+import {width} from "@amcharts/amcharts4/.internal/core/utils/Utils";
+import {ContainerOutlined} from "@ant-design/icons";
 
 const useStyles = makeStyles((theme) => ({
-  paperStyle: {
-    padding: "10px",
-    height: "70vh",
-    width: "450px",
-    margin: "20px auto",
-  },
-  avatarStyle: {
-    background: "#00dffffc",
-  },
-  root: {
-    width: "100%",
-    "& > * + *": {
-      marginTop: theme.spacing(2),
+    paperStyle: {
+        padding: "10px",
+        height: "70vh",
+        width: "450px",
+        margin: "20px auto"
     },
-  },
-  textFieldWidth: {
-    width: "100%",
-  },
-  nameHighlight: {
-    backgroundColor: "#6666A9",
-    color: "#ffffff",
-    padding: "10px 5px 5px 5px",
-    borderRadius: "20px 20px 0 0",
-  },
-  white: {
-    color: "white",
-  },
+    avatarStyle: {
+        background: "#00dffffc"
+    },
+    root: {
+        width: "100%",
+        "& > * + *": {
+            marginTop: theme.spacing(2)
+        }
+    },
+    textFieldWidth: {
+        width: "100%"
+    },
+    nameHighlight: {
+        backgroundColor: "#6666A9",
+        color: "#ffffff",
+        padding: "10px 5px 5px 5px",
+        borderRadius: "20px 20px 0 0"
+    },
+    white: {
+        color: "white"
+    },
 
-  price: {
-    marginTop: 18,
-    marginBottom: 18,
-  },
+    price: {
+        marginTop: 18,
+        marginBottom: 18
+    },
 
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
+    formControl: {
+        margin: theme.spacing(1),
+        minWidth: 120
+    },
+    selectEmpty: {
+        marginTop: theme.spacing(2)
+    },
 
-  get: {
-    backgroundColor: "#6666A9",
-    border: "0px solid",
-    fontSize: 18,
-    padding: "8px 40px",
-    color: "white",
-    borderRadius: 5,
-    fontWeight: 500,
-  },
+    get: {
+        backgroundColor: "#6666A9",
+        border: "0px solid",
+        fontSize: 18,
+        padding: "8px 40px",
+        color: "white",
+        borderRadius: 5,
+        fontWeight: 500
+    },
 
-  plan: {
-    border: "solid 1px #ddd",
-    borderRadius: 20,
-    paddingBottom: "30px",
-  },
+    plan: {
+        border: "solid 1px #ddd",
+        borderRadius: 20,
+        paddingBottom: "30px"
+    }
 }));
 
-export default function Plans(props: any) {
-  const classes = useStyles();
+export default function Plans(props : any) {
+    const classes = useStyles();
 
-  const [userObj, setuserObj] = useState(null);
-  const [sub, setSub] = useState(null);
-  const [date, setDate] = useState(null);
-  const [product, setProduct] = useState(null);
-  const [email, setEmail] = useState("email@email.com");
-  const [subSelect, setSubSelect] = useState(null);
-  const [openChange, setOpenChange] = useState(false);
-  const [openCancel, setOpenCancel] = useState(false);
-  const [subscriptionSend, setSubscriptionSend] = useState(null);
-  const getUserObj = useCallback(() => {
-    console.log("GETTING THE USER OBJ");
-    if (product == null) {
-      axios
-        .get(`/profile-info`, {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        })
-        .then((response) => response.data)
-        .then((user) => {
-          setuserObj(user);
-          getSub(user);
+    const [userObj, setuserObj] = useState(null);
+    const [sub, setSub] = useState(null);
+    const [date, setDate] = useState(null);
+    const [product, setProduct] = useState(null);
+    const [email, setEmail] = useState("email@email.com");
+    const [subSelect, setSubSelect] = useState(null);
+    const [openChange, setOpenChange] = useState(false);
+    const [openCancel, setOpenCancel] = useState(false);
+    const [subscriptionSend, setSubscriptionSend] = useState(null);
+    const getUserObj = useCallback(() => {
+        if (product == null) {
+            axios.get(`/profile-info`, {
+                headers: {
+                    Token: userManager.getToken()
+                }
+            }).then((response) => response.data).then((user) => {
+                setuserObj(user);
+                getSub(user);
+            });
+        }
+    }, [email]);
+
+    const getSub = useCallback((user : any) => {
+        if (user.userDetails.subscriptionId != null && user.userDetails.subscriptionId != "") {
+            axios.get(`/get-subscription?id=${
+                user.userDetails.subscriptionId
+            }`).then((response) => response.data).then((subscription) => {
+                setSub(subscription);
+                setDate(new Date(subscription.current_period_end * 1000));
+                getProduct(subscription);
+            });
+        } else {
+            setSub("Not currently subscribed");
+            setProduct({name: "You are not currently Subscribed"});
+        }
+    }, [email]);
+
+    const getProduct = useCallback((sub : any) => {
+        axios.get(`/get-product?id=${
+            sub.items.data[0].plan.product
+        }`).then((response) => response.data).then((product) => {
+            setProduct(product);
         });
-    }
-  }, [email]);
+    }, [email]);
 
-  const getSub = useCallback(
-    (user: any) => {
-      if (
-        user.userDetails.subscriptionId != null &&
-        user.userDetails.subscriptionId != ""
-      ) {
-        axios
-          .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
-          .then((response) => response.data)
-          .then((subscription) => {
-            setSub(subscription);
-            setDate(new Date(subscription.current_period_end * 1000));
-            getProduct(subscription);
-          });
-      } else {
-        setSub("Not currently subscribed");
-        setProduct({
-          name: "You are not currently Subscribed",
+    const [checker, setChecker] = useState(0);
+
+    const changeSubscription = (option : any) => {
+        if (subSelect == null) {
+            alert("Please Select a subscription");
+        } else if (option == 3) { // enterprise subscription
+            axios.post("/update-subscription", {
+                subscription: sub.id,
+                price: "price_1JCapGFYFs5GcbAXGlbz4pJV",
+                userId: userObj.userDetails._id,
+                subscriptionType: "Enterprise"
+            });
+        } else if (option == 2) { // Premium Subscription
+            axios.post("/update-subscription", {
+                subscription: sub.id,
+                price: "price_1J7UmZFYFs5GcbAXvPronXSX",
+                userId: userObj.userDetails._id,
+                subscriptionType: "Premium"
+            });
+        } else if (option == 1) {
+            axios.post("/update-subscription", {
+                subscription: sub.id,
+                price: "price_1JCargFYFs5GcbAXZowQSPpK",
+                userId: userObj.userDetails._id,
+                subscriptionType: "Free"
+            });
+        }
+        // Free Subscription
+    };
+
+    const cancelSubscription = (option : any) => {
+        axios.post("/cancel-subscription", {
+            subscription: sub.id,
+            userId: userObj.userDetails._id
         });
-      }
-    },
-    [email]
-  );
+    };
 
-  const getProduct = useCallback(
-    (sub: any) => {
-      axios
-        .get(`/get-product?id=${sub.items.data[0].plan.product}`)
-        .then((response) => response.data)
-        .then((product) => {
-          setProduct(product);
-        });
-    },
-    [email]
-  );
+    const closeModal = () => {
+        setOpenChange(false);
+        setOpenCancel(false);
+    };
 
-  const [checker, setChecker] = useState(0);
+    const refresh = () => {
+        snackbarService.showSnackbar("Subscription Updated Successfully!", "success");
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    };
 
-  const changeSubscription = (option: any) => {
-    if (subSelect == null) {
-      alert("Please Select a subscription");
-    } else if (option == 3) {
-      //enterprise subscription
-      axios.post("/update-subscription", {
-        subscription: sub.id,
-        price: "price_1JCapGFYFs5GcbAXGlbz4pJV",
-      });
-    } else if (option == 2) {
-      //Premium Subscription
-      axios.post("/update-subscription", {
-        subscription: sub.id,
-        price: "price_1J7UmZFYFs5GcbAXvPronXSX",
-      });
-    } else if (option == 1) {
-      axios.post("/update-subscription", {
-        subscription: sub.id,
-        price: "price_1JCargFYFs5GcbAXZowQSPpK",
-      });
-    }
-    //Free Subscription
-  };
+    useEffect(() => {
+        getUserObj();
+    }, [getUserObj]);
+    return (
+        <div>
+            <ChangeSubscriptionModal open={openChange}
+                refresh={refresh}
+                close={closeModal}
+                updateSubscription={changeSubscription}
+                subscription={subscriptionSend}
+                subSelect={subSelect}></ChangeSubscriptionModal>
+            <CancelSubscriptionModal open={openCancel}
+                refresh={refresh}
+                close={closeModal}
+                cancelSubscription={cancelSubscription}
+                subscription={subscriptionSend}></CancelSubscriptionModal>
+            <Grid container alignContent="center" justify="center"
+                style={
+                    {
+                        paddingTop: 30,
+                        paddingBottom: 50,
+                        paddingLeft: 20,
+                        paddingRight: 20
+                    }
+            }>
+                <script src="https://js.stripe.com/v3/"></script>
+                <Grid container
+                    lg={8}
+                    md={10}
+                    sm={12}
+                    justify="flex-start"
+                    direction="column"
+                    style={
+                        {
+                            backgroundColor: "#fafafa",
+                            padding: "3em 5em",
+                            borderRadius: 10,
+                            boxShadow: "1px 1px 1px 1px #ddd",
+                            border: "solid 1px #ddd",
+                            textAlign: "left"
+                        }
+                }>
+                    <h1 style={
+                        {
+                            marginBottom: "1.5em",
+                            fontSize: "36px"
+                        }
+                    }>
+                        My profile
+                    </h1>
+                    <h2>{
+                        userObj == null ? "user email" : userObj.userDetails.email
+                    }</h2>
 
-  const cancelSubscription = (option: any) => {
-    axios.post("/cancel-subscription", {
-      subscription: sub.id,
-      userId: userObj.userDetails._id,
-    });
-  };
+                    <Grid container
+                        lg={12}
+                        md={12}
+                        sm={12}
+                        justify="flex-start"
+                        direction="row"
+                        style={
+                            {textAlign: "left"}
+                    }>
+                        <Grid item
+                            lg={6}
+                            md={6}
+                            sm={6}>
+                            <h3>
+                                Next Billing Date:
+                                <span> {
+                                    date == null ? "Not Active" : " " + JSON.stringify(date).substring(1, 11)
+                                } </span>
+                            </h3>
+                        </Grid>
+                    </Grid>
 
-  const closeModal = () => {
-    setOpenChange(false);
-    setOpenCancel(false);
-  };
+                    <Grid container
+                        lg={12}
+                        md={12}
+                        sm={12}
+                        alignItems="flex-end"
+                        justify="flex-start"
+                        direction="row"
+                        style={
+                            {textAlign: "left"}
+                    }>
+                        <Grid item
+                            lg={9}
+                            md={6}
+                            sm={6}>
+                            <h3 style={
+                                {marginBottom: "1.5em"}
+                            }>
+                                Current Subscription:
+                                <span> {
+                                    product == null ? "Your Subscription Type" : " " + product.name
+                                } </span>
+                            </h3>
+                            {
+                            product == null ? null : product.name == "You are not currently Subscribed" ? null : (
+                                <div>
+                                    <h3>
+                                        <strong>Change Subscription</strong>
+                                    </h3>
+                                    <FormControl className={
+                                        classes.formControl
+                                    }>
+                                        <InputLabel htmlFor="subscriptionSelect">
+                                            Select Subscription
+                                        </InputLabel>
+                                        <Select native
+                                            onChange={
+                                                (event) => {
+                                                    setSubSelect(event.target.value);
+                                                }
+                                            }
+                                            style={
+                                                {
+                                                    width: "200px",
+                                                    height: "40px"
+                                                }
+                                            }
+                                            inputProps={
+                                                {
+                                                    name: "age",
+                                                    id: "subscriptionSelect"
+                                                }
+                                        }>
+                                            <option value={null}></option>
+                                            {
+                                            product == null ? null : product.name === "Free Subscription" ? (
+                                                <option value={3}>Enterprise</option>
+                                            ) : (
+                                                <option value={1}>Free</option>
+                                            )
+                                        }
+                                            {
+                                            product == null ? null : product.name === "Premium Subscription" ? (
+                                                <option value={3}>Enterprise</option>
+                                            ) : (
+                                                <option value={2}>Premium</option>
+                                            )
+                                        } </Select>
+                                    </FormControl>
+                                    <Button style={
+                                            {marginTop: 25}
+                                        }
+                                        color="secondary"
+                                        onClick={
+                                            () => setOpenChange(true)
+                                    }>
+                                        Change Subscription
+                                    </Button>
+                                </div>
+                            )
+                        } </Grid>
+                    </Grid>
 
-  const refresh = () => {
-    snackbarService.showSnackbar(
-      "Subscription Updated Successfully!",
-      "success"
+                    <Grid container
+                        lg={12}
+                        md={12}
+                        sm={12}
+                        alignItems="flex-end"
+                        justify="flex-start"
+                        direction="row"
+                        style={
+                            {textAlign: "left"}
+                    }>
+                        <Grid item
+                            lg={9}
+                            md={6}
+                            sm={6}>
+                            {
+                            product == null ? null : product.name == "You are not currently Subscribed" ? (
+                                <h4>
+                                    Go to
+                                    <NavLink to="/plans">Plans
+                                    </NavLink>to Subscribe
+                                </h4>
+                            ) : (
+                                <div>
+                                    <Button style={
+                                            {marginTop: 25}
+                                        }
+                                        color="secondary"
+                                        variant="contained"
+                                        onClick={
+                                            () => setOpenCancel(true)
+                                    }>
+                                        Cancel Subscription
+                                    </Button>
+                                </div>
+                            )
+                        } </Grid>
+                    </Grid>
+
+                    <Grid container
+                        lg={12}
+                        md={12}
+                        sm={12}
+                        justify="center"
+                        direction="row"
+                        style={
+                            {textAlign: "center"}
+                    }>
+                        <Grid item
+                            lg={7}
+                            md={6}
+                            sm={1}></Grid>
+
+                        <Grid item
+                            lg={1}
+                            md={1}
+                            sm={1}></Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </div>
     );
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  };
-
-  useEffect(() => {
-    getUserObj();
-  }, [getUserObj]);
-  return (
-    <div>
-      <ChangeSubscriptionModal
-        open={openChange}
-        refresh={refresh}
-        close={closeModal}
-        updateSubscription={changeSubscription}
-        subscription={subscriptionSend}
-        subSelect={subSelect}
-      ></ChangeSubscriptionModal>
-      <CancelSubscriptionModal
-        open={openCancel}
-        refresh={refresh}
-        close={closeModal}
-        cancelSubscription={cancelSubscription}
-        subscription={subscriptionSend}
-      ></CancelSubscriptionModal>
-      <Grid
-        container
-        alignContent="center"
-        justify="center"
-        style={{
-          paddingTop: 30,
-          paddingBottom: 50,
-          paddingLeft: 20,
-          paddingRight: 20,
-        }}
-      >
-        <script src="https://js.stripe.com/v3/"></script>
-        <Grid
-          container
-          lg={8}
-          md={10}
-          sm={12}
-          justify="flex-start"
-          direction="column"
-          style={{
-            backgroundColor: "#fafafa",
-            padding: "3em 5em",
-            borderRadius: 10,
-            boxShadow: "1px 1px 1px 1px #ddd",
-            border: "solid 1px #ddd",
-            textAlign: "left",
-          }}
-        >
-          <h1
-            style={{
-              marginBottom: "1.5em",
-              fontSize: "36px",
-            }}
-          >
-            My profile
-          </h1>
-          <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2>
-
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
-            <Grid item lg={6} md={6} sm={6}>
-              <h3>
-                Next Billing Date:
-                <span>
-                  {date == null
-                    ? "Not Active"
-                    : " " + JSON.stringify(date).substring(1, 11)}
-                </span>
-              </h3>
-            </Grid>
-          </Grid>
-
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            alignItems="flex-end"
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
-            <Grid item lg={9} md={6} sm={6}>
-              <h3 style={{ marginBottom: "1.5em" }}>
-                Current Subscription:
-                <span>
-                  {product == null
-                    ? "Your Subscription Type"
-                    : " " + product.name}
-                </span>
-              </h3>
-              {product == null ? null : product.name ==
-                "You are not currently Subscribed" ? null : (
-                <div>
-                  <h3>
-                    <strong>Change Subscription</strong>
-                  </h3>
-                  <FormControl className={classes.formControl}>
-                    <InputLabel htmlFor="subscriptionSelect">
-                      Select Subscription
-                    </InputLabel>
-                    <Select
-                      native
-                      onChange={(event) => {
-                        setSubSelect(event.target.value);
-                      }}
-                      style={{
-                        width: "200px",
-                        height: "40px",
-                      }}
-                      inputProps={{
-                        name: "age",
-                        id: "subscriptionSelect",
-                      }}
-                    >
-                      <option value={null}></option>
-                      {product == null ? null : product.name ===
-                        "Free Subscription" ? (
-                        <option value={3}>Enterprise</option>
-                      ) : (
-                        <option value={1}>Free</option>
-                      )}
-                      {product == null ? null : product.name ===
-                        "Premium Subscription" ? (
-                        <option value={3}>Enterprise</option>
-                      ) : (
-                        <option value={2}>Premium</option>
-                      )}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    onClick={() => setOpenChange(true)}
-                  >
-                    Change Subscription
-                  </Button>
-                </div>
-              )}
-            </Grid>
-          </Grid>
-
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            alignItems="flex-end"
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
-            <Grid item lg={9} md={6} sm={6}>
-              {product == null ? null : product.name ==
-                "You are not currently Subscribed" ? (
-                <h4>
-                  Go to <NavLink to="/plans">Plans </NavLink>to Subscribe
-                </h4>
-              ) : (
-                <div>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    variant="contained"
-                    onClick={() => setOpenCancel(true)}
-                  >
-                    Cancel Subscription
-                  </Button>
-                </div>
-              )}
-            </Grid>
-          </Grid>
-
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            justify="center"
-            direction="row"
-            style={{ textAlign: "center" }}
-          >
-            <Grid item lg={7} md={6} sm={1}></Grid>
-
-            <Grid item lg={1} md={1} sm={1}></Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </div>
-  );
 }

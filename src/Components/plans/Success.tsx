@@ -88,6 +88,7 @@ export default function Plans(props : {
                     axios.post(`/add-subscription`, {
                         body: {
                             user: data.metadata.userId,
+                            subscriptionType: data.metadata.subscriptionType,
                             subscription: data.subscription,
                             customer: data.customer
                         }

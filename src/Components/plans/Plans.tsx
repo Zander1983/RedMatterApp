@@ -88,9 +88,10 @@ export default function Plans(props : any) {
 
     let userToken = gettingUserToken();
 
-    const createCheckoutSession = async (priceId : string) => {
+    const createCheckoutSession = async (priceId : string, subType : string) => {
         return axios.post("/create-checkout-session", {
-            priceId: priceId
+            priceId: priceId,
+            subscriptionType: subType
         }, {
             headers: {
                 Token: userManager.getToken()
@@ -100,19 +101,19 @@ export default function Plans(props : any) {
         });
     };
 
-    const handleClick = async (price : string) => { // Get Stripe.js instance
+    const handleClick = async (price : string, subType : string) => { // Get Stripe.js instance
         const stripe = await stripePromise;
 
         // Call your backend to create the Checkout Session
         // const response = await fetch('/create-checkout-session', { method: 'POST' });
-        createCheckoutSession(price).then(function (data) { // Call Stripe.js method to redirect to the new Checkout page
+        createCheckoutSession(price, subType).then(function (data) { // Call Stripe.js method to redirect to the new Checkout page
             stripe.redirectToCheckout({sessionId: data.sessionId}).then(() => {});
         })
     };
 
     useEffect(() => {
         try {
-            axios.post(`/api/getuserId`, {Token: userManager.getToken}).then((response) => {}).finally(() => {})
+            axios.post(`/api/getuserId`, {Token: userManager.getToken}).then((response) => {}). finally(() => {})
         } catch (err) {
             console.log(err)
         }
@@ -197,7 +198,7 @@ export default function Plans(props : any) {
                                     classes.get
                                 }
                                 onClick={
-                                    () => handleClick("price_1JCargFYFs5GcbAXZowQSPpK")
+                                    () => handleClick("price_1JCargFYFs5GcbAXZowQSPpK", "Free")
                             }>Start Free!</Button>
                         </div>
                     </Grid>
@@ -240,7 +241,7 @@ export default function Plans(props : any) {
                                     classes.get
                                 }
                                 onClick={
-                                    () => handleClick("price_1J7UmZFYFs5GcbAXvPronXSX")
+                                    () => handleClick("price_1J7UmZFYFs5GcbAXvPronXSX", "Premium")
                             }>Get Started!</Button>
                         </div>
                     </Grid>
@@ -285,7 +286,7 @@ export default function Plans(props : any) {
                                     classes.get
                                 }
                                 onClick={
-                                    () => handleClick("price_1JCapGFYFs5GcbAXGlbz4pJV")
+                                    () => handleClick("price_1JCapGFYFs5GcbAXGlbz4pJV", "Enterprise")
                             }>Get Enterprise!</Button>
                         </div>
                     </Grid>
