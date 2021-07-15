@@ -7,6 +7,7 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
+import Gate from "graph/dataManagement/gate/gate";
 
 const maxPolygonDist = 15;
 
@@ -35,40 +36,14 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
 
-  canMove(points: Point[], offset: Point) {
-    let canMove = true;
-    const bounds = this.plotter.plotData.getXandYRanges();
-    for (let i = 0; i < points.length; i++) {
-      let x = points[i].x + offset.x;
-      let y = points[i].y + offset.y;
-      if (
-        x < bounds.x[0] ||
-        y < bounds.y[0] ||
-        x > bounds.x[1] ||
-        y > bounds.y[1]
-      )
-        canMove = false;
-    }
-    return canMove;
-  }
-
   editGateEvent(type: string, mouse: Point) {
     if (
       type === "mousedown" &&
       this.plotter.gates.length > 0 &&
       !this.isDraggingVertex
     ) {
-      console.log("a");
-      this.plotter.gates.forEach((gate) => {
-        if (
-          gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))
-        ) {
-          this.isDraggingGate = true;
-          this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
-          this.targetEditGate = gate as PolygonGate;
-          return;
-        }
-      });
+      console.log("calling detect gates clicked");
+      this.detectGatesClicked(mouse);
     }
 
     if (
@@ -77,76 +52,123 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.started &&
       !this.isDraggingGate
     ) {
-      console.log("b");
-      this.plotter.gates.forEach((gate) => {
-        if (gate instanceof PolygonGate && this.targetEditGate === null)
-          gate.points.forEach((p, i) => {
-            if (
-              this.targetEditGate === null &&
-              euclidianDistance2D(
-                mouse,
-                this.plotter.transformer.toConcretePoint(
-                  { ...p },
-                  undefined,
-                  false
-                )
-              ) <= maxPolygonDist
-            ) {
-              console.log(this.gateEvent.)
-              this.targetEditGate = gate;
-              this.targetPointIndex = i;
-              this.isDraggingVertex = true;
-            }
-          });
-      });
+      console.log("calling detect points clicked");
+      this.detectPointsClicked(mouse);
     } else if (this.targetEditGate !== null && type === "mouseup") {
-      console.log("c");
-      this.isDraggingVertex = false;
-      this.targetEditGate = null;
-      this.targetPointIndex = null;
+      // Reset gates and points on mouseup
+      console.log("Reset gates and points on mouseup");
+      this.reset();
     } else if (
       this.targetEditGate !== null &&
       type === "mousemove" &&
       this.isDraggingVertex &&
       !this.isDraggingGate
     ) {
-      console.log("d");
-      const gateState = this.targetEditGate.getState();
-      gateState.points[this.targetPointIndex] =
-        this.plotter.transformer.toAbstractPoint(mouse);
-      this.targetEditGate.update(gateState);
-    }
-
-    if (
+      // Detect point selected and moved
+      console.log("Detect point selected and moved");
+      this.pointMoveToMousePosition(mouse);
+    } else if (
       this.targetEditGate !== null &&
       type === "mousemove" &&
       this.isDraggingGate &&
       !this.isDraggingVertex
     ) {
-      console.log("e");
-      const absMouse = this.plotter.transformer.toAbstractPoint(mouse);
-
-      let offset = {
-        x: absMouse.x - this.gatePivot.x,
-        y: absMouse.y - this.gatePivot.y,
-      };
-      this.gatePivot = absMouse;
-
-      const gateState = this.targetEditGate.getState();
-      for (let index = 0; index < gateState.points.length; index++) {
-        gateState.points[index] = {
-          x: gateState.points[index].x + offset.x,
-          y: gateState.points[index].y + offset.y,
-        };
-      }
-
-      this.targetEditGate.update(gateState);
+      // Detect gate selected and moved
+      console.log("Detect gate selected and moved");
+      this.gateMoveToMousePosition(mouse);
     }
 
     if (type === "mouseup" && this.isDraggingVertex)
       this.isDraggingVertex = false;
     else if (type === "mouseup" && this.isDraggingGate)
       this.isDraggingGate = false;
+  }
+
+  private detectGatesClicked(mouse: Point) {
+    this.plotter.gates.forEach((gate) => {
+      if (gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))) {
+        this.isDraggingGate = true;
+        this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
+        this.targetEditGate = gate as PolygonGate;
+        return;
+      }
+    });
+  }
+
+  private detectPointsClicked(mouse: Point) {
+    this.plotter.gates.forEach((gate) => {
+      if (gate instanceof PolygonGate && this.targetEditGate === null)
+        gate.points.forEach((p, i) => {
+          if (
+            this.targetEditGate === null &&
+            euclidianDistance2D(
+              mouse,
+              this.plotter.transformer.toConcretePoint(
+                { ...p },
+                undefined,
+                false
+              )
+            ) <= maxPolygonDist
+          ) {
+            this.targetEditGate = gate;
+            this.targetPointIndex = i;
+            this.isDraggingVertex = true;
+          }
+        });
+    });
+  }
+
+  private gateMoveToMousePosition(mouse: Point) {
+    console.log("gatepivot b4", this.gatePivot);
+    const gatePivot = this.plotter.transformer.toConcretePoint({
+      ...this.gatePivot,
+    });
+    console.log(mouse, gatePivot);
+    let offset = {
+      x: mouse.x - gatePivot.x,
+      y: mouse.y - gatePivot.y,
+    };
+    console.log("offset", offset);
+    this.gatePivot = this.plotter.transformer.toAbstractPoint({
+      ...mouse,
+    });
+    console.log("gatepivot aft", this.gatePivot);
+
+    const gateState = this.targetEditGate.getState();
+    for (let index = 0; index < gateState.points.length; index++) {
+      console.log("b4", gateState.points[index]);
+
+      gateState.points[index] = this.plotter.transformer.toConcretePoint(
+        gateState.points[index],
+        undefined,
+        false
+      );
+
+      gateState.points[index] = {
+        x: gateState.points[index].x + offset.x,
+        y: gateState.points[index].y + offset.y,
+      };
+
+      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+        gateState.points[index]
+      );
+      console.log("aft", gateState.points[index]);
+    }
+
+    this.targetEditGate.update(gateState);
+  }
+
+  private pointMoveToMousePosition(mouse: Point) {
+    const gateState = this.targetEditGate.getState();
+    gateState.points[this.targetPointIndex] =
+      this.plotter.transformer.toAbstractPoint(mouse);
+    this.targetEditGate.update(gateState);
+  }
+
+  private reset() {
+    this.isDraggingVertex = false;
+    this.targetEditGate = null;
+    this.targetPointIndex = null;
   }
 
   protected instanceGate(): PolygonGate {
@@ -214,11 +236,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     };
   }
 
-  gateEvent(type: string, { x, y }: Point) {
+  gateEvent(type: string, point: Point) {
     if (!this.started) return;
-    const isCloseToFirstPoint = this.closeToFirstPoint({ x, y });
+    const isCloseToFirstPoint = this.closeToFirstPoint(point);
     if (type === "mousedown" && !isCloseToFirstPoint) {
-      this.points = [...this.points, { x, y }];
+      this.points = [...this.points, point];
     } else if (type === "mousedown") {
       this.createAndAddGate();
     }
@@ -230,11 +252,16 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       return false;
     }
     const p1 = this.plotter.transformer.toConcretePoint(
-      this.points[0],
+      { ...this.points[0] },
       undefined,
       false
     );
-    const p2 = this.plotter.transformer.toConcretePoint(p, undefined, false);
+    const p2 = this.plotter.transformer.toConcretePoint(
+      { ...p },
+      undefined,
+      false
+    );
+    // console.log(p1, p2);
     if (euclidianDistance2D(p1, p2) <= maxPolygonDist) {
       return true;
     }

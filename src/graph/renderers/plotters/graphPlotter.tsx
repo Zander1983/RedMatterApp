@@ -6,10 +6,10 @@ import GraphTransformer, {
 } from "graph/renderers/transformers/graphTransformer";
 import PlotData from "graph/dataManagement/plotData";
 
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+export const leftPadding = 70;
+export const rightPadding = 50;
+export const topPadding = 50;
+export const bottomPadding = 50;
 
 export interface GraphPlotterState extends PlotterState {
   plotData: PlotData;

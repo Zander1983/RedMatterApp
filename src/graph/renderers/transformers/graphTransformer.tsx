@@ -2,6 +2,12 @@ import PlotData from "graph/dataManagement/plotData";
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
 import numeral from "numeral";
 import FCSServices from "services/FCSServices/FCSServices";
+import {
+  bottomPadding,
+  leftPadding,
+  rightPadding,
+  topPadding,
+} from "../plotters/graphPlotter";
 
 const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
@@ -57,7 +63,7 @@ export default class GraphTransformer extends Transformer {
     if (state.plotData !== undefined) this.plotData = state.plotData;
   }
 
-  getTransformerState() {
+  getTransformerState(): GraphTransformerState {
     return {
       x1: this.x1,
       y1: this.y1,
@@ -72,11 +78,27 @@ export default class GraphTransformer extends Transformer {
     };
   }
 
+  isOutOfBounds(p: GraphPoint): boolean {
+    let { ibx, iby, iex, iey } = this;
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    const rangeX = xBi ? [0, 1] : [ibx, iex];
+    const rangeY = yBi ? [0, 1] : [iby, iey];
+    if (p.x < rangeX[0] || p.x > rangeX[1]) {
+      return true;
+    }
+    if (p.y < rangeY[0] || p.y > rangeY[1]) {
+      return true;
+    }
+    return false;
+  }
+
   toConcretePoint = (
     p: GraphPoint,
     customRanges?: [[number, number], [number, number]],
-    alreadyLogicleConverted: boolean = true
+    prints: boolean = false
   ): GraphPoint => {
+    if (prints) console.log("to concrete point got", p);
     let { ibx, iby, iex, iey } = this;
     if (customRanges !== undefined) {
       ibx = customRanges[0][0];
@@ -86,77 +108,86 @@ export default class GraphTransformer extends Transformer {
     }
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
-    if (!alreadyLogicleConverted && (xBi || yBi)) {
-      let ranges = [
-        this.plotData.linearRanges.get(this.plotData.xAxis),
-        this.plotData.linearRanges.get(this.plotData.yAxis),
-      ];
-      const fcsService = new FCSServices();
-      if (xBi) {
-        p.x = fcsService.logicleInverseMarkTransformer(
-          [p.x],
-          ranges[0][0],
-          ranges[0][1]
-        )[0];
-      }
-      if (yBi) {
-        p.y = fcsService.logicleInverseMarkTransformer(
-          [p.y],
-          ranges[0][0],
-          ranges[0][1]
-        )[0];
-      }
-    }
-    const w = Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2);
-    const h = Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
-    const xBegin = Math.min(this.x1, this.x2);
-    const yEnd = Math.max(this.y1, this.y2);
-    return {
-      x: (((p.x - ibx) / (iex - ibx)) * w + xBegin) / this.scale,
-      y: (yEnd - ((p.y - iby) / (iey - iby)) * h) / this.scale,
-    };
-  };
-
-  toAbstractPoint = (
-    p: GraphPoint,
-    noConversionFromLogicle: boolean = false
-  ): GraphPoint => {
-    const plotXRange = this.x2 / this.scale - this.x1 / this.scale;
-    const plotYRange = this.y1 / this.scale - this.y2 / this.scale;
-    const abstractXRange = this.iex - this.ibx;
-    const abstractYRange = this.iey - this.iby;
-    let ret = {
-      x:
-        ((p.x - this.x1 / this.scale) / plotXRange) * abstractXRange + this.ibx,
-      y:
-        this.iey - ((this.y1 / this.scale - p.y) / plotYRange) * abstractYRange,
-    };
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
-    if (noConversionFromLogicle || (!xBi && !yBi)) return ret;
-    let ranges = [
-      this.plotData.ranges.get(this.plotData.xAxis),
-      this.plotData.ranges.get(this.plotData.yAxis),
-    ];
-    const fcsService = new FCSServices();
-    if (xBi) {
-      ret.x = 1 - (ranges[0][1] - ret.x) / (ranges[0][1] - ranges[0][0]);
-      ret.x = fcsService.logicleInverseMarkTransformer(
-        [ret.x],
-        ranges[0][0],
-        ranges[0][1]
-      )[0];
-    }
-    if (yBi) {
-      ret.y = 1 - (ranges[1][1] - ret.y) / (ranges[1][1] - ranges[1][0]);
-      ret.y = fcsService.logicleInverseMarkTransformer(
-        [ret.y],
-        ranges[0][0],
-        ranges[0][1]
-      )[0];
-    }
+    let ret = { x: 0, y: 0 };
+    ret.x = xBi
+      ? this.toConcreteLogicle(p.x, "x")
+      : this.toConcreteLinear(p.x, "x", ibx, iex);
+    ret.y = yBi
+      ? this.toConcreteLogicle(p.y, "y")
+      : this.toConcreteLinear(p.y, "y", iby, iey);
+    if (prints) console.log("to concrete point ret", ret);
     return ret;
   };
+
+  private toConcreteLinear(
+    number: number,
+    axis: "x" | "y",
+    b: number,
+    e: number
+  ): number {
+    const amplitude =
+      axis === "x"
+        ? Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)
+        : Math.max(this.y1, this.y2) - Math.min(this.y1, this.y2);
+
+    const padding =
+      axis === "x" ? Math.min(this.x1, this.x2) : Math.max(this.y1, this.y2);
+
+    const scaledPosition = (number - b) / (e - b);
+
+    return axis === "x"
+      ? (padding + scaledPosition * amplitude) / this.scale
+      : (padding - scaledPosition * amplitude) / this.scale;
+  }
+
+  private toConcreteLogicle(number: number, axis: "x" | "y"): number {
+    let range =
+      axis === "x"
+        ? [leftPadding, this.plotData.plotWidth - rightPadding]
+        : [topPadding, this.plotData.plotHeight - bottomPadding];
+    const amplitude = range[1] - range[0];
+    return axis === "x"
+      ? amplitude * number + range[0]
+      : amplitude * (1.0 - number) + range[0];
+  }
+
+  toAbstractPoint = (p: GraphPoint): GraphPoint => {
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    let ret = { x: 0, y: 0 };
+    ret.x = xBi
+      ? this.toAbstractLogicle(p.x, "x")
+      : this.toAbstractLinear(p.x, "x");
+    ret.y = yBi
+      ? this.toAbstractLogicle(p.y, "y")
+      : this.toAbstractLinear(p.y, "y");
+    return ret;
+  };
+
+  private toAbstractLogicle(number: number, axis: "x" | "y"): number {
+    let range =
+      axis === "x"
+        ? [leftPadding, this.plotData.plotWidth - rightPadding]
+        : [topPadding, this.plotData.plotHeight - bottomPadding];
+    const ret =
+      axis === "x"
+        ? 1 - (range[1] - number) / (range[1] - range[0])
+        : (range[1] - number) / (range[1] - range[0]);
+    return ret;
+  }
+
+  private toAbstractLinear(number: number, axis: "x" | "y"): number {
+    const plotRange =
+      axis === "x"
+        ? this.x2 / this.scale - this.x1 / this.scale
+        : this.y1 / this.scale - this.y2 / this.scale;
+    const abstractRange =
+      axis === "x" ? this.iex - this.ibx : this.iey - this.iby;
+    return axis === "x"
+      ? ((number - this.x1 / this.scale) / plotRange) * abstractRange + this.ibx
+      : this.iey -
+          ((this.y1 / this.scale - number) / plotRange) * abstractRange;
+  }
 
   abstractLinearToLogicle(p: { x: number; y: number }): {
     x: number;

@@ -20,7 +20,6 @@ interface PolygonGateState {
 }
 
 export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
-  // static TargetPlotter = ScatterPlotter;
   plotter: ScatterPlotter | null = null;
 
   points: Point[] = [];
@@ -49,10 +48,15 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     const newPoints = gate.points;
     let { points, newRanges } = this.pointsToBi([...newPoints]);
     for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(points[i], newRanges);
+      const p = this.plotter.transformer.toConcretePoint(
+        points[i],
+        undefined,
+        false
+      );
       const pp = this.plotter.transformer.toConcretePoint(
         points[(i + 1) % points.length],
-        newRanges
+        undefined,
+        false
       );
       let color = "#f00";
       let size = 2;
@@ -72,6 +76,48 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
         lineWidth: 2,
         strokeColor: "#f00",
       });
+    }
+  }
+
+  protected drawGating() {
+    if (this.points === undefined) return;
+    let lastMousePos = { ...this.lastMousePos };
+    const newPoints = [...this.points, lastMousePos];
+    const { points, newRanges } = this.pointsToBi(newPoints);
+    const pointCount = points.length - 1;
+    lastMousePos = points[pointCount];
+    let lastPoint = null;
+    const scale = this.plotter.scale;
+    for (let i = 0; i < pointCount; i++) {
+      const p = this.plotter.transformer.toConcretePoint(points[i], undefined);
+      this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
+      if (i == pointCount - 1) {
+        const mouse = this.plotter.transformer.toConcretePoint(
+          lastMousePos,
+          undefined,
+          true
+        );
+        this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
+        this.plotter.drawer.segment({
+          x1: p.x * scale,
+          y1: p.y * scale,
+          x2: mouse.x * scale,
+          y2: mouse.y * scale,
+          lineWidth: this.closeToFirstPoint(mouse, false) ? 4 : 2,
+          strokeColor: this.closeToFirstPoint(mouse, false) ? "#00f" : "#f00",
+        });
+      }
+      if (lastPoint !== null) {
+        this.plotter.drawer.segment({
+          x1: p.x * scale,
+          y1: p.y * scale,
+          x2: lastPoint.x * scale,
+          y2: lastPoint.y * scale,
+          lineWidth: 2,
+          strokeColor: "#f00",
+        });
+      }
+      lastPoint = p;
     }
   }
 
@@ -110,48 +156,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     };
   }
 
-  protected drawGating() {
-    if (this.points === undefined) return;
-    let lastMousePos = { ...this.lastMousePos };
-    const newPoints = [...this.points, lastMousePos];
-    const { points, newRanges } = this.pointsToBi(newPoints);
-    const pointCount = points.length - 1;
-    lastMousePos = points[pointCount];
-    let lastPoint = null;
-    const scale = this.plotter.scale;
-    for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(points[i], newRanges);
-      this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
-      if (i == pointCount - 1) {
-        const mouse = this.plotter.transformer.toConcretePoint(
-          lastMousePos,
-          newRanges
-        );
-        this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
-        this.plotter.drawer.segment({
-          x1: p.x * scale,
-          y1: p.y * scale,
-          x2: mouse.x * scale,
-          y2: mouse.y * scale,
-          lineWidth: this.closeToFirstPoint(mouse, false) ? 4 : 2,
-          strokeColor: this.closeToFirstPoint(mouse, false) ? "#00f" : "#f00",
-        });
-      }
-      if (lastPoint !== null) {
-        this.plotter.drawer.segment({
-          x1: p.x * scale,
-          y1: p.y * scale,
-          x2: lastPoint.x * scale,
-          y2: lastPoint.y * scale,
-          lineWidth: 2,
-          strokeColor: "#f00",
-        });
-      }
-      lastPoint = p;
-    }
-  }
-
-  private closeToFirstPoint(
+  closeToFirstPoint(
     p: Point,
     abstract: boolean = false,
     otherPointToCompare: Point = undefined
