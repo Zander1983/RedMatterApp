@@ -25,7 +25,7 @@ import Plans from "./Components/plans/Plans";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
-import UserProfile from "./Components/plans/UserProfile"
+import UserProfile from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
@@ -121,7 +121,9 @@ const router = [
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
-    component: ({ match }: any) => <Experiment id={match.params.experimentId} />,
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} />
+    ),
   },
   {
     path: "/mailing-list",

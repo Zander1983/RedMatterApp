@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
-import cancel from './img/multiply.png';
+import cancel from "./img/multiply.png";
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
@@ -33,19 +33,18 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   nameHighlight: {
-      backgroundColor:"#6666A9",
-      color:"#ffffff",
-      padding: "10px 5px 5px 5px",
-      borderRadius: "20px 20px 0 0"
+    backgroundColor: "#6666A9",
+    color: "#ffffff",
+    padding: "10px 5px 5px 5px",
+    borderRadius: "20px 20px 0 0",
   },
-  white:{
-      color: "white"
+  white: {
+    color: "white",
   },
 
   price: {
-      marginTop: 18,
-      marginBottom: 18,
-      
+    marginTop: 18,
+    marginBottom: 18,
   },
 
   get: {
@@ -55,20 +54,18 @@ const useStyles = makeStyles((theme) => ({
     padding: "8px 40px",
     color: "white",
     borderRadius: 5,
-    fontWeight: 500
+    fontWeight: 500,
   },
 
   plan: {
     border: "solid 1px #ddd",
     borderRadius: 20,
-    paddingBottom: "30px"
-  }
+    paddingBottom: "30px",
+  },
 }));
 
-
-
-export default function Plans(props:any) {
-    const classes = useStyles();
+export default function Plans(props: any) {
+  const classes = useStyles();
   return (
     <Grid
       container
@@ -95,17 +92,16 @@ export default function Plans(props:any) {
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
-        }}>
-             <img src={cancel} alt="success icon" style={{height:'4em', width:'4em', margin:'15px auto 20px'}}></img>
-            <h1>Payment Cancelled</h1>
-            <p> Redirecting you to Homepage</p>
-
-           
-
-        
+        }}
+      >
+        <img
+          src={cancel}
+          alt="success icon"
+          style={{ height: "4em", width: "4em", margin: "15px auto 20px" }}
+        ></img>
+        <h1>Payment Cancelled</h1>
+        <p> Redirecting you to Homepage</p>
       </Grid>
-
-
-      </Grid>
+    </Grid>
   );
-};
+}
