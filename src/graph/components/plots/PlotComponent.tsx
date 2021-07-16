@@ -261,7 +261,6 @@ function PlotComponent(props: {
 
     window.addEventListener("click", (e) => {
       let event: any = e.target;
-      console.log(event);
       if (event && event.id != "hist_overlay") {
         setHistogramOverlayOpen(false);
       }
