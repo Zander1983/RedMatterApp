@@ -7,9 +7,8 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import Gate from "graph/dataManagement/gate/gate";
 
-const maxPolygonDist = 15;
+export const selectPointDist = 15;
 
 export interface PolygonGateState extends GateState {
   points: Point[];
@@ -35,6 +34,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
+
+  setPluginState() {
+    let state = { ...this.getGatingState() };
+    this.plugin.setGatingState(state);
+  }
 
   editGateEvent(type: string, mouse: Point) {
     if (
@@ -108,7 +112,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
                 undefined,
                 false
               )
-            ) <= maxPolygonDist
+            ) <= selectPointDist
           ) {
             this.targetEditGate = gate;
             this.targetPointIndex = i;
@@ -185,9 +189,13 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(yAxis);
 
     const newGate = new PolygonGate({
-      points: points,
+      points: [...points].map((e) =>
+        this.plotter.transformer.toAbstractPoint(e)
+      ),
       xAxis: xAxis,
+      xAxisType: this.plotter.plotData.xPlotType,
       yAxis: yAxis,
+      yAxisType: this.plotter.plotData.yPlotType,
       parents: this.plotter.plotData.population.map((e) => e.gate),
     });
 
@@ -251,18 +259,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     if (this.points.length < 2) {
       return false;
     }
-    const p1 = this.plotter.transformer.toConcretePoint(
-      { ...this.points[0] },
-      undefined,
-      false
-    );
-    const p2 = this.plotter.transformer.toConcretePoint(
-      { ...p },
-      undefined,
-      false
-    );
-    // console.log(p1, p2);
-    if (euclidianDistance2D(p1, p2) <= maxPolygonDist) {
+    if (euclidianDistance2D(this.points[0], p) <= selectPointDist) {
       return true;
     }
     return false;

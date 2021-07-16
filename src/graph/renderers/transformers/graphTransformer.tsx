@@ -202,7 +202,6 @@ export default class GraphTransformer extends Transformer {
     ];
     const fcsService = new FCSServices();
     if (xBi) {
-      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
       p.x = fcsService.logicleMarkTransformer(
         [p.x],
         ranges[0][0],
@@ -210,7 +209,6 @@ export default class GraphTransformer extends Transformer {
       )[0];
     }
     if (yBi) {
-      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
       p.y = fcsService.logicleMarkTransformer(
         [p.y],
         ranges[0][0],
@@ -232,22 +230,21 @@ export default class GraphTransformer extends Transformer {
       this.plotData.linearRanges.get(this.plotData.yAxis),
     ];
     const fcsService = new FCSServices();
+    let ret = { x: 0, y: 0 };
     if (xBi) {
-      p.x = 1 - (ranges[0][1] - p.x) / (ranges[0][1] - ranges[0][0]);
       p.x = fcsService.logicleInverseMarkTransformer(
         [p.x],
         ranges[0][0],
         ranges[0][1]
       )[0];
-    }
+    } else ret.x = p.x;
     if (yBi) {
-      p.y = 1 - (ranges[1][1] - p.y) / (ranges[1][1] - ranges[1][0]);
       p.y = fcsService.logicleInverseMarkTransformer(
         [p.y],
         ranges[0][0],
         ranges[0][1]
       )[0];
-    }
+    } else ret.y = p.y;
     return p;
   }
 
