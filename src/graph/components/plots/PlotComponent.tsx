@@ -382,6 +382,14 @@ function PlotComponent(props: {
     return null;
   };
 
+  const isOptionSelected = (plotId: string, type: string = "") => {
+    let plot = isHistogramSelected(plotId);
+    if (plot && type == plot.type) {
+      return "#6666aa";
+    }
+    return "#66d";
+  };
+
   const getHistogramSelectedColor = (
     plotId: string,
     type: string = ""
@@ -395,7 +403,6 @@ function PlotComponent(props: {
           return "#fff";
         }
       }
-
       return plot.plot.color;
     }
 
@@ -791,11 +798,11 @@ function PlotComponent(props: {
                           <span>
                             <Button
                               style={{
-                                backgroundColor: "#66d",
-                                color: getHistogramSelectedColor(
+                                backgroundColor: isOptionSelected(
                                   e.plotData.id,
                                   COMMON_CONSTANTS.Bar
                                 ),
+                                color: "#fff",
                                 fontSize: 13,
                               }}
                               onClick={() => {
@@ -810,11 +817,11 @@ function PlotComponent(props: {
                             </Button>
                             <Button
                               style={{
-                                backgroundColor: "#66d",
-                                color: getHistogramSelectedColor(
+                                backgroundColor: isOptionSelected(
                                   e.plotData.id,
                                   COMMON_CONSTANTS.Line
                                 ),
+                                color: "#fff",
                                 fontSize: 13,
                                 marginLeft: 20,
                               }}
@@ -884,13 +891,13 @@ function PlotComponent(props: {
                           </span>
                           <Button
                             style={{
-                              backgroundColor: "#66d",
-                              color: getHistogramSelectedColor(
+                              backgroundColor: isOptionSelected(
                                 filePlotIdDict[e.id]
                                   ? filePlotIdDict[e.id].id
                                   : "",
                                 COMMON_CONSTANTS.Bar
                               ),
+                              color: "#fff",
                               fontSize: 13,
                             }}
                             onClick={() => {
@@ -925,13 +932,13 @@ function PlotComponent(props: {
                           </Button>
                           <Button
                             style={{
-                              backgroundColor: "#66d",
-                              color: getHistogramSelectedColor(
+                              backgroundColor: isOptionSelected(
                                 filePlotIdDict[e.id]
                                   ? filePlotIdDict[e.id].id
                                   : "",
                                 COMMON_CONSTANTS.Line
                               ),
+                              color: "#fff",
                               fontSize: 13,
                               marginLeft: 20,
                             }}
