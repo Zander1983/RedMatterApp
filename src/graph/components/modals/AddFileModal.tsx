@@ -21,7 +21,6 @@ import { DownloadOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getHumanReadableTimeDifference } from "utils/time";
-import { FileService } from "services/FileService";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {

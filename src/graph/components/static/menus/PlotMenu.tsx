@@ -93,7 +93,6 @@ export default function PlotMenu(props: {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
-            <TableCell>Overlays</TableCell>
             <TableCell>Type</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>From file</TableCell>
@@ -164,9 +163,6 @@ export default function PlotMenu(props: {
                   >
                     <FileCopy></FileCopy>
                   </Button>
-                </TableCell>
-                <TableCell>
-                  <Overlays plot={plot}></Overlays>
                 </TableCell>
                 <TableCell>{type}</TableCell>
                 <TableCell>

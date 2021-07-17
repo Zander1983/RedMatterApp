@@ -89,7 +89,7 @@ export default class PlotData extends ObserversFunctionality {
   label: string = "";
   histogramOverlays: {
     color: string;
-    plot: string;
+    plot: any;
   }[] = [];
   histogramBarOverlays: {
     color: string;
@@ -225,7 +225,7 @@ export default class PlotData extends ObserversFunctionality {
       plotScale: this.plotScale,
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
-      histogramAxis: this.histogramAxis,
+      histogramAxis: this.histogramAxis
     };
   }
 
@@ -256,16 +256,16 @@ export default class PlotData extends ObserversFunctionality {
   /* MULTI PLOT INTERACTION */
 
   addOverlay(plotData: PlotData, color?: string) {
-    if (color === undefined) color = generateColor();
+    if (!color) color = generateColor();
     this.histogramOverlays.push({
-      plot: plotData.id,
+      plot: plotData,
       color: color,
     });
     this.plotUpdated();
   }
 
   addBarOverlay(plotData: PlotData, color?: string) {
-    if (color === undefined) color = generateColor();
+    if (!color) color = generateColor();
     this.histogramBarOverlays.push({
       plot: plotData,
       color: color,
@@ -279,17 +279,15 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
   
+  removeAnyOverlay(ploDataID: string)
+  {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+    this.histogramOverlays = this.histogramOverlays.filter(x => x.plot.id != ploDataID);
+    this.plotUpdated();
+  }
+
   removeOverlay(plotDataID: string) {
-    const oldLength = this.histogramOverlays.length;
-    const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
-    if (without.length < oldLength - 1 || without.length === oldLength) {
-      throw Error(
-        "Try to remove " +
-          (oldLength - without.length).toString() +
-          " overlay(s). Should be exactly 1."
-      );
-    }
-    this.histogramOverlays = without;
+    this.histogramOverlays = this.histogramOverlays.filter((e) => e.plot.id != plotDataID);
     this.plotUpdated();
   }
 

@@ -19,7 +19,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   direction: "vertical" | "horizontal" = "vertical";
   bins: number = 1;
   drawer: HistogramDrawer;
-  drawer1: HistogramDrawer;
 
   globalMax: number = 0;
   rangeMin: number = 0;
@@ -98,7 +97,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
   public createDrawer(): void {
     this.drawer = new HistogramDrawer();
-    this.drawer1 = new HistogramDrawer();
   }
 
   private DRAW_DIVISION_CONST = 3;
@@ -127,17 +125,26 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     let globlMax = mainHist.max;
     let range = this.plotData.ranges.get(axis);
 
-    const overlaysObj = this.plotData.getOverlays();
+    const overlaysObj = this.plotData.histogramOverlays;
     const overlays = [];
+
+    this.rangeMin = range[0];
+    this.rangeMax = range[1];
 
     for (const overlay of overlaysObj) {
       if (overlay.plot === undefined || overlay.plot === null) continue;
-      const overlayRes = overlay.plot.getBins(
+      let newPlotData = new PlotData();
+      newPlotData.file = overlay.plot.file;
+      newPlotData.population = overlay.plot.population;
+      newPlotData.setupPlot();
+      newPlotData.getXandYRanges();
+      newPlotData.ranges.set(axis, [range[0], range[1]]);
+      const overlayRes = newPlotData.getBins(
         Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
         axis
       );
       overlayRes.list = overlayRes.list.map(
-        (e) => e / this.DRAW_DIVISION_CONST
+        (e: any) => e / this.DRAW_DIVISION_CONST
       );
       overlays.push({
         ...overlayRes,
@@ -145,26 +152,25 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       });
       const lastMax = overlay.plot.getBins(Math.round(this.bins) - 1, axis).max;
       if (lastMax > globlMax) globlMax = lastMax;
-      const overlayRanges = overlay.plot.ranges.get(axis);
-      if (overlayRanges[0] < range[0]) range[0] = overlayRanges[0];
-      if (overlayRanges[1] > range[1]) range[1] = overlayRanges[1];
     }
-
     this.globalMax = globlMax;
-    this.rangeMin = range[0];
-    this.rangeMax = range[1];
     const barOverlays = this.plotData.histogramBarOverlays;
     let binsArray = [];
     let parentBinsArray = [];
-    let mainPlotColor = this.plotData.population && this.plotData.population.length > 0 ? this.plotData.population[0].gate.color : "";
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: mainHist.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
+    let mainPlotColor =
+      this.plotData.population && this.plotData.population.length > 0
+        ? this.plotData.population[0].gate.color
+        : "";
 
     if (barOverlays) {
+      for (let i = 0; i < barOverlays.length; i++) {
+        const lastMax = barOverlays[i].plot.getBins(
+          Math.round(this.bins) - 1,
+          axis
+        ).max;
+        if (lastMax > globlMax) globlMax = lastMax;
+      }
+      this.globalMax = globlMax;
       for (let i = 0; i < barOverlays.length; i++) {
         let newPlotData = new PlotData();
         newPlotData.file = barOverlays[i].plot.file;
@@ -174,10 +180,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         newPlotData.ranges.set(axis, [range[0], range[1]]);
         let overlayMainHist = newPlotData.getBins(this.bins, axis);
         let binsArray = [];
-        let overlayGloblMax = overlayMainHist.max;
         for (let j = 0; j < this.bins; j++) {
           binsArray.push({
-            value: overlayMainHist.list[j] / overlayGloblMax,
+            value: overlayMainHist.list[j] / globlMax,
             color: barOverlays[i].color,
           });
         }
@@ -185,7 +190,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         binsArray = [];
       }
     }
-
+    for (let i = 0; i < this.bins; i++) {
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: mainPlotColor,
+      });
+    }
     for (let i = 0; i < binsArray.length; i++) {
       let binsAscArray = [];
       binsAscArray.push(binsArray[i]);
