@@ -9,7 +9,6 @@ import {
 import { snackbarService } from "uno-material-ui";
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
-import AxisBar from "./plotui/axisBar";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import fileService from "services/FileService";
 import CanvasComponent from "../canvas/CanvasComponent";
@@ -18,7 +17,6 @@ import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
-import { keys } from "lodash";
 
 const classes = {
   mainContainer: {
@@ -37,16 +35,11 @@ const classes = {
   },
 };
 
-const nullOrUndefined = (obj: any) => {
-  return obj === null || obj === undefined;
-};
-
 function useForceUpdate() {
   const [value, setValue] = React.useState(0); // integer state
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-const minDrawInterval = 30;
 let interval: any = {};
 var plotDownloadingFiles: any[] = [];
 var filePlotIdDict: any = {};
