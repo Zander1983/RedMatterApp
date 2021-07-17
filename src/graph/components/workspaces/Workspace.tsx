@@ -54,6 +54,9 @@ class Workspace extends React.Component<WorkspaceProps> {
     plotData: PlotData;
     plotRender: Plot;
   }[] = [];
+
+  groupedPlots: {}[] = [];
+
   plotMoving: boolean = true;
 
   constructor(props: WorkspaceProps) {
@@ -71,6 +74,7 @@ class Workspace extends React.Component<WorkspaceProps> {
 
     this.state = {
       plots: [],
+      groupedPlots: [],
     };
   }
 
@@ -80,6 +84,11 @@ class Workspace extends React.Component<WorkspaceProps> {
       this.forceUpdate();
     }
     const plotMap = dataManager.getAllPlots();
+
+    //console.log(">>> plotMap is ", plotMap[0].plot.file.id);
+
+    //const groupedPlots = plotMap.reduce();
+
     const plotList: {
       plotData: PlotData;
       plotRender: Plot;
@@ -90,6 +99,14 @@ class Workspace extends React.Component<WorkspaceProps> {
         plotRender: dataManager.getPlotRendererForPlot(v.plotID),
       })
     );
+
+    this.groupedPlots = plotList.reduce(function (a, c) {
+      a[c.plotData.file.id] = a[c.plotData.file.id] || [];
+      a[c.plotData.file.id].push(c);
+      return a;
+    }, Object.create(null));
+    console.log(">>>>>> groupedPlots ", this.groupedPlots);
+
     this.plots = plotList;
     this.forceUpdate();
   }
@@ -115,32 +132,44 @@ class Workspace extends React.Component<WorkspaceProps> {
           rowHeight={30}
           isDraggable={this.plotMoving}
         >
-          {
-            //@ts-ignore
-            this.plots.map((e, i) => {
-              return (
-                <div
-                  key={e.plotData.id}
-                  style={classes.itemOuterDiv}
-                  data-grid={standardGridPlotItem((i * STDW) % 30, 100)}
-                  id={`workspace-outter-${e.plotData.id}`}
-                >
-                  <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent
-                      plot={e.plotRender}
-                      plotIndex={e.plotData.id}
-                      plotFileId={e.plotData.file.id}
-                      plots={this.plots.filter(
-                        (x) => x.plotData.id != e.plotData.id
-                      )}
-                      sharedWorkspace={this.props.sharedWorkspace}
-                      experimentId={this.props.experimentId}
-                    />
+          {this.groupedPlots &&
+            Object.entries(this.groupedPlots).forEach((key, index) => {
+              let plots = key[1];
+              console.log(">>>>> plots ", plots);
+
+              {
+                /* seperates grouped files here with a <hr /> */
+              }
+              {
+                /* print the file name here  */
+              }
+
+              //@ts-ignore
+              plots.map((e, i) => {
+                console.log("e is ", e);
+                return (
+                  <div
+                    key={e.plotData.id}
+                    style={classes.itemOuterDiv}
+                    data-grid={standardGridPlotItem((i * STDW) % 30, 100)}
+                    id={`workspace-outter-${e.plotData.id}`}
+                  >
+                    <div id="inner" style={classes.itemInnerDiv}>
+                      <PlotComponent
+                        plot={e.plotRender}
+                        plotIndex={e.plotData.id}
+                        plotFileId={e.plotData.file.id}
+                        plots={this.plots.filter(
+                          (x) => x.plotData.id != e.plotData.id
+                        )}
+                        sharedWorkspace={this.props.sharedWorkspace}
+                        experimentId={this.props.experimentId}
+                      />
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          }
+                );
+              });
+            })}
         </ResponsiveGridLayout>
       );
     } else {
