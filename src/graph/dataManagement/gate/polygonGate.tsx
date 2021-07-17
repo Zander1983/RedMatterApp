@@ -13,7 +13,6 @@ export default class PolygonGate extends Gate {
 
   constructor(gate: PolygonGateState) {
     super(gate);
-    console.log("GATE CONSTUCTOR CALLED WITH GATE = ", gate);
     this.points = gate.points;
   }
 

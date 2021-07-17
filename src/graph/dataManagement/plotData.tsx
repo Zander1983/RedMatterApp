@@ -661,10 +661,10 @@ export default class PlotData extends ObserversFunctionality {
         );
         const min =
           //@ts-ignore
-          axisType === "biexponential" ? 0 : axis[axisType + "Minimum"];
+          axis[axisType + "Minimum"];
         const max =
           //@ts-ignore
-          axisType === "biexponential" ? 1 : axis[axisType + "Maximum"];
+          axis[axisType + "Maximum"];
         //@ts-ignore
         this.ranges.set(axis.paramName, [min, max]);
         //@ts-ignore

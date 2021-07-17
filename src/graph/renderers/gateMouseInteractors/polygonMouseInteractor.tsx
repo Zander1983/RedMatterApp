@@ -46,7 +46,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.plotter.gates.length > 0 &&
       !this.isDraggingVertex
     ) {
-      console.log("calling detect gates clicked");
+      // console.log("calling detect gates clicked");
       this.detectGatesClicked(mouse);
     }
 
@@ -56,11 +56,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.started &&
       !this.isDraggingGate
     ) {
-      console.log("calling detect points clicked");
+      // console.log("calling detect points clicked");
       this.detectPointsClicked(mouse);
     } else if (this.targetEditGate !== null && type === "mouseup") {
       // Reset gates and points on mouseup
-      console.log("Reset gates and points on mouseup");
+      // console.log("Reset gates and points on mouseup");
       this.reset();
     } else if (
       this.targetEditGate !== null &&
@@ -69,7 +69,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.isDraggingGate
     ) {
       // Detect point selected and moved
-      console.log("Detect point selected and moved");
+      // console.log("Detect point selected and moved");
       this.pointMoveToMousePosition(mouse);
     } else if (
       this.targetEditGate !== null &&
@@ -78,7 +78,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.isDraggingVertex
     ) {
       // Detect gate selected and moved
-      console.log("Detect gate selected and moved");
+      // console.log("Detect gate selected and moved");
       this.gateMoveToMousePosition(mouse);
     }
 
