@@ -96,9 +96,8 @@ export default class GraphTransformer extends Transformer {
   toConcretePoint = (
     p: GraphPoint,
     customRanges?: [[number, number], [number, number]],
-    prints: boolean = false
+    withLogicle: boolean = false
   ): GraphPoint => {
-    if (prints) console.log("to concrete point got", p);
     let { ibx, iby, iex, iey } = this;
     if (customRanges !== undefined) {
       ibx = customRanges[0][0];
@@ -109,13 +108,15 @@ export default class GraphTransformer extends Transformer {
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
     let ret = { x: 0, y: 0 };
+    if (withLogicle) {
+      p = this.rawAbstractLinearToLogicle(p);
+    }
     ret.x = xBi
       ? this.toConcreteLogicle(p.x, "x")
       : this.toConcreteLinear(p.x, "x", ibx, iex);
     ret.y = yBi
       ? this.toConcreteLogicle(p.y, "y")
       : this.toConcreteLinear(p.y, "y", iby, iey);
-    if (prints) console.log("to concrete point ret", ret);
     return ret;
   };
 
@@ -151,16 +152,18 @@ export default class GraphTransformer extends Transformer {
       : amplitude * (1.0 - number) + range[0];
   }
 
-  toAbstractPoint = (p: GraphPoint): GraphPoint => {
+  toAbstractPoint = (p: GraphPoint, forceLin: boolean = false): GraphPoint => {
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
     let ret = { x: 0, y: 0 };
-    ret.x = xBi
-      ? this.toAbstractLogicle(p.x, "x")
-      : this.toAbstractLinear(p.x, "x");
-    ret.y = yBi
-      ? this.toAbstractLogicle(p.y, "y")
-      : this.toAbstractLinear(p.y, "y");
+    ret.x =
+      xBi && !forceLin
+        ? this.toAbstractLogicle(p.x, "x")
+        : this.toAbstractLinear(p.x, "x");
+    ret.y =
+      yBi && !forceLin
+        ? this.toAbstractLogicle(p.y, "y")
+        : this.toAbstractLinear(p.y, "y");
     return ret;
   };
 
@@ -245,6 +248,38 @@ export default class GraphTransformer extends Transformer {
         ranges[0][1]
       )[0];
     } else ret.y = p.y;
+    return p;
+  }
+
+  rawAbstractLogicleToLinear(p: GraphPoint): GraphPoint {
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    let ranges = [
+      this.plotData.linearRanges.get(this.plotData.xAxis),
+      this.plotData.linearRanges.get(this.plotData.yAxis),
+    ];
+    if (xBi) {
+      p.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.x;
+    }
+    if (yBi) {
+      p.y = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.y;
+    }
+    return p;
+  }
+
+  rawAbstractLinearToLogicle(p: GraphPoint): GraphPoint {
+    const xBi = this.plotData.xPlotType === "bi";
+    const yBi = this.plotData.yPlotType === "bi";
+    let ranges = [
+      this.plotData.linearRanges.get(this.plotData.xAxis),
+      this.plotData.linearRanges.get(this.plotData.yAxis),
+    ];
+    if (xBi) {
+      p.x = (p.x - ranges[0][0]) / (ranges[0][1] - ranges[0][0]);
+    }
+    if (yBi) {
+      p.y = (p.y - ranges[1][0]) / (ranges[1][1] - ranges[1][0]);
+    }
     return p;
   }
 

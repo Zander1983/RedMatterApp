@@ -44,14 +44,19 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   }
 
   protected drawGate(gate: PolygonGate) {
+    if (
+      gate.xAxisType !== this.plotter.plotData.xPlotType ||
+      gate.yAxisType !== this.plotter.plotData.yPlotType
+    ) {
+      return;
+    }
     const pointCount = gate.points.length;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
       let p = gate.points[i];
       let pp = gate.points[(i + 1) % gate.points.length];
-      console.log(p, pp);
-      p = this.plotter.transformer.toConcretePoint(p);
-      pp = this.plotter.transformer.toConcretePoint(pp);
+      p = this.plotter.transformer.toConcretePoint({ ...p }, undefined, true);
+      pp = this.plotter.transformer.toConcretePoint({ ...pp }, undefined, true);
       let color = "#f00";
       let size = 2;
       if (
@@ -154,7 +159,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
         ? { ...this.points[0] }
         : otherPointToCompare;
     const p2 = abstract
-      ? this.plotter.transformer.toConcretePoint(p, undefined, false)
+      ? this.plotter.transformer.toConcretePoint({ ...p })
       : p;
     const dist = euclidianDistance2D(p1, p2);
     if (dist <= selectPointDist * 0.75) {

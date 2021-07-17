@@ -90,9 +90,13 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   private detectGatesClicked(mouse: Point) {
     this.plotter.gates.forEach((gate) => {
-      if (gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))) {
+      if (
+        gate.isPointInside(
+          this.plotter.transformer.toAbstractPoint(mouse, true)
+        )
+      ) {
         this.isDraggingGate = true;
-        this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
+        this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse, true);
         this.targetEditGate = gate as PolygonGate;
         return;
       }
@@ -110,7 +114,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
               this.plotter.transformer.toConcretePoint(
                 { ...p },
                 undefined,
-                false
+                true
               )
             ) <= selectPointDist
           ) {
@@ -123,29 +127,30 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   private gateMoveToMousePosition(mouse: Point) {
-    console.log("gatepivot b4", this.gatePivot);
-    const gatePivot = this.plotter.transformer.toConcretePoint({
-      ...this.gatePivot,
-    });
-    console.log(mouse, gatePivot);
+    const gatePivot = this.plotter.transformer.toConcretePoint(
+      {
+        ...this.gatePivot,
+      },
+      undefined,
+      true
+    );
     let offset = {
       x: mouse.x - gatePivot.x,
       y: mouse.y - gatePivot.y,
     };
-    console.log("offset", offset);
-    this.gatePivot = this.plotter.transformer.toAbstractPoint({
-      ...mouse,
-    });
-    console.log("gatepivot aft", this.gatePivot);
+    this.gatePivot = this.plotter.transformer.toAbstractPoint(
+      {
+        ...mouse,
+      },
+      true
+    );
 
     const gateState = this.targetEditGate.getState();
     for (let index = 0; index < gateState.points.length; index++) {
-      console.log("b4", gateState.points[index]);
-
       gateState.points[index] = this.plotter.transformer.toConcretePoint(
         gateState.points[index],
         undefined,
-        false
+        true
       );
 
       gateState.points[index] = {
@@ -154,9 +159,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       };
 
       gateState.points[index] = this.plotter.transformer.toAbstractPoint(
-        gateState.points[index]
+        gateState.points[index],
+        true
       );
-      console.log("aft", gateState.points[index]);
     }
 
     this.targetEditGate.update(gateState);
@@ -165,7 +170,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   private pointMoveToMousePosition(mouse: Point) {
     const gateState = this.targetEditGate.getState();
     gateState.points[this.targetPointIndex] =
-      this.plotter.transformer.toAbstractPoint(mouse);
+      this.plotter.transformer.rawAbstractLogicleToLinear(
+        this.plotter.transformer.toAbstractPoint(mouse)
+      );
     this.targetEditGate.update(gateState);
   }
 
@@ -189,9 +196,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(yAxis);
 
     const newGate = new PolygonGate({
-      points: [...points].map((e) =>
-        this.plotter.transformer.toAbstractPoint(e)
-      ),
+      points: [...points].map((e) => {
+        e = this.plotter.transformer.toAbstractPoint(e);
+        return this.plotter.transformer.rawAbstractLogicleToLinear(e);
+      }),
       xAxis: xAxis,
       xAxisType: this.plotter.plotData.xPlotType,
       yAxis: yAxis,
