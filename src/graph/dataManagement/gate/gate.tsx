@@ -2,6 +2,7 @@ import dataManager from "../dataManager";
 import ObserversFunctionality, {
   publishDecorator,
 } from "../observersFunctionality";
+import PlotData from "../plotData";
 
 export interface GateState {
   name?: string;
@@ -94,7 +95,7 @@ export default abstract class Gate extends ObserversFunctionality {
     if (update.color !== undefined) this.color = update.color;
   }
 
-  isPointInside(point: { x: number; y: number }): boolean {
+  isPointInside(point: { x: number; y: number }, context?: PlotData): boolean {
     // for (const parent of this.parents) {
     //   if (!parent.isPointInside(point)) {
     //     return false;

@@ -45,7 +45,6 @@ export default class WorkspaceAssembler {
       gates,
       plots: plots === null || plots === undefined ? [] : plots,
     });
-    console.log(workspaceJSON);
     return workspaceJSON;
   }
   parsePlot(plot: any) {
