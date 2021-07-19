@@ -47,11 +47,6 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-interface Dictionary {
-  [key: string]: string;
-}
-
-const minDrawInterval = 30;
 let interval: any = {};
 var plotDownloadingFiles: any[] = [];
 var filePlotIdDict: any = {};
@@ -475,6 +470,7 @@ function PlotComponent(props: {
 
   const setAxisRange = (min: number, max: number, axis: string) => {
     props.plot.plotData.ranges.set(axis, [min, max]);
+    props.plot.plotData.linearRanges.set(axis, [min, max]);
   };
 
   const [oldPos, setOldPos] = React.useState(69420);

@@ -1,6 +1,7 @@
 import GraphDrawer, {
   GraphDrawerState,
 } from "graph/renderers/drawers/graphDrawer";
+import { Label } from "../transformers/graphTransformer";
 
 const binPadding = 0;
 
@@ -88,6 +89,8 @@ export default class HistogramDrawer extends GraphDrawer {
     hbins?: number;
     xAxisLabel?: string;
     yAxisLabel?: string;
+    xLabels: Label[];
+    yLabels: Label[];
   }): void {
     super.drawPlotGraph(params);
   }
@@ -97,6 +100,7 @@ export default class HistogramDrawer extends GraphDrawer {
     if (this.axis === "vertical") {
       this.binSize = (this.x2 - this.x1) / this.bins;
       if (this.bins <= index) {
+        return;
         throw Error(`Out of bounds index for histogram with ${this.bins} bins`);
       }
       const outterBeginX = this.x1 + index * this.binSize;
@@ -116,6 +120,7 @@ export default class HistogramDrawer extends GraphDrawer {
     } else {
       this.binSize = (this.y2 - this.y1) / this.bins;
       if (this.bins <= index) {
+        return;
         throw Error(`Out of bounds index for histogram with ${this.bins} bins`);
       }
       const outterBeginY = this.y1 + (this.bins - 1 - index) * this.binSize;

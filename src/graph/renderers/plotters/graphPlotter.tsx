@@ -1,13 +1,15 @@
 import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
 import Gate from "graph/dataManagement/gate/gate";
 import GraphDrawer from "graph/renderers/drawers/graphDrawer";
-import GraphTransformer from "graph/renderers/transformers/graphTransformer";
+import GraphTransformer, {
+  Label,
+} from "graph/renderers/transformers/graphTransformer";
 import PlotData from "graph/dataManagement/plotData";
 
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+export const leftPadding = 70;
+export const rightPadding = 50;
+export const topPadding = 50;
+export const bottomPadding = 50;
 
 export interface GraphPlotterState extends PlotterState {
   plotData: PlotData;
@@ -57,8 +59,8 @@ export default class GraphPlotter extends Plotter {
   yAxis: number[] = [];
   xAxisName: string;
   yAxisName: string;
-  xLabels: string[] = [];
-  yLabels: string[] = [];
+  xLabels: Label[] = [];
+  yLabels: Label[] = [];
   gates: Gate[];
 
   canvasContext: any = null;
@@ -91,15 +93,48 @@ export default class GraphPlotter extends Plotter {
   }
 
   public draw(drawPlotGraphParams?: any): void {
-    this.drawer.drawPlotGraph(drawPlotGraphParams);
+    this.drawer.drawPlotGraph({
+      ...drawPlotGraphParams,
+      xLabels: this.xLabels,
+      yLabels: this.yLabels,
+    });
     this.drawHeader();
   }
 
-  public update(): void {
+  public update(noLabels: boolean = false): void {
+    const ranges = this.plotData.getXandYRanges();
     this.getBins();
 
-    this.xLabels = this.createRangeArray("x");
-    this.yLabels = this.createRangeArray("y");
+    if (noLabels === false) {
+      const xRange =
+        this.plotData.xPlotType === "lin"
+          ? ranges.x
+          : this.plotData.linearRanges.get(this.plotData.xAxis);
+
+      const yRange =
+        this.plotData.yPlotType === "lin"
+          ? ranges.y
+          : this.plotData.linearRanges.get(this.plotData.yAxis);
+
+      const xLabels = this.transformer.getAxisLabels(
+        this.plotData.xPlotType,
+        xRange,
+        this.plotData.xPlotType === "bi"
+          ? Math.round(this.horizontalBinCount / 2)
+          : this.horizontalBinCount
+      );
+
+      const yLabels = this.transformer.getAxisLabels(
+        this.plotData.yPlotType,
+        yRange,
+        this.plotData.yPlotType === "bi"
+          ? Math.round(this.verticalBinCount / 2)
+          : this.verticalBinCount
+      );
+
+      this.xLabels = xLabels;
+      this.yLabels = yLabels;
+    }
 
     super.update();
   }
@@ -116,8 +151,24 @@ export default class GraphPlotter extends Plotter {
     this.height = state.height;
     this.scale = state.scale;
     this.gates = state.gates;
-    this.xLabels = state.xLabels;
-    this.yLabels = state.yLabels;
+    this.xLabels =
+      state.xLabels === undefined
+        ? undefined
+        : state.xLabels.map((e) => {
+            return {
+              name: e,
+              pos: parseFloat(e),
+            };
+          });
+    this.yLabels =
+      state.yLabels === undefined
+        ? undefined
+        : state.yLabels.map((e) => {
+            return {
+              name: e,
+              pos: parseFloat(e),
+            };
+          });
   }
 
   protected getBins() {
@@ -146,8 +197,8 @@ export default class GraphPlotter extends Plotter {
       scale: this.scale,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
-      xLabels: this.xLabels,
-      yLabels: this.yLabels,
+      xLabels: this.xLabels.map((e) => e.name),
+      yLabels: this.yLabels.map((e) => e.name),
       gates: this.gates,
     };
   }
@@ -189,6 +240,7 @@ export default class GraphPlotter extends Plotter {
       iby: ranges.y[0],
       iey: ranges.y[1],
       scale: this.scale,
+      plotData: this.plotData,
     });
   }
 
@@ -200,7 +252,7 @@ export default class GraphPlotter extends Plotter {
     this.transformer.update();
   }
 
-  private createRangeArray(axis: "x" | "y"): Array<string> {
+  createRangeArray(axis: "x" | "y"): Array<string> {
     const plotSize =
       axis === "x" ? this.plotData.plotWidth : this.plotData.plotHeight;
     const ranges = this.plotData.getXandYRanges();
