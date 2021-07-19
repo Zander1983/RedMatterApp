@@ -129,8 +129,14 @@ export default class GraphDrawer extends Drawer {
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
 
     if (params.labels !== undefined) {
-      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
-      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
+      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o), {
+        pos: 0,
+        name: "0",
+      }).pos;
+      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o), {
+        pos: 0,
+        name: "0",
+      }).pos;
       if (orientation === "v") {
         for (const label of params.labels) {
           let pos = (label.pos - min) / (max - min);

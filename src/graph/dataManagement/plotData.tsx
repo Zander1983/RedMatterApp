@@ -38,6 +38,7 @@ export interface PlotDataState {
   id: string;
   ranges: Map<string, [number, number]>;
   linRanges: Map<string, [number, number]>;
+  rangePlotType: Map<string, string>;
   file: FCSFile;
   gates: {
     gate: Gate;
@@ -229,6 +230,7 @@ export default class PlotData extends ObserversFunctionality {
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
       linRanges: this.linearRanges,
+      rangePlotType: this.rangePlotType,
     };
   }
 
@@ -250,6 +252,8 @@ export default class PlotData extends ObserversFunctionality {
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
     if (state.linRanges !== undefined) this.linearRanges = state.linRanges;
+    if (state.rangePlotType !== undefined)
+      this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
@@ -525,8 +529,21 @@ export default class PlotData extends ObserversFunctionality {
           ? this.xAxis
           : this.yAxis
         : targetAxis;
-    const range = this.ranges.get(axisName);
-    const axis = this.getAxis(axisName);
+    let range = this.ranges.get(axisName);
+    let axis = this.getAxis(axisName);
+    if (
+      (this.xAxis === axisName && this.xPlotType === "bi") ||
+      (this.yAxis === axisName && this.yPlotType === "bi")
+    ) {
+      const fcsServices = new FCSServices();
+      const linearRange = this.linearRanges.get(axisName);
+      axis = fcsServices.logicleMarkTransformer(
+        [...axis],
+        linearRange[0],
+        linearRange[1]
+      );
+      range = [0, 1];
+    }
     const binCounts = Array(binCount).fill(0);
     const step = (range[1] - range[0]) / binCount;
     let mx = 0;
