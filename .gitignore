@@ -2,6 +2,7 @@ node_modules
 package-lock.json
 .idea
 npm-debug.log
+.vscode/
 
 # Remove all json files that are not package.json
 !package.json
