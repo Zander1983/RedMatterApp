@@ -11,6 +11,7 @@ import PlotData from "./plotData";
 import WorkspaceData from "./workspaceData";
 import lodash from "lodash";
 import dataManager from "./dataManager";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
@@ -31,7 +32,12 @@ export default class WorkspaceAssembler {
     workspace.plots.forEach((plot: any) => {
       let nplot = lodash.cloneDeep(plot);
       nplot.histogramBarOverlays.forEach((x: any) => {
-        x.plot = this.parsePlot(x.plot);
+        if (x.plot && Object.keys(x.plot).length > 0)
+          x.plot = this.parsePlot(x.plot);
+      });
+      nplot.histogramOverlays.forEach((x: any) => {
+        if (x.plot && Object.keys(x.plot).length > 0)
+          x.plot = this.parsePlot(x.plot);
       });
       let p = this.parsePlot(nplot);
       plots.push(p);
@@ -56,6 +62,7 @@ export default class WorkspaceAssembler {
       return e;
     });
 
+    delete plot.ranges;
     delete plot.axisDataCache;
     delete plot.randomSelection;
     delete plot.changed;
@@ -64,17 +71,39 @@ export default class WorkspaceAssembler {
     delete plot.observers;
     delete plot.STD_BIN_SIZE;
     plot.file = plot.file.src + "://" + plot.file.id;
-
     const p = JSON.parse(JSON.stringify(plot));
-
-    const ranges: any = {};
-    plot.ranges.forEach((v: [number, number], k: string) => {
-      ranges[k] = v;
-    });
-    p.ranges = ranges;
-
     return p;
   }
+
+  getHistogramOverlayObj(
+    plotHistObj: any,
+    files: Map<any, any>,
+    fileMappings: any,
+    oldNewPlotIdMap: any,
+    plotObj: any
+  ) {
+    let newPlot;
+    switch (plotHistObj.plotSource) {
+      case COMMON_CONSTANTS.FILE:
+        let plot = new PlotData();
+        plot.file = files.get(fileMappings[plotHistObj.plot.file]);
+        plot.setupPlot();
+        plot.getXandYRanges();
+        newPlot = {
+          color: plotHistObj.color,
+          plot: plot,
+          plotId: plot.id,
+          plotSource: plotHistObj.plotSource,
+        };
+        break;
+      case COMMON_CONSTANTS.PLOT:
+        plotHistObj.plotId = oldNewPlotIdMap[plotObj.id];
+        newPlot = plotHistObj;
+        break;
+    }
+    return newPlot;
+  }
+
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
     const inp = JSON.parse(workspaceJSON);
     const files = new Map();
@@ -122,6 +151,8 @@ export default class WorkspaceAssembler {
       v.parents = origin.parents.map((e: any) => gates.get(gateMappings[e]));
     });
 
+    let oldNewPlotIdMap: any = {};
+
     for (let i = 0; i < inp.plots.length; i++) {
       const plotObj = inp.plots[i];
 
@@ -137,15 +168,50 @@ export default class WorkspaceAssembler {
         return e;
       });
 
-      const ranges = new Map();
-      for (const key in plotObj.ranges) {
-        ranges.set(key, plotObj.ranges[key]);
-      }
-      plotObj.ranges = ranges;
-
       const plot = new PlotData();
+      oldNewPlotIdMap[plotObj.id] = plot.id;
       plot.setState(plotObj);
+      plot.updateRanges();
       plots.set(plot.id, plot);
+    }
+
+    for (let i = 0; i < inp.plots.length; i++) {
+      const plotObj = inp.plots[i];
+      for (let j = 0; j < plotObj.histogramOverlays.length; j++) {
+        let plotHistObj = plotObj.histogramOverlays[j];
+        let newPlotHistObj = this.getHistogramOverlayObj(
+          plotHistObj,
+          files,
+          fileMappings,
+          oldNewPlotIdMap,
+          plotObj
+        );
+        debugger;
+        let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+        plot.addOverlay(
+          newPlotHistObj.plot,
+          newPlotHistObj.color,
+          newPlotHistObj.plotId,
+          newPlotHistObj.plotSource
+        );
+      }
+      for (let j = 0; j < plotObj.histogramBarOverlays.length; j++) {
+        let plotHistObj = plotObj.histogramBarOverlays[j];
+        let newPlotHistObj = this.getHistogramOverlayObj(
+          plotHistObj,
+          files,
+          fileMappings,
+          oldNewPlotIdMap,
+          plotObj
+        );
+        let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+        plot.addBarOverlay(
+          newPlotHistObj.plot,
+          newPlotHistObj.color,
+          newPlotHistObj.plotId,
+          newPlotHistObj.plotSource
+        );
+      }
     }
 
     targetWorkspace.workspaceName = inp.workspaceName;

@@ -12,6 +12,7 @@ import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
 import { generateColor } from "graph/utils/color";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import FCSServices from "services/FCSServices/FCSServices";
 
 /* TypeScript does not deal well with decorators. Your linter might
@@ -90,10 +91,14 @@ export default class PlotData extends ObserversFunctionality {
   histogramOverlays: {
     color: string;
     plot: any;
+    plotId: string;
+    plotSource: string;
   }[] = [];
   histogramBarOverlays: {
     color: string;
     plot: any;
+    plotId: string;
+    plotSource: string;
   }[] = [];
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
@@ -118,7 +123,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
-    
+
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -225,7 +230,7 @@ export default class PlotData extends ObserversFunctionality {
       plotScale: this.plotScale,
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
-      histogramAxis: this.histogramAxis
+      histogramAxis: this.histogramAxis,
     };
   }
 
@@ -255,39 +260,59 @@ export default class PlotData extends ObserversFunctionality {
 
   /* MULTI PLOT INTERACTION */
 
-  addOverlay(plotData: PlotData, color?: string) {
+  addOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
     if (!color) color = generateColor();
     this.histogramOverlays.push({
-      plot: plotData,
+      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
       color: color,
+      plotId: plotId,
+      plotSource: plotSource,
     });
     this.plotUpdated();
   }
 
-  addBarOverlay(plotData: PlotData, color?: string) {
+  addBarOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
     if (!color) color = generateColor();
     this.histogramBarOverlays.push({
-      plot: plotData,
+      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
       color: color,
+      plotId: plotId,
+      plotSource: plotSource,
     });
     this.plotUpdated();
   }
 
-  removeBarOverlay(ploDataID: string)
-  {
-    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+  removeBarOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plotId != ploDataID
+    );
     this.plotUpdated();
   }
-  
-  removeAnyOverlay(ploDataID: string)
-  {
-    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
-    this.histogramOverlays = this.histogramOverlays.filter(x => x.plot.id != ploDataID);
+
+  removeAnyOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plotId != ploDataID
+    );
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (x) => x.plotId != ploDataID
+    );
     this.plotUpdated();
   }
 
   removeOverlay(plotDataID: string) {
-    this.histogramOverlays = this.histogramOverlays.filter((e) => e.plot.id != plotDataID);
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (e) => e.plotId != plotDataID
+    );
     this.plotUpdated();
   }
 
