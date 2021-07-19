@@ -15,3 +15,4 @@ npm-debug.log
 # Build folder should never be commited
 build
 tslint
+.DS_Store

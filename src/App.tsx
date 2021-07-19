@@ -21,6 +21,11 @@ import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import Plans from "./Components/plans/Plans";
+import PremiumCheckout from "./Components/plans/PremiumCheckout";
+import Cancel from "./Components/plans/Cancel";
+import Success from "./Components/plans/Success";
+import UserProfile from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
@@ -68,8 +73,31 @@ const router = [
     component: Register,
   },
   {
+    path: "/plans",
+    component: Plans,
+  },
+  {
     path: "/verify",
     component: VerifyEmail,
+  },
+  {
+    path: "/premium-checkout",
+    component: PremiumCheckout,
+  },
+  {
+    path: "/user-profile",
+    component: UserProfile,
+  },
+  {
+    path: "/cancel",
+    component: Cancel,
+  },
+  {
+    path: "/success/:session_id",
+    component: ({ match }: any) => {
+      //@ts-ignore
+      return <Success session_id={match.params.session_id} />;
+    },
   },
   {
     path: "/verify/:verifyStr",
@@ -93,7 +121,9 @@ const router = [
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
-    component: ({ match }: any) => <Experiment id={match.params.experimentId} />,
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} />
+    ),
   },
   {
     path: "/mailing-list",
