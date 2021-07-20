@@ -14,7 +14,7 @@ import {
   UserApiFetchParamCreator,
 } from "api_calls/nodejsback";
 
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js/pure";
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 const stripePromise = loadStripe(
