@@ -277,7 +277,28 @@ function PlotComponent(props: {
         setHistogramOverlayOpen(false);
       }
     });
-
+    let fileHistOverlay: any = [];
+    fileHistOverlay = fileHistOverlay.concat(
+      props.plot.plotData.histogramBarOverlays
+        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .map((y) => {
+          return { histObj: y, type: COMMON_CONSTANTS.Bar };
+        })
+    );
+    fileHistOverlay = fileHistOverlay.concat(
+      props.plot.plotData.histogramOverlays
+        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .map((y) => {
+          return { histObj: y, type: COMMON_CONSTANTS.Line };
+        })
+    );
+    for (let i = 0; i < fileHistOverlay.length; i++) {
+      let obj = fileHistOverlay[i];
+      filePlotIdDict[obj.histObj.plot.file.id] = {
+        id: obj.histObj.plotId,
+        type: obj.type,
+      };
+    }
     return () => {
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
@@ -449,6 +470,7 @@ function PlotComponent(props: {
     } else {
       filePlotIdDict = {};
       props.plot.plotData.histogramBarOverlays = [];
+      props.plot.plotData.histogramOverlays = [];
       if (targetAxis === "x") {
         oldYAxisValue = yAxis;
         setAxis("y", xAxis);

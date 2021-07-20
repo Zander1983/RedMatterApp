@@ -97,7 +97,7 @@ export default class WorkspaceAssembler {
         };
         break;
       case COMMON_CONSTANTS.PLOT:
-        plotHistObj.plotId = oldNewPlotIdMap[plotObj.id];
+        plotHistObj.plotId = oldNewPlotIdMap[plotHistObj.plotId];
         newPlot = plotHistObj;
         break;
     }
@@ -186,7 +186,6 @@ export default class WorkspaceAssembler {
           oldNewPlotIdMap,
           plotObj
         );
-        debugger;
         let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
         plot.addOverlay(
           newPlotHistObj.plot,
@@ -213,7 +212,6 @@ export default class WorkspaceAssembler {
         );
       }
     }
-
     targetWorkspace.workspaceName = inp.workspaceName;
     targetWorkspace.files = files;
     targetWorkspace.gates = gates;
