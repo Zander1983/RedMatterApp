@@ -470,7 +470,6 @@ function PlotComponent(props: {
 
   const setAxisRange = (min: number, max: number, axis: string) => {
     props.plot.plotData.ranges.set(axis, [min, max]);
-    props.plot.plotData.linearRanges.set(axis, [min, max]);
   };
 
   const [oldPos, setOldPos] = React.useState(69420);

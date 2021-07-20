@@ -37,7 +37,6 @@ const MAX_EVENT_SIZE = 100000;
 export interface PlotDataState {
   id: string;
   ranges: Map<string, [number, number]>;
-  linRanges: Map<string, [number, number]>;
   rangePlotType: Map<string, string>;
   file: FCSFile;
   gates: {
@@ -66,7 +65,6 @@ export default class PlotData extends ObserversFunctionality {
 
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
-  linearRanges: Map<string, [number, number]> = new Map();
   rangePlotType: Map<string, string> = new Map();
   file: FCSFile;
   gates: {
@@ -216,7 +214,8 @@ export default class PlotData extends ObserversFunctionality {
     return {
       id: this.id,
       label: this.label,
-      ranges: this.ranges,
+      ranges: new Map(this.ranges),
+      rangePlotType: new Map(this.rangePlotType),
       file: this.file,
       gates: this.gates,
       population: this.population,
@@ -229,8 +228,6 @@ export default class PlotData extends ObserversFunctionality {
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
-      linRanges: this.linearRanges,
-      rangePlotType: this.rangePlotType,
     };
   }
 
@@ -251,7 +248,6 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
-    if (state.linRanges !== undefined) this.linearRanges = state.linRanges;
     if (state.rangePlotType !== undefined)
       this.rangePlotType = state.rangePlotType;
   }
@@ -539,7 +535,7 @@ export default class PlotData extends ObserversFunctionality {
       (this.yAxis === axisName && this.yPlotType === "bi")
     ) {
       const fcsServices = new FCSServices();
-      const linearRange = this.linearRanges.get(axisName);
+      const linearRange = this.ranges.get(axisName);
       axis = fcsServices.logicleMarkTransformer(
         [...axis],
         linearRange[0],
@@ -688,7 +684,7 @@ export default class PlotData extends ObserversFunctionality {
         //@ts-ignore
         this.ranges.set(axis.paramName, [min, max]);
         //@ts-ignore
-        this.linearRanges.set(axis.paramName, [min, max]);
+        this.ranges.set(axis.paramName, [min, max]);
       });
     } else {
       const axesData = this.getAxesData();
@@ -697,7 +693,6 @@ export default class PlotData extends ObserversFunctionality {
         this.rangePlotType.set(axis, "lin");
         const data = axesData.map((e) => e[axis]);
         this.ranges.set(axis, this.findRangeBoundries(data));
-        this.linearRanges.set(axis, this.findRangeBoundries(data));
       }
     }
   }

@@ -41,8 +41,8 @@ export default class PolygonGate extends Gate {
       return { ...e };
     });
     const ranges = [
-      context.linearRanges.get(context.xAxis),
-      context.linearRanges.get(context.yAxis),
+      context.ranges.get(context.xAxis),
+      context.ranges.get(context.yAxis),
     ];
     const fcsServices = new FCSServices();
     const convert = (e: { x: number; y: number }) => {

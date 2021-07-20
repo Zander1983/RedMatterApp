@@ -109,12 +109,12 @@ export default class GraphPlotter extends Plotter {
       const xRange =
         this.plotData.xPlotType === "lin"
           ? ranges.x
-          : this.plotData.linearRanges.get(this.plotData.xAxis);
+          : this.plotData.ranges.get(this.plotData.xAxis);
 
       const yRange =
         this.plotData.yPlotType === "lin"
           ? ranges.y
-          : this.plotData.linearRanges.get(this.plotData.yAxis);
+          : this.plotData.ranges.get(this.plotData.yAxis);
 
       const xLabels = this.transformer.getAxisLabels(
         this.plotData.xPlotType,
