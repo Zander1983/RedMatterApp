@@ -147,12 +147,11 @@ export default function Plans(props: any) {
         {
           subscription: sub.id,
           price: "price_1JCapGFYFs5GcbAXGlbz4pJV",
-          userId: userObj.userDetails._id,
           subscriptionType: "Enterprise",
         },
         {
           headers: {
-            token: userManager.getToken(),
+            Token: userManager.getToken(),
           },
         }
       );
@@ -163,12 +162,11 @@ export default function Plans(props: any) {
         {
           subscription: sub.id,
           price: "price_1J7UmZFYFs5GcbAXvPronXSX",
-          userId: userObj.userDetails._id,
           subscriptionType: "Premium",
         },
         {
           headers: {
-            token: userManager.getToken(),
+            Token: userManager.getToken(),
           },
         }
       );
@@ -178,12 +176,11 @@ export default function Plans(props: any) {
         {
           subscription: sub.id,
           price: "price_1JCargFYFs5GcbAXZowQSPpK",
-          userId: userObj.userDetails._id,
           subscriptionType: "Free",
         },
         {
           headers: {
-            token: userManager.getToken(),
+            Token: userManager.getToken(),
           },
         }
       );
