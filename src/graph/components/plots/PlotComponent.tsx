@@ -592,6 +592,7 @@ function PlotComponent(props: {
           ></RangeResizeModal>
           <div
             draggable="true"
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: isPlotHistogram()
@@ -634,6 +635,7 @@ function PlotComponent(props: {
           ></div>
           <div
             draggable="true"
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
