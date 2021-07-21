@@ -138,10 +138,9 @@ export default class ScatterPlotter extends PluginGraphPlotter {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors();
 
-    const linRanges = this.plotData.getXandYRanges();
     let ranges: [[number, number], [number, number]] = [
-      linRanges.x,
-      linRanges.y,
+      this.ranges.x,
+      this.ranges.y,
     ];
     const fcsServices = new FCSServices();
     let xData = this.xAxis;
@@ -150,28 +149,25 @@ export default class ScatterPlotter extends PluginGraphPlotter {
       ranges[0] = [0, 1];
       xData = fcsServices.logicleMarkTransformer(
         xData,
-        linRanges.x[0],
-        linRanges.x[1]
+        this.ranges.x[0],
+        this.ranges.x[1]
       );
     }
     if (this.plotData.yPlotType === "bi") {
       ranges[1] = [0, 1];
       yData = fcsServices.logicleMarkTransformer(
         yData,
-        linRanges.y[0],
-        linRanges.y[1]
+        this.ranges.y[0],
+        this.ranges.y[1]
       );
     }
 
     for (let i = 0; i < pointCount; i++) {
-      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, ranges)) continue;
-      const { x, y } = this.transformer.toConcretePoint(
-        {
-          x: xData[i],
-          y: yData[i],
-        },
-        ranges
-      );
+      if (this.isOutOfRange({ x: xData[i], y: yData[i] })) continue;
+      const { x, y } = this.transformer.toConcretePoint({
+        x: xData[i],
+        y: yData[i],
+      });
       this.drawer.addPoint(x, y, 1.1, colors[i]);
     }
   }
@@ -182,9 +178,8 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   ) {
     let x: [number, number], y: [number, number];
     if (customRanges === undefined) {
-      const ranges = this.plotData.getXandYRanges();
-      x = ranges.x;
-      y = ranges.y;
+      x = this.ranges.x;
+      y = this.ranges.y;
     } else {
       x = customRanges[0];
       y = customRanges[1];
