@@ -121,16 +121,6 @@ export default function Plans(props: any) {
     });
   };
 
-  useEffect(() => {
-    try {
-      axios
-        .post(`/api/getuserId`, { Token: userManager.getToken })
-        .then((response) => {})
-        .finally(() => {});
-    } catch (err) {
-      console.log(err);
-    }
-  });
   return (
     <Grid
       container
