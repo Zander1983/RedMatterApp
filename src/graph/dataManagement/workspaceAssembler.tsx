@@ -38,12 +38,14 @@ export default class WorkspaceAssembler {
     });
     const name =
       workspace.workspaceName === undefined ? "" : workspace.workspaceName;
-    return JSON.stringify({
+
+    const workspaceJSON = JSON.stringify({
       name,
       files,
       gates,
       plots: plots === null || plots === undefined ? [] : plots,
     });
+    return workspaceJSON;
   }
   parsePlot(plot: any) {
     plot = lodash.cloneDeep(plot);

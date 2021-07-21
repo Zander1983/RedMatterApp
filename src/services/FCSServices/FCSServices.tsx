@@ -1,5 +1,6 @@
 import fcsModel from "./fcsTransformer/fcsModel";
-import LogicleAPI from "./logicle/logicleApi";
+import LogicleAPI from "./logicle-js/logicleApi";
+import MarkLogicle from "./logicleMark";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
@@ -48,7 +49,7 @@ class FCSServices {
     this.logicleA = A;
   }
 
-  logicleTransformer(data: number[]) {
+  logicleJsTransformer(data: number[]) {
     return new LogicleAPI().logicleTransform(
       data,
       this.logicleT,
@@ -56,6 +57,24 @@ class FCSServices {
       this.logicleM,
       this.logicleA
     );
+  }
+
+  logicleMarkTransformer(
+    data: number[],
+    rangeBegin?: number,
+    rangeEnd?: number
+  ): number[] {
+    const logicle = new MarkLogicle(rangeBegin, rangeEnd);
+    return data.map((e) => logicle.scale(e));
+  }
+
+  logicleInverseMarkTransformer(
+    data: number[],
+    rangeBegin?: number,
+    rangeEnd?: number
+  ): number[] {
+    const logicle = new MarkLogicle(rangeBegin, rangeEnd);
+    return data.map((e) => logicle.inverse(e));
   }
 }
 

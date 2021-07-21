@@ -1,6 +1,7 @@
 import numeral from "numeral";
 
 import Drawer, { DrawerState } from "graph/renderers/drawers/drawer";
+import { Label } from "../transformers/graphTransformer";
 
 export interface GraphDrawerState extends DrawerState {
   x1: number;
@@ -98,6 +99,7 @@ export default class GraphDrawer extends Drawer {
     ib: number;
     ie: number;
     bins?: number;
+    labels?: Label[];
   }) {
     this.segment({
       x1: params.x1,
@@ -125,6 +127,57 @@ export default class GraphDrawer extends Drawer {
 
     let counter = bins;
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
+
+    if (params.labels !== undefined) {
+      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o), {
+        pos: 0,
+        name: "0",
+      }).pos;
+      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o), {
+        pos: 0,
+        name: "0",
+      }).pos;
+      if (orientation === "v") {
+        for (const label of params.labels) {
+          let pos = (label.pos - min) / (max - min);
+          const y = Math.abs(p1 - p2) * (1 - pos) + Math.min(p1, p2);
+          this.segment({
+            x1: op1 - 14,
+            y1: y,
+            x2: op1 + 14,
+            y2: y,
+            lineWidth: 1,
+          });
+          this.text({
+            x: op1 - 90,
+            y: y + 8,
+            text: label.name,
+            font: "20px Arial",
+            fillColor: "black",
+          });
+        }
+      } else {
+        for (const label of params.labels) {
+          let pos = (label.pos - min) / (max - min);
+          const x = Math.abs(p1 - p2) * pos + Math.min(p1, p2);
+          this.segment({
+            x1: x,
+            y1: op2 - 14,
+            x2: x,
+            y2: op2 + 14,
+            lineWidth: 1,
+          });
+          this.text({
+            font: "20px Arial",
+            fillColor: "black",
+            text: label.name,
+            x: x - 24,
+            y: op2 + 40,
+          });
+        }
+      }
+      return;
+    }
 
     if (bins === 0 || bins === null || bins === undefined) {
       throw Error("Bins are unset or set as an invalid amount");
@@ -198,6 +251,7 @@ export default class GraphDrawer extends Drawer {
   private drawPlotLines(
     orientation: "v" | "h",
     sbins?: number,
+    labels?: Label[],
     strokeColor?: string
   ) {
     const bins =
@@ -209,23 +263,47 @@ export default class GraphDrawer extends Drawer {
     const obegin = orientation == "h" ? this.x1 : this.y1;
     const oend = orientation == "h" ? this.x2 : this.y2;
 
-    for (
-      let i = orientation == "v" ? 1 : 0;
-      i < bins + (orientation == "v" ? 1 : 0);
-      i++
-    ) {
-      const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
-      this.segment({
-        x1: orientation == "h" ? obegin : fd,
-        y1: orientation == "h" ? fd : obegin,
-        x2: orientation == "h" ? oend : fd,
-        y2: orientation == "h" ? fd : oend,
-        strokeColor: graphLineColor,
-      });
+    if (labels !== undefined && labels.length >= 3) {
+      // console.log(labels);
+      let min = labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
+      let max = labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
+
+      for (let i = 0; i < labels.length; i++) {
+        let pos = (labels[i].pos - min) / (max - min);
+        pos =
+          Math.abs(begin - end) * (orientation === "h" ? 1 - pos : pos) +
+          Math.min(begin, end);
+        // let pos = labels[i].pos;
+
+        this.segment({
+          x1: orientation == "h" ? obegin : pos,
+          y1: orientation == "h" ? pos : obegin,
+          x2: orientation == "h" ? oend : pos,
+          y2: orientation == "h" ? pos : oend,
+          strokeColor: graphLineColor,
+        });
+      }
+    } else {
+      for (
+        let i = orientation == "v" ? 1 : 0;
+        i < bins + (orientation == "v" ? 1 : 0);
+        i++
+      ) {
+        const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
+        this.segment({
+          x1: orientation == "h" ? obegin : fd,
+          y1: orientation == "h" ? fd : obegin,
+          x2: orientation == "h" ? oend : fd,
+          y2: orientation == "h" ? fd : oend,
+          strokeColor: graphLineColor,
+        });
+      }
     }
   }
 
   drawPlotGraph(params?: {
+    xLabels: Label[];
+    yLabels: Label[];
     lines?: boolean;
     vbins?: number;
     hbins?: number;
@@ -246,6 +324,7 @@ export default class GraphDrawer extends Drawer {
         params === undefined || params.vbins !== undefined
           ? undefined
           : params.vbins,
+      labels: params.yLabels,
     });
 
     this.graphLine({
@@ -259,6 +338,7 @@ export default class GraphDrawer extends Drawer {
         params === undefined || params.hbins !== undefined
           ? undefined
           : params.hbins,
+      labels: params.xLabels,
     });
 
     if (lines) {
@@ -266,13 +346,15 @@ export default class GraphDrawer extends Drawer {
         "v",
         params !== undefined && params.vbins !== undefined
           ? params.vbins
-          : undefined
+          : undefined,
+        params.xLabels
       );
       this.drawPlotLines(
         "h",
         params !== undefined && params.hbins !== undefined
           ? params.hbins
-          : undefined
+          : undefined,
+        params.yLabels
       );
     }
   }

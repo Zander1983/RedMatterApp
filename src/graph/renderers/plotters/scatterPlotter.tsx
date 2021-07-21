@@ -5,6 +5,7 @@ import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
+import FCSServices from "services/FCSServices/FCSServices";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
@@ -137,18 +138,57 @@ export default class ScatterPlotter extends PluginGraphPlotter {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors();
 
+    const linRanges = this.plotData.getXandYRanges();
+    let ranges: [[number, number], [number, number]] = [
+      linRanges.x,
+      linRanges.y,
+    ];
+    const fcsServices = new FCSServices();
+    let xData = this.xAxis;
+    let yData = this.yAxis;
+    if (this.plotData.xPlotType === "bi") {
+      ranges[0] = [0, 1];
+      xData = fcsServices.logicleMarkTransformer(
+        xData,
+        linRanges.x[0],
+        linRanges.x[1]
+      );
+    }
+    if (this.plotData.yPlotType === "bi") {
+      ranges[1] = [0, 1];
+      yData = fcsServices.logicleMarkTransformer(
+        yData,
+        linRanges.y[0],
+        linRanges.y[1]
+      );
+    }
+
     for (let i = 0; i < pointCount; i++) {
-      if (this.isOutOfRange({ x: this.xAxis[i], y: this.yAxis[i] })) continue;
-      const { x, y } = this.transformer.toConcretePoint({
-        x: this.xAxis[i],
-        y: this.yAxis[i],
-      });
+      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, ranges)) continue;
+      const { x, y } = this.transformer.toConcretePoint(
+        {
+          x: xData[i],
+          y: yData[i],
+        },
+        ranges
+      );
       this.drawer.addPoint(x, y, 1.1, colors[i]);
     }
   }
 
-  private isOutOfRange(p: { x: number; y: number }) {
-    const { x, y } = this.plotData.getXandYRanges();
+  private isOutOfRange(
+    p: { x: number; y: number },
+    customRanges?: [[number, number], [number, number]]
+  ) {
+    let x: [number, number], y: [number, number];
+    if (customRanges === undefined) {
+      const ranges = this.plotData.getXandYRanges();
+      x = ranges.x;
+      y = ranges.y;
+    } else {
+      x = customRanges[0];
+      y = customRanges[1];
+    }
     return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 

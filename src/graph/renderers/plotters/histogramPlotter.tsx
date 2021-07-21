@@ -29,11 +29,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   }
 
   protected setDrawerState(): void {
-    const ranges = this.plotData.getXandYRanges();
-    const binListMax = this.plotData.getBins(
-      this.bins,
-      this.direction == "vertical" ? this.xAxisName : this.yAxisName
-    ).max;
     let hBins =
       this.width === undefined ? 2 : Math.round(this.width / (30 * this.scale));
     let vBins =
@@ -92,7 +87,40 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   }
 
   public update() {
-    super.update();
+    super.update(true);
+    const ranges = {
+      x: this.plotData.linearRanges.get(this.xAxisName),
+      y: this.plotData.linearRanges.get(this.xAxisName),
+    };
+    if (this.plotData.histogramAxis === "vertical") {
+      const hbins = (this.width - rightPadding) / 50;
+      const xRange =
+        this.plotData.xPlotType === "lin"
+          ? ranges.x
+          : this.plotData.findRangeBoundries(
+              this.plotData.getAxesData().map((e) => e[this.plotData.xAxis])
+            );
+
+      this.xLabels = this.transformer.getAxisLabels(
+        this.plotData.xPlotType,
+        xRange,
+        this.plotData.xPlotType === "bi" ? Math.round(hbins / 2) : hbins
+      );
+    } else {
+      const vbins = (this.height - bottomPadding) / 50;
+      const yRange =
+        this.plotData.yPlotType === "lin"
+          ? ranges.y
+          : this.plotData.findRangeBoundries(
+              this.plotData.getAxesData().map((e) => e[this.plotData.yAxis])
+            );
+
+      this.yLabels = this.transformer.getAxisLabels(
+        this.plotData.yPlotType,
+        yRange,
+        this.plotData.yPlotType === "bi" ? Math.round(vbins / 2) : vbins
+      );
+    }
   }
 
   public createDrawer(): void {
@@ -161,6 +189,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.plotData.population && this.plotData.population.length > 0
         ? this.plotData.population[0].gate.color
         : "";
+    for (let i = 0; i < this.bins; i++) {
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: mainPlotColor,
+      });
+    }
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {

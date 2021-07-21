@@ -37,6 +37,8 @@ const MAX_EVENT_SIZE = 100000;
 export interface PlotDataState {
   id: string;
   ranges: Map<string, [number, number]>;
+  linRanges: Map<string, [number, number]>;
+  rangePlotType: Map<string, string>;
   file: FCSFile;
   gates: {
     gate: Gate;
@@ -64,6 +66,7 @@ export default class PlotData extends ObserversFunctionality {
 
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
+  linearRanges: Map<string, [number, number]> = new Map();
   rangePlotType: Map<string, string> = new Map();
   file: FCSFile;
   gates: {
@@ -118,7 +121,7 @@ export default class PlotData extends ObserversFunctionality {
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
     this.label = "Plot " + PlotData.instaceCount++;
-    
+
     this.updateGateObservers();
     this.updateRandomSelection();
   }
@@ -225,7 +228,9 @@ export default class PlotData extends ObserversFunctionality {
       plotScale: this.plotScale,
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
-      histogramAxis: this.histogramAxis
+      histogramAxis: this.histogramAxis,
+      linRanges: this.linearRanges,
+      rangePlotType: this.rangePlotType,
     };
   }
 
@@ -246,6 +251,9 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+    if (state.linRanges !== undefined) this.linearRanges = state.linRanges;
+    if (state.rangePlotType !== undefined)
+      this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
@@ -273,21 +281,27 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
   }
 
-  removeBarOverlay(ploDataID: string)
-  {
-    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
+  removeBarOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plot.id != ploDataID
+    );
     this.plotUpdated();
   }
-  
-  removeAnyOverlay(ploDataID: string)
-  {
-    this.histogramBarOverlays = this.histogramBarOverlays.filter(x => x.plot.id != ploDataID);
-    this.histogramOverlays = this.histogramOverlays.filter(x => x.plot.id != ploDataID);
+
+  removeAnyOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plot.id != ploDataID
+    );
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (x) => x.plot.id != ploDataID
+    );
     this.plotUpdated();
   }
 
   removeOverlay(plotDataID: string) {
-    this.histogramOverlays = this.histogramOverlays.filter((e) => e.plot.id != plotDataID);
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (e) => e.plot.id != plotDataID
+    );
     this.plotUpdated();
   }
 
@@ -390,12 +404,14 @@ export default class PlotData extends ObserversFunctionality {
   setXAxis(xAxis: string) {
     this.changed = this.changed || xAxis !== this.xAxis;
     this.xAxis = xAxis;
+    this.xPlotType = this.rangePlotType.get(xAxis);
   }
 
   @conditionalUpdateDecorator()
   setYAxis(yAxis: string) {
     this.changed = this.changed || yAxis !== this.yAxis;
     this.yAxis = yAxis;
+    this.yPlotType = this.rangePlotType.get(yAxis);
   }
 
   @conditionalUpdateDecorator()
@@ -414,7 +430,7 @@ export default class PlotData extends ObserversFunctionality {
         x: point[gate.gate.xAxis],
         y: point[gate.gate.yAxis],
       };
-      return gate.gate.isPointInside(p)
+      return gate.gate.isPointInside(p, this)
         ? !gate.inverseGating
         : gate.inverseGating;
     };
@@ -477,41 +493,7 @@ export default class PlotData extends ObserversFunctionality {
       yAxis.push(e[yAxisName]);
     });
 
-    // if (this.xPlotType === "bi") {
-    //   xAxis = new FCSServices().logicleTransformer([...xAxis]);
-    // }
-
-    // if (this.yPlotType === "bi") {
-    //   yAxis = new FCSServices().logicleTransformer([...yAxis]);
-    // }
-
-    // this.updateRanges();
     return { xAxis, yAxis };
-  }
-
-  updateRanges() {
-    const xChanged = this.xPlotType !== this.rangePlotType.get(this.xAxis);
-    const yChanged = this.yPlotType !== this.rangePlotType.get(this.yAxis);
-    if (!xChanged && !yChanged) {
-      return;
-    }
-    if (xChanged) {
-      if (this.xPlotType === "bi") {
-        this.rangePlotType.set(this.xAxis, "bi");
-        this.ranges.set(this.xAxis, [0.5, 1]);
-      } else {
-        this.ranges.delete(this.xAxis);
-      }
-    }
-    if (yChanged) {
-      if (this.yPlotType === "bi") {
-        this.rangePlotType.set(this.yAxis, "bi");
-        this.ranges.set(this.yAxis, [0.5, 1]);
-      } else {
-        this.ranges.delete(this.yAxis);
-      }
-    }
-    this.findAllRanges();
   }
 
   getAxis(targetAxis: string): number[] {
@@ -550,8 +532,21 @@ export default class PlotData extends ObserversFunctionality {
           ? this.xAxis
           : this.yAxis
         : targetAxis;
-    const range = this.ranges.get(axisName);
-    const axis = this.getAxis(axisName);
+    let range = this.ranges.get(axisName);
+    let axis = this.getAxis(axisName);
+    if (
+      (this.xAxis === axisName && this.xPlotType === "bi") ||
+      (this.yAxis === axisName && this.yPlotType === "bi")
+    ) {
+      const fcsServices = new FCSServices();
+      const linearRange = this.linearRanges.get(axisName);
+      axis = fcsServices.logicleMarkTransformer(
+        [...axis],
+        linearRange[0],
+        linearRange[1]
+      );
+      range = [0, 1];
+    }
     const binCounts = Array(binCount).fill(0);
     const step = (range[1] - range[0]) / binCount;
     let mx = 0;
@@ -595,7 +590,7 @@ export default class PlotData extends ObserversFunctionality {
           const x = gate.gate.xAxis;
           const y = gate.gate.yAxis;
           data = data.filter((e: any) => {
-            const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+            const inside = gate.gate.isPointInside({ x: e[x], y: e[y] }, this);
             return gate.inverseGating ? !inside : inside;
           });
         }
@@ -605,7 +600,7 @@ export default class PlotData extends ObserversFunctionality {
       const x = gate.gate.xAxis;
       const y = gate.gate.yAxis;
       data = data.filter((e: any) => {
-        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] }, this);
         return gate.inverseGating ? !inside : inside;
       });
     }
@@ -684,13 +679,16 @@ export default class PlotData extends ObserversFunctionality {
           axis.paramName,
           axisType === "linear" ? "lin" : "bi"
         );
+        const min =
+          //@ts-ignore
+          axis[axisType + "Minimum"];
+        const max =
+          //@ts-ignore
+          axis[axisType + "Maximum"];
         //@ts-ignore
-        this.ranges.set(axis.paramName, [
-          //@ts-ignore
-          axisType === "biexponential" ? 0 : axis[axisType + "Minimum"],
-          //@ts-ignore
-          axisType === "biexponential" ? 1 : axis[axisType + "Maximum"],
-        ]);
+        this.ranges.set(axis.paramName, [min, max]);
+        //@ts-ignore
+        this.linearRanges.set(axis.paramName, [min, max]);
       });
     } else {
       const axesData = this.getAxesData();
@@ -699,11 +697,12 @@ export default class PlotData extends ObserversFunctionality {
         this.rangePlotType.set(axis, "lin");
         const data = axesData.map((e) => e[axis]);
         this.ranges.set(axis, this.findRangeBoundries(data));
+        this.linearRanges.set(axis, this.findRangeBoundries(data));
       }
     }
   }
 
-  private findRangeBoundries(axisData: number[]): [number, number] {
+  findRangeBoundries(axisData: number[]): [number, number] {
     let min = axisData[0],
       max = axisData[0];
     for (const p of axisData) {
