@@ -31,6 +31,8 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import { useLocation } from "react-router-dom";
 import PlotData from "graph/dataManagement/plotData";
+import { API_CALLS } from "assets/constants/apiCalls";
+import { Dbouncer } from "services/Dbouncer";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -67,6 +69,7 @@ const useStyles = makeStyles((theme) => ({
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 let setWorkspaceAlready = false;
+let workspaceSharedLocal = false;
 const staticFiles = [
   "transduction_1",
   "transduction_2",
@@ -95,7 +98,7 @@ function Plots(props: { experimentId: string }) {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
-
+  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace());
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -116,33 +119,74 @@ function Plots(props: { experimentId: string }) {
         "error"
       );
     }
-
+    workspaceSharedLocal = workspaceData.data["isShared"];
     initPlots(workspaceData.data["isShared"]);
-    if (workspaceData)
+    if (workspaceData && workspaceData.data["isShared"])
       loadWorkspaceStatsToDM(
         workspaceData.data["isShared"],
         JSON.parse(workspaceData.data["state"])
       );
   };
 
-  useEffect(() => {
+  const getWorkspace = async () => {
+    let workspaceData;
 
+    try {
+      workspaceData = await axios.post(
+        "/api/getWorkspace",
+        {
+          experimentId: props.experimentId,
+        },
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+      if (workspaceData.data["state"])
+        await loadWorkspaceStatsToDM(
+          false,
+          JSON.parse(workspaceData.data["state"])
+        );
+    } catch (e) {
+      snackbarService.showSnackbar(
+        "Could not verify the workspace, reload the page and try again!",
+        "error"
+      );
+    }
+    initPlots();
+  };
+
+  useEffect(() => {
     dataManager.setExperimentId(props.experimentId);
 
     let workspaceId = new URLSearchParams(location.search).get("id");
     if (workspaceId) {
       verifyWorkspace(workspaceId);
     } else {
-      initPlots();
+      getWorkspace();
     }
 
     var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       setDownloadedFiles(dataManager.downloaded);
     });
-
-    var downloadingListner = dataManager.addObserver("updateDownloadingFiles", () => {
-      setDownloadingFiles(dataManager.downloadingFiles);
+    dataManager.addObserver("removePlotFromWorkspace", () =>
+      autoSaveWorkspace()
+    );
+    dataManager.addObserver("updateWorkspace", () => {
+      autoSaveWorkspace();
     });
+    dataManager.addObserver("workspaceUpdated", () => {
+      debugger;
+      autoSaveWorkspace();
+    });
+
+    var downloadingListner = dataManager.addObserver(
+      "updateDownloadingFiles",
+      () => {
+        setDownloadingFiles(dataManager.downloadingFiles);
+      }
+    );
 
     return () => {
       setWorkspaceAlready = false;
@@ -151,6 +195,11 @@ function Plots(props: { experimentId: string }) {
       dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
   }, []);
+
+  const autoSaveWorkspace = () => {
+    debugger;
+    if (!workspaceSharedLocal) saveWorkspace();
+  };
 
   const initPlots = async (workSpaceShared: boolean = false) => {
     if (observerAdded === false) {
@@ -275,33 +324,41 @@ function Plots(props: { experimentId: string }) {
     setNamePromptOpen(false);
   };
 
-  var getSharedRemoteFiles = async (fileIds: Array<string>) => {
+  var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
+    let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
+    let headers = isShared
+      ? {}
+      : {
+          token: userManager.getToken(),
+        };
+
     let datas = await axios.post(
-      "/api/sharedEvents",
+      url,
       {
         experimentId: props.experimentId,
         fileIds: fileIds,
       },
-      {}
+      {
+        headers: headers,
+      }
     );
 
     return datas.data;
   };
 
   var loadWorkspaceStatsToDM = async (
-    sharedWorkspacearg: boolean,
+    workspaceShared: boolean,
     workspaceStatearg: any
   ) => {
-    if (sharedWorkspacearg && workspaceStatearg) {
+    if (workspaceStatearg) {
       setLoading(true);
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
 
       setDownloadingFiles(stateFileIds);
-      let eventFiles = await getSharedRemoteFiles(stateFileIds);
+      let eventFiles = await getFiles(workspaceShared, stateFileIds);
       dataManager.updateDownloaded(eventFiles);
-      if(!dataManager.ready())
-      {
+      if (!dataManager.ready()) {
         dataManager.createWorkspace();
       }
       for (let i = 0; i < eventFiles.length; i++) {
@@ -314,9 +371,7 @@ function Plots(props: { experimentId: string }) {
   };
 
   const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    dataManager.downloadFileEvents(
-      fileIds
-    );
+    dataManager.downloadFileEvents(fileIds);
   };
 
   const addFile = (index: number) => {

@@ -205,7 +205,11 @@ export default class PlotData extends ObserversFunctionality {
      updates happen. */
   @publishDecorator()
   plotUpdated() {
+    debugger;
     this.changed = false;
+    debugger;
+    if (dataManager.letUpdateBeCalledForAutoSave)
+      dataManager.workspaceUpdated();
   }
 
   private conditionalUpdate() {
@@ -264,7 +268,8 @@ export default class PlotData extends ObserversFunctionality {
     plotData: PlotData,
     color?: string,
     plotId?: string,
-    plotSource?: string
+    plotSource?: string,
+    updatePlot = true
   ) {
     if (!color) color = generateColor();
     this.histogramOverlays.push({
@@ -273,15 +278,17 @@ export default class PlotData extends ObserversFunctionality {
       plotId: plotId,
       plotSource: plotSource,
     });
-    this.plotUpdated();
+    if (updatePlot) this.plotUpdated();
   }
 
   addBarOverlay(
     plotData: PlotData,
     color?: string,
     plotId?: string,
-    plotSource?: string
+    plotSource?: string,
+    updatePlot = true
   ) {
+    debugger;
     if (!color) color = generateColor();
     this.histogramBarOverlays.push({
       plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
@@ -289,7 +296,8 @@ export default class PlotData extends ObserversFunctionality {
       plotId: plotId,
       plotSource: plotSource,
     });
-    this.plotUpdated();
+
+    if (updatePlot) this.plotUpdated();
   }
 
   removeBarOverlay(ploDataID: string) {

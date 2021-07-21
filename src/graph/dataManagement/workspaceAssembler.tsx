@@ -112,7 +112,7 @@ export default class WorkspaceAssembler {
     const fileMappings: any = {};
     const gateMappings: any = {};
     const inverseGateMappings: any = {};
-
+    dataManager.letUpdateBeCalledForAutoSave = false;
     for (const fileString of inp.files) {
       const src = fileString.split("://");
       let file = dataManager.getFile(src[1]);
@@ -191,7 +191,8 @@ export default class WorkspaceAssembler {
           newPlotHistObj.plot,
           newPlotHistObj.color,
           newPlotHistObj.plotId,
-          newPlotHistObj.plotSource
+          newPlotHistObj.plotSource,
+          false
         );
       }
       for (let j = 0; j < plotObj.histogramBarOverlays.length; j++) {
@@ -208,7 +209,8 @@ export default class WorkspaceAssembler {
           newPlotHistObj.plot,
           newPlotHistObj.color,
           newPlotHistObj.plotId,
-          newPlotHistObj.plotSource
+          newPlotHistObj.plotSource,
+          false
         );
       }
     }
@@ -218,5 +220,6 @@ export default class WorkspaceAssembler {
     targetWorkspace.plots = plots;
 
     targetWorkspace.setupWorkspace();
+    dataManager.letUpdateBeCalledForAutoSave = true;
   }
 }

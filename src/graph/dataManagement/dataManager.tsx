@@ -397,6 +397,14 @@ class DataManager extends ObserversFunctionality {
     this.loadWorkspaceFilesFromRemote();
   }
 
+  letUpdateBeCalledForAutoSave = true;
+
+  @publishDecorator()
+  workspaceUpdated() {
+    debugger;
+    this.letUpdateBeCalledForAutoSave = true;
+  }
+
   isRemoteWorkspace() {
     return this.remoteWorkspaceID !== undefined;
   }
@@ -495,8 +503,7 @@ class DataManager extends ObserversFunctionality {
         fileId,
         this.experimentId
       );
-      if(!this.ready())
-      {
+      if (!this.ready()) {
         this.createWorkspace();
       }
       let file = response[0];
@@ -507,7 +514,7 @@ class DataManager extends ObserversFunctionality {
         axes: file.channels.map((e: any) => e.value),
         data: file.events,
         plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file
+        remoteData: file,
       });
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);

@@ -9,7 +9,7 @@ import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";
-
+import { Dbouncer } from "services/Dbouncer";
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const classes = {
@@ -55,7 +55,7 @@ class Workspace extends React.Component<WorkspaceProps> {
     plotRender: Plot;
   }[] = [];
   plotMoving: boolean = true;
-
+  workspaceLoaded = false;
   constructor(props: WorkspaceProps) {
     super(props);
     this.workspace = dataManager.getWorkspace().workspace;
@@ -72,6 +72,7 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.state = {
       plots: [],
     };
+    this.workspaceLoaded = true;
   }
 
   update() {
