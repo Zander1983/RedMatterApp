@@ -120,7 +120,7 @@ export default class PlotData extends ObserversFunctionality {
     y: number;
   } = {
     x: -1,
-    y: 0,
+    y: -1,
   };
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
