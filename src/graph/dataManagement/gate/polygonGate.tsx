@@ -32,18 +32,11 @@ export default class PolygonGate extends Gate {
     return "Polygon Gate";
   }
 
-  isPointInside(point: Point, context?: PlotData): boolean {
-    if (context === undefined)
-      return (
-        pointInsidePolygon(point, this.points) && super.isPointInside(point)
-      );
+  isPointInside(point: Point, add?: string): boolean {
     let points = this.points.map((e) => {
       return { ...e };
     });
-    const ranges = [
-      context.ranges.get(context.xAxis),
-      context.ranges.get(context.yAxis),
-    ];
+    const ranges = [this.xAxisOriginalRanges, this.yAxisOriginalRanges];
     const fcsServices = new FCSServices();
     const convert = (e: { x: number; y: number }) => {
       if (this.xAxisType === "bi")
@@ -69,6 +62,7 @@ export default class PolygonGate extends Gate {
     };
     points = points.map((e) => rawConvert(e));
     point = convert(point);
+    if (add === "yes") console.log(point, points);
     return pointInsidePolygon(point, points) && super.isPointInside(point);
   }
 }

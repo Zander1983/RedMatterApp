@@ -426,7 +426,7 @@ export default class PlotData extends ObserversFunctionality {
         x: point[gate.gate.xAxis],
         y: point[gate.gate.yAxis],
       };
-      return gate.gate.isPointInside(p, this)
+      return gate.gate.isPointInside(p)
         ? !gate.inverseGating
         : gate.inverseGating;
     };
@@ -618,7 +618,7 @@ export default class PlotData extends ObserversFunctionality {
           const x = gate.gate.xAxis;
           const y = gate.gate.yAxis;
           data = data.filter((e: any) => {
-            const inside = gate.gate.isPointInside({ x: e[x], y: e[y] }, this);
+            const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
             return gate.inverseGating ? !inside : inside;
           });
         }
@@ -628,7 +628,7 @@ export default class PlotData extends ObserversFunctionality {
       const x = gate.gate.xAxis;
       const y = gate.gate.yAxis;
       data = data.filter((e: any) => {
-        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] }, this);
+        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
         return gate.inverseGating ? !inside : inside;
       });
     }

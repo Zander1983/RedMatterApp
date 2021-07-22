@@ -87,7 +87,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plotter.gates.forEach((gate) => {
       if (
         gate.isPointInside(
-          this.plotter.transformer.toAbstractPoint(mouse, true)
+          this.plotter.transformer.toAbstractPoint(mouse, true),
+          "yes"
         )
       ) {
         this.isDraggingGate = true;
