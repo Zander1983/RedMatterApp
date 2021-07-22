@@ -205,11 +205,7 @@ export default class PlotData extends ObserversFunctionality {
      updates happen. */
   @publishDecorator()
   plotUpdated() {
-    debugger;
     this.changed = false;
-    debugger;
-    if (dataManager.letUpdateBeCalledForAutoSave)
-      dataManager.workspaceUpdated();
   }
 
   private conditionalUpdate() {
@@ -268,8 +264,7 @@ export default class PlotData extends ObserversFunctionality {
     plotData: PlotData,
     color?: string,
     plotId?: string,
-    plotSource?: string,
-    updatePlot = true
+    plotSource?: string
   ) {
     if (!color) color = generateColor();
     this.histogramOverlays.push({
@@ -278,17 +273,21 @@ export default class PlotData extends ObserversFunctionality {
       plotId: plotId,
       plotSource: plotSource,
     });
-    if (updatePlot) this.plotUpdated();
+    this.plotUpdated();
+    this.initiateAutoSave();
+  }
+
+  initiateAutoSave() {
+    if (dataManager.letUpdateBeCalledForAutoSave)
+      dataManager.workspaceUpdated();
   }
 
   addBarOverlay(
     plotData: PlotData,
     color?: string,
     plotId?: string,
-    plotSource?: string,
-    updatePlot = true
+    plotSource?: string
   ) {
-    debugger;
     if (!color) color = generateColor();
     this.histogramBarOverlays.push({
       plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
@@ -296,8 +295,8 @@ export default class PlotData extends ObserversFunctionality {
       plotId: plotId,
       plotSource: plotSource,
     });
-
-    if (updatePlot) this.plotUpdated();
+    this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeBarOverlay(ploDataID: string) {
@@ -315,6 +314,7 @@ export default class PlotData extends ObserversFunctionality {
       (x) => x.plotId != ploDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeOverlay(plotDataID: string) {
@@ -322,6 +322,7 @@ export default class PlotData extends ObserversFunctionality {
       (e) => e.plotId != plotDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   createSubpop(inverse: boolean = false) {

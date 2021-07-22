@@ -191,8 +191,7 @@ export default class WorkspaceAssembler {
           newPlotHistObj.plot,
           newPlotHistObj.color,
           newPlotHistObj.plotId,
-          newPlotHistObj.plotSource,
-          false
+          newPlotHistObj.plotSource
         );
       }
       for (let j = 0; j < plotObj.histogramBarOverlays.length; j++) {
@@ -209,8 +208,7 @@ export default class WorkspaceAssembler {
           newPlotHistObj.plot,
           newPlotHistObj.color,
           newPlotHistObj.plotId,
-          newPlotHistObj.plotSource,
-          false
+          newPlotHistObj.plotSource
         );
       }
     }

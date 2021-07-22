@@ -125,6 +125,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     let mainHist = this.plotData.getBins(this.bins, axis);
 
     let globlMax = mainHist.max;
+    this.plotData.updateRanges();
     let range = this.plotData.ranges.get(axis);
 
     const overlaysObj = this.plotData.histogramOverlays;
@@ -134,8 +135,10 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.rangeMax = range[1];
 
     for (const overlay of overlaysObj) {
-      if (overlay.plot === undefined || overlay.plot === null) continue;
+      console.log(overlay);
+      if (!overlay) continue;
       let newPlotData;
+
       switch (overlay.plotSource) {
         case COMMON_CONSTANTS.PLOT:
           newPlotData = dataManager.getPlot(overlay.plotId);
@@ -174,6 +177,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {
+        if (!barOverlays[i]) continue;
         let newPlotData;
         switch (barOverlays[i].plotSource) {
           case COMMON_CONSTANTS.PLOT:

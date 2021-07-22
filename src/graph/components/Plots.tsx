@@ -33,6 +33,9 @@ import { useLocation } from "react-router-dom";
 import PlotData from "graph/dataManagement/plotData";
 import { API_CALLS } from "assets/constants/apiCalls";
 import { Dbouncer } from "services/Dbouncer";
+import { green } from "@material-ui/core/colors";
+import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
+import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -63,6 +66,18 @@ const useStyles = makeStyles((theme) => ({
   topButton: {
     marginLeft: 20,
     height: 35,
+  },
+  savingProgress: {
+    marginLeft: "-10px",
+    display: "flex",
+    marginRight: "10px",
+    animation: "App-logo-spin 1.4s linear infinite",
+  },
+  saved: {
+    marginLeft: "-10px",
+    display: "flex",
+    marginRight: "10px",
+    color: green[500],
   },
 }));
 
@@ -96,9 +111,10 @@ function Plots(props: { experimentId: string }) {
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
-  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace());
+  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -170,16 +186,27 @@ function Plots(props: { experimentId: string }) {
     var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       setDownloadedFiles(dataManager.downloaded);
     });
-    dataManager.addObserver("removePlotFromWorkspace", () =>
-      autoSaveWorkspace()
+
+    let addPlotListner = dataManager.addObserver(
+      "addNewPlotToWorkspace",
+      () => {
+        autoSaveWorkspace();
+      }
     );
-    dataManager.addObserver("updateWorkspace", () => {
-      autoSaveWorkspace();
-    });
-    dataManager.addObserver("workspaceUpdated", () => {
-      debugger;
-      autoSaveWorkspace();
-    });
+
+    let removePlotListner = dataManager.addObserver(
+      "removePlotFromWorkspace",
+      () => {
+        autoSaveWorkspace();
+      }
+    );
+
+    let updateWorkspaceListner = dataManager.addObserver(
+      "workspaceUpdated",
+      () => {
+        autoSaveWorkspace();
+      }
+    );
 
     var downloadingListner = dataManager.addObserver(
       "updateDownloadingFiles",
@@ -187,18 +214,23 @@ function Plots(props: { experimentId: string }) {
         setDownloadingFiles(dataManager.downloadingFiles);
       }
     );
-
+    dataManager.letUpdateBeCalledForAutoSave = true;
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
+      dataManager.removeObserver("workspaceUpdated", updateWorkspaceListner);
+      dataManager.removeObserver("removePlotFromWorkspace", removePlotListner);
+      dataManager.removeObserver("addNewPlotToWorkspace", addPlotListner);
     };
   }, []);
 
   const autoSaveWorkspace = () => {
-    debugger;
-    if (!workspaceSharedLocal) saveWorkspace();
+    if (!workspaceSharedLocal) {
+      setSavingWorkspace(true);
+      saveWorkspace();
+    }
   };
 
   const initPlots = async (workSpaceShared: boolean = false) => {
@@ -251,6 +283,7 @@ function Plots(props: { experimentId: string }) {
   }
 
   const upsertWorkSpace = (isShared: boolean = false) => {
+    setSavingWorkspace(true);
     let stateJson = dataManager.getWorkspaceJSON();
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -267,12 +300,10 @@ function Plots(props: { experimentId: string }) {
       )
       .then((e) => {
         setNewWorkspaceId(e.data.workspaceId);
-        snackbarService.showSnackbar(
-          "Workspace saved successfully.",
-          "success"
-        );
+        setSavingWorkspace(false);
       })
       .catch((e) => {
+        setSavingWorkspace(false);
         snackbarService.showSnackbar(
           "Could not save the workspace, reload the page and try again!",
           "error"
@@ -354,18 +385,18 @@ function Plots(props: { experimentId: string }) {
       setLoading(true);
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
-
-      setDownloadingFiles(stateFileIds);
-      let eventFiles = await getFiles(workspaceShared, stateFileIds);
-      dataManager.updateDownloaded(eventFiles);
-      if (!dataManager.ready()) {
-        dataManager.createWorkspace();
+      if (stateFileIds && stateFileIds.length) {
+        setDownloadingFiles(stateFileIds);
+        let eventFiles = await getFiles(workspaceShared, stateFileIds);
+        dataManager.updateDownloaded(eventFiles);
+        if (!dataManager.ready()) {
+          dataManager.createWorkspace();
+        }
+        for (let i = 0; i < eventFiles.length; i++) {
+          workspaceStateReload.addFile(eventFiles[i]);
+        }
+        dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
       }
-      for (let i = 0; i < eventFiles.length; i++) {
-        workspaceStateReload.addFile(eventFiles[i]);
-      }
-
-      dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
     }
     setLoading(false);
   };
@@ -734,6 +765,7 @@ function Plots(props: { experimentId: string }) {
                       className={classes.topButton}
                       startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                       onClick={() => {
+                        dataManager.letUpdateBeCalledForAutoSave = false;
                         history.goBack();
                       }}
                     >
@@ -787,6 +819,15 @@ function Plots(props: { experimentId: string }) {
                         backgroundColor: "#fafafa",
                       }}
                     >
+                      {savingWorkspace ? (
+                        <div className={classes.savingProgress}>
+                          <AutorenewRoundedIcon />
+                        </div>
+                      ) : (
+                        <div className={classes.saved}>
+                          <CheckCircleRoundedIcon />
+                        </div>
+                      )}
                       Save Workspace
                     </Button>
                   )}

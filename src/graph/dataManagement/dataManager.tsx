@@ -187,6 +187,7 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   updateWorkspace() {
     this.saveWorkspaceToLocalStorage();
+    if (this.letUpdateBeCalledForAutoSave) this.workspaceUpdated();
   }
 
   @publishDecorator()
@@ -318,6 +319,8 @@ class DataManager extends ObserversFunctionality {
       delete this.remoteFiles;
       delete this.remoteWorkspaceID;
     }
+    this.downloadingFiles = [];
+    this.downloadingFiles = [];
     this.removeWorkspace();
     // Clears local storage
     window.localStorage.removeItem(this.lastLocalStorageSave);
@@ -401,7 +404,6 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   workspaceUpdated() {
-    debugger;
     this.letUpdateBeCalledForAutoSave = true;
   }
 

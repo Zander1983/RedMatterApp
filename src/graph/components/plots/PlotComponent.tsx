@@ -218,19 +218,31 @@ function PlotComponent(props: {
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
-        let filePlotDataIds: any[] = filePlotIdDict
-          ? Object.values(filePlotIdDict)
-            ? Object.values(filePlotIdDict).map((x: any) => x.id)
-            : []
-          : [];
-        let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
-        let plotData = props.plot.plotData.histogramBarOverlays.filter(
-          (x: any) =>
-            !existingPlotDataIds.includes(x.plot.id) &&
-            !filePlotDataIds.includes(x.plot.id)
-        );
-        if (plotData && plotData.length > 0)
-          props.plot.plotData.removeAnyOverlay(plotData[0].plot.id);
+        if (props.plot && props.plot.plotData) {
+          let filePlotDataIds: any[] = filePlotIdDict
+            ? Object.values(filePlotIdDict)
+              ? Object.values(filePlotIdDict).map((x: any) => x.id)
+              : []
+            : [];
+          let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
+          let plotData: any = [];
+          plotData = plotData.concat(
+            props.plot.plotData.histogramBarOverlays.filter(
+              (x: any) =>
+                !existingPlotDataIds.includes(x.plot.id) &&
+                !filePlotDataIds.includes(x.plot.id)
+            )
+          );
+          plotData = plotData.concat(
+            props.plot.plotData.histogramOverlays.filter(
+              (x: any) =>
+                !existingPlotDataIds.includes(x.plot.id) &&
+                !filePlotDataIds.includes(x.plot.id)
+            )
+          );
+          if (plotData && plotData.length > 0)
+            props.plot.plotData.removeAnyOverlay(plotData[0].plotId);
+        }
 
         tryKillComponent();
       });
@@ -388,7 +400,7 @@ function PlotComponent(props: {
       newPlotData = new PlotData();
       newPlotData.file = file;
       newPlotData.setupPlot();
-      newPlotData.getXandYRanges();
+      newPlotData.updateRanges();
     } else {
       newPlotData = plotData;
     }
