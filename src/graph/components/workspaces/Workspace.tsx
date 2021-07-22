@@ -30,12 +30,16 @@ const MINW = 10;
 const MINH = 18;
 const STDW = 15;
 
-const standardGridPlotItem = (x: number, y: number) => {
+const standardGridPlotItem = (index: number, plotData: any) => {
+  let x = plotData.positions.x;
+  let y = plotData.positions.y;
+  let w = plotData.dimensions.w;
+  let h = plotData.dimensions.h;
   return {
-    x: x,
-    y: y,
-    w: STDW,
-    h: MINH,
+    x: x < 0 ? (index * STDW) % 30 : x,
+    y: y ? y : 100,
+    w: w,
+    h: h,
     minW: MINW,
     minH: MINH,
     // static: true,
@@ -100,6 +104,26 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.forceUpdate();
   }
 
+  savePlotPosition(layouts: any) {
+    for (let i = 0; i < layouts.length; i++) {
+      let layout = layouts[i];
+      let plotId = layouts[i].i;
+
+      let plot = this.plots.find((x) => x.plotData.id == plotId);
+
+      plot.plotData.dimensions = {
+        h: layout.h,
+        w: layout.w,
+      };
+
+      plot.plotData.positions = {
+        x: layout.x,
+        y: layout.y,
+      };
+
+      dataManager.workspaceUpdated();
+    }
+  }
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
      significatively */
@@ -115,6 +139,9 @@ class Workspace extends React.Component<WorkspaceProps> {
           rows={{ lg: 30 }}
           rowHeight={30}
           isDraggable={this.plotMoving}
+          onLayoutChange={(layout: any) => {
+            this.savePlotPosition(layout);
+          }}
         >
           {
             //@ts-ignore
@@ -123,7 +150,7 @@ class Workspace extends React.Component<WorkspaceProps> {
                 <div
                   key={e.plotData.id}
                   style={classes.itemOuterDiv}
-                  data-grid={standardGridPlotItem((i * STDW) % 30, 100)}
+                  data-grid={standardGridPlotItem(i, e.plotData)}
                   id={`workspace-outter-${e.plotData.id}`}
                 >
                   <div id="inner" style={classes.itemInnerDiv}>

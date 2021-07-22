@@ -58,6 +58,14 @@ export interface PlotDataState {
   yPlotType: string;
   histogramAxis: "horizontal" | "vertical";
   label: string;
+  dimensions: {
+    w: number;
+    h: number;
+  };
+  positions: {
+    x: number;
+    y: number;
+  };
 }
 
 export default class PlotData extends ObserversFunctionality {
@@ -100,6 +108,20 @@ export default class PlotData extends ObserversFunctionality {
     plotId: string;
     plotSource: string;
   }[] = [];
+  dimensions: {
+    w: number;
+    h: number;
+  } = {
+    w: 15,
+    h: 18,
+  };
+  positions: {
+    x: number;
+    y: number;
+  } = {
+    x: -1,
+    y: 0,
+  };
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -231,6 +253,8 @@ export default class PlotData extends ObserversFunctionality {
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
+      dimensions: this.dimensions,
+      positions: this.positions,
     };
   }
 
@@ -251,6 +275,8 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+    if (state.dimensions !== undefined) this.dimensions = state.dimensions;
+    if (state.positions !== undefined) this.positions = state.positions;
   }
 
   update(state: any) {
