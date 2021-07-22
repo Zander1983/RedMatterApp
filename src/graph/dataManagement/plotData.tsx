@@ -560,6 +560,38 @@ export default class PlotData extends ObserversFunctionality {
       : this.plotHeight / this.STD_BIN_SIZE;
   }
 
+  resetOriginalRanges() {
+    if (
+      !this?.file ||
+      !this?.file?.remoteData ||
+      !this.file?.plotTypes ||
+      !this?.file?.remoteData?.paramsAnalysis
+    ) {
+      throw Error("No original range exists");
+    }
+    Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
+      const axisType =
+        this.file.remoteData.channels[i].display !== "bi"
+          ? "linear"
+          : "biexponential";
+      this.rangePlotType.set(
+        //@ts-ignore
+        axis.paramName,
+        axisType === "linear" ? "lin" : "bi"
+      );
+      const min =
+        //@ts-ignore
+        axis[axisType + "Minimum"];
+      const max =
+        //@ts-ignore
+        axis[axisType + "Maximum"];
+      //@ts-ignore
+      this.ranges.set(axis.paramName, [min, max]);
+      //@ts-ignore
+      this.ranges.set(axis.paramName, [min, max]);
+    });
+  }
+
   private axisDataCache: null | any[] = null;
   getAxesData(filterGating: boolean = true): any[] {
     if (this.axisDataCache) return this.axisDataCache;

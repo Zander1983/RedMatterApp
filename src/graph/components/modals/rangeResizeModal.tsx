@@ -114,6 +114,7 @@ function RangeResizeModal(props: {
                 marginLeft: 20,
               }}
               onClick={() => {
+                props.callback(69, 420, props.inits.axis.split(" ")[0]);
                 props.closeCall.f(props.closeCall.ref);
               }}
             >

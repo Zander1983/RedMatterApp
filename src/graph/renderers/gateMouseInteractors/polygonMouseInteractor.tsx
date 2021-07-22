@@ -190,6 +190,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(xAxis);
     checkNotNullOrUndefined(yAxis);
 
+    let originalRanges = [
+      this.plotter.plotData.ranges.get(this.plotter.plotData.xAxis),
+      this.plotter.plotData.ranges.get(this.plotter.plotData.yAxis),
+    ];
+
     const newGate = new PolygonGate({
       points: [...points].map((e) => {
         e = this.plotter.transformer.toAbstractPoint(e);
