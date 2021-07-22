@@ -114,12 +114,12 @@ const AppHeader = (props: any) => {
                   Experiments
                 </NavLink>
               )}
-              <a className={classes.topBarLink} onClick={onLogout} href="/">
-                Logout
-              </a>
               <NavLink className={classes.topBarLink} to="/user-profile">
                 My Profile
               </NavLink>
+              <a className={classes.topBarLink} onClick={onLogout} href="/">
+                Logout
+              </a>
             </>
           ) : (
             <>

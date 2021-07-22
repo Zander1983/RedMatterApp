@@ -39,9 +39,6 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-
-
-
 function CreateExperimentModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
@@ -60,9 +57,9 @@ function CreateExperimentModal(props: {
   const [createExperimentDialog, setCreateExperimentDialog] =
     React.useState(false);
   const [nameError, setNameError] = React.useState(false);
-
-
-
+  const [subscriptionType, setSubscriptionType] = React.useState(null);
+  const [enablePrivateExperiment, setEnablePrivateExperiment] =
+    React.useState(false);
 
   useEffect(() => {
     //props.redirectIfTokenExpired(organizationId);
@@ -80,17 +77,34 @@ function CreateExperimentModal(props: {
         },
       });
     }
+    axios
+      .get("/api/getuserdetails", {
+        headers: {
+          token: userManager.getToken(),
+        },
+      })
+      .then((user) => {
+        if (
+          user.data.userDetails.subscriptionType === "Free" ||
+          user.data.userDetails.subscriptionType == null
+        ) {
+          setEnablePrivateExperiment(false);
+        } else {
+          setEnablePrivateExperiment(true);
+        }
+      });
   }, [props.open]);
-
-
-
-  
 
   const createExperiment = () => {
     const req = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).createExperiment(
-      { details: formData, name: name, privateExp: privateExperiment, organisationId: organizationId },
+      {
+        details: formData,
+        name: name,
+        privateExp: privateExperiment,
+        organisationId: organizationId,
+      },
       userManager.getToken()
     );
     axios
@@ -237,7 +251,9 @@ function CreateExperimentModal(props: {
                     textAlign: "left",
                   }}
                 >
-                  <span style={{ fontWeight: 300 }}>Your Experiment's Name</span>
+                  <span style={{ fontWeight: 300 }}>
+                    Your Experiment's Name
+                  </span>
                 </Typography>
               </Grid>
               <Grid item xs={7}>
@@ -272,59 +288,67 @@ function CreateExperimentModal(props: {
               </Grid>
 
               <Divider style={{ width: "90%" }}></Divider>
-
-              <Grid item xs={5}>
-                <Typography
-                  style={{
-                    marginTop: 0,
-                    textAlign: "left",
-                  }}
-                >
-                  <span style={{ fontWeight: 300 }}>Private experiment</span>
-                </Typography>
-              </Grid>
-              <Grid item xs={7}>
-                <FormControlLabel
-                  style={{
-                    marginTop: "-10px",
-                    marginLeft: "-64%",
-                  }}
-                  control={
-                    <Checkbox
-                      //@ts-ignore
-                      color="primary"
-                      inputProps={{ "aria-label": "secondary checkbox" }}
-                      checked={privateExperiment}
-                      onChange={() => setPrivateExperiment(!privateExperiment)}
-                      name="Private workspace"
-                      style={{}}
-                    />
-                  }
-                  label={
-                    <span style={{ fontSize: "13px" }}>
-                      <strong style={{ fontWeight: 300 }}>
-                        Private Experiment
-                      </strong>
-                    </span>
-                  }
-                />
-
-                {privateExperiment ? (
-                  <p
+              {enablePrivateExperiment === false ? null : (
+                <Grid item xs={5}>
+                  <Typography
                     style={{
-                      fontSize: 10,
-                      marginTop: -13,
-                      marginBottom: 15,
-                      marginLeft: "-20%",
+                      marginTop: 0,
+                      textAlign: "left",
                     }}
                   >
-                    No one in your workspace will be able to see this experiment
-                  </p>
-                ) : null}
-              </Grid>
-              <Divider
-                style={{ width: "90%", marginTop: -7, marginBottom: 10 }}
-              ></Divider>
+                    <span style={{ fontWeight: 300 }}>Private experiment</span>
+                  </Typography>
+                </Grid>
+              )}
+              {enablePrivateExperiment === false ? null : (
+                <Grid item xs={7}>
+                  <FormControlLabel
+                    style={{
+                      marginTop: "-10px",
+                      marginLeft: "-64%",
+                    }}
+                    control={
+                      <Checkbox
+                        //@ts-ignore
+                        color="primary"
+                        inputProps={{ "aria-label": "secondary checkbox" }}
+                        checked={privateExperiment}
+                        onChange={() =>
+                          setPrivateExperiment(!privateExperiment)
+                        }
+                        name="Private workspace"
+                        style={{}}
+                      />
+                    }
+                    label={
+                      <span style={{ fontSize: "13px" }}>
+                        <strong style={{ fontWeight: 300 }}>
+                          Private Experiment
+                        </strong>
+                      </span>
+                    }
+                  />
+
+                  {privateExperiment ? (
+                    <p
+                      style={{
+                        fontSize: 10,
+                        marginTop: -13,
+                        marginBottom: 15,
+                        marginLeft: "-20%",
+                      }}
+                    >
+                      No one in your workspace will be able to see this
+                      experiment
+                    </p>
+                  ) : null}
+                </Grid>
+              )}
+              {enablePrivateExperiment === false ? null : (
+                <Divider
+                  style={{ width: "90%", marginTop: -7, marginBottom: 10 }}
+                ></Divider>
+              )}
             </Grid>
           </div>
 
