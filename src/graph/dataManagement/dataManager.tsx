@@ -64,10 +64,8 @@ class DataManager extends ObserversFunctionality {
       this.plotRenderers === undefined ||
       this.plotRenderers === null
     ) {
-      // console.log("is not ready");
       return false;
     }
-    // console.log("is ready");
     return true;
   }
 
@@ -495,8 +493,7 @@ class DataManager extends ObserversFunctionality {
         fileId,
         this.experimentId
       );
-      if(!this.ready())
-      {
+      if (!this.ready()) {
         this.createWorkspace();
       }
       let file = response[0];
@@ -507,7 +504,7 @@ class DataManager extends ObserversFunctionality {
         axes: file.channels.map((e: any) => e.value),
         data: file.events,
         plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file
+        remoteData: file,
       });
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);

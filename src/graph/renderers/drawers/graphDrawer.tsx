@@ -129,11 +129,6 @@ export default class GraphDrawer extends Drawer {
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
 
     if (params.labels !== undefined && params.labels.length >= 2) {
-      // console.log("got labels", params.labels);
-      // console.log(
-      //   "has ranges",
-      //   orientation === "v" ? [this.iby, this.iey] : [this.ibx, this.iex]
-      // );
       let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
       let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
 
@@ -158,9 +153,6 @@ export default class GraphDrawer extends Drawer {
         }
       } else {
         for (const label of params.labels) {
-          if (orientation === "h") {
-            console.log(max, min, label.pos);
-          }
           let pos = (label.pos - min) / (max - min);
           const x = Math.abs(p1 - p2) * pos + Math.min(p1, p2);
           this.segment({
@@ -267,7 +259,6 @@ export default class GraphDrawer extends Drawer {
     const oend = orientation == "h" ? this.x2 : this.y2;
 
     if (labels !== undefined && labels.length >= 3) {
-      // console.log(labels);
       let min = labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
       let max = labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
 

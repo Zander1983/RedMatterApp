@@ -273,8 +273,6 @@ class Logicle {
           return 2 * this.x1 - x;
         else return x;
     }
-
-    //console.log(' shouldnt get here ');
   }
 
   /**
@@ -388,6 +386,3 @@ class Logicle {
 }
 
 export default Logicle;
-// var logicle = new Logicle();
-
-// console.log('logicle.scale(-200) is ', logicle.scale(-75));
