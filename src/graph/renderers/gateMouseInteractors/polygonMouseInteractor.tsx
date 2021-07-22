@@ -202,8 +202,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       }),
       xAxis: xAxis,
       xAxisType: this.plotter.plotData.xPlotType,
+      xAxisOriginalRanges: originalRanges[0],
       yAxis: yAxis,
       yAxisType: this.plotter.plotData.yPlotType,
+      yAxisOriginalRanges: originalRanges[1],
       parents: this.plotter.plotData.population.map((e) => e.gate),
     });
 

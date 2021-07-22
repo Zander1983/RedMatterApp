@@ -9,8 +9,10 @@ export interface GateState {
   color?: string;
   xAxis: string;
   xAxisType: string;
+  xAxisOriginalRanges?: [number, number];
   yAxis: string;
   yAxisType: string;
+  yAxisOriginalRanges?: [number, number];
   parents: Gate[];
 }
 
@@ -27,8 +29,10 @@ export default abstract class Gate extends ObserversFunctionality {
   color?: string | null;
   xAxis: string;
   xAxisType: string = "lin";
+  xAxisOriginalRanges?: [number, number];
   yAxis: string;
   yAxisType: string = "lin";
+  yAxisOriginalRanges?: [number, number];
   parents: Gate[] = [];
   children: Gate[] = [];
 
@@ -51,6 +55,10 @@ export default abstract class Gate extends ObserversFunctionality {
     this.yAxis = gate.yAxis;
     if (gate.xAxisType !== undefined) this.xAxisType = gate.xAxisType;
     if (gate.yAxisType !== undefined) this.yAxisType = gate.yAxisType;
+    if (gate.xAxisOriginalRanges !== undefined)
+      this.xAxisOriginalRanges = gate.xAxisOriginalRanges;
+    if (gate.yAxisOriginalRanges !== undefined)
+      this.yAxisOriginalRanges = gate.yAxisOriginalRanges;
     if (gate.name !== undefined) this.name = gate.name;
     else this.name = this.getGateType() + " " + Gate.instanceCount.toString();
     if (gate.color !== undefined) this.color = gate.color;
