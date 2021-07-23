@@ -282,9 +282,8 @@ export default class PlotData extends ObserversFunctionality {
       this.histogramAxis = state.histogramAxis;
     if (state.dimensions !== undefined) this.dimensions = state.dimensions;
     if (state.positions !== undefined) this.positions = state.positions;
-    if (state.linRanges !== undefined) this.linearRanges = state.linRanges;
-    if (state.rangePlotType !== undefined)
-      this.rangePlotType = state.rangePlotType;
+    if (state.linRanges) this.linearRanges = state.linRanges;
+    if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
@@ -338,6 +337,7 @@ export default class PlotData extends ObserversFunctionality {
       (x) => x.plotId != ploDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeAnyOverlay(ploDataID: string) {
@@ -728,6 +728,8 @@ export default class PlotData extends ObserversFunctionality {
           this.file.remoteData.channels[i].display !== "bi"
             ? "linear"
             : "biexponential";
+
+        this.rangePlotType = new Map();
         this.rangePlotType.set(
           //@ts-ignore
           axis.paramName,

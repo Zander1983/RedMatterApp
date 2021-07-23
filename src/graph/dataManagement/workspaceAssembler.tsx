@@ -173,7 +173,7 @@ export default class WorkspaceAssembler {
       const plot = new PlotData();
       oldNewPlotIdMap[plotObj.id] = plot.id;
       plot.setState(plotObj);
-      plot.updateRanges();
+      plot.getXandYRanges();
       plots.set(plot.id, plot);
     }
 

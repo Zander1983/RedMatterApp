@@ -328,7 +328,7 @@ function PlotComponent(props: {
           let plotObj = isHistogramSelected(filePlotIdDict[pltFlObj.id].id);
           let plotData = plotObj.plot.plot;
           if (plotObj.type == plotType) {
-            removeOverlayAsPerType(plotType, plotData);
+            removeOverlayAsPerType(plotType, plotData.id);
             filePlotIdDict[pltFlObj.id] = null;
           } else {
             addOverlayAsPerType(
@@ -354,7 +354,7 @@ function PlotComponent(props: {
         let plotObj = isHistogramSelected(plotData.id);
         if (plotObj) {
           if (plotObj.type == plotType) {
-            removeOverlayAsPerType(plotType, plotData);
+            removeOverlayAsPerType(plotType, plotData.id);
           } else {
             addOverlayAsPerType(
               plotType,
@@ -390,7 +390,7 @@ function PlotComponent(props: {
       newPlotData = new PlotData();
       newPlotData.file = file;
       newPlotData.setupPlot();
-      newPlotData.updateRanges();
+      newPlotData.getXandYRanges();
     } else {
       newPlotData = plotData;
     }
@@ -502,33 +502,33 @@ function PlotComponent(props: {
   ) => {
     switch (type) {
       case COMMON_CONSTANTS.Bar:
-        props.plot.plotData.removeOverlay(plotData.id);
         props.plot.plotData.addBarOverlay(
           plotData,
           color,
           plotData.id,
           plotSource
         );
+        props.plot.plotData.removeOverlay(plotData.id);
         break;
       case COMMON_CONSTANTS.Line:
-        props.plot.plotData.removeBarOverlay(plotData.id);
         props.plot.plotData.addOverlay(
           plotData,
           color,
           plotData.id,
           plotSource
         );
+        props.plot.plotData.removeBarOverlay(plotData.id);
         break;
     }
   };
 
-  const removeOverlayAsPerType = (type: string, plotData: PlotData) => {
+  const removeOverlayAsPerType = (type: string, plotDataId: string) => {
     switch (type) {
       case COMMON_CONSTANTS.Bar:
-        props.plot.plotData.removeBarOverlay(plotData.id);
+        props.plot.plotData.removeBarOverlay(plotDataId);
         break;
       case COMMON_CONSTANTS.Line:
-        props.plot.plotData.removeOverlay(plotData.id);
+        props.plot.plotData.removeOverlay(plotDataId);
         break;
     }
   };
@@ -843,7 +843,7 @@ function PlotComponent(props: {
                               if (plotObj && Object.keys(plotObj).length > 0) {
                                 removeOverlayAsPerType(
                                   plotObj.type,
-                                  plotObj.plot.plot
+                                  plotObj.plot.plotId
                                 );
                                 setHistogramOverlayOpen(false);
                               }
@@ -935,7 +935,7 @@ function PlotComponent(props: {
                                 if (plotObj) {
                                   removeOverlayAsPerType(
                                     plotObj.type,
-                                    plotObj.plot.plot
+                                    plotObj.plot.plotId
                                   );
                                   setHistogramOverlayOpen(false);
                                 }

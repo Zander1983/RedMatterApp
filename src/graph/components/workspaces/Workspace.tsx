@@ -193,7 +193,9 @@ class Workspace extends React.Component<WorkspaceProps> {
                                 plot={e.plotRender}
                                 plotIndex={e.plotData.id}
                                 plotFileId={e.plotData.file.id}
-                                plots={plots}
+                                plots={this.plots.filter(
+                                  (x) => x.plotData.id != e.plotData.id
+                                )}
                                 sharedWorkspace={this.props.sharedWorkspace}
                                 experimentId={this.props.experimentId}
                               />

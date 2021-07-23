@@ -153,7 +153,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     let mainHist = this.plotData.getBins(this.bins, axis);
 
     let globlMax = mainHist.max;
-    this.plotData.updateRanges();
+
     let range = this.plotData.ranges.get(axis);
 
     const overlaysObj = this.plotData.histogramOverlays;
@@ -238,8 +238,8 @@ export default class HistogramPlotter extends PluginGraphPlotter {
             newPlotData = new PlotData();
             newPlotData.file = barOverlays[i].plot.file;
             newPlotData.population = barOverlays[i].plot.population;
-            newPlotData.setupPlot();
             newPlotData.getXandYRanges();
+            newPlotData.setupPlot();
             break;
         }
         newPlotData.ranges.set(axis, [range[0], range[1]]);
@@ -270,10 +270,13 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       binsAscArray.sort((a, b) => {
         return b.value - a.value;
       });
+
       for (let j = 0; j < binsAscArray.length; j++) {
-        if (binsAscArray[j].color)
-          this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
-        else this.drawer.addBin(i, binsAscArray[j].value);
+        if (binsAscArray[j]) {
+          if (binsAscArray[j].color)
+            this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
+          else this.drawer.addBin(i, binsAscArray[j].value);
+        }
       }
     }
 
