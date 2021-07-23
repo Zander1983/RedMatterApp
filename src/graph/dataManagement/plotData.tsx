@@ -729,7 +729,9 @@ export default class PlotData extends ObserversFunctionality {
             ? "linear"
             : "biexponential";
 
-        this.rangePlotType = new Map();
+        if (this.rangePlotType && Object.keys(this.rangePlotType).length == 0)
+          this.rangePlotType = new Map();
+
         this.rangePlotType.set(
           //@ts-ignore
           axis.paramName,
