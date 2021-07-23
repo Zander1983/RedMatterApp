@@ -214,20 +214,21 @@ function PlotComponent(props: {
               ? Object.values(filePlotIdDict).map((x: any) => x.id)
               : []
             : [];
-          let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
+          let plots = dataManager.getAllPlots();
+          let existingPlotDataIds = plots.map((x: any) => x.plotID);
           let plotData: any = [];
           plotData = plotData.concat(
             props.plot.plotData.histogramBarOverlays.filter(
               (x: any) =>
-                !existingPlotDataIds.includes(x.plot.id) &&
-                !filePlotDataIds.includes(x.plot.id)
+                !existingPlotDataIds.includes(x.plotId) &&
+                !filePlotDataIds.includes(x.plotId)
             )
           );
           plotData = plotData.concat(
             props.plot.plotData.histogramOverlays.filter(
               (x: any) =>
-                !existingPlotDataIds.includes(x.plot.id) &&
-                !filePlotDataIds.includes(x.plot.id)
+                !existingPlotDataIds.includes(x.plotId) &&
+                !filePlotDataIds.includes(x.plotId)
             )
           );
           if (plotData && plotData.length > 0)
