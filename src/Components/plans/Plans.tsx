@@ -122,11 +122,6 @@ export default function Plans(props: any) {
     });
   };
 
-  useEffect(() => {
-    console.log("problems with the console again?");
-    console.log(window.location.origin);
-  });
-
   return (
     <Grid
       container
