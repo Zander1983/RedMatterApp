@@ -97,6 +97,7 @@ export default function Plans(props: any) {
         {
           priceId: priceId,
           subscriptionType: subType,
+          location: window.location.origin,
         },
         {
           headers: {
@@ -120,6 +121,11 @@ export default function Plans(props: any) {
       stripe.redirectToCheckout({ sessionId: data.sessionId }).then(() => {});
     });
   };
+
+  useEffect(() => {
+    console.log("problems with the console again?");
+    console.log(window.location.origin);
+  });
 
   return (
     <Grid
