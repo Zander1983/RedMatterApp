@@ -1,29 +1,12 @@
 import React from "react";
-import {
-  makeStyles,
-  Theme,
-  createStyles,
-  withStyles,
-} from "@material-ui/core/styles";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import Button from "@material-ui/core/Button";
+import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
-import Avatar from "@material-ui/core/Avatar";
-
-import Done from "@material-ui/icons/Done";
 
 import formSteps from "./FormSteps";
-import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
-import userManager from "Components/users/userManager";
 import { useDispatch, useStore } from "react-redux";
-import axios from "axios";
-import { snackbarService } from "uno-material-ui";
-import TextArea from "antd/lib/input/TextArea";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -71,15 +54,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-function getSteps() {
-  return [
-    "Device selection",
-    "Cell type",
-    "Particle size",
-    "Fluorophores category",
-    "Description",
-  ];
-}
 // FUNCTION THAT GETS ALL THE COMBOBOXES FROM FORMSTEPS.TSX
 function getStepContent(step: number) {
   switch (step) {
@@ -97,6 +71,7 @@ function getStepContent(step: number) {
       throw Error("Unknown step");
   }
 }
+
 // THE COMPILED FORM
 export default function PrototypeForm2(props: {
   workspaceID?: string;
@@ -126,9 +101,7 @@ export default function PrototypeForm2(props: {
         }}
       >
         {/* //THIS IS THE MODAL FORM, EACH TYPOGRAPHY IS THE TITLE FOR THE SELECTION, AND 
-            //GET STEPCONTENT(number) GETS THE CONTENT, AS YOU'D EXPECT */}
-
-        {" "}
+            //GET STEPCONTENT(number) GETS THE CONTENT, AS YOU'D EXPECT */}{" "}
         {/* //DEVICE TYPE */}
         <Grid container spacing={3}>
           <Grid item xs={5}>

@@ -113,8 +113,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       history.replace("/login");
       return orgID;
     }
-    
-  }
+  };
 
   const [organizationExperiments, setExperiments] = React.useState([]);
   const [privateExperiments, setPrivateExperiments] = React.useState([]);
@@ -182,7 +181,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (privateExperimentsSwitch) {
       toDisplay = toDisplay.concat(
         privateExperiments.map((e) => {
-          return { ...e, source: "private" };
+          return { ...e, source: "personal" };
         })
       );
     }
@@ -330,4 +329,3 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   );
 };
 export default Experiments;
-

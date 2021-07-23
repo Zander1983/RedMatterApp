@@ -10,6 +10,8 @@ import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";
 import { Dbouncer } from "services/Dbouncer";
+import { Divider } from "@material-ui/core";
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const classes = {
@@ -27,8 +29,8 @@ const classes = {
 };
 
 const MINW = 10;
-const MINH = 18;
-const STDW = 15;
+const MINH = 14;
+const STDW = 10;
 
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
@@ -129,47 +131,83 @@ class Workspace extends React.Component<WorkspaceProps> {
      significatively */
   render() {
     console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
+    let plotGroups: any = {};
+    for (const plot of this.plots) {
+      const fileId = plot.plotData.file.id;
+      if (fileId in plotGroups) {
+        plotGroups[fileId].push(plot);
+      } else {
+        plotGroups[fileId] = [plot];
+      }
+    }
+    const keys = Object.keys(plotGroups);
     //@ts-ignore
     if (this.plots.length > 0) {
       return (
-        <ResponsiveGridLayout
-          className="layout"
-          breakpoints={{ lg: 1200 }}
-          cols={{ lg: 30 }}
-          rows={{ lg: 30 }}
-          rowHeight={30}
-          isDraggable={this.plotMoving}
-          onLayoutChange={(layout: any) => {
-            this.savePlotPosition(layout);
-          }}
-        >
-          {
-            //@ts-ignore
-            this.plots.map((e, i) => {
-              return (
+        <div>
+          <Divider></Divider>
+          {keys.map((key: string) => {
+            const plots: {
+              plotData: PlotData;
+              plotRender: Plot;
+            }[] = plotGroups[key];
+            return (
+              <div>
                 <div
-                  key={e.plotData.id}
-                  style={classes.itemOuterDiv}
-                  data-grid={standardGridPlotItem(i, e.plotData)}
-                  id={`workspace-outter-${e.plotData.id}`}
+                  style={{
+                    backgroundColor: "#6666AA",
+                    padding: 5,
+                    paddingLeft: 10,
+                    paddingBottom: 1,
+                    paddingTop: 7,
+                  }}
                 >
-                  <div id="inner" style={classes.itemInnerDiv}>
-                    <PlotComponent
-                      plot={e.plotRender}
-                      plotIndex={e.plotData.id}
-                      plotFileId={e.plotData.file.id}
-                      plots={this.plots.filter(
-                        (x) => x.plotData.id != e.plotData.id
-                      )}
-                      sharedWorkspace={this.props.sharedWorkspace}
-                      experimentId={this.props.experimentId}
-                    />
-                  </div>
+                  <h1 style={{ color: "white" }}>
+                    {plots[0].plotData.file.name}
+                  </h1>
                 </div>
-              );
-            })
-          }
-        </ResponsiveGridLayout>
+                <div style={{ marginTop: 10, marginBottom: 10 }}>
+                  <ResponsiveGridLayout
+                    className="layout"
+                    breakpoints={{ lg: 1200 }}
+                    cols={{ lg: 30 }}
+                    rows={{ lg: 30 }}
+                    rowHeight={30}
+                    isDraggable={this.plotMoving}
+                    onLayoutChange={(layout: any) => {
+                      this.savePlotPosition(layout);
+                    }}
+                  >
+                    {
+                      //@ts-ignore
+                      plots.map((e, i) => {
+                        return (
+                          <div
+                            key={e.plotData.id}
+                            style={classes.itemOuterDiv}
+                            data-grid={standardGridPlotItem(i, e.plotData)}
+                            id={`workspace-outter-${e.plotData.id}`}
+                          >
+                            <div id="inner" style={classes.itemInnerDiv}>
+                              <PlotComponent
+                                plot={e.plotRender}
+                                plotIndex={e.plotData.id}
+                                plotFileId={e.plotData.file.id}
+                                plots={plots}
+                                sharedWorkspace={this.props.sharedWorkspace}
+                                experimentId={this.props.experimentId}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    }
+                  </ResponsiveGridLayout>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       );
     } else {
       return (

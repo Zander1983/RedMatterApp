@@ -104,7 +104,9 @@ const AppHeader = (props: any) => {
               Start Analysing
             </NavLink>
           ) : null}
-
+          <NavLink className={classes.topBarLink} to="/plans">
+            Plans
+          </NavLink>
           {isLoggedIn ? (
             <>
               {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
@@ -112,6 +114,9 @@ const AppHeader = (props: any) => {
                   Experiments
                 </NavLink>
               )}
+              <NavLink className={classes.topBarLink} to="/user-profile">
+                My Profile
+              </NavLink>
               <a className={classes.topBarLink} onClick={onLogout} href="/">
                 Logout
               </a>

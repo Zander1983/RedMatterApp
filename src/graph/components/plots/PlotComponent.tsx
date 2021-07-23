@@ -9,7 +9,6 @@ import {
 import { snackbarService } from "uno-material-ui";
 import GateBar from "./plotui/gateBar";
 import MainBar from "./plotui/mainBar";
-import AxisBar from "./plotui/axisBar";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
@@ -44,20 +43,11 @@ const classes = {
   },
 };
 
-const nullOrUndefined = (obj: any) => {
-  return obj === null || obj === undefined;
-};
-
 function useForceUpdate() {
   const [value, setValue] = React.useState(0); // integer state
   return () => setValue((value) => value + 1); // update the state to force render
 }
 
-interface Dictionary {
-  [key: string]: string;
-}
-
-const minDrawInterval = 30;
 let interval: any = {};
 var plotDownloadingFiles: any[] = [];
 var filePlotIdDict: any = {};
@@ -545,6 +535,7 @@ function PlotComponent(props: {
 
   const setAxisRange = (min: number, max: number, axis: string) => {
     props.plot.plotData.ranges.set(axis, [min, max]);
+    props.plot.plotData.linearRanges.set(axis, [min, max]);
   };
 
   const [oldPos, setOldPos] = React.useState(69420);
