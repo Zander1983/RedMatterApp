@@ -490,13 +490,12 @@ class DataManager extends ObserversFunctionality {
     let response;
     try {
       this.downloadHappening = true;
-      let response = await FileService.downloadFileEvent(
+      response = await FileService.downloadFileEvent(
         this.workspaceIsShared,
         fileId,
         this.experimentId
       );
-      if(!this.ready())
-      {
+      if (!this.ready()) {
         this.createWorkspace();
       }
       let file = response[0];
@@ -507,12 +506,13 @@ class DataManager extends ObserversFunctionality {
         axes: file.channels.map((e: any) => e.value),
         data: file.events,
         plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file
+        remoteData: file,
       });
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);
     } catch (e) {
-      let file = this.files.find((x) => x.id == fileId);
+      if (e?.error) snackbarService.showSnackbar(e.error, "error");
+      let file = this.files.find((x) => x.id === fileId);
       snackbarService.showSnackbar(
         `Error download file ${file.label} please try again`,
         "error"

@@ -3,10 +3,6 @@ import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 
 export class FileService {
-  constructor() {
-    
-  }
-
   static async downloadFileMetadata(
     workspaceIsShared: boolean,
     experimentId: string
@@ -25,7 +21,8 @@ export class FileService {
         userManager.getToken()
       );
     }
-    return await axios.get(params.url, params.options);
+    const response = await axios.get(params.url, params.options);
+    return response;
   }
 
   static async downloadFileEvent(
@@ -55,7 +52,14 @@ export class FileService {
         }
       );
     }
-    return response.data;
+    const files = response.data;
+    for (const file of files) {
+      //@ts-ignore
+      if (file.events.length > 2000)
+        //@ts-ignore
+        file.events = file.events.slice(0, 2000);
+    }
+    return files;
   }
 }
 
