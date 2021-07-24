@@ -64,10 +64,8 @@ class DataManager extends ObserversFunctionality {
       this.plotRenderers === undefined ||
       this.plotRenderers === null
     ) {
-      // console.log("is not ready");
       return false;
     }
-    // console.log("is ready");
     return true;
   }
 

@@ -89,8 +89,8 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   public update() {
     super.update(true);
     const ranges = {
-      x: this.plotData.linearRanges.get(this.xAxisName),
-      y: this.plotData.linearRanges.get(this.xAxisName),
+      x: this.plotData.ranges.get(this.xAxisName),
+      y: this.plotData.ranges.get(this.xAxisName),
     };
     if (this.plotData.histogramAxis === "vertical") {
       const hbins = (this.width - rightPadding) / 50;

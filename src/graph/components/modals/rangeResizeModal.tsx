@@ -105,6 +105,21 @@ function RangeResizeModal(props: {
             >
               Cancel
             </Button>
+
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "#6666aa",
+                color: "white",
+                marginLeft: 20,
+              }}
+              onClick={() => {
+                props.callback(69, 420, props.inits.axis.split(" ")[0]);
+                props.closeCall.f(props.closeCall.ref);
+              }}
+            >
+              Set Default
+            </Button>
           </Grid>
         </Grid>
       </div>

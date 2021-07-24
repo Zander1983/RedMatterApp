@@ -128,15 +128,10 @@ export default class GraphDrawer extends Drawer {
     let counter = bins;
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
 
-    if (params.labels !== undefined) {
-      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o), {
-        pos: 0,
-        name: "0",
-      }).pos;
-      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o), {
-        pos: 0,
-        name: "0",
-      }).pos;
+    if (params.labels !== undefined && params.labels.length >= 2) {
+      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
+      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
+
       if (orientation === "v") {
         for (const label of params.labels) {
           let pos = (label.pos - min) / (max - min);
@@ -264,7 +259,6 @@ export default class GraphDrawer extends Drawer {
     const oend = orientation == "h" ? this.x2 : this.y2;
 
     if (labels !== undefined && labels.length >= 3) {
-      // console.log(labels);
       let min = labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
       let max = labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
 
