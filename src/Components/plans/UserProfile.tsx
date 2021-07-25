@@ -248,7 +248,7 @@ export default function Plans(props: any) {
           md={10}
           sm={12}
           justify="flex-start"
-          direction="column"
+          direction="row"
           style={{
             backgroundColor: "#fafafa",
             padding: "3em 5em",

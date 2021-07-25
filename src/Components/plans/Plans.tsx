@@ -139,7 +139,7 @@ export default function Plans(props: any) {
         md={10}
         sm={12}
         justify="center"
-        direction="column"
+        direction="row"
         style={{
           backgroundColor: "#fafafa",
           padding: 20,
