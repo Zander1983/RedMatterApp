@@ -257,8 +257,6 @@ export default class PlotData extends ObserversFunctionality {
       histogramAxis: this.histogramAxis,
       dimensions: this.dimensions,
       positions: this.positions,
-      linRanges: this.linearRanges,
-      rangePlotType: this.rangePlotType,
     };
   }
 
@@ -281,7 +279,6 @@ export default class PlotData extends ObserversFunctionality {
       this.histogramAxis = state.histogramAxis;
     if (state.dimensions !== undefined) this.dimensions = state.dimensions;
     if (state.positions !== undefined) this.positions = state.positions;
-    if (state.linRanges) this.linearRanges = state.linRanges;
     if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
     if (state.rangePlotType !== undefined)
       this.rangePlotType = state.rangePlotType;
