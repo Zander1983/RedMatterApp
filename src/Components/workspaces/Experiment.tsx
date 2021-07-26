@@ -37,6 +37,8 @@ const styles = {
   },
 };
 
+const fileTempIdMap: any = {};
+
 const Experiment = (props: any) => {
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
@@ -72,7 +74,30 @@ const Experiment = (props: any) => {
     history.replace("/experiments");
   }
 
-  const fetchExperimentData = (snack = true, callback?: Function) => {
+  useEffect(() => {
+    if (
+      fileTempIdMap &&
+      Object.keys(fileTempIdMap).length > 0 &&
+      uploadingFiles.length > 0
+    ) {
+      let keys = Object.keys(fileTempIdMap)
+        .map((x) => {
+          if (fileTempIdMap[x]) {
+            delete fileTempIdMap[x];
+            return x;
+          }
+        })
+        .filter((x) => x);
+      let files = uploadingFiles.filter((x) => !keys.includes(x.id));
+      setUploadingFiles(files);
+    }
+  }, [experimentData]);
+
+  const fetchExperimentData = (
+    snack = true,
+    key: string = "",
+    callback?: Function
+  ) => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -84,6 +109,8 @@ const Experiment = (props: any) => {
     axios
       .get(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
+        if (fileTempIdMap && Object.keys(fileTempIdMap).length > 0)
+          fileTempIdMap[key] = e.data.files[0].id;
         setExperimentData(e.data);
         let sizeSum = 0;
         for (const file of e.data.files) {
@@ -100,7 +127,7 @@ const Experiment = (props: any) => {
         userManager.logout();
       })
       .finally(() => {
-        if (callback !== undefined) callback();
+        //if (callback !== undefined) callback();
       });
   };
 
@@ -185,15 +212,17 @@ const Experiment = (props: any) => {
       );
       return;
     }
-    setUploadingFiles([
-      ...uploadingFiles,
-      ...fileList.map((e) => {
+
+    let filesUpload = uploadingFiles.concat(
+      fileList.map((e) => {
         return { name: e.file.name, id: e.tempId };
-      }),
-    ]);
+      })
+    );
+    setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
     for (const file of fileList) {
+      fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
         const buf = Buffer.from(e);
         return await fcsservice.loadFileMetadata(buf).then((e) => {
@@ -216,7 +245,7 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, () => {
+        fetchExperimentData(false, file.tempId, () => {
           setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
         });
         setFileUploadInputValue("");
@@ -241,7 +270,7 @@ const Experiment = (props: any) => {
           );
         })
         .finally(() => {
-          fetchExperimentData(false, () => {
+          fetchExperimentData(false, file.tempId, () => {
             setUploadingFiles(
               uploadingFiles.filter((e) => e.id !== file.tempId)
             );

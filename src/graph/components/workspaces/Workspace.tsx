@@ -29,7 +29,7 @@ const classes = {
 };
 
 const MINW = 10;
-const MINH = 14;
+const MINH = 12;
 const STDW = 10;
 
 const standardGridPlotItem = (index: number, plotData: any) => {
