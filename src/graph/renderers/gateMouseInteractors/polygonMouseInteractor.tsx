@@ -46,7 +46,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.plotter.gates.length > 0 &&
       !this.isDraggingVertex
     ) {
-      // console.log("calling detect gates clicked");
       this.detectGatesClicked(mouse);
     }
 
@@ -56,11 +55,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.started &&
       !this.isDraggingGate
     ) {
-      // console.log("calling detect points clicked");
       this.detectPointsClicked(mouse);
     } else if (this.targetEditGate !== null && type === "mouseup") {
       // Reset gates and points on mouseup
-      // console.log("Reset gates and points on mouseup");
       this.reset();
     } else if (
       this.targetEditGate !== null &&
@@ -69,7 +66,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.isDraggingGate
     ) {
       // Detect point selected and moved
-      // console.log("Detect point selected and moved");
       this.pointMoveToMousePosition(mouse);
     } else if (
       this.targetEditGate !== null &&
@@ -78,7 +74,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       !this.isDraggingVertex
     ) {
       // Detect gate selected and moved
-      // console.log("Detect gate selected and moved");
       this.gateMoveToMousePosition(mouse);
     }
 
@@ -92,7 +87,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plotter.gates.forEach((gate) => {
       if (
         gate.isPointInside(
-          this.plotter.transformer.toAbstractPoint(mouse, true)
+          this.plotter.transformer.toAbstractPoint(mouse, true),
+          "yes"
         )
       ) {
         this.isDraggingGate = true;
@@ -195,6 +191,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(xAxis);
     checkNotNullOrUndefined(yAxis);
 
+    let originalRanges = [
+      this.plotter.plotData.ranges.get(this.plotter.plotData.xAxis),
+      this.plotter.plotData.ranges.get(this.plotter.plotData.yAxis),
+    ];
+
     const newGate = new PolygonGate({
       points: [...points].map((e) => {
         e = this.plotter.transformer.toAbstractPoint(e);
@@ -202,8 +203,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       }),
       xAxis: xAxis,
       xAxisType: this.plotter.plotData.xPlotType,
+      xAxisOriginalRanges: originalRanges[0],
       yAxis: yAxis,
       yAxisType: this.plotter.plotData.yPlotType,
+      yAxisOriginalRanges: originalRanges[1],
       parents: this.plotter.plotData.population.map((e) => e.gate),
     });
 

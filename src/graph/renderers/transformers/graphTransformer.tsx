@@ -200,8 +200,8 @@ export default class GraphTransformer extends Transformer {
     const yBi = this.plotData.yPlotType === "bi";
     if (!xBi && !yBi) return p;
     let ranges = [
-      this.plotData.linearRanges.get(this.plotData.xAxis),
-      this.plotData.linearRanges.get(this.plotData.yAxis),
+      this.plotData.ranges.get(this.plotData.xAxis),
+      this.plotData.ranges.get(this.plotData.yAxis),
     ];
     const fcsService = new FCSServices();
     if (xBi) {
@@ -229,8 +229,8 @@ export default class GraphTransformer extends Transformer {
     const yBi = this.plotData.yPlotType === "bi";
     if (!xBi && !yBi) return p;
     let ranges = [
-      this.plotData.linearRanges.get(this.plotData.xAxis),
-      this.plotData.linearRanges.get(this.plotData.yAxis),
+      this.plotData.ranges.get(this.plotData.xAxis),
+      this.plotData.ranges.get(this.plotData.yAxis),
     ];
     const fcsService = new FCSServices();
     let ret = { x: 0, y: 0 };
@@ -255,8 +255,8 @@ export default class GraphTransformer extends Transformer {
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
     let ranges = [
-      this.plotData.linearRanges.get(this.plotData.xAxis),
-      this.plotData.linearRanges.get(this.plotData.yAxis),
+      this.plotData.ranges.get(this.plotData.xAxis),
+      this.plotData.ranges.get(this.plotData.yAxis),
     ];
     if (xBi) {
       p.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.x;
@@ -271,8 +271,8 @@ export default class GraphTransformer extends Transformer {
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
     let ranges = [
-      this.plotData.linearRanges.get(this.plotData.xAxis),
-      this.plotData.linearRanges.get(this.plotData.yAxis),
+      this.plotData.ranges.get(this.plotData.xAxis),
+      this.plotData.ranges.get(this.plotData.yAxis),
     ];
     if (xBi) {
       p.x = (p.x - ranges[0][0]) / (ranges[0][1] - ranges[0][0]);

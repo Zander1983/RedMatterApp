@@ -64,10 +64,8 @@ class DataManager extends ObserversFunctionality {
       this.plotRenderers === undefined ||
       this.plotRenderers === null
     ) {
-      // console.log("is not ready");
       return false;
     }
-    // console.log("is ready");
     return true;
   }
 
@@ -500,7 +498,7 @@ class DataManager extends ObserversFunctionality {
     let response;
     try {
       this.downloadHappening = true;
-      let response = await FileService.downloadFileEvent(
+      response = await FileService.downloadFileEvent(
         this.workspaceIsShared,
         fileId,
         this.experimentId
@@ -521,7 +519,8 @@ class DataManager extends ObserversFunctionality {
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);
     } catch (e) {
-      let file = this.files.find((x) => x.id == fileId);
+      if (e?.error) snackbarService.showSnackbar(e.error, "error");
+      let file = this.files.find((x) => x.id === fileId);
       snackbarService.showSnackbar(
         `Error download file ${file.label} please try again`,
         "error"

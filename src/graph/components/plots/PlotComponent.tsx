@@ -13,7 +13,6 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
-import FCSFile from "graph/dataManagement/fcsFile";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
@@ -535,8 +534,8 @@ function PlotComponent(props: {
   };
 
   const setAxisRange = (min: number, max: number, axis: string) => {
-    props.plot.plotData.ranges.set(axis, [min, max]);
-    props.plot.plotData.linearRanges.set(axis, [min, max]);
+    if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
+    else props.plot.plotData.ranges.set(axis, [min, max]);
   };
 
   const [oldPos, setOldPos] = React.useState(69420);
@@ -659,6 +658,7 @@ function PlotComponent(props: {
           ></RangeResizeModal>
           <div
             draggable="true"
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: isPlotHistogram()
@@ -701,6 +701,7 @@ function PlotComponent(props: {
           ></div>
           <div
             draggable="true"
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
