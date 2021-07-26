@@ -220,6 +220,8 @@ function FormCellType() {
           options={[
             { id: 1, key: 1, value: "Single cells" },
             { id: 2, key: 2, value: "Heterogenous population" },
+            { id: 3, key: 3, value: "Lymphocytes" },
+            { id: 4, key: 4, value: "Other" },
           ]}
           getOptionLabel={(option) => option.value}
           style={{ width: 400 }}
@@ -391,7 +393,7 @@ function FormFluorophores() {
             {...params}
             error={fluorosphoresCategoryError}
             size="small"
-            label="Fluorosphores"
+            label="Fluorophores"
             placeholder="Placeholder"
             helperText="This Field is Required"
             variant="outlined"
