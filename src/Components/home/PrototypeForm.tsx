@@ -77,9 +77,6 @@ export default function PrototypeForm2(props: {
   workspaceID?: string;
   onSend?: Function;
 }) {
-  const history = useHistory();
-  const store = useStore();
-  const dispatch = useDispatch();
   const classes = useStyles();
 
   return (

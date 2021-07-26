@@ -62,7 +62,9 @@ function CreateExperimentModal(props: {
     React.useState(false);
 
   useEffect(() => {
-    //props.redirectIfTokenExpired(organizationId);
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
     for (const item of [
       "device",
       "cellType",
@@ -355,6 +357,7 @@ function CreateExperimentModal(props: {
           <PrototypeForm
             //@ts-ignore
             onSend={(e) => {
+              console.log("set form data", e);
               setFormData(e);
             }}
           ></PrototypeForm>
