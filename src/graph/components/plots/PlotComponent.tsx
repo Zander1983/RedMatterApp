@@ -16,6 +16,9 @@ import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { keys } from "lodash";
+import { generateColor } from "graph/utils/color";
+import { any } from "@amcharts/amcharts4/.internal/core/utils/Array";
 
 interface overlayHistogram {
   color: string;
@@ -163,8 +166,15 @@ function PlotComponent(props: {
 
   var files = dataManager.files.filter((x) => x.id != props.plotFileId);
 
-  const addFile = (fileId: string, type: string) => {
-    addHistogrmOverlay(fileId, dataManager.getFile(fileId), true, {}, type);
+  const addFile = (fileId: string, type: string, plotSource: string) => {
+    addHistogrmOverlay(
+      fileId,
+      dataManager.getFile(fileId),
+      true,
+      {},
+      type,
+      plotSource
+    );
   };
 
   const downloadFile = (fileId: string) => {
@@ -197,19 +207,32 @@ function PlotComponent(props: {
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
-        let filePlotDataIds: any[] = filePlotIdDict
-          ? Object.values(filePlotIdDict)
-            ? Object.values(filePlotIdDict).map((x: any) => x.id)
-            : []
-          : [];
-        let existingPlotDataIds = props.plots.map((x: any) => x.plotData.id);
-        let plotData = props.plot.plotData.histogramBarOverlays.filter(
-          (x: any) =>
-            !existingPlotDataIds.includes(x.plot.id) &&
-            !filePlotDataIds.includes(x.plot.id)
-        );
-        if (plotData && plotData.length > 0)
-          props.plot.plotData.removeAnyOverlay(plotData[0].plot.id);
+        if (props.plot && props.plot.plotData) {
+          let filePlotDataIds: any[] = filePlotIdDict
+            ? Object.values(filePlotIdDict)
+              ? Object.values(filePlotIdDict).map((x: any) => x.id)
+              : []
+            : [];
+          let plots = dataManager.getAllPlots();
+          let existingPlotDataIds = plots.map((x: any) => x.plotID);
+          let plotData: any = [];
+          plotData = plotData.concat(
+            props.plot.plotData.histogramBarOverlays.filter(
+              (x: any) =>
+                !existingPlotDataIds.includes(x.plotId) &&
+                !filePlotDataIds.includes(x.plotId)
+            )
+          );
+          plotData = plotData.concat(
+            props.plot.plotData.histogramOverlays.filter(
+              (x: any) =>
+                !existingPlotDataIds.includes(x.plotId) &&
+                !filePlotDataIds.includes(x.plotId)
+            )
+          );
+          if (plotData && plotData.length > 0)
+            props.plot.plotData.removeAnyOverlay(plotData[0].plotId);
+        }
 
         tryKillComponent();
       });
@@ -229,7 +252,11 @@ function PlotComponent(props: {
         if (files && files.length > 0) {
           snackbarService.showSnackbar("Overlay added", "success");
           setTimeout(() => {
-            addFile(files[0].id, filePlotIdDict[files[0].id].type);
+            addFile(
+              files[0].id,
+              filePlotIdDict[files[0].id].type,
+              COMMON_CONSTANTS.FILE
+            );
           }, 0);
           plotDownloadingFiles = plotDownloadingFiles.filter(
             (x) => x != files[0].id
@@ -252,7 +279,28 @@ function PlotComponent(props: {
         setHistogramOverlayOpen(false);
       }
     });
-
+    let fileHistOverlay: any = [];
+    fileHistOverlay = fileHistOverlay.concat(
+      props.plot.plotData.histogramBarOverlays
+        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .map((y) => {
+          return { histObj: y, type: COMMON_CONSTANTS.Bar };
+        })
+    );
+    fileHistOverlay = fileHistOverlay.concat(
+      props.plot.plotData.histogramOverlays
+        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .map((y) => {
+          return { histObj: y, type: COMMON_CONSTANTS.Line };
+        })
+    );
+    for (let i = 0; i < fileHistOverlay.length; i++) {
+      let obj = fileHistOverlay[i];
+      filePlotIdDict[obj.histObj.plot.file.id] = {
+        id: obj.histObj.plotId,
+        type: obj.type,
+      };
+    }
     return () => {
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
@@ -280,14 +328,19 @@ function PlotComponent(props: {
           let plotObj = isHistogramSelected(filePlotIdDict[pltFlObj.id].id);
           let plotData = plotObj.plot.plot;
           if (plotObj.type == plotType) {
-            removeOverlayAsPerType(plotType, plotData);
+            removeOverlayAsPerType(plotType, plotData.id);
             filePlotIdDict[pltFlObj.id] = null;
           } else {
-            addOverlayAsPerType(plotType, plotData, plotObj.plot.color);
+            addOverlayAsPerType(
+              plotType,
+              plotData,
+              plotObj.plot.color,
+              COMMON_CONSTANTS.FILE
+            );
           }
         } else {
           if (isDownloaded(pltFlObj.id)) {
-            addFile(pltFlObj.id, plotType);
+            addFile(pltFlObj.id, plotType, COMMON_CONSTANTS.FILE);
           } else {
             if (!filePlotIdDict[pltFlObj.id])
               filePlotIdDict[pltFlObj.id] = { id: "", type: plotType };
@@ -301,12 +354,13 @@ function PlotComponent(props: {
         let plotObj = isHistogramSelected(plotData.id);
         if (plotObj) {
           if (plotObj.type == plotType) {
-            removeOverlayAsPerType(plotType, plotData);
+            removeOverlayAsPerType(plotType, plotData.id);
           } else {
             addOverlayAsPerType(
               plotType,
               pltFlObj.plotData,
-              plotObj.plot.color
+              plotObj.plot.color,
+              COMMON_CONSTANTS.PLOT
             );
           }
         } else {
@@ -315,7 +369,8 @@ function PlotComponent(props: {
             plotData.file,
             false,
             pltFlObj.plotData,
-            plotType
+            plotType,
+            COMMON_CONSTANTS.PLOT
           );
         }
         break;
@@ -327,9 +382,10 @@ function PlotComponent(props: {
     file: any,
     addNewPlot: boolean,
     plotData: any = {},
-    plotType: string
+    plotType: string,
+    plotSource: string
   ) => {
-    let newPlotData;
+    let newPlotData: any = {};
     if (addNewPlot) {
       newPlotData = new PlotData();
       newPlotData.file = file;
@@ -345,7 +401,7 @@ function PlotComponent(props: {
     let obj = getMinMax(plotRanges, newPlotRanges);
     setAxisRange(obj.min, obj.max, props.plot.plotData.xAxis);
 
-    addOverlayAsPerType(plotType, newPlotData);
+    addOverlayAsPerType(plotType, newPlotData, "", plotSource);
 
     if (addNewPlot) {
       if (!filePlotIdDict[id]) filePlotIdDict[id] = {};
@@ -355,10 +411,10 @@ function PlotComponent(props: {
 
   const isHistogramSelected = (plotId: string) => {
     let plot1 = props.plot.plotData.histogramBarOverlays.find(
-      (x) => x.plot.id == plotId
+      (x) => x.plotId == plotId
     );
     let plot2 = props.plot.plotData.histogramOverlays.find(
-      (x) => x.plot.id == plotId
+      (x) => x.plotId == plotId
     );
 
     if (plot1) {
@@ -416,6 +472,7 @@ function PlotComponent(props: {
     } else {
       filePlotIdDict = {};
       props.plot.plotData.histogramBarOverlays = [];
+      props.plot.plotData.histogramOverlays = [];
       if (targetAxis === "x") {
         oldYAxisValue = yAxis;
         setAxis("y", xAxis);
@@ -440,27 +497,38 @@ function PlotComponent(props: {
   const addOverlayAsPerType = (
     type: string,
     plotData: PlotData,
-    color: string = ""
+    color: string = "",
+    plotSource: string = ""
   ) => {
     switch (type) {
       case COMMON_CONSTANTS.Bar:
+        props.plot.plotData.addBarOverlay(
+          plotData,
+          color,
+          plotData.id,
+          plotSource
+        );
         props.plot.plotData.removeOverlay(plotData.id);
-        props.plot.plotData.addBarOverlay(plotData, color);
         break;
       case COMMON_CONSTANTS.Line:
+        props.plot.plotData.addOverlay(
+          plotData,
+          color,
+          plotData.id,
+          plotSource
+        );
         props.plot.plotData.removeBarOverlay(plotData.id);
-        props.plot.plotData.addOverlay(plotData, color);
         break;
     }
   };
 
-  const removeOverlayAsPerType = (type: string, plotData: PlotData) => {
+  const removeOverlayAsPerType = (type: string, plotDataId: string) => {
     switch (type) {
       case COMMON_CONSTANTS.Bar:
-        props.plot.plotData.removeBarOverlay(plotData.id);
+        props.plot.plotData.removeBarOverlay(plotDataId);
         break;
       case COMMON_CONSTANTS.Line:
-        props.plot.plotData.removeOverlay(plotData.id);
+        props.plot.plotData.removeOverlay(plotDataId);
         break;
     }
   };
@@ -777,7 +845,7 @@ function PlotComponent(props: {
                               if (plotObj && Object.keys(plotObj).length > 0) {
                                 removeOverlayAsPerType(
                                   plotObj.type,
-                                  plotObj.plot.plot
+                                  plotObj.plot.plotId
                                 );
                                 setHistogramOverlayOpen(false);
                               }
@@ -869,7 +937,7 @@ function PlotComponent(props: {
                                 if (plotObj) {
                                   removeOverlayAsPerType(
                                     plotObj.type,
-                                    plotObj.plot.plot
+                                    plotObj.plot.plotId
                                   );
                                   setHistogramOverlayOpen(false);
                                 }

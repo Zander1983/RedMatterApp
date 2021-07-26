@@ -4,6 +4,8 @@ import GraphPlotter, {
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import PlotData from "graph/dataManagement/plotData";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import dataManager from "graph/dataManagement/dataManager";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -151,6 +153,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     let mainHist = this.plotData.getBins(this.bins, axis);
 
     let globlMax = mainHist.max;
+
     let range = this.plotData.ranges.get(axis);
 
     const overlaysObj = this.plotData.histogramOverlays;
@@ -160,12 +163,22 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.rangeMax = range[1];
 
     for (const overlay of overlaysObj) {
-      if (overlay.plot === undefined || overlay.plot === null) continue;
-      let newPlotData = new PlotData();
-      newPlotData.file = overlay.plot.file;
-      newPlotData.population = overlay.plot.population;
-      newPlotData.setupPlot();
-      newPlotData.getXandYRanges();
+      console.log(overlay);
+      if (!overlay) continue;
+      let newPlotData;
+
+      switch (overlay.plotSource) {
+        case COMMON_CONSTANTS.PLOT:
+          newPlotData = dataManager.getPlot(overlay.plotId);
+          break;
+        case COMMON_CONSTANTS.FILE:
+          newPlotData = new PlotData();
+          newPlotData.file = overlay.plot.file;
+          newPlotData.population = overlay.plot.population;
+          newPlotData.setupPlot();
+          newPlotData.getXandYRanges();
+          break;
+      }
       newPlotData.ranges.set(axis, [range[0], range[1]]);
       const overlayRes = newPlotData.getBins(
         Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
@@ -178,7 +191,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         ...overlayRes,
         color: overlay.color,
       });
-      const lastMax = overlay.plot.getBins(Math.round(this.bins) - 1, axis).max;
+      const lastMax = newPlotData.getBins(Math.round(this.bins) - 1, axis).max;
       if (lastMax > globlMax) globlMax = lastMax;
     }
     this.globalMax = globlMax;
@@ -198,7 +211,17 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     if (barOverlays) {
       for (let i = 0; i < barOverlays.length; i++) {
-        const lastMax = barOverlays[i].plot.getBins(
+        if (!barOverlays[i]) continue;
+        let newPlotData;
+        switch (barOverlays[i].plotSource) {
+          case COMMON_CONSTANTS.PLOT:
+            newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+            break;
+          case COMMON_CONSTANTS.FILE:
+            newPlotData = barOverlays[i].plot;
+            break;
+        }
+        const lastMax = newPlotData.getBins(
           Math.round(this.bins) - 1,
           axis
         ).max;
@@ -206,11 +229,19 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       }
       this.globalMax = globlMax;
       for (let i = 0; i < barOverlays.length; i++) {
-        let newPlotData = new PlotData();
-        newPlotData.file = barOverlays[i].plot.file;
-        newPlotData.population = barOverlays[i].plot.population;
-        newPlotData.setupPlot();
-        newPlotData.getXandYRanges();
+        let newPlotData;
+        switch (barOverlays[i].plotSource) {
+          case COMMON_CONSTANTS.PLOT:
+            newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+            break;
+          case COMMON_CONSTANTS.FILE:
+            newPlotData = new PlotData();
+            newPlotData.file = barOverlays[i].plot.file;
+            newPlotData.population = barOverlays[i].plot.population;
+            newPlotData.getXandYRanges();
+            newPlotData.setupPlot();
+            break;
+        }
         newPlotData.ranges.set(axis, [range[0], range[1]]);
         let overlayMainHist = newPlotData.getBins(this.bins, axis);
         let binsArray = [];
@@ -239,10 +270,13 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       binsAscArray.sort((a, b) => {
         return b.value - a.value;
       });
+
       for (let j = 0; j < binsAscArray.length; j++) {
-        if (binsAscArray[j].color)
-          this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
-        else this.drawer.addBin(i, binsAscArray[j].value);
+        if (binsAscArray[j]) {
+          if (binsAscArray[j].color)
+            this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
+          else this.drawer.addBin(i, binsAscArray[j].value);
+        }
       }
     }
 

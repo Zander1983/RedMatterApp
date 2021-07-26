@@ -31,6 +31,11 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import Gate from "graph/dataManagement/gate/gate";
 import { useLocation } from "react-router-dom";
 import PlotData from "graph/dataManagement/plotData";
+import { API_CALLS } from "assets/constants/apiCalls";
+import { Dbouncer } from "services/Dbouncer";
+import { green } from "@material-ui/core/colors";
+import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
+import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -62,11 +67,24 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 20,
     height: 35,
   },
+  savingProgress: {
+    marginLeft: "-10px",
+    display: "flex",
+    marginRight: "10px",
+    animation: "App-logo-spin 1.4s linear infinite",
+  },
+  saved: {
+    marginLeft: "-10px",
+    display: "flex",
+    marginRight: "10px",
+    color: green[500],
+  },
 }));
 
 // ==== Avoid multiple listeners for screen resize ====
 let eventListenerSet = false;
 let setWorkspaceAlready = false;
+let workspaceSharedLocal = false;
 const staticFiles = [
   "transduction_1",
   "transduction_2",
@@ -93,9 +111,10 @@ function Plots(props: { experimentId: string }) {
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
-
+  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -116,41 +135,103 @@ function Plots(props: { experimentId: string }) {
         "error"
       );
     }
-
+    workspaceSharedLocal = workspaceData.data["isShared"];
     initPlots(workspaceData.data["isShared"]);
-    if (workspaceData)
+    if (workspaceData && workspaceData.data["isShared"])
       loadWorkspaceStatsToDM(
         workspaceData.data["isShared"],
         JSON.parse(workspaceData.data["state"])
       );
   };
 
-  useEffect(() => {
+  const getWorkspace = async () => {
+    let workspaceData;
 
+    try {
+      workspaceData = await axios.post(
+        "/api/getWorkspace",
+        {
+          experimentId: props.experimentId,
+        },
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+      if (workspaceData.data["state"])
+        await loadWorkspaceStatsToDM(
+          false,
+          JSON.parse(workspaceData.data["state"])
+        );
+    } catch (e) {
+      snackbarService.showSnackbar(
+        "Could not verify the workspace, reload the page and try again!",
+        "error"
+      );
+    }
+    initPlots();
+  };
+
+  useEffect(() => {
     dataManager.setExperimentId(props.experimentId);
 
     let workspaceId = new URLSearchParams(location.search).get("id");
     if (workspaceId) {
       verifyWorkspace(workspaceId);
     } else {
-      initPlots();
+      getWorkspace();
     }
 
     var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       setDownloadedFiles(dataManager.downloaded);
     });
 
-    var downloadingListner = dataManager.addObserver("updateDownloadingFiles", () => {
-      setDownloadingFiles(dataManager.downloadingFiles);
-    });
+    let addPlotListner = dataManager.addObserver(
+      "addNewPlotToWorkspace",
+      () => {
+        autoSaveWorkspace();
+      }
+    );
 
+    let removePlotListner = dataManager.addObserver(
+      "removePlotFromWorkspace",
+      () => {
+        autoSaveWorkspace();
+      }
+    );
+
+    let updateWorkspaceListner = dataManager.addObserver(
+      "workspaceUpdated",
+      () => {
+        autoSaveWorkspace();
+      }
+    );
+
+    var downloadingListner = dataManager.addObserver(
+      "updateDownloadingFiles",
+      () => {
+        setDownloadingFiles(dataManager.downloadingFiles);
+      }
+    );
+    dataManager.letUpdateBeCalledForAutoSave = true;
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
+      dataManager.removeObserver("workspaceUpdated", updateWorkspaceListner);
+      dataManager.removeObserver("removePlotFromWorkspace", removePlotListner);
+      dataManager.removeObserver("addNewPlotToWorkspace", addPlotListner);
     };
   }, []);
+
+  const autoSaveWorkspace = () => {
+    if (!workspaceSharedLocal) {
+      setSavingWorkspace(true);
+      saveWorkspace();
+    }
+  };
 
   const initPlots = async (workSpaceShared: boolean = false) => {
     if (observerAdded === false) {
@@ -202,6 +283,7 @@ function Plots(props: { experimentId: string }) {
   }
 
   const upsertWorkSpace = (isShared: boolean = false) => {
+    setSavingWorkspace(true);
     let stateJson = dataManager.getWorkspaceJSON();
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -218,12 +300,10 @@ function Plots(props: { experimentId: string }) {
       )
       .then((e) => {
         setNewWorkspaceId(e.data.workspaceId);
-        snackbarService.showSnackbar(
-          "Workspace saved successfully.",
-          "success"
-        );
+        setSavingWorkspace(false);
       })
       .catch((e) => {
+        setSavingWorkspace(false);
         snackbarService.showSnackbar(
           "Could not save the workspace, reload the page and try again!",
           "error"
@@ -275,48 +355,54 @@ function Plots(props: { experimentId: string }) {
     setNamePromptOpen(false);
   };
 
-  var getSharedRemoteFiles = async (fileIds: Array<string>) => {
+  var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
+    let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
+    let headers = isShared
+      ? {}
+      : {
+          token: userManager.getToken(),
+        };
+
     let datas = await axios.post(
-      "/api/sharedEvents",
+      url,
       {
         experimentId: props.experimentId,
         fileIds: fileIds,
       },
-      {}
+      {
+        headers: headers,
+      }
     );
 
     return datas.data;
   };
 
   var loadWorkspaceStatsToDM = async (
-    sharedWorkspacearg: boolean,
+    workspaceShared: boolean,
     workspaceStatearg: any
   ) => {
-    if (sharedWorkspacearg && workspaceStatearg) {
+    if (workspaceStatearg) {
       setLoading(true);
       let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
       let stateFileIds = workspaceStateReload.getFileIds();
-
-      setDownloadingFiles(stateFileIds);
-      let eventFiles = await getSharedRemoteFiles(stateFileIds);
-      dataManager.updateDownloaded(eventFiles);
-      if(!dataManager.ready())
-      {
-        dataManager.createWorkspace();
+      if (stateFileIds && stateFileIds.length) {
+        setDownloadingFiles(stateFileIds);
+        let eventFiles = await getFiles(workspaceShared, stateFileIds);
+        dataManager.updateDownloaded(eventFiles);
+        if (!dataManager.ready()) {
+          dataManager.createWorkspace();
+        }
+        for (let i = 0; i < eventFiles.length; i++) {
+          workspaceStateReload.addFile(eventFiles[i]);
+        }
+        dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
       }
-      for (let i = 0; i < eventFiles.length; i++) {
-        workspaceStateReload.addFile(eventFiles[i]);
-      }
-
-      dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
     }
     setLoading(false);
   };
 
   const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    dataManager.downloadFileEvents(
-      fileIds
-    );
+    dataManager.downloadFileEvents(fileIds);
   };
 
   const addFile = (index: number) => {
@@ -679,6 +765,7 @@ function Plots(props: { experimentId: string }) {
                       className={classes.topButton}
                       startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                       onClick={() => {
+                        dataManager.letUpdateBeCalledForAutoSave = false;
                         history.goBack();
                       }}
                     >
@@ -732,6 +819,15 @@ function Plots(props: { experimentId: string }) {
                         backgroundColor: "#fafafa",
                       }}
                     >
+                      {savingWorkspace ? (
+                        <div className={classes.savingProgress}>
+                          <AutorenewRoundedIcon />
+                        </div>
+                      ) : (
+                        <div className={classes.saved}>
+                          <CheckCircleRoundedIcon />
+                        </div>
+                      )}
                       Save Workspace
                     </Button>
                   )}

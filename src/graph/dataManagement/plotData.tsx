@@ -12,6 +12,7 @@ import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
 import { generateColor } from "graph/utils/color";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import FCSServices from "services/FCSServices/FCSServices";
 
 /* TypeScript does not deal well with decorators. Your linter might
@@ -58,6 +59,14 @@ export interface PlotDataState {
   yPlotType: string;
   histogramAxis: "horizontal" | "vertical";
   label: string;
+  dimensions: {
+    w: number;
+    h: number;
+  };
+  positions: {
+    x: number;
+    y: number;
+  };
 }
 
 export default class PlotData extends ObserversFunctionality {
@@ -91,11 +100,29 @@ export default class PlotData extends ObserversFunctionality {
   histogramOverlays: {
     color: string;
     plot: any;
+    plotId: string;
+    plotSource: string;
   }[] = [];
   histogramBarOverlays: {
     color: string;
     plot: any;
+    plotId: string;
+    plotSource: string;
   }[] = [];
+  dimensions: {
+    w: number;
+    h: number;
+  } = {
+    w: 15,
+    h: 18,
+  };
+  positions: {
+    x: number;
+    y: number;
+  } = {
+    x: -1,
+    y: -1,
+  };
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -228,6 +255,10 @@ export default class PlotData extends ObserversFunctionality {
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
+      dimensions: this.dimensions,
+      positions: this.positions,
+      linRanges: this.linearRanges,
+      rangePlotType: this.rangePlotType,
     };
   }
 
@@ -248,6 +279,10 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+    if (state.dimensions !== undefined) this.dimensions = state.dimensions;
+    if (state.positions !== undefined) this.positions = state.positions;
+    if (state.linRanges) this.linearRanges = state.linRanges;
+    if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
     if (state.rangePlotType !== undefined)
       this.rangePlotType = state.rangePlotType;
   }
@@ -259,46 +294,70 @@ export default class PlotData extends ObserversFunctionality {
 
   /* MULTI PLOT INTERACTION */
 
-  addOverlay(plotData: PlotData, color?: string) {
+  addOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
     if (!color) color = generateColor();
     this.histogramOverlays.push({
-      plot: plotData,
+      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
       color: color,
+      plotId: plotId,
+      plotSource: plotSource,
     });
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
-  addBarOverlay(plotData: PlotData, color?: string) {
+  initiateAutoSave() {
+    if (dataManager.letUpdateBeCalledForAutoSave)
+      dataManager.workspaceUpdated();
+  }
+
+  addBarOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
     if (!color) color = generateColor();
     this.histogramBarOverlays.push({
-      plot: plotData,
+      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
       color: color,
+      plotId: plotId,
+      plotSource: plotSource,
     });
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeBarOverlay(ploDataID: string) {
     this.histogramBarOverlays = this.histogramBarOverlays.filter(
-      (x) => x.plot.id != ploDataID
+      (x) => x.plotId != ploDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeAnyOverlay(ploDataID: string) {
     this.histogramBarOverlays = this.histogramBarOverlays.filter(
-      (x) => x.plot.id != ploDataID
+      (x) => x.plotId != ploDataID
     );
     this.histogramOverlays = this.histogramOverlays.filter(
-      (x) => x.plot.id != ploDataID
+      (x) => x.plotId != ploDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeOverlay(plotDataID: string) {
     this.histogramOverlays = this.histogramOverlays.filter(
-      (e) => e.plot.id != plotDataID
+      (e) => e.plotId != plotDataID
     );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   createSubpop(inverse: boolean = false) {
@@ -702,6 +761,10 @@ export default class PlotData extends ObserversFunctionality {
           this.file.remoteData.channels[i].display !== "bi"
             ? "linear"
             : "biexponential";
+
+        if (this.rangePlotType && Object.keys(this.rangePlotType).length == 0)
+          this.rangePlotType = new Map();
+
         this.rangePlotType.set(
           //@ts-ignore
           axis.paramName,

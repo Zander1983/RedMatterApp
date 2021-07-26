@@ -9,6 +9,7 @@ import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";
+import { Dbouncer } from "services/Dbouncer";
 import { Divider } from "@material-ui/core";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -31,12 +32,16 @@ const MINW = 10;
 const MINH = 14;
 const STDW = 10;
 
-const standardGridPlotItem = (x: number, y: number) => {
+const standardGridPlotItem = (index: number, plotData: any) => {
+  let x = plotData.positions.x;
+  let y = plotData.positions.y;
+  let w = plotData.dimensions.w;
+  let h = plotData.dimensions.h;
   return {
-    x: x,
-    y: y,
-    w: STDW,
-    h: MINH,
+    x: x < 0 ? (index * STDW) % 30 : x,
+    y: y < 0 ? 100 : y,
+    w: w,
+    h: h,
     minW: MINW,
     minH: MINH,
     // static: true,
@@ -56,7 +61,7 @@ class Workspace extends React.Component<WorkspaceProps> {
     plotRender: Plot;
   }[] = [];
   plotMoving: boolean = true;
-
+  workspaceLoaded = false;
   constructor(props: WorkspaceProps) {
     super(props);
     this.workspace = dataManager.getWorkspace().workspace;
@@ -73,6 +78,7 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.state = {
       plots: [],
     };
+    this.workspaceLoaded = true;
   }
 
   update() {
@@ -100,6 +106,26 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.forceUpdate();
   }
 
+  savePlotPosition(layouts: any) {
+    for (let i = 0; i < layouts.length; i++) {
+      let layout = layouts[i];
+      let plotId = layouts[i].i;
+
+      let plot = this.plots.find((x) => x.plotData.id == plotId);
+
+      plot.plotData.dimensions = {
+        h: layout.h,
+        w: layout.w,
+      };
+
+      plot.plotData.positions = {
+        x: layout.x,
+        y: layout.y,
+      };
+
+      dataManager.workspaceUpdated();
+    }
+  }
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
      significatively */
@@ -148,6 +174,9 @@ class Workspace extends React.Component<WorkspaceProps> {
                     rows={{ lg: 30 }}
                     rowHeight={30}
                     isDraggable={this.plotMoving}
+                    onLayoutChange={(layout: any) => {
+                      this.savePlotPosition(layout);
+                    }}
                   >
                     {
                       //@ts-ignore
@@ -156,10 +185,7 @@ class Workspace extends React.Component<WorkspaceProps> {
                           <div
                             key={e.plotData.id}
                             style={classes.itemOuterDiv}
-                            data-grid={standardGridPlotItem(
-                              (i * STDW) % 30,
-                              100
-                            )}
+                            data-grid={standardGridPlotItem(i, e.plotData)}
                             id={`workspace-outter-${e.plotData.id}`}
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
@@ -167,7 +193,9 @@ class Workspace extends React.Component<WorkspaceProps> {
                                 plot={e.plotRender}
                                 plotIndex={e.plotData.id}
                                 plotFileId={e.plotData.file.id}
-                                plots={plots}
+                                plots={this.plots.filter(
+                                  (x) => x.plotData.id != e.plotData.id
+                                )}
                                 sharedWorkspace={this.props.sharedWorkspace}
                                 experimentId={this.props.experimentId}
                               />
