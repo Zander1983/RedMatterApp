@@ -97,6 +97,7 @@ export default function Plans(props: any) {
         {
           priceId: priceId,
           subscriptionType: subType,
+          location: window.location.origin,
         },
         {
           headers: {
