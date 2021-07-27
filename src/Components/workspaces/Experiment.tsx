@@ -93,11 +93,7 @@ const Experiment = (props: any) => {
     }
   }, [experimentData]);
 
-  const fetchExperimentData = (
-    snack = true,
-    key: string = "",
-    callback?: Function
-  ) => {
+  const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -125,9 +121,6 @@ const Experiment = (props: any) => {
             "error"
           );
         userManager.logout();
-      })
-      .finally(() => {
-        //if (callback !== undefined) callback();
       });
   };
 
@@ -218,6 +211,7 @@ const Experiment = (props: any) => {
         return { name: e.file.name, id: e.tempId };
       })
     );
+
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
@@ -245,9 +239,7 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, file.tempId, () => {
-          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
-        });
+        fetchExperimentData(false, file.tempId);
         setFileUploadInputValue("");
         return;
       }
@@ -270,11 +262,7 @@ const Experiment = (props: any) => {
           );
         })
         .finally(() => {
-          fetchExperimentData(false, file.tempId, () => {
-            setUploadingFiles(
-              uploadingFiles.filter((e) => e.id !== file.tempId)
-            );
-          });
+          fetchExperimentData(false, file.tempId);
           setFileUploadInputValue("");
         });
     }
