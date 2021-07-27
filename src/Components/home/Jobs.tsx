@@ -38,6 +38,7 @@ function About() {
       }}
     >
       <Grid
+        container
         lg={6}
         md={9}
         sm={12}
@@ -59,7 +60,7 @@ function About() {
           alignItems="center"
           style={{ marginBottom: 50 }}
         >
-          <Grid xs={12} md={9} lg={6} direction="row">
+          <Grid xs={12} md={9} lg={6} container direction="row">
             <img
               src={logo_orig}
               style={{

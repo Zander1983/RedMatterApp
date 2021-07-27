@@ -112,7 +112,7 @@ export default function GateBar(props: any) {
   };
 
   return (
-    <Grid item xs={12} container direction="column" style={classes.bar}>
+    <Grid xs={12} container direction="column" style={classes.bar}>
       <Autocomplete
         multiple
         options={gates}

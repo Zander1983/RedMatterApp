@@ -110,7 +110,6 @@ export default function Plans() {
     >
       <Grid
         container
-        item
         lg={8}
         md={10}
         sm={12}
@@ -130,7 +129,6 @@ export default function Plans() {
         <Grid
           spacing={5}
           container
-          item
           lg={12}
           md={12}
           sm={12}

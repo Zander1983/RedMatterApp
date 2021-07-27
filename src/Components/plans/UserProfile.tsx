@@ -239,7 +239,6 @@ export default function Plans(props: any) {
         <script src="https://js.stripe.com/v3/"></script>
         <Grid
           container
-          item
           lg={8}
           md={10}
           sm={12}
@@ -266,7 +265,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            item
             lg={12}
             md={12}
             sm={12}
@@ -289,7 +287,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            item
             lg={12}
             md={12}
             sm={12}
@@ -361,7 +358,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            item
             lg={12}
             md={12}
             sm={12}
@@ -394,7 +390,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            item
             lg={12}
             md={12}
             sm={12}

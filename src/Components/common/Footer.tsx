@@ -174,7 +174,7 @@ export default function Footer(props: any) {
 
   return (
     <Grid
-      item
+      container
       xs={12}
       md={9}
       lg={6}
