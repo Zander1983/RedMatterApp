@@ -8,10 +8,7 @@ import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
-import {
-  AuthenticationApiFetchParamCreator,
-  UserApiFetchParamCreator,
-} from "api_calls/nodejsback";
+import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {

@@ -22,21 +22,6 @@ export default function FileMenu() {
     setFiles(dataManager.getAllFiles());
   };
 
-  const resetFiles = (fileID: string) => {
-    const subFile = {
-      file: dataManager.getFile(fileID),
-      fileID: fileID,
-    };
-    const newFiles = files.map((g) => {
-      if (g.fileID === fileID) {
-        return subFile;
-      } else {
-        return g;
-      }
-    });
-    setFiles(newFiles);
-  };
-
   useEffect(() => {
     if (!observersSetup) {
       setObserversSetup(true);
@@ -50,7 +35,7 @@ export default function FileMenu() {
         resetAll();
       });
     }
-  }, []);
+  }, [observersSetup]);
 
   return (
     <TableContainer component={Paper}>
@@ -74,9 +59,6 @@ export default function FileMenu() {
                     alert(
                       "Unfortunately we haven't implemented full support for changing the name of files as of now."
                     );
-                    // const newName = e.target.value;
-                    // file.file.update({ name: newName });
-                    // resetFiles(file.fileID);
                   }}
                 />
               </TableCell>

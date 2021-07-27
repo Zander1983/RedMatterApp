@@ -1,3 +1,5 @@
+/* eslint-disable import/no-anonymous-default-export */
+/* eslint-disable  */
 const removeNulls = (array) => {
   return array.filter(function (val) {
     return val !== null;

@@ -1,3 +1,4 @@
+/* eslint-disable*/
 var generalHelper = require("./generalHelper");
 var fcsHelper = require("./fcsHelper");
 var memoize = require("memoizee");
@@ -69,7 +70,6 @@ class Scale {
     var scaleType = params.scaleType;
     var value = params.value;
     var param = params.param;
-    var g = params.g;
     var r = params.r;
     var f1 = params.f1;
     var f2 = params.f2;

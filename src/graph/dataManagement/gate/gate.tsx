@@ -2,7 +2,6 @@ import dataManager from "../dataManager";
 import ObserversFunctionality, {
   publishDecorator,
 } from "../observersFunctionality";
-import PlotData from "../plotData";
 
 export interface GateState {
   name?: string;

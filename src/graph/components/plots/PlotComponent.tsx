@@ -16,11 +16,7 @@ import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-
-interface overlayHistogram {
-  color: string;
-  plot: any;
-}
+import useForceUpdate from "hooks/forceUpdate";
 
 const classes = {
   mainContainer: {
@@ -38,11 +34,6 @@ const classes = {
     flexGrow: 1,
   },
 };
-
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
 
 let interval: any = {};
 var plotDownloadingFiles: any[] = [];
@@ -63,7 +54,7 @@ function PlotComponent(props: {
   });
 
   const setPlotType = (axis: "x" | "y", value: string) => {
-    axis == "x"
+    axis === "x"
       ? props.plot.plotData.setXAxisPlotType(value)
       : props.plot.plotData.setYAxisPlotType(value);
   };
@@ -126,11 +117,11 @@ function PlotComponent(props: {
   };
 
   const setAxis = (axis: "x" | "y", value: string) => {
-    const otherAxisValue = axis == "x" ? yAxis : xAxis;
-    if (value == otherAxisValue && !isPlotHistogram()) {
-      setHistogram(axis == "x" ? "y" : "x", true);
+    const otherAxisValue = axis === "x" ? yAxis : xAxis;
+    if (value === otherAxisValue && !isPlotHistogram()) {
+      setHistogram(axis === "x" ? "y" : "x", true);
     } else {
-      axis == "x"
+      axis === "x"
         ? props.plot.plotData.setXAxis(value)
         : props.plot.plotData.setYAxis(value);
     }
@@ -161,7 +152,7 @@ function PlotComponent(props: {
     dataManager.downloadingFiles
   );
 
-  var files = dataManager.files.filter((x) => x.id != props.plotFileId);
+  var files = dataManager.files.filter((x) => x.id !== props.plotFileId);
 
   const addFile = (fileId: string, type: string, plotSource: string) => {
     addHistogrmOverlay(
@@ -184,13 +175,13 @@ function PlotComponent(props: {
   };
 
   const isDownloading = (fileId: string) => {
-    let downloadingFileId = downloadingFiles.find((x) => x == fileId);
+    let downloadingFileId = downloadingFiles.find((x) => x === fileId);
     if (downloadingFileId) return true;
     return false;
   };
 
   const isDownloaded = (fileId: string) => {
-    let donwloadedFileId = downloadedFiles.find((x) => x.id == fileId);
+    let donwloadedFileId = downloadedFiles.find((x) => x.id === fileId);
     if (donwloadedFileId) return true;
     return false;
   };
@@ -256,7 +247,7 @@ function PlotComponent(props: {
             );
           }, 0);
           plotDownloadingFiles = plotDownloadingFiles.filter(
-            (x) => x != files[0].id
+            (x) => x !== files[0].id
           );
         }
       }
@@ -272,21 +263,21 @@ function PlotComponent(props: {
 
     window.addEventListener("click", (e) => {
       let event: any = e.target;
-      if (event && event.id != "hist_overlay") {
+      if (event && event.id !== "hist_overlay") {
         setHistogramOverlayOpen(false);
       }
     });
     let fileHistOverlay: any = [];
     fileHistOverlay = fileHistOverlay.concat(
       props.plot.plotData.histogramBarOverlays
-        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .filter((x) => x.plotSource === COMMON_CONSTANTS.FILE)
         .map((y) => {
           return { histObj: y, type: COMMON_CONSTANTS.Bar };
         })
     );
     fileHistOverlay = fileHistOverlay.concat(
       props.plot.plotData.histogramOverlays
-        .filter((x) => x.plotSource == COMMON_CONSTANTS.FILE)
+        .filter((x) => x.plotSource === COMMON_CONSTANTS.FILE)
         .map((y) => {
           return { histObj: y, type: COMMON_CONSTANTS.Line };
         })
@@ -302,6 +293,7 @@ function PlotComponent(props: {
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   let oldXAxisValue: string | null = null;
@@ -324,7 +316,7 @@ function PlotComponent(props: {
         if (filePlotIdDict[pltFlObj.id] && filePlotIdDict[pltFlObj.id].id) {
           let plotObj = isHistogramSelected(filePlotIdDict[pltFlObj.id].id);
           let plotData = plotObj.plot.plot;
-          if (plotObj.type == plotType) {
+          if (plotObj.type === plotType) {
             removeOverlayAsPerType(plotType, plotData.id);
             filePlotIdDict[pltFlObj.id] = null;
           } else {
@@ -350,7 +342,7 @@ function PlotComponent(props: {
         let plotData = pltFlObj.plotData;
         let plotObj = isHistogramSelected(plotData.id);
         if (plotObj) {
-          if (plotObj.type == plotType) {
+          if (plotObj.type === plotType) {
             removeOverlayAsPerType(plotType, plotData.id);
           } else {
             addOverlayAsPerType(
@@ -408,10 +400,10 @@ function PlotComponent(props: {
 
   const isHistogramSelected = (plotId: string) => {
     let plot1 = props.plot.plotData.histogramBarOverlays.find(
-      (x) => x.plotId == plotId
+      (x) => x.plotId === plotId
     );
     let plot2 = props.plot.plotData.histogramOverlays.find(
-      (x) => x.plotId == plotId
+      (x) => x.plotId === plotId
     );
 
     if (plot1) {
@@ -424,7 +416,7 @@ function PlotComponent(props: {
 
   const isOptionSelected = (plotId: string, type: string = "") => {
     let plot = isHistogramSelected(plotId);
-    if (plot && type == plot.type) {
+    if (plot && type === plot.type) {
       return "#6666aa";
     }
     return "#66d";
@@ -437,7 +429,7 @@ function PlotComponent(props: {
     let plot = isHistogramSelected(plotId);
     if (plot) {
       if (type) {
-        if (type == plot.type) {
+        if (type === plot.type) {
           return plot.plot.color;
         } else {
           return "#fff";
@@ -592,7 +584,7 @@ function PlotComponent(props: {
               flex: "1 1 auto",
             }}
             onChange={(e) => {
-              if (e.target.value == "hist") {
+              if (e.target.value === "hist") {
                 handleHist("y");
                 return;
               }
@@ -765,7 +757,7 @@ function PlotComponent(props: {
               <Select
                 style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
                 onChange={(e) => {
-                  if (e.target.value == "hist") {
+                  if (e.target.value === "hist") {
                     handleHist("x");
                     return;
                   }

@@ -16,7 +16,6 @@ import FileCopy from "@material-ui/icons/FileCopy";
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
 import PlotData from "graph/dataManagement/plotData";
-import FileService from "services/FileService";
 import { snackbarService } from "uno-material-ui";
 
 const classes = {
@@ -49,7 +48,7 @@ export default function GateMenu() {
 
   const setGateColor = (gate: Gate, color: any) => {
     gate.update({
-      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
+      color: `rgb(${color.rgb.r},${color.rgb.g},${color.rgb.b})`,
     });
     resetGates(gate.id);
   };
@@ -96,6 +95,7 @@ export default function GateMenu() {
         dataManager.removeObserver(e.terget, e.value);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const applyGateToAllFiles = async (params: {

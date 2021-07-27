@@ -1,6 +1,4 @@
-import FCSFile from "graph/dataManagement/fcsFile";
 import dataManager from "graph/dataManagement/dataManager";
-import Plotter from "graph/renderers/plotters/plotter";
 import Plot from "./plotRender";
 
 interface CanvasState {
@@ -68,7 +66,6 @@ export default class Canvas {
     const canvas = ref.current;
     const context = canvas.getContext("2d");
     this.context = context;
-    let frameCount = 0;
     let animationFrameId = 0;
 
     const sendMouseInteraction = (event: Event, lock?: boolean) => {
@@ -93,7 +90,6 @@ export default class Canvas {
     addCanvasListener("mousemove", (e: Event) => sendMouseInteraction(e));
 
     this.canvasRender = () => {
-      frameCount++;
       const { width, height } = canvas.getBoundingClientRect();
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width * this.scale;

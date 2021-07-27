@@ -117,13 +117,13 @@ export default class GraphDrawer extends Drawer {
     const bins =
       params.bins !== undefined
         ? params.bins
-        : orientation == "v"
+        : orientation === "v"
         ? this.ypts
         : this.xpts;
-    const p1 = orientation == "v" ? this.y1 : this.x1;
-    const p2 = orientation == "v" ? this.y2 : this.x2;
-    const op1 = orientation == "v" ? this.x1 : this.y1;
-    const op2 = orientation == "v" ? this.x2 : this.y2;
+    const p1 = orientation === "v" ? this.y1 : this.x1;
+    const p2 = orientation === "v" ? this.y2 : this.x2;
+    const op1 = orientation === "v" ? this.x1 : this.y1;
+    const op2 = orientation === "v" ? this.x2 : this.y2;
 
     let counter = bins;
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
@@ -184,7 +184,7 @@ export default class GraphDrawer extends Drawer {
       throw Error("Width and height are unset");
     }
 
-    if (orientation == "v") {
+    if (orientation === "v") {
       for (let y = Math.min(p1, p2); y <= Math.max(p1, p2); y += interval) {
         this.segment({
           x1: op1 - 14,
@@ -250,13 +250,13 @@ export default class GraphDrawer extends Drawer {
     strokeColor?: string
   ) {
     const bins =
-      sbins !== undefined ? sbins : orientation == "h" ? this.ypts : this.xpts;
+      sbins !== undefined ? sbins : orientation === "h" ? this.ypts : this.xpts;
 
-    const begin = orientation == "h" ? this.y1 : this.x1;
-    const end = orientation == "h" ? this.y2 : this.x2;
+    const begin = orientation === "h" ? this.y1 : this.x1;
+    const end = orientation === "h" ? this.y2 : this.x2;
 
-    const obegin = orientation == "h" ? this.x1 : this.y1;
-    const oend = orientation == "h" ? this.x2 : this.y2;
+    const obegin = orientation === "h" ? this.x1 : this.y1;
+    const oend = orientation === "h" ? this.x2 : this.y2;
 
     if (labels !== undefined && labels.length >= 3) {
       let min = labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
@@ -270,25 +270,25 @@ export default class GraphDrawer extends Drawer {
         // let pos = labels[i].pos;
 
         this.segment({
-          x1: orientation == "h" ? obegin : pos,
-          y1: orientation == "h" ? pos : obegin,
-          x2: orientation == "h" ? oend : pos,
-          y2: orientation == "h" ? pos : oend,
+          x1: orientation === "h" ? obegin : pos,
+          y1: orientation === "h" ? pos : obegin,
+          x2: orientation === "h" ? oend : pos,
+          y2: orientation === "h" ? pos : oend,
           strokeColor: graphLineColor,
         });
       }
     } else {
       for (
-        let i = orientation == "v" ? 1 : 0;
-        i < bins + (orientation == "v" ? 1 : 0);
+        let i = orientation === "v" ? 1 : 0;
+        i < bins + (orientation === "v" ? 1 : 0);
         i++
       ) {
         const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
         this.segment({
-          x1: orientation == "h" ? obegin : fd,
-          y1: orientation == "h" ? fd : obegin,
-          x2: orientation == "h" ? oend : fd,
-          y2: orientation == "h" ? fd : oend,
+          x1: orientation === "h" ? obegin : fd,
+          y1: orientation === "h" ? fd : obegin,
+          x2: orientation === "h" ? oend : fd,
+          y2: orientation === "h" ? fd : oend,
           strokeColor: graphLineColor,
         });
       }

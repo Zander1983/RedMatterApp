@@ -258,7 +258,8 @@ export default class GraphPlotter extends Plotter {
         : this.ranges.y[1] - this.ranges.y[0];
     const rangeMin = axis === "x" ? this.ranges.x[0] : this.ranges.y[0];
     const lineCount = Math.round(
-      plotSize / (axis == "x" ? this.horizontalBinCount : this.verticalBinCount)
+      plotSize /
+        (axis === "x" ? this.horizontalBinCount : this.verticalBinCount)
     );
     return Array(lineCount).map((e, i) =>
       ((rangeSize * i) / lineCount + rangeMin).toString()

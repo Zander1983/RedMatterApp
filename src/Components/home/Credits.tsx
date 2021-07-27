@@ -1,5 +1,5 @@
 import { Button, Grid } from "@material-ui/core";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 export default function Terms() {
   const history = useHistory();

@@ -46,7 +46,7 @@ const reducer = (state = initialState, action: any) => {
       try {
         if (
           state !== undefined &&
-          state.profile != undefined &&
+          state.profile !== undefined &&
           state.experiment !== undefined &&
           state.experiment.device !== undefined
         )

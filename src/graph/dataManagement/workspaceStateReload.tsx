@@ -1,7 +1,6 @@
 import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import { snackbarService } from "uno-material-ui";
-import PlotData from "graph/dataManagement/plotData";
 import staticFileReader from "../components/modals/staticFCSFiles/staticFileReader";
 
 export interface WorkspaceStateHelperObj {
@@ -18,13 +17,12 @@ export class WorkspaceStateHelper {
     this.state = state;
   }
 
-  getFileIds()
-  {
+  getFileIds() {
     let filesLength = this.state.files.length;
     let fileIds = [];
 
     for (let i = 0; i < filesLength; i++) {
-       fileIds.push(this.state.files[i].split("://")[1]);
+      fileIds.push(this.state.files[i].split("://")[1]);
     }
 
     return fileIds;

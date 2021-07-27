@@ -9,10 +9,8 @@ import CardActions from "@material-ui/core/CardActions";
 import CardHeader from "@material-ui/core/CardHeader";
 import StarIcon from "@material-ui/icons/StarBorder";
 import Divider from "@material-ui/core/Divider";
-import { useStore } from "react-redux";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
-import researchers_image from "../../assets/images/researchers.jpg";
 import lab from "../../assets/images/lab.png";
 import researcher from "../../assets/images/researcher.png";
 import uni from "../../assets/images/uni2.jpg";
@@ -172,7 +170,6 @@ const AppLandingPage = () => {
           <video autoPlay muted loop>
             <source src={loop_analytics} type="video/mp4" />
           </video>
-          {/* <img src={researchers_image} className={classes.backgroundTop}></img> */}
         </div>
 
         <div className={classes.topDialogContent}>
@@ -181,7 +178,7 @@ const AppLandingPage = () => {
               <Typography variant="h6">
                 <img
                   src={icon}
-                  alt="Logo"
+                  alt="Red matter logo"
                   height="25"
                   style={{
                     marginRight: 10,
@@ -265,13 +262,13 @@ const AppLandingPage = () => {
               )}
               <br />
               <NavLink to="/mailing-list">
-                <a
+                <p
                   style={{
                     color: "#ddf",
                   }}
                 >
                   Or join our mailing list
-                </a>
+                </p>
               </NavLink>
             </CardContent>
           </Card>
@@ -309,6 +306,7 @@ const AppLandingPage = () => {
             }}
           >
             <img
+              alt="Researcher"
               style={{
                 marginTop: -30,
                 marginLeft: -10,
@@ -348,6 +346,7 @@ const AppLandingPage = () => {
             }}
           >
             <img
+              alt="Laboratory"
               style={{
                 marginTop: -30,
                 marginLeft: -50,
@@ -388,6 +387,7 @@ const AppLandingPage = () => {
             }}
           >
             <img
+              alt="University"
               style={{
                 marginTop: -70,
                 marginLeft: -153,
@@ -505,7 +505,11 @@ const AppLandingPage = () => {
                   height: 55,
                 }}
               >
-                <img src={"/universityLogos/" + item.name} height={50} />
+                <img
+                  alt={item.name}
+                  src={"/universityLogos/" + item.name}
+                  height={50}
+                />
               </div>
             </Grid>
           ))}

@@ -2,7 +2,6 @@
 // do this just right and this guy IS the de-facto responsible for that.
 // By the way: only workspace has access to this guy too.
 
-import { IdcardFilled } from "@ant-design/icons";
 import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import Gate from "./gate/gate";
 import OvalGate from "./gate/ovalGate";
