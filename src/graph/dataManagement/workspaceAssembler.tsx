@@ -88,6 +88,7 @@ export default class WorkspaceAssembler {
     switch (plotHistObj.plotSource) {
       case COMMON_CONSTANTS.FILE:
         let plot = new PlotData();
+        if (fileMappings[plotHistObj.plot.file]) return null;
         plot.file = files.get(fileMappings[plotHistObj.plot.file]);
         plot.setupPlot();
         plot.getXandYRanges();
@@ -99,6 +100,7 @@ export default class WorkspaceAssembler {
         };
         break;
       case COMMON_CONSTANTS.PLOT:
+        if (oldNewPlotIdMap[plotHistObj.plotId]) return null;
         plotHistObj.plotId = oldNewPlotIdMap[plotHistObj.plotId];
         newPlot = plotHistObj;
         break;
@@ -121,11 +123,10 @@ export default class WorkspaceAssembler {
       if (src[0] === "local") {
         file = staticFileReader(src[1]);
       }
-      if (file === null) {
-        throw Error('Could not recover file "' + fileString + '"');
+      if (file) {
+        files.set(file.id, file);
+        fileMappings[fileString] = file.id;
       }
-      files.set(file.id, file);
-      fileMappings[fileString] = file.id;
     }
 
     let i = 0;
@@ -157,7 +158,7 @@ export default class WorkspaceAssembler {
 
     for (let i = 0; i < inp.plots.length; i++) {
       const plotObj = inp.plots[i];
-
+      if (!fileMappings[plotObj.file]) continue;
       plotObj.file = files.get(fileMappings[plotObj.file]);
 
       plotObj.gates = plotObj.gates.map((e: any) => {
@@ -188,13 +189,15 @@ export default class WorkspaceAssembler {
           oldNewPlotIdMap,
           plotObj
         );
-        let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
-        plot.addOverlay(
-          newPlotHistObj.plot,
-          newPlotHistObj.color,
-          newPlotHistObj.plotId,
-          newPlotHistObj.plotSource
-        );
+        if (newPlotHistObj) {
+          let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+          plot.addOverlay(
+            newPlotHistObj.plot,
+            newPlotHistObj.color,
+            newPlotHistObj.plotId,
+            newPlotHistObj.plotSource
+          );
+        }
       }
       for (let j = 0; j < plotObj.histogramBarOverlays.length; j++) {
         let plotHistObj = plotObj.histogramBarOverlays[j];
@@ -205,13 +208,15 @@ export default class WorkspaceAssembler {
           oldNewPlotIdMap,
           plotObj
         );
-        let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
-        plot.addBarOverlay(
-          newPlotHistObj.plot,
-          newPlotHistObj.color,
-          newPlotHistObj.plotId,
-          newPlotHistObj.plotSource
-        );
+        if (newPlotHistObj) {
+          let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+          plot.addBarOverlay(
+            newPlotHistObj.plot,
+            newPlotHistObj.color,
+            newPlotHistObj.plotId,
+            newPlotHistObj.plotSource
+          );
+        }
       }
     }
     targetWorkspace.workspaceName = inp.workspaceName;
