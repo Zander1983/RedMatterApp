@@ -55,7 +55,7 @@ function CreateExperimentModal(props: {
   const [enablePrivateExperiment, setEnablePrivateExperiment] =
     React.useState(false);
 
-  useEffect(() => {
+  const getUserDetails = () => {
     dispatch({
       type: "EXPERIMENT_FORM_DATA_CLEAR",
     });
@@ -89,7 +89,12 @@ function CreateExperimentModal(props: {
           setEnablePrivateExperiment(true);
         }
       });
-  }, [dispatch, props.open]);
+  };
+
+  useEffect(() => {
+    getUserDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.open]);
 
   const createExperiment = () => {
     const req = ExperimentApiFetchParamCreator({

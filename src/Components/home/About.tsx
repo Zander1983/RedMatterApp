@@ -72,7 +72,6 @@ function App() {
       }}
     >
       <Grid
-        container
         lg={6}
         md={9}
         sm={12}

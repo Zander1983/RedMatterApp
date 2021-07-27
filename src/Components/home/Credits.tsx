@@ -6,7 +6,6 @@ export default function Terms() {
 
   return (
     <Grid
-      container
       xs={12}
       md={9}
       lg={6}

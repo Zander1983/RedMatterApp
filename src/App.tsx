@@ -168,7 +168,7 @@ const App = () => {
           <Switch>
             {router.map((e) => (
               // @ts-ignore
-              <Route exact path={e.path} component={e.component} />
+              <Route exact key={e.path} path={e.path} component={e.component} />
             ))}
           </Switch>
         </Content>

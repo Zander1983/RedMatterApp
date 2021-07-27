@@ -596,7 +596,9 @@ function PlotComponent(props: {
             value={yAxis}
           >
             {plot.plotData.file.axes.map((e: any) => (
-              <MenuItem value={e}>{e}</MenuItem>
+              <MenuItem value={e} key={e}>
+                {e}
+              </MenuItem>
             ))}
             <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
             <MenuItem
@@ -769,7 +771,9 @@ function PlotComponent(props: {
                 value={xAxis}
               >
                 {plot.plotData.file.axes.map((e: any) => (
-                  <MenuItem value={e}>{e}</MenuItem>
+                  <MenuItem value={e} key={e}>
+                    {e}
+                  </MenuItem>
                 ))}
                 <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
                 <MenuItem
@@ -815,6 +819,7 @@ function PlotComponent(props: {
                     <MenuItem value={"0"}>Histogram overlays</MenuItem>
                     {props.plots.map((e: any) => (
                       <MenuItem
+                        key={e}
                         id="hist_overlay"
                         value={e}
                         style={{
@@ -901,6 +906,7 @@ function PlotComponent(props: {
                     ))}
                     {files.map((e: any) => (
                       <MenuItem
+                        key={e}
                         id="hist_overlay"
                         value={e}
                         style={{

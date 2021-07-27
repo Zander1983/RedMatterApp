@@ -550,6 +550,7 @@ function Workspace(props: { experimentId: string }) {
             boxShadow: "2px 3px 3px #ddd",
           }}
           xs={12}
+          item
         >
           {initPlot ? (
             <div>
@@ -564,7 +565,7 @@ function Workspace(props: { experimentId: string }) {
                 }}
                 container
               >
-                <Grid container xs={9}>
+                <Grid container item xs={9}>
                   {sharedWorkspace ? null : (
                     <Button
                       size="large"
@@ -647,6 +648,7 @@ function Workspace(props: { experimentId: string }) {
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
                     xs={3}
+                    item
                     style={{
                       textAlign: "right",
                       paddingRight: 20,
