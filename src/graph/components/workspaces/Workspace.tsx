@@ -29,8 +29,8 @@ const classes = {
 };
 
 const MINW = 10;
-const MINH = 14;
-const STDW = 15;
+const MINH = 12;
+const STDW = 10;
 
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
