@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 3,
   },
   toolbar: {
-    backgroundColor: "#333",
+    backgroundColor: "#6666A9",
     textColor: "#fafafa",
   },
 }));

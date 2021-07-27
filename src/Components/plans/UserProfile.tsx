@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 import FormControl from "@material-ui/core/FormControl";
 import ChangeSubscriptionModal from "./changeSubscriptionModal";
 import CancelSubscriptionModal from "./cancelSubscriptionModal";
+import AddUsersModal from "./addUsersModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
@@ -84,6 +85,7 @@ export default function Plans(props: any) {
   const [subSelect, setSubSelect] = useState(null);
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const [openAddUser, setOpenAddUser] = useState(false);
   const [subscriptionSend, setSubscriptionSend] = useState(null);
   const getUserObj = useCallback(() => {
     if (product == null) {
@@ -96,7 +98,26 @@ export default function Plans(props: any) {
         .then((response) => response.data)
         .then((user) => {
           setuserObj(user);
-          getSub(user);
+          if (user.userDetails.isOrganisationAdmin === true) {
+            setuserObj(user);
+            getSub(user);
+          } else {
+            axios
+              .post(
+                `/admin-profile-info`,
+                {
+                  adminId: user.userDetails.adminId,
+                },
+                {
+                  headers: {
+                    Token: userManager.getToken(),
+                  },
+                }
+              )
+              .then((user) => {
+                getSub(user.data);
+              });
+          }
         });
     }
   }, [email]);
@@ -198,6 +219,13 @@ export default function Plans(props: any) {
   const closeModal = () => {
     setOpenChange(false);
     setOpenCancel(false);
+    setOpenAddUser(false);
+  };
+
+  const copiedToClipboard = () => {
+    snackbarService.showSnackbar("Copied to clipboard", "success");
+
+    closeModal();
   };
 
   const refresh = () => {
@@ -213,8 +241,15 @@ export default function Plans(props: any) {
   useEffect(() => {
     getUserObj();
   }, [getUserObj]);
+
   return (
     <div>
+      <AddUsersModal
+        open={openAddUser}
+        close={closeModal}
+        user={userObj}
+        copiedToClipboard={copiedToClipboard}
+      ></AddUsersModal>
       <ChangeSubscriptionModal
         open={openChange}
         refresh={refresh}
@@ -281,10 +316,13 @@ export default function Plans(props: any) {
               <h3>
                 Next Billing Date:
                 <span>
-                  {" "}
-                  {date == null
-                    ? "Not Active"
-                    : " " + JSON.stringify(date).substring(1, 11)}{" "}
+                  {userObj == null
+                    ? null
+                    : userObj.userDetails.isOrganisationAdmin
+                    ? date == null
+                      ? "Not Active"
+                      : " " + JSON.stringify(date).substring(1, 11)
+                    : " Managed by Organisation"}
                 </span>
               </h3>
             </Grid>
@@ -310,54 +348,59 @@ export default function Plans(props: any) {
                     : " " + product.name}{" "}
                 </span>
               </h3>
-              {product == null ? null : product.name ==
-                "You are not currently Subscribed" ? null : (
-                <div>
-                  <h3>
-                    <strong>Change Subscription</strong>
-                  </h3>
-                  <FormControl className={classes.formControl}>
-                    <InputLabel htmlFor="subscriptionSelect">
-                      Select Subscription
-                    </InputLabel>
-                    <Select
-                      native
-                      onChange={(event) => {
-                        setSubSelect(event.target.value);
-                      }}
-                      style={{
-                        width: "200px",
-                        height: "40px",
-                      }}
-                      inputProps={{
-                        name: "age",
-                        id: "subscriptionSelect",
-                      }}
+              {userObj == null ? null : userObj.userDetails
+                  .isOrganisationAdmin ? (
+                product == null ? null : product.name ==
+                  "You are not currently Subscribed" ? null : (
+                  <div>
+                    <h3>
+                      <strong>Change Subscription</strong>
+                    </h3>
+                    <FormControl className={classes.formControl}>
+                      <InputLabel htmlFor="subscriptionSelect">
+                        Select Subscription
+                      </InputLabel>
+                      <Select
+                        native
+                        onChange={(event) => {
+                          setSubSelect(event.target.value);
+                        }}
+                        style={{
+                          width: "200px",
+                          height: "40px",
+                        }}
+                        inputProps={{
+                          name: "age",
+                          id: "subscriptionSelect",
+                        }}
+                      >
+                        <option value={null}></option>
+                        {product == null ? null : product.name ===
+                          "Free Subscription" ? (
+                          <option value={3}>Enterprise</option>
+                        ) : (
+                          <option value={1}>Free</option>
+                        )}
+                        {product == null ? null : product.name ===
+                          "Premium Subscription" ? (
+                          <option value={3}>Enterprise</option>
+                        ) : (
+                          <option value={2}>Premium</option>
+                        )}{" "}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      style={{ marginTop: 25 }}
+                      color="secondary"
+                      onClick={() => setOpenChange(true)}
                     >
-                      <option value={null}></option>
-                      {product == null ? null : product.name ===
-                        "Free Subscription" ? (
-                        <option value={3}>Enterprise</option>
-                      ) : (
-                        <option value={1}>Free</option>
-                      )}
-                      {product == null ? null : product.name ===
-                        "Premium Subscription" ? (
-                        <option value={3}>Enterprise</option>
-                      ) : (
-                        <option value={2}>Premium</option>
-                      )}{" "}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    onClick={() => setOpenChange(true)}
-                  >
-                    Change Subscription
-                  </Button>
-                </div>
-              )}{" "}
+                      Change Subscription
+                    </Button>
+                  </div>
+                )
+              ) : null}
+              {}
+              {}{" "}
             </Grid>
           </Grid>
 
@@ -371,25 +414,49 @@ export default function Plans(props: any) {
             direction="row"
             style={{ textAlign: "left" }}
           >
-            <Grid item lg={9} md={6} sm={6}>
-              {product == null ? null : product.name ==
-                "You are not currently Subscribed" ? (
-                <h4>
-                  Go to
-                  <NavLink to="/plans">Plans</NavLink>to Subscribe
-                </h4>
-              ) : (
-                <div>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    variant="contained"
-                    onClick={() => setOpenCancel(true)}
-                  >
-                    Cancel Subscription
-                  </Button>
-                </div>
-              )}{" "}
+            <Grid item lg={10} md={6} sm={6}>
+              {userObj == null ? null : userObj.userDetails
+                  .isOrganisationAdmin ? (
+                product == null ? null : product.name ==
+                  "You are not currently Subscribed" ? (
+                  <h4>
+                    Go to
+                    <NavLink to="/plans">Plans</NavLink>to Subscribe
+                  </h4>
+                ) : (
+                  <div>
+                    <Button
+                      style={{ marginTop: 25 }}
+                      color="secondary"
+                      variant="contained"
+                      onClick={() => setOpenCancel(true)}
+                    >
+                      Cancel Subscription
+                    </Button>
+                  </div>
+                )
+              ) : null}
+              {}{" "}
+            </Grid>
+
+            <Grid item lg={2} md={6} sm={6}>
+              {userObj == null ? null : userObj.userDetails
+                  .isOrganisationAdmin ? (
+                product == null ? null : product.name ==
+                  "Enterprise Subscription" ? (
+                  <div>
+                    <Button
+                      style={{ marginTop: 25 }}
+                      color="primary"
+                      variant="contained"
+                      onClick={() => setOpenAddUser(true)}
+                    >
+                      Add Users
+                    </Button>
+                  </div>
+                ) : null
+              ) : null}
+              {}{" "}
             </Grid>
           </Grid>
 
