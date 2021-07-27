@@ -69,6 +69,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
       xs={6}
       md={4}
       lg={3}
+      item
     >
       <MessageModal
         open={deleteConfirmModal}
