@@ -1,3 +1,4 @@
+/* eslint-disable*/
 import percentileHelper from "./percentileHelper";
 import generalHelper from "./generalHelper";
 import Logicle from "./logicle";

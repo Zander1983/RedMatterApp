@@ -160,9 +160,9 @@ export default class PlotData extends ObserversFunctionality {
       i++
     ) {
       const axis = this.file.axes[i];
-      if (axis.toUpperCase().indexOf("FSC") != -1) {
+      if (axis.toUpperCase().indexOf("FSC") !== -1) {
         hasFSC = i;
-      } else if (axis.toUpperCase().indexOf("SSC") != -1) {
+      } else if (axis.toUpperCase().indexOf("SSC") !== -1) {
         hasSSC = i;
       }
     }
@@ -299,7 +299,7 @@ export default class PlotData extends ObserversFunctionality {
   ) {
     if (!color) color = generateColor();
     this.histogramOverlays.push({
-      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
+      plot: COMMON_CONSTANTS.FILE === plotSource ? plotData : {},
       color: color,
       plotId: plotId,
       plotSource: plotSource,
@@ -321,7 +321,7 @@ export default class PlotData extends ObserversFunctionality {
   ) {
     if (!color) color = generateColor();
     this.histogramBarOverlays.push({
-      plot: COMMON_CONSTANTS.FILE == plotSource ? plotData : {},
+      plot: COMMON_CONSTANTS.FILE === plotSource ? plotData : {},
       color: color,
       plotId: plotId,
       plotSource: plotSource,
@@ -332,7 +332,7 @@ export default class PlotData extends ObserversFunctionality {
 
   removeBarOverlay(ploDataID: string) {
     this.histogramBarOverlays = this.histogramBarOverlays.filter(
-      (x) => x.plotId != ploDataID
+      (x) => x.plotId !== ploDataID
     );
     this.plotUpdated();
     this.initiateAutoSave();
@@ -340,10 +340,10 @@ export default class PlotData extends ObserversFunctionality {
 
   removeAnyOverlay(ploDataID: string) {
     this.histogramBarOverlays = this.histogramBarOverlays.filter(
-      (x) => x.plotId != ploDataID
+      (x) => x.plotId !== ploDataID
     );
     this.histogramOverlays = this.histogramOverlays.filter(
-      (x) => x.plotId != ploDataID
+      (x) => x.plotId !== ploDataID
     );
     this.plotUpdated();
     this.initiateAutoSave();
@@ -351,7 +351,7 @@ export default class PlotData extends ObserversFunctionality {
 
   removeOverlay(plotDataID: string) {
     this.histogramOverlays = this.histogramOverlays.filter(
-      (e) => e.plotId != plotDataID
+      (e) => e.plotId !== plotDataID
     );
     this.plotUpdated();
     this.initiateAutoSave();
@@ -419,7 +419,8 @@ export default class PlotData extends ObserversFunctionality {
 
   @conditionalUpdateDecorator()
   setWidthAndHeight(w: number, h: number) {
-    this.changed = this.changed || this.plotWidth != w || this.plotHeight != h;
+    this.changed =
+      this.changed || this.plotWidth !== w || this.plotHeight !== h;
     this.plotWidth = w - 40;
     this.plotHeight = h - 30;
   }
@@ -714,7 +715,7 @@ export default class PlotData extends ObserversFunctionality {
           this.gateObservers.filter((g) => g.targetGateID === e)[0].observerID
         );
       this.gateObservers = this.gateObservers.filter(
-        (g) => g.targetGateID != e
+        (g) => g.targetGateID !== e
       );
     });
     gateIds = this.population.map((obj) => obj.gate.id);
@@ -749,7 +750,7 @@ export default class PlotData extends ObserversFunctionality {
     }
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
     if (
-      this.file.remoteData != undefined &&
+      this.file.remoteData !== undefined &&
       this.file.remoteData.paramsAnalysis !== undefined
     ) {
       //@ts-ignore
@@ -759,7 +760,7 @@ export default class PlotData extends ObserversFunctionality {
             ? "linear"
             : "biexponential";
 
-        if (this.rangePlotType && Object.keys(this.rangePlotType).length == 0)
+        if (this.rangePlotType && Object.keys(this.rangePlotType).length === 0)
           this.rangePlotType = new Map();
 
         this.rangePlotType.set(
@@ -796,7 +797,6 @@ export default class PlotData extends ObserversFunctionality {
       min = Math.min(p, min);
       max = Math.max(p, max);
     }
-    const d = Math.max(max - min, 1e-10);
     return [min, max];
   }
 }

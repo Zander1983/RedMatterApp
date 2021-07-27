@@ -302,7 +302,6 @@ export default class GraphTransformer extends Transformer {
       const binSize = 1.0 / binsCount;
       const fcsServices = new FCSServices();
 
-      let oldBinSize = 0;
       for (let i = 0, j = 0; j <= binsCount; i += binSize, j++) {
         const inverse = fcsServices.logicleInverseMarkTransformer(
           [i],
@@ -312,7 +311,6 @@ export default class GraphTransformer extends Transformer {
         const name = this.expLabel(inverse);
         const pos = i;
         labels.push({ pos, name });
-        oldBinSize = pos;
       }
     }
     return labels;

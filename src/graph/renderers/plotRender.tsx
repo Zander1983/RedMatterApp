@@ -13,31 +13,11 @@ import Canvas from "graph/renderers/canvas";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
-import GateMouseInteractorFactory from "graph/renderers/gateMouseInteractors/gateMouseInteractorFactory";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import dataManager from "graph/dataManagement/dataManager";
-import { controllers } from "chart.js";
 
 const plotterFactory = new PlotterFactory();
-const mouseInteractorFactory = new GateMouseInteractorFactory();
-
-/* TypeScript does not deal well with decorators. Your linter might
-   indicate a problem with this function but it does not exist */
-const conditionalUpdateDecorator = () => {
-  return function (
-    target: Plot,
-    key: string | symbol,
-    descriptor: PropertyDescriptor
-  ) {
-    const original = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      original.apply(this, args);
-      //@ts-ignore
-      this.conditionalUpdate();
-    };
-  };
-};
 
 export default class Plot {
   plotData: PlotData;
@@ -184,10 +164,10 @@ export default class Plot {
 
   private validateReady(): boolean {
     if (
-      this.plotData.plotWidth != 0 &&
-      this.plotData.plotHeight != 0 &&
-      this.plotData.plotScale != 0 &&
-      this.plotter.drawer != null
+      this.plotData.plotWidth !== 0 &&
+      this.plotData.plotHeight !== 0 &&
+      this.plotData.plotScale !== 0 &&
+      this.plotter.drawer !== null
     ) {
       return true;
     }

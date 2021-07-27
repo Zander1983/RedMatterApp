@@ -1,7 +1,7 @@
-import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
+import Plotter from "graph/renderers/plotters/plotter";
 
 interface PluginSetup {
-  order: string; // "before" | "after" | null;
+  order: string;
   overwrite: boolean;
   functionSignature: string;
   plugin: PlotterPlugin;
@@ -103,7 +103,6 @@ export default abstract class PlotterPlugin {
     const ret = filtered.map((e) => {
       if (!e.includes("_"))
         throw Error("Invalid plugin function signature: " + e);
-      const signature = e.split("_")[0];
       const overwrite = e.split("_")[1] === "OVERWRITE";
       const order = overwrite ? null : e.split("_")[1].toLowerCase();
       return {

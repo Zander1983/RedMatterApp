@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import React from "react";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -7,60 +6,9 @@ import { FormControlLabel } from "@material-ui/core";
 
 import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
-import { store } from "redux/store";
-import { Grid } from "@amcharts/amcharts4/charts";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: "100%",
-    },
-    button: {
-      marginRight: theme.spacing(1),
-    },
-    instructions: {
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-    marginButton: {
-      margin: theme.spacing(1),
-      width: 300,
-      height: 50,
-      backgroundColor: "rgb(210, 230, 240)",
-    },
-    deviceTypeContent: {
-      padding: "2px 4px",
-      display: "flex",
-      alignItems: "center",
-      width: 400,
-    },
-    input: {
-      marginLeft: theme.spacing(1),
-      flex: 1,
-    },
-    iconButton: {
-      padding: 10,
-    },
-    divider: {
-      height: 28,
-      margin: 4,
-    },
-  })
-);
-
-function getSteps() {
-  return [
-    "Device selection",
-    "Cell type",
-    "Particle size",
-    "Fluorophores category",
-    "Description",
-  ];
-}
 
 function FormDeviceType() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.device;
   try {
     let defaultValue = store.getState().user.experiment.device;
     if (defaultValue === undefined) defaultValue = null;
@@ -69,7 +17,6 @@ function FormDeviceType() {
     }
   } catch (e) {}
   const dispatch = useDispatch();
-  const [deviceType, setDeviceType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
 
   return (
@@ -162,7 +109,6 @@ function FormDeviceType() {
 function FormCellType() {
   const store = useStore();
   const [cellTypeError, setCellTypeError] = React.useState(false);
-  let defaultValue = null;
   try {
     let defaultValue = store.getState().user.experiment.cellType;
     if (defaultValue === undefined) defaultValue = null;
@@ -174,12 +120,6 @@ function FormCellType() {
     }
   } catch (e) {}
   const dispatch = useDispatch();
-  const [cellType, setCellType] = React.useState(defaultValue);
-
-  const getData = () => {
-    return cellType;
-  };
-
   return (
     <div
       style={{
@@ -205,13 +145,13 @@ function FormCellType() {
                 },
               },
             });
-            if (store.getState().user.experiment.cellType != "") {
+            if (store.getState().user.experiment.cellType !== "") {
               setCellTypeError(false);
             }
           }}
           onBlur={(e) => {
             if (
-              store.getState().user.experiment.cellType == "" ||
+              store.getState().user.experiment.cellType === "" ||
               store.getState().user.experiment.cellType == null
             ) {
               setCellTypeError(true);
@@ -246,7 +186,6 @@ function FormCellType() {
 function FormParticleSize() {
   const store = useStore();
   const [particleSizeError, setParticleSizeError] = React.useState(false);
-  let defaultValue = store.getState().user.experiment.particleSize;
   try {
     let defaultValue = store.getState().user.experiment.particleSize;
     if (defaultValue === undefined) defaultValue = null;
@@ -259,12 +198,6 @@ function FormParticleSize() {
     }
   } catch (e) {}
   const dispatch = useDispatch();
-  const [particleSize, setParticleSize] = React.useState(defaultValue);
-
-  const getData = () => {
-    return particleSize;
-  };
-
   return (
     <div
       style={{
@@ -290,14 +223,14 @@ function FormParticleSize() {
             },
           });
 
-          if (store.getState().user.experiment.particleSize != "") {
+          if (store.getState().user.experiment.particleSize !== "") {
             setParticleSizeError(false);
           }
         }}
         onBlur={(e) => {
           if (
-            store.getState().user.experiment.particleSize == null ||
-            store.getState().user.experiment.particleSize == ""
+            store.getState().user.experiment.particleSize === null ||
+            store.getState().user.experiment.particleSize === ""
           ) {
             setParticleSizeError(true);
           }
@@ -330,7 +263,6 @@ function FormFluorophores() {
   const store = useStore();
   const [fluorosphoresCategoryError, setFluorosphoresCategoryError] =
     React.useState(false);
-  let defaultValue = store.getState().user.experiment.fluorophoresCategory;
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
@@ -341,12 +273,7 @@ function FormFluorophores() {
     }
   } catch (e) {}
   const dispatch = useDispatch();
-  const [fluorophoresType, setFluorophoresType] = React.useState(defaultValue);
   const [notFound, setNotFound] = React.useState(false);
-
-  const getData = () => {
-    return fluorophoresType;
-  };
 
   return (
     <div
@@ -372,13 +299,13 @@ function FormFluorophores() {
               },
             },
           });
-          if (store.getState().user.experiment.fluorophoresCategory != "") {
+          if (store.getState().user.experiment.fluorophoresCategory !== "") {
             setFluorosphoresCategoryError(false);
           }
         }}
         onBlur={(e) => {
           if (
-            store.getState().user.experiment.fluorophoresCategory == "" ||
+            store.getState().user.experiment.fluorophoresCategory === "" ||
             store.getState().user.experiment.fluorophoresCategory == null
           ) {
             setFluorosphoresCategoryError(true);
@@ -465,10 +392,6 @@ function FormDescription() {
   const dispatch = useDispatch();
   const [description, setdescription] = React.useState(defaultValue);
 
-  const getData = () => {
-    return description;
-  };
-
   return (
     <TextField
       helperText="This Field is Optional"
@@ -497,7 +420,7 @@ function FormDescription() {
   );
 }
 
-export default {
+const formSteps = {
   formDeviceType: {
     component: <FormDeviceType />,
     optional: false,
@@ -526,3 +449,5 @@ export default {
       "Enter a brief description of your experiment. You can skip if you like!",
   },
 };
+
+export default formSteps;

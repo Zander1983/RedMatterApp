@@ -1,18 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory } from "react-router-dom";
 import userManager from "Components/users/userManager";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
-import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
-import { useDispatch, useStore } from "react-redux";
-import { snackbarService } from "uno-material-ui";
-import { LockFilled } from "@ant-design/icons";
-import {
-  AuthenticationApiFetchParamCreator,
-  UserApiFetchParamCreator,
-} from "api_calls/nodejsback";
+import { Grid, Button } from "@material-ui/core";
 
 import { loadStripe } from "@stripe/stripe-js/pure";
 // Make sure to call `loadStripe` outside of a component’s render to avoid
@@ -72,23 +61,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Plans(props: any) {
-  const [userId, setUserId] = useState(null);
-  const store = useStore();
-
+export default function Plans() {
   const classes = useStyles();
-
-  const gettingUserToken = () => {
-    try {
-      let token = userManager.getToken();
-      return token;
-    } catch (error) {
-      let token = null;
-      return token;
-    }
-  };
-
-  let userToken = gettingUserToken();
 
   const createCheckoutSession = async (priceId: string, subType: string) => {
     return axios

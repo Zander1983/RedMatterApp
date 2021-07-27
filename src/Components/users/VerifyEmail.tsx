@@ -29,9 +29,10 @@ const VerifyEmail = (props: any) => {
     }
   };
   useEffect(() => {
-    if (code != undefined && code != "") {
+    if (code !== undefined && code !== "") {
       handleSubmit();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -83,6 +84,7 @@ const VerifyEmail = (props: any) => {
                 }}
               >
                 <img
+                  alt="Red matter logo"
                   src={logo_orig}
                   style={{
                     width: "100%",

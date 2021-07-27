@@ -37,7 +37,7 @@ export default class HistogramDrawer extends GraphDrawer {
   drawLines() {
     const vl = (this.y2 - this.y1) / this.binSize;
     const hl = (this.x2 - this.x1) / this.binSize;
-    if (this.axis == "horizontal") {
+    if (this.axis === "horizontal") {
       // Horizontal hist lines
       for (let i = 0; i < vl; i++) {
         const height =
@@ -101,7 +101,6 @@ export default class HistogramDrawer extends GraphDrawer {
       this.binSize = (this.x2 - this.x1) / this.bins;
       if (this.bins <= index) {
         return;
-        throw Error(`Out of bounds index for histogram with ${this.bins} bins`);
       }
       const outterBeginX = this.x1 + index * this.binSize;
       const outterEndX = this.x1 + (index + 1) * this.binSize;
@@ -121,7 +120,6 @@ export default class HistogramDrawer extends GraphDrawer {
       this.binSize = (this.y2 - this.y1) / this.bins;
       if (this.bins <= index) {
         return;
-        throw Error(`Out of bounds index for histogram with ${this.bins} bins`);
       }
       const outterBeginY = this.y1 + (this.bins - 1 - index) * this.binSize;
       const outterEndY = this.y1 + (this.bins - index) * this.binSize;

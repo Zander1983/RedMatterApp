@@ -44,6 +44,7 @@ function RangeResizeModal(props: {
   useEffect(() => {
     setMin(props.inits.min);
     setMax(props.inits.max);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.inits.min]);
 
   return (

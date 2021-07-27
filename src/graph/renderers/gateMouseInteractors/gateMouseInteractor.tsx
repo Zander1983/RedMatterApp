@@ -2,7 +2,6 @@ import dataManager from "../../dataManagement/dataManager";
 import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import FCSServices from "services/FCSServices/FCSServices";
 
 export interface Point {
   x: number;

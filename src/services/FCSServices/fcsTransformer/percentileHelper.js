@@ -1,3 +1,6 @@
+/* eslint-disable*/
+/* eslint-disable import/no-anonymous-default-export */
+
 // Returns the value at a given percentile in a sorted numeric array.
 // "Linear interpolation between closest ranks" method
 const percentile = (arr, p) => {
