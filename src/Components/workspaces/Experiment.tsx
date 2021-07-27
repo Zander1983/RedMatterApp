@@ -215,6 +215,7 @@ const Experiment = (props: any) => {
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
+    let finalFileList = [];
     for (const file of fileList) {
       fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
@@ -239,10 +240,15 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, file.tempId);
+        filesUpload = filesUpload.filter((x) => x.id != file.tempId);
+        setUploadingFiles(filesUpload);
         setFileUploadInputValue("");
-        return;
+      } else {
+        finalFileList.push(file);
       }
+    }
+
+    for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
