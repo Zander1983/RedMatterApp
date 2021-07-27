@@ -220,7 +220,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           marginRight: "auto",
         }}
         container
-        item
         xs={12}
         md={10}
         lg={8}
@@ -233,13 +232,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
           }}
-          item
           xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              item
               lg={12}
               sm={12}
               style={{
@@ -300,7 +297,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 width: "100%",
               }}
               xs={12}
-              item
             >
               {displayExperiments.length > 0 ? (
                 displayExperiments.map((data: any, index: number) => {

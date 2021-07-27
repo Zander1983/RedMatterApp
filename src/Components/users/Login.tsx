@@ -117,7 +117,6 @@ const Login = (props: any) => {
             label="Email"
             onChange={handleChange}
             name="email"
-            autoComplete="email"
             value={formData.email}
             variant="outlined"
             validators={["required", "isEmail"]}
@@ -128,7 +127,6 @@ const Login = (props: any) => {
             className={classes.textFieldWidth}
             label="Password"
             variant="outlined"
-            autoComplete="current-password"
             type="password"
             onChange={handleChange}
             name="password"

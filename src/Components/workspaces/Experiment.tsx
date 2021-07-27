@@ -76,7 +76,7 @@ const Experiment = (props: any) => {
     history.replace("/experiments");
   }
 
-  const addExperimentIdToRedux = () => {
+  useEffect(() => {
     dispatch({
       type: "EXPERIMENT_FORM_DATA",
       payload: {
@@ -84,10 +84,9 @@ const Experiment = (props: any) => {
         formitem: { key: "experimentId", value: props.id },
       },
     });
-  };
-  useEffect(addExperimentIdToRedux, [dispatch, props.id]);
+  }, [dispatch, props.id]);
 
-  const findUploadingFiles = () => {
+  useEffect(() => {
     if (
       fileTempIdMap &&
       Object.keys(fileTempIdMap).length > 0 &&
@@ -105,8 +104,7 @@ const Experiment = (props: any) => {
       let files = uploadingFiles.filter((x) => !keys.includes(x.id));
       setUploadingFiles(files);
     }
-  };
-  useEffect(findUploadingFiles, [experimentData, uploadingFiles]);
+  }, [experimentData, uploadingFiles]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchExperimentData = (
@@ -330,6 +328,8 @@ const Experiment = (props: any) => {
   };
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
+  useEffect(() => {}, [experimentData]);
+
   return (
     <>
       {}
@@ -356,7 +356,6 @@ const Experiment = (props: any) => {
           marginRight: "auto",
         }}
         container
-        item
         xs={12}
         md={10}
         lg={8}
@@ -369,13 +368,11 @@ const Experiment = (props: any) => {
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
           }}
-          item
           xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              item
               lg={12}
               sm={12}
               style={{
@@ -409,8 +406,6 @@ const Experiment = (props: any) => {
                 ) : (
                   <Grid
                     xs={12}
-                    container
-                    item
                     direction="row"
                     style={{
                       color: "#fff",
@@ -502,7 +497,6 @@ const Experiment = (props: any) => {
               </Grid>
               <Grid
                 xs={12}
-                item
                 style={{
                   backgroundColor: "#ddd",
                   border: "solid 1px #bbb",
@@ -513,7 +507,6 @@ const Experiment = (props: any) => {
               >
                 <Grid
                   xs={12}
-                  item
                   style={{
                     backgroundColor:
                       experimentSize === 0
@@ -537,14 +530,13 @@ const Experiment = (props: any) => {
                     : ""}
                 </Grid>
               </Grid>
-              <Grid xs={12} item style={{ textAlign: "center" }}>
+              <Grid xs={12} style={{ textAlign: "center" }}>
                 {/*@ts-ignore*/}
                 {/* {experiments.length > 0
                   ? JSON.stringify(experiments[0].details)
                   : null} */}
                 <Grid
                   container
-                  item
                   direction="row"
                   style={{
                     justifyContent: "space-between",
@@ -603,7 +595,7 @@ const Experiment = (props: any) => {
                 ) : (
                   experimentData.files.map((e: any, i: number) => {
                     return (
-                      <Grid key={i}>
+                      <>
                         <Grid
                           item
                           xs={12}
@@ -683,7 +675,7 @@ const Experiment = (props: any) => {
                             style={{ marginTop: 15, marginBottom: 15 }}
                           ></Divider>
                         ) : null}
-                      </Grid>
+                      </>
                     );
                   })
                 )}
@@ -696,7 +688,7 @@ const Experiment = (props: any) => {
                 ) : null}
                 {uploadingFiles.map((e: any, i: number) => {
                   return (
-                    <div key={i}>
+                    <>
                       <Grid
                         item
                         xs={12}
@@ -734,7 +726,7 @@ const Experiment = (props: any) => {
                           style={{ marginTop: 15, marginBottom: 15 }}
                         ></Divider>
                       ) : null}
-                    </div>
+                    </>
                   );
                 })}
                 {Object.keys(experiment).length > 0 ? (
@@ -742,7 +734,6 @@ const Experiment = (props: any) => {
                     <Divider style={{ marginBottom: 10 }}></Divider>
                     <Grid
                       container
-                      item
                       direction="row"
                       style={{
                         justifyContent: "space-between",
@@ -784,7 +775,6 @@ const Experiment = (props: any) => {
                     <Divider style={{ marginBottom: 10 }}></Divider>
                     <Grid
                       container
-                      item
                       direction="row"
                       style={{
                         justifyContent: "space-between",
@@ -795,7 +785,7 @@ const Experiment = (props: any) => {
                           Experiment Channels
                         </h1>
                         {getExperimentChannels().map((e) => (
-                          <h4 key={e}>{"• " + e}</h4>
+                          <h4>{"• " + e}</h4>
                         ))}
                       </div>
                     </Grid>

@@ -89,7 +89,7 @@ export default function MainBar(props: any) {
   // };
 
   return (
-    <Grid container direction="row" item xs={12} style={classes.main}>
+    <Grid container direction="row" xs={12} style={classes.main}>
       <MessageModal
         open={deleteModalOpen}
         closeCall={{

@@ -22,10 +22,10 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     fontFamily: "Quicksand",
     fontWeight: 700,
-    color: "inherit",
+    color: "white",
   },
   topBarLink: {
-    color: "inherit",
+    color: "white",
     fontSize: 17,
     fontFamily: "Quicksand",
     fontWeight: 600,

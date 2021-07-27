@@ -277,7 +277,6 @@ const AppLandingPage = () => {
 
       <Grid
         container
-        item
         direction="row"
         xs={12}
         md={9}
@@ -411,7 +410,6 @@ const AppLandingPage = () => {
       </Grid>
 
       <Grid
-        item
         xs={12}
         md={9}
         lg={6}
@@ -423,7 +421,6 @@ const AppLandingPage = () => {
 
       <Grid
         container
-        item
         xs={12}
         md={9}
         lg={6}
@@ -435,8 +432,8 @@ const AppLandingPage = () => {
           marginBottom: -20,
         }}
       >
-        {featureList.map((e, i) => (
-          <Grid container item xs={6} md={4} key={i} style={{ padding: 10 }}>
+        {featureList.map((e) => (
+          <Grid container xs={6} md={4} style={{ padding: 10 }}>
             <Grid
               container
               direction="column"
@@ -471,12 +468,11 @@ const AppLandingPage = () => {
         ))}
       </Grid>
 
-      <Grid item xs={12} md={9} lg={6} className={classes.majorColumnItem}>
+      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
       <Grid
-        item
         xs={12}
         md={9}
         lg={6}
@@ -493,7 +489,6 @@ const AppLandingPage = () => {
         </h1>
         <Grid
           container
-          item
           className={classes.majorColumnItem}
           style={{
             padding: 10,
@@ -503,7 +498,7 @@ const AppLandingPage = () => {
           }}
         >
           {universities.map((item, i) => (
-            <Grid key={i} item xs={4} md={3} lg={2}>
+            <Grid key={i} xs={4} md={3} lg={2}>
               <div
                 style={{
                   backgroundColor: "#fff",
@@ -521,12 +516,11 @@ const AppLandingPage = () => {
         </Grid>
       </Grid>
 
-      <Grid item xs={12} md={9} lg={6} className={classes.majorColumnItem}>
+      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
       <Grid
-        item
         xs={12}
         md={9}
         lg={6}
@@ -546,7 +540,6 @@ const AppLandingPage = () => {
 
       <Grid
         container
-        item
         xs={12}
         md={9}
         lg={6}
@@ -554,6 +547,7 @@ const AppLandingPage = () => {
           marginLeft: "auto",
           marginRight: "auto",
         }}
+        alignItems="flex-end"
       >
         {serviceTiers.map((tier) => (
           <Grid item key={tier.title} sm={12} md={4} style={{ padding: 10 }}>
@@ -568,7 +562,7 @@ const AppLandingPage = () => {
                 subheader={tier.subheader}
                 titleTypographyProps={{ align: "center" }}
                 // @ts-ignore
-                subheaderTypographyProps={{ align: "center", color: "inherit" }}
+                subheaderTypographyProps={{ align: "center", color: "white" }}
                 action={tier.title === "Pro" ? <StarIcon /> : null}
                 className={classes.cardHeader}
               />
