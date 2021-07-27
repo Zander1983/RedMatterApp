@@ -514,7 +514,7 @@ class DataManager extends ObserversFunctionality {
         axes: file.channels.map((e: any) => e.value),
         data: file.events,
         plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
+        remoteData: { ...file, events: [] },
       });
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);
