@@ -58,7 +58,7 @@ const Login = (props: any) => {
       const loginData = res.data;
       dispatch({
         type: "LOGIN",
-        payload: { user: { profile: loginData } },
+        payload: loginData,
       });
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {

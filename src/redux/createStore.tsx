@@ -3,10 +3,14 @@ import thunk from "redux-thunk";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 
-import reducers from "./reducers";
+import userReducers from "./reducers/userReducers";
+import experimentReducers from "./reducers/experimentReducers";
+import graphReducers from "graph/redux/reducers";
 
 const rootReducer = combineReducers({
-  user: reducers,
+  user: userReducers,
+  workspace: graphReducers,
+  experiment: experimentReducers,
 });
 
 const persistConfig = {

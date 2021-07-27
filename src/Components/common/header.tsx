@@ -44,9 +44,7 @@ const AppHeader = (props: any) => {
     Object.keys(
       useSelector((state: any) => {
         if (Object.keys(state).includes("user")) {
-          if (Object.keys(state.user).includes("profile")) {
-            return state.user.profile;
-          }
+          return state.user;
         }
         return {};
       })

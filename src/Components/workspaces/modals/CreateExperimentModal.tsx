@@ -145,12 +145,11 @@ function CreateExperimentModal(props: {
     }
 
     const valuesToCheck = {
-      1: store.getState().user.experiment.cellType,
-      2: store.getState().user.experiment.particleSize,
-      3: store.getState().user.experiment.fluorophoresCategory,
+      1: store.getState().experiment.cellType,
+      2: store.getState().experiment.particleSize,
+      3: store.getState().experiment.fluorophoresCategory,
     };
 
-    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
     if (
       Object.values(valuesToCheck).every((item) => item != null) &&
       name != null
@@ -163,15 +162,14 @@ function CreateExperimentModal(props: {
       );
       return;
     }
-    //SET THE FROM DATA STATE SO WE CAN CREATE THE EXPERIMENT FROM THE CREATEWORKSPACE FUNCTION
-    setFormData(store.getState().user.experiment);
+    setFormData(store.getState().experiment);
   };
 
   const confirmEnabled = () => {
     const valuesToCheck = {
-      1: store.getState().user.experiment.cellType,
-      2: store.getState().user.experiment.particleSize,
-      3: store.getState().user.experiment.fluorophoresCategory,
+      1: store.getState().experiment.cellType,
+      2: store.getState().experiment.particleSize,
+      3: store.getState().experiment.fluorophoresCategory,
       4: name,
     };
     return Object.values(valuesToCheck).every(

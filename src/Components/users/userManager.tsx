@@ -5,7 +5,7 @@ class UserManager {
 
   isLoggedIn(): boolean {
     this.state = store.getState();
-    const ret = Object.keys(this.state.user.profile).length !== 0;
+    const ret = Object.keys(this.state.user).length !== 0;
     return ret;
   }
 
@@ -19,14 +19,14 @@ class UserManager {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
     }
-    return this.state.user.profile.token;
+    return this.state.user.token;
   }
 
   getOrganiztionID() {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
     }
-    return this.state.user.profile.organisationId;
+    return this.state.user.organisationId;
   }
 
   canAccessExperiment(id: string) {

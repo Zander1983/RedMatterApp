@@ -80,37 +80,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// ==== Avoid multiple listeners for screen resize ====
 let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
-const staticFiles = [
-  "transduction_1",
-  "transduction_2",
-  "transduction_3",
-  "erica1",
-  "erica2",
-  "erica3",
-].map((e) => {
-  return {
-    label: e,
-    information: "...",
-    fromStatic: e,
-    fileSize: 0,
-    eventCount: 0,
-    lastModified: "X/X/X",
-  };
-});
 
 function Workspace(props: { experimentId: string }) {
   const store = useStore();
   const [workspace, setWorkspace] = React.useState(null);
   console.log("GENERAL STATE =", workspace);
 
-  useEffect(() => {
-    setWorkspace(store.getState().user);
-  }, [store, store.getState]);
-
-  const remoteWorkspace = dataManager.isRemoteWorkspace();
+  const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
@@ -119,6 +97,11 @@ function Workspace(props: { experimentId: string }) {
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
+  const [loading, setLoading] = React.useState(false);
+
+  useEffect(() => {
+    setWorkspace(store.getState().user);
+  }, [store, store.getState]);
 
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
@@ -273,9 +256,6 @@ function Workspace(props: { experimentId: string }) {
     setInitPlot(true);
   };
 
-  const classes = useStyles();
-  const [loading, setLoading] = React.useState(false);
-
   const upsertWorkSpace = (isShared: boolean = false) => {
     setSavingWorkspace(true);
     let stateJson = dataManager.getWorkspaceJSON();
@@ -393,9 +373,7 @@ function Workspace(props: { experimentId: string }) {
       return;
     }
 
-    const file: any = remoteWorkspace
-      ? downloadedFiles[index]
-      : staticFiles[index];
+    const file: any = downloadedFiles[index];
     let newFile: FCSFile;
     if (file?.fromStatic) {
       newFile = staticFileReader(file.fromStatic);

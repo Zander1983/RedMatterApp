@@ -10,7 +10,7 @@ import { useDispatch, useStore } from "react-redux";
 function FormDeviceType() {
   const store = useStore();
   try {
-    let defaultValue = store.getState().user.experiment.device;
+    let defaultValue = store.getState().experiment.device;
     if (defaultValue === undefined) defaultValue = null;
     if (defaultValue != null) {
       defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
@@ -110,7 +110,7 @@ function FormCellType() {
   const store = useStore();
   const [cellTypeError, setCellTypeError] = React.useState(false);
   try {
-    let defaultValue = store.getState().user.experiment.cellType;
+    let defaultValue = store.getState().experiment.cellType;
     if (defaultValue === undefined) defaultValue = null;
     if (defaultValue != null) {
       defaultValue = [
@@ -145,14 +145,14 @@ function FormCellType() {
                 },
               },
             });
-            if (store.getState().user.experiment.cellType !== "") {
+            if (store.getState().experiment.cellType !== "") {
               setCellTypeError(false);
             }
           }}
           onBlur={(e) => {
             if (
-              store.getState().user.experiment.cellType === "" ||
-              store.getState().user.experiment.cellType == null
+              store.getState().experiment.cellType === "" ||
+              store.getState().experiment.cellType == null
             ) {
               setCellTypeError(true);
             }
@@ -187,7 +187,7 @@ function FormParticleSize() {
   const store = useStore();
   const [particleSizeError, setParticleSizeError] = React.useState(false);
   try {
-    let defaultValue = store.getState().user.experiment.particleSize;
+    let defaultValue = store.getState().experiment.particleSize;
     if (defaultValue === undefined) defaultValue = null;
     if (defaultValue != null) {
       defaultValue = [
@@ -223,14 +223,14 @@ function FormParticleSize() {
             },
           });
 
-          if (store.getState().user.experiment.particleSize !== "") {
+          if (store.getState().experiment.particleSize !== "") {
             setParticleSizeError(false);
           }
         }}
         onBlur={(e) => {
           if (
-            store.getState().user.experiment.particleSize === null ||
-            store.getState().user.experiment.particleSize === ""
+            store.getState().experiment.particleSize === null ||
+            store.getState().experiment.particleSize === ""
           ) {
             setParticleSizeError(true);
           }
@@ -264,7 +264,7 @@ function FormFluorophores() {
   const [fluorosphoresCategoryError, setFluorosphoresCategoryError] =
     React.useState(false);
   try {
-    let defaultValue = store.getState().user.experiment.fluorophoresCategory;
+    let defaultValue = store.getState().experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
     if (defaultValue != null) {
       defaultValue = fluorophoresData.filter(
@@ -299,14 +299,14 @@ function FormFluorophores() {
               },
             },
           });
-          if (store.getState().user.experiment.fluorophoresCategory !== "") {
+          if (store.getState().experiment.fluorophoresCategory !== "") {
             setFluorosphoresCategoryError(false);
           }
         }}
         onBlur={(e) => {
           if (
-            store.getState().user.experiment.fluorophoresCategory === "" ||
-            store.getState().user.experiment.fluorophoresCategory == null
+            store.getState().experiment.fluorophoresCategory === "" ||
+            store.getState().experiment.fluorophoresCategory == null
           ) {
             setFluorosphoresCategoryError(true);
           }
@@ -384,9 +384,9 @@ function FormFluorophores() {
 
 function FormDescription() {
   const store = useStore();
-  let defaultValue = store.getState().user.experiment.formDescription;
+  let defaultValue = store.getState().experiment.formDescription;
   try {
-    let defaultValue = store.getState().user.experiment.description;
+    let defaultValue = store.getState().experiment.description;
     if (defaultValue === undefined) defaultValue = null;
   } catch (e) {}
   const dispatch = useDispatch();

@@ -40,16 +40,16 @@ function CreateExperimentDialog(props: {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             <strong>Device:</strong>
-            {store.getState().user.experiment.device}
+            {store.getState().experiment.device}
             <br></br>
             <strong>Cell Type:</strong>
-            {store.getState().user.experiment.cellType}
+            {store.getState().experiment.cellType}
             <br></br>
             <strong>Particle Size:</strong>
-            {store.getState().user.experiment.particleSize}
+            {store.getState().experiment.particleSize}
             <br></br>
             <strong>Fluorophores Category:</strong>
-            {store.getState().user.experiment.fluorophoresCategory}
+            {store.getState().experiment.fluorophoresCategory}
             <br></br>
             <strong>Description:</strong>
             <b
@@ -59,7 +59,7 @@ function CreateExperimentDialog(props: {
                 display: "inline",
               }}
             >
-              {store.getState().user.experiment.description}
+              {store.getState().experiment.description}
             </b>
             <br></br>
           </DialogContentText>
