@@ -139,7 +139,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
           y: yBi ? logiclizedy : e.y,
         };
       });
-      ranges = [xBi ? [0, 1] : ranges.x, yBi ? [0, 1] : ranges.y];
+      ranges = [xBi ? [0.5, 1] : ranges.x, yBi ? [0.5, 1] : ranges.y];
     } else {
       ranges = [ranges.x, ranges.y];
     }

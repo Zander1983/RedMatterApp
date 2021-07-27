@@ -82,8 +82,8 @@ export default class GraphTransformer extends Transformer {
     let { ibx, iby, iex, iey } = this;
     const xBi = this.plotData.xPlotType === "bi";
     const yBi = this.plotData.yPlotType === "bi";
-    const rangeX = xBi ? [0, 1] : [ibx, iex];
-    const rangeY = yBi ? [0, 1] : [iby, iey];
+    const rangeX = xBi ? [0.5, 1] : [ibx, iex];
+    const rangeY = yBi ? [0.5, 1] : [iby, iey];
     if (p.x < rangeX[0] || p.x > rangeX[1]) {
       return true;
     }

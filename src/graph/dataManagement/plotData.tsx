@@ -597,7 +597,7 @@ export default class PlotData extends ObserversFunctionality {
         linearRange[0],
         linearRange[1]
       );
-      range = [0, 1];
+      range = [0.5, 1];
     }
     const binCounts = Array(binCount).fill(0);
     const step = (range[1] - range[0]) / binCount;

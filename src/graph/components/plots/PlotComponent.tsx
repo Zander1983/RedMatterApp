@@ -16,9 +16,6 @@ import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { keys } from "lodash";
-import { generateColor } from "graph/utils/color";
-import { any } from "@amcharts/amcharts4/.internal/core/utils/Array";
 
 interface overlayHistogram {
   color: string;
@@ -538,6 +535,7 @@ function PlotComponent(props: {
     else props.plot.plotData.ranges.set(axis, [min, max]);
   };
 
+  const [mouseDownPos, setMouseDownPos] = React.useState({ x: 0, y: 0 });
   const [oldPos, setOldPos] = React.useState(69420);
   const calculateDragRangeChange = (
     min: number,
@@ -658,7 +656,13 @@ function PlotComponent(props: {
           ></RangeResizeModal>
           <div
             draggable="true"
-            onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setMouseDownPos({
+                x: e.nativeEvent.offsetX,
+                y: e.nativeEvent.offsetY,
+              });
+            }}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: isPlotHistogram()
@@ -689,11 +693,11 @@ function PlotComponent(props: {
               );
               const dragValue = e.nativeEvent.offsetY;
               const closerToMin =
-                dragValue > (plot.plotData.plotHeight - 100) / 2;
+                mouseDownPos.y > (plot.plotData.plotHeight - 100) / 2;
               const [newMin, newMax] = calculateDragRangeChange(
                 oldMin,
                 oldMax,
-                (closerToMin ? -1 : 1) * dragValue,
+                (closerToMin ? 1 : -1) * dragValue,
                 closerToMin
               );
               setAxisRange(newMin, newMax, plot.plotData.yAxis);
@@ -701,7 +705,13 @@ function PlotComponent(props: {
           ></div>
           <div
             draggable="true"
-            onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setMouseDownPos({
+                x: e.nativeEvent.offsetX,
+                y: e.nativeEvent.offsetY,
+              });
+            }}
             style={{
               backgroundColor: "rgba(0,0,0,0.0)",
               width: plot.plotData.plotWidth - 120,
@@ -732,11 +742,11 @@ function PlotComponent(props: {
               );
               const dragValue = e.nativeEvent.offsetX;
               const closerToMin =
-                dragValue < (plot.plotData.plotWidth - 120) / 2;
+                mouseDownPos.x < (plot.plotData.plotWidth - 120) / 2;
               const [newMin, newMax] = calculateDragRangeChange(
                 oldMin,
                 oldMax,
-                (closerToMin ? 1 : -1) * dragValue,
+                (closerToMin ? -1 : 1) * dragValue,
                 closerToMin
               );
               setAxisRange(newMin, newMax, plot.plotData.xAxis);
