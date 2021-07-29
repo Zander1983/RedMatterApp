@@ -6,7 +6,7 @@ const initialState: any = {
   plots: [],
   previousStates: [],
   remoteID: null,
-  mouseState: null,
+  mouseGateState: null,
 };
 
 const graphReducers = (state = initialState, action: any) => {
@@ -24,6 +24,7 @@ const graphReducers = (state = initialState, action: any) => {
     case actionTypes.ADD_FILE:
       return {
         ...state,
+        files: [action.payload.file, ...state.files],
       };
     case actionTypes.ADD_PLOT:
       return {

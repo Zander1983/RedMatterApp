@@ -84,7 +84,7 @@ let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
 
 function Workspace(props: { experimentId: string }) {
-  const store = useStore();
+  const store = props.store;
   const [workspace, setWorkspace] = React.useState(null);
   console.log("GENERAL STATE =", workspace);
 
@@ -98,10 +98,6 @@ function Workspace(props: { experimentId: string }) {
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
   const [loading, setLoading] = React.useState(false);
-
-  useEffect(() => {
-    setWorkspace(store.getState().user);
-  }, [store, store.getState]);
 
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
