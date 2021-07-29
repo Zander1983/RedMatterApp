@@ -1,6 +1,4 @@
-import GraphPlotter, {
-  GraphPlotterState,
-} from "graph/renderers/plotters/graphPlotter";
+import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 
 export const applyPlugin = () => {
@@ -32,9 +30,9 @@ export const applyPlugin = () => {
             overwritten = true;
             functionList = [e];
           } else if (!overwritten) {
-            if (e.order == "before") {
+            if (e.order === "before") {
               functionList = [e, ...functionList];
-            } else if (e.order == "after") {
+            } else if (e.order === "after") {
               functionList = [...functionList, e];
             } else {
               throw Error("Unrecognized plugin order " + e.order);

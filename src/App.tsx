@@ -15,7 +15,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/components/Plots";
+import Plots from "./graph/Workspace";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
@@ -154,7 +154,7 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
-  }, []);
+  }, [dispatch]);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

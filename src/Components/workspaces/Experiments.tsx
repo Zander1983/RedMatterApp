@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
-import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
 
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/CreateExperimentModal";
@@ -10,11 +9,8 @@ import CreateExperimentModal from "./modals/CreateExperimentModal";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import { withStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { purple } from "@material-ui/core/colors";
-import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch, { SwitchClassKey, SwitchProps } from "@material-ui/core/Switch";
-import Typography from "@material-ui/core/Typography";
 import { snackbarService } from "uno-material-ui";
 
 interface Styles extends Partial<Record<SwitchClassKey, string>> {
@@ -165,10 +161,12 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
     setExperimentsToBeDisplayed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     privateExperimentsSwitch,
     organizationExperimentsSwitch,

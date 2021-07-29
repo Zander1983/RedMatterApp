@@ -1,6 +1,5 @@
 import Gate, { GateState, Point } from "./gate";
 import { pointInsidePolygon } from "graph/dataManagement/math/euclidianPlane";
-import PlotData from "../plotData";
 import FCSServices from "services/FCSServices/FCSServices";
 
 interface PolygonGateState extends GateState {

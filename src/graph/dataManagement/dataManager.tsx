@@ -18,8 +18,6 @@ import ObserversFunctionality, {
 import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
-import axios from "axios";
-import userManager from "Components/users/userManager";
 import { FileService } from "services/FileService";
 import { snackbarService } from "uno-material-ui";
 
@@ -171,7 +169,7 @@ class DataManager extends ObserversFunctionality {
     }
     const plotGates = this.currentWorkspace.plots.get(plotID).gates;
     for (let indx in plotGates) {
-      if (plotGates[indx].gate.id == gateID) {
+      if (plotGates[indx].gate.id === gateID) {
         this.currentWorkspace.plots
           .get(plotID)
           .removeGate(plotGates[indx].gate);
@@ -352,8 +350,7 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   saveWorkspaceToLocalStorage() {
-    const currentWorkspace = this.getWorkspaceJSON();
-    if (this.lastLocalStorageSave != undefined) {
+    if (this.lastLocalStorageSave !== undefined) {
       window.localStorage.removeItem(this.lastLocalStorageSave);
     }
     window.localStorage.setItem(
@@ -416,7 +413,7 @@ class DataManager extends ObserversFunctionality {
   dragLock: boolean = false;
   @publishDecorator()
   workspaceDragLock(dragLock?: boolean) {
-    if (dragLock != undefined) {
+    if (dragLock !== undefined) {
       this.dragLock = dragLock;
       if (this.dragLock === true) {
         setTimeout(() => this.workspaceDragLock(false), 1000);
@@ -514,7 +511,7 @@ class DataManager extends ObserversFunctionality {
         axes: file.channels.map((e: any) => e.value),
         data: file.events,
         plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
+        remoteData: { ...file, events: [] },
       });
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);
@@ -597,7 +594,7 @@ class DataManager extends ObserversFunctionality {
 
   private generateLocalStorageName() {
     this.lastLocalStorageSave = "currentWorkspace";
-    if (this.remoteWorkspaceID != undefined) {
+    if (this.remoteWorkspaceID !== undefined) {
       this.lastLocalStorageSave += "-" + this.remoteWorkspaceID;
     }
     return this.lastLocalStorageSave;

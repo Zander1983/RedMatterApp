@@ -16,6 +16,7 @@ import FileCopy from "@material-ui/icons/FileCopy";
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
 import PlotData from "graph/dataManagement/plotData";
+import { snackbarService } from "uno-material-ui";
 
 const classes = {
   table: {},
@@ -47,7 +48,7 @@ export default function GateMenu() {
 
   const setGateColor = (gate: Gate, color: any) => {
     gate.update({
-      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
+      color: `rgb(${color.rgb.r},${color.rgb.g},${color.rgb.b})`,
     });
     resetGates(gate.id);
   };
@@ -94,11 +95,30 @@ export default function GateMenu() {
         dataManager.removeObserver(e.terget, e.value);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applyGateToAllFiles = (params: { gateID: string; gate: Gate }) => {
+  const applyGateToAllFiles = async (params: {
+    gateID: string;
+    gate: Gate;
+  }) => {
     const { gate, gateID } = params;
     let files = dataManager.getAllFiles();
+    let downloadSnackbar = false;
+    const promises = dataManager.files
+      .map((file) => {
+        if (files.filter((e) => e.fileID === file.id).length === 0) {
+          if (downloadSnackbar === false) {
+            downloadSnackbar = true;
+            snackbarService.showSnackbar("Downloading files...", "info");
+          }
+          return dataManager.downloadFileEvent(file.id);
+        }
+        return null;
+      })
+      .filter((e) => e !== null);
+    await Promise.all(promises);
+    files = dataManager.getAllFiles();
     const plots = dataManager.getAllPlots();
     // Check gates that already
     plots.forEach((plot) => {
@@ -110,6 +130,7 @@ export default function GateMenu() {
         files = files.filter((file) => file.fileID !== plot.plot.file.id);
       }
     });
+
     for (const file of files) {
       const plot = new PlotData();
       plot.file = file.file;
@@ -119,6 +140,10 @@ export default function GateMenu() {
           gate: gate,
         },
       ];
+      plot.setXAxis(gate.xAxis);
+      plot.setYAxis(gate.yAxis);
+      plot.setXAxisPlotType(gate.xAxisType);
+      plot.setYAxisPlotType(gate.yAxisType);
       dataManager.addNewPlotToWorkspace(plot);
     }
   };

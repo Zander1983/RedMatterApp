@@ -1,41 +1,40 @@
 import React, { useEffect } from "react";
+import { useStore } from "react-redux";
+import axios from "axios";
+import { useHistory } from "react-router";
+import { useLocation } from "react-router-dom";
+
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
-import Popover from "@material-ui/core/Popover";
-import Typography from "@material-ui/core/Typography";
-import TextField from "@material-ui/core/TextField";
+import { snackbarService } from "uno-material-ui";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
-import MessageModal from "./modals/MessageModal";
-import AddFileModal from "./modals/AddFileModal";
-import GatetNamePrompt from "./modals/GateNamePrompt";
-import GenerateReportModal from "./modals/GenerateReportModal";
-import LinkShareModal from "./modals/linkShareModal";
-import FCSFile from "graph/dataManagement/fcsFile";
-import Workspace from "./workspaces/Workspace";
-import dataManager from "graph/dataManagement/dataManager";
-import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
-import SideMenus from "./static/SideMenus";
-import { HuePicker } from "react-color";
-import {
-  ExperimentApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
-} from "api_calls/nodejsback";
-import userManager from "Components/users/userManager";
-import axios from "axios";
-import { snackbarService } from "uno-material-ui";
-import { useHistory } from "react-router";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import Gate from "graph/dataManagement/gate/gate";
-import { useLocation } from "react-router-dom";
-import PlotData from "graph/dataManagement/plotData";
-import { API_CALLS } from "assets/constants/apiCalls";
-import { Dbouncer } from "services/Dbouncer";
 import { green } from "@material-ui/core/colors";
 import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+
+import userManager from "Components/users/userManager";
+import Gate from "graph/dataManagement/gate/gate";
+import PlotData from "graph/dataManagement/plotData";
+import { API_CALLS } from "assets/constants/apiCalls";
+import { Dbouncer } from "services/Dbouncer";
+import HowToUseModal from "./HowToUseModal";
+import SmallScreenNotice from "./SmallScreenNotice";
+import PrototypeNotice from "./PrototypeNotice";
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
+import MessageModal from "./components/modals/MessageModal";
+import AddFileModal from "./components/modals/AddFileModal";
+import GatetNamePrompt from "./components/modals/GateNamePrompt";
+import GenerateReportModal from "./components/modals/GenerateReportModal";
+import LinkShareModal from "./components/modals/linkShareModal";
+import FCSFile from "graph/dataManagement/fcsFile";
+import Plots from "./components/workspaces/Plots";
+import dataManager from "graph/dataManagement/dataManager";
+import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
+import SideMenus from "./components/static/SideMenus";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -82,7 +81,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // ==== Avoid multiple listeners for screen resize ====
-let eventListenerSet = false;
 let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
 const staticFiles = [
@@ -103,18 +101,27 @@ const staticFiles = [
   };
 });
 
-function Plots(props: { experimentId: string }) {
-  console.log("EXPERIMENT ID = ", props.experimentId);
+function Workspace(props: { experimentId: string }) {
+  const store = useStore();
+  const [workspace, setWorkspace] = React.useState(null);
+  console.log("GENERAL STATE =", workspace);
+
+  useEffect(() => {
+    setWorkspace(store.getState().user);
+  }, [store, store.getState]);
+
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
+
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
-  const [workspaceState, setWorkspaceState] = React.useState();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
   const location = useLocation();
+
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
+
   const verifyWorkspace = async (workspaceId: string) => {
     let workspaceData;
     try {
@@ -128,7 +135,6 @@ function Plots(props: { experimentId: string }) {
       );
       dataManager.setWorkspaceIsShared(workspaceData.data["isShared"]);
       setSharedWorkspace(workspaceData.data["isShared"]);
-      setWorkspaceState(JSON.parse(workspaceData.data["state"]));
     } catch (e) {
       snackbarService.showSnackbar(
         "Could not verify the workspace, reload the page and try again!",
@@ -146,7 +152,6 @@ function Plots(props: { experimentId: string }) {
 
   const getWorkspace = async () => {
     let workspaceData;
-
     try {
       workspaceData = await axios.post(
         "/api/getWorkspace",
@@ -224,6 +229,7 @@ function Plots(props: { experimentId: string }) {
       dataManager.removeObserver("removePlotFromWorkspace", removePlotListner);
       dataManager.removeObserver("addNewPlotToWorkspace", addPlotListner);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const autoSaveWorkspace = () => {
@@ -270,18 +276,6 @@ function Plots(props: { experimentId: string }) {
   const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
 
-  // == Small screen size notice ==
-  const [showSmallScreenNotice, setShowSmallScreenNotice] = React.useState(
-    window.innerWidth < 1165
-  );
-
-  if (!eventListenerSet) {
-    eventListenerSet = true;
-    window.addEventListener("resize", () => {
-      setShowSmallScreenNotice(window.innerWidth < 1165);
-    });
-  }
-
   const upsertWorkSpace = (isShared: boolean = false) => {
     setSavingWorkspace(true);
     let stateJson = dataManager.getWorkspaceJSON();
@@ -310,6 +304,7 @@ function Plots(props: { experimentId: string }) {
         );
       });
   };
+
   // == General modal logic ==
   const handleOpen = (func: Function) => {
     func(true);
@@ -324,21 +319,8 @@ function Plots(props: { experimentId: string }) {
   const [generateReportModalOpen, setGenerateReportModalOpen] =
     React.useState(false);
   const [loadModal, setLoadModal] = React.useState(false);
-  const [helpModal, setHelpModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const waitTime = Math.random() * 1000 + 500;
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handlePopoverOpen = (e: any) => {
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
   const [observerAdded, setObserverAdded] = React.useState(false);
   const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
@@ -502,132 +484,6 @@ function Plots(props: { experimentId: string }) {
       ) : null}
 
       <MessageModal
-        open={helpModal}
-        closeCall={{ f: handleClose, ref: setHelpModal }}
-        message={
-          <div
-            style={{
-              overflow: "hidden",
-              overflowY: "scroll",
-              maxHeight: 500,
-            }}
-          >
-            <h2>How to use?</h2>
-            <div
-              style={{
-                width: 550,
-                marginLeft: "auto",
-                marginRight: "auto",
-                textAlign: "left",
-              }}
-            >
-              <p>
-                <b>General:</b> You may add a file by clicking the "+ Add new
-                file" button. By adding a file, you will see a plot with the
-                entire contents of the file you selected. You may move this plot
-                around by simple clicking dragging it. You may resize by
-                clicking and dragging the bottom right of a plot.
-              </p>
-              <p>
-                <b>Main bar:</b> Located at the top of a plot, with several blue
-                buttons and a red button for deleting a plot. In the right of
-                this bar, you may find a camera button, which when clicked allow
-                you to download the current plot as a .png picture.
-              </p>
-              <p>
-                <b>Oval gates:</b> By pressing "Oval" you may enable oval gate
-                creation (indicated by the button's color turning slightly
-                lighter). To create an oval gate, click the first point where
-                you want this oval gate to touch, then move your mouse up to the
-                opposite point of this ellipse. After this, move your point away
-                from the segment created to change the perpendicular axis'
-                radius. After that, just press once again and a oval gate is
-                created. To edit, just click any of the four significant points
-                of the gate to adjust it.
-              </p>
-              <p>
-                <b>Polygon gates:</b> By pressing "Polygon" you may enable
-                polygon gate creation (indicated by the button's color turning
-                slightly lighter). To create a polygon gate, first enable it be
-                pressing the indicated button, then start clicking on the plot
-                where you want the points of the polygon to be. To finish it,
-                click the first point back again. The last segment of the
-                polygon will be highlighted blue if the click you are about to
-                make is the finishing one for closing that polygon. After a gate
-                is created, you may click one of it's points to select it and
-                move around as you see fit. To finish editing, just press again
-                to release the point where you want it to be.
-              </p>
-              <p>
-                <b>Subpopulations and inverse subpopulations:</b> You may create
-                a subpopulation based on the current points your gates gate on a
-                given plot by pressing the "Subpop" button.You may also create
-                an inverse subpopulation by pressing "Inverse subpop" button.
-                The inverse subpopulation selects all point outside of your
-                current gates.
-              </p>
-              <p>
-                <b>Population bar:</b> In here you may type a gate to apply to
-                your current plot, or open a menu with all available gates. You
-                may remove or add gates as you wish. Sometimes, if you create a
-                plot as a population of another gated plot, you will not be able
-                to remove that certain population.
-              </p>
-              <p>
-                <b>Axis bar:</b> In these bars you may change the axis of the X
-                or Y dimension. You may turn that dimension into a histogram by
-                simple pressing the histogram button. You may change the type of
-                plotting you want (linear, logicel, log...).
-              </p>
-              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <p>
-                  <b>Sharing:</b> To share the workspace, all you have to do it
-                  click the "Share Workspace button" located at the top right.
-                  In there, you may find a link other people can access to see
-                  your current workspace. The shared workspace is a snapshot:
-                  it's immutable. As soon as you create it, it stays like that.
-                  You may open a shared workspace and edit, but to see that
-                  workspace again, you must create another share link. By
-                  pressing the "copy" icon to the left of the link sharing
-                  button, you may copy the link in a single click.
-                </p>
-              )}
-            </div>
-            <h2 style={{ marginTop: 50 }}>
-              What is going to be in the full version of Red Matter?
-            </h2>
-            <h3>Planned features:</h3>
-            <ul
-              style={{
-                width: 550,
-                marginLeft: "auto",
-                marginRight: "auto",
-                textAlign: "left",
-              }}
-            >
-              <li>
-                Creating reports (with medians, std. deviation, ...) as .pdf,
-                .csv or .xls
-              </li>
-              <li>Compensation, logicel, ...</li>
-            </ul>
-            <h3>Long term features:</h3>
-            <ul
-              style={{
-                width: 550,
-                marginLeft: "auto",
-                marginRight: "auto",
-                textAlign: "left",
-              }}
-            >
-              <li>Automatic gating using artificial intelligence</li>
-              <li>Red Matter's subscription with power user features</li>
-            </ul>
-          </div>
-        }
-      />
-
-      <MessageModal
         open={loadModal}
         closeCall={{ f: handleClose, ref: setLoadModal }}
         message={
@@ -671,53 +527,8 @@ function Plots(props: { experimentId: string }) {
       <SideMenus></SideMenus>
 
       {/* == NOTICES == */}
-      {showSmallScreenNotice ? (
-        <div
-          style={{
-            color: "#555",
-            backgroundColor: "#fdd",
-            padding: 20,
-            paddingBottom: 1,
-            paddingTop: 15,
-            marginTop: -10,
-            textAlign: "center",
-          }}
-        >
-          <p>
-            <b>We noticed you are using a small screen</b>
-            <br />
-            Unfortunately, Red Matter is made with Desktop-sized screens in
-            mind. Consider switching devices!
-          </p>
-        </div>
-      ) : null}
-
-      {props.experimentId === undefined ? (
-        <div
-          style={{
-            color: "#555",
-            backgroundColor: "#dedede",
-            paddingBottom: 1,
-            paddingTop: 15,
-            fontSize: "1.1em",
-            textAlign: "center",
-          }}
-        >
-          <p>
-            This is a <b>PROTOTYPE</b> showing functionalities we expect to add
-            to Red Matter.
-            <br />
-            It uses local anonymous files for you to test how the app works
-            quick and easy.
-            <br />
-            You can help us improve or learn more by sending an email to{" "}
-            <a href="mailto:redmatterapp@gmail.com">
-              <b>redmatterapp@gmail.com</b>
-            </a>
-            .
-          </p>
-        </div>
-      ) : null}
+      <SmallScreenNotice />
+      <PrototypeNotice experimentId={props.experimentId} />
 
       {/* == MAIN PANEL == */}
       <Grid
@@ -796,17 +607,7 @@ function Plots(props: { experimentId: string }) {
                   >
                     Generate report
                   </Button>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => handleOpen(setHelpModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Learn More
-                  </Button>
+                  <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
                   {sharedWorkspace ? null : (
@@ -874,12 +675,12 @@ function Plots(props: { experimentId: string }) {
 
               <Grid>
                 {!loading ? (
-                  <Workspace
+                  <Plots
                     {...{
                       sharedWorkspace: sharedWorkspace,
                       experimentId: props.experimentId,
                     }}
-                  ></Workspace>
+                  ></Plots>
                 ) : (
                   <Grid
                     container
@@ -916,4 +717,4 @@ function Plots(props: { experimentId: string }) {
   );
 }
 
-export default Plots;
+export default Workspace;

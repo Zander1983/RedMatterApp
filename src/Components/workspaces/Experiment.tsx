@@ -21,13 +21,13 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   DeleteFilled,
-  DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
+import { useDispatch } from "react-redux";
 
 const styles = {
   input: {
@@ -40,6 +40,8 @@ const styles = {
 const fileTempIdMap: any = {};
 
 const Experiment = (props: any) => {
+  const dispatch = useDispatch();
+
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [onDropZone, setOnDropZone] = useState(false);
@@ -48,8 +50,8 @@ const Experiment = (props: any) => {
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
   const [experimentSize, setExperimentSize] = useState(0);
-  const [maxExperimentSize, setMaxExperimentSize] = useState(
-    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
+  const maxExperimentSize = parseInt(
+    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
 
   const { classes } = props;
@@ -75,6 +77,16 @@ const Experiment = (props: any) => {
   }
 
   useEffect(() => {
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "experimentId", value: props.id },
+      },
+    });
+  }, [dispatch, props.id]);
+
+  useEffect(() => {
     if (
       fileTempIdMap &&
       Object.keys(fileTempIdMap).length > 0 &&
@@ -86,12 +98,13 @@ const Experiment = (props: any) => {
             delete fileTempIdMap[x];
             return x;
           }
+          return null;
         })
         .filter((x) => x);
       let files = uploadingFiles.filter((x) => !keys.includes(x.id));
       setUploadingFiles(files);
     }
-  }, [experimentData]);
+  }, [experimentData, uploadingFiles]);
 
   const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
@@ -144,6 +157,7 @@ const Experiment = (props: any) => {
       });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getExperiment = () => {
     const experimentApiObj = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -300,14 +314,10 @@ const Experiment = (props: any) => {
       });
   };
 
-  const updateSize = (newSize: number) => {
-    setExperimentSize(newSize);
-  };
-
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
-  }, []);
+  }, [fetchExperimentData, getExperiment]);
 
   const handleClose = (func: Function) => {
     func(false);
@@ -630,7 +640,7 @@ const Experiment = (props: any) => {
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              ) == "just now"
+                              ) === "just now"
                                 ? ""
                                 : "ago"}
                             </b>
@@ -729,25 +739,25 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Details
                         </h1>
-                        {experiment.details.device != undefined ? (
+                        {experiment.details.device !== undefined ? (
                           <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
-                        {experiment.details.cellType != undefined ? (
+                        {experiment.details.cellType !== undefined ? (
                           <h4>• Cell type: {experiment.details.cellType}</h4>
                         ) : null}
-                        {experiment.details.particleSize != undefined ? (
+                        {experiment.details.particleSize !== undefined ? (
                           <h4>
                             • Particle size: {experiment.details.particleSize}
                           </h4>
                         ) : null}
-                        {experiment.details.fluorophoresCategory !=
+                        {experiment.details.fluorophoresCategory !==
                         undefined ? (
                           <h4>
                             • Fluorophores category:{" "}
                             {experiment.details.fluorophoresCategory}
                           </h4>
                         ) : null}
-                        {experiment.details.description != undefined ? (
+                        {experiment.details.description !== undefined ? (
                           <h4>
                             • Description: {experiment.details.description}
                           </h4>

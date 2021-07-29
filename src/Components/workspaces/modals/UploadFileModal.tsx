@@ -9,6 +9,7 @@ import userManager from "Components/users/userManager";
 
 import { snackbarService } from "uno-material-ui";
 import oldBackFileUploader from "utils/oldBackFileUploader";
+import useForceUpdate from "hooks/forceUpdate";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -26,11 +27,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
-
 let sum = 0;
 function UploadFileModal(props: {
   open: boolean;
@@ -41,8 +37,6 @@ function UploadFileModal(props: {
   const forceUpdate = useForceUpdate();
   const classes = useStyles();
 
-  const organizationId = userManager.getOrganiztionID();
-  const [name, setName] = React.useState("");
   const [files, setFiles] = React.useState([]);
   const [uploading, setUploading] = React.useState(false);
 
@@ -66,7 +60,8 @@ function UploadFileModal(props: {
         userManager.getOrganiztionID(),
         files[i]
       )
-        .then((e) => {
+        // eslint-disable-next-line no-loop-func
+        .then(() => {
           if (sum + addP >= 100) {
             endFileUpload();
           }

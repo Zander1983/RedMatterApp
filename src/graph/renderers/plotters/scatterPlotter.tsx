@@ -112,7 +112,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   }
 
   public validateDraw(): void {
-    if (this.xAxis.length != this.yAxis.length) {
+    if (this.xAxis.length !== this.yAxis.length) {
       throw Error(
         "Axes point count are different. xAxis has " +
           this.xAxis.length.toString() +

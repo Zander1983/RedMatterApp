@@ -3,7 +3,6 @@
   items that, each, has an observer
 */
 
-import dataManager from "./dataManager";
 import ObserversFunctionality from "./observersFunctionality";
 
 export default class ObserverList {
@@ -73,7 +72,8 @@ export default class ObserverList {
 
     toRemove.forEach((e) => {
       // const item = this.itemGetter(e);
-      for (const target of this.itemTargets) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for (const _target of this.itemTargets) {
         // const obs = this.findObserver(e, target);
         // item.removeObserver(obs.target, obs.id);
         this.itemObserverIds = this.itemObserverIds.filter(

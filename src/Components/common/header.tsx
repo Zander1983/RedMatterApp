@@ -94,11 +94,11 @@ const AppHeader = (props: any) => {
               </b>
             </NavLink>
           </Typography>
-          {process.env.REACT_APP_NO_WORKSPACES !== "true" ? (
+          {/*{process.env.REACT_APP_NO_WORKSPACES !== "true" ? (
             <NavLink className={classes.topBarLink} to="/test-red-matter">
               Test Red Matter
             </NavLink>
-          ) : null}
+          ) : null}*/}
           {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
             <NavLink className={classes.topBarLink} to="/analyse">
               Start Analysing

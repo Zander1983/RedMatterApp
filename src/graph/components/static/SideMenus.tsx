@@ -14,10 +14,6 @@ import PlotMenu from "./menus/PlotMenu";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { CSVCreator, CSVObject } from "services/CSVCreator";
 
-const classes = {
-  table: {},
-};
-
 export default function SideMenus() {
   const ref = React.useRef(null);
   // == General modal logic ==
@@ -34,7 +30,7 @@ export default function SideMenus() {
 
   const downloadCsv = () => {
     let statsProvider = new PlotStats();
-    let tableNames = ['Stats data', 'Gates data', 'Files data'];
+    let tableNames = ["Stats data", "Gates data", "Files data"];
     let csvCreator = new CSVCreator(tableNames);
 
     let tables = [];
@@ -77,10 +73,10 @@ export default function SideMenus() {
     let statsHeader = COMMON_CONSTANTS.SIDE_MENU.STATS;
     let keys = Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS);
     statsHeader[6] = `${
-      statsX == COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+      statsX === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
     } X`;
     statsHeader[7] = `${
-      statsY == COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+      statsY === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
     } Y`;
 
     table.headers = statsHeader;

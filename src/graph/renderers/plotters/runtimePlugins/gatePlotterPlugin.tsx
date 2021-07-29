@@ -27,8 +27,8 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
 
     for (const gate of this.gates) {
       if (
-        this.plotter.xAxisName == gate.xAxis &&
-        this.plotter.yAxisName == gate.yAxis
+        this.plotter.xAxisName === gate.xAxis &&
+        this.plotter.yAxisName === gate.yAxis
       ) {
         this.drawGate(gate);
       }

@@ -6,10 +6,10 @@ import { makeStyles } from "@material-ui/core/styles";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import Button from "@material-ui/core/Button";
-import { ArrowDownOutlined } from "@ant-design/icons";
 import { useHistory } from "react-router";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import useForceUpdate from "hooks/forceUpdate";
 
 function Copyright() {
   return (
@@ -74,12 +74,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 10,
   },
 }));
-
-//create your forceUpdate hook
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
 
 export default function Footer(props: any) {
   const forceUpdate = useForceUpdate();
@@ -196,7 +190,7 @@ export default function Footer(props: any) {
             <ul>
               {footer.description.map((item, j) => (
                 <li key={item.name} style={{ textAlign: "left" }}>
-                  {item.open != undefined ? (
+                  {item.open !== undefined ? (
                     <>
                       <Button
                         onClick={() => {

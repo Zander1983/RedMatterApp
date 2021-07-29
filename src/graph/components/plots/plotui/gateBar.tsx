@@ -103,6 +103,7 @@ export default function GateBar(props: any) {
         dataManager.removeObserver(e.terget, e.value);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const gateInPopulation = (id: string) => {

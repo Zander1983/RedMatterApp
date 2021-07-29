@@ -1,10 +1,7 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
-import {
-  euclidianDistance2D,
-  getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "graph/dataManagement/math/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 
@@ -88,7 +85,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     for (let i = 0; i < pointCount; i++) {
       const p = points[i];
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
-      if (i == pointCount - 1) {
+      if (i === pointCount - 1) {
         const mouse = lastMousePos;
         this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
         this.plotter.drawer.segment({
@@ -139,7 +136,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
           y: yBi ? logiclizedy : e.y,
         };
       });
-      ranges = [xBi ? [0, 1] : ranges.x, yBi ? [0, 1] : ranges.y];
+      ranges = [xBi ? [0.5, 1] : ranges.x, yBi ? [0.5, 1] : ranges.y];
     } else {
       ranges = [ranges.x, ranges.y];
     }

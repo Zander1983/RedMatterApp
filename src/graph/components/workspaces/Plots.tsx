@@ -1,15 +1,13 @@
-import React, { useRef } from "react";
+import React from "react";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
 import dataManager from "../../dataManagement/dataManager";
-import { data } from "jquery";
 import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";
-import { Dbouncer } from "services/Dbouncer";
 import { Divider } from "@material-ui/core";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -111,7 +109,7 @@ class Workspace extends React.Component<WorkspaceProps> {
       let layout = layouts[i];
       let plotId = layouts[i].i;
 
-      let plot = this.plots.find((x) => x.plotData.id == plotId);
+      let plot = this.plots.find((x) => x.plotData.id === plotId);
 
       plot.plotData.dimensions = {
         h: layout.h,
@@ -194,7 +192,7 @@ class Workspace extends React.Component<WorkspaceProps> {
                                 plotIndex={e.plotData.id}
                                 plotFileId={e.plotData.file.id}
                                 plots={this.plots.filter(
-                                  (x) => x.plotData.id != e.plotData.id
+                                  (x) => x.plotData.id !== e.plotData.id
                                 )}
                                 sharedWorkspace={this.props.sharedWorkspace}
                                 experimentId={this.props.experimentId}

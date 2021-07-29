@@ -198,22 +198,22 @@ export default abstract class Drawer {
   }
 
   protected setFillColor(color: string | undefined) {
-    if (color == undefined) return;
+    if (color === undefined) return;
     this.ctx.fillStyle = color;
   }
 
   protected setStrokeColor(color: string | undefined) {
-    if (color == undefined) return;
+    if (color === undefined) return;
     this.ctx.strokeStyle = color;
   }
 
   protected setLineWidth(width: number | undefined) {
-    if (width == undefined) return;
+    if (width === undefined) return;
     this.ctx.lineWidth = width;
   }
 
   protected setFont(font: string | undefined) {
-    if (font == undefined) return;
+    if (font === undefined) return;
     this.ctx.font = font;
   }
 

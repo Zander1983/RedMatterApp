@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import { Grid, Button } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import InputLabel from "@material-ui/core/InputLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import { NavLink } from "react-router-dom";
 import FormControl from "@material-ui/core/FormControl";
 import ChangeSubscriptionModal from "./changeSubscriptionModal";
@@ -11,8 +10,6 @@ import CancelSubscriptionModal from "./cancelSubscriptionModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
-import { width } from "@amcharts/amcharts4/.internal/core/utils/Utils";
-import { ContainerOutlined } from "@ant-design/icons";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -80,32 +77,28 @@ export default function Plans(props: any) {
   const [sub, setSub] = useState(null);
   const [date, setDate] = useState(null);
   const [product, setProduct] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [email, setEmail] = useState("email@email.com");
   const [subSelect, setSubSelect] = useState(null);
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [subscriptionSend, setSubscriptionSend] = useState(null);
-  const getUserObj = useCallback(() => {
-    if (product == null) {
-      axios
-        .get(`/profile-info`, {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        })
-        .then((response) => response.data)
-        .then((user) => {
-          setuserObj(user);
-          getSub(user);
-        });
-    }
-  }, [email]);
+
+  const getProduct = useCallback((sub: any) => {
+    axios
+      .get(`/get-product?id=${sub.items.data[0].plan.product}`)
+      .then((response) => response.data)
+      .then((product) => {
+        setProduct(product);
+      });
+  }, []);
 
   const getSub = useCallback(
     (user: any) => {
       if (
         user.userDetails.subscriptionId != null &&
-        user.userDetails.subscriptionId != ""
+        user.userDetails.subscriptionId !== ""
       ) {
         axios
           .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
@@ -120,27 +113,29 @@ export default function Plans(props: any) {
         setProduct({ name: "You are not currently Subscribed" });
       }
     },
-    [email]
+    [getProduct]
   );
 
-  const getProduct = useCallback(
-    (sub: any) => {
+  const getUserObj = useCallback(() => {
+    if (product == null) {
       axios
-        .get(`/get-product?id=${sub.items.data[0].plan.product}`)
+        .get(`/profile-info`, {
+          headers: {
+            Token: userManager.getToken(),
+          },
+        })
         .then((response) => response.data)
-        .then((product) => {
-          setProduct(product);
+        .then((user) => {
+          setuserObj(user);
+          getSub(user);
         });
-    },
-    [email]
-  );
-
-  const [checker, setChecker] = useState(0);
+    }
+  }, [getSub, product]);
 
   const changeSubscription = (option: any) => {
     if (subSelect == null) {
       alert("Please Select a subscription");
-    } else if (option == 3) {
+    } else if (option === 3) {
       // enterprise subscription
       axios.post(
         "/update-subscription",
@@ -155,7 +150,7 @@ export default function Plans(props: any) {
           },
         }
       );
-    } else if (option == 2) {
+    } else if (option === 2) {
       // Premium Subscription
       axios.post(
         "/update-subscription",
@@ -170,7 +165,7 @@ export default function Plans(props: any) {
           },
         }
       );
-    } else if (option == 1) {
+    } else if (option === 1) {
       axios.post(
         "/update-subscription",
         {
@@ -310,7 +305,7 @@ export default function Plans(props: any) {
                     : " " + product.name}{" "}
                 </span>
               </h3>
-              {product == null ? null : product.name ==
+              {product == null ? null : product.name ===
                 "You are not currently Subscribed" ? null : (
                 <div>
                   <h3>
@@ -372,7 +367,7 @@ export default function Plans(props: any) {
             style={{ textAlign: "left" }}
           >
             <Grid item lg={9} md={6} sm={6}>
-              {product == null ? null : product.name ==
+              {product == null ? null : product.name ===
                 "You are not currently Subscribed" ? (
                 <h4>
                   Go to

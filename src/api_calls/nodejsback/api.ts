@@ -1,3 +1,4 @@
+/* eslint-disable */
 /// <reference path="./custom.d.ts" />
 // tslint:disable
 /**
@@ -4918,11 +4919,10 @@ export const ExperimentFilesApiFetchParamCreator = function (
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-     experimentFilesWithoutToken(
+    experimentFilesWithoutToken(
       experimentId: string,
       options: any = {}
     ): FetchArgs {
-    
       // verify required parameter 'experimentId' is not null or undefined
       if (experimentId === null || experimentId === undefined) {
         throw new RequiredError(
@@ -4930,7 +4930,7 @@ export const ExperimentFilesApiFetchParamCreator = function (
           "Required parameter experimentId was null or undefined when calling experimentFiles."
         );
       }
-     
+
       const localVarPath = `/api/getSharedExperimentFiles`;
       const localVarUrlObj = url.parse(localVarPath, true);
       const localVarRequestOptions = Object.assign({ method: "GET" }, options);

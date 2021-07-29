@@ -42,14 +42,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   editGateEvent(type: string, mouse: Point) {
     if (
-      type === "mousedown" &&
-      this.plotter.gates.length > 0 &&
-      !this.isDraggingVertex
-    ) {
-      this.detectGatesClicked(mouse);
-    }
-
-    if (
       this.targetEditGate === null &&
       type === "mousedown" &&
       !this.started &&
@@ -75,6 +67,14 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     ) {
       // Detect gate selected and moved
       this.gateMoveToMousePosition(mouse);
+    }
+
+    if (
+      type === "mousedown" &&
+      this.plotter.gates.length > 0 &&
+      !this.isDraggingVertex
+    ) {
+      this.detectGatesClicked(mouse);
     }
 
     if (type === "mouseup" && this.isDraggingVertex)
