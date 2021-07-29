@@ -136,17 +136,19 @@ const Register = (props: any) => {
             handleSubmit();
           }}
         >
-          <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
-            className={classes.textFieldWidth}
-            variant="outlined"
-            label="Organisation"
-            onChange={handleChange}
-            name="organisation"
-            value={formData.organisation}
-            validators={["required"]}
-            errorMessages={["Organisation is required"]}
-          />
+          {joiningOrg == false ? (
+            <TextValidator
+              style={{ marginTop: 30, backgroundColor: "white" }}
+              className={classes.textFieldWidth}
+              variant="outlined"
+              label="Organisation"
+              onChange={handleChange}
+              name="organisation"
+              value={formData.organisation}
+              validators={["required"]}
+              errorMessages={["Organisation is required"]}
+            />
+          ) : null}
 
           <Autocomplete
             id="location"
@@ -218,7 +220,17 @@ const Register = (props: any) => {
 
           {joiningOrg === false ? (
             <a
-              onClick={() => setJoiningOrg(true)}
+              onClick={() => {
+                setJoiningOrg(true);
+                setFormData({
+                  email: formData.email,
+                  organisation: " ",
+                  organisationKey: "",
+                  location: formData.location,
+                  password: formData.password,
+                  g_recaptcha_response: formData.g_recaptcha_response,
+                });
+              }}
               style={{ textAlign: "left", color: "#008" }}
             >
               I'm here to join my organisation
