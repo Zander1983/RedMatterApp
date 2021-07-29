@@ -106,12 +106,7 @@ const Experiment = (props: any) => {
     }
   }, [experimentData, uploadingFiles]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchExperimentData = (
-    snack = true,
-    key: string = "",
-    callback?: Function
-  ) => {
+  const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -230,9 +225,11 @@ const Experiment = (props: any) => {
         return { name: e.file.name, id: e.tempId };
       })
     );
+
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
+    let finalFileList = [];
     for (const file of fileList) {
       fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
@@ -257,12 +254,15 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, file.tempId, () => {
-          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
-        });
+        filesUpload = filesUpload.filter((x) => x.id != file.tempId);
+        setUploadingFiles(filesUpload);
         setFileUploadInputValue("");
-        return;
+      } else {
+        finalFileList.push(file);
       }
+    }
+
+    for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
@@ -282,11 +282,7 @@ const Experiment = (props: any) => {
           );
         })
         .finally(() => {
-          fetchExperimentData(false, file.tempId, () => {
-            setUploadingFiles(
-              uploadingFiles.filter((e) => e.id !== file.tempId)
-            );
-          });
+          fetchExperimentData(false, file.tempId);
           setFileUploadInputValue("");
         });
     }
