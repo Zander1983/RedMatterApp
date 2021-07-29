@@ -24,6 +24,7 @@ import Share from "@material-ui/icons/Share";
 import Language from "@material-ui/icons/Language";
 import Note from "@material-ui/icons/Note";
 import userManager from "Components/users/userManager";
+import Plans from "../plans/Plans";
 
 const useStyles = makeStyles((theme) => ({
   topDialogBar: {
@@ -537,8 +538,8 @@ const AppLandingPage = () => {
           Pricing
         </h1>
       </Grid>
-
-      <Grid
+      <Plans></Plans>
+      {/* <Grid
         container
         xs={12}
         md={9}
@@ -601,7 +602,7 @@ const AppLandingPage = () => {
             </Card>
           </Grid>
         ))}
-      </Grid>
+      </Grid> */}
     </div>
   );
 };

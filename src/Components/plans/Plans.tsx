@@ -1,14 +1,24 @@
+import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import userManager from "Components/users/userManager";
-import { Grid, Button } from "@material-ui/core";
+import { Grid, Button, CircularProgress } from "@material-ui/core";
+import { NavLink } from "react-router-dom";
+import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
+import { useDispatch, useStore } from "react-redux";
+import { snackbarService } from "uno-material-ui";
+import { LockFilled } from "@ant-design/icons";
+import {
+  AuthenticationApiFetchParamCreator,
+  UserApiFetchParamCreator,
+} from "api_calls/nodejsback";
 
 import { loadStripe } from "@stripe/stripe-js/pure";
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
-const stripePromise = loadStripe(
-  "pk_test_51J7UfrFYFs5GcbAXBxHANlj0XASMfZV5TfxzkaKSDTTOeJTmlaIa60Uk5WlizFQ2JTSqZuhn9nJauzNGKmC1dR3700t0UTXOdy"
-);
+
+let stripePromise: any = {};
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -61,7 +71,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Plans() {
+export default function Plans(props: any) {
+  const [userId, setUserId] = useState(null);
+  const store = useStore();
+
+  const isLoggedIn =
+    Object.keys(
+      useSelector((state: any) => {
+        if (Object.keys(state).includes("user")) {
+          if (Object.keys(state.user).includes("profile")) {
+            return state.user.profile;
+          }
+        }
+        return {};
+      })
+    ).length !== 0;
+
   const classes = useStyles();
 
   const createCheckoutSession = async (priceId: string, subType: string) => {
@@ -96,6 +121,13 @@ export default function Plans() {
     });
   };
 
+  useEffect(() => {
+    console.log("is logged in", isLoggedIn);
+    stripePromise = loadStripe(
+      "pk_test_51J7UfrFYFs5GcbAXBxHANlj0XASMfZV5TfxzkaKSDTTOeJTmlaIa60Uk5WlizFQ2JTSqZuhn9nJauzNGKmC1dR3700t0UTXOdy"
+    );
+  }, []);
+
   return (
     <Grid
       container
@@ -114,7 +146,7 @@ export default function Plans() {
         md={10}
         sm={12}
         justify="center"
-        direction="column"
+        direction="row"
         style={{
           backgroundColor: "#fafafa",
           padding: 20,
@@ -124,7 +156,7 @@ export default function Plans() {
           textAlign: "center",
         }}
       >
-        <h1>Choose Your Plan</h1>
+        <h1 style={{ marginBottom: 15 }}>Choose Your Plan</h1>
 
         <Grid
           spacing={5}
@@ -157,18 +189,30 @@ export default function Plans() {
                   <br></br>Public experiments
                 </p>
               </div>
-
-              <Button
-                style={{ marginTop: 25 }}
-                color="primary"
-                variant="contained"
-                className={classes.get}
-                onClick={() =>
-                  handleClick("price_1JCargFYFs5GcbAXZowQSPpK", "Free")
-                }
-              >
-                Start Free!
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  style={{ marginTop: 25 }}
+                  color="primary"
+                  variant="contained"
+                  className={classes.get}
+                  onClick={() =>
+                    handleClick("price_1JCargFYFs5GcbAXZowQSPpK", "Free")
+                  }
+                >
+                  Start Free!
+                </Button>
+              ) : (
+                <NavLink to="/register">
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="primary"
+                    variant="contained"
+                    className={classes.get}
+                  >
+                    Start Free!
+                  </Button>
+                </NavLink>
+              )}
             </div>
           </Grid>
 
@@ -189,17 +233,30 @@ export default function Plans() {
                   <br></br>Private experiments
                 </p>
               </div>
-              <Button
-                style={{ marginTop: 25 }}
-                color="primary"
-                variant="contained"
-                className={classes.get}
-                onClick={() =>
-                  handleClick("price_1J7UmZFYFs5GcbAXvPronXSX", "Premium")
-                }
-              >
-                Get Started!
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  style={{ marginTop: 25 }}
+                  color="primary"
+                  variant="contained"
+                  className={classes.get}
+                  onClick={() =>
+                    handleClick("price_1J7UmZFYFs5GcbAXvPronXSX", "Premium")
+                  }
+                >
+                  Get Started!
+                </Button>
+              ) : (
+                <NavLink to="/register">
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="primary"
+                    variant="contained"
+                    className={classes.get}
+                  >
+                    Start Free!
+                  </Button>
+                </NavLink>
+              )}
             </div>
           </Grid>
 
@@ -221,18 +278,30 @@ export default function Plans() {
                   Custom Support!
                 </p>
               </div>
-
-              <Button
-                style={{ marginTop: 25 }}
-                color="primary"
-                variant="contained"
-                className={classes.get}
-                onClick={() =>
-                  handleClick("price_1JCapGFYFs5GcbAXGlbz4pJV", "Enterprise")
-                }
-              >
-                Get Enterprise!
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  style={{ marginTop: 25 }}
+                  color="primary"
+                  variant="contained"
+                  className={classes.get}
+                  onClick={() =>
+                    handleClick("price_1JCapGFYFs5GcbAXGlbz4pJV", "Enterprise")
+                  }
+                >
+                  Get Enterprise!
+                </Button>
+              ) : (
+                <NavLink to="/register">
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="primary"
+                    variant="contained"
+                    className={classes.get}
+                  >
+                    Start Free!
+                  </Button>
+                </NavLink>
+              )}
             </div>
           </Grid>
         </Grid>
