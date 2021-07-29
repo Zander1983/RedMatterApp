@@ -4,7 +4,7 @@ import GraphDrawer, {
 import {
   euclidianDistance2D,
   getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+} from "graph/old/dataManagement/math/euclidianPlane";
 
 interface ScatterDrawerState extends GraphDrawerState {}
 

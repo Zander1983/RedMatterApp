@@ -17,7 +17,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
-import MessageModal from "graph/components/modals/MessageModal";
+import MessageModal from "graph/old/components/modals/MessageModal";
 
 const styles = {
   title: {

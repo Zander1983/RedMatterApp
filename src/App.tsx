@@ -15,7 +15,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/Workspace";
+import Workspace from "./graph/Workspace";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
@@ -109,12 +109,12 @@ const router = [
       (process.env.REACT_APP_NO_WORKSPACES === "true"
         ? "analyse"
         : "test-red-matter"),
-    component: Plots,
+    component: Workspace,
   },
   {
     path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} />
+      <Workspace experimentId={match.params.experimentId} />
     ),
   },
   { path: "/experiments", component: Experiments },

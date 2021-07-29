@@ -1,10 +1,10 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import OvalGate from "graph/dataManagement/gate/ovalGate";
+import OvalGate from "graph/old/dataManagement/gate/ovalGate";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import {
   euclidianDistance2D,
   getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+} from "graph/old/dataManagement/math/euclidianPlane";
 
 interface Point {
   x: number;

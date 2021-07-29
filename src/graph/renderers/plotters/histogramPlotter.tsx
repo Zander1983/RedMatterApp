@@ -1,9 +1,9 @@
 import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
-import PlotData from "graph/dataManagement/plotData";
+import PlotData from "graph/old/dataManagement/plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import dataManager from "graph/dataManagement/dataManager";
+import dataManager from "graph/old/dataManagement/dataManager";
 
 const leftPadding = 70;
 const rightPadding = 50;

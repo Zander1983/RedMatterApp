@@ -1,4 +1,4 @@
-import PlotData from "graph/dataManagement/plotData";
+import PlotData from "graph/old/dataManagement/plotData";
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
 import numeral from "numeral";
 import FCSServices from "services/FCSServices/FCSServices";

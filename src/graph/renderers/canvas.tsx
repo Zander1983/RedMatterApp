@@ -1,4 +1,4 @@
-import dataManager from "graph/dataManagement/dataManager";
+import dataManager from "graph/old/dataManagement/dataManager";
 import Plot from "./plotRender";
 
 interface CanvasState {

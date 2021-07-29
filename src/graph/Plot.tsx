@@ -1,9 +1,19 @@
 import CanvasEngine from "./engine/renderManager";
 
-export interface PlotProps {}
+export interface PlotProps {
+  id: string;
+  plots: PlotType;
+}
 
 const Plot = (props: PlotProps) => {
-  return <CanvasEngine root="graphEngine" width={300} height={300} />;
+  return (
+    <CanvasEngine
+      root={"graphRenderer"}
+      width={300}
+      height={300}
+      props={props}
+    />
+  );
 };
 
 export default Plot;

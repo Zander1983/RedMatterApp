@@ -1,7 +1,7 @@
 /*
   Plot - Responsible for keeping all rendering state syncronized.
 */
-import PlotData from "graph/dataManagement/plotData";
+import PlotData from "graph/old/dataManagement/plotData";
 
 import PlotterFactory from "graph/renderers/plotters/plotterFactory";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
@@ -15,7 +15,7 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import dataManager from "graph/dataManagement/dataManager";
+import dataManager from "graph/old/dataManagement/dataManager";
 
 const plotterFactory = new PlotterFactory();
 

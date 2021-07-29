@@ -1,7 +1,7 @@
 import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
-import OvalGate from "graph/dataManagement/gate/ovalGate";
-import PolygonGate from "graph/dataManagement/gate/polygonGate";
+import OvalGate from "graph/old/dataManagement/gate/ovalGate";
+import PolygonGate from "graph/old/dataManagement/gate/polygonGate";
 import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";

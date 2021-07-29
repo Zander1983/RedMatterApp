@@ -1,10 +1,10 @@
-import OvalGate from "../../dataManagement/gate/ovalGate";
+import OvalGate from "../../old/dataManagement/gate/ovalGate";
 import {
   euclidianDistance2D,
   distLinePoint2D,
   getVectorAngle2D,
   rotateVector2D,
-} from "../../dataManagement/math/euclidianPlane";
+} from "../../old/dataManagement/math/euclidianPlane";
 import GateMouseInteractor, {
   Point,
   GateState,

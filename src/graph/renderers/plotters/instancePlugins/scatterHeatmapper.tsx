@@ -1,6 +1,6 @@
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
-import { pointInsideEllipse } from "graph/dataManagement/math/euclidianPlane";
+import { pointInsideEllipse } from "graph/old/dataManagement/math/euclidianPlane";
 
 export default class ScatterHeatmapperPlugin extends PlotterPlugin {
   static TargetPlotter = ScatterPlotter;

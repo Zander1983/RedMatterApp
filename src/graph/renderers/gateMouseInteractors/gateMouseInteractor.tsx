@@ -1,5 +1,5 @@
-import dataManager from "../../dataManagement/dataManager";
-import Gate from "../../dataManagement/gate/gate";
+import dataManager from "../../old/dataManagement/dataManager";
+import Gate from "../../old/dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import ScatterPlotter from "../plotters/scatterPlotter";
 

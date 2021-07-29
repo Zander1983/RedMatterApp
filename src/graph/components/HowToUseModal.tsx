@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@material-ui/core";
 
-import MessageModal from "./old/components/modals/MessageModal";
+import MessageModal from "../old/components/modals/MessageModal";
 
 const HowToUseModal = () => {
   const [helpModal, setHelpModal] = React.useState(false);

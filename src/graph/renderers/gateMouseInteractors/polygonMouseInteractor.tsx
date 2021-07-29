@@ -1,5 +1,5 @@
-import PolygonGate from "../../dataManagement/gate/polygonGate";
-import { euclidianDistance2D } from "../../dataManagement/math/euclidianPlane";
+import PolygonGate from "../../old/dataManagement/gate/polygonGate";
+import { euclidianDistance2D } from "../../old/dataManagement/math/euclidianPlane";
 import GateMouseInteractor, {
   Point,
   GateState,

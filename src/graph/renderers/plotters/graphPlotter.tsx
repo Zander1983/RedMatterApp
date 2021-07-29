@@ -1,10 +1,10 @@
 import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
-import Gate from "graph/dataManagement/gate/gate";
+import Gate from "graph/old/dataManagement/gate/gate";
 import GraphDrawer from "graph/renderers/drawers/graphDrawer";
 import GraphTransformer, {
   Label,
 } from "graph/renderers/transformers/graphTransformer";
-import PlotData from "graph/dataManagement/plotData";
+import PlotData from "graph/old/dataManagement/plotData";
 
 export const leftPadding = 70;
 export const rightPadding = 50;
