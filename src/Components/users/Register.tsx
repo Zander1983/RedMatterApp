@@ -52,7 +52,6 @@ const Register = (props: any) => {
   });
 
   const handleChange = (event: any) => {
-    console.log(formData);
     setFormData((prevData: any) => {
       return { ...prevData, [event.target.name]: event.target.value };
     });
