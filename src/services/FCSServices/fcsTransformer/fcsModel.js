@@ -1,3 +1,5 @@
+/* eslint-disable no-throw-literal */
+/* eslint-disable  */
 import FCS from "fcs";
 import FS from "fs";
 import Q from "q";
@@ -8,7 +10,6 @@ import Scale from "./scale";
 
 class CustomFCS extends FCS {
   _prepareReadParameters(databuf) {
-    "use strict";
     var isBE;
     if ("4,3,2,1" === this.text.$BYTEORD) isBE = true;
     else if ("1,2,3,4" === this.text.$BYTEORD) isBE = false;
@@ -85,8 +86,6 @@ class CustomFCS extends FCS {
   }
 
   _readDataGroupByEvent(databuf, readParameters) {
-    "use strict";
-
     // determine if these are ints, floats, etc...
     readParameters = readParameters || this._prepareReadParameters(databuf);
 

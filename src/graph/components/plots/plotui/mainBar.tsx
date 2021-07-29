@@ -2,7 +2,6 @@ import { Button } from "@material-ui/core";
 import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import CancelIcon from "@material-ui/icons/Cancel";
-import CameraAltIcon from "@material-ui/icons/CameraAlt";
 
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";
@@ -33,7 +32,7 @@ const classes = {
 export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
-  const [ovalGating, setOvalGating] = React.useState(false);
+  // const [ovalGating, setOvalGating] = React.useState(false);
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
 
@@ -45,15 +44,15 @@ export default function MainBar(props: any) {
     func(false);
   };
 
-  const ovalGatingSetter = () => {
-    if (ovalGating) {
-      plot.setGating("Oval", false);
-      setOvalGating(false);
-    } else {
-      plot.setGating("Oval", true);
-      setOvalGating(true);
-    }
-  };
+  // const ovalGatingSetter = () => {
+  //   if (ovalGating) {
+  //     plot.setGating("Oval", false);
+  //     setOvalGating(false);
+  //   } else {
+  //     plot.setGating("Oval", true);
+  //     setOvalGating(true);
+  //   }
+  // };
 
   const polygonGatingSetter = () => {
     if (polygonGating) {
@@ -68,26 +67,26 @@ export default function MainBar(props: any) {
   useEffect(() => {
     plot.unsetGating = () => {
       setPolygonGating(false);
-      setOvalGating(false);
+      // setOvalGating(false);
     };
-  }, []);
+  }, [plot]);
 
-  const downloadCanvasAsImage = () => {
-    let downloadLink = document.createElement("a");
-    downloadLink.setAttribute(
-      "download",
-      `workspacename-filename-${plot.plotData.id}.png`
-    );
-    let canvas = document.getElementById(`canvas-${plot.plotData.id}`);
-    //@ts-ignore
-    let dataURL = canvas.toDataURL("image/png");
-    let url = dataURL.replace(
-      /^data:image\/png/,
-      "data:application/octet-stream"
-    );
-    downloadLink.setAttribute("href", url);
-    downloadLink.click();
-  };
+  // const downloadCanvasAsImage = () => {
+  //   let downloadLink = document.createElement("a");
+  //   downloadLink.setAttribute(
+  //     "download",
+  //     `workspacename-filename-${plot.plotData.id}.png`
+  //   );
+  //   let canvas = document.getElementById(`canvas-${plot.plotData.id}`);
+  //   //@ts-ignore
+  //   let dataURL = canvas.toDataURL("image/png");
+  //   let url = dataURL.replace(
+  //     /^data:image\/png/,
+  //     "data:application/octet-stream"
+  //   );
+  //   downloadLink.setAttribute("href", url);
+  //   downloadLink.click();
+  // };
 
   return (
     <Grid container direction="row" xs={12} style={classes.main}>

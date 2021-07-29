@@ -2,7 +2,6 @@
 // do this just right and this guy IS the de-facto responsible for that.
 // By the way: only workspace has access to this guy too.
 
-import { IdcardFilled } from "@ant-design/icons";
 import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import Gate from "./gate/gate";
 import OvalGate from "./gate/ovalGate";
@@ -11,6 +10,7 @@ import PlotData from "./plotData";
 import WorkspaceData from "./workspaceData";
 import lodash from "lodash";
 import dataManager from "./dataManager";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
@@ -31,7 +31,12 @@ export default class WorkspaceAssembler {
     workspace.plots.forEach((plot: any) => {
       let nplot = lodash.cloneDeep(plot);
       nplot.histogramBarOverlays.forEach((x: any) => {
-        x.plot = this.parsePlot(x.plot);
+        if (x.plot && Object.keys(x.plot).length > 0)
+          x.plot = this.parsePlot(x.plot);
+      });
+      nplot.histogramOverlays.forEach((x: any) => {
+        if (x.plot && Object.keys(x.plot).length > 0)
+          x.plot = this.parsePlot(x.plot);
       });
       let p = this.parsePlot(nplot);
       plots.push(p);
@@ -45,7 +50,6 @@ export default class WorkspaceAssembler {
       gates,
       plots: plots === null || plots === undefined ? [] : plots,
     });
-    console.log(workspaceJSON);
     return workspaceJSON;
   }
   parsePlot(plot: any) {
@@ -59,6 +63,7 @@ export default class WorkspaceAssembler {
       return e;
     });
 
+    delete plot.ranges;
     delete plot.axisDataCache;
     delete plot.randomSelection;
     delete plot.changed;
@@ -67,17 +72,41 @@ export default class WorkspaceAssembler {
     delete plot.observers;
     delete plot.STD_BIN_SIZE;
     plot.file = plot.file.src + "://" + plot.file.id;
-
     const p = JSON.parse(JSON.stringify(plot));
-
-    const ranges: any = {};
-    plot.ranges.forEach((v: [number, number], k: string) => {
-      ranges[k] = v;
-    });
-    p.ranges = ranges;
-
     return p;
   }
+
+  getHistogramOverlayObj(
+    plotHistObj: any,
+    files: Map<any, any>,
+    fileMappings: any,
+    oldNewPlotIdMap: any,
+    plotObj: any
+  ) {
+    let newPlot;
+    switch (plotHistObj.plotSource) {
+      case COMMON_CONSTANTS.FILE:
+        let plot = new PlotData();
+        if (fileMappings[plotHistObj.plot.file]) return null;
+        plot.file = files.get(fileMappings[plotHistObj.plot.file]);
+        plot.setupPlot();
+        plot.getXandYRanges();
+        newPlot = {
+          color: plotHistObj.color,
+          plot: plot,
+          plotId: plot.id,
+          plotSource: plotHistObj.plotSource,
+        };
+        break;
+      case COMMON_CONSTANTS.PLOT:
+        if (oldNewPlotIdMap[plotHistObj.plotId]) return null;
+        plotHistObj.plotId = oldNewPlotIdMap[plotHistObj.plotId];
+        newPlot = plotHistObj;
+        break;
+    }
+    return newPlot;
+  }
+
   importWorkspace(workspaceJSON: string, targetWorkspace: WorkspaceData) {
     const inp = JSON.parse(workspaceJSON);
     const files = new Map();
@@ -86,18 +115,17 @@ export default class WorkspaceAssembler {
     const fileMappings: any = {};
     const gateMappings: any = {};
     const inverseGateMappings: any = {};
-
+    dataManager.letUpdateBeCalledForAutoSave = false;
     for (const fileString of inp.files) {
       const src = fileString.split("://");
       let file = dataManager.getFile(src[1]);
       if (src[0] === "local") {
         file = staticFileReader(src[1]);
       }
-      if (file === null) {
-        throw Error('Could not recover file "' + fileString + '"');
+      if (file) {
+        files.set(file.id, file);
+        fileMappings[fileString] = file.id;
       }
-      files.set(file.id, file);
-      fileMappings[fileString] = file.id;
     }
 
     let i = 0;
@@ -125,9 +153,11 @@ export default class WorkspaceAssembler {
       v.parents = origin.parents.map((e: any) => gates.get(gateMappings[e]));
     });
 
+    let oldNewPlotIdMap: any = {};
+
     for (let i = 0; i < inp.plots.length; i++) {
       const plotObj = inp.plots[i];
-
+      if (!fileMappings[plotObj.file]) continue;
       plotObj.file = files.get(fileMappings[plotObj.file]);
 
       plotObj.gates = plotObj.gates.map((e: any) => {
@@ -140,22 +170,60 @@ export default class WorkspaceAssembler {
         return e;
       });
 
-      const ranges = new Map();
-      for (const key in plotObj.ranges) {
-        ranges.set(key, plotObj.ranges[key]);
-      }
-      plotObj.ranges = ranges;
-
       const plot = new PlotData();
+      oldNewPlotIdMap[plotObj.id] = plot.id;
       plot.setState(plotObj);
+      plot.getXandYRanges();
       plots.set(plot.id, plot);
     }
 
+    for (let i = 0; i < inp.plots.length; i++) {
+      const plotObj = inp.plots[i];
+      for (let j = 0; j < plotObj.histogramOverlays.length; j++) {
+        let plotHistObj = plotObj.histogramOverlays[j];
+        let newPlotHistObj = this.getHistogramOverlayObj(
+          plotHistObj,
+          files,
+          fileMappings,
+          oldNewPlotIdMap,
+          plotObj
+        );
+        if (newPlotHistObj) {
+          let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+          plot.addOverlay(
+            newPlotHistObj.plot,
+            newPlotHistObj.color,
+            newPlotHistObj.plotId,
+            newPlotHistObj.plotSource
+          );
+        }
+      }
+      for (let j = 0; j < plotObj.histogramBarOverlays.length; j++) {
+        let plotHistObj = plotObj.histogramBarOverlays[j];
+        let newPlotHistObj = this.getHistogramOverlayObj(
+          plotHistObj,
+          files,
+          fileMappings,
+          oldNewPlotIdMap,
+          plotObj
+        );
+        if (newPlotHistObj) {
+          let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
+          plot.addBarOverlay(
+            newPlotHistObj.plot,
+            newPlotHistObj.color,
+            newPlotHistObj.plotId,
+            newPlotHistObj.plotSource
+          );
+        }
+      }
+    }
     targetWorkspace.workspaceName = inp.workspaceName;
     targetWorkspace.files = files;
     targetWorkspace.gates = gates;
     targetWorkspace.plots = plots;
 
     targetWorkspace.setupWorkspace();
+    dataManager.letUpdateBeCalledForAutoSave = true;
   }
 }

@@ -1,25 +1,13 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  Tooltip,
-} from "@material-ui/core";
+import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
 
 import dataManager from "graph/dataManagement/dataManager";
-import FCSFile from "graph/dataManagement/fcsFile";
 
-import axios from "axios";
-
-import PlotData from "graph/dataManagement/plotData";
-import staticFileReader from "./staticFCSFiles/staticFileReader";
 import { snackbarService } from "uno-material-ui";
 import { DownloadOutlined } from "@ant-design/icons";
-import userManager from "Components/users/userManager";
-import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getHumanReadableTimeDifference } from "utils/time";
 
 const useStyles = makeStyles((theme) => ({
@@ -79,13 +67,6 @@ const staticFiles = [
   };
 });
 
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
-
-
-let downloading: any[] = [];
 let downloaded: any[] = [];
 
 function AddFileModal(props: {
@@ -98,10 +79,11 @@ function AddFileModal(props: {
   onDownloadFileEvents: (fileIds: any[]) => void;
   addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
-  const forceUpdate = useForceUpdate();
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
+
   const [filesMetadata, setFilesMetadata] = React.useState([]);
+
   useEffect(() => {
     if (remoteWorkspace) {
       setFilesMetadata(props.filesMetadata);
@@ -111,9 +93,9 @@ function AddFileModal(props: {
       });
     }
     return () => {
-      downloading = [];
       downloaded = [];
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [onHover, setOnHover] = React.useState(-1);
@@ -214,7 +196,7 @@ function AddFileModal(props: {
           {downloadCopied ? (
             filesMetadata.map((fileMetadata: any, i: number) => {
               const divider =
-                i == filesMetadata.length - 1 ? null : (
+                i === filesMetadata.length - 1 ? null : (
                   <Divider className={classes.fileSelectDivider} />
                 );
               let isDownloaded =

@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory } from "react-router-dom";
 import userManager from "Components/users/userManager";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
@@ -91,18 +89,6 @@ export default function Plans(props: any) {
 
   const classes = useStyles();
 
-  const gettingUserToken = () => {
-    try {
-      let token = userManager.getToken();
-      return token;
-    } catch (error) {
-      let token = null;
-      return token;
-    }
-  };
-
-  let userToken = gettingUserToken();
-
   const createCheckoutSession = async (priceId: string, subType: string) => {
     return axios
       .post(
@@ -110,6 +96,7 @@ export default function Plans(props: any) {
         {
           priceId: priceId,
           subscriptionType: subType,
+          location: window.location.origin,
         },
         {
           headers: {

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel, Switch } from "@material-ui/core";
+import { Button, FormControlLabel } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
@@ -11,11 +11,11 @@ import Grid from "@material-ui/core/Grid";
 import userManager from "Components/users/userManager";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import CreateExperimentDialog from "./CreateExperimentDialog";
+import useForceUpdate from "hooks/forceUpdate";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -33,12 +33,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-//create your forceUpdate hook
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
-
 function CreateExperimentModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
@@ -51,18 +45,20 @@ function CreateExperimentModal(props: {
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
   const organizationId = props.organizationId;
+
   const [name, setName] = React.useState("");
   const [privateExperiment, setPrivateExperiment] = React.useState(false);
   const [formData, setFormData] = React.useState(null);
   const [createExperimentDialog, setCreateExperimentDialog] =
     React.useState(false);
   const [nameError, setNameError] = React.useState(false);
-  const [subscriptionType, setSubscriptionType] = React.useState(null);
   const [enablePrivateExperiment, setEnablePrivateExperiment] =
     React.useState(false);
 
   useEffect(() => {
-    //props.redirectIfTokenExpired(organizationId);
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA_CLEAR",
+    });
     for (const item of [
       "device",
       "cellType",
@@ -93,7 +89,7 @@ function CreateExperimentModal(props: {
           setEnablePrivateExperiment(true);
         }
       });
-  }, [props.open]);
+  }, [dispatch, props.open]);
 
   const createExperiment = () => {
     const req = ExperimentApiFetchParamCreator({
@@ -174,7 +170,7 @@ function CreateExperimentModal(props: {
       4: name,
     };
     return Object.values(valuesToCheck).every(
-      (item) => item != null && item != ""
+      (item) => item != null && item !== ""
     );
   };
 
@@ -267,7 +263,7 @@ function CreateExperimentModal(props: {
                     setName(textField.target.value);
                     if (
                       textField.target.value != null &&
-                      textField.target.value != ""
+                      textField.target.value !== ""
                     ) {
                       setNameError(false);
                     }
@@ -275,7 +271,7 @@ function CreateExperimentModal(props: {
                   onBlur={(textField: any) => {
                     if (
                       textField.target.value == null ||
-                      textField.target.value == ""
+                      textField.target.value === ""
                     ) {
                       setNameError(true);
                     }
@@ -355,6 +351,7 @@ function CreateExperimentModal(props: {
           <PrototypeForm
             //@ts-ignore
             onSend={(e) => {
+              console.log("set form data", e);
               setFormData(e);
             }}
           ></PrototypeForm>

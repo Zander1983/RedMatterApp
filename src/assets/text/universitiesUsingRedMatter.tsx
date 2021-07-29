@@ -1,4 +1,4 @@
-export default [
+const universities = [
   {
     name: "California Polytechnic State University.png",
   },
@@ -108,3 +108,5 @@ export default [
   // { name: "Yonsei Univ",  },
   // { name: "Queen's University Belfast",  },
 ];
+
+export default universities;

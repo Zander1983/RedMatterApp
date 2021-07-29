@@ -21,13 +21,13 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   DeleteFilled,
-  DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
+import { useDispatch } from "react-redux";
 
 const styles = {
   input: {
@@ -37,7 +37,11 @@ const styles = {
   },
 };
 
+const fileTempIdMap: any = {};
+
 const Experiment = (props: any) => {
+  const dispatch = useDispatch();
+
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [onDropZone, setOnDropZone] = useState(false);
@@ -46,8 +50,8 @@ const Experiment = (props: any) => {
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
   const [experimentSize, setExperimentSize] = useState(0);
-  const [maxExperimentSize, setMaxExperimentSize] = useState(
-    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
+  const maxExperimentSize = parseInt(
+    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
 
   const { classes } = props;
@@ -72,7 +76,37 @@ const Experiment = (props: any) => {
     history.replace("/experiments");
   }
 
-  const fetchExperimentData = (snack = true, callback?: Function) => {
+  useEffect(() => {
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "experimentId", value: props.id },
+      },
+    });
+  }, [dispatch, props.id]);
+
+  useEffect(() => {
+    if (
+      fileTempIdMap &&
+      Object.keys(fileTempIdMap).length > 0 &&
+      uploadingFiles.length > 0
+    ) {
+      let keys = Object.keys(fileTempIdMap)
+        .map((x) => {
+          if (fileTempIdMap[x]) {
+            delete fileTempIdMap[x];
+            return x;
+          }
+          return null;
+        })
+        .filter((x) => x);
+      let files = uploadingFiles.filter((x) => !keys.includes(x.id));
+      setUploadingFiles(files);
+    }
+  }, [experimentData, uploadingFiles]);
+
+  const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -84,6 +118,8 @@ const Experiment = (props: any) => {
     axios
       .get(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
+        if (fileTempIdMap && Object.keys(fileTempIdMap).length > 0)
+          fileTempIdMap[key] = e.data.files[0].id;
         setExperimentData(e.data);
         let sizeSum = 0;
         for (const file of e.data.files) {
@@ -98,9 +134,6 @@ const Experiment = (props: any) => {
             "error"
           );
         userManager.logout();
-      })
-      .finally(() => {
-        if (callback !== undefined) callback();
       });
   };
 
@@ -124,6 +157,7 @@ const Experiment = (props: any) => {
       });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getExperiment = () => {
     const experimentApiObj = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -185,15 +219,19 @@ const Experiment = (props: any) => {
       );
       return;
     }
-    setUploadingFiles([
-      ...uploadingFiles,
-      ...fileList.map((e) => {
+
+    let filesUpload = uploadingFiles.concat(
+      fileList.map((e) => {
         return { name: e.file.name, id: e.tempId };
-      }),
-    ]);
+      })
+    );
+
+    setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
+    let finalFileList = [];
     for (const file of fileList) {
+      fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
         const buf = Buffer.from(e);
         return await fcsservice.loadFileMetadata(buf).then((e) => {
@@ -216,12 +254,15 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, () => {
-          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
-        });
+        filesUpload = filesUpload.filter((x) => x.id != file.tempId);
+        setUploadingFiles(filesUpload);
         setFileUploadInputValue("");
-        return;
+      } else {
+        finalFileList.push(file);
       }
+    }
+
+    for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
@@ -241,11 +282,7 @@ const Experiment = (props: any) => {
           );
         })
         .finally(() => {
-          fetchExperimentData(false, () => {
-            setUploadingFiles(
-              uploadingFiles.filter((e) => e.id !== file.tempId)
-            );
-          });
+          fetchExperimentData(false, file.tempId);
           setFileUploadInputValue("");
         });
     }
@@ -277,14 +314,10 @@ const Experiment = (props: any) => {
       });
   };
 
-  const updateSize = (newSize: number) => {
-    setExperimentSize(newSize);
-  };
-
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
-  }, []);
+  }, [fetchExperimentData, getExperiment]);
 
   const handleClose = (func: Function) => {
     func(false);
@@ -607,7 +640,7 @@ const Experiment = (props: any) => {
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              ) == "just now"
+                              ) === "just now"
                                 ? ""
                                 : "ago"}
                             </b>
@@ -706,25 +739,25 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Details
                         </h1>
-                        {experiment.details.device != undefined ? (
+                        {experiment.details.device !== undefined ? (
                           <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
-                        {experiment.details.cellType != undefined ? (
+                        {experiment.details.cellType !== undefined ? (
                           <h4>• Cell type: {experiment.details.cellType}</h4>
                         ) : null}
-                        {experiment.details.particleSize != undefined ? (
+                        {experiment.details.particleSize !== undefined ? (
                           <h4>
                             • Particle size: {experiment.details.particleSize}
                           </h4>
                         ) : null}
-                        {experiment.details.fluorophoresCategory !=
+                        {experiment.details.fluorophoresCategory !==
                         undefined ? (
                           <h4>
                             • Fluorophores category:{" "}
                             {experiment.details.fluorophoresCategory}
                           </h4>
                         ) : null}
-                        {experiment.details.description != undefined ? (
+                        {experiment.details.description !== undefined ? (
                           <h4>
                             • Description: {experiment.details.description}
                           </h4>

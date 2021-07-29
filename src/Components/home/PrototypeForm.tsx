@@ -2,11 +2,9 @@ import React from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { useHistory } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
 
 import formSteps from "./FormSteps";
-import { useDispatch, useStore } from "react-redux";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -77,9 +75,6 @@ export default function PrototypeForm2(props: {
   workspaceID?: string;
   onSend?: Function;
 }) {
-  const history = useHistory();
-  const store = useStore();
-  const dispatch = useDispatch();
   const classes = useStyles();
 
   return (

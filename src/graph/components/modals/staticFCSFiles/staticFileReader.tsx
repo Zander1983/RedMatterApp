@@ -1,17 +1,5 @@
 import FCSFile from "graph/dataManagement/fcsFile";
 
-const kmeans = require("node-kmeans");
-
-/* Frontend kmeans is very expensive, don't use */
-const kmeansify = (list: Array<Array<number>>, callback: Function): void => {
-  kmeans.clusterize(list, { k: 1200 }, (err: any, res: any) => {
-    if (err) throw Error("Clusterization failed!");
-    else {
-      callback(res.map((e: any) => e.centroid));
-    }
-  });
-};
-
 const staticFileReader = (filename: string): FCSFile => {
   const file = require("./" + filename).default;
 

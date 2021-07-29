@@ -14,8 +14,6 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
-import Overlays from "./overlays/Overlays";
-
 import dataManager from "graph/dataManagement/dataManager";
 import PlotStats from "graph/dataManagement/stats";
 import ObserverList from "graph/dataManagement/observeList";
@@ -23,7 +21,6 @@ import PlotData from "graph/dataManagement/plotData";
 import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { getValue } from "@amcharts/amcharts4/.internal/core/utils/Type";
 
 interface Dictionary {
   [key: string]: number;
@@ -36,8 +33,8 @@ const classes = {
 const statsProvider = new PlotStats();
 
 export default function PlotMenu(props: {
-  onStatChange: (statObj: any) => void
-}) : JSX.Element {
+  onStatChange: (statObj: any) => void;
+}): JSX.Element {
   const observerListProvider = new ObserverList();
   const [plots, setPlots] = React.useState([]);
   const [setup, setSetup] = React.useState(false);
@@ -84,6 +81,7 @@ export default function PlotMenu(props: {
     return () => {
       observerListProvider.kill();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -104,7 +102,10 @@ export default function PlotMenu(props: {
                 value={statsX}
                 onChange={(e) => {
                   setStatsX(parseInt(e.target.value.toString()));
-                  props.onStatChange({x: true, value: parseInt(e.target.value.toString())});
+                  props.onStatChange({
+                    x: true,
+                    value: parseInt(e.target.value.toString()),
+                  });
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
@@ -119,7 +120,10 @@ export default function PlotMenu(props: {
                 value={statsY}
                 onChange={(e) => {
                   setStatsY(parseInt(e.target.value.toString()));
-                  props.onStatChange({x: false, value: parseInt(e.target.value.toString())});
+                  props.onStatChange({
+                    x: false,
+                    value: parseInt(e.target.value.toString()),
+                  });
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
@@ -215,7 +219,9 @@ export default function PlotMenu(props: {
                     : stats.statY}
                 </TableCell>
                 <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
-                <TableCell>{stats.pointsOutSideOfRangeObj.percentage}</TableCell>
+                <TableCell>
+                  {stats.pointsOutSideOfRangeObj.percentage}
+                </TableCell>
               </TableRow>
             );
           })}
