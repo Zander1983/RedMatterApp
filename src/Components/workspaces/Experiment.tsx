@@ -317,7 +317,7 @@ const Experiment = (props: any) => {
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
-  }, [fetchExperimentData, getExperiment]);
+  }, []);
 
   const handleClose = (func: Function) => {
     func(false);
