@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress, TextField } from "@material-ui/core";
 import useForceUpdate from "hooks/forceUpdate";
 
@@ -37,18 +37,22 @@ const useStyles = makeStyles((theme) => ({
   features: {
     display: "inline-block",
     margin: "0px 20px 0px 0px",
-    fontSize: "11px",
+    fontSize: "10px",
     fontStyle: "italic",
     color: "#333",
   },
   experiment: {
-    padding: "25px 30px",
+    // padding: "25px 30px",
     margin: "10px 0",
     width: "100%",
+    height: "13em",
+    border: "2px solid #6666aa",
+    borderRadius: "20px",
     "&:hover": {
-      background: "#efefef",
+      // background: "#efefef",
       borderRadius: "20px",
       cursor: "pointer",
+      boxShadow: "1px 2px 5px 3px #a3a3a0",
     },
   },
 }));
@@ -149,7 +153,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
           "/browse-experiments",
           {
             name: name,
-            items: 1,
+            items: 25,
             skip: skip,
           },
           {
@@ -266,71 +270,92 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
             <Grid
               container
               style={{
-                padding: "10px 30px",
+                padding: "30px 30px",
                 margin: "auto",
                 width: "100%",
+                justifyContent: "space-evenly",
               }}
               xs={12}
             >
               {experiments == null ? (
-                <h3>Loading experiments...</h3>
+                <h3 style={{ marginBottom: 0, color: "gray" }}>
+                  <i>Loading experiments...</i>
+                </h3>
               ) : (
                 //@ts-ignore
                 experiments.map((experiment, i) => {
                   return (
-                    <div
+                    <NavLink
                       style={{
-                        width: "100%",
+                        width: "31%",
                       }}
+                      to={`/experiment/${experiment.id}/poke`}
                     >
-                      <div className={classes.experiment}>
-                        <div>
-                          <h3 style={{ marginBottom: 0, color: "#333" }}>
-                            <strong>Name: {experiment.name}</strong>
-                          </h3>
-                        </div>
+                      <div
 
-                        <div>
-                          <div className={classes.features}>
-                            Device: <strong>{experiment.details.device}</strong>
+                      // onClick={() => {
+                      //   history.replace(`/experiment/${experiment.id}/poke`);
+                      // }}
+                      >
+                        <div className={classes.experiment}>
+                          <div>
+                            <h3
+                              style={{
+                                marginBottom: 0,
+                                color: "#fff",
+                                backgroundColor: "#6666aa",
+                                borderRadius: "14px 14px 0 0",
+                                padding: ".5em .8em",
+                              }}
+                            >
+                              <strong>Name: {experiment.name}</strong>
+                            </h3>
                           </div>
-                          <div className={classes.features}>
-                            Cell Type:{" "}
-                            <strong>{experiment.details.cellType}</strong>
-                          </div>
-                          <div className={classes.features}>
-                            Particle Size:{" "}
-                            <strong>{experiment.details.particleSize}</strong>
-                          </div>
-                          <div className={classes.features}>
-                            Fluorophores:{" "}
-                            <strong>
-                              {experiment.details.fluorophoresCategory}
-                            </strong>
-                          </div>
+
                           <div
                             style={{
-                              overflow: "hidden",
-                              fontSize: "11px",
+                              padding: ".3em 1em .3em",
                             }}
                           >
-                            <i>
-                              Description:{" "}
-                              <strong>{experiment.details.description}</strong>
-                            </i>
+                            <div className={classes.features}>
+                              Device:{" "}
+                              <strong>{experiment.details.device}</strong>
+                            </div>
+                            <br></br>
+                            <div className={classes.features}>
+                              Cell Type:{" "}
+                              <strong>{experiment.details.cellType}</strong>
+                            </div>
+                            <br></br>
+                            <div className={classes.features}>
+                              Particle Size:{" "}
+                              <strong>{experiment.details.particleSize}</strong>
+                            </div>
+                            <br></br>
+                            <div className={classes.features}>
+                              Fluorophores:{" "}
+                              <strong>
+                                {experiment.details.fluorophoresCategory}
+                              </strong>
+                            </div>
+                            <div
+                              className={classes.features}
+                              style={{
+                                overflow: "hidden",
+                                width: "100%",
+                              }}
+                            >
+                              <i>
+                                Description:{" "}
+                                <strong>
+                                  {experiment.details.description}
+                                </strong>
+                              </i>
+                            </div>
                           </div>
                         </div>
                       </div>
-
-                      <div
-                        style={{
-                          height: "2px",
-                          backgroundColor: "gray",
-                          width: "100%",
-                          borderRadius: "40px",
-                        }}
-                      ></div>
-                    </div>
+                    </NavLink>
                   );
                 })
               )}
@@ -344,7 +369,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                       margin: "0 auto",
                     }}
                     onClick={() => {
-                      setSkip(skip + 1);
+                      setSkip(skip + 25);
                     }}
                   >
                     Load More

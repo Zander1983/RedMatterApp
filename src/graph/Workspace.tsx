@@ -101,7 +101,7 @@ const staticFiles = [
   };
 });
 
-function Workspace(props: { experimentId: string }) {
+function Workspace(props: { experimentId: string; poke: Boolean }) {
   const store = useStore();
   const [workspace, setWorkspace] = React.useState(null);
   console.log("GENERAL STATE =", workspace);

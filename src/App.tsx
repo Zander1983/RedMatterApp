@@ -119,7 +119,13 @@ const router = [
   {
     path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} />
+      <Plots experimentId={match.params.experimentId} poke={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/plots/poke",
+    component: ({ match }: any) => (
+      <Plots experimentId={match.params.experimentId} poke={true} />
     ),
   },
   { path: "/experiments", component: Experiments },
@@ -127,7 +133,13 @@ const router = [
   {
     path: "/experiment/:experimentId",
     component: ({ match }: any) => (
-      <Experiment id={match.params.experimentId} />
+      <Experiment id={match.params.experimentId} poke={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/poke",
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} poke={true} />
     ),
   },
   {
