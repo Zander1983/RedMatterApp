@@ -1,30 +1,54 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { baseSetChildrenState, RendererProps } from "./renderManager";
+import renderMap from "graph/renderMap";
+import { useEffect, useRef, useState } from "react";
+import { ChildStateProps, RendererProps } from "./renderManager";
+import {
+  graphRenderer as a,
+  setGraphRenderChildrenState as b,
+} from "./../graphRenderer2";
+
+const baseSetChildrenState = (
+  state: any
+): { [index: string]: ChildStateProps } => {
+  const childrenState: { [index: string]: ChildStateProps } = {};
+  const children = Object.keys(state);
+  for (const childName of children) {
+    childrenState[childName] = {
+      props: state[childName],
+      ...renderMap[childName],
+      canvas: state.canvas,
+    };
+  }
+  return childrenState;
+};
+
+const getChildren = (props: any): any[] => {
+  const protoChildrenState = props.setChildrenState(props.props);
+  const childrenState = baseSetChildrenState(protoChildrenState);
+  const children = Object.keys(childrenState);
+  const ret = children.map((childName) => {
+    const child = childrenState[childName];
+    const element = {
+      ...child,
+      canvas: props.canvas,
+      props: { ...props.props, ...child.props },
+    };
+    return element;
+  });
+  return ret;
+};
 
 const Renderer = (props: RendererProps) => {
-  console.log("renderer called");
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
+  const [children, setChildren] = useState(null);
 
-  const render = useCallback(
-    (context: CanvasRenderingContext2D) => {
-      if (context === null || context === undefined) return;
-      props.renderMethod(props, context);
-    },
-    [props]
-  );
+  useEffect(() => {
+    setChildren(getChildren(props));
+  }, [props]);
 
-  const getChildren = (): JSX.Element[] => {
-    const ret: JSX.Element[] = [];
-    const protoChildrenState = props.setChildrenState(props);
-    const childrenState = baseSetChildrenState(protoChildrenState);
-    const children = Object.keys(childrenState);
-    for (const childName of children) {
-      const child = childrenState[childName];
-      const element = <Renderer {...child} />;
-      ret.push(element);
-    }
-    return ret;
+  const render = (context: CanvasRenderingContext2D) => {
+    if (context === null || context === undefined) return;
+    props.renderMethod(props.props, context);
   };
 
   useEffect(() => {
@@ -33,20 +57,23 @@ const Renderer = (props: RendererProps) => {
     const currentContext: CanvasRenderingContext2D = canvas.getContext("2d");
     setContext(currentContext);
     render(currentContext);
-  }, [canvasRef, render]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasRef]);
 
   useEffect(() => {
     render(context);
-  }, [props, context, render]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props, context]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={props.canvas.width}
-      height={props.canvas.height}
-    >
-      {getChildren()}
-    </canvas>
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={props.canvas.width}
+        height={props.canvas.height}
+      ></canvas>
+      {children !== null ? children.map((e: any) => <Renderer {...e} />) : null}
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import { baseSetChildrenState, RendererProps } from "./renderManager";
+import { RendererProps } from "./engine/renderManager";
 
 export interface GraphContentRendererType extends RendererProps {
   /* === THIS IS WHERE EXPECTED STATE DEFINITIONS HAPPEN === */

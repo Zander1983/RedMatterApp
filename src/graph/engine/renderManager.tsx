@@ -16,6 +16,7 @@ export interface RendererProps extends CanvasProps {
     context: CanvasRenderingContext2D
   ) => void;
   setChildrenState: (state: RendererProps) => { [index: string]: any };
+  props: any;
 }
 
 export interface ChildStateProps extends RendererProps {}
@@ -30,21 +31,6 @@ export interface RenderMapType {
     [index: string]: any;
   };
 }
-
-export const baseSetChildrenState = (
-  state: any
-): { [index: string]: ChildStateProps } => {
-  const childrenState: { [index: string]: ChildStateProps } = {};
-  const children = Object.keys(state);
-  for (const childName of children) {
-    childrenState[childName] = {
-      ...state[childName],
-      ...renderMap[childName],
-      canvas: state.canvas,
-    };
-  }
-  return childrenState;
-};
 
 /* 
   In the future, we will need a way to get all overlayed canvases and turn them
