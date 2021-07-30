@@ -17,7 +17,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
-import MessageModal from "graph/old/components/modals/MessageModal";
+// import MessageModal from "graph/old/components/modals/MessageModal";
 
 const styles = {
   title: {
@@ -71,7 +71,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
       lg={3}
       item
     >
-      <MessageModal
+      {/* <MessageModal
         open={deleteConfirmModal}
         closeCall={{
           f: handleClose,
@@ -87,7 +87,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
             setDeleteConfirmModal(false);
           },
         }}
-      />
+      /> */}
       <Grid item>
         <Card>
           <NavLink

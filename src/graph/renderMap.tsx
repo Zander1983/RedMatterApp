@@ -1,13 +1,10 @@
-import {
-  graphRenderer,
-  setGraphRenderChildrenState,
-} from "./engine/graphRenderer";
+import { graphRenderer, setGraphRenderChildrenState } from "./graphRenderer";
 import { RenderMapType } from "./engine/renderManager";
 
 const renderMap: {
   [index: string]: RenderMapType;
 } = {
-  graphRender: {
+  graphRenderer: {
     children: [],
     renderMethod: graphRenderer,
     setChildrenState: setGraphRenderChildrenState,

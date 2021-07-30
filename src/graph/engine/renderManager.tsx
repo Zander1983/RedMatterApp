@@ -1,6 +1,8 @@
 import renderMap from "graph/renderMap";
 import Renderer from "./renderer";
 
+type Superset<L extends R, R> = L;
+
 export interface CanvasProps {
   canvas: {
     width: number;
@@ -21,10 +23,12 @@ export interface ChildStateProps extends RendererProps {}
 export interface RenderMapType {
   children: string[];
   renderMethod: (
-    state: RendererProps,
+    state: Superset<any, RendererProps>,
     context: CanvasRenderingContext2D
   ) => void;
-  setChildrenState: (state: RendererProps) => { [index: string]: any };
+  setChildrenState: (state: Superset<any, RendererProps>) => {
+    [index: string]: any;
+  };
 }
 
 export const baseSetChildrenState = (

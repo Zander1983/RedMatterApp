@@ -19,9 +19,11 @@ export interface ContextualPoint extends Point {
   context: Context2D;
 }
 
-export interface Range extends Context2D {
+export interface Range {
   min: number;
   max: number;
+  axis: string;
+  axisType: "lin" | "bi";
 }
 
 export interface Vector extends ContextualPoint {}
@@ -58,17 +60,17 @@ export interface FileType {
 
 export interface PlotType {
   readonly id: PlotID;
-  file: FileType | string;
+  fileId: FileID;
   gates: {
-    gate: GateType | string;
+    gateId: GateID;
     displayOnlyPointsInGate: boolean;
     inverseGating: boolean;
   }[];
   population: {
-    gate: GateType;
+    gateId: GateID;
     inverseGating: boolean;
   }[];
-  ranges: Map<string, Range>;
+  ranges: { [index: string]: Range };
   context2D: Context2D;
   positionInWorkspace: [number, number];
   plotWidth: number;

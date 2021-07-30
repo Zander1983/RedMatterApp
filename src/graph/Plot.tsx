@@ -1,17 +1,18 @@
 import CanvasEngine from "./engine/renderManager";
+import { GateType, PlotType } from "./Types";
 
 export interface PlotProps {
-  id: string;
-  plots: PlotType;
+  gates: GateType[];
+  plot: PlotType;
 }
 
-const Plot = (props: PlotProps) => {
+const Plot = (props: { plotData: PlotProps }) => {
   return (
     <CanvasEngine
       root={"graphRenderer"}
       width={300}
       height={300}
-      props={props}
+      props={{ ...props.plotData.plot, num: 1 }}
     />
   );
 };

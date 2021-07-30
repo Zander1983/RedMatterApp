@@ -3,7 +3,7 @@ class Firebase {
 
   constructor() {
     //@ts-ignore
-    this.db = db;
+    // this.db = db;
   }
 
   saveToCloud(collection: string, item: any) {

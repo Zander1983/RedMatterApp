@@ -31,7 +31,7 @@ export default class PolygonGate extends Gate {
     return "Polygon Gate";
   }
 
-  isPointInside(gate: ,point: Point, add?: string): boolean {
+  isPointInside(point: Point, add?: string): boolean {
     let points = this.points.map((e) => {
       return { ...e };
     });

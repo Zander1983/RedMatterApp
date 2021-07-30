@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { baseSetChildrenState, RendererProps } from "./renderManager";
 
 const Renderer = (props: RendererProps) => {
+  console.log("renderer called");
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
 

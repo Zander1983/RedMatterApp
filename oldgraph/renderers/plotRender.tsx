@@ -8,8 +8,6 @@ import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
-import Canvas from "graph/renderers/canvas";
-
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
