@@ -255,7 +255,6 @@ const Experiment = (props: any) => {
           "error"
         );
         filesUpload = filesUpload.filter((x) => x.id != file.tempId);
-        debugger;
         setUploadingFiles(filesUpload);
         setFileUploadInputValue("");
       } else {

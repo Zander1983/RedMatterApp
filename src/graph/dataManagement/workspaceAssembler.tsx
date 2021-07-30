@@ -207,7 +207,6 @@ export default class WorkspaceAssembler {
           oldNewPlotIdMap,
           plotObj
         );
-        debugger;
         if (newPlotHistObj) {
           let plot = plots.get(oldNewPlotIdMap[plotObj.id]);
           plot.addBarOverlay(
