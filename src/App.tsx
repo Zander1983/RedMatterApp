@@ -27,6 +27,7 @@ import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
 import UserProfile from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
+import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import { useEffect } from "react";
@@ -67,6 +68,10 @@ const router = [
   {
     path: "/login",
     component: Login,
+  },
+  {
+    path: "/browse-experiments",
+    component: BrowseExperiments,
   },
   {
     path: "/register",
