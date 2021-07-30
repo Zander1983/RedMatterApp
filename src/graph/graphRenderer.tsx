@@ -2,17 +2,18 @@ import { RendererProps } from "./engine/renderManager";
 
 export interface GraphRendererProps extends RendererProps {
   num: number;
+  a: number;
 }
 
 export const graphRenderer = (
   state: GraphRendererProps,
   context: CanvasRenderingContext2D
 ) => {
+  console.log("graphRenderer =", state.props.num);
+  context.clearRect(0, 0, state.canvas.width, state.canvas.height);
   context.beginPath();
-  const num = state.props.num * 10;
-  console.log(state, "graphRenderer");
-  context.moveTo(100, 100 + num);
-  context.lineTo(200, 200 + num);
+  context.moveTo(100 + state.props.num, 100);
+  context.lineTo(200 + state.props.num, 200);
   context.stroke();
 };
 
@@ -21,7 +22,7 @@ export const setGraphRenderChildrenState = (
 ): { [index: string]: any } => {
   const childrenState: any = {
     graphRenderer2: {
-      num: state.props.num + 1,
+      num: state.props.num + 10,
     },
   };
   return childrenState;

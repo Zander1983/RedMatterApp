@@ -1,10 +1,6 @@
 import renderMap from "graph/renderMap";
 import { useEffect, useRef, useState } from "react";
 import { ChildStateProps, RendererProps } from "./renderManager";
-import {
-  graphRenderer as a,
-  setGraphRenderChildrenState as b,
-} from "./../graphRenderer2";
 
 const baseSetChildrenState = (
   state: any
