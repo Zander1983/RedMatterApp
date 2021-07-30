@@ -102,14 +102,6 @@ const staticFiles = [
 });
 
 function Workspace(props: { experimentId: string }) {
-  const store = useStore();
-  const [workspace, setWorkspace] = React.useState(null);
-  console.log("GENERAL STATE =", workspace);
-
-  useEffect(() => {
-    setWorkspace(store.getState().user);
-  }, [store, store.getState]);
-
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();

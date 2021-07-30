@@ -51,6 +51,8 @@ interface WorkspaceProps {
   experimentId: string;
 }
 
+let intervals: any = null;
+
 class Workspace extends React.Component<WorkspaceProps> {
   private static renderCalls = 0;
   workspace: WorkspaceData;
@@ -174,6 +176,14 @@ class Workspace extends React.Component<WorkspaceProps> {
                     isDraggable={this.plotMoving}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
+                    }}
+                    onResizeStart={() => {
+                      intervals = setInterval(() => {
+                        dataManager.updateWorkspace();
+                      }, 50);
+                    }}
+                    onResizeStop={() => {
+                      clearInterval(intervals);
                     }}
                   >
                     {
