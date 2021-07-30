@@ -22,7 +22,7 @@ const baseSetChildrenState = (
 };
 
 const getChildren = (props: any): any[] => {
-  const protoChildrenState = props.setChildrenState(props.props);
+  const protoChildrenState = props.setChildrenState(props);
   const childrenState = baseSetChildrenState(protoChildrenState);
   const children = Object.keys(childrenState);
   const ret = children.map((childName) => {
@@ -48,7 +48,7 @@ const Renderer = (props: RendererProps) => {
 
   const render = (context: CanvasRenderingContext2D) => {
     if (context === null || context === undefined) return;
-    props.renderMethod(props.props, context);
+    props.renderMethod(props, context);
   };
 
   useEffect(() => {
@@ -66,8 +66,13 @@ const Renderer = (props: RendererProps) => {
   }, [props, context]);
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <canvas
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+        }}
         ref={canvasRef}
         width={props.canvas.width}
         height={props.canvas.height}

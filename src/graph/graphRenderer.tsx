@@ -8,21 +8,20 @@ export const graphRenderer = (
   state: GraphRendererProps,
   context: CanvasRenderingContext2D
 ) => {
-  console.log("graphRender was drawn with state =", state);
   context.beginPath();
-  const num = state.num * 10;
-  context.moveTo(100 + num, 100 + num);
-  context.lineTo(200 + num, 200 + num);
+  const num = state.props.num * 10;
+  console.log(state, "graphRenderer");
+  context.moveTo(100, 100 + num);
+  context.lineTo(200, 200 + num);
   context.stroke();
 };
 
 export const setGraphRenderChildrenState = (
   state: GraphRendererProps
 ): { [index: string]: any } => {
-  // console.log("graphRender child", state);
   const childrenState: any = {
     graphRenderer2: {
-      num: state.num + 1,
+      num: state.props.num + 1,
     },
   };
   return childrenState;
