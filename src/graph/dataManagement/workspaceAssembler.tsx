@@ -87,7 +87,7 @@ export default class WorkspaceAssembler {
     switch (plotHistObj.plotSource) {
       case COMMON_CONSTANTS.FILE:
         let plot = new PlotData();
-        if (fileMappings[plotHistObj.plot.file]) return null;
+        if (!fileMappings[plotHistObj.plot.file]) return null;
         plot.file = files.get(fileMappings[plotHistObj.plot.file]);
         plot.setupPlot();
         plot.getXandYRanges();
@@ -99,7 +99,7 @@ export default class WorkspaceAssembler {
         };
         break;
       case COMMON_CONSTANTS.PLOT:
-        if (oldNewPlotIdMap[plotHistObj.plotId]) return null;
+        if (!oldNewPlotIdMap[plotHistObj.plotId]) return null;
         plotHistObj.plotId = oldNewPlotIdMap[plotHistObj.plotId];
         newPlot = plotHistObj;
         break;
