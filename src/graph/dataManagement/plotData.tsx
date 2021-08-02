@@ -274,8 +274,6 @@ export default class PlotData extends ObserversFunctionality {
     if (state.dimensions !== undefined) this.dimensions = state.dimensions;
     if (state.positions !== undefined) this.positions = state.positions;
     if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
-    if (state.rangePlotType !== undefined)
-      this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
@@ -728,7 +726,8 @@ export default class PlotData extends ObserversFunctionality {
 
     Object.values(this.file.axes).forEach((axis, i) => {
       const axisType = this.file.plotTypes[i];
-
+      if (!this.rangePlotType || Object.keys(this.rangePlotType).length == 0)
+        this.rangePlotType = new Map();
       this.rangePlotType.set(axis, axisType);
       const data = axesData.map((e) => e[axis]);
       const boundaries = this.findRangeBoundries(data);

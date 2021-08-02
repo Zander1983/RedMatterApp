@@ -87,8 +87,8 @@ function PlotComponent(props: {
         plot !== undefined &&
         plot.plotData !== undefined
       )
-        plot.plotData.setWidthAndHeight(plotDimensions.w, plotDimensions.h);
-      plot.draw();
+      props.plot.plotData.setWidthAndHeight(plotDimensions.w, plotDimensions.h);
+      props.plot.draw();
     }
   };
 
