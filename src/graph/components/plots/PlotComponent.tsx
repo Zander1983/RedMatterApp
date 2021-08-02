@@ -82,7 +82,8 @@ function PlotComponent(props: {
   const plotUpdater = () => {
     if (dataManager.ready()) {
       const plotDimensions = updatePlotSize();
-      plot.plotData.setWidthAndHeight(plotDimensions.w, plotDimensions.h);
+      if (plotDimensions !== undefined)
+        plot.plotData.setWidthAndHeight(plotDimensions.w, plotDimensions.h);
       plot.draw();
     }
   };
