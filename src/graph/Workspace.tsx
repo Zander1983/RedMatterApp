@@ -398,6 +398,7 @@ function Workspace(props: { experimentId: string }) {
       plotTypes: file.channels.map((e: any) => e.display),
       remoteData: file,
     });
+    console.log("workspace new file", newFile);
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);

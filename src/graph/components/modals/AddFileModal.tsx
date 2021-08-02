@@ -49,24 +49,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const staticFiles = [
-  "transduction_1",
-  "transduction_2",
-  "transduction_3",
-  "erica1",
-  "erica2",
-  "erica3",
-].map((e) => {
-  return {
-    label: e,
-    information: "...",
-    fromStatic: e,
-    fileSize: 0,
-    eventCount: 0,
-    lastModified: "X/X/X",
-  };
-});
-
 let downloaded: any[] = [];
 
 function AddFileModal(props: {
@@ -79,19 +61,16 @@ function AddFileModal(props: {
   onDownloadFileEvents: (fileIds: any[]) => void;
   addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
-  const remoteWorkspace = dataManager.isRemoteWorkspace();
   const classes = useStyles();
 
   const [filesMetadata, setFilesMetadata] = React.useState([]);
 
   useEffect(() => {
-    if (remoteWorkspace) {
-      setFilesMetadata(props.filesMetadata);
-      dataManager.addObserver("clearWorkspace", () => {
-        downloaded = remoteWorkspace ? [] : staticFiles;
-        dataManager.setWorkspaceLoading(false);
-      });
-    }
+    setFilesMetadata(props.filesMetadata);
+    dataManager.addObserver("clearWorkspace", () => {
+      downloaded = [];
+      dataManager.setWorkspaceLoading(false);
+    });
     return () => {
       downloaded = [];
     };
@@ -292,12 +271,6 @@ function AddFileModal(props: {
                           </p>
                         </div>
                       </Grid>
-                      {/* <Grid
-                      direction="row"
-                      style={{
-                        flexGrow: 1,
-                      }}
-                    ></Grid> */}
                       <Grid
                         style={{
                           float: "right",
@@ -308,13 +281,11 @@ function AddFileModal(props: {
                         }}
                       >
                         <Grid style={{ display: "inline-block" }}>
-                          {remoteWorkspace
-                            ? isDownloaded
-                              ? "Downloaded"
-                              : isDownloading
-                              ? "Dowloading..."
-                              : "Remote"
-                            : "Local"}
+                          {isDownloaded
+                            ? "Downloaded"
+                            : isDownloading
+                            ? "Dowloading..."
+                            : "Remote"}
                         </Grid>
                         <Grid
                           style={{
@@ -327,12 +298,11 @@ function AddFileModal(props: {
                               width: 13,
                               height: 13,
                               marginLeft: 10,
-                              backgroundColor:
-                                isDownloaded || !remoteWorkspace
-                                  ? "green"
-                                  : isDownloading
-                                  ? "#66d"
-                                  : "#d66",
+                              backgroundColor: isDownloaded
+                                ? "green"
+                                : isDownloading
+                                ? "#66d"
+                                : "#d66",
                             }}
                           ></Grid>
                         </Grid>
@@ -345,89 +315,67 @@ function AddFileModal(props: {
                         textAlign: "right",
                       }}
                     >
-                      {remoteWorkspace ? (
-                        !isDownloaded ? (
-                          <Button
-                            style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
-                            }}
-                            onClick={() => downloadFile(fileMetadata.id)}
-                          >
-                            {isDownloading ? (
-                              <CircularProgress
-                                style={{
-                                  color: "white",
-                                  width: 23,
-                                  height: 23,
-                                }}
-                              />
-                            ) : (
-                              "Download"
-                            )}
-                          </Button>
-                        ) : // <Button
-                        //   style={{
-                        //     backgroundColor: "#d66",
-                        //     color: "white",
-                        //     fontSize: 13,
-                        //     marginLeft: 20,
-                        //   }}
-                        //   onClick={() => {
-                        //     downloaded =
-                        //       //@ts-ignore
-                        //       downloaded.filter(
-                        //         (e) => e.id !== fileMetadata.id
-                        //       );
-                        //     dataManager.removeFileFromWorkspace(
-                        //       fileMetadata.id
-                        //     );
-                        //     forceUpdate();
-                        //   }}
-                        // >
-                        //   Remove
-                        // </Button>
-                        null
-                      ) : null}
-                      {isDownloaded || !remoteWorkspace ? (
+                      {!isDownloaded ? (
                         <Button
                           style={{
-                            backgroundColor:
-                              isDownloaded || !remoteWorkspace
-                                ? "#66d"
-                                : "#99d",
+                            backgroundColor: "#66d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={() => downloadFile(fileMetadata.id)}
+                        >
+                          {isDownloading ? (
+                            <CircularProgress
+                              style={{
+                                color: "white",
+                                width: 23,
+                                height: 23,
+                              }}
+                            />
+                          ) : (
+                            "Download"
+                          )}
+                        </Button>
+                      ) : // <Button
+                      //   style={{
+                      //     backgroundColor: "#d66",
+                      //     color: "white",
+                      //     fontSize: 13,
+                      //     marginLeft: 20,
+                      //   }}
+                      //   onClick={() => {
+                      //     downloaded =
+                      //       //@ts-ignore
+                      //       downloaded.filter(
+                      //         (e) => e.id !== fileMetadata.id
+                      //       );
+                      //     dataManager.removeFileFromWorkspace(
+                      //       fileMetadata.id
+                      //     );
+                      //     forceUpdate();
+                      //   }}
+                      // >
+                      //   Remove
+                      // </Button>
+                      null}
+                      {isDownloaded ? (
+                        <Button
+                          style={{
+                            backgroundColor: isDownloaded ? "#66d" : "#99d",
                             color: "white",
                             fontSize: 13,
                             marginLeft: 20,
                           }}
                           onClick={() => {
                             let index: number;
-                            for (
-                              let i = 0;
-                              i <
-                              (remoteWorkspace
-                                ? props.downloaded.length
-                                : staticFiles.length);
-                              i++
-                            ) {
-                              if (
-                                remoteWorkspace &&
-                                props.downloaded[i].id === fileMetadata.id
-                              ) {
-                                index = i;
-                                break;
-                              }
-                              if (
-                                !remoteWorkspace &&
-                                fileMetadata.label === staticFiles[i].label
-                              ) {
+                            for (let i = 0; i < props.downloaded.length; i++) {
+                              if (props.downloaded[i].id === fileMetadata.id) {
                                 index = i;
                                 break;
                               }
                             }
-                            if (index === undefined && remoteWorkspace) {
+                            if (index === undefined) {
                               snackbarService.showSnackbar(
                                 "File is not dowloaded",
                                 "error"
@@ -437,7 +385,7 @@ function AddFileModal(props: {
                             addFile(index);
                             props.closeCall.f(props.closeCall.ref);
                           }}
-                          disabled={!isDownloaded && remoteWorkspace}
+                          disabled={!isDownloaded}
                         >
                           Add to Workspace
                         </Button>

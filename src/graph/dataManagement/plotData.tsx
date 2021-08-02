@@ -620,27 +620,7 @@ export default class PlotData extends ObserversFunctionality {
     ) {
       throw Error("No original range exists");
     }
-    Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
-      const axisType =
-        this.file.remoteData.channels[i].display !== "bi"
-          ? "linear"
-          : "biexponential";
-      this.rangePlotType.set(
-        //@ts-ignore
-        axis.paramName,
-        axisType === "linear" ? "lin" : "bi"
-      );
-      const min =
-        //@ts-ignore
-        axis[axisType + "Minimum"];
-      const max =
-        //@ts-ignore
-        axis[axisType + "Maximum"];
-      //@ts-ignore
-      this.ranges.set(axis.paramName, [min, max]);
-      //@ts-ignore
-      this.ranges.set(axis.paramName, [min, max]);
-    });
+    this.findAllRanges();
   }
 
   private axisDataCache: null | any[] = null;
@@ -742,52 +722,18 @@ export default class PlotData extends ObserversFunctionality {
     if (!(this.ranges instanceof Map)) {
       this.ranges = new Map();
     }
-    console.log("findAllRangesCalled");
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
-    if (
-      this.file.remoteData !== undefined &&
-      this.file.remoteData.paramsAnalysis !== undefined
-    ) {
-      console.log("remoteAnalysus");
+    if (this.file === undefined) throw Error("No file found for plot");
+    const axesData = this.getAxesData();
 
-      //@ts-ignore
-      Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
-        const axisType =
-          this.file.remoteData.channels[i].display !== "bi"
-            ? "linear"
-            : "biexponential";
+    Object.values(this.file.axes).forEach((axis, i) => {
+      const axisType = this.file.plotTypes[i];
 
-        if (this.rangePlotType && Object.keys(this.rangePlotType).length === 0)
-          this.rangePlotType = new Map();
-
-        //@ts-ignore
-        console.log(this.file.remoteData.channels[i], axis.paramName);
-
-        this.rangePlotType.set(
-          //@ts-ignore
-          axis.paramName,
-          axisType === "linear" ? "lin" : "bi"
-        );
-        const min =
-          //@ts-ignore
-          axis[axisType + "Minimum"];
-        const max =
-          //@ts-ignore
-          axis[axisType + "Maximum"];
-        //@ts-ignore
-        this.ranges.set(axis.paramName, [min, max]);
-        //@ts-ignore
-        this.ranges.set(axis.paramName, [min, max]);
-      });
-    } else {
-      const axesData = this.getAxesData();
-      for (const axis of this.file.axes) {
-        if (this.ranges.has(axis)) continue;
-        this.rangePlotType.set(axis, "lin");
-        const data = axesData.map((e) => e[axis]);
-        this.ranges.set(axis, this.findRangeBoundries(data));
-      }
-    }
+      this.rangePlotType.set(axis, axisType);
+      const data = axesData.map((e) => e[axis]);
+      const boundaries = this.findRangeBoundries(data);
+      this.ranges.set(axis, boundaries);
+    });
   }
 
   findRangeBoundries(axisData: number[]): [number, number] {
