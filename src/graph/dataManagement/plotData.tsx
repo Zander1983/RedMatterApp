@@ -4,7 +4,6 @@
   easily.
 */
 
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
@@ -215,11 +214,6 @@ export default class PlotData extends ObserversFunctionality {
 
   import(plotJSON: string) {
     const plot = JSON.parse(plotJSON);
-    if (plot.file.split("://")[0] === "local") {
-      const file = staticFileReader(plot.file.split("://")[1]);
-      const id = dataManager.addNewFileToWorkspace(file);
-      plot.file = dataManager.getFile(id);
-    }
     this.setState(plot);
   }
 
@@ -748,11 +742,14 @@ export default class PlotData extends ObserversFunctionality {
     if (!(this.ranges instanceof Map)) {
       this.ranges = new Map();
     }
+    console.log("findAllRangesCalled");
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
     if (
       this.file.remoteData !== undefined &&
       this.file.remoteData.paramsAnalysis !== undefined
     ) {
+      console.log("remoteAnalysus");
+
       //@ts-ignore
       Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
         const axisType =
@@ -762,6 +759,9 @@ export default class PlotData extends ObserversFunctionality {
 
         if (this.rangePlotType && Object.keys(this.rangePlotType).length === 0)
           this.rangePlotType = new Map();
+
+        //@ts-ignore
+        console.log(this.file.remoteData.channels[i], axis.paramName);
 
         this.rangePlotType.set(
           //@ts-ignore

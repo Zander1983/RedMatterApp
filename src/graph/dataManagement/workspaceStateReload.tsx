@@ -1,7 +1,6 @@
 import dataManager from "graph/dataManagement/dataManager";
 import FCSFile from "graph/dataManagement/fcsFile";
 import { snackbarService } from "uno-material-ui";
-import staticFileReader from "../components/modals/staticFCSFiles/staticFileReader";
 
 export interface WorkspaceStateHelperObj {
   name: string;
@@ -34,19 +33,15 @@ export class WorkspaceStateHelper {
       return;
     }
     let newFile: FCSFile;
-    if (file?.fromStatic) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
+    newFile = new FCSFile({
+      name: file.title,
+      id: file.id,
+      src: "remote",
+      axes: file.channels.map((e: any) => e.value),
+      data: file.events,
+      plotTypes: file.channels.map((e: any) => e.display),
+      remoteData: { ...file, events: [] },
+    });
     dataManager.addNewFileToWorkspace(newFile);
   };
 }
