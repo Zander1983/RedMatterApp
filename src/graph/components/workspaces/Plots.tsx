@@ -122,8 +122,6 @@ class Workspace extends React.Component<WorkspaceProps> {
         x: layout.x,
         y: layout.y,
       };
-
-      dataManager.workspaceUpdated();
     }
   }
   /* This function has to be carefully controlled ensure that the plots will
@@ -177,13 +175,8 @@ class Workspace extends React.Component<WorkspaceProps> {
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
-                    onResizeStart={() => {
-                      intervals = setInterval(() => {
-                        dataManager.updateWorkspace();
-                      }, 50);
-                    }}
-                    onResizeStop={() => {
-                      clearInterval(intervals);
+                    onResize={() => {
+                      dataManager.updateWorkspace();
                     }}
                   >
                     {
