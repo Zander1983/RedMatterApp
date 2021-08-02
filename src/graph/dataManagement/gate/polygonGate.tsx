@@ -31,7 +31,7 @@ export default class PolygonGate extends Gate {
     return "Polygon Gate";
   }
 
-  isPointInside(point: Point, add?: string): boolean {
+  isPointInside(point: Point): boolean {
     let points = this.points.map((e) => {
       return { ...e };
     });
@@ -61,7 +61,6 @@ export default class PolygonGate extends Gate {
     };
     points = points.map((e) => rawConvert(e));
     point = convert(point);
-    if (add === "yes") console.log(point, points);
     return pointInsidePolygon(point, points) && super.isPointInside(point);
   }
 }

@@ -122,7 +122,6 @@ export default function Plans(props: any) {
   };
 
   useEffect(() => {
-    console.log("is logged in", isLoggedIn);
     stripePromise = loadStripe(
       "pk_test_51J7UfrFYFs5GcbAXBxHANlj0XASMfZV5TfxzkaKSDTTOeJTmlaIa60Uk5WlizFQ2JTSqZuhn9nJauzNGKmC1dR3700t0UTXOdy"
     );

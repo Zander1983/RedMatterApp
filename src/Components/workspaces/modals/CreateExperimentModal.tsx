@@ -351,7 +351,6 @@ function CreateExperimentModal(props: {
           <PrototypeForm
             //@ts-ignore
             onSend={(e) => {
-              console.log("set form data", e);
               setFormData(e);
             }}
           ></PrototypeForm>

@@ -528,8 +528,6 @@ class Scale {
       maxLabel = minMax.max;
     }
 
-    console.log("3. fcs.get$PnX is ", fcs.get$PnX("R"));
-
     // 3. if it stil hasn't been set, get from file
     if (!max) {
       max = fcsHelper.getMaxForParam({
@@ -543,8 +541,6 @@ class Scale {
         maxLabel = this.getNearestPower(max);
       }
     }
-
-    console.log("fcsHelper f is ", fcsHelper);
 
     if (!min) {
       min = fcsHelper.getMinForParam({

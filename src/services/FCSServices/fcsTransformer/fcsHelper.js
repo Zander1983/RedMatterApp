@@ -57,8 +57,6 @@ export const getTMWA = (params) => {
   var scale = params.scale;
   var minMax = params.minMax;
 
-  console.log("2. fcs.get$PnX is ", fcs.get$PnX("R"));
-
   if (!minMax) {
     minMax = scale.getMinMax({
       fcs: fcs,

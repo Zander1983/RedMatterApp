@@ -103,7 +103,6 @@ export default class Plot {
   }
 
   draw() {
-    console.log("draw() called");
     if (
       !dataManager.ready() ||
       this.plotData === undefined ||

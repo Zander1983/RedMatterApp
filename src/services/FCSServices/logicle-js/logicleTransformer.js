@@ -90,11 +90,6 @@ const logicleTransformer = (event) => {
       channelsEvents[paramIndex] = channelEvents;
     }
   }
-
-  console.log(
-    "[INFO] Number of events per channel being saved: ",
-    channelsEvents[0].length
-  );
 };
 
 const getParamsAnalysis = (fcs, scale, channelNames) => {
