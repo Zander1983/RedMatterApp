@@ -100,7 +100,15 @@ const staticFiles = [
   };
 });
 
-function Workspace(props: { experimentId: string }) {
+function Workspace(props: { experimentId: string; poke: Boolean }) {
+  const store = useStore();
+  const [workspace, setWorkspace] = React.useState(null);
+  console.log("GENERAL STATE =", workspace);
+
+  useEffect(() => {
+    setWorkspace(store.getState().user);
+  }, [store, store.getState]);
+
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -598,39 +606,43 @@ function Workspace(props: { experimentId: string }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {sharedWorkspace ? null : (
+                  {props.poke === false ? (
+                    sharedWorkspace ? null : (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => upsertWorkSpace()}
+                        className={classes.topButton}
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        {savingWorkspace ? (
+                          <div className={classes.savingProgress}>
+                            <AutorenewRoundedIcon />
+                          </div>
+                        ) : (
+                          <div className={classes.saved}>
+                            <CheckCircleRoundedIcon />
+                          </div>
+                        )}
+                        Save Workspace
+                      </Button>
+                    )
+                  ) : null}
+                  {props.poke === false ? (
                     <Button
                       variant="contained"
                       size="large"
-                      onClick={() => upsertWorkSpace()}
+                      onClick={() => handleOpen(setClearModal)}
                       className={classes.topButton}
                       style={{
                         backgroundColor: "#fafafa",
                       }}
                     >
-                      {savingWorkspace ? (
-                        <div className={classes.savingProgress}>
-                          <AutorenewRoundedIcon />
-                        </div>
-                      ) : (
-                        <div className={classes.saved}>
-                          <CheckCircleRoundedIcon />
-                        </div>
-                      )}
-                      Save Workspace
+                      Clear
                     </Button>
-                  )}
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Clear
-                  </Button>
+                  ) : null}
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
@@ -640,23 +652,25 @@ function Workspace(props: { experimentId: string }) {
                       paddingRight: 20,
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => onLinkShareClick()}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                    >
-                      <ShareIcon
-                        fontSize="small"
+                    {props.poke === true ? (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => onLinkShareClick()}
+                        className={classes.topButton}
                         style={{
-                          marginRight: 10,
+                          backgroundColor: "#fafafa",
                         }}
-                      ></ShareIcon>
-                      Share Workspace
-                    </Button>
+                      >
+                        <ShareIcon
+                          fontSize="small"
+                          style={{
+                            marginRight: 10,
+                          }}
+                        ></ShareIcon>
+                        Share Workspace
+                      </Button>
+                    ) : null}
                   </Grid>
                 )}
               </Grid>

@@ -104,6 +104,7 @@ const AppHeader = (props: any) => {
               Start Analysing
             </NavLink>
           ) : null}
+
           <NavLink className={classes.topBarLink} to="/plans">
             Plans
           </NavLink>
@@ -116,6 +117,9 @@ const AppHeader = (props: any) => {
               )}
               <NavLink className={classes.topBarLink} to="/user-profile">
                 My Profile
+              </NavLink>
+              <NavLink className={classes.topBarLink} to="/browse-experiments">
+                Browse
               </NavLink>
               <a className={classes.topBarLink} onClick={onLogout} href="/">
                 Logout
