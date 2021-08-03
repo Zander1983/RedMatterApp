@@ -325,7 +325,9 @@ function AddFileModal(props: {
                             marginLeft: 20,
                           }}
                           onClick={async () => {
-                            downloadFile(fileMetadata.id);
+                            let file = await dataManager.downloadFileEvent(
+                              fileMetadata.id
+                            );
                             const plot = new PlotData();
                             plot.file = file.file;
                             dataManager.addNewPlotToWorkspace(plot);
