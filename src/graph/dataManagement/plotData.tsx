@@ -621,9 +621,18 @@ export default class PlotData extends ObserversFunctionality {
     this.findAllRanges();
   }
 
-  private axisDataCache: null | any[] = null;
-  getAxesData(filterGating: boolean = true): any[] {
-    if (this.axisDataCache) return this.axisDataCache;
+  private axisDataCache: null | {
+    data: any[];
+    filterGating: boolean;
+    filterPop: boolean;
+  } = null;
+  getAxesData(filterGating: boolean = true, filterPop: boolean = true): any[] {
+    if (
+      this.axisDataCache !== null &&
+      this.axisDataCache.filterGating === filterGating &&
+      this.axisDataCache.filterPop === filterPop
+    )
+      return this.axisDataCache.data;
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -653,16 +662,19 @@ export default class PlotData extends ObserversFunctionality {
         }
       }
     }
-    for (const gate of this.population) {
-      const x = gate.gate.xAxis;
-      const y = gate.gate.yAxis;
-      data = data.filter((e: any) => {
-        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-        return gate.inverseGating ? !inside : inside;
-      });
+    if (filterPop) {
+      for (const gate of this.population) {
+        const x = gate.gate.xAxis;
+        const y = gate.gate.yAxis;
+        data = data.filter((e: any) => {
+          const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+          return gate.inverseGating ? !inside : inside;
+        });
+      }
     }
-    // data = this.filterIndexesFromRandomSelection(data);
-    return (this.axisDataCache = data);
+    //@ts-ignore
+    this.axisDataCache = { data, filterGating, filterPop };
+    return data;
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
@@ -717,17 +729,16 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private findAllRanges() {
-    if (!(this.ranges instanceof Map)) {
-      this.ranges = new Map();
-    }
+    if (!(this.ranges instanceof Map)) this.ranges = new Map();
+    if (!(this.ranges instanceof Map)) this.rangePlotType = new Map();
+
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
     if (this.file === undefined) throw Error("No file found for plot");
-    const axesData = this.getAxesData();
+    const axesData = this.getAxesData(false, false);
 
     Object.values(this.file.axes).forEach((axis, i) => {
       const axisType = this.file.plotTypes[i];
-      if (!this.rangePlotType || Object.keys(this.rangePlotType).length == 0)
-        this.rangePlotType = new Map();
+
       this.rangePlotType.set(axis, axisType);
       const data = axesData.map((e) => e[axis]);
       const boundaries = this.findRangeBoundries(data);
