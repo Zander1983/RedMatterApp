@@ -610,28 +610,31 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {sharedWorkspace ? null : (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => upsertWorkSpace()}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                    >
-                      {savingWorkspace ? (
-                        <div className={classes.savingProgress}>
-                          <AutorenewRoundedIcon />
-                        </div>
-                      ) : (
-                        <div className={classes.saved}>
-                          <CheckCircleRoundedIcon />
-                        </div>
-                      )}
-                      Save Workspace
-                    </Button>
-                  )}
+                  {props.poke === true ? (
+                    sharedWorkspace ? null : (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => upsertWorkSpace()}
+                        className={classes.topButton}
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        {savingWorkspace ? (
+                          <div className={classes.savingProgress}>
+                            <AutorenewRoundedIcon />
+                          </div>
+                        ) : (
+                          <div className={classes.saved}>
+                            <CheckCircleRoundedIcon />
+                          </div>
+                        )}
+                        Save Workspace
+                      </Button>
+                    )
+                  ) : null}
+
                   <Button
                     variant="contained"
                     size="large"
@@ -652,23 +655,25 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       paddingRight: 20,
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => onLinkShareClick()}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                    >
-                      <ShareIcon
-                        fontSize="small"
+                    {props.poke === true ? (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => onLinkShareClick()}
+                        className={classes.topButton}
                         style={{
-                          marginRight: 10,
+                          backgroundColor: "#fafafa",
                         }}
-                      ></ShareIcon>
-                      Share Workspace
-                    </Button>
+                      >
+                        <ShareIcon
+                          fontSize="small"
+                          style={{
+                            marginRight: 10,
+                          }}
+                        ></ShareIcon>
+                        Share Workspace
+                      </Button>
+                    ) : null}
                   </Grid>
                 )}
               </Grid>
