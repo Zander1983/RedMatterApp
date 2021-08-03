@@ -606,7 +606,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {props.poke === true ? (
+                  {props.poke === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -630,7 +630,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       </Button>
                     )
                   ) : null}
-                  {props.poke == false ? (
+                  {props.poke === false ? (
                     <Button
                       variant="contained"
                       size="large"

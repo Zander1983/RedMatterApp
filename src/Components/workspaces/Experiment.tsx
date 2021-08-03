@@ -396,7 +396,11 @@ const Experiment = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.push("/experiments");
+                  if (props.poke == false) {
+                    history.push("/experiments");
+                  } else {
+                    history.push("/browse-experiments");
+                  }
                 }}
               >
                 Back
