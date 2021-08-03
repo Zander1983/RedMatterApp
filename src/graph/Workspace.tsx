@@ -634,18 +634,19 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       </Button>
                     )
                   ) : null}
-
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Clear
-                  </Button>
+                  {props.poke == false ? (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => handleOpen(setClearModal)}
+                      className={classes.topButton}
+                      style={{
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  ) : null}
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
