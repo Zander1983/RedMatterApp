@@ -17,6 +17,7 @@ import PlotData from "graph/dataManagement/plotData";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import useForceUpdate from "hooks/forceUpdate";
+import RangeSliders from "./RangeSliders";
 
 const classes = {
   mainContainer: {
@@ -480,17 +481,6 @@ function PlotComponent(props: {
     }
   };
 
-  const [rangeResizeModalOpen, setRangeResizeModalOpen] = React.useState(false);
-  const [rangeResizeModalAxis, setRangeResizeModalAxis] = React.useState("");
-  const [rangeResizeModalTargetMin, setRangeResizeModalTargetMin] =
-    React.useState(0);
-  const [rangeResizeModalTargetMax, setRangeResizeModalTargetMax] =
-    React.useState(0);
-
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-
   const addOverlayAsPerType = (
     type: string,
     plotData: PlotData,
@@ -538,28 +528,6 @@ function PlotComponent(props: {
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
     }
-  };
-
-  const [mouseDownPos, setMouseDownPos] = React.useState({ x: 0, y: 0 });
-  const [oldPos, setOldPos] = React.useState(69420);
-  const calculateDragRangeChange = (
-    min: number,
-    max: number,
-    dragValue: number,
-    closerToMin: boolean
-  ) => {
-    const diff = dragValue - oldPos;
-    setOldPos(dragValue);
-    const absolute = max - min;
-    const dragV = 0.01;
-    if (closerToMin) {
-      if (diff < 0) min += absolute * dragV;
-      else min -= absolute * dragV;
-    } else {
-      if (diff < 0) max -= absolute * dragV;
-      else max += absolute * dragV;
-    }
-    return [min, max];
   };
 
   return (
@@ -654,118 +622,7 @@ function PlotComponent(props: {
             paddingRight: 0,
           }}
         >
-          <RangeResizeModal
-            open={rangeResizeModalOpen}
-            closeCall={{
-              f: handleClose,
-              ref: setRangeResizeModalOpen,
-            }}
-            inits={{
-              axis: rangeResizeModalAxis,
-              min: rangeResizeModalTargetMin,
-              max: rangeResizeModalTargetMax,
-            }}
-            callback={setAxisRange}
-          ></RangeResizeModal>
-          <div
-            draggable="true"
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              setMouseDownPos({
-                x: e.nativeEvent.offsetX,
-                y: e.nativeEvent.offsetY,
-              });
-            }}
-            style={{
-              backgroundColor: "rgba(0,0,0,0.0)",
-              width: isPlotHistogram()
-                ? props.plot.plotData.histogramAxis === "vertical"
-                  ? 0
-                  : 50
-                : 50,
-              height: plot.plotData.plotHeight - 100,
-              cursor: "s-resize",
-              position: "absolute",
-              zIndex: 10000,
-              left: 65,
-              bottom: 100,
-            }}
-            onDoubleClick={() => {
-              const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
-              setRangeResizeModalTargetMin(ranges[0]);
-              setRangeResizeModalTargetMax(ranges[1]);
-              setRangeResizeModalOpen(true);
-              setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
-            }}
-            onDrag={(e) => {
-              if (e.clientX === 0 && e.clientY === 0) {
-                return;
-              }
-              let [oldMin, oldMax] = plot.plotData.ranges.get(
-                plot.plotData.yAxis
-              );
-              const dragValue = e.nativeEvent.offsetY;
-              const closerToMin =
-                mouseDownPos.y > (plot.plotData.plotHeight - 100) / 2;
-              const [newMin, newMax] = calculateDragRangeChange(
-                oldMin,
-                oldMax,
-                (closerToMin ? 1 : -1) * dragValue,
-                closerToMin
-              );
-              setAxisRange(newMin, newMax, plot.plotData.yAxis);
-            }}
-            onDragEnd={() => dataManager.updateWorkspace()}
-          ></div>
-          <div
-            draggable="true"
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              setMouseDownPos({
-                x: e.nativeEvent.offsetX,
-                y: e.nativeEvent.offsetY,
-              });
-            }}
-            style={{
-              backgroundColor: "rgba(0,0,0,0.0)",
-              width: plot.plotData.plotWidth - 120,
-              cursor: "e-resize",
-              height: isPlotHistogram()
-                ? props.plot.plotData.histogramAxis === "horizontal"
-                  ? 0
-                  : 50
-                : 50,
-              position: "absolute",
-              zIndex: 10000,
-              left: 115,
-              bottom: 50,
-            }}
-            onDoubleClick={() => {
-              const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
-              setRangeResizeModalTargetMin(ranges[0]);
-              setRangeResizeModalTargetMax(ranges[1]);
-              setRangeResizeModalOpen(true);
-              setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
-            }}
-            onDrag={(e) => {
-              if (e.clientX === 0 && e.clientY === 0) {
-                return;
-              }
-              let [oldMin, oldMax] = plot.plotData.ranges.get(
-                plot.plotData.xAxis
-              );
-              const dragValue = e.nativeEvent.offsetX;
-              const closerToMin =
-                mouseDownPos.x < (plot.plotData.plotWidth - 120) / 2;
-              const [newMin, newMax] = calculateDragRangeChange(
-                oldMin,
-                oldMax,
-                (closerToMin ? -1 : 1) * dragValue,
-                closerToMin
-              );
-              setAxisRange(newMin, newMax, plot.plotData.xAxis);
-            }}
-          ></div>
+          <RangeSliders plot={plot} />
           <CanvasComponent plot={plot} plotIndex={props.plotIndex} />
           <div
             style={{
