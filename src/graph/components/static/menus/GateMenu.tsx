@@ -103,22 +103,23 @@ export default function GateMenu() {
     gate: Gate;
   }) => {
     const { gate, gateID } = params;
-    let files = dataManager.getAllFiles();
     let downloadSnackbar = false;
     const promises = dataManager.files
-      .map((file) => {
-        if (files.filter((e) => e.fileID === file.id).length === 0) {
-          if (downloadSnackbar === false) {
-            downloadSnackbar = true;
-            snackbarService.showSnackbar("Downloading files...", "info");
-          }
-          return dataManager.downloadFileEvent(file.id);
+      .filter((e) => {
+        for (const file of dataManager.getAllFiles()) {
+          if (e.id === file.fileID) return false;
         }
-        return null;
+        return true;
       })
-      .filter((e) => e !== null);
+      .map((e) => {
+        if (downloadSnackbar === false) {
+          downloadSnackbar = true;
+          snackbarService.showSnackbar("Downloading files...", "info");
+        }
+        return dataManager.downloadFileEvent(e.id);
+      });
     await Promise.all(promises);
-    files = dataManager.getAllFiles();
+    let files = dataManager.getAllFiles();
     const plots = dataManager.getAllPlots();
     // Check gates that already
     plots.forEach((plot) => {
@@ -146,6 +147,7 @@ export default function GateMenu() {
       plot.setYAxisPlotType(gate.yAxisType);
       dataManager.addNewPlotToWorkspace(plot);
     }
+    dataManager.updateWorkspace();
   };
 
   return (

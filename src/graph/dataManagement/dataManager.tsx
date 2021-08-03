@@ -84,7 +84,7 @@ class DataManager extends ObserversFunctionality {
   addNewFileToWorkspace(file: FCSFile): FileID {
     let found: any = null;
     this.currentWorkspace.files.forEach((e) => {
-      if (e.name === file.name) {
+      if (e.id === file.id) {
         found = e.id;
       }
     });
