@@ -205,6 +205,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
         lg={8}
       >
         <Grid
+          container
           style={{
             backgroundColor: "#fafafa",
             borderRadius: 10,
@@ -214,7 +215,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
           }}
           xs={12}
         >
-          <Grid style={{ borderRadius: 5 }}>
+          <Grid container style={{ borderRadius: 5 }}>
             <Grid
               container
               lg={12}

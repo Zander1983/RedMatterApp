@@ -97,6 +97,7 @@ function About() {
         </p>
         <h2 style={{ marginTop: 10 }}>Job postings</h2>
         <Grid
+          container
           style={{
             backgroundColor: "#fff",
             borderRadius: 10,
@@ -108,7 +109,7 @@ function About() {
           {jobs.map((e, i) => {
             return (
               <>
-                <Grid>
+                <Grid item={true}>
                   <h1>
                     <b>{e.title}</b>
                   </h1>

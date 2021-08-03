@@ -276,12 +276,11 @@ const AppLandingPage = () => {
         </div>
       </div>
 
+      {/* Start of the container  */}
+
       <Grid
         container
         direction="row"
-        xs={12}
-        md={9}
-        lg={6}
         style={{
           marginLeft: "auto",
           marginRight: "auto",
@@ -292,125 +291,133 @@ const AppLandingPage = () => {
           marginTop: 20,
         }}
       >
-        <div>
-          <div
-            style={{
-              borderRadius: "50%",
-              width: 270,
-              height: 270,
-              margin: 20,
-              marginTop: -40,
-              backgroundColor: "#fafafa",
-              padding: 20,
-              overflow: "hidden",
-              border: "solid 1px #ddd",
-            }}
-          >
-            <img
-              alt="Researcher"
+        <Grid item xs={12} md={9} lg={6}>
+          <div>
+            <div
               style={{
-                marginTop: -30,
-                marginLeft: -10,
-                height: 280,
+                borderRadius: "50%",
+                width: 270,
+                height: 270,
+                margin: "0 auto 20px",
+                marginTop: -40,
+                backgroundColor: "#fafafa",
+                padding: 20,
+                overflow: "hidden",
+                border: "solid 1px #ddd",
               }}
-              src={researcher}
-            />
-          </div>
+            >
+              <img
+                alt="Researcher"
+                style={{
+                  marginTop: -30,
+                  marginLeft: -10,
+                  height: 280,
+                }}
+                src={researcher}
+              />
+            </div>
 
-          <h1 className={classes.institutionTitle}>Researchers</h1>
-          <p
-            style={{
-              width: 300,
-            }}
-          >
-            Researchers can analyse their FCS files on any device, instantly
-            share, and collaborate with other researchers.
-          </p>
-        </div>
+            <h1 className={classes.institutionTitle}>Researchers</h1>
+            <p
+              style={{
+                width: 300,
+                margin: "0 auto",
+              }}
+            >
+              Researchers can analyse their FCS files on any device, instantly
+              share, and collaborate with other researchers.
+            </p>
+          </div>
+        </Grid>
 
         <Divider
           orientation="vertical"
           className={classes.verticalDivider}
         ></Divider>
 
-        <div>
-          <div
-            style={{
-              borderRadius: "50%",
-              width: 270,
-              height: 270,
-              margin: 20,
-              backgroundColor: "#fafafa",
-              padding: 20,
-              overflow: "hidden",
-              border: "solid 1px #ddd",
-            }}
-          >
-            <img
-              alt="Laboratory"
+        <Grid item xs={12} md={9} lg={6}>
+          <div>
+            <div
               style={{
-                marginTop: -30,
-                marginLeft: -50,
-                height: 420,
+                borderRadius: "50%",
+                width: 270,
+                height: 270,
+                margin: "0 auto 20px",
+                backgroundColor: "#fafafa",
+                padding: 20,
+                overflow: "hidden",
+                border: "solid 1px #ddd",
               }}
-              src={lab}
-            />
+            >
+              <img
+                alt="Laboratory"
+                style={{
+                  marginTop: -30,
+                  marginLeft: -50,
+                  height: 420,
+                }}
+                src={lab}
+              />
+            </div>
+            <h1 className={classes.institutionTitle}>Laboratories</h1>
+            <p
+              style={{
+                width: 280,
+                margin: "0 auto",
+              }}
+            >
+              Laboratories can access their data from any device (stored
+              securely in the cloud) and analyse data remotely. Red Matter
+              provides smart algorithms to makes analysis of large amounts of
+              files much more efficient.
+            </p>
           </div>
-          <h1 className={classes.institutionTitle}>Laboratories</h1>
-          <p
-            style={{
-              marginLeft: 10,
-              width: 280,
-            }}
-          >
-            Laboratories can access their data from any device (stored securely
-            in the cloud) and analyse data remotely. Red Matter provides smart
-            algorithms to makes analysis of large amounts of files much more
-            efficient.
-          </p>
-        </div>
+        </Grid>
 
         <Divider
           orientation="vertical"
           className={classes.verticalDivider}
         ></Divider>
-
-        <div>
-          <div
-            style={{
-              borderRadius: "50%",
-              width: 270,
-              height: 270,
-              margin: 20,
-              padding: 20,
-              border: "solid 1px #ddd",
-              overflow: "hidden",
-            }}
-          >
-            <img
-              alt="University"
+        <Grid item xs={12} md={9} lg={6}>
+          <div>
+            <div
               style={{
-                marginTop: -70,
-                marginLeft: -153,
-                height: 330,
+                borderRadius: "50%",
+                width: 270,
+                height: 270,
+                margin: "0 auto 20px",
+                padding: 20,
+                border: "solid 1px #ddd",
+                overflow: "hidden",
               }}
-              src={uni}
-            />
+            >
+              <img
+                alt="University"
+                style={{
+                  marginTop: -70,
+                  marginLeft: -153,
+                  height: 330,
+                }}
+                src={uni}
+              />
+            </div>
+            <h1 className={classes.institutionTitle}>Universities</h1>
+            <p
+              style={{
+                width: 300,
+                margin: "0 auto",
+              }}
+            >
+              Red Matter is designed to flatten the steep learning curve of flow
+              cytometry data analysis, and so makes for a perfect tool for users
+              starting out their journey with flow cytometry.
+            </p>
           </div>
-          <h1 className={classes.institutionTitle}>Universities</h1>
-          <p
-            style={{
-              width: 300,
-            }}
-          >
-            Red Matter is designed to flatten the steep learning curve of flow
-            cytometry data analysis, and so makes for a perfect tool for users
-            starting out their journey with flow cytometry.
-          </p>
-        </div>
+        </Grid>
       </Grid>
-
+      {/* End of the container */}
       <Grid
+        item
         xs={12}
         md={9}
         lg={6}
@@ -422,33 +429,33 @@ const AppLandingPage = () => {
 
       <Grid
         container
-        xs={12}
-        md={9}
-        lg={6}
         style={{
-          flex: 1,
+          flex: 0,
           marginLeft: "auto",
           marginRight: "auto",
           textAlign: "center",
           marginBottom: -20,
+          padding: ".5rem 8rem",
         }}
       >
-        {featureList.map((e) => (
-          <Grid container xs={6} md={4} style={{ padding: 10 }}>
+        {featureList.map((e, i) => (
+          <Grid item key={i} xs={12} md={6} lg={4} style={{ padding: 10 }}>
             <Grid
               container
               direction="column"
               justify="center"
-              alignContent="center"
+              //alignContent="center"
               alignItems="center"
               style={{
                 border: "solid 1px #ddd",
                 padding: 10,
                 borderRadius: 5,
                 backgroundColor: "#fafaff",
+                height: 300,
               }}
             >
               <Grid
+                item
                 style={{
                   padding: 30,
                   borderRadius: "50%",
@@ -469,11 +476,12 @@ const AppLandingPage = () => {
         ))}
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
+      <Grid item xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
       <Grid
+        item={true}
         xs={12}
         md={9}
         lg={6}
@@ -499,7 +507,7 @@ const AppLandingPage = () => {
           }}
         >
           {universities.map((item, i) => (
-            <Grid key={i} xs={4} md={3} lg={2}>
+            <Grid item key={i} xs={4} md={3} lg={2}>
               <div
                 style={{
                   backgroundColor: "#fff",
@@ -517,11 +525,12 @@ const AppLandingPage = () => {
         </Grid>
       </Grid>
 
-      <Grid xs={12} md={9} lg={6} className={classes.majorColumnItem}>
+      <Grid item xs={12} md={9} lg={6} className={classes.majorColumnItem}>
         <Divider></Divider>
       </Grid>
 
       <Grid
+        item
         xs={12}
         md={9}
         lg={6}
