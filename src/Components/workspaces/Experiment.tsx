@@ -104,7 +104,7 @@ const Experiment = (props: any) => {
       let files = uploadingFiles.filter((x) => !keys.includes(x.id));
       setUploadingFiles(files);
     }
-  }, [experimentData, uploadingFiles]);
+  }, [experimentData]);
 
   const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
@@ -118,8 +118,14 @@ const Experiment = (props: any) => {
     axios
       .get(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
-        if (fileTempIdMap && Object.keys(fileTempIdMap).length > 0)
-          fileTempIdMap[key] = e.data.files[0].id;
+        if (key && fileTempIdMap && Object.keys(fileTempIdMap).length > 0) {
+          if (e.data.files) {
+            fileTempIdMap[key] = e.data.files[0].id;
+          } else {
+            delete fileTempIdMap[key];
+          }
+        }
+
         setExperimentData(e.data);
         let sizeSum = 0;
         for (const file of e.data.files) {
@@ -238,15 +244,17 @@ const Experiment = (props: any) => {
           return e;
         });
       });
-      if (channelSet.size === 0) channelSet = new Set(fcsFile.channels);
+      if (channelSet.size == 0) {
+        if (getExperimentChannels().length == 0) {
+          channelSet = new Set(fcsFile.channels);
+        } else {
+          channelSet = new Set(getExperimentChannels());
+        }
+      }
+
       if (
-        (getExperimentChannels().length > 0 &&
-          !setContaineSet(
-            new Set(fcsFile.channels),
-            new Set(getExperimentChannels())
-          )) ||
-        (channelSet.size > 0 &&
-          !setContaineSet(new Set(fcsFile.channels), channelSet))
+        channelSet.size > 0 &&
+        !setContaineSet(new Set(fcsFile.channels), new Set(channelSet))
       ) {
         snackbarService.showSnackbar(
           "Channels of uploaded file " +
@@ -255,13 +263,11 @@ const Experiment = (props: any) => {
           "error"
         );
         filesUpload = filesUpload.filter((x) => x.id != file.tempId);
-        setUploadingFiles(filesUpload);
-        setFileUploadInputValue("");
       } else {
         finalFileList.push(file);
       }
     }
-
+    setUploadingFiles(filesUpload);
     for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
@@ -283,9 +289,10 @@ const Experiment = (props: any) => {
         })
         .finally(() => {
           fetchExperimentData(false, file.tempId);
-          setFileUploadInputValue("");
         });
     }
+
+    setFileUploadInputValue("");
   };
 
   const getExperimentChannels = (): string[] => {
@@ -317,7 +324,7 @@ const Experiment = (props: any) => {
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
-  }, [fetchExperimentData, getExperiment]);
+  }, []);
 
   const handleClose = (func: Function) => {
     func(false);

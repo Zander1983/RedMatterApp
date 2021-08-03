@@ -4,7 +4,6 @@
   easily.
 */
 
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
@@ -215,11 +214,6 @@ export default class PlotData extends ObserversFunctionality {
 
   import(plotJSON: string) {
     const plot = JSON.parse(plotJSON);
-    if (plot.file.split("://")[0] === "local") {
-      const file = staticFileReader(plot.file.split("://")[1]);
-      const id = dataManager.addNewFileToWorkspace(file);
-      plot.file = dataManager.getFile(id);
-    }
     this.setState(plot);
   }
 
@@ -280,8 +274,6 @@ export default class PlotData extends ObserversFunctionality {
     if (state.dimensions !== undefined) this.dimensions = state.dimensions;
     if (state.positions !== undefined) this.positions = state.positions;
     if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
-    if (state.rangePlotType !== undefined)
-      this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
@@ -626,32 +618,21 @@ export default class PlotData extends ObserversFunctionality {
     ) {
       throw Error("No original range exists");
     }
-    Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
-      const axisType =
-        this.file.remoteData.channels[i].display !== "bi"
-          ? "linear"
-          : "biexponential";
-      this.rangePlotType.set(
-        //@ts-ignore
-        axis.paramName,
-        axisType === "linear" ? "lin" : "bi"
-      );
-      const min =
-        //@ts-ignore
-        axis[axisType + "Minimum"];
-      const max =
-        //@ts-ignore
-        axis[axisType + "Maximum"];
-      //@ts-ignore
-      this.ranges.set(axis.paramName, [min, max]);
-      //@ts-ignore
-      this.ranges.set(axis.paramName, [min, max]);
-    });
+    this.findAllRanges();
   }
 
-  private axisDataCache: null | any[] = null;
-  getAxesData(filterGating: boolean = true): any[] {
-    if (this.axisDataCache) return this.axisDataCache;
+  private axisDataCache: null | {
+    data: any[];
+    filterGating: boolean;
+    filterPop: boolean;
+  } = null;
+  getAxesData(filterGating: boolean = true, filterPop: boolean = true): any[] {
+    if (
+      this.axisDataCache !== null &&
+      this.axisDataCache.filterGating === filterGating &&
+      this.axisDataCache.filterPop === filterPop
+    )
+      return this.axisDataCache.data;
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -681,16 +662,19 @@ export default class PlotData extends ObserversFunctionality {
         }
       }
     }
-    for (const gate of this.population) {
-      const x = gate.gate.xAxis;
-      const y = gate.gate.yAxis;
-      data = data.filter((e: any) => {
-        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-        return gate.inverseGating ? !inside : inside;
-      });
+    if (filterPop) {
+      for (const gate of this.population) {
+        const x = gate.gate.xAxis;
+        const y = gate.gate.yAxis;
+        data = data.filter((e: any) => {
+          const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+          return gate.inverseGating ? !inside : inside;
+        });
+      }
     }
-    // data = this.filterIndexesFromRandomSelection(data);
-    return (this.axisDataCache = data);
+    //@ts-ignore
+    this.axisDataCache = { data, filterGating, filterPop };
+    return data;
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
@@ -745,49 +729,21 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private findAllRanges() {
-    if (!(this.ranges instanceof Map)) {
-      this.ranges = new Map();
-    }
+    if (!(this.ranges instanceof Map)) this.ranges = new Map();
+    if (!(this.ranges instanceof Map)) this.rangePlotType = new Map();
+
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
-    if (
-      this.file.remoteData !== undefined &&
-      this.file.remoteData.paramsAnalysis !== undefined
-    ) {
-      //@ts-ignore
-      Object.values(this.file.remoteData.paramsAnalysis).forEach((axis, i) => {
-        const axisType =
-          this.file.remoteData.channels[i].display !== "bi"
-            ? "linear"
-            : "biexponential";
+    if (this.file === undefined) throw Error("No file found for plot");
+    const axesData = this.getAxesData(false, false);
 
-        if (this.rangePlotType && Object.keys(this.rangePlotType).length === 0)
-          this.rangePlotType = new Map();
+    Object.values(this.file.axes).forEach((axis, i) => {
+      const axisType = this.file.plotTypes[i];
 
-        this.rangePlotType.set(
-          //@ts-ignore
-          axis.paramName,
-          axisType === "linear" ? "lin" : "bi"
-        );
-        const min =
-          //@ts-ignore
-          axis[axisType + "Minimum"];
-        const max =
-          //@ts-ignore
-          axis[axisType + "Maximum"];
-        //@ts-ignore
-        this.ranges.set(axis.paramName, [min, max]);
-        //@ts-ignore
-        this.ranges.set(axis.paramName, [min, max]);
-      });
-    } else {
-      const axesData = this.getAxesData();
-      for (const axis of this.file.axes) {
-        if (this.ranges.has(axis)) continue;
-        this.rangePlotType.set(axis, "lin");
-        const data = axesData.map((e) => e[axis]);
-        this.ranges.set(axis, this.findRangeBoundries(data));
-      }
-    }
+      this.rangePlotType.set(axis, axisType);
+      const data = axesData.map((e) => e[axis]);
+      const boundaries = this.findRangeBoundries(data);
+      this.ranges.set(axis, boundaries);
+    });
   }
 
   findRangeBoundries(axisData: number[]): [number, number] {

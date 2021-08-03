@@ -102,6 +102,7 @@ export default class FCSFile {
       data: pop,
       label: this.label,
       plotTypes: this.plotTypes,
+      remoteData: this.remoteData,
     });
   }
 

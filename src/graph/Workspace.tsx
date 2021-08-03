@@ -24,7 +24,6 @@ import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
 import GatetNamePrompt from "./components/modals/GateNamePrompt";
@@ -397,19 +396,16 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       ? downloadedFiles[index]
       : staticFiles[index];
     let newFile: FCSFile;
-    if (file?.fromStatic) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
+
+    newFile = new FCSFile({
+      name: file.title,
+      id: file.id,
+      src: "remote",
+      axes: file.channels.map((e: any) => e.value),
+      data: file.events,
+      plotTypes: file.channels.map((e: any) => e.display),
+      remoteData: file,
+    });
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);

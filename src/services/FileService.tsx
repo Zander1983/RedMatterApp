@@ -53,12 +53,12 @@ export class FileService {
       );
     }
     const files = response.data;
-    for (const file of files) {
-      //@ts-ignore
-      if (file.events.length > 2000)
-        //@ts-ignore
-        file.events = file.events.slice(0, 2000);
-    }
+    // for (const file of files) {
+    //   //@ts-ignore
+    //   if (file.events.length > 2000)
+    //     //@ts-ignore
+    //     file.events = file.events.slice(0, 2000);
+    // }
     return files;
   }
 }

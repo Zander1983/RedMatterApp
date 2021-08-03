@@ -76,13 +76,22 @@ function PlotComponent(props: {
     const br = displayRef.current.getBoundingClientRect();
     //@ts-ignore
     const bar = barRef.current.getBoundingClientRect();
-    plot.plotData.setWidthAndHeight(br.width - 20, br.height - bar.height - 40);
+    return { w: br.width - 20, h: br.height - bar.height - 40 };
   };
 
   const plotUpdater = () => {
     if (dataManager.ready()) {
-      updatePlotSize();
-      plot.draw();
+      const plotDimensions = updatePlotSize();
+      if (
+        plotDimensions !== undefined &&
+        plot !== undefined &&
+        plot.plotData !== undefined
+      )
+        props.plot.plotData.setWidthAndHeight(
+          plotDimensions.w,
+          plotDimensions.h
+        );
+      props.plot.draw();
     }
   };
 
@@ -187,11 +196,10 @@ function PlotComponent(props: {
   };
 
   useEffect(() => {
-    if (interval[props.plotIndex] === undefined) {
-      interval[props.plotIndex] = setInterval(() => {
-        plotUpdater();
-      }, 10);
-    }
+    dataManager.addObserver("updateWorkspace", () => {
+      plotUpdater();
+    });
+    setTimeout(() => plotUpdater(), 100);
     if (!plotSetup) {
       plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
@@ -522,9 +530,14 @@ function PlotComponent(props: {
     }
   };
 
+  const [lastUpdate, setLastUpdate] = React.useState(null);
   const setAxisRange = (min: number, max: number, axis: string) => {
     if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axis, [min, max]);
+    if (lastUpdate + 100 < new Date().getTime()) {
+      dataManager.updateWorkspace();
+      setLastUpdate(new Date().getTime());
+    }
   };
 
   const [mouseDownPos, setMouseDownPos] = React.useState({ x: 0, y: 0 });
@@ -550,8 +563,16 @@ function PlotComponent(props: {
   };
 
   return (
-    <div style={classes.mainContainer} ref={displayRef}>
-      <div style={classes.utilityBar} ref={barRef}>
+    <div
+      id={`display-ref-${props.plot.plotData.id}`}
+      style={classes.mainContainer}
+      ref={displayRef}
+    >
+      <div
+        id={`bar-ref-${props.plot.plotData.id}`}
+        style={classes.utilityBar}
+        ref={barRef}
+      >
         <MainBar plotIndex={props.plotIndex} plot={plot}></MainBar>
         <Divider></Divider>
 
@@ -694,6 +715,7 @@ function PlotComponent(props: {
               );
               setAxisRange(newMin, newMax, plot.plotData.yAxis);
             }}
+            onDragEnd={() => dataManager.updateWorkspace()}
           ></div>
           <div
             draggable="true"

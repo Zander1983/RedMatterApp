@@ -161,7 +161,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.rangeMax = range[1];
 
     for (const overlay of overlaysObj) {
-      console.log(overlay);
       if (!overlay) continue;
       let newPlotData;
 

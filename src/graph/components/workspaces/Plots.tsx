@@ -28,7 +28,7 @@ const classes = {
 
 const MINW = 10;
 const MINH = 12;
-const STDW = 10;
+const STDW = 15;
 
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
@@ -50,6 +50,8 @@ interface WorkspaceProps {
   sharedWorkspace: boolean;
   experimentId: string;
 }
+
+let intervals: any = null;
 
 class Workspace extends React.Component<WorkspaceProps> {
   private static renderCalls = 0;
@@ -104,6 +106,26 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.forceUpdate();
   }
 
+  resizeCanvas(layouts: any) {
+    for (let i = 0; i < layouts.length; i++) {
+      let layout = layouts[i];
+      let plotId = layouts[i].i;
+      let id = `canvas-${plotId}`;
+      let displayRef = `display-ref-${plotId}`;
+      let barRef = `bar-ref-${plotId}`;
+
+      let docIdRef = document.getElementById(id);
+      let docDisplayRef: any = document.getElementById(displayRef);
+      let docBarRef: any = document.getElementById(barRef);
+
+      if (docBarRef && docDisplayRef && docIdRef) {
+        let width = docDisplayRef.offsetWidth - 60;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 80;
+        docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+      }
+    }
+  }
+
   savePlotPosition(layouts: any) {
     for (let i = 0; i < layouts.length; i++) {
       let layout = layouts[i];
@@ -120,9 +142,8 @@ class Workspace extends React.Component<WorkspaceProps> {
         x: layout.x,
         y: layout.y,
       };
-
-      dataManager.workspaceUpdated();
     }
+    dataManager.updateWorkspace();
   }
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
@@ -174,6 +195,9 @@ class Workspace extends React.Component<WorkspaceProps> {
                     isDraggable={this.plotMoving}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
+                    }}
+                    onResize={(layout: any) => {
+                      this.resizeCanvas(layout);
                     }}
                   >
                     {

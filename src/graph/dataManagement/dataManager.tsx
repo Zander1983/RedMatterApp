@@ -84,7 +84,7 @@ class DataManager extends ObserversFunctionality {
   addNewFileToWorkspace(file: FCSFile): FileID {
     let found: any = null;
     this.currentWorkspace.files.forEach((e) => {
-      if (e.name === file.name) {
+      if (e.id === file.id) {
         found = e.id;
       }
     });
@@ -516,10 +516,11 @@ class DataManager extends ObserversFunctionality {
       this.addNewFileToWorkspace(newFile);
       this.updateDownloaded(response);
     } catch (e) {
+      console.log("e is ", e);
       if (e?.error) snackbarService.showSnackbar(e.error, "error");
       let file = this.files.find((x) => x.id === fileId);
       snackbarService.showSnackbar(
-        `Error download file ${file.label} please try again`,
+        `in Error download file ${file.label} please try again`,
         "error"
       );
     } finally {

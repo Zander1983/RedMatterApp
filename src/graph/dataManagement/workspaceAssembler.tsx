@@ -2,7 +2,6 @@
 // do this just right and this guy IS the de-facto responsible for that.
 // By the way: only workspace has access to this guy too.
 
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import Gate from "./gate/gate";
 import OvalGate from "./gate/ovalGate";
 import PolygonGate from "./gate/polygonGate";
@@ -87,7 +86,7 @@ export default class WorkspaceAssembler {
     switch (plotHistObj.plotSource) {
       case COMMON_CONSTANTS.FILE:
         let plot = new PlotData();
-        if (fileMappings[plotHistObj.plot.file]) return null;
+        if (!fileMappings[plotHistObj.plot.file]) return null;
         plot.file = files.get(fileMappings[plotHistObj.plot.file]);
         plot.setupPlot();
         plot.getXandYRanges();
@@ -99,7 +98,7 @@ export default class WorkspaceAssembler {
         };
         break;
       case COMMON_CONSTANTS.PLOT:
-        if (oldNewPlotIdMap[plotHistObj.plotId]) return null;
+        if (!oldNewPlotIdMap[plotHistObj.plotId]) return null;
         plotHistObj.plotId = oldNewPlotIdMap[plotHistObj.plotId];
         newPlot = plotHistObj;
         break;
@@ -119,9 +118,6 @@ export default class WorkspaceAssembler {
     for (const fileString of inp.files) {
       const src = fileString.split("://");
       let file = dataManager.getFile(src[1]);
-      if (src[0] === "local") {
-        file = staticFileReader(src[1]);
-      }
       if (file) {
         files.set(file.id, file);
         fileMappings[fileString] = file.id;
