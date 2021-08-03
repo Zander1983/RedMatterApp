@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme) => ({
   },
   topButton: {
     marginLeft: 20,
+    marginTop: 10,
     height: 35,
   },
   savingProgress: {
