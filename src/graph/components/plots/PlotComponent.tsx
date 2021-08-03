@@ -87,7 +87,10 @@ function PlotComponent(props: {
         plot !== undefined &&
         plot.plotData !== undefined
       )
-      props.plot.plotData.setWidthAndHeight(plotDimensions.w, plotDimensions.h);
+        props.plot.plotData.setWidthAndHeight(
+          plotDimensions.w,
+          plotDimensions.h
+        );
       props.plot.draw();
     }
   };
@@ -560,8 +563,16 @@ function PlotComponent(props: {
   };
 
   return (
-    <div style={classes.mainContainer} ref={displayRef}>
-      <div style={classes.utilityBar} ref={barRef}>
+    <div
+      id={`display-ref-${props.plot.plotData.id}`}
+      style={classes.mainContainer}
+      ref={displayRef}
+    >
+      <div
+        id={`bar-ref-${props.plot.plotData.id}`}
+        style={classes.utilityBar}
+        ref={barRef}
+      >
         <MainBar plotIndex={props.plotIndex} plot={plot}></MainBar>
         <Divider></Divider>
 
