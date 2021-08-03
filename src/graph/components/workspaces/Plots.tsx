@@ -106,6 +106,26 @@ class Workspace extends React.Component<WorkspaceProps> {
     this.forceUpdate();
   }
 
+  resizeCanvas(layouts: any) {
+    for (let i = 0; i < layouts.length; i++) {
+      let layout = layouts[i];
+      let plotId = layouts[i].i;
+      let id = `canvas-${plotId}`;
+      let displayRef = `display-ref-${plotId}`;
+      let barRef = `bar-ref-${plotId}`;
+
+      let docIdRef = document.getElementById(id);
+      let docDisplayRef: any = document.getElementById(displayRef);
+      let docBarRef: any = document.getElementById(barRef);
+
+      if (docBarRef && docDisplayRef && docIdRef) {
+        let width = docDisplayRef.offsetWidth - 60;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 80;
+        docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+      }
+    }
+  }
+
   savePlotPosition(layouts: any) {
     for (let i = 0; i < layouts.length; i++) {
       let layout = layouts[i];
@@ -123,6 +143,7 @@ class Workspace extends React.Component<WorkspaceProps> {
         y: layout.y,
       };
     }
+    dataManager.updateWorkspace();
   }
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
@@ -175,8 +196,8 @@ class Workspace extends React.Component<WorkspaceProps> {
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
-                    onResize={() => {
-                      dataManager.updateWorkspace();
+                    onResize={(layout: any) => {
+                      this.resizeCanvas(layout);
                     }}
                   >
                     {
