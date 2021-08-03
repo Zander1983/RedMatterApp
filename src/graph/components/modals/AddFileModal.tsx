@@ -9,6 +9,7 @@ import dataManager from "graph/dataManagement/dataManager";
 import { snackbarService } from "uno-material-ui";
 import { DownloadOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
+import PlotData from "graph/dataManagement/plotData";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -323,7 +324,12 @@ function AddFileModal(props: {
                             fontSize: 13,
                             marginLeft: 20,
                           }}
-                          onClick={() => downloadFile(fileMetadata.id)}
+                          onClick={async () => {
+                            downloadFile(fileMetadata.id);
+                            const plot = new PlotData();
+                            plot.file = file.file;
+                            dataManager.addNewPlotToWorkspace(plot);
+                          }}
                         >
                           {isDownloading ? (
                             <CircularProgress
@@ -337,28 +343,7 @@ function AddFileModal(props: {
                             "Download"
                           )}
                         </Button>
-                      ) : // <Button
-                      //   style={{
-                      //     backgroundColor: "#d66",
-                      //     color: "white",
-                      //     fontSize: 13,
-                      //     marginLeft: 20,
-                      //   }}
-                      //   onClick={() => {
-                      //     downloaded =
-                      //       //@ts-ignore
-                      //       downloaded.filter(
-                      //         (e) => e.id !== fileMetadata.id
-                      //       );
-                      //     dataManager.removeFileFromWorkspace(
-                      //       fileMetadata.id
-                      //     );
-                      //     forceUpdate();
-                      //   }}
-                      // >
-                      //   Remove
-                      // </Button>
-                      null}
+                      ) : null}
                       {isDownloaded ? (
                         <Button
                           style={{

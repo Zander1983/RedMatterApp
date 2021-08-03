@@ -383,7 +383,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   };
 
   const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    dataManager.downloadFileEvents(fileIds);
+    await dataManager.downloadFileEvents(fileIds);
   };
 
   const addFile = (index: number) => {

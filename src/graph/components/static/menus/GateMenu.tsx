@@ -111,12 +111,12 @@ export default function GateMenu() {
         }
         return true;
       })
-      .map((e) => {
+      .map(async (e) => {
         if (downloadSnackbar === false) {
           downloadSnackbar = true;
           snackbarService.showSnackbar("Downloading files...", "info");
         }
-        return dataManager.downloadFileEvent(e.id);
+        return await dataManager.downloadFileEvent(e.id);
       });
     await Promise.all(promises);
     let files = dataManager.getAllFiles();
