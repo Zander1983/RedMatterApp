@@ -183,9 +183,9 @@ const App = () => {
           style={{ fontFamily: "Quicksand" }}
         >
           <Switch>
-            {router.map((e) => (
+            {router.map((e, number) => (
               // @ts-ignore
-              <Route exact path={e.path} component={e.component} />
+              <Route key={number} exact path={e.path} component={e.component} />
             ))}
           </Switch>
         </Content>

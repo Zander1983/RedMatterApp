@@ -165,17 +165,14 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
         .then((response) => {
           if (skip === 0) {
             setExperiments(response.data);
-            console.log(experiments);
           } else {
             let aux = experiments;
-            console.log("INITIAL AUX", aux);
             //@ts-ignore
             response.data.map((experiment) => {
               return aux.push(experiment);
             });
 
             setExperiments(aux);
-            console.log(experiments);
             forceUpdate();
           }
         });
@@ -198,27 +195,24 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
           marginTop: 30,
           marginLeft: "auto",
           marginRight: "auto",
+          padding: "0 4em",
         }}
         container
-        xs={12}
-        md={10}
-        lg={8}
       >
         <Grid
+          container
           style={{
             backgroundColor: "#fafafa",
             borderRadius: 10,
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
-          xs={12}
         >
-          <Grid style={{ borderRadius: 5 }}>
+          <Grid container style={{ borderRadius: 5 }}>
             <Grid
               container
-              lg={12}
-              sm={12}
               style={{
                 backgroundColor: "#66a",
                 borderTopLeftRadius: 10,
@@ -275,7 +269,6 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                 width: "100%",
                 justifyContent: "space-evenly",
               }}
-              xs={12}
             >
               {experiments == null ? (
                 <h3 style={{ marginBottom: 0, color: "gray" }}>
@@ -286,6 +279,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                 experiments.map((experiment, i) => {
                   return (
                     <NavLink
+                      key={i}
                       style={{
                         width: "31%",
                       }}
