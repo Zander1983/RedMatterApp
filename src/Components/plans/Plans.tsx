@@ -150,6 +150,7 @@ export default function Plans(props: any) {
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
+          width: "75%",
         }}
       >
         <h1 style={{ marginBottom: 15 }}>Choose Your Plan</h1>

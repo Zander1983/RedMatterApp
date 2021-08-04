@@ -281,7 +281,7 @@ export default function Plans(props: any) {
             boxShadow: "1px 1px 1px 1px #ddd",
             border: "solid 1px #ddd",
             textAlign: "left",
-            width: "100%",
+            width: "75%",
           }}
         >
           <h1

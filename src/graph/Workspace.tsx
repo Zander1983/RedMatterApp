@@ -545,7 +545,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
           }}
-          xs={12}
         >
           {initPlot ? (
             <div>
@@ -560,14 +559,13 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 }}
                 container
               >
-                <Grid container xs={9}>
+                <Grid container>
                   {sharedWorkspace ? null : (
                     <Button
                       size="large"
                       variant="contained"
                       style={{
                         backgroundColor: "#fafafa",
-                        marginLeft: 20,
                       }}
                       className={classes.topButton}
                       startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
@@ -646,7 +644,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
-                    xs={3}
                     style={{
                       textAlign: "right",
                       paddingRight: 20,

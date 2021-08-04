@@ -357,11 +357,9 @@ const Experiment = (props: any) => {
           marginTop: 30,
           marginLeft: "auto",
           marginRight: "auto",
+          padding: "0 4em",
         }}
         container
-        xs={12}
-        md={10}
-        lg={8}
       >
         <Grid
           style={{
@@ -370,14 +368,12 @@ const Experiment = (props: any) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
-          xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              lg={12}
-              sm={12}
               style={{
                 backgroundColor: "#66a",
                 borderTopLeftRadius: 10,
@@ -412,7 +408,7 @@ const Experiment = (props: any) => {
                   />
                 ) : (
                   <Grid
-                    xs={12}
+                    container
                     direction="row"
                     style={{
                       color: "#fff",
@@ -510,7 +506,6 @@ const Experiment = (props: any) => {
                 Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
-                xs={12}
                 style={{
                   backgroundColor: "#ddd",
                   border: "solid 1px #bbb",
@@ -520,7 +515,6 @@ const Experiment = (props: any) => {
                 }}
               >
                 <Grid
-                  xs={12}
                   style={{
                     backgroundColor:
                       experimentSize === 0
@@ -544,7 +538,7 @@ const Experiment = (props: any) => {
                     : ""}
                 </Grid>
               </Grid>
-              <Grid xs={12} style={{ textAlign: "center" }}>
+              <Grid style={{ textAlign: "center" }}>
                 {/*@ts-ignore*/}
                 {/* {experiments.length > 0
                   ? JSON.stringify(experiments[0].details)
@@ -613,9 +607,10 @@ const Experiment = (props: any) => {
                 ) : (
                   experimentData.files.map((e: any, i: number) => {
                     return (
-                      <>
+                      <div key={i}>
                         <Grid
                           item
+                          key={i}
                           xs={12}
                           style={{
                             textAlign: "left",
@@ -693,7 +688,7 @@ const Experiment = (props: any) => {
                             style={{ marginTop: 15, marginBottom: 15 }}
                           ></Divider>
                         ) : null}
-                      </>
+                      </div>
                     );
                   })
                 )}
@@ -802,8 +797,8 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Channels
                         </h1>
-                        {getExperimentChannels().map((e) => (
-                          <h4>{"• " + e}</h4>
+                        {getExperimentChannels().map((e, i) => (
+                          <h4 key={i}>{"• " + e}</h4>
                         ))}
                       </div>
                     </Grid>

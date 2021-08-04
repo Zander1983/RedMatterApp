@@ -207,6 +207,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
         >
           <Grid container style={{ borderRadius: 5 }}>

@@ -229,7 +229,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
-            width: "100%",
+            width: "75%",
           }}
           // xs={12}
         >
