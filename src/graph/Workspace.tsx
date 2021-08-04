@@ -183,27 +183,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       setDownloadedFiles(dataManager.downloaded);
     });
 
-    let addPlotListner = dataManager.addObserver(
-      "addNewPlotToWorkspace",
-      () => {
-        autoSaveWorkspace();
-      }
-    );
-
-    let removePlotListner = dataManager.addObserver(
-      "removePlotFromWorkspace",
-      () => {
-        autoSaveWorkspace();
-      }
-    );
-
-    let updateWorkspaceListner = dataManager.addObserver(
-      "workspaceUpdated",
-      () => {
-        autoSaveWorkspace();
-      }
-    );
-
     var downloadingListner = dataManager.addObserver(
       "updateDownloadingFiles",
       () => {
@@ -216,9 +195,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       dataManager.clearWorkspace();
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
-      dataManager.removeObserver("workspaceUpdated", updateWorkspaceListner);
-      dataManager.removeObserver("removePlotFromWorkspace", removePlotListner);
-      dataManager.removeObserver("addNewPlotToWorkspace", addPlotListner);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
