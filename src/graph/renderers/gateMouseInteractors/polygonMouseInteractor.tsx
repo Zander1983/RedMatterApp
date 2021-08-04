@@ -209,8 +209,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
     const newGate = new PolygonGate({
       points: [...points].map((e) => {
+        console.log("got", e);
         e = this.plotter.transformer.toAbstractPoint(e);
-        return this.plotter.transformer.rawAbstractLogicleToLinear(e);
+        console.log("now is", e);
+        e = this.plotter.transformer.rawAbstractLogicleToLinear(e);
+        console.log("finally is", e);
+        return e;
       }),
       xAxis: xAxis,
       xAxisType: this.plotter.plotData.xPlotType,
