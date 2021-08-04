@@ -396,7 +396,11 @@ const Experiment = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.push("/experiments");
+                  if (props.poke == false) {
+                    history.push("/experiments");
+                  } else {
+                    history.push("/browse-experiments");
+                  }
                 }}
               >
                 Back
@@ -436,23 +440,26 @@ const Experiment = (props: any) => {
                     ) : (
                       experiment.name
                     )}
-                    <Button
-                      style={{ fontSize: 20, marginLeft: 20 }}
-                      onClick={() => setEditingName(!editingName)}
-                    >
-                      <EditOutlined
-                        style={{
-                          color: "white",
-                          borderRadius: 5,
-                          marginTop: -4,
-                          border: "solid 1px #fff",
-                          padding: 3,
-                        }}
-                      />
-                    </Button>
+                    {props.poke === true ? null : (
+                      <Button
+                        style={{ fontSize: 20, marginLeft: 20 }}
+                        onClick={() => setEditingName(!editingName)}
+                      >
+                        <EditOutlined
+                          style={{
+                            color: "white",
+                            borderRadius: 5,
+                            marginTop: -4,
+                            border: "solid 1px #fff",
+                            padding: 3,
+                          }}
+                        />
+                      </Button>
+                    )}
                   </Grid>
                 )}
               </div>
+
               <Button
                 variant="contained"
                 style={{
@@ -461,9 +468,13 @@ const Experiment = (props: any) => {
                   visibility:
                     experimentData?.files.length === 0 ? "hidden" : "visible",
                 }}
-                onClick={() =>
-                  history.push("/experiment/" + props.id + "/plots")
-                }
+                onClick={() => {
+                  if (props.poke === false) {
+                    history.push("/experiment/" + props.id + "/plots");
+                  } else {
+                    history.push("/experiment/" + props.id + "/plots/poke");
+                  }
+                }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
                 Workspace
@@ -538,55 +549,59 @@ const Experiment = (props: any) => {
                 {/* {experiments.length > 0
                   ? JSON.stringify(experiments[0].details)
                   : null} */}
-                <Grid
-                  container
-                  direction="row"
-                  style={{
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ textAlign: "left" }}>
-                    <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
-                      Experiment Files
-                    </h1>
-                    <p
-                      style={{
-                        fontSize: 14,
-                      }}
-                    >
-                      To upload files, drag and drop them here or click the
-                      upload button
-                    </p>
-                  </div>
-                  <div>
-                    <Button
-                      variant="contained"
-                      style={{
-                        backgroundColor: "#6666AA",
-                        maxHeight: 50,
-                        marginTop: 5,
-                        color: "white",
-                      }}
-                      onClick={() => {
-                        inputFile.current.click();
-                      }}
-                    >
-                      <input
-                        type="file"
-                        id="file"
-                        ref={inputFile}
-                        value={fileUploadInputValue}
-                        multiple
-                        accept=".fcs, .lmd"
-                        style={{ display: "none" }}
-                        onChange={(e) => {
-                          uploadFiles(e.target.files);
+
+                {props.poke === true ? null : (
+                  <Grid
+                    container
+                    direction="row"
+                    style={{
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ textAlign: "left" }}>
+                      <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                        Experiment Files
+                      </h1>
+                      <p
+                        style={{
+                          fontSize: 14,
                         }}
-                      />
-                      Upload File
-                    </Button>
-                  </div>
-                </Grid>
+                      >
+                        To upload files, drag and drop them here or click the
+                        upload button
+                      </p>
+                    </div>
+                    <div>
+                      <Button
+                        variant="contained"
+                        style={{
+                          backgroundColor: "#6666AA",
+                          maxHeight: 50,
+                          marginTop: 5,
+                          color: "white",
+                        }}
+                        onClick={() => {
+                          inputFile.current.click();
+                        }}
+                      >
+                        <input
+                          type="file"
+                          id="file"
+                          ref={inputFile}
+                          value={fileUploadInputValue}
+                          multiple
+                          accept=".fcs, .lmd"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            uploadFiles(e.target.files);
+                          }}
+                        />
+                        Upload File
+                      </Button>
+                    </div>
+                  </Grid>
+                )}
+
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
