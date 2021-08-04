@@ -264,20 +264,16 @@ export default function Plans(props: any) {
         alignContent="center"
         justify="center"
         style={{
+          margin: "0 auto",
           paddingTop: 30,
           paddingBottom: 50,
-          paddingLeft: 20,
-          paddingRight: 20,
+          paddingLeft: "4em",
+          paddingRight: "4em",
         }}
       >
         <script src="https://js.stripe.com/v3/"></script>
         <Grid
-          container
-          lg={8}
-          md={10}
-          sm={12}
-          justify="flex-start"
-          direction="row"
+          item
           style={{
             backgroundColor: "#fafafa",
             padding: "3em 5em",
@@ -285,6 +281,7 @@ export default function Plans(props: any) {
             boxShadow: "1px 1px 1px 1px #ddd",
             border: "solid 1px #ddd",
             textAlign: "left",
+            width: "100%",
           }}
         >
           <h1
@@ -297,15 +294,7 @@ export default function Plans(props: any) {
           </h1>
           {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
 
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
+          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
             <Grid item lg={6} md={6} sm={6}>
               <h3>
                 Next Billing Date:
@@ -322,16 +311,7 @@ export default function Plans(props: any) {
             </Grid>
           </Grid>
 
-          <Grid
-            container
-            lg={12}
-            md={12}
-            sm={12}
-            alignItems="flex-end"
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
+          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
             <Grid item lg={9} md={6} sm={6}>
               <h3 style={{ marginBottom: "1.5em" }}>
                 Current Subscription:
@@ -400,9 +380,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            lg={12}
-            md={12}
-            sm={12}
             alignItems="flex-end"
             justify="flex-start"
             direction="row"
@@ -456,9 +433,6 @@ export default function Plans(props: any) {
 
           <Grid
             container
-            lg={12}
-            md={12}
-            sm={12}
             justify="center"
             direction="row"
             style={{ textAlign: "center" }}

@@ -63,6 +63,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
 
   return (
     <Grid
+      item
       style={{
         padding: 5,
       }}
