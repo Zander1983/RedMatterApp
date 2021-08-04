@@ -202,8 +202,8 @@ function AddFileModal(props: {
                         : classes.fileSelectFileContainer
                     }
                   >
-                    <Grid container xs={12} direction="row">
-                      <Grid direction="row">
+                    <Grid container direction="row">
+                      <Grid container direction="row">
                         <p>
                           <b>Title:</b>{" "}
                           <a
