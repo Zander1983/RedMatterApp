@@ -31,10 +31,13 @@ export default class PolygonGate extends Gate {
     return "Polygon Gate";
   }
 
-  isPointInside(point: Point): boolean {
+  isPointInside(point: Point, forceRaw: boolean = false): boolean {
     let points = this.points.map((e) => {
       return { ...e };
     });
+    if (forceRaw) {
+      return pointInsidePolygon(point, points) && super.isPointInside(point);
+    }
     const ranges = [this.xAxisOriginalRanges, this.yAxisOriginalRanges];
     const fcsServices = new FCSServices();
     const convert = (e: { x: number; y: number }) => {

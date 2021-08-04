@@ -730,7 +730,7 @@ export default class PlotData extends ObserversFunctionality {
 
   private findAllRanges() {
     if (!(this.ranges instanceof Map)) this.ranges = new Map();
-    if (!(this.ranges instanceof Map)) this.rangePlotType = new Map();
+    if (!(this.rangePlotType instanceof Map)) this.rangePlotType = new Map();
 
     if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
     if (this.file === undefined) throw Error("No file found for plot");

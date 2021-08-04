@@ -7,6 +7,7 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
+import Gate from "graph/dataManagement/gate/gate";
 
 export const selectPointDist = 15;
 
@@ -83,19 +84,31 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.isDraggingGate = false;
   }
 
+  private validateGateOnSpace(gate: Gate) {
+    return (
+      gate.xAxis === this.plotter.plotData.xAxis &&
+      gate.yAxis === this.plotter.plotData.yAxis &&
+      gate.xAxisType === this.plotter.plotData.xPlotType &&
+      gate.yAxisType === this.plotter.plotData.yPlotType
+    );
+  }
+
   private detectGatesClicked(mouse: Point) {
-    this.plotter.gates.forEach((gate) => {
-      if (
-        gate.isPointInside(
-          this.plotter.transformer.toAbstractPoint(mouse, true)
-        )
-      ) {
-        this.isDraggingGate = true;
-        this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse, true);
-        this.targetEditGate = gate as PolygonGate;
-        return;
-      }
-    });
+    const abstractMouse = this.plotter.transformer.toAbstractPoint(
+      { ...mouse },
+      true
+    );
+    this.plotter.gates
+      .filter((e) => this.validateGateOnSpace(e))
+      .forEach((gate) => {
+        console.log((gate as PolygonGate).points, abstractMouse);
+        if ((gate as PolygonGate).isPointInside(abstractMouse, true)) {
+          this.isDraggingGate = true;
+          this.gatePivot = abstractMouse;
+          this.targetEditGate = gate as PolygonGate;
+          return;
+        }
+      });
   }
 
   private detectPointsClicked(mouse: Point) {
