@@ -585,7 +585,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {savingWorkspace ? (
+                        {/* {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -593,7 +593,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )}
+                        )} */}
                         Save Workspace
                       </Button>
                     )
