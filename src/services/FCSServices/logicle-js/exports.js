@@ -7,8 +7,6 @@ exports.LogicleTransform = function (x, T, M, W, A, inverse = false) {
   if (W == null) throw "W is not specified";
   if (A == null) throw "A is not specified";
 
-  console.log(api);
-
   return api["logicle_transform"]({
     x: x,
     T: T,

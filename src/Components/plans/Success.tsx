@@ -22,7 +22,6 @@ export default function Plans(props: { session_id: any }) {
                 customer: data.customer,
               },
             })
-            .then(() => console.log("Customer Saved Succesfully"))
             .then(() => {
               axios.post(`/add-subscription`, {
                 body: {

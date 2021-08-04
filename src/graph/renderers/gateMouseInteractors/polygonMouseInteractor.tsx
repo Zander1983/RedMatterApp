@@ -101,7 +101,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plotter.gates
       .filter((e) => this.validateGateOnSpace(e))
       .forEach((gate) => {
-        console.log((gate as PolygonGate).points, abstractMouse);
         if ((gate as PolygonGate).isPointInside(abstractMouse, true)) {
           this.isDraggingGate = true;
           this.gatePivot = abstractMouse;
