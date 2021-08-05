@@ -107,7 +107,7 @@ function RangeResizeModal(props: {
               Cancel
             </Button>
 
-            <Button
+            {/* <Button
               variant="contained"
               style={{
                 backgroundColor: "#6666aa",
@@ -120,7 +120,7 @@ function RangeResizeModal(props: {
               }}
             >
               Set Default
-            </Button>
+            </Button> */}
           </Grid>
         </Grid>
       </div>

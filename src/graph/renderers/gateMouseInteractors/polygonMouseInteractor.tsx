@@ -42,6 +42,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   editGateEvent(type: string, mouse: Point) {
+    if (this.started) return;
     if (
       this.targetEditGate === null &&
       type === "mousedown" &&

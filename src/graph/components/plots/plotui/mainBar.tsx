@@ -162,7 +162,7 @@ export default function MainBar(props: any) {
         >
           Draw gate
         </Button>
-        <Button
+        {/* <Button
           style={{
             backgroundColor: "#66a",
             flex: "1 1 auto",
@@ -203,7 +203,7 @@ export default function MainBar(props: any) {
           }}
         >
           Inverse Subpop
-        </Button>
+        </Button> */}
       </Grid>
       {/* <Button style={{ display: "inline-block"}}
         variant="contained"
