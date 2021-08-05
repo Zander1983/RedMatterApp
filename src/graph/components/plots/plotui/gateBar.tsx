@@ -53,20 +53,21 @@ export default function GateBar(props: any) {
       plot.plotData === undefined
     )
       return;
-    let gates = plot.plotData.gates.map((e) => e.gate);
+    let plotGates = plot.plotData.gates.map((e) => e.gate);
     const pop = plot.plotData.population.map((e) => e.gate);
     setPopulation(pop);
-    gates = gates.filter((e: any) => {
+    plotGates = plotGates.filter((e: any) => {
       for (const gate of pop) {
         if (gate.id === e.id) return false;
       }
       return true;
     });
-    setSelected(gates);
+    setSelected(plotGates);
     let cgates: Gate[] = [];
     dataManager.getAllGates().forEach((v) => {
       cgates.push(v.gate);
     });
+    console.log("setGates = ", cgates);
     setGates(cgates);
   };
 

@@ -35,7 +35,7 @@ const DEFAULT_COLOR = "#000";
 const MAX_EVENT_SIZE = 100000;
 
 export interface PlotDataState {
-  id: string;
+  id?: string;
   ranges: Map<string, [number, number]>;
   rangePlotType: Map<string, string>;
   file: FCSFile;

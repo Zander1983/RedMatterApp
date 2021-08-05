@@ -157,7 +157,7 @@ export default function GateMenu() {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
-            <TableCell></TableCell>
+            {dataManager.files.length > 1 ? <TableCell></TableCell> : null}
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
             <TableCell>Type</TableCell>
@@ -192,18 +192,20 @@ export default function GateMenu() {
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell>
-              <TableCell>
-                <Button
-                  style={{
-                    display: "inline-block",
-                    padding: 0,
-                    minWidth: 0,
-                  }}
-                  onClick={() => applyGateToAllFiles(gate)}
-                >
-                  Apply to all files
-                </Button>
-              </TableCell>
+              {dataManager.files.length > 1 ? (
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                    }}
+                    onClick={() => applyGateToAllFiles(gate)}
+                  >
+                    Apply to all files
+                  </Button>
+                </TableCell>
+              ) : null}
               <TableCell>
                 <TextField
                   value={gate.gate.name}
