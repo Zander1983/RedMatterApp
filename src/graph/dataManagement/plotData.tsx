@@ -66,7 +66,6 @@ export interface PlotDataState {
     x: number;
     y: number;
   };
-  parentPlotId: string;
 }
 
 export default class PlotData extends ObserversFunctionality {
@@ -123,7 +122,6 @@ export default class PlotData extends ObserversFunctionality {
     x: -1,
     y: -1,
   };
-  parentPlotId: string = "";
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -253,7 +251,6 @@ export default class PlotData extends ObserversFunctionality {
       histogramAxis: this.histogramAxis,
       dimensions: this.dimensions,
       positions: this.positions,
-      parentPlotId: this.parentPlotId,
     };
   }
 
@@ -282,9 +279,6 @@ export default class PlotData extends ObserversFunctionality {
   update(state: any) {
     if (state.label !== undefined) this.label = state.label;
     this.plotUpdated();
-
-    dataManager.redrawPlotIds.push(this.id);
-    if (this.parentPlotId) dataManager.redrawPlotIds.push(this.id);
   }
 
   /* MULTI PLOT INTERACTION */
@@ -364,7 +358,6 @@ export default class PlotData extends ObserversFunctionality {
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
-    newPlotData.parentPlotId = this.id;
     newPlotData.population = [...newGates, ...this.population];
     newPlotData.gates = [];
     return dataManager.addNewPlotToWorkspace(newPlotData);

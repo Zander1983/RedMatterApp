@@ -20,17 +20,6 @@ import useForceUpdate from "hooks/forceUpdate";
 import RangeSliders from "./RangeSliders";
 
 const classes = {
-  itemOuterDiv: {
-    flex: 1,
-    backgroundColor: "#eef",
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: 5,
-  },
-  itemInnerDiv: {
-    width: "100%",
-    height: "100%",
-  },
   mainContainer: {
     width: "100%",
     height: "100%",
@@ -52,7 +41,6 @@ var plotDownloadingFiles: any[] = [];
 var filePlotIdDict: any = {};
 
 function PlotComponent(props: {
-  index: number;
   plot: Plot;
   plotIndex: string;
   plotFileId: string;
@@ -104,16 +92,7 @@ function PlotComponent(props: {
           plotDimensions.w,
           plotDimensions.h
         );
-      let plotRanges = props.plot.plotData.ranges.get(
-        props.plot.plotData.xAxis
-      );
-      plot.plotData.ranges.set(props.plot.plotData.xAxis, [
-        plotRanges[0],
-        plotRanges[1],
-      ]);
-      plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
-
-      plot.draw();
+      props.plot.draw();
     }
   };
 
@@ -216,41 +195,14 @@ function PlotComponent(props: {
     if (donwloadedFileId) return true;
     return false;
   };
-  const [plotMoving, setPlotMoving] = React.useState(true);
-  const updatePlotMovement = () => {
-    dataManager.updateWorkspace();
-    setPlotMoving(!dataManager.dragLock);
-    rerender();
-  };
+
   useEffect(() => {
     dataManager.addObserver("updateWorkspace", () => {
-      if (
-        dataManager.redrawPlotIds.includes(props.plot.plotData.id) ||
-        dataManager.redrawPlotIds.includes(props.plot.plotData.parentPlotId)
-      ) {
-        console.log("redrawn");
-        plotUpdater();
-        let inx = dataManager.redrawPlotIds.findIndex(
-          (x) => x == props.plot.plotData.id
-        );
-        delete dataManager.redrawPlotIds[inx];
-      }
+      plotUpdater();
     });
-    dataManager.addObserver("workspaceDragLock", () => {
-      if (
-        dataManager.redrawPlotIds.includes(props.plot.plotData.id) ||
-        dataManager.redrawPlotIds.includes(props.plot.plotData.parentPlotId)
-      ) {
-        console.log("movement");
-        updatePlotMovement();
-        let inx = dataManager.redrawPlotIds.findIndex(
-          (x) => x == props.plot.plotData.id
-        );
-        delete dataManager.redrawPlotIds[inx];
-      }
-    });
+    setTimeout(() => plotUpdater(), 100);
     if (!plotSetup) {
-      //plot.plotData.addObserver("plotUpdated", () => rerender());
+      plot.plotData.addObserver("plotUpdated", () => rerender());
       dataManager.addObserver("removePlotFromWorkspace", () => {
         if (props.plot && props.plot.plotData) {
           let filePlotDataIds: any[] = filePlotIdDict
@@ -287,7 +239,6 @@ function PlotComponent(props: {
       });
       plot.setup();
       setPlotSetup(true);
-      plotUpdater();
     }
 
     let downloadedListner = dataManager.addObserver("updateDownloaded", () => {
@@ -574,32 +525,9 @@ function PlotComponent(props: {
     if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axis, [min, max]);
     if (lastUpdate + 100 < new Date().getTime()) {
-      dataManager.redrawPlotIds.push(props.plot.plotData.id);
-      if (props.plot.plotData.parentPlotId) {
-        dataManager.redrawPlotIds.push(props.plot.plotData.parentPlotId);
-      }
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
     }
-  };
-  const MINW = 10;
-  const MINH = 12;
-  const STDW = 15;
-  const standardGridPlotItem = (index: number, plotData: any) => {
-    let x = plotData.positions.x;
-    let y = plotData.positions.y;
-    let w = plotData.dimensions.w;
-    let h = plotData.dimensions.h;
-    return {
-      x: x < 0 ? (index * STDW) % 30 : x,
-      y: y < 0 ? 100 : y,
-      w: w,
-      h: h,
-      minW: MINW,
-      minH: MINH,
-      isDraggable: plotMoving,
-      // static: true,
-    };
   };
 
   return (

@@ -2,7 +2,6 @@ import React from "react";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
 import RangeResizeModal from "../modals/rangeResizeModal";
-import PlotData from "graph/dataManagement/plotData";
 
 /*
   This guy is responsible for range sliding and range modal. 
@@ -32,28 +31,8 @@ function RangeSliders(props: { plot: Plot }) {
 
   const [lastUpdate, setLastUpdate] = React.useState(null);
   const setAxisRange = (min: number, max: number, axis: string) => {
-    let plots = dataManager.getAllPlots();
-    let changePlotRanges = plots.filter(
-      (x) =>
-        x.plot.id == props.plot.plotData.parentPlotId ||
-        x.plot.parentPlotId == props.plot.plotData.id ||
-        x.plot.id == props.plot.plotData.id
-    );
-
-    for (let plt of changePlotRanges) {
-      if (min === 69 && max === 420) plt.plot.resetOriginalRanges();
-      else plt.plot.ranges.set(axis, [min, max]);
-
-      if (!dataManager.redrawPlotIds.includes(plt.plotID))
-        dataManager.redrawPlotIds.push(plt.plotID);
-      if (
-        plt.plot.parentPlotId &&
-        !dataManager.redrawPlotIds.includes(plt.plot.parentPlotId)
-      ) {
-        dataManager.redrawPlotIds.push(plt.plot.parentPlotId);
-      }
-    }
-
+    if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
+    else props.plot.plotData.ranges.set(axis, [min, max]);
     if (lastUpdate + 40 < new Date().getTime()) {
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
