@@ -442,6 +442,7 @@ class DataManager extends ObserversFunctionality {
   downloaded: any[] = [];
   downloadingFiles: Array<string> = [];
   downloadHappening: boolean = false;
+  redrawPlotIds: Array<string> = [];
 
   setWorkspaceIsShared(workspaceIsShared: boolean) {
     this.workspaceIsShared = workspaceIsShared;
