@@ -113,8 +113,8 @@ export default class PlotData extends ObserversFunctionality {
     w: number;
     h: number;
   } = {
-    w: 15,
-    h: 18,
+    w: 10,
+    h: 12,
   };
   positions: {
     x: number;
