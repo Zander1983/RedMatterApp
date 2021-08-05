@@ -50,34 +50,36 @@ interface WorkspaceProps {
   sharedWorkspace: boolean;
   experimentId: string;
 }
-
+interface IState {
+  plotMoving?: boolean;
+}
 let intervals: any = null;
 
-class Workspace extends React.Component<WorkspaceProps> {
+class Workspace extends React.Component<WorkspaceProps, IState> {
   private static renderCalls = 0;
   workspace: WorkspaceData;
   plots: {
     plotData: PlotData;
     plotRender: Plot;
   }[] = [];
-  plotMoving: boolean = true;
+
   workspaceLoaded = false;
   constructor(props: WorkspaceProps) {
     super(props);
+    this.state = {
+      plotMoving: true,
+    };
     this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();
 
     dataManager.addObserver("addNewPlotToWorkspace", () => this.update());
     dataManager.addObserver("removePlotFromWorkspace", () => this.update());
-    dataManager.addObserver("updateWorkspace", () => this.update());
-    dataManager.addObserver("workspaceDragLock", () =>
-      this.updatePlotMovement()
-    );
+    // dataManager.addObserver("updateWorkspace", () => this.update());
+    // dataManager.addObserver("workspaceDragLock", () =>
+    //   this.updatePlotMovement()
+    // );
 
-    this.state = {
-      plots: [],
-    };
     this.workspaceLoaded = true;
   }
 
@@ -102,8 +104,10 @@ class Workspace extends React.Component<WorkspaceProps> {
   }
 
   updatePlotMovement() {
-    this.plotMoving = !dataManager.dragLock;
-    this.forceUpdate();
+    dataManager.updateWorkspace();
+    this.setState({
+      plotMoving: !dataManager.dragLock,
+    });
   }
 
   resizeCanvas(layouts: any) {
@@ -132,16 +136,30 @@ class Workspace extends React.Component<WorkspaceProps> {
       let plotId = layouts[i].i;
 
       let plot = this.plots.find((x) => x.plotData.id === plotId);
+      if (
+        plot.plotData.dimensions.h != layout.h ||
+        plot.plotData.dimensions.w != layout.w ||
+        plot.plotData.positions.x != layout.x ||
+        plot.plotData.positions.y != layout.y
+      ) {
+        if (!dataManager.redrawPlotIds.includes(plot.plotData.id))
+          dataManager.redrawPlotIds.push(plot.plotData.id);
+        if (
+          plot.plotData.parentPlotId &&
+          !dataManager.redrawPlotIds.includes(plot.plotData.parentPlotId)
+        ) {
+          dataManager.redrawPlotIds.push(plot.plotData.parentPlotId);
+        }
+        plot.plotData.dimensions = {
+          h: layout.h,
+          w: layout.w,
+        };
 
-      plot.plotData.dimensions = {
-        h: layout.h,
-        w: layout.w,
-      };
-
-      plot.plotData.positions = {
-        x: layout.x,
-        y: layout.y,
-      };
+        plot.plotData.positions = {
+          x: layout.x,
+          y: layout.y,
+        };
+      }
     }
     dataManager.updateWorkspace();
   }
@@ -192,7 +210,7 @@ class Workspace extends React.Component<WorkspaceProps> {
                     cols={{ lg: 30 }}
                     rows={{ lg: 30 }}
                     rowHeight={30}
-                    isDraggable={this.plotMoving}
+                    isDraggable={false}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
@@ -212,6 +230,7 @@ class Workspace extends React.Component<WorkspaceProps> {
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
                               <PlotComponent
+                                index={i}
                                 plot={e.plotRender}
                                 plotIndex={e.plotData.id}
                                 plotFileId={e.plotData.file.id}
