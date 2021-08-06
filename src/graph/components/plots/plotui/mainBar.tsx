@@ -164,6 +164,7 @@ export default function MainBar(props: any) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
+            marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
             flex: "1 1 auto",
@@ -185,6 +186,7 @@ export default function MainBar(props: any) {
             width: "75%",
             fontSize: 12,
             color: "white",
+            marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
             backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
@@ -204,7 +206,7 @@ export default function MainBar(props: any) {
           }}
           style={{
             // flex: "1 1 auto",
-            width: "47%",
+            minWidth: "47%",
             fontSize: 12,
             color: "white",
             marginTop: 5,
