@@ -286,8 +286,10 @@ function PlotComponent(props: {
                   !filePlotDataIds.includes(x.plotId)
               )
             );
-            if (plotData && plotData.length > 0)
+            if (plotData && plotData.length > 0) {
               props.plot.plotData.removeAnyOverlay(plotData[0].plotId);
+              plotUpdater();
+            }
           }
 
           tryKillComponent();
@@ -434,6 +436,9 @@ function PlotComponent(props: {
         }
         break;
     }
+    setTimeout(() => {
+      plotUpdater();
+    }, 0);
   };
 
   const addHistogrmOverlay = (

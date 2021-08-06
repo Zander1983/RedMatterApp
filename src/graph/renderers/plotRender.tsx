@@ -41,12 +41,13 @@ export default class Plot {
     Existance of a plot can only be on the presence of a file. 
   */
   constructor(plotData: PlotData) {
-    this.plotData = plotData;
-    this.plotData.addObserver("plotUpdated", () => {
-      this.update();
-    });
-
-    this.canvas = new Canvas();
+    if (plotData) {
+      this.plotData = plotData;
+      this.plotData.addObserver("plotUpdated", () => {
+        this.update();
+      });
+      this.canvas = new Canvas();
+    }
   }
 
   /* Whenever plot data gets updated, this should be called to rerender
