@@ -31,21 +31,35 @@ function RangeResizeModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   inits: {
-    axis: string;
-    min: number;
-    max: number;
+    axisX: string;
+    axisY: string;
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
   };
-  callback: (min: number, max: number, axis: string) => void;
+  callback: (
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    axisX: string,
+    axisY: string
+  ) => void;
 }): JSX.Element {
   const classes = useStyles();
-  const [min, setMin] = React.useState(0);
-  const [max, setMax] = React.useState(0);
+  const [minX, setMinX] = React.useState(0);
+  const [maxX, setMaxX] = React.useState(0);
+  const [minY, setMinY] = React.useState(0);
+  const [maxY, setMaxY] = React.useState(0);
 
   useEffect(() => {
-    setMin(props.inits.min);
-    setMax(props.inits.max);
+    setMinX(props.inits.minX);
+    setMaxX(props.inits.maxX);
+    setMinY(props.inits.minY);
+    setMaxY(props.inits.maxY);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.inits.min]);
+  }, [props.inits.minX, props.inits.minY]);
 
   return (
     <Modal
@@ -55,27 +69,58 @@ function RangeResizeModal(props: {
       }}
     >
       <div className={classes.modal}>
-        <Grid container alignItems="center" direction="column">
-          <h2>Edit {props.inits.axis} range</h2>
-          <TextField
-            label="Range min"
-            value={min}
-            onChange={(e) => {
-              const v = parseInt(e.target.value);
-              if (isNaN(v)) setMin(0);
-              else setMin(parseInt(e.target.value));
-            }}
-          />
-          <br />
-          <TextField
-            label="Range max"
-            value={max}
-            onChange={(e) => {
-              const v = parseInt(e.target.value);
-              if (isNaN(v)) setMax(0);
-              else setMax(parseInt(e.target.value));
-            }}
-          />
+        <Grid
+          container
+          alignItems="center"
+          direction="row"
+          style={{ padding: "2rem 1rem" }}
+        >
+          <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+            <h3>Edit {props.inits.axisX} range</h3>
+            <TextField
+              label="Range min"
+              value={minX}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                if (isNaN(v)) setMinX(0);
+                else setMinX(parseInt(e.target.value));
+              }}
+            />
+            <br />
+            <TextField
+              label="Range max"
+              value={maxX}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                if (isNaN(v)) setMaxX(0);
+                else setMaxX(parseInt(e.target.value));
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+            <h3>Edit {props.inits.axisY} range</h3>
+            <TextField
+              label="Range min"
+              value={minY}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                if (isNaN(v)) setMinY(0);
+                else setMinY(parseInt(e.target.value));
+              }}
+            />
+            <br />
+            <TextField
+              label="Range max"
+              value={maxY}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                if (isNaN(v)) setMaxY(0);
+                else setMaxY(parseInt(e.target.value));
+              }}
+            />
+          </Grid>
+
           <br />
           <Grid
             container
@@ -87,7 +132,14 @@ function RangeResizeModal(props: {
               variant="contained"
               color="primary"
               onClick={() => {
-                props.callback(min, max, props.inits.axis.split(" ")[0]);
+                props.callback(
+                  minX,
+                  maxX,
+                  minY,
+                  maxY,
+                  props.inits.axisX.split(" ")[0],
+                  props.inits.axisY.split(" ")[0]
+                );
                 props.closeCall.f(props.closeCall.ref);
               }}
             >
