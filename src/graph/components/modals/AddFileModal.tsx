@@ -284,7 +284,7 @@ function AddFileModal(props: {
                           {isDownloaded
                             ? "Downloaded"
                             : isDownloading
-                            ? "Dowloading..."
+                            ? "Downloading..."
                             : "Remote"}
                         </Grid>
                         <Grid
