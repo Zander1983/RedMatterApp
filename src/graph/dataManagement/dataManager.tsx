@@ -319,6 +319,7 @@ class DataManager extends ObserversFunctionality {
     }
 
     this.redrawPlotIds = [];
+    this.removeWorkspace();
 
     // Clears local storage
     window.localStorage.removeItem(this.lastLocalStorageSave);
@@ -326,7 +327,6 @@ class DataManager extends ObserversFunctionality {
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
     }
-    this.removeWorkspace();
 
     DataManager.resetInstance();
     // Creates brand new workspace
