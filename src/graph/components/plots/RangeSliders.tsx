@@ -102,19 +102,20 @@ function RangeSliders(props: { plot: Plot }) {
             : 50,
           height: plot.plotData.plotHeight - 100,
           // cursor: "s-resize",
-          cursor: "pointer",
+          // cursor: "pointer",
           position: "absolute",
           zIndex: 10000,
           left: 65,
           bottom: 100,
         }}
-        onClick={() => {
-          const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
-          setRangeResizeModalTargetMin(ranges[0]);
-          setRangeResizeModalTargetMax(ranges[1]);
-          setRangeResizeModalOpen(true);
-          setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
-        }}
+        //COMENTING THE FOLLOWING LINES AS THIS FUNCITONALITY NOW BELONGS TO THE EDIT AXIS BUTTONS ON MAIN BAR
+        // onClick={() => {
+        //   const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
+        //   setRangeResizeModalTargetMin(ranges[0]);
+        //   setRangeResizeModalTargetMax(ranges[1]);
+        //   setRangeResizeModalOpen(true);
+        //   setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
+        // }}
         // onDrag={(e) => {
         //   if (e.clientX === 0 && e.clientY === 0) {
         //     return;
@@ -164,7 +165,7 @@ function RangeSliders(props: { plot: Plot }) {
           backgroundColor: "rgba(0,0,0,0.0)",
           width: plot.plotData.plotWidth - 120,
           // cursor: "e-resize",
-          cursor: "pointer",
+          // cursor: "pointer",
           height: isPlotHistogram()
             ? props.plot.plotData.histogramAxis === "horizontal"
               ? 0
@@ -175,13 +176,14 @@ function RangeSliders(props: { plot: Plot }) {
           left: 115,
           bottom: 50,
         }}
-        onClick={() => {
-          const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
-          setRangeResizeModalTargetMin(ranges[0]);
-          setRangeResizeModalTargetMax(ranges[1]);
-          setRangeResizeModalOpen(true);
-          setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
-        }}
+        //COMENTING THE FOLLOWING LINES AS THIS FUNCITONALITY NOW BELONGS TO THE EDIT AXIS BUTTONS ON MAIN BAR
+        // onClick={() => {
+        //   const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
+        //   setRangeResizeModalTargetMin(ranges[0]);
+        //   setRangeResizeModalTargetMax(ranges[1]);
+        //   setRangeResizeModalOpen(true);
+        //   setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
+        // }}
         // onDrag={(e) => {
         //   if (e.clientX === 0 && e.clientY === 0) {
         //     return;
