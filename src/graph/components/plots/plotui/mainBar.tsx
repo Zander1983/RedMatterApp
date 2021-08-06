@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
@@ -5,6 +6,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";
+import RangeResizeModal from "../../modals/rangeResizeModal";
 
 const classes = {
   main: {
@@ -33,8 +35,23 @@ export default function MainBar(props: any) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
+  const [openResize, setOpenResize] = useState(false);
+  const [rangeResizeModalAxis, setRangeResizeModalAxis] = React.useState("");
+  const [rangeResizeModalTargetMin, setRangeResizeModalTargetMin] =
+    React.useState(0);
+  const [rangeResizeModalTargetMax, setRangeResizeModalTargetMax] =
+    React.useState(0);
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
+  const [lastUpdate, setLastUpdate] = React.useState(null);
+  const setAxisRange = (min: number, max: number, axis: string) => {
+    if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
+    else props.plot.plotData.ranges.set(axis, [min, max]);
+    if (lastUpdate + 40 < new Date().getTime()) {
+      dataManager.updateWorkspace();
+      setLastUpdate(new Date().getTime());
+    }
+  };
 
   const deletePlot = () => {
     dataManager.removePlotFromWorkspace(plot.plotData.id);
@@ -90,6 +107,19 @@ export default function MainBar(props: any) {
 
   return (
     <Grid container direction="row" xs={12} style={classes.main}>
+      <RangeResizeModal
+        open={openResize}
+        closeCall={{
+          f: handleClose,
+          ref: setOpenResize,
+        }}
+        inits={{
+          axis: rangeResizeModalAxis,
+          min: rangeResizeModalTargetMin,
+          max: rangeResizeModalTargetMax,
+        }}
+        callback={setAxisRange}
+      ></RangeResizeModal>
       <MessageModal
         open={deleteModalOpen}
         closeCall={{
@@ -135,6 +165,7 @@ export default function MainBar(props: any) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
+            marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
             flex: "1 1 auto",
@@ -176,6 +207,52 @@ export default function MainBar(props: any) {
             {polygonGating ? "Drawing gate..." : "Draw gate"}
           </Button>
         </Tooltip>
+        <Button
+          variant="contained"
+          size="medium"
+          onClick={() => {
+            const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
+            setRangeResizeModalTargetMin(ranges[0]);
+            setRangeResizeModalTargetMax(ranges[1]);
+            setOpenResize(true);
+            setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
+          }}
+          style={{
+            // flex: "1 1 auto",
+            minWidth: "47%",
+            fontSize: 12,
+            color: "white",
+            marginTop: 5,
+            marginRight: 5,
+            marginLeft: 5,
+            backgroundColor: "#6666aa",
+          }}
+        >
+          Edit Y axis
+        </Button>
+
+        <Button
+          variant="contained"
+          size="medium"
+          onClick={() => {
+            const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
+            setRangeResizeModalTargetMin(ranges[0]);
+            setRangeResizeModalTargetMax(ranges[1]);
+            setOpenResize(true);
+            setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
+          }}
+          style={{
+            width: "47%",
+            fontSize: 12,
+            color: "white",
+            marginTop: 5,
+            marginRight: 5,
+            marginLeft: 5,
+            backgroundColor: "#6666aa",
+          }}
+        >
+          Edit X axis
+        </Button>
         {/* <Button
           style={{
             backgroundColor: "#66a",
