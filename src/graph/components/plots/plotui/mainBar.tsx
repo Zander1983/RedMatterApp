@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
+import useForceUpdate from "hooks/forceUpdate";
 import CancelIcon from "@material-ui/icons/Cancel";
 
 import MessageModal from "../../modals/MessageModal";
@@ -61,9 +62,7 @@ export default function MainBar(props: any) {
   ) => {
     if (minX === 69 && maxX === 420) {
       props.plot.plotData.resetOriginalRanges();
-      alert("executing the if");
     } else {
-      alert("executing the else");
       console.log("axisX", axisX);
       props.plot.plotData.ranges.set(axisX, [minX, maxX]);
     }
@@ -71,6 +70,7 @@ export default function MainBar(props: any) {
     if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
     if (lastUpdate + 40 < new Date().getTime()) {
+      alert("executing the if for updating");
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
     }

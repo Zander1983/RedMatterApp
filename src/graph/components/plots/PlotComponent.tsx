@@ -14,7 +14,6 @@ import CanvasComponent from "../canvas/CanvasComponent";
 import Plot from "graph/renderers/plotRender";
 import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
-import RangeResizeModal from "../modals/rangeResizeModal";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import useForceUpdate from "hooks/forceUpdate";
 import RangeSliders from "./RangeSliders";
@@ -630,7 +629,11 @@ function PlotComponent(props: {
         style={classes.utilityBar}
         ref={barRef}
       >
-        <MainBar plotIndex={props.plotIndex} plot={plot}></MainBar>
+        <MainBar
+          plotIndex={props.plotIndex}
+          plot={plot}
+          rerender={rerender}
+        ></MainBar>
         <Divider></Divider>
 
         <GateBar plot={plot}></GateBar>
