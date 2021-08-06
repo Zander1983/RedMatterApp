@@ -358,7 +358,10 @@ export default class PlotData extends ObserversFunctionality {
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
-    newPlotData.population = [...newGates, ...this.population];
+    newPlotData.population = [
+      newGates[newGates.length - 1],
+      ...this.population,
+    ];
     newPlotData.gates = [];
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
