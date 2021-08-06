@@ -212,7 +212,7 @@ export default function MainBar(props: any) {
             marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
-            backgroundColor: "#ffb300",
+            backgroundColor: "#6666aa",
           }}
         >
           Edit Y axis
@@ -235,7 +235,7 @@ export default function MainBar(props: any) {
             marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
-            backgroundColor: "#0277bd",
+            backgroundColor: "#6666aa",
           }}
         >
           Edit X axis
