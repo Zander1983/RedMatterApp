@@ -1,5 +1,6 @@
-import { Button } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
+import { Button, Tooltip } from "@material-ui/core";
+import React, { useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import CancelIcon from "@material-ui/icons/Cancel";
 
@@ -177,23 +178,35 @@ export default function MainBar(props: any) {
             }}
           ></CancelIcon>
         </Button>
-        <Button
-          variant="contained"
-          size="medium"
-          onClick={() => polygonGatingSetter()}
-          style={{
-            flex: "2 2 auto",
-            width: "75%",
-            fontSize: 12,
-            color: "white",
-            marginTop: 5,
-            marginRight: 5,
-            marginLeft: 5,
-            backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
-          }}
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button enables/disables gate drawing
+              </h3>
+              <br />
+              Click anywhere on plot below to create gate points. <br />
+              Connect the final point with the first to create your gate. <br />
+              A new plot will be created with the population inside your gate.
+            </React.Fragment>
+          }
         >
-          Draw gate
-        </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            onClick={() => polygonGatingSetter()}
+            style={{
+              flex: "1 1 auto",
+              fontSize: 12,
+              color: "white",
+              marginRight: 5,
+              marginLeft: 5,
+              backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
+            }}
+          >
+            {polygonGating ? "Drawing gate..." : "Draw gate"}
+          </Button>
+        </Tooltip>
         <Button
           variant="contained"
           size="medium"

@@ -11,6 +11,8 @@ import dataManager from "../../../dataManagement/dataManager";
 import Plot from "graph/renderers/plotRender";
 
 import Gate from "../../../dataManagement/gate/gate";
+import PolygonGate from "graph/dataManagement/gate/polygonGate";
+import { snackbarService } from "uno-material-ui";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -36,14 +38,21 @@ export default function GateBar(props: any) {
   const [observers, setObservers] = React.useState([]);
   const plot: Plot = props.plot;
 
-  const changeGatePlotState = (gateName: string, selected: boolean) => {
-    const gateID = gates.find((gate) => gate.name === gateName).id;
-    if (selected) {
-      dataManager.unlinkGateFromPlot(plot.plotData.id, gateID);
-    } else {
-      dataManager.linkGateToPlot(plot.plotData.id, gateID);
+  const changeGatePlotState = (gateId: string, selected: boolean) => {
+    try {
+      const gateID = gates.find((gate) => gate.id === gateId).id;
+      if (selected) {
+        dataManager.unlinkGateFromPlot(plot.plotData.id, gateID);
+      } else {
+        dataManager.linkGateToPlot(plot.plotData.id, gateID);
+      }
+      update();
+    } catch {
+      snackbarService.showSnackbar(
+        "There was an error updating gates, please try again.",
+        "error"
+      );
     }
-    update();
   };
 
   const update = () => {
@@ -67,7 +76,6 @@ export default function GateBar(props: any) {
     dataManager.getAllGates().forEach((v) => {
       cgates.push(v.gate);
     });
-    console.log("setGates = ", cgates);
     setGates(cgates);
   };
 
@@ -113,76 +121,154 @@ export default function GateBar(props: any) {
   };
 
   return (
-    <Grid xs={12} container direction="column" style={classes.bar}>
-      <Autocomplete
-        multiple
-        options={gates}
-        value={gates.filter((e: any) => {
-          for (const gate of population) {
-            if (gate.id === e.id) return true;
-          }
-          for (const gate of selected) {
-            if (gate.id === e.id) return true;
-          }
-          return false;
-        })}
-        disableCloseOnSelect
-        getOptionLabel={(option) => option.name}
-        renderOption={(option, { selected }) => (
-          <Button
-            onClick={() => {
-              if (!gateInPopulation(option.id)) {
-                changeGatePlotState(option.name, selected);
+    <Grid
+      xs={12}
+      item
+      container
+      direction="column"
+      style={{
+        ...classes.bar,
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gridGap: 10,
+      }}
+    >
+      <Grid item>
+        <Autocomplete
+          multiple
+          options={population}
+          value={population.filter((e: any) => {
+            for (const gate of population) {
+              if (gate.id === e.id) return true;
+            }
+            return false;
+          })}
+          disableClearable
+          noOptionsText={"All"}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option.name}
+          renderOption={(option, { selected }) => (
+            <Button
+              style={{
+                flex: 1,
+                justifyContent: "left",
+                textTransform: "none",
+              }}
+            >
+              {option.name} - ({option.xAxis}, {option.yAxis})
+            </Button>
+          )}
+          style={{ flex: 1 }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label={
+                population.length > 0
+                  ? `Population (${population.length})`
+                  : "Population: All"
               }
-            }}
-            style={{
-              flex: 1,
-              justifyContent: "left",
-              textTransform: "none",
-            }}
-          >
-            <Checkbox
-              icon={icon}
-              disabled={gateInPopulation(option.id)}
-              checkedIcon={checkedIcon}
-              style={{ marginRight: 8, textAlign: "left", padding: 0 }}
-              checked={selected || gateInPopulation(option.id)}
             />
-            {option.name} - ({option.xAxis}, {option.yAxis})
-          </Button>
-        )}
-        style={{ flex: 1 }}
-        renderInput={(params) => (
-          <TextField {...params} variant="outlined" label="Population" />
-        )}
-        renderTags={(tagValue, _) => {
-          return tagValue.map((option) => (
-            <Chip
-              label={option.name}
-              disabled={gateInPopulation(option.id)}
-              avatar={
-                <div
-                  style={{
-                    borderRadius: "50%",
-                    width: 15,
-                    height: 15,
-                    marginLeft: 7,
-                    border: "solid 2px #999",
-                    backgroundColor: option.color,
-                  }}
-                ></div>
+          )}
+          renderTags={(tagValue, _) => {
+            return tagValue.map((option) => (
+              <Chip
+                label={option.name}
+                avatar={
+                  <div
+                    style={{
+                      borderRadius: "50%",
+                      width: 15,
+                      height: 15,
+                      marginLeft: 7,
+                      border: "solid 2px #999",
+                      backgroundColor: option.color,
+                    }}
+                  ></div>
+                }
+                {...props}
+                style={{ marginLeft: 5 }}
+              />
+            ));
+          }}
+        />
+      </Grid>
+      <Grid item>
+        <Autocomplete
+          multiple
+          options={gates.filter(
+            (e) => population.filter((pop) => pop.id === e.id).length === 0
+          )}
+          value={gates.filter((e: any) => {
+            for (const gate of selected) {
+              if (gate.id === e.id) {
+                return population.filter((pop) => pop.id === e.id).length === 0;
               }
-              onDelete={() => {
+            }
+            return false;
+          })}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option.name}
+          renderOption={(option, { selected }) => (
+            <Button
+              onClick={() => {
                 if (!gateInPopulation(option.id)) {
-                  changeGatePlotState(option.name, true);
+                  changeGatePlotState(option.id, selected);
                 }
               }}
-              {...props}
-              style={{ marginLeft: 5 }}
+              style={{
+                flex: 1,
+                justifyContent: "left",
+                textTransform: "none",
+              }}
+            >
+              <Checkbox
+                icon={icon}
+                disabled={gateInPopulation(option.id)}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8, textAlign: "left", padding: 0 }}
+                checked={selected || gateInPopulation(option.id)}
+              />
+              {option.name} - ({option.xAxis}, {option.yAxis})
+            </Button>
+          )}
+          style={{ flex: 1 }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label={`Gates (${gates.length})`}
             />
-          ));
-        }}
-      />
+          )}
+          renderTags={(tagValue, _) => {
+            return tagValue.map((option) => (
+              <Chip
+                label={option.name}
+                disabled={gateInPopulation(option.id)}
+                avatar={
+                  <div
+                    style={{
+                      borderRadius: "50%",
+                      width: 15,
+                      height: 15,
+                      marginLeft: 7,
+                      border: "solid 2px #999",
+                      backgroundColor: option.color,
+                    }}
+                  ></div>
+                }
+                onDelete={() => {
+                  if (!gateInPopulation(option.id)) {
+                    changeGatePlotState(option.id, true);
+                  }
+                }}
+                {...props}
+                style={{ marginLeft: 5 }}
+              />
+            ));
+          }}
+        />
+      </Grid>
     </Grid>
   );
 }

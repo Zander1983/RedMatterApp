@@ -48,11 +48,6 @@ export default function GetNamePrompt(props: {
       >
         <DialogTitle id="form-dialog-title">Name Your Gate</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Please write the name of the
-            <b> Gate </b>
-            to continue.
-          </DialogContentText>
           <TextField
             error={nameError}
             helperText="This Field Is Required"

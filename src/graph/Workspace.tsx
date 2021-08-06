@@ -194,6 +194,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
+      setDownloadedFiles([]);
+      setDownloadingFiles([]);
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
@@ -263,6 +265,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       .then((e) => {
         setNewWorkspaceId(e.data.workspaceId);
         setSavingWorkspace(false);
+        snackbarService.showSnackbar("Workspace saved!", "success");
       })
       .catch((e) => {
         setSavingWorkspace(false);
@@ -584,7 +587,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {savingWorkspace ? (
+                        {/* {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -592,7 +595,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )}
+                        )} */}
                         Save Workspace
                       </Button>
                     )
