@@ -191,7 +191,6 @@ export default function MainBar(props: any) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
             flex: "1 1 auto",
@@ -219,7 +218,7 @@ export default function MainBar(props: any) {
         >
           <Button
             variant="contained"
-            size="medium"
+            size="small"
             onClick={() => polygonGatingSetter()}
             style={{
               flex: "1 1 auto",
@@ -249,7 +248,7 @@ export default function MainBar(props: any) {
           }}
           style={{
             // flex: "1 1 auto",
-            width: "47%",
+            width: "100%",
             fontSize: 12,
             color: "white",
             marginTop: 5,
@@ -258,7 +257,7 @@ export default function MainBar(props: any) {
             backgroundColor: "#6666aa",
           }}
         >
-          Edit Y axis
+          Edit Axes
         </Button>
 
         {/* <Button
