@@ -218,11 +218,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           marginTop: 30,
           marginLeft: "auto",
           marginRight: "auto",
+          padding: "20px 4em",
         }}
         container
-        xs={12}
-        md={10}
-        lg={8}
       >
         <Grid
           style={{
@@ -231,14 +229,13 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
-          xs={12}
+          // xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              lg={12}
-              sm={12}
               style={{
                 backgroundColor: "#66a",
                 borderTopLeftRadius: 10,
@@ -296,7 +293,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 margin: "auto",
                 width: "100%",
               }}
-              xs={12}
             >
               {displayExperiments.length > 0 ? (
                 displayExperiments.map((data: any, index: number) => {

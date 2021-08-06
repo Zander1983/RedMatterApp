@@ -42,6 +42,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   editGateEvent(type: string, mouse: Point) {
+    if (this.started) return;
     if (
       this.targetEditGate === null &&
       type === "mousedown" &&
@@ -209,11 +210,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
     const newGate = new PolygonGate({
       points: [...points].map((e) => {
-        console.log("got", e);
         e = this.plotter.transformer.toAbstractPoint(e);
-        console.log("now is", e);
         e = this.plotter.transformer.rawAbstractLogicleToLinear(e);
-        console.log("finally is", e);
         return e;
       }),
       xAxis: xAxis,

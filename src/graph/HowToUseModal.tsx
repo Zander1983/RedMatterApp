@@ -21,6 +21,7 @@ const HowToUseModal = () => {
         style={{
           marginLeft: 20,
           height: 35,
+          marginTop: 10,
           backgroundColor: "#fafafa",
         }}
       >

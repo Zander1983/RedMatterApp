@@ -94,9 +94,6 @@ const Login = (props: any) => {
     >
       <Grid
         container
-        lg={6}
-        md={9}
-        sm={12}
         justify="center"
         direction="column"
         style={{
@@ -106,6 +103,7 @@ const Login = (props: any) => {
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
+          width: "50%",
         }}
       >
         <LockFilled />

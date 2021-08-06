@@ -35,7 +35,7 @@ const DEFAULT_COLOR = "#000";
 const MAX_EVENT_SIZE = 100000;
 
 export interface PlotDataState {
-  id: string;
+  id?: string;
   ranges: Map<string, [number, number]>;
   rangePlotType: Map<string, string>;
   file: FCSFile;
@@ -113,8 +113,8 @@ export default class PlotData extends ObserversFunctionality {
     w: number;
     h: number;
   } = {
-    w: 15,
-    h: 18,
+    w: 10,
+    h: 12,
   };
   positions: {
     x: number;
@@ -364,8 +364,11 @@ export default class PlotData extends ObserversFunctionality {
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
+    newPlotData.population = [
+      newGates[newGates.length - 1],
+      ...this.population,
+    ];
     newPlotData.parentPlotId = this.id;
-    newPlotData.population = [...newGates, ...this.population];
     newPlotData.gates = [];
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }

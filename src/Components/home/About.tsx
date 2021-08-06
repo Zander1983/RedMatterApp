@@ -129,6 +129,7 @@ function App() {
           </div>
         ) : null}
         <Grid
+          item={true}
           justify="center"
           container
           style={{

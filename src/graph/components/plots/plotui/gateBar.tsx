@@ -11,6 +11,7 @@ import dataManager from "../../../dataManagement/dataManager";
 import Plot from "graph/renderers/plotRender";
 
 import Gate from "../../../dataManagement/gate/gate";
+import PolygonGate from "graph/dataManagement/gate/polygonGate";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -53,21 +54,39 @@ export default function GateBar(props: any) {
       plot.plotData === undefined
     )
       return;
-    let gates = plot.plotData.gates.map((e) => e.gate);
+    let plotGates = plot.plotData.gates.map((e) => e.gate);
     const pop = plot.plotData.population.map((e) => e.gate);
+    let allGate: null | PolygonGate = null;
+    if (pop.length === 0) {
+      allGate = new PolygonGate({
+        id: "mockpop",
+        name: "All",
+        color: "white",
+        points: [],
+        xAxis: "123",
+        xAxisType: "123",
+        xAxisOriginalRanges: [0, 0],
+        yAxis: "456",
+        yAxisType: "456",
+        yAxisOriginalRanges: [0, 0],
+        parents: [],
+      });
+      pop.push(allGate);
+    }
+    console.log("POPULATION = ", pop);
     setPopulation(pop);
-    gates = gates.filter((e: any) => {
+    plotGates = plotGates.filter((e: any) => {
       for (const gate of pop) {
         if (gate.id === e.id) return false;
       }
       return true;
     });
-    setSelected(gates);
+    setSelected(plotGates);
     let cgates: Gate[] = [];
     dataManager.getAllGates().forEach((v) => {
       cgates.push(v.gate);
     });
-    setGates(cgates);
+    setGates(allGate === null ? cgates : [allGate, ...cgates]);
   };
 
   useEffect(() => {
@@ -107,6 +126,7 @@ export default function GateBar(props: any) {
   }, []);
 
   const gateInPopulation = (id: string) => {
+    if (id === "mockpop") return true;
     for (const gate of population) if (gate.id === id) return true;
     return false;
   };
@@ -118,6 +138,7 @@ export default function GateBar(props: any) {
         options={gates}
         value={gates.filter((e: any) => {
           for (const gate of population) {
+            if (gate.id === "mockpop") return true;
             if (gate.id === e.id) return true;
           }
           for (const gate of selected) {
@@ -160,22 +181,28 @@ export default function GateBar(props: any) {
               label={option.name}
               disabled={gateInPopulation(option.id)}
               avatar={
-                <div
-                  style={{
-                    borderRadius: "50%",
-                    width: 15,
-                    height: 15,
-                    marginLeft: 7,
-                    border: "solid 2px #999",
-                    backgroundColor: option.color,
-                  }}
-                ></div>
+                option.id === "mockpop" ? null : (
+                  <div
+                    style={{
+                      borderRadius: "50%",
+                      width: 15,
+                      height: 15,
+                      marginLeft: 7,
+                      border: "solid 2px #999",
+                      backgroundColor: option.color,
+                    }}
+                  ></div>
+                )
               }
-              onDelete={() => {
-                if (!gateInPopulation(option.id)) {
-                  changeGatePlotState(option.name, true);
-                }
-              }}
+              onDelete={
+                option.id === "mockpop"
+                  ? null
+                  : () => {
+                      if (!gateInPopulation(option.id)) {
+                        changeGatePlotState(option.name, true);
+                      }
+                    }
+              }
               {...props}
               style={{ marginLeft: 5 }}
             />

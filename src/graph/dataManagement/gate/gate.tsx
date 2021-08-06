@@ -4,6 +4,7 @@ import ObserversFunctionality, {
 } from "../observersFunctionality";
 
 export interface GateState {
+  id?: string;
   name?: string;
   color?: string;
   xAxis: string;
@@ -43,7 +44,7 @@ export default abstract class Gate extends ObserversFunctionality {
 
   constructor(gate: GateState) {
     super();
-    this.id = dataManager.createID();
+    this.id = gate.id ? gate.id : dataManager.createID();
 
     this.setState(gate);
     Gate.instanceCount++;

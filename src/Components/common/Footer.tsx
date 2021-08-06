@@ -174,7 +174,7 @@ export default function Footer(props: any) {
 
   return (
     <Grid
-      container
+      item
       xs={12}
       md={9}
       lg={6}
@@ -183,7 +183,13 @@ export default function Footer(props: any) {
     >
       <Grid container spacing={4} justify="space-evenly">
         {footers.map((footer, i) => (
-          <Grid item xs={4} key={footer.title} style={{ textAlign: "left" }}>
+          <Grid
+            item={true}
+            xs={4}
+            md={4}
+            key={footer.title}
+            style={{ textAlign: "left" }}
+          >
             <Typography variant="h6" color="textPrimary" gutterBottom>
               {footer.title}
             </Typography>

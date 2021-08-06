@@ -262,7 +262,7 @@ export default class GraphTransformer extends Transformer {
       p.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.x;
     }
     if (yBi) {
-      p.y = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.y;
+      p.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * p.y;
     }
     return p;
   }

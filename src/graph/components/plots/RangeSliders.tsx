@@ -122,36 +122,37 @@ function RangeSliders(props: { plot: Plot }) {
               : 50
             : 50,
           height: plot.plotData.plotHeight - 100,
-          cursor: "s-resize",
+          // cursor: "s-resize",
+          cursor: "pointer",
           position: "absolute",
           zIndex: 10000,
           left: 65,
           bottom: 100,
         }}
-        onDoubleClick={() => {
+        onClick={() => {
           const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
           setRangeResizeModalTargetMin(ranges[0]);
           setRangeResizeModalTargetMax(ranges[1]);
           setRangeResizeModalOpen(true);
           setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
         }}
-        onDrag={(e) => {
-          if (e.clientX === 0 && e.clientY === 0) {
-            return;
-          }
-          let [oldMin, oldMax] = plot.plotData.ranges.get(plot.plotData.yAxis);
-          const dragValue = e.nativeEvent.offsetY;
-          const closerToMin =
-            mouseDownPos.y > (plot.plotData.plotHeight - 100) / 2;
-          const [newMin, newMax] = calculateDragRangeChange(
-            oldMin,
-            oldMax,
-            (closerToMin ? 1 : -1) * dragValue,
-            closerToMin
-          );
-          setAxisRange(newMin, newMax, plot.plotData.yAxis);
-        }}
-        onDragEnd={() => dataManager.updateWorkspace()}
+        // onDrag={(e) => {
+        //   if (e.clientX === 0 && e.clientY === 0) {
+        //     return;
+        //   }
+        //   let [oldMin, oldMax] = plot.plotData.ranges.get(plot.plotData.yAxis);
+        //   const dragValue = e.nativeEvent.offsetY;
+        //   const closerToMin =
+        //     mouseDownPos.y > (plot.plotData.plotHeight - 100) / 2;
+        //   const [newMin, newMax] = calculateDragRangeChange(
+        //     oldMin,
+        //     oldMax,
+        //     (closerToMin ? 1 : -1) * dragValue,
+        //     closerToMin
+        //   );
+        //   setAxisRange(newMin, newMax, plot.plotData.yAxis);
+        // }}
+        // onDragEnd={() => dataManager.updateWorkspace()}
       ></div>
       <div
         onMouseDown={(e) => {
@@ -183,7 +184,8 @@ function RangeSliders(props: { plot: Plot }) {
         style={{
           backgroundColor: "rgba(0,0,0,0.0)",
           width: plot.plotData.plotWidth - 120,
-          cursor: "e-resize",
+          // cursor: "e-resize",
+          cursor: "pointer",
           height: isPlotHistogram()
             ? props.plot.plotData.histogramAxis === "horizontal"
               ? 0
@@ -194,29 +196,29 @@ function RangeSliders(props: { plot: Plot }) {
           left: 115,
           bottom: 50,
         }}
-        onDoubleClick={() => {
+        onClick={() => {
           const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
           setRangeResizeModalTargetMin(ranges[0]);
           setRangeResizeModalTargetMax(ranges[1]);
           setRangeResizeModalOpen(true);
           setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
         }}
-        onDrag={(e) => {
-          if (e.clientX === 0 && e.clientY === 0) {
-            return;
-          }
-          let [oldMin, oldMax] = plot.plotData.ranges.get(plot.plotData.xAxis);
-          const dragValue = e.nativeEvent.offsetX;
-          const closerToMin =
-            mouseDownPos.x < (plot.plotData.plotWidth - 120) / 2;
-          const [newMin, newMax] = calculateDragRangeChange(
-            oldMin,
-            oldMax,
-            (closerToMin ? -1 : 1) * dragValue,
-            closerToMin
-          );
-          setAxisRange(newMin, newMax, plot.plotData.xAxis);
-        }}
+        // onDrag={(e) => {
+        //   if (e.clientX === 0 && e.clientY === 0) {
+        //     return;
+        //   }
+        //   let [oldMin, oldMax] = plot.plotData.ranges.get(plot.plotData.xAxis);
+        //   const dragValue = e.nativeEvent.offsetX;
+        //   const closerToMin =
+        //     mouseDownPos.x < (plot.plotData.plotWidth - 120) / 2;
+        //   const [newMin, newMax] = calculateDragRangeChange(
+        //     oldMin,
+        //     oldMax,
+        //     (closerToMin ? -1 : 1) * dragValue,
+        //     closerToMin
+        //   );
+        //   setAxisRange(newMin, newMax, plot.plotData.xAxis);
+        // }}
       ></div>
       <div
         onMouseDown={(e) => {

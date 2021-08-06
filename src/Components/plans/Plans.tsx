@@ -135,24 +135,22 @@ export default function Plans(props: any) {
       style={{
         paddingTop: 30,
         paddingBottom: 50,
-        paddingLeft: 20,
-        paddingRight: 20,
+        paddingLeft: "4em",
+        paddingRight: "4em",
       }}
     >
       <Grid
         container
-        lg={8}
-        md={10}
-        sm={12}
         justify="center"
         direction="row"
         style={{
           backgroundColor: "#fafafa",
-          padding: 20,
+          padding: "20px 4em",
           borderRadius: 10,
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
+          width: "75%",
         }}
       >
         <h1 style={{ marginBottom: 15 }}>Choose Your Plan</h1>
@@ -160,9 +158,6 @@ export default function Plans(props: any) {
         <Grid
           spacing={5}
           container
-          lg={12}
-          md={12}
-          sm={12}
           justify="center"
           direction="row"
           style={{
