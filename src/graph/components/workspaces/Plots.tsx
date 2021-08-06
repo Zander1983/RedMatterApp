@@ -62,7 +62,9 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
     plotData: PlotData;
     plotRender: Plot;
   }[] = [];
-
+  addPlotLisner: any;
+  removePlotLisner: any;
+  clearWorkspaceLisner: any;
   workspaceLoaded = false;
   constructor(props: WorkspaceProps) {
     super(props);
@@ -73,14 +75,25 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
     this.update();
 
-    dataManager.addObserver("addNewPlotToWorkspace", () => this.update());
-    dataManager.addObserver("removePlotFromWorkspace", () => this.update());
-    // dataManager.addObserver("updateWorkspace", () => this.update());
-    // dataManager.addObserver("workspaceDragLock", () =>
-    //   this.updatePlotMovement()
-    // );
+    this.addPlotLisner = dataManager.addObserver("addNewPlotToWorkspace", () =>
+      this.update()
+    );
+    this.removePlotLisner = dataManager.addObserver(
+      "removePlotFromWorkspace",
+      () => this.update()
+    );
+    this.clearWorkspaceLisner = dataManager.addObserver(
+      "afterClearWorkspace",
+      () => this.update()
+    );
 
     this.workspaceLoaded = true;
+  }
+
+  componentWillUnmount() {
+    dataManager.removeObserver("addNewPlotToWorkspace", this.addPlotLisner);
+    dataManager.removeObserver("removePlotFromWorkspace", this.addPlotLisner);
+    dataManager.removeObserver("afterClearWorkspace", this.addPlotLisner);
   }
 
   update() {
