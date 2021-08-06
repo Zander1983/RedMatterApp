@@ -84,7 +84,7 @@ function RangeSliders(props: { plot: Plot }) {
         }}
         callback={setAxisRange}
       ></RangeResizeModal>
-      <div
+      {/* <div
         draggable="true"
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -133,8 +133,8 @@ function RangeSliders(props: { plot: Plot }) {
         //   setAxisRange(newMin, newMax, plot.plotData.yAxis);
         // }}
         // onDragEnd={() => dataManager.updateWorkspace()}
-      ></div>
-      <div
+      ></div> */}
+      {/* <div
         onMouseDown={(e) => {
           e.stopPropagation();
         }}
@@ -151,8 +151,8 @@ function RangeSliders(props: { plot: Plot }) {
           left: 65,
           bottom: 100 + (plot.plotData.plotHeight - 100) / 4,
         }}
-      ></div>
-      <div
+      ></div> */}
+      {/* <div
         draggable="true"
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -200,8 +200,8 @@ function RangeSliders(props: { plot: Plot }) {
         //   );
         //   setAxisRange(newMin, newMax, plot.plotData.xAxis);
         // }}
-      ></div>
-      <div
+      ></div> */}
+      {/* <div
         onMouseDown={(e) => {
           e.stopPropagation();
         }}
@@ -218,7 +218,7 @@ function RangeSliders(props: { plot: Plot }) {
           left: 115 + (plot.plotData.plotWidth - 120) / 4,
           bottom: 50,
         }}
-      ></div>
+      ></div> */}
     </div>
   );
 }
