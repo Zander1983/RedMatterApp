@@ -284,7 +284,7 @@ export default class PlotData extends ObserversFunctionality {
     this.plotUpdated();
 
     dataManager.redrawPlotIds.push(this.id);
-    if (this.parentPlotId) dataManager.redrawPlotIds.push(this.id);
+    if (this.parentPlotId) dataManager.redrawPlotIds.push(this.parentPlotId);
   }
 
   /* MULTI PLOT INTERACTION */

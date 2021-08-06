@@ -317,6 +317,7 @@ class DataManager extends ObserversFunctionality {
     }
     this.downloadingFiles = [];
     this.downloadingFiles = [];
+    this.redrawPlotIds = [];
     this.removeWorkspace();
     // Clears local storage
     window.localStorage.removeItem(this.lastLocalStorageSave);

@@ -93,27 +93,23 @@ function PlotComponent(props: {
   };
 
   const plotUpdater = () => {
-    if (dataManager.ready()) {
-      const plotDimensions = updatePlotSize();
-      if (
-        plotDimensions !== undefined &&
-        plot !== undefined &&
-        plot.plotData !== undefined
-      )
-        props.plot.plotData.setWidthAndHeight(
-          plotDimensions.w,
-          plotDimensions.h
-        );
-      let plotRanges = props.plot.plotData.ranges.get(
-        props.plot.plotData.xAxis
-      );
-      plot.plotData.ranges.set(props.plot.plotData.xAxis, [
-        plotRanges[0],
-        plotRanges[1],
-      ]);
-      plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
+    if (props.plot && props.plot.plotData) {
+      if (dataManager.ready()) {
+        const plotDimensions = updatePlotSize();
+        if (
+          plotDimensions !== undefined &&
+          plot !== undefined &&
+          plot.plotData !== undefined
+        )
+          props.plot.plotData.setWidthAndHeight(
+            plotDimensions.w,
+            plotDimensions.h
+          );
 
-      plot.draw();
+        plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
+
+        plot.draw();
+      }
     }
   };
 
@@ -223,64 +219,80 @@ function PlotComponent(props: {
     rerender();
   };
   useEffect(() => {
-    dataManager.addObserver("updateWorkspace", () => {
-      if (
-        dataManager.redrawPlotIds.includes(props.plot.plotData.id) ||
-        dataManager.redrawPlotIds.includes(props.plot.plotData.parentPlotId)
-      ) {
-        console.log("redrawn");
-        plotUpdater();
-        let inx = dataManager.redrawPlotIds.findIndex(
-          (x) => x == props.plot.plotData.id
-        );
-        delete dataManager.redrawPlotIds[inx];
+    let updateWorkspaceListner = dataManager.addObserver(
+      "updateWorkspace",
+      () => {
+        if (
+          dataManager.letUpdateBeCalledForAutoSave &&
+          props.plot &&
+          props.plot.plotData &&
+          (dataManager.redrawPlotIds.includes(props.plot?.plotData?.id) ||
+            dataManager.redrawPlotIds.includes(
+              props.plot?.plotData?.parentPlotId
+            ))
+        ) {
+          plotUpdater();
+          let inx = dataManager.redrawPlotIds.findIndex(
+            (x) => x == props.plot.plotData.id
+          );
+          delete dataManager.redrawPlotIds[inx];
+        }
       }
-    });
-    dataManager.addObserver("workspaceDragLock", () => {
-      if (
-        dataManager.redrawPlotIds.includes(props.plot.plotData.id) ||
-        dataManager.redrawPlotIds.includes(props.plot.plotData.parentPlotId)
-      ) {
-        console.log("movement");
-        updatePlotMovement();
-        let inx = dataManager.redrawPlotIds.findIndex(
-          (x) => x == props.plot.plotData.id
-        );
-        delete dataManager.redrawPlotIds[inx];
+    );
+    let workspaceDragLockListner = dataManager.addObserver(
+      "workspaceDragLock",
+      () => {
+        if (
+          dataManager.letUpdateBeCalledForAutoSave &&
+          (dataManager.redrawPlotIds.includes(props.plot?.plotData?.id) ||
+            dataManager.redrawPlotIds.includes(
+              props.plot?.plotData?.parentPlotId
+            ))
+        ) {
+          updatePlotMovement();
+          let inx = dataManager.redrawPlotIds.findIndex(
+            (x) => x == props.plot.plotData.id
+          );
+          delete dataManager.redrawPlotIds[inx];
+        }
       }
-    });
+    );
+    let plotRemoveListner: any;
     if (!plotSetup) {
       //plot.plotData.addObserver("plotUpdated", () => rerender());
-      dataManager.addObserver("removePlotFromWorkspace", () => {
-        if (props.plot && props.plot.plotData) {
-          let filePlotDataIds: any[] = filePlotIdDict
-            ? Object.values(filePlotIdDict)
-              ? Object.values(filePlotIdDict).map((x: any) => x.id)
-              : []
-            : [];
-          let plots = dataManager.getAllPlots();
-          let existingPlotDataIds = plots.map((x: any) => x.plotID);
-          let plotData: any = [];
-          plotData = plotData.concat(
-            props.plot.plotData.histogramBarOverlays.filter(
-              (x: any) =>
-                !existingPlotDataIds.includes(x.plotId) &&
-                !filePlotDataIds.includes(x.plotId)
-            )
-          );
-          plotData = plotData.concat(
-            props.plot.plotData.histogramOverlays.filter(
-              (x: any) =>
-                !existingPlotDataIds.includes(x.plotId) &&
-                !filePlotDataIds.includes(x.plotId)
-            )
-          );
-          if (plotData && plotData.length > 0)
-            props.plot.plotData.removeAnyOverlay(plotData[0].plotId);
-        }
+      plotRemoveListner = dataManager.addObserver(
+        "removePlotFromWorkspace",
+        () => {
+          if (props.plot && props.plot.plotData) {
+            let filePlotDataIds: any[] = filePlotIdDict
+              ? Object.values(filePlotIdDict)
+                ? Object.values(filePlotIdDict).map((x: any) => x.id)
+                : []
+              : [];
+            let plots = dataManager.getAllPlots();
+            let existingPlotDataIds = plots.map((x: any) => x.plotID);
+            let plotData: any = [];
+            plotData = plotData.concat(
+              props.plot.plotData.histogramBarOverlays.filter(
+                (x: any) =>
+                  !existingPlotDataIds.includes(x.plotId) &&
+                  !filePlotDataIds.includes(x.plotId)
+              )
+            );
+            plotData = plotData.concat(
+              props.plot.plotData.histogramOverlays.filter(
+                (x: any) =>
+                  !existingPlotDataIds.includes(x.plotId) &&
+                  !filePlotDataIds.includes(x.plotId)
+              )
+            );
+            if (plotData && plotData.length > 0)
+              props.plot.plotData.removeAnyOverlay(plotData[0].plotId);
+          }
 
-        tryKillComponent();
-      });
+          tryKillComponent();
+        }
+      );
       dataManager.addObserver("clearWorkspace", () => {
         clearInterval(interval[props.plotIndex]);
         interval[props.plotIndex] = undefined;
@@ -350,6 +362,9 @@ function PlotComponent(props: {
     return () => {
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
+      dataManager.removeObserver("workspaceDragLock", workspaceDragLockListner);
+      dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
+      dataManager.removeObserver("removePlotFromWorkspace", plotRemoveListner);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
