@@ -293,10 +293,7 @@ function PlotComponent(props: {
           tryKillComponent();
         }
       );
-      dataManager.addObserver("clearWorkspace", () => {
-        clearInterval(interval[props.plotIndex]);
-        interval[props.plotIndex] = undefined;
-      });
+
       plot.setup();
       setPlotSetup(true);
       plotUpdater();

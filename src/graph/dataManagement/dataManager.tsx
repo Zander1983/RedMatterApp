@@ -314,23 +314,30 @@ class DataManager extends ObserversFunctionality {
     if (!keepFiles) {
       delete this.remoteFiles;
       delete this.remoteWorkspaceID;
+      this.downloadingFiles = [];
+      this.downloaded = [];
     }
-    this.downloadingFiles = [];
-    this.downloaded = [];
+
     this.redrawPlotIds = [];
-    this.removeWorkspace();
+
     // Clears local storage
     window.localStorage.removeItem(this.lastLocalStorageSave);
     // Clears link shared
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
     }
+    this.removeWorkspace();
+
     DataManager.resetInstance();
     // Creates brand new workspace
     this.createWorkspace();
+
+    this.afterClearWorkspace();
     // Informs everyone of the change
     this.updateWorkspace();
   }
+  @publishDecorator()
+  afterClearWorkspace() {}
 
   // ======== Workspace management
   @publishDecorator()
