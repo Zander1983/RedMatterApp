@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
   },
   topButton: {
     marginLeft: 20,
-    marginTop: 10,
+    marginTop: 5,
     height: 35,
   },
   savingProgress: {
@@ -523,7 +523,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
               <Grid
                 style={{
                   backgroundColor: "#66a",
-                  paddingTop: 20,
+                  paddingTop: 15,
                   paddingBottom: 19,
                   borderRadius: 10,
                   WebkitBorderBottomLeftRadius: 0,
