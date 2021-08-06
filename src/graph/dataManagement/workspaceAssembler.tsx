@@ -128,9 +128,7 @@ export default class WorkspaceAssembler {
     for (const gateObj of inp.gates) {
       let gate: Gate;
       if (gateObj.gateType === "PolygonGate") {
-        console.log("instancing a new gate on workspaceAssembler0", gateObj);
         gate = new PolygonGate(gateObj);
-        console.log("newGate", gate);
       }
       if (gateObj.gateType === "OvalGate") {
         gate = new OvalGate(gateObj);
@@ -172,7 +170,6 @@ export default class WorkspaceAssembler {
       oldNewPlotIdMap[plotObj.id] = plot.id;
       plot.setState(plotObj);
       plot.getXandYRanges();
-      console.log(plot);
       plots.set(plot.id, plot);
     }
 

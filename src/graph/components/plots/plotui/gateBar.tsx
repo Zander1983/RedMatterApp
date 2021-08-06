@@ -67,7 +67,6 @@ export default function GateBar(props: any) {
     dataManager.getAllGates().forEach((v) => {
       cgates.push(v.gate);
     });
-    console.log("setGates = ", cgates);
     setGates(cgates);
   };
 

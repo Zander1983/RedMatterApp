@@ -82,7 +82,6 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   @updateWorkspaceDecorator()
   addNewFileToWorkspace(file: FCSFile): FileID {
-    console.log("adding file", file);
     let found: any = null;
     this.currentWorkspace.files.forEach((e) => {
       if (e.id === file.id) {
@@ -156,7 +155,6 @@ class DataManager extends ObserversFunctionality {
     if (!this.currentWorkspace.gates.has(gateID)) {
       throw Error("Adding non-existent gate to plot");
     }
-    console.log("linking", gateID, plotID);
     const cplot = this.currentWorkspace.plots.get(plotID);
     cplot.addGate(this.currentWorkspace.gates.get(gateID), forceGatedPoints);
   }
@@ -170,7 +168,6 @@ class DataManager extends ObserversFunctionality {
       throw Error("Removing non-existent gate to plot");
     }
     const plotGates = this.currentWorkspace.plots.get(plotID).gates;
-    console.log(plotGates, gateID);
     for (let indx in plotGates) {
       if (plotGates[indx].gate.id === gateID) {
         this.currentWorkspace.plots
