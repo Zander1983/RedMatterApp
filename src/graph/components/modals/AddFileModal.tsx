@@ -271,9 +271,16 @@ function AddFileModal(props: {
                           </p>
                         </div>
                       </Grid>
+                    </Grid>
+                    <div
+                      style={{
+                        marginBottom: 10,
+                        marginLeft: -20,
+                        textAlign: "right",
+                      }}
+                    >
                       <Grid
                         style={{
-                          float: "right",
                           textAlign: "right",
                           flex: 1,
                           flexDirection: "row",
@@ -297,6 +304,8 @@ function AddFileModal(props: {
                               borderRadius: "100%",
                               width: 13,
                               height: 13,
+                              position: "relative",
+                              top: 2,
                               marginLeft: 10,
                               backgroundColor: isDownloaded
                                 ? "green"
@@ -307,14 +316,6 @@ function AddFileModal(props: {
                           ></Grid>
                         </Grid>
                       </Grid>
-                    </Grid>
-                    <div
-                      style={{
-                        marginBottom: 10,
-                        marginLeft: -20,
-                        textAlign: "right",
-                      }}
-                    >
                       {!isDownloaded ? (
                         <Button
                           style={{
