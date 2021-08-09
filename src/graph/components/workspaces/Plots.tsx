@@ -42,7 +42,7 @@ const standardGridPlotItem = (index: number, plotData: any) => {
     h: h,
     minW: MINW,
     minH: MINH,
-    // static: true,
+    static: false,
   };
 };
 
@@ -223,7 +223,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
                     cols={{ lg: 30 }}
                     rows={{ lg: 30 }}
                     rowHeight={30}
-                    isDraggable={false}
+                    isDraggable={true}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
