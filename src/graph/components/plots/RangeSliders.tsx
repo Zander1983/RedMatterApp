@@ -92,7 +92,7 @@ function RangeSliders(props: { plot: Plot }) {
         paddingRight: 0,
       }}
     >
-      <RangeResizeModal
+      {/* <RangeResizeModal
         open={rangeResizeModalOpen}
         closeCall={{
           f: handleClose,
@@ -104,7 +104,7 @@ function RangeSliders(props: { plot: Plot }) {
           max: rangeResizeModalTargetMax,
         }}
         callback={setAxisRange}
-      ></RangeResizeModal>
+      ></RangeResizeModal> */}
       {/* <div
         draggable="true"
         onMouseDown={(e) => {

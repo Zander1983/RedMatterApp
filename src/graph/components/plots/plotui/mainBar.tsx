@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
+import useForceUpdate from "hooks/forceUpdate";
 import CancelIcon from "@material-ui/icons/Cancel";
 
 import MessageModal from "../../modals/MessageModal";
@@ -35,18 +36,41 @@ export default function MainBar(props: any) {
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
   const [openResize, setOpenResize] = useState(false);
-  const [rangeResizeModalAxis, setRangeResizeModalAxis] = React.useState("");
-  const [rangeResizeModalTargetMin, setRangeResizeModalTargetMin] =
+  const [rangeResizeModalAxisX, setRangeResizeModalAxisX] = React.useState("");
+  const [rangeResizeModalAxisY, setRangeResizeModalAxisY] = React.useState("");
+  const [rangeResizeModalTargetMinX, setRangeResizeModalTargetMinX] =
     React.useState(0);
-  const [rangeResizeModalTargetMax, setRangeResizeModalTargetMax] =
+  const [rangeResizeModalTargetMaxX, setRangeResizeModalTargetMaxX] =
     React.useState(0);
+  const [rangeResizeModalTargetMinY, setRangeResizeModalTargetMinY] =
+    React.useState(0);
+  const [rangeResizeModalTargetMaxY, setRangeResizeModalTargetMaxY] =
+    React.useState(0);
+
+  //cambie los min y max para que ahora reciban los parametros para X e Y
+
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
   const [lastUpdate, setLastUpdate] = React.useState(null);
-  const setAxisRange = (min: number, max: number, axis: string) => {
-    if (min === 69 && max === 420) props.plot.plotData.resetOriginalRanges();
-    else props.plot.plotData.ranges.set(axis, [min, max]);
+  const setAxisRange = (
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    axisX: string,
+    axisY: string
+  ) => {
+    if (minX === 69 && maxX === 420) {
+      props.plot.plotData.resetOriginalRanges();
+    } else {
+      console.log("axisX", axisX);
+      props.plot.plotData.ranges.set(axisX, [minX, maxX]);
+    }
+
+    if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
+    else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
     if (lastUpdate + 40 < new Date().getTime()) {
+      alert("executing the if for updating");
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
     }
@@ -113,9 +137,12 @@ export default function MainBar(props: any) {
           ref: setOpenResize,
         }}
         inits={{
-          axis: rangeResizeModalAxis,
-          min: rangeResizeModalTargetMin,
-          max: rangeResizeModalTargetMax,
+          axisX: rangeResizeModalAxisX,
+          axisY: rangeResizeModalAxisY,
+          minX: rangeResizeModalTargetMinX,
+          maxX: rangeResizeModalTargetMaxX,
+          minY: rangeResizeModalTargetMinY,
+          maxY: rangeResizeModalTargetMaxY,
         }}
         callback={setAxisRange}
       ></RangeResizeModal>
@@ -164,7 +191,6 @@ export default function MainBar(props: any) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            marginTop: 5,
             marginRight: 5,
             marginLeft: 5,
             flex: "1 1 auto",
@@ -192,7 +218,7 @@ export default function MainBar(props: any) {
         >
           <Button
             variant="contained"
-            size="medium"
+            size="small"
             onClick={() => polygonGatingSetter()}
             style={{
               flex: "1 1 auto",
@@ -210,15 +236,19 @@ export default function MainBar(props: any) {
           variant="contained"
           size="medium"
           onClick={() => {
-            const ranges = plot.plotData.ranges.get(plot.plotData.yAxis);
-            setRangeResizeModalTargetMin(ranges[0]);
-            setRangeResizeModalTargetMax(ranges[1]);
+            const rangesX = plot.plotData.ranges.get(plot.plotData.xAxis);
+            setRangeResizeModalTargetMinX(rangesX[0]);
+            setRangeResizeModalTargetMaxX(rangesX[1]);
+            const rangesY = plot.plotData.ranges.get(plot.plotData.yAxis);
+            setRangeResizeModalTargetMinY(rangesY[0]);
+            setRangeResizeModalTargetMaxY(rangesY[1]);
+            setRangeResizeModalAxisX(plot.plotData.xAxis + " (X Axis)");
+            setRangeResizeModalAxisY(plot.plotData.yAxis + " (Y Axis)");
             setOpenResize(true);
-            setRangeResizeModalAxis(plot.plotData.yAxis + " (Y Axis)");
           }}
           style={{
             // flex: "1 1 auto",
-            minWidth: "47%",
+            width: "100%",
             fontSize: 12,
             color: "white",
             marginTop: 5,
@@ -227,18 +257,18 @@ export default function MainBar(props: any) {
             backgroundColor: "#6666aa",
           }}
         >
-          Edit Y axis
+          Edit Axes
         </Button>
 
-        <Button
+        {/* <Button
           variant="contained"
           size="medium"
           onClick={() => {
             const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
-            setRangeResizeModalTargetMin(ranges[0]);
-            setRangeResizeModalTargetMax(ranges[1]);
+            setRangeResizeModalTargetMinY(ranges[0]);
+            setRangeResizeModalTargetMaxY(ranges[1]);
             setOpenResize(true);
-            setRangeResizeModalAxis(plot.plotData.xAxis + " (X Axis)");
+            setRangeResizeModalAxisX(plot.plotData.xAxis + " (X Axis)");
           }}
           style={{
             width: "47%",
@@ -251,7 +281,7 @@ export default function MainBar(props: any) {
           }}
         >
           Edit X axis
-        </Button>
+        </Button> */}
         {/* <Button
           style={{
             backgroundColor: "#66a",
