@@ -331,11 +331,6 @@ function AddFileModal(props: {
                           let file = await dataManager.downloadFileEvent(
                             fileMetadata.id
                           );
-                          // const plot = new PlotData();
-                          // plot.file = file.file;
-                          // console.log("file", file);
-                          // console.log("file metadata", fileMetadata);
-                          //dataManager.addNewPlotToWorkspace(plot);
                           console.log("FILE", file);
                           let newFile = new FCSFile({
                             name: file[0].title,
@@ -359,37 +354,6 @@ function AddFileModal(props: {
                       >
                         {buttonText}
                       </Button>
-                      {/* {isDownloaded ? (
-                        <Button
-                          style={{
-                            backgroundColor: isDownloaded ? "#66d" : "#99d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            let index: number;
-                            for (let i = 0; i < props.downloaded.length; i++) {
-                              if (props.downloaded[i].id === fileMetadata.id) {
-                                index = i;
-                                break;
-                              }
-                            }
-                            if (index === undefined) {
-                              snackbarService.showSnackbar(
-                                "File is not dowloaded",
-                                "error"
-                              );
-                              return;
-                            }
-                            addFile(index);
-                            props.closeCall.f(props.closeCall.ref);
-                          }}
-                          disabled={!isDownloaded}
-                        >
-                          Add to Workspace
-                        </Button>
-                      ) : null} */}
                     </div>
                   </div>
                   {divider}
