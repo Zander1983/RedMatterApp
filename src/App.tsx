@@ -32,6 +32,7 @@ import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import WorkspaceParser from "flowJoWorkspaceParser/converter";
 
 const { Content } = Layout;
 
@@ -153,6 +154,10 @@ const router = [
   {
     path: "/jobs",
     component: Jobs,
+  },
+  {
+    path: "/flowjoWorkspaceParser",
+    component: WorkspaceParser,
   },
 ].filter((e) => {
   if (process.env.REACT_APP_NO_WORKSPACES === "true") {
