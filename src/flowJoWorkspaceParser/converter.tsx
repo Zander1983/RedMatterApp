@@ -1,9 +1,30 @@
 import { Button, Grid } from "@material-ui/core";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+const readTextFile = (file: File) => {
+  var rawFile = new XMLHttpRequest();
+  //@ts-ignore
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = function () {
+    if (rawFile.readyState === 4) {
+      if (rawFile.status === 200 || rawFile.status === 0) {
+        var allText = rawFile.responseText;
+        console.log("read an got ", allText);
+      }
+    }
+  };
+  rawFile.send(null);
+};
 
 const WorkspaceParser = () => {
   const [errors, setErrors] = useState(["abc"]);
   const [workspace, setWorkpsace] = useState({});
+  const inputFile = useRef(null);
+
+  const uploadFile = (file: File) => {
+    console.log(file);
+    readTextFile(file);
+  };
 
   return (
     <Grid container direction="row">
@@ -15,12 +36,43 @@ const WorkspaceParser = () => {
         style={{ textAlign: "center", marginTop: 20 }}
         direction="column"
       >
-        <h1>Hi and welcome!</h1>
-        <p>This is the flowjo workspace parser, pls input file:</p>
-        <p>This is the flowjo workspace parser, pls input file:</p>
-        <p>Now press button:</p>
-        <Button style={{ backgroundColor: "#66f", color: "white" }}>
-          Click me
+        <h1>flowjo workspace parser</h1>
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: "#6666AA",
+            maxHeight: 50,
+            marginTop: 5,
+            marginBottom: 15,
+            color: "white",
+          }}
+          onClick={() => {
+            inputFile.current.click();
+          }}
+        >
+          Input file
+          <input
+            type="file"
+            id="file"
+            accept=".wsp"
+            ref={inputFile}
+            style={{ display: "none" }}
+            onChange={(e) => {
+              uploadFile(e.target.files[0]);
+            }}
+          />
+        </Button>
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: "#6666AA",
+            maxHeight: 50,
+            marginTop: 5,
+            color: "white",
+          }}
+          onClick={() => {}}
+        >
+          Parse the .wsp file
         </Button>
         <div
           style={{
