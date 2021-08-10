@@ -142,15 +142,27 @@ function PlotComponent(props: {
     return xAxis === yAxis;
   };
 
-  const setAxis = (axis: "x" | "y", value: string) => {
+  const setAxis = (
+    axis: "x" | "y",
+    value: string,
+    stopHist: boolean = false
+  ) => {
     const otherAxisValue = axis === "x" ? yAxis : xAxis;
     if (value === otherAxisValue && !isPlotHistogram()) {
       setHistogram(axis === "x" ? "y" : "x", true);
     } else {
-      axis === "x"
-        ? props.plot.plotData.setXAxis(value)
-        : props.plot.plotData.setYAxis(value);
+      if (isPlotHistogram() && !stopHist) {
+        props.plot.plotData.setXAxis(value);
+        props.plot.plotData.setYAxis(value);
+      } else {
+        axis === "x"
+          ? props.plot.plotData.setXAxis(value)
+          : props.plot.plotData.setYAxis(value);
+      }
     }
+    dataManager.updateWorkspace();
+    rerender();
+    props.plot.plotData.plotUpdated();
   };
 
   const isAxisDisabled = (axis: "x" | "y") => {
@@ -517,21 +529,21 @@ function PlotComponent(props: {
 
   const handleHist = (targetAxis: "x" | "y") => {
     if (isPlotHistogram()) {
+      plot.plotData.yHistogram = plot.plotData.xHistogram = false;
       if (targetAxis === "x") {
         const axis =
           oldYAxisValue && oldYAxisValue !== xAxis
             ? oldYAxisValue
             : plot.plotData.file.axes.filter((e) => e !== xAxis)[0];
-        plot.plotData.xHistogram = false;
-        setAxis("y", axis);
+        setAxis("y", axis, true);
       } else {
         const axis =
           oldXAxisValue && oldXAxisValue !== yAxis
             ? oldXAxisValue
             : plot.plotData.file.axes.filter((e) => e !== yAxis)[0];
-        plot.plotData.yHistogram = false;
-        setAxis("x", axis);
+        setAxis("x", axis, true);
       }
+      rerender();
     } else {
       filePlotIdDict = {};
       props.plot.plotData.histogramBarOverlays = [];
@@ -670,9 +682,9 @@ function PlotComponent(props: {
                 handleHist("y");
                 return;
               }
-              handleSelectEvent(e, "y", (e: any) =>
-                setAxis("y", e.target.value)
-              );
+              handleSelectEvent(e, "y", (e: any) => {
+                setAxis("y", e.target.value);
+              });
             }}
             disabled={plot.plotData.xHistogram}
             value={yAxis}
