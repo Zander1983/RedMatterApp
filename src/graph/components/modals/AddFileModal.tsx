@@ -331,7 +331,6 @@ function AddFileModal(props: {
                           let file = await dataManager.downloadFileEvent(
                             fileMetadata.id
                           );
-                          console.log("FILE", file);
                           let newFile = new FCSFile({
                             name: file[0].title,
                             id: file[0].id,
