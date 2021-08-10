@@ -1,5 +1,6 @@
 import PlotData from "graph/dataManagement/plotData";
 import Transformer, { Point } from "graph/renderers/transformers/transformer";
+import { maxHeaderSize } from "http";
 import numeral from "numeral";
 import FCSServices from "services/FCSServices/FCSServices";
 import {
@@ -288,7 +289,7 @@ export default class GraphTransformer extends Transformer {
     linRange: [number, number],
     binsCount: number = 10
   ): Label[] {
-    let labels = [];
+    let labels: Label[] = [];
     if (format === "lin") {
       const binSize = (linRange[1] - linRange[0]) / binsCount;
 
@@ -299,21 +300,64 @@ export default class GraphTransformer extends Transformer {
         });
     }
     if (format === "bi") {
-      const binSize = 1.0 / binsCount;
-      const fcsServices = new FCSServices();
-
-      for (let i = 0, j = 0; j <= binsCount; i += binSize, j++) {
-        const inverse = fcsServices.logicleInverseMarkTransformer(
-          [i],
-          linRange[0],
-          linRange[1]
-        )[0];
-        const name = this.expLabel(inverse);
-        const pos = i;
-        labels.push({ pos, name });
+      const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
+      let pot10 = 1;
+      let pot10Exp = 0;
+      const fow = () => {
+        pot10 *= 10;
+        pot10Exp++;
+      };
+      const back = () => {
+        pot10 /= 10;
+        pot10Exp--;
+      };
+      const add = (x: number, p: number) => {
+        if (
+          (x >= linRange[0] && x <= linRange[1]) ||
+          (x <= linRange[0] && x >= linRange[1])
+        ) {
+          labels.push({
+            pos: x,
+            name: this.pot10Label(p),
+          });
+        }
+      };
+      while (pot10 <= baseline) fow();
+      while (pot10 >= 1) {
+        add(pot10, pot10Exp);
+        add(-pot10, -pot10Exp);
+        back();
       }
+      labels = labels.sort((a, b) => a.pos - b.pos);
+
+      const distTolerance = 0.03;
+      let lastAdded: number | null = null;
+      labels = labels.filter((e, i) => {
+        if (i === 0) {
+          lastAdded = i;
+          return true;
+        }
+        if (
+          (e.pos - labels[lastAdded].pos) /
+            (Math.max(linRange[0], linRange[1]) -
+              Math.min(linRange[0], linRange[1])) >=
+          distTolerance
+        ) {
+          lastAdded = i;
+          return true;
+        }
+        return false;
+      });
     }
     return labels;
+  }
+
+  private pot10Label(pot10Indx: number): string {
+    let ev = "";
+    for (const l of Math.abs(pot10Indx).toString()) ev += EXP_NUMS[parseInt(l)];
+    let name = "10" + ev;
+    if (!name.includes("-") && pot10Indx < 0) name = "-" + name;
+    return name;
   }
 
   private expLabel(num: number): string {

@@ -129,8 +129,8 @@ export default class GraphDrawer extends Drawer {
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
 
     if (params.labels !== undefined && params.labels.length >= 2) {
-      let min = params.labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
-      let max = params.labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
+      let min = orientation === "h" ? this.ibx : this.iby;
+      let max = orientation === "h" ? this.iex : this.iey;
 
       if (orientation === "v") {
         for (const label of params.labels) {
@@ -258,16 +258,15 @@ export default class GraphDrawer extends Drawer {
     const obegin = orientation === "h" ? this.x1 : this.y1;
     const oend = orientation === "h" ? this.x2 : this.y2;
 
-    if (labels !== undefined && labels.length >= 3) {
-      let min = labels.reduce((e, o) => (e.pos < o.pos ? e : o)).pos;
-      let max = labels.reduce((e, o) => (e.pos > o.pos ? e : o)).pos;
-
+    if (labels !== undefined && labels.length >= 2) {
+      let min = orientation === "v" ? this.ibx : this.iby;
+      let max = orientation === "v" ? this.iex : this.iey;
+      labels.push({ pos: max, name: "" });
       for (let i = 0; i < labels.length; i++) {
         let pos = (labels[i].pos - min) / (max - min);
         pos =
           Math.abs(begin - end) * (orientation === "h" ? 1 - pos : pos) +
           Math.min(begin, end);
-        // let pos = labels[i].pos;
 
         this.segment({
           x1: orientation === "h" ? obegin : pos,
