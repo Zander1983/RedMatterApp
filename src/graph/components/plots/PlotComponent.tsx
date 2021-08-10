@@ -651,10 +651,11 @@ function PlotComponent(props: {
         <div
           className="pc-y"
           style={{
+            marginTop: 100,
+            marginRight: 20,
             transform: "rotate(270deg)",
             height: "min-content",
             width: "2%",
-            marginRight: "10px",
             display: "flex",
           }}
         >

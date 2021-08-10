@@ -51,7 +51,6 @@ export default function MainBar(props: any) {
 
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
-  const [lastUpdate, setLastUpdate] = React.useState(null);
   const setAxisRange = (
     minX: number,
     maxX: number,
@@ -68,10 +67,7 @@ export default function MainBar(props: any) {
 
     if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
-    if (lastUpdate + 40 < new Date().getTime()) {
-      dataManager.updateWorkspace();
-      setLastUpdate(new Date().getTime());
-    }
+    dataManager.updateWorkspace();
   };
 
   const deletePlot = () => {
