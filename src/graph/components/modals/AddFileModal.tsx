@@ -3,11 +3,11 @@ import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
-
+import FCSFile from "graph/dataManagement/fcsFile";
 import dataManager from "graph/dataManagement/dataManager";
-
+import PlotData from "graph/dataManagement/plotData";
 import { snackbarService } from "uno-material-ui";
-import { DownloadOutlined } from "@ant-design/icons";
+import { ConsoleSqlOutlined, DownloadOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
 
 const useStyles = makeStyles((theme) => ({
@@ -64,7 +64,8 @@ function AddFileModal(props: {
   const classes = useStyles();
 
   const [filesMetadata, setFilesMetadata] = React.useState([]);
-
+  const [buttonText, setButtonText] = React.useState("ADD TO WORKSPACE");
+  const [buttonDisabled, setButtonDisabled] = React.useState(false);
   useEffect(() => {
     setFilesMetadata(props.filesMetadata);
     dataManager.addObserver("clearWorkspace", () => {
@@ -204,7 +205,7 @@ function AddFileModal(props: {
                   >
                     <Grid container direction="row">
                       <Grid container direction="row">
-                        <p>
+                        <p style={{ width: "100%" }}>
                           <b>Title:</b>{" "}
                           <a
                             style={{
@@ -316,81 +317,42 @@ function AddFileModal(props: {
                           ></Grid>
                         </Grid>
                       </Grid>
-                      {!isDownloaded ? (
-                        <Button
-                          style={{
-                            backgroundColor: "#66d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => downloadFile(fileMetadata.id)}
-                        >
-                          {isDownloading ? (
-                            <CircularProgress
-                              style={{
-                                color: "white",
-                                width: 23,
-                                height: 23,
-                              }}
-                            />
-                          ) : (
-                            "Download"
-                          )}
-                        </Button>
-                      ) : // <Button
-                      //   style={{
-                      //     backgroundColor: "#d66",
-                      //     color: "white",
-                      //     fontSize: 13,
-                      //     marginLeft: 20,
-                      //   }}
-                      //   onClick={() => {
-                      //     downloaded =
-                      //       //@ts-ignore
-                      //       downloaded.filter(
-                      //         (e) => e.id !== fileMetadata.id
-                      //       );
-                      //     dataManager.removeFileFromWorkspace(
-                      //       fileMetadata.id
-                      //     );
-                      //     forceUpdate();
-                      //   }}
-                      // >
-                      //   Remove
-                      // </Button>
-                      null}
-                      {isDownloaded ? (
-                        <Button
-                          style={{
-                            backgroundColor: isDownloaded ? "#66d" : "#99d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            let index: number;
-                            for (let i = 0; i < props.downloaded.length; i++) {
-                              if (props.downloaded[i].id === fileMetadata.id) {
-                                index = i;
-                                break;
-                              }
-                            }
-                            if (index === undefined) {
-                              snackbarService.showSnackbar(
-                                "File is not dowloaded",
-                                "error"
-                              );
-                              return;
-                            }
-                            addFile(index);
-                            props.closeCall.f(props.closeCall.ref);
-                          }}
-                          disabled={!isDownloaded}
-                        >
-                          Add to Workspace
-                        </Button>
-                      ) : null}
+                      <Button
+                        disabled={buttonDisabled}
+                        style={{
+                          backgroundColor: buttonDisabled ? "#bdbdbd" : "#66d",
+                          color: "white",
+                          fontSize: 13,
+                          marginLeft: 20,
+                        }}
+                        onClick={async () => {
+                          //downloadFile(fileMetadata.id)
+                          setButtonText("Downloading...");
+                          let file = await dataManager.downloadFileEvent(
+                            fileMetadata.id
+                          );
+                          let newFile = new FCSFile({
+                            name: file[0].title,
+                            id: file[0].id,
+                            src: "remote",
+                            axes: file[0].channels.map((e: any) => e.value),
+                            data: file[0].events,
+                            plotTypes: file[0].channels.map(
+                              (e: any) => e.display
+                            ),
+                            remoteData: file,
+                          });
+                          const fileID =
+                            dataManager.addNewFileToWorkspace(newFile);
+                          const plot = new PlotData();
+                          plot.file = dataManager.getFile(fileID);
+                          dataManager.addNewPlotToWorkspace(plot);
+                          setButtonDisabled(true);
+                          setButtonText("Added to Workspace");
+                        }}
+                      >
+                        {buttonText}
+                      </Button>
                     </div>
                   </div>
                   {divider}
