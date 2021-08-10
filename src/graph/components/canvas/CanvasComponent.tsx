@@ -20,6 +20,9 @@ const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
   const id = `canvas-${props.plotIndex}`;
   return (
     <canvas
+      onMouseDown={(e) => {
+        e.stopPropagation();
+      }}
       style={{
         backgroundColor: "#fff",
         textAlign: "center",
