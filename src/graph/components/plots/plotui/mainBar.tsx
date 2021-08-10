@@ -69,7 +69,6 @@ export default function MainBar(props: any) {
     if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
     if (lastUpdate + 40 < new Date().getTime()) {
-      alert("executing the if for updating");
       dataManager.updateWorkspace();
       setLastUpdate(new Date().getTime());
     }
