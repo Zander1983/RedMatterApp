@@ -1,6 +1,7 @@
 import PlotData from "./plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
+import { sqrt } from "mathjs";
 
 export default class PlotStats {
   plot: PlotData;
@@ -13,6 +14,7 @@ export default class PlotStats {
     return {
       statX: stat.x,
       statY: stat.y,
+      sd: stat.sd,
       pointsOutSideOfRangeObj: pointsOutSideOfRangeObj,
       filePopulationSize: pop.fileSize,
       gatedFilePopulationSize: pop.plotSize,
@@ -54,7 +56,8 @@ export default class PlotStats {
     const data = this.plot.getXandYData();
     let x = this.getMedianOrMean(statX, data.xAxis);
     let y = this.getMedianOrMean(statY, data.yAxis);
-    return { x: x, y: y };
+    let sd = this.getStandardDeviation(data.yAxis);
+    return { x: x, y: y, sd: sd };
   }
 
   private getMedianOrMean(val: number, axis: Array<number>) {
@@ -117,5 +120,23 @@ export default class PlotStats {
     }
 
     return numeral(value).format("0a");
+  }
+
+  private getStandardDeviation(axis: Array<number>) {
+    let mu = this.getMean(axis);
+    mu = mu.slice(0, -1);
+    let mean = parseFloat(mu);
+
+    let squareSum = 0;
+
+    for (let i = 0; i < axis.length; i++) {
+      squareSum += Math.pow(axis[i] - mean, 2);
+    }
+
+    let divideByNMinus1 = squareSum / (axis.length - 1);
+
+    let sd = Math.sqrt(divideByNMinus1);
+
+    return numeral(sd).format("0a");
   }
 }

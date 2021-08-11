@@ -135,6 +135,7 @@ export default function PlotMenu(props: {
             </TableCell>
             <TableCell>Points outside</TableCell>
             <TableCell>% of Points outside</TableCell>
+            <TableCell>Std. Deviation</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -222,6 +223,7 @@ export default function PlotMenu(props: {
                 <TableCell>
                   {stats.pointsOutSideOfRangeObj.percentage}
                 </TableCell>
+                <TableCell>{stats.sd}</TableCell>
               </TableRow>
             );
           })}
