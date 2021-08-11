@@ -249,49 +249,45 @@ export default class GraphDrawer extends Drawer {
     labels?: Label[],
     strokeColor?: string
   ) {
-    const bins =
-      sbins !== undefined ? sbins : orientation === "h" ? this.ypts : this.xpts;
-
-    const begin = orientation === "h" ? this.y1 : this.x1;
-    const end = orientation === "h" ? this.y2 : this.x2;
-
-    const obegin = orientation === "h" ? this.x1 : this.y1;
-    const oend = orientation === "h" ? this.x2 : this.y2;
-
-    if (labels !== undefined && labels.length >= 2) {
-      let min = orientation === "v" ? this.ibx : this.iby;
-      let max = orientation === "v" ? this.iex : this.iey;
-      labels.push({ pos: max, name: "" });
-      for (let i = 0; i < labels.length; i++) {
-        let pos = (labels[i].pos - min) / (max - min);
-        pos =
-          Math.abs(begin - end) * (orientation === "h" ? 1 - pos : pos) +
-          Math.min(begin, end);
-
-        this.segment({
-          x1: orientation === "h" ? obegin : pos,
-          y1: orientation === "h" ? pos : obegin,
-          x2: orientation === "h" ? oend : pos,
-          y2: orientation === "h" ? pos : oend,
-          strokeColor: graphLineColor,
-        });
-      }
-    } else {
-      for (
-        let i = orientation === "v" ? 1 : 0;
-        i < bins + (orientation === "v" ? 1 : 0);
-        i++
-      ) {
-        const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
-        this.segment({
-          x1: orientation === "h" ? obegin : fd,
-          y1: orientation === "h" ? fd : obegin,
-          x2: orientation === "h" ? oend : fd,
-          y2: orientation === "h" ? fd : oend,
-          strokeColor: graphLineColor,
-        });
-      }
-    }
+    // const bins =
+    //   sbins !== undefined ? sbins : orientation === "h" ? this.ypts : this.xpts;
+    // const begin = orientation === "h" ? this.y1 : this.x1;
+    // const end = orientation === "h" ? this.y2 : this.x2;
+    // const obegin = orientation === "h" ? this.x1 : this.y1;
+    // const oend = orientation === "h" ? this.x2 : this.y2;
+    // if (labels !== undefined && labels.length >= 2) {
+    //   let min = orientation === "v" ? this.ibx : this.iby;
+    //   let max = orientation === "v" ? this.iex : this.iey;
+    //   labels.push({ pos: max, name: "" });
+    //   for (let i = 0; i < labels.length; i++) {
+    //     let pos = (labels[i].pos - min) / (max - min);
+    //     pos =
+    //       Math.abs(begin - end) * (orientation === "h" ? 1 - pos : pos) +
+    //       Math.min(begin, end);
+    //     this.segment({
+    //       x1: orientation === "h" ? obegin : pos,
+    //       y1: orientation === "h" ? pos : obegin,
+    //       x2: orientation === "h" ? oend : pos,
+    //       y2: orientation === "h" ? pos : oend,
+    //       strokeColor: graphLineColor,
+    //     });
+    //   }
+    // } else {
+    //   for (
+    //     let i = orientation === "v" ? 1 : 0;
+    //     i < bins + (orientation === "v" ? 1 : 0);
+    //     i++
+    //   ) {
+    //     const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
+    //     this.segment({
+    //       x1: orientation === "h" ? obegin : fd,
+    //       y1: orientation === "h" ? fd : obegin,
+    //       x2: orientation === "h" ? oend : fd,
+    //       y2: orientation === "h" ? fd : oend,
+    //       strokeColor: graphLineColor,
+    //     });
+    //   }
+    // }
   }
 
   drawPlotGraph(params?: {
