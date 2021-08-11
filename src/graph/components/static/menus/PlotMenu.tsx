@@ -102,7 +102,6 @@ export default function PlotMenu(props: {
   };
 
   useEffect(() => {
-    console.log("percentages", percentages);
     if (!setup) {
       setupObservers();
       setSetup(true);
@@ -164,7 +163,6 @@ export default function PlotMenu(props: {
             </TableCell>
             <TableCell>Points outside</TableCell>
             <TableCell>% of Points outside</TableCell>
-            <TableCell>Std. Deviation</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -181,16 +179,10 @@ export default function PlotMenu(props: {
               );
 
               percentages.push(percentageToFloat);
-              console.log(percentages);
               let mean = getMean(percentages);
               let standard = getStandardDeviation(percentages);
               meanPlusStandard = mean + standard;
               meanMinusStandard = mean - standard;
-              console.log("mean", mean);
-              console.log("standard", standard);
-              console.log("meanPlusStandard", meanPlusStandard);
-              console.log("meanMinusStandard", meanMinusStandard);
-              console.log("plot", plot);
             }
 
             return (
@@ -284,7 +276,6 @@ export default function PlotMenu(props: {
                 <TableCell>
                   {stats.pointsOutSideOfRangeObj.percentage}
                 </TableCell>
-                <TableCell>{stats.sd}</TableCell>
               </TableRow>
             );
           })}
