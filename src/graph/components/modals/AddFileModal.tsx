@@ -9,6 +9,7 @@ import PlotData from "graph/dataManagement/plotData";
 import { snackbarService } from "uno-material-ui";
 import { ConsoleSqlOutlined, DownloadOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
+import useForceUpdate from "hooks/forceUpdate";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -65,7 +66,7 @@ function AddFileModal(props: {
 
   const [filesMetadata, setFilesMetadata] = React.useState([]);
   const [buttonText, setButtonText] = React.useState("ADD TO WORKSPACE");
-  const [buttonDisabled, setButtonDisabled] = React.useState(false);
+
   useEffect(() => {
     setFilesMetadata(props.filesMetadata);
     dataManager.addObserver("clearWorkspace", () => {
@@ -317,42 +318,53 @@ function AddFileModal(props: {
                           ></Grid>
                         </Grid>
                       </Grid>
-                      <Button
-                        disabled={buttonDisabled}
-                        style={{
-                          backgroundColor: buttonDisabled ? "#bdbdbd" : "#66d",
-                          color: "white",
-                          fontSize: 13,
-                          marginLeft: 20,
-                        }}
-                        onClick={async () => {
-                          //downloadFile(fileMetadata.id)
-                          setButtonText("Downloading...");
-                          let file = await dataManager.downloadFileEvent(
-                            fileMetadata.id
-                          );
-                          let newFile = new FCSFile({
-                            name: file[0].title,
-                            id: file[0].id,
-                            src: "remote",
-                            axes: file[0].channels.map((e: any) => e.value),
-                            data: file[0].events,
-                            plotTypes: file[0].channels.map(
-                              (e: any) => e.display
-                            ),
-                            remoteData: file,
-                          });
-                          const fileID =
-                            dataManager.addNewFileToWorkspace(newFile);
-                          const plot = new PlotData();
-                          plot.file = dataManager.getFile(fileID);
-                          dataManager.addNewPlotToWorkspace(plot);
-                          setButtonDisabled(true);
-                          setButtonText("Added to Workspace");
-                        }}
-                      >
-                        {buttonText}
-                      </Button>
+                      {isDownloaded === false ? (
+                        <Button
+                          style={{
+                            backgroundColor: "#66d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={async () => {
+                            setButtonText("Downloading...");
+                            let file = await dataManager.downloadFileEvent(
+                              fileMetadata.id
+                            );
+                            let newFile = new FCSFile({
+                              name: file[0].title,
+                              id: file[0].id,
+                              src: "remote",
+                              axes: file[0].channels.map((e: any) => e.value),
+                              data: file[0].events,
+                              plotTypes: file[0].channels.map(
+                                (e: any) => e.display
+                              ),
+                              remoteData: file,
+                            });
+                            const fileID =
+                              dataManager.addNewFileToWorkspace(newFile);
+                            const plot = new PlotData();
+                            plot.file = dataManager.getFile(fileID);
+                            dataManager.addNewPlotToWorkspace(plot);
+                            setButtonText("Add to workspace");
+                          }}
+                        >
+                          {buttonText}
+                        </Button>
+                      ) : (
+                        <Button
+                          disabled={true}
+                          style={{
+                            backgroundColor: "#bdbdbd",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                        >
+                          Added to Workspace
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {divider}
