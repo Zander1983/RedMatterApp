@@ -63,28 +63,28 @@ function RangeResizeModal(props: {
   }, [props.inits.minX, props.inits.minY, props.inits.maxX, props.inits.maxY]);
 
   const commitRangeChange = () => {
-    // try {
-    const iMinX = parseFloat(minX);
-    const iMaxX = parseFloat(maxX);
-    const iMinY = parseFloat(minY);
-    const iMaxY = parseFloat(maxY);
-    if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw "";
-    props.callback(
-      iMinX,
-      iMaxX,
-      iMinY,
-      iMaxY,
-      props.inits.axisX.split(" ")[0],
-      props.inits.axisY.split(" ")[0]
-    );
-    setMinX(iMinX.toString());
-    setMaxX(iMaxX.toString());
-    setMinY(iMinY.toString());
-    setMaxY(iMaxY.toString());
-    props.closeCall.f(props.closeCall.ref);
-    // } catch {
-    //   snackbarService.showSnackbar("Invalid ranges", "error");
-    // }
+    try {
+      const iMinX = parseFloat(minX);
+      const iMaxX = parseFloat(maxX);
+      const iMinY = parseFloat(minY);
+      const iMaxY = parseFloat(maxY);
+      if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw "";
+      props.callback(
+        iMinX,
+        iMaxX,
+        iMinY,
+        iMaxY,
+        props.inits.axisX.split(" ")[0],
+        props.inits.axisY.split(" ")[0]
+      );
+      setMinX(iMinX.toString());
+      setMaxX(iMaxX.toString());
+      setMinY(iMinY.toString());
+      setMaxY(iMaxY.toString());
+      props.closeCall.f(props.closeCall.ref);
+    } catch {
+      snackbarService.showSnackbar("Invalid ranges", "error");
+    }
   };
 
   return (
