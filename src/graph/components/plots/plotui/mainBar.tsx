@@ -7,6 +7,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";
 import RangeResizeModal from "../../modals/rangeResizeModal";
+import PlotData from "graph/dataManagement/plotData";
 
 const classes = {
   main: {
@@ -59,14 +60,29 @@ export default function MainBar(props: any) {
     axisX: string,
     axisY: string
   ) => {
-    if (minX === 69 && maxX === 420) props.plot.plotData.resetOriginalRanges();
-    else props.plot.plotData.ranges.set(axisX, [minX, maxX]);
+    const targetPlots: PlotData[] = [];
+    const plots = dataManager.getAllPlots();
+    plots.filter((res) => {
+      const tPlot = res.plot;
+      if (
+        tPlot.xAxis === plot.plotData.xAxis &&
+        tPlot.yAxis === plot.plotData.yAxis &&
+        tPlot.xPlotType === plot.plotData.xPlotType &&
+        tPlot.yPlotType === plot.plotData.yPlotType
+      ) {
+        targetPlots.push(tPlot);
+      }
+    });
 
-    if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
-    else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
+    targetPlots.forEach((e) => {
+      if (minX === 69 && maxX === 420) e.resetOriginalRanges();
+      else e.ranges.set(axisX, [minX, maxX]);
 
+      if (minY === 69 && maxY === 420) e.resetOriginalRanges();
+      else e.ranges.set(axisY, [minY, maxY]);
+    });
     dataManager.updateWorkspace();
-    plot.update();
+    targetPlots.forEach((e) => e.plotUpdated());
   };
 
   const deletePlot = () => {
