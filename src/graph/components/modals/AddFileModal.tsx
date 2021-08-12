@@ -93,6 +93,7 @@ function AddFileModal(props: {
       plot.file = dataManager.getFile(fileId);
       dataManager.addNewPlotToWorkspace(plot);
       dataManager.removeObserver("addNewFileToWorkspace", id);
+      props.closeCall.f(props.closeCall.ref);
     });
   };
 

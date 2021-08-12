@@ -59,14 +59,12 @@ export default function MainBar(props: any) {
     axisX: string,
     axisY: string
   ) => {
-    if (minX === 69 && maxX === 420) {
-      props.plot.plotData.resetOriginalRanges();
-    } else {
-      props.plot.plotData.ranges.set(axisX, [minX, maxX]);
-    }
+    if (minX === 69 && maxX === 420) props.plot.plotData.resetOriginalRanges();
+    else props.plot.plotData.ranges.set(axisX, [minX, maxX]);
 
     if (minY === 69 && maxY === 420) props.plot.plotData.resetOriginalRanges();
     else props.plot.plotData.ranges.set(axisY, [minY, maxY]);
+
     dataManager.updateWorkspace();
     plot.update();
   };

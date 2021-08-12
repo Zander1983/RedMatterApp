@@ -69,6 +69,7 @@ function PlotComponent(props: {
     axis === "x"
       ? props.plot.plotData.setXAxisPlotType(value)
       : props.plot.plotData.setYAxisPlotType(value);
+    rerender();
   };
 
   const rerender = useForceUpdate();

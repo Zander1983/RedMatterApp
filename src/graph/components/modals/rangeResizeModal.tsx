@@ -1,7 +1,8 @@
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, Grid, TextField } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
+import { snackbarService } from "uno-material-ui";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -48,22 +49,51 @@ function RangeResizeModal(props: {
   ) => void;
 }): JSX.Element {
   const classes = useStyles();
-  const [minX, setMinX] = React.useState(0);
-  const [maxX, setMaxX] = React.useState(0);
-  const [minY, setMinY] = React.useState(0);
-  const [maxY, setMaxY] = React.useState(0);
+  const [minX, setMinX] = React.useState("0");
+  const [maxX, setMaxX] = React.useState("0");
+  const [minY, setMinY] = React.useState("0");
+  const [maxY, setMaxY] = React.useState("0");
 
   useEffect(() => {
-    setMinX(props.inits.minX);
-    setMaxX(props.inits.maxX);
-    setMinY(props.inits.minY);
-    setMaxY(props.inits.maxY);
+    setMinX(props.inits.minX.toString());
+    setMaxX(props.inits.maxX.toString());
+    setMinY(props.inits.minY.toString());
+    setMaxY(props.inits.maxY.toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.inits.minX, props.inits.minY]);
+  }, [props.inits.minX, props.inits.minY, props.inits.maxX, props.inits.maxY]);
+
+  const commitRangeChange = () => {
+    try {
+      const iMinX = parseFloat(minX);
+      const iMaxX = parseFloat(maxX);
+      const iMinY = parseFloat(minY);
+      const iMaxY = parseFloat(maxY);
+      console.log(iMinX, iMaxX, iMinY, iMaxY);
+      if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw "";
+      props.callback(
+        iMinX,
+        iMaxX,
+        iMinY,
+        iMaxY,
+        props.inits.axisX.split(" ")[0],
+        props.inits.axisY.split(" ")[0]
+      );
+      setMinX(iMinX.toString());
+      setMaxX(iMaxX.toString());
+      setMinY(iMinY.toString());
+      setMaxY(iMaxY.toString());
+      props.closeCall.f(props.closeCall.ref);
+    } catch {
+      snackbarService.showSnackbar("Invalid ranges", "error");
+    }
+  };
 
   return (
     <Modal
       open={props.open}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+      }}
       onClose={() => {
         props.closeCall.f(props.closeCall.ref);
       }}
@@ -81,9 +111,7 @@ function RangeResizeModal(props: {
               label="Range min"
               value={minX}
               onChange={(e) => {
-                const v = parseInt(e.target.value);
-                if (isNaN(v)) setMinX(0);
-                else setMinX(parseInt(e.target.value));
+                setMinX(e.target.value);
               }}
             />
             <br />
@@ -91,9 +119,7 @@ function RangeResizeModal(props: {
               label="Range max"
               value={maxX}
               onChange={(e) => {
-                const v = parseInt(e.target.value);
-                if (isNaN(v)) setMaxX(0);
-                else setMaxX(parseInt(e.target.value));
+                setMaxX(e.target.value);
               }}
             />
           </Grid>
@@ -104,9 +130,7 @@ function RangeResizeModal(props: {
               label="Range min"
               value={minY}
               onChange={(e) => {
-                const v = parseInt(e.target.value);
-                if (isNaN(v)) setMinY(0);
-                else setMinY(parseInt(e.target.value));
+                setMinY(e.target.value);
               }}
             />
             <br />
@@ -114,9 +138,7 @@ function RangeResizeModal(props: {
               label="Range max"
               value={maxY}
               onChange={(e) => {
-                const v = parseInt(e.target.value);
-                if (isNaN(v)) setMaxY(0);
-                else setMaxY(parseInt(e.target.value));
+                setMaxY(e.target.value);
               }}
             />
           </Grid>
@@ -132,15 +154,7 @@ function RangeResizeModal(props: {
               variant="contained"
               color="primary"
               onClick={() => {
-                props.callback(
-                  minX,
-                  maxX,
-                  minY,
-                  maxY,
-                  props.inits.axisX.split(" ")[0],
-                  props.inits.axisY.split(" ")[0]
-                );
-                props.closeCall.f(props.closeCall.ref);
+                commitRangeChange();
               }}
             >
               Confirm
@@ -149,8 +163,9 @@ function RangeResizeModal(props: {
             <Button
               variant="contained"
               style={{
-                backgroundColor: "#faa",
+                backgroundColor: "#d77",
                 marginLeft: 20,
+                color: "white",
               }}
               onClick={() => {
                 props.closeCall.f(props.closeCall.ref);
