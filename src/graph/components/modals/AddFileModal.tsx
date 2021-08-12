@@ -87,6 +87,13 @@ function AddFileModal(props: {
 
   const downloadFile = (fileId: string) => {
     props.onDownloadFileEvents([fileId]);
+    let id = "";
+    id = dataManager.addObserver("addNewFileToWorkspace", () => {
+      const plot = new PlotData();
+      plot.file = dataManager.getFile(fileId);
+      dataManager.addNewPlotToWorkspace(plot);
+      dataManager.removeObserver("addNewFileToWorkspace", id);
+    });
   };
 
   const downloadAll = () => {
@@ -117,7 +124,7 @@ function AddFileModal(props: {
             textAlign: "center",
           }}
         >
-          Download and use your Flow Analysis files.
+          Load and use your Flow Analysis files.
         </p>
 
         <div>
@@ -136,7 +143,7 @@ function AddFileModal(props: {
               downloadAll();
             }}
           >
-            Download all files
+            Load all files
           </Button>
         </div>
 
@@ -291,9 +298,9 @@ function AddFileModal(props: {
                       >
                         <Grid style={{ display: "inline-block" }}>
                           {isDownloaded
-                            ? "Downloaded"
+                            ? "Loaded"
                             : isDownloading
-                            ? "Downloading..."
+                            ? "Loading..."
                             : "Remote"}
                         </Grid>
                         <Grid
@@ -326,45 +333,52 @@ function AddFileModal(props: {
                             fontSize: 13,
                             marginLeft: 20,
                           }}
-                          onClick={async () => {
-                            setButtonText("Downloading...");
-                            let file = await dataManager.downloadFileEvent(
-                              fileMetadata.id
-                            );
-                            let newFile = new FCSFile({
-                              name: file[0].title,
-                              id: file[0].id,
-                              src: "remote",
-                              axes: file[0].channels.map((e: any) => e.value),
-                              data: file[0].events,
-                              plotTypes: file[0].channels.map(
-                                (e: any) => e.display
-                              ),
-                              remoteData: file,
-                            });
-                            const fileID =
-                              dataManager.addNewFileToWorkspace(newFile);
-                            const plot = new PlotData();
-                            plot.file = dataManager.getFile(fileID);
-                            dataManager.addNewPlotToWorkspace(plot);
-                            setButtonText("Add to workspace");
-                          }}
+                          onClick={() => downloadFile(fileMetadata.id)}
                         >
-                          {buttonText}
+                          {isDownloading ? (
+                            <CircularProgress
+                              style={{
+                                color: "white",
+                                width: 23,
+                                height: 23,
+                              }}
+                            />
+                          ) : (
+                            "Download"
+                          )}
                         </Button>
-                      ) : (
+                      ) : null}
+                      {isDownloaded ? (
                         <Button
-                          disabled={true}
                           style={{
-                            backgroundColor: "#bdbdbd",
+                            backgroundColor: isDownloaded ? "#66d" : "#99d",
                             color: "white",
                             fontSize: 13,
                             marginLeft: 20,
                           }}
+                          onClick={() => {
+                            let index: number;
+                            for (let i = 0; i < props.downloaded.length; i++) {
+                              if (props.downloaded[i].id === fileMetadata.id) {
+                                index = i;
+                                break;
+                              }
+                            }
+                            if (index === undefined) {
+                              snackbarService.showSnackbar(
+                                "File is not dowloaded",
+                                "error"
+                              );
+                              return;
+                            }
+                            addFile(index);
+                            props.closeCall.f(props.closeCall.ref);
+                          }}
+                          disabled={!isDownloaded}
                         >
-                          Added to Workspace
+                          Add to Workspace
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   {divider}
