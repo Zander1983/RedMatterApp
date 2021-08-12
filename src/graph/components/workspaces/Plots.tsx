@@ -166,7 +166,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
         }
         plot.plotData.dimensions = {
           h: layout.h,
-          w: layout.w - 100,
+          w: layout.w,
         };
 
         plot.plotData.positions = {
