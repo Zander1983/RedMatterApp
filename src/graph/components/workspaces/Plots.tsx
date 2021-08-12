@@ -136,7 +136,8 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
       let docBarRef: any = document.getElementById(barRef);
 
       if (docBarRef && docDisplayRef && docIdRef) {
-        let width = docDisplayRef.offsetWidth - 60;
+        let width =
+          docDisplayRef.offsetWidth - 53 - docDisplayRef.offsetWidth * 0.013;
         let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 80;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       }
@@ -165,7 +166,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
         }
         plot.plotData.dimensions = {
           h: layout.h,
-          w: layout.w,
+          w: layout.w - 100,
         };
 
         plot.plotData.positions = {
@@ -228,6 +229,9 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
                       this.savePlotPosition(layout);
                     }}
                     onResize={(layout: any) => {
+                      this.resizeCanvas(layout);
+                    }}
+                    onResizeStop={(layout: any) => {
                       this.resizeCanvas(layout);
                     }}
                   >
