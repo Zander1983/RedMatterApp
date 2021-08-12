@@ -21,6 +21,7 @@ import PlotData from "graph/dataManagement/plotData";
 import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import numeral from "numeral";
 
 interface Dictionary {
   [key: string]: number;
@@ -63,14 +64,41 @@ export default function PlotMenu(props: {
     return statObj[e];
   };
 
-  const deletePlot = (plot: PlotData) => {
+  const deletePlot = (plot: PlotData, index: number) => {
     dataManager.removePlotFromWorkspace(plot.id);
+    percentages.splice(index, 1);
   };
 
   const clonePlot = (plot: PlotData) => {
     const newPlot = new PlotData();
     newPlot.setState(plot.getState());
     dataManager.addNewPlotToWorkspace(newPlot);
+  };
+
+  let percentages: any[] = [];
+  const [sd, setSd] = React.useState(null);
+
+  const getMean = (list: Array<number>) => {
+    let sum = 0;
+    list.forEach((e) => (sum += e));
+    let count = list.length;
+    return sum / count;
+  };
+
+  const getStandardDeviation = (list: Array<number>) => {
+    let mean = getMean(list);
+
+    let squareSum = 0;
+
+    for (let i = 0; i < list.length; i++) {
+      squareSum += Math.pow(list[i] - mean, 2);
+    }
+
+    let divideByNMinus1 = squareSum / list.length;
+
+    let sd = Math.sqrt(divideByNMinus1);
+
+    return sd;
   };
 
   useEffect(() => {
@@ -82,7 +110,7 @@ export default function PlotMenu(props: {
       observerListProvider.kill();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sd]);
 
   return (
     <TableContainer component={Paper}>
@@ -138,10 +166,25 @@ export default function PlotMenu(props: {
           </TableRow>
         </TableHead>
         <TableBody>
-          {plots.map((plot) => {
+          {plots.map((plot, i) => {
             const type =
               plot.xAxis === plot.yAxis ? "histogram" : "scatterplot";
             let stats = statsProvider.getPlotStats(plot, statsX, statsY);
+            let percentageToFloat: number = 0;
+            let meanPlusStandard: number = 0;
+            let meanMinusStandard: number = 0;
+            if (i > 0) {
+              percentageToFloat = parseFloat(
+                stats.gatedFilePopulationPercentage.slice(0, -1)
+              );
+
+              percentages.push(percentageToFloat);
+              let mean = getMean(percentages);
+              let standard = getStandardDeviation(percentages);
+              meanPlusStandard = mean + standard;
+              meanMinusStandard = mean - standard;
+            }
+
             return (
               <TableRow key={plot.id}>
                 <TableCell>
@@ -151,7 +194,7 @@ export default function PlotMenu(props: {
                       padding: 0,
                       minWidth: 0,
                     }}
-                    onClick={() => deletePlot(plot)}
+                    onClick={() => deletePlot(plot, i)}
                   >
                     <Delete></Delete>
                   </Button>
@@ -207,7 +250,18 @@ export default function PlotMenu(props: {
                 <TableCell>
                   {stats.gatedFilePopulationSize} / {stats.filePopulationSize}
                 </TableCell>
-                <TableCell>{stats.gatedFilePopulationPercentage}</TableCell>
+                <TableCell
+                  style={{
+                    color:
+                      percentageToFloat > meanPlusStandard
+                        ? "red"
+                        : percentageToFloat < meanMinusStandard
+                        ? "orange"
+                        : "black",
+                  }}
+                >
+                  {stats.gatedFilePopulationPercentage}
+                </TableCell>
                 <TableCell>
                   {type === "histogram" && plot.histogramAxis === "horizontal"
                     ? "~"

@@ -1,6 +1,7 @@
 import PlotData from "./plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
+import { sqrt } from "mathjs";
 
 export default class PlotStats {
   plot: PlotData;
