@@ -260,7 +260,11 @@ export default function PlotMenu(props: {
                         : "black",
                   }}
                 >
-                  {stats.gatedFilePopulationPercentage}
+                  {stats.gatedFilePopulationPercentage}{" "}
+                  {percentageToFloat > meanPlusStandard ||
+                  percentageToFloat < meanMinusStandard
+                    ? "(Outlier)"
+                    : null}
                 </TableCell>
                 <TableCell>
                   {type === "histogram" && plot.histogramAxis === "horizontal"
