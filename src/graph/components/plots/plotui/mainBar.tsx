@@ -4,10 +4,16 @@ import Grid from "@material-ui/core/Grid";
 import useForceUpdate from "hooks/forceUpdate";
 import CancelIcon from "@material-ui/icons/Cancel";
 
+import CreateIcon from "@material-ui/icons/Create";
+import TuneIcon from "@material-ui/icons/Tune";
+import TouchAppIcon from "@material-ui/icons/TouchApp";
+import ExposureIcon from "@material-ui/icons/Exposure";
+import GrainIcon from "@material-ui/icons/Grain";
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";
 import RangeResizeModal from "../../modals/rangeResizeModal";
 import PlotData from "graph/dataManagement/plotData";
+import Grain from "@material-ui/icons/Grain";
 
 const classes = {
   main: {
@@ -196,13 +202,14 @@ export default function MainBar(props: any) {
         direction="row"
       >
         <Button
+          variant="contained"
+          size="small"
           onClick={() => setDeleteModalOpen(true)}
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            marginRight: 5,
-            marginLeft: 5,
-            flex: "1 1 auto",
+            width: "25%",
+            height: "1.7rem",
           }}
         >
           <CancelIcon
@@ -230,20 +237,19 @@ export default function MainBar(props: any) {
             size="small"
             onClick={() => polygonGatingSetter()}
             style={{
-              flex: "1 1 auto",
-              fontSize: 12,
+              width: "45%",
               color: "white",
-              marginRight: 5,
-              marginLeft: 5,
+              height: "1.7rem",
+              fontSize: "12",
               backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
             }}
           >
-            {polygonGating ? "Drawing gate..." : "Draw gate"}
+            {polygonGating ? <TouchAppIcon /> : <CreateIcon />}
           </Button>
         </Tooltip>
         <Button
           variant="contained"
-          size="medium"
+          size="small"
           onClick={() => {
             const rangesX = plot.plotData.ranges.get(plot.plotData.xAxis);
             setRangeResizeModalTargetMinX(rangesX[0]);
@@ -256,17 +262,14 @@ export default function MainBar(props: any) {
             setOpenResize(true);
           }}
           style={{
-            // flex: "1 1 auto",
-            width: "100%",
+            width: "25%",
+            height: "1.7rem",
             fontSize: 12,
             color: "white",
-            marginTop: 5,
-            marginRight: 5,
-            marginLeft: 5,
             backgroundColor: "#6666aa",
           }}
         >
-          Edit Axes
+          <TuneIcon />
         </Button>
 
         {/* <Button

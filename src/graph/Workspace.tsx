@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
   topButton: {
     marginLeft: 20,
     marginTop: 5,
-    height: 35,
+    height: "1.9rem",
   },
   savingProgress: {
     marginLeft: "-10px",
@@ -457,9 +457,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         message={
           <div>
             <h2>Loading workspace</h2>
-            <h3 style={{ color: "#777" }}>
+            <h4 style={{ color: "#777" }}>
               Please wait, we are collecting your files from the servers...
-            </h3>
+            </h4>
             <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
           </div>
         }
@@ -524,7 +524,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 style={{
                   backgroundColor: "#66a",
                   paddingTop: 2,
-                  paddingBottom: 5,
+                  paddingBottom: 6,
                   borderRadius: 10,
                   WebkitBorderBottomLeftRadius: 0,
                   WebkitBorderBottomRightRadius: 0,

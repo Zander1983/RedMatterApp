@@ -20,7 +20,7 @@ const HowToUseModal = () => {
         onClick={() => handleOpen(setHelpModal)}
         style={{
           marginLeft: 20,
-          height: 35,
+          height: "1.9rem",
           marginTop: 5,
           backgroundColor: "#fafafa",
         }}
