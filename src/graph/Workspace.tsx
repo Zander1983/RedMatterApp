@@ -523,8 +523,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
               <Grid
                 style={{
                   backgroundColor: "#66a",
-                  paddingTop: 15,
-                  paddingBottom: 19,
+                  paddingTop: 2,
+                  paddingBottom: 5,
                   borderRadius: 10,
                   WebkitBorderBottomLeftRadius: 0,
                   WebkitBorderBottomRightRadius: 0,
@@ -534,7 +534,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 <Grid container>
                   {sharedWorkspace ? null : (
                     <Button
-                      size="large"
+                      size="small"
                       variant="contained"
                       style={{
                         backgroundColor: "#fafafa",
@@ -552,7 +552,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
                   <Button
                     variant="contained"
-                    size="large"
+                    size="small"
                     onClick={() => handleOpen(setAddFileModalOpen)}
                     className={classes.topButton}
                     style={{
@@ -564,7 +564,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
                   <Button
                     variant="contained"
-                    size="large"
+                    size="small"
                     onClick={() => handleOpen(setGenerateReportModalOpen)}
                     className={classes.topButton}
                     style={{
@@ -580,7 +580,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
-                        size="large"
+                        size="small"
                         onClick={() => upsertWorkSpace()}
                         className={classes.topButton}
                         style={{
@@ -603,7 +603,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   {props.poke === false ? (
                     <Button
                       variant="contained"
-                      size="large"
+                      size="small"
                       onClick={() => handleOpen(setClearModal)}
                       className={classes.topButton}
                       style={{

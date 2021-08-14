@@ -16,7 +16,7 @@ const HowToUseModal = () => {
     <>
       <Button
         variant="contained"
-        size="large"
+        size="small"
         onClick={() => handleOpen(setHelpModal)}
         style={{
           marginLeft: 20,
