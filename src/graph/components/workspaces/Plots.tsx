@@ -207,17 +207,16 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
                 <div
                   style={{
                     backgroundColor: "#6666AA",
-                    padding: 5,
-                    paddingLeft: 10,
-                    paddingBottom: 1,
-                    paddingTop: 7,
+                    paddingLeft: 20,
+                    paddingBottom: 3,
+                    paddingTop: 3,
                   }}
                 >
-                  <h1 style={{ color: "white" }}>
+                  <h3 style={{ color: "white", marginBottom: 0 }}>
                     {plots[0].plotData.file.name}
-                  </h1>
+                  </h3>
                 </div>
-                <div style={{ marginTop: 10, marginBottom: 10 }}>
+                <div style={{ marginTop: 3, marginBottom: 10 }}>
                   <ResponsiveGridLayout
                     className="layout"
                     breakpoints={{ lg: 1200 }}

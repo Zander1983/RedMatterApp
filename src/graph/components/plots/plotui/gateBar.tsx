@@ -162,6 +162,7 @@ export default function GateBar(props: any) {
           renderInput={(params) => (
             <TextField
               {...params}
+              size="small"
               variant="outlined"
               label={
                 population.length > 0
@@ -236,6 +237,7 @@ export default function GateBar(props: any) {
           renderInput={(params) => (
             <TextField
               {...params}
+              size="small"
               variant="outlined"
               label={`Gates (${gates.length})`}
             />

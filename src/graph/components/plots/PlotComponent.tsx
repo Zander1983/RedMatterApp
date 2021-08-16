@@ -33,7 +33,7 @@ const classes = {
   mainContainer: {
     width: "100%",
     height: "100%",
-    padding: 10,
+    padding: "8px 10px 10px 10px",
   },
   utilityBar: {
     width: "100%",
@@ -653,6 +653,7 @@ function PlotComponent(props: {
           rerender={rerender}
           redrawPlot={plotUpdater}
         ></MainBar>
+
         <Divider></Divider>
 
         <GateBar plot={plot}></GateBar>
