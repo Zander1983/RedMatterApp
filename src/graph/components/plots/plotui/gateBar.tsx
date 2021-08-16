@@ -11,8 +11,8 @@ import dataManager from "../../../dataManagement/dataManager";
 import Plot from "graph/renderers/plotRender";
 
 import Gate from "../../../dataManagement/gate/gate";
-import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import { snackbarService } from "uno-material-ui";
+import useForceUpdate from "hooks/forceUpdate";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -32,9 +32,8 @@ const classes = {
 };
 
 export default function GateBar(props: any) {
+  const forceUpdate = useForceUpdate();
   const [gates, setGates] = React.useState([]);
-  const [selected, setSelected] = React.useState([]);
-  const [population, setPopulation] = React.useState([]);
   const [observers, setObservers] = React.useState([]);
   const plot: Plot = props.plot;
 
@@ -62,51 +61,29 @@ export default function GateBar(props: any) {
       plot.plotData === undefined
     )
       return;
-    let plotGates = plot.plotData.gates.map((e) => e.gate);
-    const pop = plot.plotData.population.map((e) => e.gate);
-    setPopulation(pop);
-    plotGates = plotGates.filter((e: any) => {
-      for (const gate of pop) {
-        if (gate.id === e.id) return false;
-      }
-      return true;
-    });
-    setSelected(plotGates);
-    let cgates: Gate[] = [];
-    dataManager.getAllGates().forEach((v) => {
-      cgates.push(v.gate);
-    });
+    let cgates: Gate[] = dataManager.getAllGates().map((e) => e.gate);
     setGates(cgates);
+    forceUpdate();
   };
 
   useEffect(() => {
     update();
-    setObservers([
-      {
-        target: "addNewGateToWorkspace",
-        value: dataManager.addObserver("addNewGateToWorkspace", () => {
-          update();
-        }),
-      },
-      {
-        target: "linkGateToPlot",
-        value: dataManager.addObserver("linkGateToPlot", () => {
-          update();
-        }),
-      },
-      {
-        target: "unlinkGateFromPlot",
-        value: dataManager.addObserver("unlinkGateFromPlot", () => {
-          update();
-        }),
-      },
-      {
-        target: "clearWorkspace",
-        value: dataManager.addObserver("clearWorkspace", () => {
-          update();
-        }),
-      },
-    ]);
+    const obs = [
+      "addNewGateToWorkspace",
+      "removeGateFromWorkspace",
+      "linkGateToPlot",
+      "unlinkGateFromPlot",
+      "linkPopulationToPlot",
+      "unlinkPopulationFromPlot",
+      "clearWorkspace",
+    ];
+    const obsWithValues = obs.map((e) => {
+      return {
+        value: dataManager.addObserver(e, update),
+        target: e,
+      };
+    });
+    setObservers(obsWithValues);
     return () => {
       observers.forEach((e) => {
         dataManager.removeObserver(e.terget, e.value);
@@ -115,9 +92,68 @@ export default function GateBar(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const gateInPopulation = (id: string) => {
-    for (const gate of population) if (gate.id === id) return true;
-    return false;
+  const gateInPopulation = (gateId: string) =>
+    dataManager
+      .getPlot(plot.plotData.id)
+      .population.filter((e) => e.gate.id === gateId).length > 0;
+
+  const gateInPlotGates = (gateId: string) => {
+    return (
+      dataManager
+        .getPlot(plot.plotData.id)
+        .gates.filter((e) => e.gate.id === gateId).length > 0
+    );
+  };
+
+  const addGateToPopulation = (gateId: string) => {
+    if (gateInPopulation(gateId)) throw Error("Gate already in population");
+    dataManager.linkPopulationToPlot(plot.plotData.id, gateId);
+  };
+
+  const removeGateFromPopulation = (gateId: string) => {
+    if (!gateInPopulation(gateId)) throw Error("Gate is not in population");
+    dataManager.unlinkPopulationFromPlot(plot.plotData.id, gateId);
+  };
+
+  const addGateToPlotGates = (gateId: string) => {
+    if (gateInPlotGates(gateId)) throw Error("Gate already in plot gates");
+    dataManager.linkGateToPlot(plot.plotData.id, gateId);
+  };
+
+  const removeGateFromPlotGates = (gateId: string) => {
+    if (!gateInPlotGates(gateId)) throw Error("Gate is not in plot gates");
+    dataManager.unlinkGateFromPlot(plot.plotData.id, gateId);
+  };
+
+  const populationSelect = (id: string) => {
+    const pop = gateInPopulation(id);
+    const plotGates = gateInPlotGates(id);
+    if (pop && plotGates)
+      throw Error("This gate is both population and plot gates");
+    else if (plotGates) {
+      removeGateFromPlotGates(id);
+      addGateToPopulation(id);
+    } else if (pop) {
+      removeGateFromPopulation(id);
+    } else {
+      addGateToPopulation(id);
+    }
+    update();
+  };
+
+  const plotGatesSelect = (id: string) => {
+    const pop = gateInPopulation(id);
+    const plotGates = gateInPlotGates(id);
+    if (pop && plotGates)
+      throw Error("This gate is both population and plot gates");
+    else if (plotGates) {
+      removeGateFromPlotGates(id);
+    } else if (pop) {
+      throw Error("This gate is already population");
+    } else {
+      addGateToPlotGates(id);
+    }
+    update();
   };
 
   return (
@@ -136,25 +172,28 @@ export default function GateBar(props: any) {
       <Grid item>
         <Autocomplete
           multiple
-          options={population}
-          value={population.filter((e: any) => {
-            for (const gate of population) {
-              if (gate.id === e.id) return true;
-            }
-            return false;
-          })}
-          disableClearable
+          options={gates}
+          value={gates.filter((e: any) => gateInPopulation(e.id))}
           noOptionsText={"All"}
           disableCloseOnSelect
           getOptionLabel={(option) => option.name}
           renderOption={(option, { selected }) => (
             <Button
+              onClick={() => {
+                populationSelect(option.id);
+              }}
               style={{
                 flex: 1,
                 justifyContent: "left",
                 textTransform: "none",
               }}
             >
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8, textAlign: "left", padding: 0 }}
+                checked={selected || gateInPopulation(option.id)}
+              />
               {option.name} - ({option.xAxis}, {option.yAxis})
             </Button>
           )}
@@ -165,8 +204,8 @@ export default function GateBar(props: any) {
               size="small"
               variant="outlined"
               label={
-                population.length > 0
-                  ? `Population (${population.length})`
+                gates.length > 0
+                  ? `Population (${plot.plotData.population.length})`
                   : "Population: All"
               }
             />
@@ -189,6 +228,11 @@ export default function GateBar(props: any) {
                 }
                 {...props}
                 style={{ marginLeft: 5 }}
+                onDelete={() => {
+                  if (gateInPopulation(option.id)) {
+                    removeGateFromPopulation(option.id);
+                  }
+                }}
               />
             ));
           }}
@@ -197,25 +241,15 @@ export default function GateBar(props: any) {
       <Grid item>
         <Autocomplete
           multiple
-          options={gates.filter(
-            (e) => population.filter((pop) => pop.id === e.id).length === 0
-          )}
-          value={gates.filter((e: any) => {
-            for (const gate of selected) {
-              if (gate.id === e.id) {
-                return population.filter((pop) => pop.id === e.id).length === 0;
-              }
-            }
-            return false;
-          })}
+          options={gates.filter((e) => !gateInPopulation(e.id))}
+          value={gates.filter((e: any) => gateInPlotGates(e.id))}
           disableCloseOnSelect
           getOptionLabel={(option) => option.name}
           renderOption={(option, { selected }) => (
             <Button
               onClick={() => {
-                if (!gateInPopulation(option.id)) {
-                  changeGatePlotState(option.id, selected);
-                }
+                if (gateInPopulation(option.id)) return;
+                plotGatesSelect(option.id);
               }}
               style={{
                 flex: 1,
@@ -228,7 +262,11 @@ export default function GateBar(props: any) {
                 disabled={gateInPopulation(option.id)}
                 checkedIcon={checkedIcon}
                 style={{ marginRight: 8, textAlign: "left", padding: 0 }}
-                checked={selected || gateInPopulation(option.id)}
+                checked={
+                  selected ||
+                  gateInPlotGates(option.id) ||
+                  gateInPopulation(option.id)
+                }
               />
               {option.name} - ({option.xAxis}, {option.yAxis})
             </Button>
@@ -239,7 +277,9 @@ export default function GateBar(props: any) {
               {...params}
               size="small"
               variant="outlined"
-              label={`Gates (${gates.length})`}
+              label={`Gates (${
+                gates.filter((e) => !gateInPopulation(e.id)).length
+              })`}
             />
           )}
           renderTags={(tagValue, _) => {

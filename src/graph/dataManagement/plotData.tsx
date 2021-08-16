@@ -32,7 +32,6 @@ const conditionalUpdateDecorator = () => {
 };
 
 const DEFAULT_COLOR = "#000";
-const MAX_EVENT_SIZE = 100000;
 
 export interface PlotDataState {
   id?: string;
@@ -149,7 +148,6 @@ export default class PlotData extends ObserversFunctionality {
     this.label = "Plot " + PlotData.instaceCount++;
 
     this.updateGateObservers();
-    this.updateRandomSelection();
   }
 
   getFSCandSSCAxis(): { fsc: number; ssc: number } {
@@ -180,32 +178,6 @@ export default class PlotData extends ObserversFunctionality {
         color: e.color,
       };
     });
-  }
-
-  private updateRandomSelection() {
-    const pointCount = this.getXandYData().xAxis.length;
-    const axisCount = this.file.axes.length;
-    if (pointCount * axisCount > MAX_EVENT_SIZE) {
-      const selectedPointsCount = Math.round(MAX_EVENT_SIZE / axisCount);
-      let permutation = Array(pointCount)
-        .fill(0)
-        .map((_, i) => i);
-      for (let i = 0; i < pointCount; i++) {
-        const temp = permutation[i];
-        const rnd = Math.round(Math.random() * pointCount);
-        permutation[i] = permutation[rnd];
-        permutation[rnd] = temp;
-      }
-      this.randomSelection = permutation.filter(
-        (_, i) => i < selectedPointsCount
-      );
-    } else this.randomSelection = null;
-    this.axisDataCache = null;
-  }
-
-  private filterIndexesFromRandomSelection(arr: any[]) {
-    if (this.randomSelection === null) return arr;
-    return this.randomSelection.map((e) => arr[e]);
   }
 
   export(): string {
@@ -364,12 +336,13 @@ export default class PlotData extends ObserversFunctionality {
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
+    newPlotData.parentPlotId = this.id;
+    newPlotData.gates = [];
     newPlotData.population = [
       newGates[newGates.length - 1],
       ...this.population,
     ];
-    newPlotData.parentPlotId = this.id;
-    newPlotData.gates = [];
+    newPlotData.updateGateObservers();
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
 
@@ -391,8 +364,6 @@ export default class PlotData extends ObserversFunctionality {
 
     this.axisDataCache = null;
     this.updateGateObservers();
-    this.updateRandomSelection();
-
     this.plotUpdated();
   }
 
@@ -410,13 +381,53 @@ export default class PlotData extends ObserversFunctionality {
 
     this.axisDataCache = null;
     this.updateGateObservers();
-    this.updateRandomSelection();
+    this.plotUpdated();
+  }
 
+  @publishDecorator()
+  addPopulation(gate: Gate) {
+    const gateQuery = this.population.filter((g) => g.gate.id === gate.id);
+    if (gateQuery.length > 0) {
+      throw Error(
+        "Adding the same gate with ID = " + gate.id + " twice to plot"
+      );
+    }
+    this.population.push({
+      gate: gate,
+      inverseGating: false,
+    });
+
+    this.axisDataCache = null;
+    this.updateGateObservers();
+    this.plotUpdated();
+  }
+
+  @publishDecorator()
+  removePopulation(gate: Gate) {
+    const gateQuery = this.population.filter((g) => g.gate.id === gate.id);
+    if (gateQuery.length !== 1) {
+      if (gateQuery.length < 1)
+        throw Error("Gate with ID = " + gate.id + " was not found");
+      if (gateQuery.length > 1) {
+        throw Error("Multiple gates with ID = " + gate.id + " were found");
+      }
+    }
+    this.population = this.population.filter((g) => g.gate.id !== gate.id);
+
+    this.axisDataCache = null;
+    this.updateGateObservers();
     this.plotUpdated();
   }
 
   getGates(): Gate[] {
     return this.gates.map((e) => e.gate);
+  }
+
+  getGatesAndPopulation(): Gate[] {
+    return [
+      ...this.gates.map((e) => e.gate),
+      ...this.population.map((e) => e.gate),
+    ];
   }
 
   @conditionalUpdateDecorator()
@@ -730,7 +741,7 @@ export default class PlotData extends ObserversFunctionality {
           "update",
           this.popObservers.filter((g) => g.targetGateID === e)[0].observerID
         );
-      this.popObservers = this.popObservers.filter((g) => g.targetGateID === e);
+      this.popObservers = this.popObservers.filter((g) => g.targetGateID !== e);
     });
   }
 

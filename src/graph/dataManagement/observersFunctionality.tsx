@@ -80,7 +80,7 @@ export default abstract class ObserversFunctionality {
   removeObserver(type: string, id: string) {
     if (this.observers.has(type)) {
       const list = this.observers.get(type);
-      let newlist = list.filter((observer) => observer.id != id);
+      let newlist = list.filter((observer) => observer.id !== id);
       if (list.length === 0) {
         throw Error("Observer not found for removal");
       }
