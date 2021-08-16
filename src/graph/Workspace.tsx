@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
   topButton: {
     marginLeft: 20,
     marginTop: 5,
-    height: 35,
+    height: "1.9rem",
   },
   savingProgress: {
     marginLeft: "-10px",
@@ -457,9 +457,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         message={
           <div>
             <h2>Loading workspace</h2>
-            <h3 style={{ color: "#777" }}>
+            <h4 style={{ color: "#777" }}>
               Please wait, we are collecting your files from the servers...
-            </h3>
+            </h4>
             <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
           </div>
         }
@@ -501,7 +501,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       {/* == MAIN PANEL == */}
       <Grid
         style={{
-          marginTop: 30,
+          marginTop: 10,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",
@@ -523,8 +523,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
               <Grid
                 style={{
                   backgroundColor: "#66a",
-                  paddingTop: 15,
-                  paddingBottom: 19,
+                  paddingTop: 2,
+                  paddingBottom: 6,
                   borderRadius: 10,
                   WebkitBorderBottomLeftRadius: 0,
                   WebkitBorderBottomRightRadius: 0,
@@ -534,7 +534,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 <Grid container>
                   {sharedWorkspace ? null : (
                     <Button
-                      size="large"
+                      size="small"
                       variant="contained"
                       style={{
                         backgroundColor: "#fafafa",
@@ -552,7 +552,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
                   <Button
                     variant="contained"
-                    size="large"
+                    size="small"
                     onClick={() => handleOpen(setAddFileModalOpen)}
                     className={classes.topButton}
                     style={{
@@ -564,7 +564,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
                   <Button
                     variant="contained"
-                    size="large"
+                    size="small"
                     onClick={() => handleOpen(setGenerateReportModalOpen)}
                     className={classes.topButton}
                     style={{
@@ -580,7 +580,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
-                        size="large"
+                        size="small"
                         onClick={() => upsertWorkSpace()}
                         className={classes.topButton}
                         style={{
@@ -603,7 +603,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   {props.poke === false ? (
                     <Button
                       variant="contained"
-                      size="large"
+                      size="small"
                       onClick={() => handleOpen(setClearModal)}
                       className={classes.topButton}
                       style={{
