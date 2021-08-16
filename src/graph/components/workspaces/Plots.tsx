@@ -35,7 +35,7 @@ const standardGridPlotItem = (index: number, plotData: any) => {
   let y = plotData.positions.y;
   let w = plotData.dimensions.w;
   let h = plotData.dimensions.h;
-  debugger;
+
   return {
     x: x < 0 ? (index * 10) % 30 : x,
     y: y < 0 ? 100 : y,

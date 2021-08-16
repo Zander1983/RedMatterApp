@@ -91,7 +91,7 @@ export default function MainBar(props: any) {
     });
 
     targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
-    debugger;
+
     dataManager.updateWorkspace();
   };
 
