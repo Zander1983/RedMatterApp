@@ -328,6 +328,16 @@ export default class GraphTransformer extends Transformer {
         add(-pot10, -pot10Exp);
         back();
       }
+      let newPos = new FCSServices().logicleMarkTransformer(
+        labels.map((e) => e.pos),
+        linRange[0],
+        linRange[1]
+      );
+      newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
+      labels = labels.map((e, i) => {
+        e.pos = newPos[i];
+        return e;
+      });
       labels = labels.sort((a, b) => a.pos - b.pos);
 
       const distTolerance = 0.03;
