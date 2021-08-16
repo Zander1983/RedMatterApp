@@ -501,7 +501,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       {/* == MAIN PANEL == */}
       <Grid
         style={{
-          marginTop: 30,
+          marginTop: 10,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",

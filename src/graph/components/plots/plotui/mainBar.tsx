@@ -15,6 +15,8 @@ import RangeResizeModal from "../../modals/rangeResizeModal";
 import PlotData from "graph/dataManagement/plotData";
 import Grain from "@material-ui/icons/Grain";
 
+import gate from "../../../img/gate.png";
+
 const classes = {
   main: {
     marginBottom: 10,
@@ -244,7 +246,19 @@ export default function MainBar(props: any) {
               backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
             }}
           >
-            {polygonGating ? <TouchAppIcon /> : <CreateIcon />}
+            {polygonGating ? (
+              <TouchAppIcon />
+            ) : (
+              <img
+                src={gate}
+                style={{
+                  height: "1.2rem",
+                  fill: "none",
+                  strokeWidth: 3,
+                  stroke: "#491EC4",
+                }}
+              ></img>
+            )}
           </Button>
         </Tooltip>
         <Button
