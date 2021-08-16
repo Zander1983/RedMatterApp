@@ -368,8 +368,17 @@ export default class PlotData extends ObserversFunctionality {
       newGates[newGates.length - 1],
       ...this.population,
     ];
+    newPlotData.positions = {
+      x: -1,
+      y: -1,
+    };
+    newPlotData.dimensions = {
+      w: 10,
+      h: 12,
+    };
     newPlotData.parentPlotId = this.id;
     newPlotData.gates = [];
+    dataManager.redrawPlotIds.push(this.id);
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
 

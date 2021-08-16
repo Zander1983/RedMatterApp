@@ -62,7 +62,7 @@ export default function MainBar(props: any) {
   ) => {
     const targetPlots: PlotData[] = [];
     const plots = dataManager.getAllPlots();
-    plots.filter((res) => {
+    plots.forEach((res) => {
       const tPlot = res.plot;
       if (
         tPlot.xAxis === plot.plotData.xAxis &&
@@ -81,8 +81,8 @@ export default function MainBar(props: any) {
       if (minY === 69 && maxY === 420) e.resetOriginalRanges();
       else e.ranges.set(axisY, [minY, maxY]);
     });
+    targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
     dataManager.updateWorkspace();
-    targetPlots.forEach((e) => e.plotUpdated());
   };
 
   const deletePlot = () => {
@@ -251,8 +251,8 @@ export default function MainBar(props: any) {
             const rangesY = plot.plotData.ranges.get(plot.plotData.yAxis);
             setRangeResizeModalTargetMinY(rangesY[0]);
             setRangeResizeModalTargetMaxY(rangesY[1]);
-            setRangeResizeModalAxisX(plot.plotData.xAxis + " (X Axis)");
-            setRangeResizeModalAxisY(plot.plotData.yAxis + " (Y Axis)");
+            setRangeResizeModalAxisX(plot.plotData.xAxis);
+            setRangeResizeModalAxisY(plot.plotData.yAxis);
             setOpenResize(true);
           }}
           style={{

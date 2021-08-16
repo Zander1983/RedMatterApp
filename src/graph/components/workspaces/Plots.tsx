@@ -35,6 +35,7 @@ const standardGridPlotItem = (index: number, plotData: any) => {
   let y = plotData.positions.y;
   let w = plotData.dimensions.w;
   let h = plotData.dimensions.h;
+  debugger;
   return {
     x: x < 0 ? (index * 10) % 30 : x,
     y: y < 0 ? 100 : y,
@@ -136,9 +137,8 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
       let docBarRef: any = document.getElementById(barRef);
 
       if (docBarRef && docDisplayRef && docIdRef) {
-        let width =
-          docDisplayRef.offsetWidth - 53 - docDisplayRef.offsetWidth * 0.013;
-        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 80;
+        let width = docDisplayRef.offsetWidth - 55;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 77;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       }
     }
