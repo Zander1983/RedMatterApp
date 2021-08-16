@@ -37,6 +37,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         : Math.round(this.height / (30 * this.scale));
     hBins = Math.max(2, hBins);
     vBins = Math.max(2, vBins);
+
     const drawerState = {
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,

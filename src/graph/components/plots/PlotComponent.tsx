@@ -179,8 +179,17 @@ function PlotComponent(props: {
       setLastSelectEvent(new Date().getTime());
     }
 
-    if (plot.plotData.xHistogram) setHistogram("x", true);
-    else if (plot.plotData.yHistogram) setHistogram("y", true);
+    if (plot.plotData.xHistogram) {
+      setHistogram("x", true);
+    } else if (plot.plotData.yHistogram) {
+      setHistogram("y", true);
+    }
+
+    if (isPlotHistogram()) {
+      handleHist(axis);
+    }
+
+    plotUpdater();
   };
 
   const [downloadedFiles, setDownloadedFiles] = React.useState(
@@ -271,7 +280,6 @@ function PlotComponent(props: {
     );
     let plotRemoveListner: any;
     if (!plotSetup) {
-      //plot.plotData.addObserver("plotUpdated", () => rerender());
       plotRemoveListner = dataManager.addObserver(
         "removePlotFromWorkspace",
         () => {
@@ -377,7 +385,6 @@ function PlotComponent(props: {
       dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
       dataManager.removeObserver("removePlotFromWorkspace", plotRemoveListner);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   let oldXAxisValue: string | null = null;
@@ -646,6 +653,7 @@ function PlotComponent(props: {
           plotIndex={props.plotIndex}
           plot={plot}
           rerender={rerender}
+          redrawPlot={plotUpdater}
         ></MainBar>
 
         <Divider></Divider>

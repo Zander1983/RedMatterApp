@@ -74,8 +74,8 @@ function RangeResizeModal(props: {
         iMaxX,
         iMinY,
         iMaxY,
-        props.inits.axisX.split(" ")[0],
-        props.inits.axisY.split(" ")[0]
+        props.inits.axisX,
+        props.inits.axisY
       );
       setMinX(iMinX.toString());
       setMaxX(iMaxX.toString());
