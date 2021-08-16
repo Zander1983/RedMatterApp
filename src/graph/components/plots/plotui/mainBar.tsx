@@ -89,7 +89,9 @@ export default function MainBar(props: any) {
       if (minY === 69 && maxY === 420) e.resetOriginalRanges();
       else e.ranges.set(axisY, [minY, maxY]);
     });
+
     targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
+    debugger;
     dataManager.updateWorkspace();
   };
 

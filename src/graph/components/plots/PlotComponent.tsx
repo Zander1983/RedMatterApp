@@ -180,11 +180,13 @@ function PlotComponent(props: {
     }
 
     if (plot.plotData.xHistogram) {
-      handleHist("x");
       setHistogram("x", true);
     } else if (plot.plotData.yHistogram) {
-      handleHist("y");
       setHistogram("y", true);
+    }
+
+    if (isPlotHistogram()) {
+      handleHist(axis);
     }
 
     plotUpdater();
