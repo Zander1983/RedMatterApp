@@ -184,12 +184,6 @@ function PlotComponent(props: {
     } else if (plot.plotData.yHistogram) {
       setHistogram("y", true);
     }
-
-    if (isPlotHistogram()) {
-      handleHist(axis);
-    }
-
-    plotUpdater();
   };
 
   const [downloadedFiles, setDownloadedFiles] = React.useState(
@@ -638,6 +632,19 @@ function PlotComponent(props: {
     };
   };
 
+  const onGateDoubleClick = (xAxis: String, yAxis: String) => {
+    let eX = { target: { value: xAxis } };
+    let eY = { target: { value: yAxis } };
+
+    handleSelectEvent(eX, "x", (e: any) => {
+      setAxis("x", e.target.value);
+    });
+
+    handleSelectEvent(eY, "y", (e: any) => {
+      setAxis("y", e.target.value);
+    });
+  };
+
   return (
     <div
       id={`display-ref-${props.plot.plotData.id}`}
@@ -658,7 +665,7 @@ function PlotComponent(props: {
 
         <Divider></Divider>
 
-        <GateBar plot={plot}></GateBar>
+        <GateBar plot={plot} onGateDoubleClick={onGateDoubleClick}></GateBar>
         <Divider style={{ marginBottom: 10 }}></Divider>
       </div>
 

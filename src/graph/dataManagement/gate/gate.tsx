@@ -60,7 +60,7 @@ export default abstract class Gate extends ObserversFunctionality {
     if (gate.yAxisOriginalRanges !== undefined)
       this.yAxisOriginalRanges = gate.yAxisOriginalRanges;
     if (gate.name !== undefined) this.name = gate.name;
-    else this.name = this.getGateType() + " " + Gate.instanceCount.toString();
+    else this.name = "";
     if (gate.color !== undefined) this.color = gate.color;
     else {
       this.color =
