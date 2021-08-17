@@ -29,6 +29,9 @@ const classes = {
     border: "1px solid",
     borderColor: "#bddaff",
   },
+  chip_hover: {
+    border: "1px solid black",
+  },
 };
 
 export default function GateBar(props: any) {
@@ -36,6 +39,7 @@ export default function GateBar(props: any) {
   const [selected, setSelected] = React.useState([]);
   const [population, setPopulation] = React.useState([]);
   const [observers, setObservers] = React.useState([]);
+  const [gateChipHover, setGateChipHover] = React.useState(false);
   const plot: Plot = props.plot;
 
   const changeGatePlotState = (gateId: string, selected: boolean) => {
@@ -120,6 +124,10 @@ export default function GateBar(props: any) {
     return false;
   };
 
+  const onGateChipClick = (option: any) => {
+    props.onGateDoubleClick(option.xAxis, option.yAxis);
+  };
+
   return (
     <Grid
       xs={12}
@@ -158,7 +166,7 @@ export default function GateBar(props: any) {
               {option.name} - ({option.xAxis}, {option.yAxis})
             </Button>
           )}
-          style={{ flex: 1 }}
+          style={{ flex: 1, height: "100%" }}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -179,8 +187,8 @@ export default function GateBar(props: any) {
                   <div
                     style={{
                       borderRadius: "50%",
-                      width: 15,
-                      height: 15,
+                      width: 12,
+                      height: 12,
                       marginLeft: 7,
                       border: "solid 2px #999",
                       backgroundColor: option.color,
@@ -188,7 +196,11 @@ export default function GateBar(props: any) {
                   ></div>
                 }
                 {...props}
-                style={{ marginLeft: 5 }}
+                style={{
+                  marginLeft: 5,
+                  marginTop: 5,
+                  height: 27,
+                }}
               />
             ));
           }}
@@ -245,14 +257,24 @@ export default function GateBar(props: any) {
           renderTags={(tagValue, _) => {
             return tagValue.map((option) => (
               <Chip
+                onDoubleClick={() => {
+                  onGateChipClick(option);
+                }}
+                onMouseEnter={() => {
+                  setGateChipHover(true);
+                }}
+                onMouseLeave={() => {
+                  setGateChipHover(false);
+                }}
+                className={`chip_hover`}
                 label={option.name}
                 disabled={gateInPopulation(option.id)}
                 avatar={
                   <div
                     style={{
                       borderRadius: "50%",
-                      width: 15,
-                      height: 15,
+                      width: 12,
+                      height: 12,
                       marginLeft: 7,
                       border: "solid 2px #999",
                       backgroundColor: option.color,
@@ -265,7 +287,12 @@ export default function GateBar(props: any) {
                   }
                 }}
                 {...props}
-                style={{ marginLeft: 5 }}
+                style={{
+                  marginLeft: 5,
+                  marginTop: 5,
+                  height: 27,
+                  backgroundColor: `${gateChipHover ? "#BAC1C1" : "#E0E0E0"}`,
+                }}
               />
             ));
           }}
