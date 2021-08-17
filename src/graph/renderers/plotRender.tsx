@@ -214,7 +214,7 @@ export default class Plot {
       height: this.plotData.plotHeight,
       scale: this.plotData.plotScale,
       direction: this.plotData.histogramAxis,
-      gates: this.plotData.getGates(),
+      gates: this.plotData.getGatesAndPopulation(),
       xRange: ranges.x,
       yRange: ranges.y,
     };

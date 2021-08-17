@@ -179,6 +179,38 @@ class DataManager extends ObserversFunctionality {
     throw Error("Gate " + gateID + " was not found in plot " + plotID);
   }
 
+  @publishDecorator()
+  linkPopulationToPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
+      throw Error("Adding gate to non-existent plot");
+    }
+    if (!this.currentWorkspace.gates.has(gateID)) {
+      throw Error("Adding non-existent gate to plot");
+    }
+    const cplot = this.currentWorkspace.plots.get(plotID);
+    cplot.addPopulation(this.currentWorkspace.gates.get(gateID));
+  }
+
+  @publishDecorator()
+  unlinkPopulationFromPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
+      throw Error("Removing gate to non-existent plot");
+    }
+    if (!this.currentWorkspace.gates.has(gateID)) {
+      throw Error("Removing non-existent gate to plot");
+    }
+    const plotGates = this.currentWorkspace.plots.get(plotID).population;
+    for (let indx in plotGates) {
+      if (plotGates[indx].gate.id === gateID) {
+        this.currentWorkspace.plots
+          .get(plotID)
+          .removePopulation(plotGates[indx].gate);
+        return;
+      }
+    }
+    throw Error("Gate " + gateID + " was not found in plot " + plotID);
+  }
+
   // ======== Getters
   @publishDecorator()
   updateWorkspace() {
