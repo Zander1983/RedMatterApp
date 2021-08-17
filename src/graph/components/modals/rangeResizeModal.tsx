@@ -32,6 +32,7 @@ function RangeResizeModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   inits: {
+    histogramAxis: null | "vertical" | "horizontal";
     axisX: string;
     axisY: string;
     minX: number;
@@ -104,43 +105,47 @@ function RangeResizeModal(props: {
           direction="row"
           style={{ padding: "2rem 1rem" }}
         >
-          <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
-            <h3>Edit {props.inits.axisX} range</h3>
-            <TextField
-              label="Range min"
-              value={minX}
-              onChange={(e) => {
-                setMinX(e.target.value);
-              }}
-            />
-            <br />
-            <TextField
-              label="Range max"
-              value={maxX}
-              onChange={(e) => {
-                setMaxX(e.target.value);
-              }}
-            />
-          </Grid>
+          {props.inits.histogramAxis !== "horizontal" ? (
+            <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+              <h3>Edit {props.inits.axisX} range</h3>
+              <TextField
+                label="Range min"
+                value={minX}
+                onChange={(e) => {
+                  setMinX(e.target.value);
+                }}
+              />
+              <br />
+              <TextField
+                label="Range max"
+                value={maxX}
+                onChange={(e) => {
+                  setMaxX(e.target.value);
+                }}
+              />
+            </Grid>
+          ) : null}
 
-          <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
-            <h3>Edit {props.inits.axisY} range</h3>
-            <TextField
-              label="Range min"
-              value={minY}
-              onChange={(e) => {
-                setMinY(e.target.value);
-              }}
-            />
-            <br />
-            <TextField
-              label="Range max"
-              value={maxY}
-              onChange={(e) => {
-                setMaxY(e.target.value);
-              }}
-            />
-          </Grid>
+          {props.inits.histogramAxis !== "vertical" ? (
+            <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+              <h3>Edit {props.inits.axisY} range</h3>
+              <TextField
+                label="Range min"
+                value={minY}
+                onChange={(e) => {
+                  setMinY(e.target.value);
+                }}
+              />
+              <br />
+              <TextField
+                label="Range max"
+                value={maxY}
+                onChange={(e) => {
+                  setMaxY(e.target.value);
+                }}
+              />
+            </Grid>
+          ) : null}
 
           <br />
           <Grid

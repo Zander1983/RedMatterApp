@@ -68,6 +68,11 @@ export default function MainBar(props: any) {
     axisX: string,
     axisY: string
   ) => {
+    const histogramAxis = plot.plotData.xHistogram
+      ? "vertical"
+      : plot.plotData.yHistogram
+      ? "horizontal"
+      : null;
     const targetPlots: PlotData[] = [];
     const plots = dataManager.getAllPlots();
     plots.forEach((res) => {
@@ -83,11 +88,13 @@ export default function MainBar(props: any) {
     });
 
     targetPlots.forEach((e) => {
-      if (minX === 69 && maxX === 420) e.resetOriginalRanges();
-      else e.ranges.set(axisX, [minX, maxX]);
+      if (histogramAxis !== "horizontal")
+        if (minX === 69 && maxX === 420) e.resetOriginalRanges();
+        else e.ranges.set(axisX, [minX, maxX]);
 
-      if (minY === 69 && maxY === 420) e.resetOriginalRanges();
-      else e.ranges.set(axisY, [minY, maxY]);
+      if (histogramAxis !== "vertical")
+        if (minY === 69 && maxY === 420) e.resetOriginalRanges();
+        else e.ranges.set(axisY, [minY, maxY]);
     });
 
     targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
@@ -156,6 +163,11 @@ export default function MainBar(props: any) {
           ref: setOpenResize,
         }}
         inits={{
+          histogramAxis: plot.plotData.xHistogram
+            ? "vertical"
+            : plot.plotData.yHistogram
+            ? "horizontal"
+            : null,
           axisX: rangeResizeModalAxisX,
           axisY: rangeResizeModalAxisY,
           minX: rangeResizeModalTargetMinX,
