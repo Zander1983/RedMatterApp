@@ -73,7 +73,6 @@ function CreateExperimentModal(props: {
         },
       });
     }
-    console.log("making request with token =", userManager.getToken());
     axios
       .get("/api/getuserdetails", {
         headers: {
