@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -6,6 +6,8 @@ import { FormControlLabel } from "@material-ui/core";
 
 import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
+
+import ClearIcon from "@material-ui/icons/Clear";
 
 function FormDeviceType() {
   const store = useStore();
@@ -263,6 +265,9 @@ function FormFluorophores() {
   const store = useStore();
   const [fluorosphoresCategoryError, setFluorosphoresCategoryError] =
     React.useState(false);
+
+  const [fluorophores, setFluorosphores] = useState([]);
+  let fluorophoresAux: any = [];
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
@@ -274,6 +279,19 @@ function FormFluorophores() {
   } catch (e) {}
   const dispatch = useDispatch();
   const [notFound, setNotFound] = React.useState(false);
+
+  useEffect(() => {
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        formitem: {
+          key: "fluorophoresCategory",
+          //@ts-ignore
+          value: null,
+        },
+      },
+    });
+  }, []);
 
   return (
     <div
@@ -287,20 +305,45 @@ function FormFluorophores() {
     >
       <Autocomplete
         //value={fluorophoresType}
+
+        disableClearable={true}
         id="fluorosphores"
         onChange={(e) => {
-          dispatch({
-            type: "EXPERIMENT_FORM_DATA",
-            payload: {
-              formitem: {
-                key: "fluorophoresCategory",
-                //@ts-ignore
-                value: e.target.outerText || e.target.innerText,
-              },
-            },
-          });
-          if (store.getState().user.experiment.fluorophoresCategory !== "") {
+          let previous = store.getState().user.experiment.fluorophoresCategory;
+          //@ts-ignore
+          let outerText = e.target.outerText;
+          //@ts-ignore
+          let innerText = e.target.innerText;
+          if (
+            store.getState().user.experiment.fluorophoresCategory !== "" &&
+            store.getState().user.experiment.fluorophoresCategory !== null
+          ) {
+            fluorophoresAux.push(outerText || innerText);
+            setFluorosphores(fluorophoresAux);
             setFluorosphoresCategoryError(false);
+            dispatch({
+              type: "EXPERIMENT_FORM_DATA",
+              payload: {
+                formitem: {
+                  key: "fluorophoresCategory",
+                  //@ts-ignore
+                  value: `${previous}, ${outerText || innerText}`,
+                },
+              },
+            });
+          } else {
+            fluorophoresAux.push(outerText || innerText);
+            setFluorosphores(fluorophoresAux);
+            dispatch({
+              type: "EXPERIMENT_FORM_DATA",
+              payload: {
+                formitem: {
+                  key: "fluorophoresCategory",
+                  //@ts-ignore
+                  value: e.target.outerText || e.target.innerText,
+                },
+              },
+            });
           }
         }}
         onBlur={(e) => {
@@ -327,6 +370,38 @@ function FormFluorophores() {
           />
         )}
       />
+
+      {store.getState().user.experiment.fluorophoresCategory != null ? (
+        <div
+          style={{
+            fontSize: 12,
+            backgroundColor: "#dedede",
+            textAlign: "left",
+            color: "black",
+            padding: "2px 8px",
+            borderRadius: "20px",
+          }}
+        >
+          <i>{store.getState().user.experiment.fluorophoresCategory}</i>{" "}
+          <ClearIcon
+            style={{ height: 15, float: "right", position: "relative", top: 2 }}
+            onClick={() => {
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    //@ts-ignore
+                    value: null,
+                  },
+                },
+              });
+              setFluorosphoresCategoryError(true);
+            }}
+          ></ClearIcon>
+        </div>
+      ) : null}
+
       <FormControlLabel
         style={{
           marginTop: -10,
