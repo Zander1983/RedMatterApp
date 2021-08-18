@@ -76,8 +76,28 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
     this.update();
 
-    this.addPlotLisner = dataManager.addObserver("addNewPlotToWorkspace", () =>
-      this.update()
+    this.addPlotLisner = dataManager.addObserver(
+      "addNewPlotToWorkspace",
+      () => {
+        this.update();
+        const lastPlotId =
+          dataManager.getAllPlots()[dataManager.getAllPlots().length - 1]
+            .plotID;
+        let docIdRef = document.getElementById(`canvas-${lastPlotId}`);
+        let docDisplayRef: any = document.getElementById(
+          `display-ref-${lastPlotId}`
+        );
+        let docBarRef: any = document.getElementById(`bar-ref-${lastPlotId}`);
+
+        if (docBarRef && docDisplayRef && docIdRef) {
+          let width = docDisplayRef.offsetWidth - 55;
+          let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
+          docIdRef.setAttribute(
+            "style",
+            `width:${width}px;height:${height}px;`
+          );
+        }
+      }
     );
     this.removePlotLisner = dataManager.addObserver(
       "removePlotFromWorkspace",
