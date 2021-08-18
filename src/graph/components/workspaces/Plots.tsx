@@ -19,6 +19,7 @@ const classes = {
     border: "solid 0.5px #bbb",
     boxShadow: "1px 3px 4px #bbd",
     borderRadius: 5,
+    paddingBottom: "2rem",
   },
   itemInnerDiv: {
     width: "100%",
