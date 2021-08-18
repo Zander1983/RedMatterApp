@@ -29,7 +29,6 @@ const classes = {
 
 const MINW = 10;
 const MINH = 12;
-const STDW = 15;
 
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
@@ -139,7 +138,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
       if (docBarRef && docDisplayRef && docIdRef) {
         let width = docDisplayRef.offsetWidth - 55;
-        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 77;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       }
     }
