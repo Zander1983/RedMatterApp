@@ -139,7 +139,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
       if (docBarRef && docDisplayRef && docIdRef) {
         let width = docDisplayRef.offsetWidth - 55;
-        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 27;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 77;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       }
     }
