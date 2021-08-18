@@ -265,9 +265,6 @@ function FormFluorophores() {
   const store = useStore();
   const [fluorosphoresCategoryError, setFluorosphoresCategoryError] =
     React.useState(false);
-
-  const [fluorophores, setFluorosphores] = useState([]);
-  let fluorophoresAux: any = [];
   try {
     let defaultValue = store.getState().user.experiment.fluorophoresCategory;
     if (defaultValue === undefined) defaultValue = null;
@@ -318,8 +315,6 @@ function FormFluorophores() {
             store.getState().user.experiment.fluorophoresCategory !== "" &&
             store.getState().user.experiment.fluorophoresCategory !== null
           ) {
-            fluorophoresAux.push(outerText || innerText);
-            setFluorosphores(fluorophoresAux);
             setFluorosphoresCategoryError(false);
             dispatch({
               type: "EXPERIMENT_FORM_DATA",
@@ -332,8 +327,6 @@ function FormFluorophores() {
               },
             });
           } else {
-            fluorophoresAux.push(outerText || innerText);
-            setFluorosphores(fluorophoresAux);
             dispatch({
               type: "EXPERIMENT_FORM_DATA",
               payload: {
