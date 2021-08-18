@@ -65,7 +65,6 @@ function AddFileModal(props: {
   const classes = useStyles();
 
   const [filesMetadata, setFilesMetadata] = React.useState([]);
-  const [buttonText, setButtonText] = React.useState("ADD TO WORKSPACE");
 
   useEffect(() => {
     setFilesMetadata(props.filesMetadata);
@@ -91,6 +90,7 @@ function AddFileModal(props: {
     id = dataManager.addObserver("addNewFileToWorkspace", () => {
       const plot = new PlotData();
       plot.file = dataManager.getFile(fileId);
+      plot.setupPlot();
       dataManager.addNewPlotToWorkspace(plot);
       dataManager.removeObserver("addNewFileToWorkspace", id);
       props.closeCall.f(props.closeCall.ref);

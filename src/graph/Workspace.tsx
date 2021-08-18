@@ -381,6 +381,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     const fileID = dataManager.addNewFileToWorkspace(newFile);
     const plot = new PlotData();
     plot.file = dataManager.getFile(fileID);
+    plot.setupPlot();
     dataManager.addNewPlotToWorkspace(plot);
   };
 

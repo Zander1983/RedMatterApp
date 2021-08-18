@@ -92,8 +92,8 @@ export default class PlotData extends ObserversFunctionality {
   plotWidth: number = 0;
   plotHeight: number = 0;
   plotScale: number = 2;
-  xPlotType: string = "lin";
-  yPlotType: string = "lin";
+  xPlotType: string = "";
+  yPlotType: string = "";
   histogramAxis: "horizontal" | "vertical" = "vertical";
   label: string = "";
   histogramOverlays: {
@@ -144,6 +144,18 @@ export default class PlotData extends ObserversFunctionality {
 
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
+
+    this.xPlotType =
+      this.xAxis.toLowerCase().includes("fsc") ||
+      this.xAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
+    console.log(this.xAxis.toLowerCase());
+    this.yPlotType =
+      this.yAxis.toLowerCase().includes("fsc") ||
+      this.yAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
 
     this.label = "Plot " + PlotData.instaceCount++;
 

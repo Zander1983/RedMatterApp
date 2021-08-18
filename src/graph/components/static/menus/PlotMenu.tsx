@@ -72,6 +72,7 @@ export default function PlotMenu(props: {
   const clonePlot = (plot: PlotData) => {
     const newPlot = new PlotData();
     newPlot.setState(plot.getState());
+    plot.setupPlot();
     dataManager.addNewPlotToWorkspace(newPlot);
   };
 
