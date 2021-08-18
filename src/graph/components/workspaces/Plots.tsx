@@ -19,6 +19,7 @@ const classes = {
     border: "solid 0.5px #bbb",
     boxShadow: "1px 3px 4px #bbd",
     borderRadius: 5,
+    paddingBottom: "2rem",
   },
   itemInnerDiv: {
     width: "100%",
@@ -138,7 +139,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
       if (docBarRef && docDisplayRef && docIdRef) {
         let width = docDisplayRef.offsetWidth - 55;
-        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 77;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 27;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       }
     }
