@@ -160,8 +160,13 @@ export default function GateBar(props: any) {
     update();
   };
 
-  const onGateChipClick = (option: any) => {
-    props.onGateDoubleClick(option.xAxis, option.yAxis);
+  const onGateChipClick = (option: Gate) => {
+    props.onGateDoubleClick(
+      option.xAxis,
+      option.xAxisType,
+      option.yAxis,
+      option.yAxisType
+    );
   };
 
   return (

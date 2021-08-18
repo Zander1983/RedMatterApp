@@ -632,17 +632,30 @@ function PlotComponent(props: {
     };
   };
 
-  const onGateDoubleClick = (xAxis: String, yAxis: String) => {
-    let eX = { target: { value: xAxis } };
-    let eY = { target: { value: yAxis } };
+  const onGateDoubleClick = (
+    xAxis: String,
+    xAxisType: String,
+    yAxis: String,
+    yAxisType: String
+  ) => {
+    if (isPlotHistogram()) {
+      plot.plotData.disableHistogram("x");
+      plot.plotData.disableHistogram("y");
+    }
 
-    handleSelectEvent(eX, "x", (e: any) => {
-      setAxis("x", e.target.value);
+    handleSelectEvent({ axis: xAxis, type: xAxisType }, "x", (e: any) => {
+      plot.plotData.setXAxis(e.axis);
+      plot.plotData.setXAxisPlotType(e.type);
     });
 
-    handleSelectEvent(eY, "y", (e: any) => {
-      setAxis("y", e.target.value);
+    handleSelectEvent({ axis: yAxis, type: yAxisType }, "y", (e: any) => {
+      plot.plotData.setYAxis(e.axis);
+      plot.plotData.setYAxisPlotType(e.type);
     });
+
+    dataManager.updateWorkspace();
+    rerender();
+    props.plot.plotData.plotUpdated();
   };
 
   return (
