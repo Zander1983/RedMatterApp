@@ -297,7 +297,7 @@ export default function GateBar(props: any) {
           renderTags={(tagValue, _) => {
             return tagValue.map((option) => (
               <Chip
-                onDoubleClick={() => {
+                onClick={() => {
                   onGateChipClick(option);
                 }}
                 onMouseEnter={() => {
