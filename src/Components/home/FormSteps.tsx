@@ -302,41 +302,48 @@ function FormFluorophores() {
     >
       <Autocomplete
         //value={fluorophoresType}
-
+        multiple
         disableClearable={true}
         id="fluorosphores"
-        onChange={(e) => {
+        disableCloseOnSelect
+        onChange={(e, list, reason, detail) => {
           let previous = store.getState().user.experiment.fluorophoresCategory;
-          //@ts-ignore
-          let outerText = e.target.outerText;
-          //@ts-ignore
-          let innerText = e.target.innerText;
-          if (
-            store.getState().user.experiment.fluorophoresCategory !== "" &&
-            store.getState().user.experiment.fluorophoresCategory !== null
-          ) {
-            setFluorosphoresCategoryError(false);
+          const option = detail.option.value;
+          if (reason === "remove-option") {
+            previous = previous.split(",").filter((e: string) => e !== option);
+            previous = previous.join(",");
             dispatch({
               type: "EXPERIMENT_FORM_DATA",
               payload: {
                 formitem: {
                   key: "fluorophoresCategory",
-                  //@ts-ignore
-                  value: `${previous}, ${outerText || innerText}`,
+                  value: previous,
                 },
               },
             });
           } else {
-            dispatch({
-              type: "EXPERIMENT_FORM_DATA",
-              payload: {
-                formitem: {
-                  key: "fluorophoresCategory",
-                  //@ts-ignore
-                  value: e.target.outerText || e.target.innerText,
+            if (previous !== "" && previous !== null) {
+              setFluorosphoresCategoryError(false);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    value: `${previous},${option}`,
+                  },
                 },
-              },
-            });
+              });
+            } else {
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    value: option,
+                  },
+                },
+              });
+            }
           }
         }}
         onBlur={(e) => {
