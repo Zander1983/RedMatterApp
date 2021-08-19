@@ -30,6 +30,22 @@ const classes = {
 const MINW = 10;
 const MINH = 12;
 
+export const resetPlotSizes = (id?: string) => {
+  let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
+  if (id) tPlots = [id];
+  for (const id of tPlots) {
+    let docIdRef = document.getElementById(`canvas-${id}`);
+    let docDisplayRef: any = document.getElementById(`display-ref-${id}`);
+    let docBarRef: any = document.getElementById(`bar-ref-${id}`);
+
+    if (docBarRef && docDisplayRef && docIdRef) {
+      let width = docDisplayRef.offsetWidth - 55;
+      let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
+      docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+    }
+  }
+};
+
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
   let y = plotData.positions.y;
@@ -83,20 +99,7 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
         const lastPlotId =
           dataManager.getAllPlots()[dataManager.getAllPlots().length - 1]
             .plotID;
-        let docIdRef = document.getElementById(`canvas-${lastPlotId}`);
-        let docDisplayRef: any = document.getElementById(
-          `display-ref-${lastPlotId}`
-        );
-        let docBarRef: any = document.getElementById(`bar-ref-${lastPlotId}`);
-
-        if (docBarRef && docDisplayRef && docIdRef) {
-          let width = docDisplayRef.offsetWidth - 55;
-          let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-          docIdRef.setAttribute(
-            "style",
-            `width:${width}px;height:${height}px;`
-          );
-        }
+        resetPlotSizes(lastPlotId);
       }
     );
     this.removePlotLisner = dataManager.addObserver(

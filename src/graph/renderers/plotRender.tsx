@@ -82,33 +82,11 @@ export default class Plot {
     setTimeout(() => this.draw(), 20);
   }
 
-  private timestampSinceLastDraw = 0;
-  private triesSinceLastDrawTry = 0;
-  private drawWaitTime = 10;
-  private shouldDraw(): boolean {
-    if (
-      this.timestampSinceLastDraw + this.drawWaitTime >
-      new Date().getTime()
-    ) {
-      this.triesSinceLastDrawTry++;
-      return false;
-    }
-    this.timestampSinceLastDraw = new Date().getTime();
-    if (this.triesSinceLastDrawTry === 0 && this.drawWaitTime < 50) {
-      this.drawWaitTime++;
-    } else {
-      this.drawWaitTime--;
-    }
-    this.triesSinceLastDrawTry = 0;
-    return true;
-  }
-
   draw() {
     if (
       !dataManager.ready() ||
       this.plotData === undefined ||
       this.plotData === null ||
-      !this.shouldDraw() ||
       !this.validateReady()
     )
       return;

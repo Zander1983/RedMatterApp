@@ -615,22 +615,6 @@ function PlotComponent(props: {
   const MINW = 10;
   const MINH = 12;
   const STDW = 15;
-  const standardGridPlotItem = (index: number, plotData: any) => {
-    let x = plotData.positions.x;
-    let y = plotData.positions.y;
-    let w = plotData.dimensions.w;
-    let h = plotData.dimensions.h;
-    return {
-      x: x < 0 ? (index * STDW) % 30 : x,
-      y: y < 0 ? 100 : y,
-      w: w,
-      h: h,
-      minW: MINW,
-      minH: MINH,
-      isDraggable: plotMoving,
-      // static: true,
-    };
-  };
 
   const onGateDoubleClick = (
     xAxis: String,

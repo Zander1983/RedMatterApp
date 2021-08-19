@@ -30,7 +30,7 @@ import GatetNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import FCSFile from "graph/dataManagement/fcsFile";
-import Plots from "./components/workspaces/Plots";
+import Plots, { resetPlotSizes } from "./components/workspaces/Plots";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
@@ -306,6 +306,15 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const renameGate = (newName: String) => {
     dataManager.getGate(gateToSend[0].id).update({ name: newName });
     setNamePromptOpen(false);
+    dataManager.workspaceUpdated();
+    resetPlotSizes();
+    dataManager
+      .getAllPlots()
+      .filter(
+        (e) =>
+          e.plot.gates.filter((g) => g.gate.id === gateToSend[0].id).length > 0
+      )
+      .forEach((e) => dataManager.getPlotRendererForPlot(e.plotID).draw());
   };
 
   var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
