@@ -1,21 +1,8 @@
 import React from "react";
-import {
-  makeStyles,
-  Theme,
-  createStyles,
-  withStyles,
-} from "@material-ui/core/styles";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import Button from "@material-ui/core/Button";
+import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { NavLink } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
-import Avatar from "@material-ui/core/Avatar";
-
-import Done from "@material-ui/icons/Done";
 
 import formSteps from "./FormSteps";
 
@@ -65,16 +52,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-function getSteps() {
-  return [
-    "Device selection",
-    "Cell type",
-    "Particle size",
-    "Fluorophores category",
-    "Description",
-  ];
-}
-
+// FUNCTION THAT GETS ALL THE COMBOBOXES FROM FORMSTEPS.TSX
 function getStepContent(step: number) {
   switch (step) {
     case 0:
@@ -92,232 +70,117 @@ function getStepContent(step: number) {
   }
 }
 
-export default function PrototypeForm() {
+// THE COMPILED FORM
+export default function PrototypeForm2(props: {
+  workspaceID?: string;
+  onSend?: Function;
+}) {
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [skipped, setSkipped] = React.useState(new Set<number>());
-  const steps = getSteps();
-
-  const isStepOptional = (step: number) => {
-    return getStepContent(step).optional;
-  };
-
-  const isStepSkipped = (step: number) => {
-    return skipped.has(step);
-  };
-
-  const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleSkip = () => {
-    if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this,
-      // it should never occur unless someone's actively trying to break something.
-      throw new Error("You can't skip a step that isn't optional.");
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped((prevSkipped) => {
-      const newSkipped = new Set(prevSkipped.values());
-      newSkipped.add(activeStep);
-      return newSkipped;
-    });
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-  };
 
   return (
     <Grid
       style={{
-        justifyContent: "center",
-        display: "flex",
-        flexDirection: "column",
-        marginLeft: "auto",
-        marginRight: "auto",
-        backgroundColor: "#fafafa",
-        borderRadius: 10,
-        marginBottom: 50,
-        textAlign: "center",
-        paddingBottom: 10,
-        marginTop: 30,
+        borderRadius: 0,
+        paddingLeft: 60,
+        paddingRight: 50,
+        marginTop: 0,
+        backgroundColor: "#FAFAFA",
       }}
-      md={12}
-      lg={9}
-      xl={6}
-      item={true}
     >
-      <Stepper
-        activeStep={activeStep}
+      <div
         style={{
-          backgroundColor: "#66a",
-          borderTopRightRadius: 10,
-          borderTopLeftRadius: 10,
+          fontFamily: "Quicksand",
+          marginTop: -10,
+          marginBottom: 30,
+          color: "#777",
         }}
       >
-        {steps.map((label, index) => {
-          const stepProps: { completed?: boolean } = {};
-          const labelProps: { optional?: React.ReactNode } = {};
-          if (isStepOptional(index)) {
-            labelProps.optional = (
-              <Typography
-                variant="caption"
-                style={{
-                  color: "white",
-                  fontSize: 13,
-                  fontFamily: "Quicksand",
-                }}
-              ></Typography>
-            );
-          }
-          if (isStepSkipped(index)) {
-            stepProps.completed = false;
-          }
-          return (
-            <Step key={label} {...stepProps}>
-              <StepLabel
-                {...labelProps}
-                icon={
-                  <Avatar
-                    className={classes.avatar}
-                    style={{
-                      background:
-                        activeStep > index
-                          ? "#eee"
-                          : activeStep == index
-                          ? "#fff"
-                          : "#aad",
-                    }}
-                  >
-                    {activeStep > index ? (
-                      <Done
-                        fontSize="small"
-                        style={{ color: "#333", fontSize: 15 }}
-                      />
-                    ) : (
-                      <b></b>
-                    )}
-                  </Avatar>
-                }
-              >
-                <b
-                  style={{
-                    color: activeStep === index ? "#fff" : "#ddf",
-                    fontWeight: activeStep === index ? 700 : 400,
-                    fontFamily: "Quicksand",
-                  }}
-                >
-                  {label}
-                </b>
-              </StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>
-      <div>
-        {activeStep === steps.length ? (
-          <div>
-            <h1 style={{ fontFamily: "Quicksand", marginTop: 30 }}>
-              All steps completed!
-            </h1>
-            <h4
-              style={{
-                fontFamily: "Quicksand",
-                marginTop: -10,
-                marginBottom: 30,
-                color: "#777",
-              }}
-            >
-              The information you've given us will help to better setup your
-              graphs
-            </h4>
-            <Button
-              onClick={handleReset}
-              className={classes.emptyButton}
-              style={{
-                border: "solid 2px #379",
-                color: "#379",
-              }}
-            >
-              <Typography
-                style={{ fontSize: 15, color: "#66a", fontWeight: 500 }}
-              >
-                Reset
-              </Typography>
-            </Button>
-            <NavLink to="/graph" style={{ color: "white" }}>
-              <Button variant="contained" className={classes.marginButton}>
-                Start Graphing!
-              </Button>
-            </NavLink>
-          </div>
-        ) : (
-          <div>
+        {/* //THIS IS THE MODAL FORM, EACH TYPOGRAPHY IS THE TITLE FOR THE SELECTION, AND 
+            //GET STEPCONTENT(number) GETS THE CONTENT, AS YOU'D EXPECT */}{" "}
+        {/* //DEVICE TYPE */}
+        <Grid container spacing={3}>
+          <Grid item xs={5}>
             <Typography
               className={classes.instructions}
-              style={{ marginTop: 20 }}
+              style={{ marginTop: 0, textAlign: "left" }}
             >
-              <h3>{getStepContent(activeStep).title}</h3>
+              <span style={{ fontWeight: 300 }}>{getStepContent(0).title}</span>
             </Typography>
-
-            {getStepContent(activeStep).component}
-
-            <div
-              style={{
-                marginTop: 30,
-              }}
+          </Grid>
+          <Grid item xs={4}>
+            {getStepContent(0).component}
+          </Grid>
+        </Grid>
+        <Divider
+          style={{ width: "100%", marginBottom: 10, marginTop: 5 }}
+        ></Divider>
+        {/* //TYPE OF CELL TO MEASURE */}
+        <Grid container spacing={3}>
+          <Grid item xs={5}>
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 0, textAlign: "left" }}
             >
-              <Divider style={{ margin: 10 }}></Divider>
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                className={classes.emptyButton}
-                style={{
-                  borderColor: activeStep === 0 ? "#ddd" : "#66a",
-                }}
-              >
-                <Typography
-                  style={{
-                    fontSize: 15,
-                    color: activeStep === 0 ? "#ddd" : "#66a",
-                    fontWeight: 500,
-                  }}
-                >
-                  Back
-                </Typography>
-              </Button>
-              {isStepOptional(activeStep) && (
-                <Button
-                  variant="contained"
-                  onClick={handleSkip}
-                  className={classes.filledButton}
-                >
-                  Skip
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                className={classes.filledButton}
-              >
-                {activeStep === steps.length - 1 ? "Finish" : "Next"}
-              </Button>
-            </div>
-          </div>
-        )}
+              <span style={{ fontWeight: 300 }}>{getStepContent(1).title}</span>
+            </Typography>
+          </Grid>
+
+          <Grid item xs={4}>
+            {getStepContent(1).component}
+          </Grid>
+        </Grid>
+        <Divider
+          style={{ width: "100%", marginBottom: 10, marginTop: 5 }}
+        ></Divider>
+        {/* //PARTICLE SIZE */}
+        <Grid container spacing={3}>
+          <Grid item xs={5}>
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 10, textAlign: "left" }}
+            >
+              <span style={{ fontWeight: 300 }}>{getStepContent(2).title}</span>
+            </Typography>
+          </Grid>
+
+          <Grid item xs={4}>
+            {getStepContent(2).component}
+          </Grid>
+        </Grid>
+        <Divider
+          style={{ width: "100%", marginBottom: 10, marginTop: 5 }}
+        ></Divider>
+        {/* //FLUOROSPHORES CATEGORY */}
+        <Grid container spacing={3}>
+          <Grid item xs={5}>
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 10, textAlign: "left" }}
+            >
+              <span style={{ fontWeight: 300 }}>{getStepContent(3).title}</span>
+            </Typography>
+          </Grid>
+          <Grid item xs={4}>
+            {getStepContent(3).component}
+          </Grid>
+        </Grid>
+        <Divider
+          style={{ width: "100%", marginBottom: 10, marginTop: 5 }}
+        ></Divider>
+        {/* DESCRIPTION */}
+        <Grid container spacing={3}>
+          <Grid item xs={5}>
+            <Typography
+              className={classes.instructions}
+              style={{ marginTop: 0, textAlign: "left" }}
+            >
+              <span style={{ fontWeight: 300 }}>{getStepContent(4).title}</span>
+            </Typography>
+          </Grid>
+          <Grid item xs={4}>
+            {getStepContent(4).component}
+          </Grid>
+        </Grid>
       </div>
     </Grid>
   );

@@ -3,16 +3,14 @@ import WorkspaceData from "../workspaceData";
 import firebase from "utils/firebase";
 
 export default class LinkReconstructor {
-  store(workspace: WorkspaceData): string {
+  store(workspace: WorkspaceData, newWorkSpaceId: string): string {
     if (workspace === null || workspace === undefined) return "";
-    let workspaceJSON = workspace.export();
     let currentHost = window.location.href;
     if (currentHost.includes("?")) {
       currentHost = currentHost.split("?")[0];
     }
     currentHost += "?id=";
-    const workpaceID = this.saveToCloud(workspaceJSON);
-    return currentHost + workpaceID;
+    return currentHost + newWorkSpaceId;
   }
 
   retrieve(callback: (workspaceJSON: string) => void) {
@@ -46,14 +44,14 @@ export default class LinkReconstructor {
     const keys = Array.from(urlParams.keys());
     const values = Array.from(urlParams.values());
     let dict: any = {};
-    keys.map((e, i) => {
+    keys.forEach((e, i) => {
       dict[e] = values[i];
     });
     return dict;
   }
 
   private saveToCloud(workspaceJSON: string): string {
-    const newURLID = dataManager.createID().substr(0, 8);
+    const newURLID = dataManager.createID().substr(0, 10);
     firebase.saveToCloud("linkshortening", {
       workspaceJSON: workspaceJSON,
       workspaceID: newURLID,

@@ -1,19 +1,8 @@
 @import "~antd/dist/antd.css";
-* {
-  margin: 0;
-  padding: 0;
-}
 
 html,
 body {
   height: 100%;
-}
-
-body {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #333;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -24,7 +13,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

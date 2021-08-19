@@ -22,7 +22,7 @@ export const publishDecorator = () => {
     descriptor.value = function (...args: any[]) {
       const ret = original.apply(this, args);
       //@ts-ignore
-      this.publish(key);
+      this.publish(key, args);
       return ret;
     };
   };
@@ -52,16 +52,23 @@ export const publishDecorator = () => {
 */
 
 export default abstract class ObserversFunctionality {
-  private observers: Map<string, { id: string; func: Function }[]> = new Map();
+  private observers: Map<
+    string,
+    { id: string; func: Function; receiveArguments: boolean }[]
+  > = new Map();
 
   private createOberserverID(): string {
     const newObjectInstaceID = uuid.v4();
     return newObjectInstaceID;
   }
 
-  addObserver(type: string, callback: Function): string {
+  addObserver(
+    type: string,
+    callback: Function,
+    receiveArguments: boolean = false
+  ): string {
     const observerID = this.createOberserverID();
-    const observer = { id: observerID, func: callback };
+    const observer = { id: observerID, func: callback, receiveArguments };
     if (this.observers.has(type)) {
       this.observers.set(type, [...this.observers.get(type), observer]);
     } else {
@@ -73,18 +80,24 @@ export default abstract class ObserversFunctionality {
   removeObserver(type: string, id: string) {
     if (this.observers.has(type)) {
       const list = this.observers.get(type);
-      list.filter((observer) => observer.id === id);
+      let newlist = list.filter((observer) => observer.id !== id);
       if (list.length === 0) {
         throw Error("Observer not found for removal");
       }
-      this.observers.set(type, list);
+      this.observers.set(type, newlist);
     } else {
       throw Error("Removing observer from non-existent observing type");
     }
   }
 
-  private publish(type: string) {
+  private publish(type: string, args?: any) {
     if (!this.observers.has(type)) return;
-    this.observers.get(type).forEach((e) => e.func());
+    this.observers.get(type).forEach((observer) => {
+      if (observer.receiveArguments) {
+        observer.func(args);
+      } else {
+        observer.func();
+      }
+    });
   }
 }

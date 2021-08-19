@@ -1,10 +1,9 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
-import {
-  euclidianDistance2D,
-  getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "graph/dataManagement/math/euclidianPlane";
+import FCSServices from "services/FCSServices/FCSServices";
+import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 
 export interface ScatterPolygonGatePlotterState {}
 
@@ -19,7 +18,6 @@ interface PolygonGateState {
 }
 
 export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
-  // static TargetPlotter = ScatterPlotter;
   plotter: ScatterPlotter | null = null;
 
   points: Point[] = [];
@@ -43,14 +41,19 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   }
 
   protected drawGate(gate: PolygonGate) {
+    if (
+      gate.xAxisType !== this.plotter.plotData.xPlotType ||
+      gate.yAxisType !== this.plotter.plotData.yPlotType
+    ) {
+      return;
+    }
     const pointCount = gate.points.length;
-    let lastPoint = null;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(gate.points[i]);
-      const pp = this.plotter.transformer.toConcretePoint(
-        gate.points[(i + 1) % gate.points.length]
-      );
+      let p = gate.points[i];
+      let pp = gate.points[(i + 1) % gate.points.length];
+      p = this.plotter.transformer.toConcretePoint({ ...p }, undefined, true);
+      pp = this.plotter.transformer.toConcretePoint({ ...pp }, undefined, true);
       let color = "#f00";
       let size = 2;
       if (
@@ -74,16 +77,16 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
   protected drawGating() {
     if (this.points === undefined) return;
-    const pointCount = this.points.length;
+    let lastMousePos = { ...this.lastMousePos };
+    const points = [...this.points];
+    const pointCount = points.length;
     let lastPoint = null;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
-      const p = this.plotter.transformer.toConcretePoint(this.points[i]);
+      const p = points[i];
       this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
-      if (i == pointCount - 1) {
-        const mouse = this.plotter.transformer.toConcretePoint(
-          this.lastMousePos
-        );
+      if (i === pointCount - 1) {
+        const mouse = lastMousePos;
         this.plotter.drawer.addPoint(p.x, p.y, 2, "#f00");
         this.plotter.drawer.segment({
           x1: p.x * scale,
@@ -108,17 +111,55 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     }
   }
 
-  private closeToFirstPoint(
+  protected pointsToBi(pts: Point[]): {
+    points: Point[];
+    newRanges: [[number, number], [number, number]];
+  } {
+    let ranges: any = this.plotter.plotData.getXandYRanges();
+    const xBi = this.plotter.plotData.xPlotType === "bi";
+    const yBi = this.plotter.plotData.yPlotType === "bi";
+    if (xBi || yBi) {
+      const fcsServices = new FCSServices();
+      pts = pts.map((e) => {
+        const logiclizedx = fcsServices.logicleMarkTransformer(
+          [e.x],
+          ranges.x[0],
+          ranges.x[1]
+        )[0];
+        const logiclizedy = fcsServices.logicleMarkTransformer(
+          [e.y],
+          ranges.y[0],
+          ranges.y[1]
+        )[0];
+        return {
+          x: xBi ? logiclizedx : e.x,
+          y: yBi ? logiclizedy : e.y,
+        };
+      });
+      ranges = [xBi ? [0.5, 1] : ranges.x, yBi ? [0.5, 1] : ranges.y];
+    } else {
+      ranges = [ranges.x, ranges.y];
+    }
+    return {
+      points: pts,
+      newRanges: ranges,
+    };
+  }
+
+  closeToFirstPoint(
     p: Point,
     abstract: boolean = false,
     otherPointToCompare: Point = undefined
   ) {
-    const p1 = this.plotter.transformer.toConcretePoint(
-      otherPointToCompare === undefined ? this.points[0] : otherPointToCompare
-    );
-    const p2 = abstract ? this.plotter.transformer.toConcretePoint(p) : p;
+    const p1 =
+      otherPointToCompare === undefined
+        ? { ...this.points[0] }
+        : otherPointToCompare;
+    const p2 = abstract
+      ? this.plotter.transformer.toConcretePoint({ ...p })
+      : p;
     const dist = euclidianDistance2D(p1, p2);
-    if (dist <= 10) {
+    if (dist <= selectPointDist * 0.75) {
       return true;
     }
     return false;

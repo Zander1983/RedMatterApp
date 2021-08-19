@@ -15,6 +15,8 @@ import FileCopy from "@material-ui/icons/FileCopy";
 
 import dataManager from "graph/dataManagement/dataManager";
 import Gate from "graph/dataManagement/gate/gate";
+import PlotData from "graph/dataManagement/plotData";
+import { snackbarService } from "uno-material-ui";
 
 const classes = {
   table: {},
@@ -46,7 +48,7 @@ export default function GateMenu() {
 
   const setGateColor = (gate: Gate, color: any) => {
     gate.update({
-      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
+      color: `rgb(${color.rgb.r},${color.rgb.g},${color.rgb.b})`,
     });
     resetGates(gate.id);
   };
@@ -93,7 +95,60 @@ export default function GateMenu() {
         dataManager.removeObserver(e.terget, e.value);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const applyGateToAllFiles = async (params: {
+    gateID: string;
+    gate: Gate;
+  }) => {
+    const { gate, gateID } = params;
+    let downloadSnackbar = false;
+    const promises = dataManager.files
+      .filter((e) => {
+        for (const file of dataManager.getAllFiles()) {
+          if (e.id === file.fileID) return false;
+        }
+        return true;
+      })
+      .map((e) => {
+        if (downloadSnackbar === false) {
+          downloadSnackbar = true;
+          snackbarService.showSnackbar("Downloading files...", "info");
+        }
+        return dataManager.downloadFileEvent(e.id);
+      });
+    await Promise.all(promises);
+    let files = dataManager.getAllFiles();
+    const plots = dataManager.getAllPlots();
+    // Check gates that already
+    plots.forEach((plot) => {
+      if (
+        plot.plot.population.length === 1 &&
+        plot.plot.population.filter((plotGate) => plotGate.gate.id === gateID)
+          .length > 0
+      ) {
+        files = files.filter((file) => file.fileID !== plot.plot.file.id);
+      }
+    });
+
+    for (const file of files) {
+      const plot = new PlotData();
+      plot.file = file.file;
+      plot.population = [
+        {
+          inverseGating: false,
+          gate: gate,
+        },
+      ];
+      plot.setXAxis(gate.xAxis);
+      plot.setYAxis(gate.yAxis);
+      plot.setXAxisPlotType(gate.xAxisType);
+      plot.setYAxisPlotType(gate.yAxisType);
+      dataManager.addNewPlotToWorkspace(plot);
+    }
+    dataManager.updateWorkspace();
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -102,6 +157,7 @@ export default function GateMenu() {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
+            {dataManager.files.length > 1 ? <TableCell></TableCell> : null}
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
             <TableCell>Type</TableCell>
@@ -136,6 +192,20 @@ export default function GateMenu() {
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell>
+              {dataManager.files.length > 1 ? (
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                    }}
+                    onClick={() => applyGateToAllFiles(gate)}
+                  >
+                    Apply to all files
+                  </Button>
+                </TableCell>
+              ) : null}
               <TableCell>
                 <TextField
                   value={gate.gate.name}

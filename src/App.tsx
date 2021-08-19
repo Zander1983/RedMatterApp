@@ -1,7 +1,5 @@
-import React, { useState, FC, useEffect } from "react";
-import { Route, Switch, useLocation, useHistory } from "react-router-dom";
-// import './../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import { Layout, Image } from "antd";
+import { Route, Switch } from "react-router-dom";
+import { Layout } from "antd";
 
 import {
   createMuiTheme,
@@ -9,30 +7,36 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
-import "./App.css";
-import "antd/dist/antd.css";
 
 import AppHeader from "./Components/common/header";
-import Workspaces from "./Components/workspaces/workspaces";
+import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
-import WorkspaceAppFiles from "./Components/workspaces/workspaceFiles";
+import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/components/Plots";
+import Plots from "./graph/Workspace";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import Plans from "./Components/plans/Plans";
+import PremiumCheckout from "./Components/plans/PremiumCheckout";
+import Cancel from "./Components/plans/Cancel";
+import Success from "./Components/plans/Success";
+import UserProfile from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
+import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
+import Jobs from "Components/home/Jobs";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    marginTop: 64,
     flex: "1 0 auto",
   },
   footer: {
@@ -51,8 +55,11 @@ const router = [
     component: AppLandingPage,
   },
   {
-    path: "/questions",
-    component: PrototypeForm,
+    path: "/questions/:workspaceID",
+    component: ({ match }: any) => {
+      //@ts-ignore
+      return <PrototypeForm workspaceID={match.params.workspaceID} />;
+    },
   },
   {
     path: "/authentication/:tabId",
@@ -63,24 +70,76 @@ const router = [
     component: Login,
   },
   {
+    path: "/browse-experiments",
+    component: BrowseExperiments,
+  },
+  {
     path: "/register",
     component: Register,
+  },
+  {
+    path: "/plans",
+    component: Plans,
   },
   {
     path: "/verify",
     component: VerifyEmail,
   },
   {
+    path: "/premium-checkout",
+    component: PremiumCheckout,
+  },
+  {
+    path: "/user-profile",
+    component: UserProfile,
+  },
+  {
+    path: "/cancel",
+    component: Cancel,
+  },
+  {
+    path: "/success/:session_id",
+    component: ({ match }: any) => {
+      //@ts-ignore
+      return <Success session_id={match.params.session_id} />;
+    },
+  },
+  {
     path: "/verify/:verifyStr",
     component: VerifyEmail,
   },
-  { path: "/graph", component: Plots },
-  { path: "/workspaces", component: Workspaces },
+  {
+    path:
+      "/" +
+      (process.env.REACT_APP_NO_WORKSPACES === "true"
+        ? "analyse"
+        : "test-red-matter"),
+    component: Plots,
+  },
+  {
+    path: "/experiment/:experimentId/plots",
+    component: ({ match }: any) => (
+      <Plots experimentId={match.params.experimentId} poke={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/plots/poke",
+    component: ({ match }: any) => (
+      <Plots experimentId={match.params.experimentId} poke={true} />
+    ),
+  },
+  { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
-    path: "/files/:workspacesId",
+    path: "/experiment/:experimentId",
     component: ({ match }: any) => (
-      <WorkspaceAppFiles id={match.params.workspacesId} />
+      <Experiment id={match.params.experimentId} poke={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/poke",
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} poke={true} />
     ),
   },
   {
@@ -91,28 +150,42 @@ const router = [
     path: "/credits",
     component: Credits,
   },
-];
+  {
+    path: "/jobs",
+    component: Jobs,
+  },
+].filter((e) => {
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+    return e.path.indexOf("experiment") === -1;
+  }
+  return true;
+});
 
 const theme = createMuiTheme();
 
 const App = () => {
+  const dispatch = useDispatch();
   const classes = useStyles();
+
+  useEffect(() => {
+    dispatch({
+      type: "RESET",
+    });
+  }, [dispatch]);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
-        <Header className="default-header">
-          <AppHeader />
-        </Header>
+        <AppHeader />
         <Content
           className={classes.content}
           style={{ fontFamily: "Quicksand" }}
         >
           <Switch>
-            {router.map((e) => (
+            {router.map((e, number) => (
               // @ts-ignore
-              <Route exact path={e.path} component={e.component} />
+              <Route key={number} exact path={e.path} component={e.component} />
             ))}
           </Switch>
         </Content>

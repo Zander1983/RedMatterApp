@@ -18,13 +18,10 @@ import ObserversFunctionality, {
 import WorkspaceData from "./workspaceData";
 import Plot from "graph/renderers/plotRender";
 import LinkReconstructor from "./reconstructors/linkReconstructor";
+import { FileService } from "services/FileService";
+import { snackbarService } from "uno-material-ui";
 
 const uuid = require("uuid");
-
-const workspaceResourcesURL = "https://suckdick.com/workspaces";
-const fileResourcesURL = "https://suckdick.com/files";
-const gateResourcesURL = "https://suckdick.com/gates";
-const plotResourcesURL = "https://suckdick.com/plots";
 
 type PlotID = string;
 type WorkspaceID = string;
@@ -58,6 +55,18 @@ class DataManager extends ObserversFunctionality {
 
   // ======== General
 
+  ready(): boolean {
+    if (
+      this.currentWorkspace === null ||
+      this.currentWorkspace === undefined ||
+      this.plotRenderers === undefined ||
+      this.plotRenderers === null
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   createID(): string {
     const newObjectInstaceID = uuid.v4();
     return newObjectInstaceID;
@@ -75,7 +84,7 @@ class DataManager extends ObserversFunctionality {
   addNewFileToWorkspace(file: FCSFile): FileID {
     let found: any = null;
     this.currentWorkspace.files.forEach((e) => {
-      if (e.name === file.name) {
+      if (e.id === file.id) {
         found = e.id;
       }
     });
@@ -160,10 +169,42 @@ class DataManager extends ObserversFunctionality {
     }
     const plotGates = this.currentWorkspace.plots.get(plotID).gates;
     for (let indx in plotGates) {
-      if (plotGates[indx].gate.id == gateID) {
+      if (plotGates[indx].gate.id === gateID) {
         this.currentWorkspace.plots
           .get(plotID)
           .removeGate(plotGates[indx].gate);
+        return;
+      }
+    }
+    throw Error("Gate " + gateID + " was not found in plot " + plotID);
+  }
+
+  @publishDecorator()
+  linkPopulationToPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
+      throw Error("Adding gate to non-existent plot");
+    }
+    if (!this.currentWorkspace.gates.has(gateID)) {
+      throw Error("Adding non-existent gate to plot");
+    }
+    const cplot = this.currentWorkspace.plots.get(plotID);
+    cplot.addPopulation(this.currentWorkspace.gates.get(gateID));
+  }
+
+  @publishDecorator()
+  unlinkPopulationFromPlot(plotID: PlotID, gateID: GateID) {
+    if (!this.currentWorkspace.plots.has(plotID)) {
+      throw Error("Removing gate to non-existent plot");
+    }
+    if (!this.currentWorkspace.gates.has(gateID)) {
+      throw Error("Removing non-existent gate to plot");
+    }
+    const plotGates = this.currentWorkspace.plots.get(plotID).population;
+    for (let indx in plotGates) {
+      if (plotGates[indx].gate.id === gateID) {
+        this.currentWorkspace.plots
+          .get(plotID)
+          .removePopulation(plotGates[indx].gate);
         return;
       }
     }
@@ -174,6 +215,7 @@ class DataManager extends ObserversFunctionality {
   @publishDecorator()
   updateWorkspace() {
     this.saveWorkspaceToLocalStorage();
+    if (this.letUpdateBeCalledForAutoSave) this.workspaceUpdated();
   }
 
   @publishDecorator()
@@ -185,7 +227,7 @@ class DataManager extends ObserversFunctionality {
         linkReconstructor.retrieve((workspaceJSON) => {
           this.rebuildWorkspaceFromJson(workspaceJSON);
         });
-      } else if (this.canLoadFromLocalStorage()) {
+      } else if (this.canLoadFromLocalStorage() && !this.isRemoteWorkspace()) {
         this.loadWorkspaceFromLocalStorage();
       }
     }
@@ -270,9 +312,10 @@ class DataManager extends ObserversFunctionality {
     if (!this.currentWorkspace.files.has(fileID)) {
       throw Error("Removing non-existent gate");
     }
+
     this.currentWorkspace.plots.forEach((e) => {
       if (e.file.id === fileID) {
-        throw Error("Removing file currently in use by workspace.");
+        this.removePlotFromWorkspace(e.id);
       }
     });
     this.currentWorkspace.files.delete(fileID);
@@ -280,25 +323,53 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   removeWorkspace() {
-    this.plotRenderers.forEach((_, k) => this.plotRenderers.delete(k));
-    this.currentWorkspace = null;
+    if (this.plotRenderers !== undefined && this.plotRenderers !== null) {
+      this.plotRenderers.forEach((e) => {
+        delete e.canvas;
+        delete e.plotData;
+      });
+      delete this.plotRenderers;
+      this.plotRenderers = new Map();
+    }
+    this.getAllPlots().map((e) => delete e.plot);
+    this.currentWorkspace.plots.clear();
+    this.getAllGates().map((e) => delete e.gate);
+    this.currentWorkspace.gates.clear();
+    this.getAllFiles().map((e) => delete e.file);
+    this.currentWorkspace.files.clear();
+    delete this.currentWorkspace;
   }
 
   @updateWorkspaceDecorator()
   @publishDecorator()
-  clearWorkspace() {
+  clearWorkspace(keepFiles: boolean = false) {
+    if (!keepFiles) {
+      delete this.remoteFiles;
+      delete this.remoteWorkspaceID;
+      this.downloadingFiles = [];
+      this.downloaded = [];
+    }
+
+    this.redrawPlotIds = [];
     this.removeWorkspace();
+
     // Clears local storage
-    window.localStorage.removeItem("currentWorkspace");
+    window.localStorage.removeItem(this.lastLocalStorageSave);
     // Clears link shared
     if (window.location.href.includes("?")) {
       window.history.pushState({}, null, window.location.href.split("?")[0]);
     }
+
+    DataManager.resetInstance();
     // Creates brand new workspace
     this.createWorkspace();
+
+    this.afterClearWorkspace();
     // Informs everyone of the change
     this.updateWorkspace();
   }
+  @publishDecorator()
+  afterClearWorkspace() {}
 
   // ======== Workspace management
   @publishDecorator()
@@ -319,13 +390,19 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   saveWorkspaceToLocalStorage() {
-    const currentWorkspace = this.getWorkspaceJSON();
-    window.localStorage.removeItem("currentWorkspace");
-    window.localStorage.setItem("currentWorkspace", this.getWorkspaceJSON());
+    if (this.lastLocalStorageSave !== undefined) {
+      window.localStorage.removeItem(this.lastLocalStorageSave);
+    }
+    window.localStorage.setItem(
+      this.generateLocalStorageName(),
+      this.getWorkspaceJSON()
+    );
   }
 
   loadWorkspaceFromLocalStorage() {
-    const workspaceJSON = window.localStorage.getItem("currentWorkspace");
+    const workspaceJSON = window.localStorage.getItem(
+      this.generateLocalStorageName()
+    );
     this.rebuildWorkspaceFromJson(workspaceJSON);
   }
 
@@ -343,9 +420,46 @@ class DataManager extends ObserversFunctionality {
     /**/
   }
 
-  loading: boolean = false;
+  @publishDecorator()
   setWorkspaceLoading(loading: boolean) {
     this.loading = loading;
+  }
+
+  isWorkspaceLoading() {
+    return this.loading;
+  }
+
+  @publishDecorator()
+  setWorkspaceID(remoteWorkspaceID: string) {
+    this.remoteWorkspaceID = remoteWorkspaceID;
+    this.loadWorkspaceFilesFromRemote();
+  }
+
+  letUpdateBeCalledForAutoSave = true;
+
+  @publishDecorator()
+  workspaceUpdated() {
+    this.letUpdateBeCalledForAutoSave = true;
+  }
+
+  isRemoteWorkspace() {
+    return this.remoteWorkspaceID !== undefined;
+  }
+
+  getRemoteWorkspaceID() {
+    return this.remoteWorkspaceID;
+  }
+
+  dragLock: boolean = false;
+  @publishDecorator()
+  workspaceDragLock(dragLock?: boolean) {
+    if (dragLock !== undefined) {
+      this.dragLock = dragLock;
+      if (this.dragLock === true) {
+        setTimeout(() => this.workspaceDragLock(false), 1000);
+      }
+    }
+    return this.dragLock;
   }
 
   /* 
@@ -356,14 +470,147 @@ class DataManager extends ObserversFunctionality {
   
   */
   private static instance: DataManager;
+  private loading: boolean = false;
+  private remoteWorkspaceID: string;
+  private lastLocalStorageSave: string;
+  private workspaceIsShared: boolean = false;
+  private experimentId: string = "";
+  files: any[] = [];
+  downloaded: any[] = [];
+  downloadingFiles: Array<string> = [];
+  downloadHappening: boolean = false;
+  redrawPlotIds: Array<string> = [];
+
+  setWorkspaceIsShared(workspaceIsShared: boolean) {
+    this.workspaceIsShared = workspaceIsShared;
+  }
+
+  getWorkspaceIsShared() {
+    return this.workspaceIsShared;
+  }
+
+  setExperimentId(experimentId: string) {
+    this.experimentId = experimentId;
+  }
+
+  getExperimentId() {
+    return this.experimentId;
+  }
+
+  async downloadFileMetadata() {
+    let response: any = await FileService.downloadFileMetadata(
+      this.workspaceIsShared,
+      this.experimentId
+    );
+    this.files = response.data.files;
+  }
+
+  async downloadFileEvents(fileIds: Array<string>) {
+    let downloadedFileIds = this.downloaded.map((x) => x.id);
+
+    let newFileIds = fileIds.filter(
+      (x) =>
+        !downloadedFileIds.includes(x) && !this.downloadingFiles.includes(x)
+    );
+
+    let newDownloadingFileIds = this.downloadingFiles.concat(newFileIds);
+
+    this.updateDownloadingFiles(newDownloadingFileIds);
+  }
+
+  @publishDecorator()
+  updateDownloaded(data: any) {
+    this.downloaded = this.downloaded.concat(data);
+  }
+
+  @publishDecorator()
+  updateDownloadingFiles(fileIds: Array<string>) {
+    this.downloadingFiles = fileIds;
+    if (this.downloadingFiles.length > 0 && !this.downloadHappening) {
+      let fileId = this.downloadingFiles[0];
+      this.downloadFileEvent(fileId);
+    }
+  }
+
+  async downloadFileEvent(fileId: string) {
+    let response;
+    try {
+      this.downloadHappening = true;
+      response = await FileService.downloadFileEvent(
+        this.workspaceIsShared,
+        fileId,
+        this.experimentId
+      );
+      if (!this.ready()) {
+        this.createWorkspace();
+      }
+      let file = response[0];
+      let newFile = new FCSFile({
+        name: file.title,
+        id: file.id,
+        src: "remote",
+        axes: file.channels.map((e: any) => e.value),
+        data: file.events,
+        plotTypes: file.channels.map((e: any) => e.display),
+        remoteData: { ...file, events: [] },
+      });
+      this.addNewFileToWorkspace(newFile);
+      this.updateDownloaded(response);
+    } catch (e) {
+      if (e?.error) snackbarService.showSnackbar(e.error, "error");
+      let file = this.files.find((x) => x.id === fileId);
+      snackbarService.showSnackbar(
+        `in Error download file ${file.label} please try again`,
+        "error"
+      );
+    } finally {
+      this.downloadHappening = false;
+      this.downloadingFiles.shift();
+      this.updateDownloadingFiles(this.downloadingFiles);
+    }
+    return response;
+  }
 
   static getInstance(): DataManager {
     if (!DataManager.instance) {
       DataManager.instance = new DataManager();
       DataManager.instance.setStandardObservers();
     }
-
+    window.addEventListener("beforeunload", () =>
+      DataManager.instance.clearWorkspace()
+    );
     return DataManager.instance;
+  }
+
+  private static resetInstance() {
+    if (DataManager.instance) {
+      delete DataManager.instance;
+      DataManager.instance = new DataManager();
+      DataManager.instance.setStandardObservers();
+    }
+  }
+
+  private handleRemoteFiles(files: any[]) {
+    // const MAX_EVENTS = 4000;
+    // for (let i = 0; i < files.length; i++) {
+    //   if (files[i].events.length > MAX_EVENTS) {
+    //     for (let j = 0; j < files[i].events.length; j++) {
+    //       const nindex = Math.floor(Math.random() * files[i].events.length);
+    //       const temp = files[i].events[nindex];
+    //       files[i].events[nindex] = files[i].events[j];
+    //       files[i].events[j] = temp;
+    //     }
+    //     files[i].events = files[i].events.slice(0, MAX_EVENTS);
+    //   }
+    // }
+    this.remoteFiles = files;
+  }
+
+  remoteFiles: any[] = [];
+  private loadWorkspaceFilesFromRemote() {
+    if (this.remoteWorkspaceID === undefined) {
+      throw Error("Cannot load files without a remoteWorkspaceID");
+    }
   }
 
   private setStandardObservers() {}
@@ -381,7 +628,17 @@ class DataManager extends ObserversFunctionality {
   }
 
   private canLoadFromLocalStorage() {
-    return window.localStorage.getItem("currentWorkspace") !== null;
+    return (
+      window.localStorage.getItem(this.generateLocalStorageName()) !== null
+    );
+  }
+
+  private generateLocalStorageName() {
+    this.lastLocalStorageSave = "currentWorkspace";
+    if (this.remoteWorkspaceID !== undefined) {
+      this.lastLocalStorageSave += "-" + this.remoteWorkspaceID;
+    }
+    return this.lastLocalStorageSave;
   }
 }
 

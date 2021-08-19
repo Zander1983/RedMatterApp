@@ -4,10 +4,15 @@ import ObserversFunctionality, {
 } from "../observersFunctionality";
 
 export interface GateState {
+  id?: string;
   name?: string;
   color?: string;
   xAxis: string;
+  xAxisType: string;
+  xAxisOriginalRanges?: [number, number];
   yAxis: string;
+  yAxisType: string;
+  yAxisOriginalRanges?: [number, number];
   parents: Gate[];
 }
 
@@ -23,7 +28,11 @@ export default abstract class Gate extends ObserversFunctionality {
   name?: string;
   color?: string | null;
   xAxis: string;
+  xAxisType: string = "lin";
+  xAxisOriginalRanges?: [number, number];
   yAxis: string;
+  yAxisType: string = "lin";
+  yAxisOriginalRanges?: [number, number];
   parents: Gate[] = [];
   children: Gate[] = [];
 
@@ -35,7 +44,7 @@ export default abstract class Gate extends ObserversFunctionality {
 
   constructor(gate: GateState) {
     super();
-    this.id = dataManager.createID();
+    this.id = gate.id ? gate.id : dataManager.createID();
 
     this.setState(gate);
     Gate.instanceCount++;
@@ -44,8 +53,14 @@ export default abstract class Gate extends ObserversFunctionality {
   setState(gate: GateState) {
     this.xAxis = gate.xAxis;
     this.yAxis = gate.yAxis;
+    if (gate.xAxisType !== undefined) this.xAxisType = gate.xAxisType;
+    if (gate.yAxisType !== undefined) this.yAxisType = gate.yAxisType;
+    if (gate.xAxisOriginalRanges !== undefined)
+      this.xAxisOriginalRanges = gate.xAxisOriginalRanges;
+    if (gate.yAxisOriginalRanges !== undefined)
+      this.yAxisOriginalRanges = gate.yAxisOriginalRanges;
     if (gate.name !== undefined) this.name = gate.name;
-    else this.name = this.getGateType() + " " + Gate.instanceCount.toString();
+    else this.name = "";
     if (gate.color !== undefined) this.color = gate.color;
     else {
       this.color =
@@ -59,7 +74,9 @@ export default abstract class Gate extends ObserversFunctionality {
   getState(): GateState {
     return {
       xAxis: this.xAxis,
+      xAxisType: this.xAxisType,
       yAxis: this.yAxis,
+      yAxisType: this.yAxisType,
       name: this.name,
       color: this.color,
       parents: this.parents,
@@ -71,7 +88,9 @@ export default abstract class Gate extends ObserversFunctionality {
       "children" in object &&
       "parents" in object &&
       "xAxis" in object &&
-      "yAxis" in object
+      "yAxis" in object &&
+      "xAxisType" in object &&
+      "yAxisType" in object
     );
   }
 

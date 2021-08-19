@@ -1,15 +1,10 @@
 import GatePlotterPlugin from "../plotters/runtimePlugins/gatePlotterPlugin";
 import OvalMousePlotterPlugin from "../plotters/runtimePlugins/scatterOvalGatePlotter";
-// import PolygonMousePlotterPlugin from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import GateMouseInteractor from "./gateMouseInteractor";
 import OvalMouseInteractor from "./ovalMouseInteractor";
-// import HistogramGateMouseInteractor from "./histogramGateMouseInteractor";
-import PolygonMouseInteractor from "./polygonMouseInteractor";
 
 export default class GateMouseInteractorFactory {
-  makeGateMouseInteractor(
-    gate: string
-  ): {
+  makeGateMouseInteractor(gate: string): {
     mouseInteractor: GateMouseInteractor;
     plotterPlugin: GatePlotterPlugin;
   } {

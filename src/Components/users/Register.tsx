@@ -45,6 +45,7 @@ const Register = (props: any) => {
   const [formData, setFormData] = useState({
     email: "",
     organisation: "",
+    organisationKey: "",
     location: "",
     password: "",
     g_recaptcha_response: "",
@@ -90,11 +91,15 @@ const Register = (props: any) => {
       snackbarService.showSnackbar("Email verification sent!", "success");
       history.push("/verify");
     } catch (err) {
-      setLoading(false);
-      const errMsg = err.response.data.message;
-      snackbarService.showSnackbar(errMsg, "error");
+      try {
+        setLoading(false);
+        const errMsg = err.response.data.message;
+        snackbarService.showSnackbar(errMsg, "error");
+      } catch (e) {}
     }
   };
+
+  const [joiningOrg, setJoiningOrg] = useState(false);
   return (
     <Grid
       container
@@ -123,24 +128,26 @@ const Register = (props: any) => {
           textAlign: "center",
         }}
       >
-        <h2>Create you Red Matter account</h2>
+        <h2>Create your Red Matter account</h2>
         <ValidatorForm
           ref={registerForm}
           onSubmit={() => {
             handleSubmit();
           }}
         >
-          <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
-            className={classes.textFieldWidth}
-            variant="outlined"
-            label="Organisation"
-            onChange={handleChange}
-            name="organisation"
-            value={formData.organisation}
-            validators={["required"]}
-            errorMessages={["Organisation is required"]}
-          />
+          {joiningOrg == false ? (
+            <TextValidator
+              style={{ marginTop: 30, backgroundColor: "white" }}
+              className={classes.textFieldWidth}
+              variant="outlined"
+              label="Organisation"
+              onChange={handleChange}
+              name="organisation"
+              value={formData.organisation}
+              validators={["required"]}
+              errorMessages={["Organisation is required"]}
+            />
+          ) : null}
 
           <Autocomplete
             id="location"
@@ -191,7 +198,11 @@ const Register = (props: any) => {
           />
 
           <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
+            style={{
+              marginTop: 30,
+              marginBottom: 10,
+              backgroundColor: "white",
+            }}
             className={classes.textFieldWidth}
             label="Password"
             variant="outlined"
@@ -205,6 +216,62 @@ const Register = (props: any) => {
               "Password must have at least 8 characters",
             ]}
           />
+
+          {joiningOrg === false ? (
+            <a
+              onClick={() => {
+                setJoiningOrg(true);
+                setFormData({
+                  email: formData.email,
+                  organisation: " ",
+                  organisationKey: "",
+                  location: formData.location,
+                  password: formData.password,
+                  g_recaptcha_response: formData.g_recaptcha_response,
+                });
+              }}
+              style={{ textAlign: "left", color: "#008" }}
+            >
+              I'm here to join my organisation
+            </a>
+          ) : null}
+
+          {joiningOrg === false ? null : (
+            <div>
+              <TextValidator
+                style={{
+                  marginTop: 30,
+                  marginBottom: 10,
+                  backgroundColor: "white",
+                }}
+                className={classes.textFieldWidth}
+                variant="outlined"
+                label="Organisation Key"
+                onChange={handleChange}
+                name="organisationKey"
+                value={formData.organisationKey}
+                validators={["required"]}
+                errorMessages={["Organisation is required"]}
+              />
+
+              <a
+                onClick={() => {
+                  setJoiningOrg(false);
+                  setFormData({
+                    email: formData.email,
+                    organisation: formData.organisation,
+                    organisationKey: "",
+                    location: formData.location,
+                    password: formData.password,
+                    g_recaptcha_response: formData.g_recaptcha_response,
+                  });
+                }}
+                style={{ textAlign: "left", color: "#008" }}
+              >
+                I do not have an organisation to join.
+              </a>
+            </div>
+          )}
 
           <Grid
             container

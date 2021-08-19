@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   menuButton: {
     marginRight: theme.spacing(2),
   },
-  title: {
+  headertitle: {
     flexGrow: 1,
     fontFamily: "Quicksand",
     fontWeight: 700,
@@ -32,9 +32,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "10px",
     padding: 6,
     borderRadius: 3,
-    "&:hover": {
-      backgroundColor: "rgba(255,255,255,0.2)",
-    },
   },
   toolbar: {
     backgroundColor: "#333",
@@ -61,69 +58,87 @@ const AppHeader = (props: any) => {
   };
 
   return (
-    <AppBar className={classes.toolbar}>
-      <Toolbar>
-        {/* <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-          <MenuIcon />
-        </IconButton> */}
-        <Typography variant="h6" className={classes.title}>
-          <NavLink style={{ color: "#fafafa" }} to="/">
-            <img
-              src={icon}
-              alt="Logo"
-              height="23"
-              style={{
-                marginRight: 7,
-                marginTop: -6,
-              }}
-            />
-            <b
-              style={{ fontFamily: "quicksand", fontWeight: 400, fontSize: 25 }}
-            >
-              RED MATTER
-            </b>
-            <b
-              style={{
-                fontFamily: "quicksand",
-                marginLeft: 5,
-                color: "#bbb",
-                fontWeight: 300,
-                fontSize: 15,
-              }}
-            >
-              v2.1.0
-            </b>
-          </NavLink>
-        </Typography>
-        <NavLink className={classes.topBarLink} to="/questions">
-          Test Red Matter
-        </NavLink>
+    <div>
+      <AppBar className={classes.toolbar} position="fixed">
+        <Toolbar>
+          <Typography className={classes.headertitle}>
+            <NavLink style={{ color: "#fafafa" }} to="/">
+              <img
+                src={icon}
+                alt="Logo"
+                height="23"
+                style={{
+                  marginRight: 7,
+                  marginTop: -6,
+                }}
+              />
+              <b
+                style={{
+                  fontFamily: "quicksand",
+                  fontWeight: 400,
+                  fontSize: 25,
+                }}
+              >
+                RED MATTER
+              </b>
+              <b
+                style={{
+                  fontFamily: "quicksand",
+                  marginLeft: 5,
+                  color: "#bbb",
+                  fontWeight: 300,
+                  fontSize: 15,
+                }}
+              >
+                {process.env.REACT_APP_CURRENT_APP_VERSION || "v2"}
+              </b>
+            </NavLink>
+          </Typography>
+          {/*{process.env.REACT_APP_NO_WORKSPACES !== "true" ? (
+            <NavLink className={classes.topBarLink} to="/test-red-matter">
+              Test Red Matter
+            </NavLink>
+          ) : null}*/}
+          {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
+            <NavLink className={classes.topBarLink} to="/analyse">
+              Start Analysing
+            </NavLink>
+          ) : null}
 
-        {isLoggedIn ? (
-          <>
-            <NavLink className={classes.topBarLink} to="/workspaces">
-              Workspace
-            </NavLink>
-            <a className={classes.topBarLink} onClick={onLogout} href="/">
-              Logout
-            </a>
-          </>
-        ) : (
-          <>
-            <NavLink className={classes.topBarLink} to="/login">
-              Sign In
-            </NavLink>
-            <NavLink className={classes.topBarLink} to="/register">
-              Register
-            </NavLink>
-          </>
-        )}
-        {/* <NavLink className={classes.topBarLink} to="/mailing-list">
-          Mailing list
-        </NavLink> */}
-        {/* <NavLink className={classes.topBarLink} to="/">Home &nbsp;</NavLink>*/}
-      </Toolbar>
-    </AppBar>
+          <NavLink className={classes.topBarLink} to="/plans">
+            Plans
+          </NavLink>
+          {isLoggedIn ? (
+            <>
+              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <NavLink className={classes.topBarLink} to="/experiments">
+                  Experiments
+                </NavLink>
+              )}
+              <NavLink className={classes.topBarLink} to="/user-profile">
+                My Profile
+              </NavLink>
+              <NavLink className={classes.topBarLink} to="/browse-experiments">
+                Browse
+              </NavLink>
+              <a className={classes.topBarLink} onClick={onLogout} href="/">
+                Logout
+              </a>
+            </>
+          ) : (
+            <>
+              <NavLink className={classes.topBarLink} to="/login">
+                Login
+              </NavLink>
+              <NavLink className={classes.topBarLink} to="/register">
+                Register
+              </NavLink>
+            </>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Toolbar />
+    </div>
   );
 };
 

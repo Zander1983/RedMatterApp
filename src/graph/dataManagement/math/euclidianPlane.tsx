@@ -1,5 +1,3 @@
-import { Point } from "chart.js";
-
 interface Point2D {
   x: number;
   y: number;

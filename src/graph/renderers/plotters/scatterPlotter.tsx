@@ -5,6 +5,7 @@ import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
+import FCSServices from "services/FCSServices/FCSServices";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
@@ -111,7 +112,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   }
 
   public validateDraw(): void {
-    if (this.xAxis.length != this.yAxis.length) {
+    if (this.xAxis.length !== this.yAxis.length) {
       throw Error(
         "Axes point count are different. xAxis has " +
           this.xAxis.length.toString() +
@@ -136,19 +137,60 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   public drawPoints() {
     const pointCount = this.xAxis.length;
     const colors = this.getPointColors();
+    const fcsServices = new FCSServices();
+    let xData = this.xAxis;
+    let yData = this.yAxis;
+    let customRanges: [[number, number], [number, number]] = [
+      this.ranges.x,
+      this.ranges.y,
+    ];
+
+    if (this.plotData.xPlotType === "bi") {
+      customRanges[0] = fcsServices.logicleMarkTransformer(
+        [...customRanges[0]],
+        customRanges[0][0],
+        customRanges[0][1]
+      ) as [number, number];
+      xData = fcsServices.logicleMarkTransformer(
+        xData,
+        this.ranges.x[0],
+        this.ranges.x[1]
+      );
+    }
+    if (this.plotData.yPlotType === "bi") {
+      customRanges[1] = fcsServices.logicleMarkTransformer(
+        [...customRanges[1]],
+        customRanges[1][0],
+        customRanges[1][1]
+      ) as [number, number];
+      yData = fcsServices.logicleMarkTransformer(
+        yData,
+        this.ranges.y[0],
+        this.ranges.y[1]
+      );
+    }
 
     for (let i = 0; i < pointCount; i++) {
-      if (this.isOutOfRange({ x: this.xAxis[i], y: this.yAxis[i] })) continue;
-      const { x, y } = this.transformer.toConcretePoint({
-        x: this.xAxis[i],
-        y: this.yAxis[i],
-      });
+      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges))
+        continue;
+      const { x, y } = this.transformer.toConcretePoint(
+        {
+          x: xData[i],
+          y: yData[i],
+        },
+        customRanges
+      );
       this.drawer.addPoint(x, y, 1.1, colors[i]);
     }
   }
 
-  private isOutOfRange(p: { x: number; y: number }) {
-    const { x, y } = this.plotData.getXandYRanges();
+  private isOutOfRange(
+    p: { x: number; y: number },
+    ranges: [[number, number], [number, number]]
+  ) {
+    let x: [number, number], y: [number, number];
+    x = ranges[0];
+    y = ranges[1];
     return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 

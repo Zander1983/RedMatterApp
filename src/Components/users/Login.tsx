@@ -8,6 +8,7 @@ import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
+import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -51,18 +52,29 @@ const Login = (props: any) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("api/login", formData);
-      console.log("request succeeded");
+      const req = AuthenticationApiFetchParamCreator().userLogin(formData);
+      const res = await axios.post(req.url, req.options.body, req.options);
       setLoading(false);
       const loginData = res.data;
       dispatch({
         type: "LOGIN",
         payload: { user: { profile: loginData } },
       });
-      props.history.push("/workspaces");
+      snackbarService.showSnackbar("Logged in!", "success");
+      if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+        props.history.push("/analyse");
+      } else {
+        props.history.push("/experiments");
+      }
     } catch (err) {
-      console.log(err);
       setLoading(false);
+      if (err.response === undefined) {
+        snackbarService.showSnackbar(
+          "Couldn't connect to Red Matter servers",
+          "error"
+        );
+        return;
+      }
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");
     }
@@ -82,9 +94,6 @@ const Login = (props: any) => {
     >
       <Grid
         container
-        lg={6}
-        md={9}
-        sm={12}
         justify="center"
         direction="column"
         style={{
@@ -94,6 +103,7 @@ const Login = (props: any) => {
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
+          width: "50%",
         }}
       >
         <LockFilled />

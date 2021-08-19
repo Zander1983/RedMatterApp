@@ -1,87 +1,25 @@
-import React from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import Grid from "@material-ui/core/Grid";
-import { NavLink } from "react-router-dom";
-import Paper from "@material-ui/core/Paper";
-import InputBase from "@material-ui/core/InputBase";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import SearchIcon from "@material-ui/icons/Search";
-import DirectionsIcon from "@material-ui/icons/Directions";
-import InputLabel from "@material-ui/core/InputLabel";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
+import React, { useEffect, useState } from "react";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { FormControlLabel } from "@material-ui/core";
 
 import { fluorophoresData, deviceData } from "./quesData";
+import { useDispatch, useStore } from "react-redux";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: "100%",
-    },
-    button: {
-      marginRight: theme.spacing(1),
-    },
-    instructions: {
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-    marginButton: {
-      margin: theme.spacing(1),
-      width: 300,
-      height: 50,
-      backgroundColor: "rgb(210, 230, 240)",
-    },
-    deviceTypeContent: {
-      padding: "2px 4px",
-      display: "flex",
-      alignItems: "center",
-      width: 400,
-    },
-    input: {
-      marginLeft: theme.spacing(1),
-      flex: 1,
-    },
-    iconButton: {
-      padding: 10,
-    },
-    divider: {
-      height: 28,
-      margin: 4,
-    },
-  })
-);
-
-function getSteps() {
-  return [
-    "Device selection",
-    "Cell type",
-    "Particle size",
-    "Fluorophores category",
-    "Description",
-  ];
-}
+import ClearIcon from "@material-ui/icons/Clear";
 
 function FormDeviceType() {
-  const classes = useStyles();
-  const [deviceType, setDeviceType] = React.useState(null);
+  const store = useStore();
+  try {
+    let defaultValue = store.getState().user.experiment.device;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
   const [notFound, setNotFound] = React.useState(false);
-
-  const getData = () => {
-    return deviceType;
-  };
 
   return (
     <div
@@ -90,44 +28,78 @@ function FormDeviceType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        value={deviceType}
         id="combo-box-demo"
         options={deviceData}
+        onChange={(e) => {
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            payload: {
+              //@ts-ignore
+              formitem: { key: "device", value: e.target.outerText },
+            },
+          });
+        }}
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Device" variant="outlined" />
+          <TextField
+            {...params}
+            size="small"
+            label="Device Type"
+            placeholder="Placeholder"
+            helperText="This Field is Optional"
+            variant="outlined"
+          />
         )}
       />
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: -10,
+          marginLeft: "-55%",
         }}
         control={
           <Checkbox
+            style={{
+              transform: "scale(0.6)",
+            }}
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
-            onChange={(e) => setNotFound(!notFound)}
+            onChange={(e) => {
+              setNotFound(!notFound);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                //@ts-ignore
+                payload: { formitem: { key: "device", value: null } },
+              });
+            }}
           />
         }
-        label="Could not find my device"
+        label={
+          <span style={{ fontSize: "13px", marginTop: "-10px" }}>
+            Could not find my device
+          </span>
+        }
       />
       {notFound ? (
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign: "left",
+            marginTop: -10,
+            marginLeft: "-20%",
           }}
         >
           Send us an email at{" "}
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your device and we will add it to our database!
           </p>
         </div>
@@ -137,13 +109,19 @@ function FormDeviceType() {
 }
 
 function FormCellType() {
-  const classes = useStyles();
-  const [cellType, setCellType] = React.useState(null);
-
-  const getData = () => {
-    return cellType;
-  };
-
+  const store = useStore();
+  const [cellTypeError, setCellTypeError] = React.useState(false);
+  try {
+    let defaultValue = store.getState().user.experiment.cellType;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: 1, value: "Single cells" },
+        { id: 2, key: 2, value: "Heterogenous population" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
   return (
     <div
       style={{
@@ -151,34 +129,77 @@ function FormCellType() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
-      <Autocomplete
-        value={cellType}
-        id="combo-box-demo"
-        options={[
-          { id: 1, key: 1, value: "Single cells" },
-          { id: 2, key: 2, value: "Heterogenous population" },
-        ]}
-        getOptionLabel={(option) => option.value}
-        style={{ width: 400 }}
-        renderInput={(params) => (
-          <TextField {...params} label="Cell type" variant="outlined" />
-        )}
-      />
+      <form>
+        <Autocomplete
+          id="cell"
+          onChange={async (e) => {
+            //@ts-ignore
+            await dispatch({
+              type: "EXPERIMENT_FORM_DATA",
+              payload: {
+                formitem: {
+                  key: "cellType",
+                  //@ts-ignore
+                  value: e.target.outerText || e.target.innerText,
+                },
+              },
+            });
+            if (store.getState().user.experiment.cellType !== "") {
+              setCellTypeError(false);
+            }
+          }}
+          onBlur={(e) => {
+            if (
+              store.getState().user.experiment.cellType === "" ||
+              store.getState().user.experiment.cellType == null
+            ) {
+              setCellTypeError(true);
+            }
+          }}
+          options={[
+            { id: 1, key: 1, value: "Single cells" },
+            { id: 2, key: 2, value: "Heterogenous population" },
+            { id: 3, key: 3, value: "Lymphocytes" },
+            { id: 4, key: 4, value: "Other" },
+          ]}
+          getOptionLabel={(option) => option.value}
+          style={{ width: 400 }}
+          renderInput={(params) => (
+            <TextField
+              required
+              {...params}
+              error={cellTypeError}
+              label="Cell type"
+              size="small"
+              placeholder="Placeholder"
+              helperText="This Field is Required"
+              variant="outlined"
+            />
+          )}
+        />
+      </form>
     </div>
   );
 }
 
 function FormParticleSize() {
-  const classes = useStyles();
-  const [particleSize, setParticleSize] = React.useState(null);
-
-  const getData = () => {
-    return particleSize;
-  };
-
+  const store = useStore();
+  const [particleSizeError, setParticleSizeError] = React.useState(false);
+  try {
+    let defaultValue = store.getState().user.experiment.particleSize;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = [
+        { id: 1, key: "Below 1µm", value: "Below 1µm" },
+        { id: 2, key: "1-3 µm", value: "1-3 µm" },
+        { id: 3, key: "2µm+", value: "2µm+" },
+      ].filter((e) => e.value === defaultValue)[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
   return (
     <div
       style={{
@@ -186,12 +207,36 @@ function FormParticleSize() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        id="combo-box-demo"
-        value={particleSize}
+        id="particle"
+        //value={particleSize}
+        onChange={(e) => {
+          dispatch({
+            type: "EXPERIMENT_FORM_DATA",
+            payload: {
+              formitem: {
+                key: "particleSize",
+                //@ts-ignore
+                value: e.target.outerText || e.target.innerText,
+              },
+            },
+          });
+
+          if (store.getState().user.experiment.particleSize !== "") {
+            setParticleSizeError(false);
+          }
+        }}
+        onBlur={(e) => {
+          if (
+            store.getState().user.experiment.particleSize === null ||
+            store.getState().user.experiment.particleSize === ""
+          ) {
+            setParticleSizeError(true);
+          }
+        }}
         options={[
           { id: 1, key: "Below 1µm", value: "Below 1µm" },
           { id: 2, key: "1-3 µm", value: "1-3 µm" },
@@ -200,7 +245,16 @@ function FormParticleSize() {
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Cell size" variant="outlined" />
+          <TextField
+            required
+            {...params}
+            error={particleSizeError}
+            size="small"
+            label="Particle Size"
+            placeholder="Placeholder"
+            helperText="This Field is Required"
+            variant="outlined"
+          />
         )}
       />
     </div>
@@ -208,13 +262,33 @@ function FormParticleSize() {
 }
 
 function FormFluorophores() {
-  const classes = useStyles();
-  const [fluorophoresType, setFluorophoresType] = React.useState(null);
+  const store = useStore();
+  const [fluorosphoresCategoryError, setFluorosphoresCategoryError] =
+    React.useState(false);
+  try {
+    let defaultValue = store.getState().user.experiment.fluorophoresCategory;
+    if (defaultValue === undefined) defaultValue = null;
+    if (defaultValue != null) {
+      defaultValue = fluorophoresData.filter(
+        (e) => e.value === defaultValue
+      )[0];
+    }
+  } catch (e) {}
+  const dispatch = useDispatch();
   const [notFound, setNotFound] = React.useState(false);
 
-  const getData = () => {
-    return fluorophoresType;
-  };
+  useEffect(() => {
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        formitem: {
+          key: "fluorophoresCategory",
+          //@ts-ignore
+          value: null,
+        },
+      },
+    });
+  }, []);
 
   return (
     <div
@@ -223,44 +297,157 @@ function FormFluorophores() {
         textAlign: "center",
         display: "grid",
         placeItems: "center",
-        marginTop: 30,
+        marginTop: 5,
       }}
     >
       <Autocomplete
-        value={fluorophoresType}
-        id="combo-box-demo"
+        //value={fluorophoresType}
+        multiple
+        disableClearable={true}
+        id="fluorosphores"
+        disableCloseOnSelect
+        onChange={(e, list, reason, detail) => {
+          let previous = store.getState().user.experiment.fluorophoresCategory;
+          const option = detail.option.value;
+          if (reason === "remove-option") {
+            previous = previous.split(",").filter((e: string) => e !== option);
+            previous = previous.join(",");
+            dispatch({
+              type: "EXPERIMENT_FORM_DATA",
+              payload: {
+                formitem: {
+                  key: "fluorophoresCategory",
+                  value: previous,
+                },
+              },
+            });
+          } else {
+            if (previous !== "" && previous !== null) {
+              setFluorosphoresCategoryError(false);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    value: `${previous},${option}`,
+                  },
+                },
+              });
+            } else {
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    value: option,
+                  },
+                },
+              });
+            }
+          }
+        }}
+        onBlur={(e) => {
+          if (
+            store.getState().user.experiment.fluorophoresCategory === "" ||
+            store.getState().user.experiment.fluorophoresCategory == null
+          ) {
+            setFluorosphoresCategoryError(true);
+          }
+        }}
         options={fluorophoresData}
         getOptionLabel={(option) => option.value}
         style={{ width: 400 }}
         renderInput={(params) => (
-          <TextField {...params} label="Fluorophores" variant="outlined" />
+          <TextField
+            required
+            {...params}
+            error={fluorosphoresCategoryError}
+            size="small"
+            label="Fluorophores"
+            placeholder="Placeholder"
+            helperText="This Field is Required"
+            variant="outlined"
+          />
         )}
       />
+
+      {store.getState().user.experiment.fluorophoresCategory != null ? (
+        <div
+          style={{
+            fontSize: 12,
+            backgroundColor: "#dedede",
+            textAlign: "left",
+            color: "black",
+            padding: "2px 8px",
+            borderRadius: "20px",
+          }}
+        >
+          <i>{store.getState().user.experiment.fluorophoresCategory}</i>{" "}
+          <ClearIcon
+            style={{ height: 15, float: "right", position: "relative", top: 2 }}
+            onClick={() => {
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  formitem: {
+                    key: "fluorophoresCategory",
+                    //@ts-ignore
+                    value: null,
+                  },
+                },
+              });
+              setFluorosphoresCategoryError(true);
+            }}
+          ></ClearIcon>
+        </div>
+      ) : null}
+
       <FormControlLabel
         style={{
-          marginTop: 20,
+          marginTop: -10,
+          marginLeft: "-47%",
         }}
         control={
           <Checkbox
             color="primary"
+            style={{
+              transform: "scale(0.6)",
+            }}
             inputProps={{ "aria-label": "secondary checkbox" }}
             checked={notFound}
-            onChange={(e) => setNotFound(!notFound)}
+            onChange={(e) => {
+              setNotFound(!notFound);
+              dispatch({
+                type: "EXPERIMENT_FORM_DATA",
+                payload: {
+                  //@ts-ignore
+                  formitem: { key: "fluorophoresCategory", value: null },
+                },
+              });
+            }}
           />
         }
-        label="Could not find the fluorophores"
+        label={
+          <span style={{ fontSize: "13px" }}>
+            Could not find the fluorophores
+          </span>
+        }
       />
       {notFound ? (
         <div
           style={{
             marginBottom: -30,
+            fontSize: 10,
+            textAlign: "left",
+            marginTop: -10,
+            marginLeft: "-15%",
           }}
         >
           Send us an email at{" "}
           <a href="mailto:redmatterapp@gmail.com">
             <b>redmatterapp@gmail.com</b>
           </a>
-          <p style={{ fontSize: 17 }}>
+          <p style={{ fontSize: 10, marginBottom: 30 }}>
             Provide the name of your fluorophores and we will add it to our
             database!
           </p>
@@ -271,31 +458,44 @@ function FormFluorophores() {
 }
 
 function FormDescription() {
-  const classes = useStyles();
-  const [description, setdescription] = React.useState(null);
-
-  const getData = () => {
-    return description;
-  };
+  const store = useStore();
+  let defaultValue = store.getState().user.experiment.formDescription;
+  try {
+    let defaultValue = store.getState().user.experiment.description;
+    if (defaultValue === undefined) defaultValue = null;
+  } catch (e) {}
+  const dispatch = useDispatch();
+  const [description, setdescription] = React.useState(defaultValue);
 
   return (
     <TextField
+      helperText="This Field is Optional"
       value={description}
       id="outlined-multiline-static"
       label="Description"
       multiline
-      rows={6}
+      onChange={(e) => {
+        setdescription(e.target.value);
+        dispatch({
+          type: "EXPERIMENT_FORM_DATA",
+          payload: {
+            //@ts-ignore
+            formitem: { key: "description", value: e.target.value },
+          },
+        });
+      }}
+      size="small"
       placeholder="..."
       variant="outlined"
       style={{
-        marginTop: 30,
-        width: 600,
+        marginTop: 5,
+        width: 400,
       }}
     />
   );
 }
 
-export default {
+const formSteps = {
   formDeviceType: {
     component: <FormDeviceType />,
     optional: false,
@@ -324,3 +524,5 @@ export default {
       "Enter a brief description of your experiment. You can skip if you like!",
   },
 };
+
+export default formSteps;

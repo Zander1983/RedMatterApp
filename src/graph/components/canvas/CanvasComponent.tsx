@@ -8,14 +8,21 @@ const CanvasComponent = (props: { plot: Plot; plotIndex: string }) => {
 
   useEffect(() => {
     if (!useCanvasCalled) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       canvasRef = canvas.useCanvas(canvasRef);
       setUseCanvasCalled(true);
     }
+    return () => {
+      canvas.setUseCanvasUsed(false);
+    };
   }, []);
 
   const id = `canvas-${props.plotIndex}`;
   return (
     <canvas
+      onMouseDown={(e) => {
+        e.stopPropagation();
+      }}
       style={{
         backgroundColor: "#fff",
         textAlign: "center",

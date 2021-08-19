@@ -1,16 +1,15 @@
-import React from "react";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import { Button, Divider } from "@material-ui/core";
-import BackupIcon from "@material-ui/icons/Backup";
-
-import dataManager from "graph/dataManagement/dataManager";
+import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
 import FCSFile from "graph/dataManagement/fcsFile";
-
-import axios from "axios";
-
+import dataManager from "graph/dataManagement/dataManager";
 import PlotData from "graph/dataManagement/plotData";
-import staticFileReader from "./staticFCSFiles/staticFileReader";
+import { snackbarService } from "uno-material-ui";
+import { ConsoleSqlOutlined, DownloadOutlined } from "@ant-design/icons";
+import { getHumanReadableTimeDifference } from "utils/time";
+import useForceUpdate from "hooks/forceUpdate";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -51,200 +50,56 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const generateRandomData = (
-  dimesionCount: number,
-  maxPoints: number,
-  l: number,
-  r: number
-) => {
-  if (l > r) throw Error("R must be greater than L");
-  const pointCount = Math.round(
-    Math.random() * (maxPoints / 2) + maxPoints / 2
-  );
-  const points: Array<Array<number>> = [];
-  for (let i = 0; i < pointCount; i++) {
-    let dimesion = [];
-    for (let j = 0; j < dimesionCount; j++) {
-      dimesion.push(Math.random() * (r - l) + l);
-    }
-    points.push(dimesion);
-  }
-  return points;
-};
-
-const generateRandomAxes = (dimesionCount: number) => {
-  const list = [];
-  for (let i: number = 0; i < dimesionCount; i++) {
-    list.push({
-      value: Math.random()
-        .toString(36)
-        .replace(/[^a-z]+/g, "")
-        .substr(0, Math.round(Math.random() * 5 + 2)),
-      key: i,
-      display: ["lin", "log"][Math.round(Math.random() * 1.5 - 0.5)],
-    });
-  }
-  return list;
-};
-
-const files = [
-  {
-    title: "transduction_1",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_1",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_2",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_2",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "transduction_3",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "transduction_3",
-    lastModified: "01/03/2021",
-  },
-  {
-    title: "erica1",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica1",
-    lastModified: "23/05/2020",
-  },
-  {
-    title: "erica2",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica2",
-    lastModified: "25/05/2020",
-  },
-  {
-    title: "erica3",
-    information: "No sources where given to anonymize data. Ficticious name.",
-    fromStatic: "erica3",
-    lastModified: "26/05/2020",
-  },
-  {
-    title: "SmallRandomDataset.fcs",
-    information:
-      "Generates some axes and points randomly! Around ~50 points, 2 dimesions, ranging from 0 to 100",
-    data: generateRandomData(2, 100, 0, 100),
-    axes: generateRandomAxes(2),
-    lastModified: "Right now!",
-  },
-  {
-    title: "MediumRandomDataset.fcs",
-    information:
-      "Generates axes and points randomly! Around ~500 points, 10 dimesions, ranging from 0 to 1",
-    data: generateRandomData(10, 1000, 0, 1),
-    axes: generateRandomAxes(10),
-    lastModified: "Right now!",
-  },
-  {
-    title: "LargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~5,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 3000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
-  {
-    title: "ExtremelyLargeRandomDataset.fcs",
-    information:
-      "Generates many axes and points randomly! Around ~50,000 points, 200 dimesions, ranging from -10000 to 1000000",
-    data: generateRandomData(200, 30000, -10000, 1000000),
-    axes: generateRandomAxes(200),
-    lastModified: "Right now!",
-  },
-];
-
-const addToFiles = (data: Array<any>, axes: object[], title: string) => {
-  const add = (data: Array<any>) => {
-    files.unshift({
-      title: title,
-      information: "Real anonymous FCS file",
-      data: data,
-      //@ts-ignore
-      axes: axes,
-      lastModified: "??",
-    });
-  };
-
-  add(data);
-};
-
-const getLocal = (filename: any, title: string) => {
-  addToFiles(filename.data, filename.axes, title);
-};
-
-const getRemotePrototypeFile = (url: string) => {
-  axios.get(url).then((response) => {
-    let text = response.data.slice(0, -3);
-    text += "]]";
-    const filedata = JSON.parse(text);
-    const remoteFileAxes = [
-      "FSC-A",
-      "SSC",
-      "Comp-FITC-A - CD7",
-      "Comp-PE-A - CD3",
-      "Comp-APC-A - CD45",
-      "Time",
-    ].map((e, i) => {
-      return { key: i, value: e, display: "lin" };
-    });
-    addToFiles(filedata, remoteFileAxes, url.split("/")[3].split(".")[0]);
-  });
-};
-
-// getLocal(transduction_1, "transduction_1");
-// getLocal(transduction_2, "transduction_2");
-// getLocal(transduction_3, "transduction_3");
-
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube3.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube2.json"
-// );
-// getRemotePrototypeFile(
-//   "https://samplefcsdata.s3-eu-west-1.amazonaws.com/erica_tube1.json"
-// );
+let downloaded: any[] = [];
 
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
+  isShared: boolean;
+  downloaded: any[];
+  filesMetadata: any[];
+  downloading: any[];
+  onDownloadFileEvents: (fileIds: any[]) => void;
+  addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(false);
+  const [filesMetadata, setFilesMetadata] = React.useState([]);
+
+  useEffect(() => {
+    setFilesMetadata(props.filesMetadata);
+    dataManager.addObserver("clearWorkspace", () => {
+      downloaded = [];
+      dataManager.setWorkspaceLoading(false);
+    });
+    return () => {
+      downloaded = [];
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [onHover, setOnHover] = React.useState(-1);
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
+  const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
   const addFile = (index: number) => {
-    const file = files[index];
-    let newFile: FCSFile;
-    if (file.fromStatic !== undefined) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        src: "generated",
-        axes: file.axes.map((e) => e.value),
-        data: file.data,
-        plotTypes: file.axes.map((e) => e.display),
-      });
-    }
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    dataManager.addNewPlotToWorkspace(plot);
+    props.addFileToWorkspace(index);
+  };
+
+  const downloadFile = (fileId: string) => {
+    props.onDownloadFileEvents([fileId]);
+    let id = "";
+    id = dataManager.addObserver("addNewFileToWorkspace", () => {
+      const plot = new PlotData();
+      plot.file = dataManager.getFile(fileId);
+      plot.setupPlot();
+      dataManager.addNewPlotToWorkspace(plot);
+      dataManager.removeObserver("addNewFileToWorkspace", id);
+      props.closeCall.f(props.closeCall.ref);
+    });
+  };
+
+  const downloadAll = () => {
+    let downloadingFileIds = filesMetadata.map((e) => e.id);
+    props.onDownloadFileEvents(downloadingFileIds);
   };
 
   return (
@@ -253,55 +108,67 @@ function AddFileModal(props: {
       onClose={() => {
         props.closeCall.f(props.closeCall.ref);
       }}
+      onRendered={() => {
+        if (!downloadCopied) {
+          downloaded = downloaded.concat(props.downloaded);
+          setDownloadCopied(true);
+        }
+      }}
     >
       <div className={classes.fileSelectModal}>
-        <h2>Open FCS file</h2>
+        <h2>Open file</h2>
 
         <p
           style={{
             color: "#777",
             fontSize: 15,
-            textAlign: "left",
+            textAlign: "center",
           }}
         >
-          The prototype still doesn't allow for uploading files or saving them,
-          but here we have a selection of 3 real fcs files for you to play
-          around!
+          Load and use your Flow Analysis files.
         </p>
 
-        <div
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
+        <div>
           <Button
+            size="large"
+            variant="contained"
             style={{
               backgroundColor: "#66d",
               color: "white",
-              fontSize: 13,
-              marginLeft: 20,
+              marginBottom: 15,
+            }}
+            startIcon={
+              <DownloadOutlined style={{ fontSize: 15, color: "white" }} />
+            }
+            onClick={() => {
+              downloadAll();
             }}
           >
-            Upload file (<BackupIcon fontSize="small"></BackupIcon>)
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#66d",
-              color: "white",
-              fontSize: 13,
-              marginLeft: 20,
-            }}
-          >
-            Upload file (Anonymous)
+            Load all files
           </Button>
         </div>
 
-        <p>
-          <b>Click on the file you want to open:</b>
-        </p>
+        {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
+          <div
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 20,
+            }}
+          >
+            <Button
+              style={{
+                backgroundColor: "#66d",
+                color: "white",
+                fontSize: 13,
+                marginLeft: 20,
+              }}
+            >
+              Upload file (Anonymous)
+            </Button>
+          </div>
+        ) : null}
 
         <div
           style={{
@@ -315,52 +182,213 @@ function AddFileModal(props: {
             borderWidth: 0.3,
           }}
         >
-          {files.map((e, i) => {
-            const divider =
-              i == files.length - 1 ? null : (
-                <Divider className={classes.fileSelectDivider} />
-              );
+          {downloadCopied ? (
+            filesMetadata.map((fileMetadata: any, i: number) => {
+              const divider =
+                i === filesMetadata.length - 1 ? null : (
+                  <Divider className={classes.fileSelectDivider} />
+                );
+              let isDownloaded =
+                //@ts-ignore
+                props.downloaded.length > 0
+                  ? props.downloaded.filter((e) => e.id === fileMetadata.id)
+                      .length > 0
+                  : false;
 
-            const payload = (
-              <div key={i.toString() + e.title}>
-                <div
-                  onMouseEnter={() => setOnHover(i)}
-                  onMouseLeave={() => setOnHover(-1)}
-                  className={
-                    onHover == i
-                      ? classes.fileSelectFileContainerHover
-                      : classes.fileSelectFileContainer
-                  }
-                  onClick={() => {
-                    addFile(i);
-                    props.closeCall.f(props.closeCall.ref);
-                  }}
-                >
-                  <p>
-                    <b>Title:</b>{" "}
-                    <a
+              const isDownloading =
+                props.downloading.length > 0
+                  ? props.downloading.filter((e) => e === fileMetadata.id)
+                      .length > 0
+                  : false;
+
+              return (
+                <div key={i.toString() + fileMetadata.title}>
+                  <div
+                    onMouseEnter={() => setOnHover(i)}
+                    onMouseLeave={() => setOnHover(-1)}
+                    className={
+                      onHover === i
+                        ? classes.fileSelectFileContainerHover
+                        : classes.fileSelectFileContainer
+                    }
+                  >
+                    <Grid container direction="row">
+                      <Grid container direction="row">
+                        <p style={{ width: "100%" }}>
+                          <b>Title:</b>{" "}
+                          <a
+                            style={{
+                              color: "#777",
+                              fontSize: 14,
+                            }}
+                          >
+                            {fileMetadata.label}
+                          </a>
+                        </p>
+                        <div style={{ display: "inline-block" }}>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                            }}
+                          >
+                            <b>Date:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {getHumanReadableTimeDifference(
+                                new Date(fileMetadata.createdOn),
+                                new Date()
+                              )}
+                            </a>
+                          </p>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
+                            }}
+                          >
+                            <b>Size:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                            </a>
+                          </p>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
+                            }}
+                          >
+                            <b>Events:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {fileMetadata.eventCount}
+                            </a>
+                          </p>
+                        </div>
+                      </Grid>
+                    </Grid>
+                    <div
                       style={{
-                        color: "#777",
-                        fontSize: 16,
-                        fontFamily: "Courier New",
+                        marginBottom: 10,
+                        marginLeft: -20,
+                        textAlign: "right",
                       }}
                     >
-                      {e.title}
-                    </a>
-                  </p>
-                  <p>
-                    <b>Last Modified:</b> {e.lastModified}
-                  </p>
-                  <p>
-                    <b>Information:</b> {e.information}
-                  </p>
+                      <Grid
+                        style={{
+                          textAlign: "right",
+                          flex: 1,
+                          flexDirection: "row",
+                          display: "inline-block",
+                        }}
+                      >
+                        <Grid style={{ display: "inline-block" }}>
+                          {isDownloaded
+                            ? "Loaded"
+                            : isDownloading
+                            ? "Loading..."
+                            : "Remote"}
+                        </Grid>
+                        <Grid
+                          style={{
+                            display: "inline-block",
+                          }}
+                        >
+                          <Grid
+                            style={{
+                              borderRadius: "100%",
+                              width: 13,
+                              height: 13,
+                              position: "relative",
+                              top: 2,
+                              marginLeft: 10,
+                              backgroundColor: isDownloaded
+                                ? "green"
+                                : isDownloading
+                                ? "#66d"
+                                : "#d66",
+                            }}
+                          ></Grid>
+                        </Grid>
+                      </Grid>
+                      {isDownloaded === false ? (
+                        <Button
+                          style={{
+                            backgroundColor: "#66d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={() => downloadFile(fileMetadata.id)}
+                        >
+                          {isDownloading ? (
+                            <CircularProgress
+                              style={{
+                                color: "white",
+                                width: 23,
+                                height: 23,
+                              }}
+                            />
+                          ) : (
+                            "Download"
+                          )}
+                        </Button>
+                      ) : null}
+                      {isDownloaded ? (
+                        <Button
+                          style={{
+                            backgroundColor: isDownloaded ? "#66d" : "#99d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={() => {
+                            let index: number;
+                            for (let i = 0; i < props.downloaded.length; i++) {
+                              if (props.downloaded[i].id === fileMetadata.id) {
+                                index = i;
+                                break;
+                              }
+                            }
+                            if (index === undefined) {
+                              snackbarService.showSnackbar(
+                                "File is not dowloaded",
+                                "error"
+                              );
+                              return;
+                            }
+                            addFile(index);
+                            props.closeCall.f(props.closeCall.ref);
+                          }}
+                          disabled={!isDownloaded}
+                        >
+                          Add to Workspace
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                  {divider}
                 </div>
-                {divider}
-              </div>
-            );
-
-            return payload;
-          })}
+              );
+            })
+          ) : (
+            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
+          )}
         </div>
       </div>
     </Modal>

@@ -2,12 +2,14 @@ import Gate from "../dataManagement/gate/gate";
 import dataManager from "./dataManager";
 
 export interface FCSFileInput {
+  id?: string;
   name: string;
   src: string;
   axes: string[];
   data: Array<Array<number>>;
   label?: string;
   plotTypes?: string[];
+  remoteData?: any;
 }
 
 export default class FCSFile {
@@ -18,15 +20,19 @@ export default class FCSFile {
   data: Array<Array<number>> = [];
   label?: string = "";
   plotTypes?: string[] = [];
+  remoteData?: any = null;
 
   constructor(file: FCSFileInput) {
-    this.id = dataManager.createID();
+    if (file.id !== undefined) this.id = file.id;
+    else this.id = dataManager.createID();
 
     this.src = file.src;
 
     this.name = file.name;
     this.axes = file.axes;
     this.data = file.data;
+
+    if (file.remoteData !== undefined) this.remoteData = file.remoteData;
 
     if (file.label !== undefined) {
       this.label = file.label;
@@ -96,6 +102,7 @@ export default class FCSFile {
       data: pop,
       label: this.label,
       plotTypes: this.plotTypes,
+      remoteData: this.remoteData,
     });
   }
 
@@ -105,7 +112,7 @@ export default class FCSFile {
       return this.axisIndexCache.get(axisName);
     }
     for (let i = 0; i < this.axes.length; i++) {
-      if (this.axes[i] == axisName) {
+      if (this.axes[i] === axisName) {
         this.axisIndexCache.set(axisName, i);
         return i;
       }

@@ -3,6 +3,7 @@ import Grid from "@material-ui/core/Grid";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 import Switch from "@material-ui/core/Switch";
+import useForceUpdate from "hooks/forceUpdate";
 
 const classes = {
   axisBar: {
@@ -20,70 +21,25 @@ const classes = {
   },
 };
 
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
-
 export default function AxisBar(props: any) {
   const plot = props.plot;
   const rerender = useForceUpdate();
 
-  const xAxis = plot.plotData.xAxis;
-  const yAxis = plot.plotData.yAxis;
   const xPlotType = plot.plotData.xPlotType;
   const yPlotType = plot.plotData.yPlotType;
-  const [xHistogram, setXHistogram] = React.useState(false);
-  const [yHistogram, setYHistogram] = React.useState(false);
-  const [oldXAxis, setOldXAxis] = React.useState(null);
-  const [oldYAxis, setOldYAxis] = React.useState(null);
 
   const isAxisDisabled = (axis: "x" | "y") => {
-    return axis === "x" ? yHistogram : xHistogram;
+    return axis === "x" ? plot.plotData.yHistogram : plot.plotData.xHistogram;
   };
 
   const isPlotHistogram = () => {
-    return isAxisDisabled("y") || isAxisDisabled("x");
-  };
-
-  const setHistogram = (axis: "x" | "y", value: boolean) => {
-    axis === "x" ? setXHistogram(value) : setYHistogram(value);
-
-    if (value) {
-      axis === "x" ? setOldYAxis(yAxis) : setOldXAxis(xAxis);
-      axis === "x"
-        ? props.plot.plotData.xAxisToHistogram()
-        : props.plot.plotData.yAxisToHistogram();
-    } else {
-      axis === "x"
-        ? props.plot.plotData.setYAxis(oldYAxis)
-        : props.plot.plotData.setXAxis(oldXAxis);
-    }
-  };
-
-  const setAxis = (axis: "x" | "y", value: string) => {
-    const otherAxisValue = axis == "x" ? yAxis : xAxis;
-    if (value == otherAxisValue && !isPlotHistogram()) {
-      setHistogram(axis == "x" ? "y" : "x", true);
-    } else {
-      axis == "x"
-        ? props.plot.plotData.setXAxis(value)
-        : props.plot.plotData.setYAxis(value);
-    }
+    return plot.plotData.xHistogram || plot.plotData.yHistogram;
   };
 
   const setPlotType = (axis: "x" | "y", value: string) => {
     axis == "x"
       ? props.plot.plotData.setXAxisPlotType(value)
       : props.plot.plotData.setYAxisPlotType(value);
-  };
-
-  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
-  const handleSelectEvent = (e: any, func: Function) => {
-    if (lastSelectEvent + 500 < new Date().getTime()) {
-      func(e);
-      setLastSelectEvent(new Date().getTime());
-    }
   };
 
   return (
@@ -108,29 +64,14 @@ export default function AxisBar(props: any) {
           <b>Type:</b>
           <Select
             style={{ width: 100, marginLeft: 10 }}
-            disabled={true || isAxisDisabled("x") || isPlotHistogram()}
+            disabled={isAxisDisabled("x") || isPlotHistogram()}
             value={xPlotType}
             //@ts-ignore
             onChange={(e) => setPlotType("x", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
-            <MenuItem value={"log"}>Log</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
             {/* <MenuItem value={"bin"}>Bilinear</MenuItem> */}
-          </Select>
-        </Grid>
-        <Grid>
-          <b>Axis:</b>
-          <Select
-            style={{ width: 100, marginLeft: 10 }}
-            onChange={(e) =>
-              handleSelectEvent(e, (e: any) => setAxis("x", e.target.value))
-            }
-            disabled={isAxisDisabled("x")}
-            value={xAxis}
-          >
-            {plot.plotData.file.axes.map((e: any) => (
-              <MenuItem value={e}>{e}</MenuItem>
-            ))}
           </Select>
         </Grid>
         <Grid>
@@ -146,9 +87,9 @@ export default function AxisBar(props: any) {
             color="primary"
             name="checkedB"
             inputProps={{ "aria-label": "primary checkbox" }}
-            checked={xHistogram}
+            checked={plot.plotData.xHistogram}
             disabled={isAxisDisabled("x")}
-            onChange={(_, checked) => setHistogram("x", checked)}
+            onChange={(_, checked) => props.histogramCallback("x", checked)}
           />
         </Grid>
       </Grid>
@@ -174,27 +115,12 @@ export default function AxisBar(props: any) {
           <Select
             style={{ width: 100, marginLeft: 10 }}
             value={yPlotType}
-            disabled={true || isAxisDisabled("y") || isPlotHistogram()}
+            disabled={isAxisDisabled("y") || isPlotHistogram()}
             //@ts-ignore
             onChange={(e) => setPlotType("y", e.target.value)}
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
-            <MenuItem value={"log"}>Log</MenuItem>
-          </Select>
-        </Grid>
-        <Grid>
-          <b>Axis:</b>
-          <Select
-            style={{ width: 100, marginLeft: 10 }}
-            onChange={(e) =>
-              handleSelectEvent(e, (e: any) => setAxis("y", e.target.value))
-            }
-            disabled={isAxisDisabled("y")}
-            value={yAxis}
-          >
-            {plot.plotData.file.axes.map((e: any) => (
-              <MenuItem value={e}>{e}</MenuItem>
-            ))}
+            <MenuItem value={"bi"}>Logicle</MenuItem>
           </Select>
         </Grid>
         <Grid>
@@ -209,9 +135,9 @@ export default function AxisBar(props: any) {
             color="primary"
             name="checkedB"
             inputProps={{ "aria-label": "primary checkbox" }}
-            checked={yHistogram}
+            checked={props.plot.plotData.yHistogram}
             disabled={isAxisDisabled("y")}
-            onChange={(_, checked) => setHistogram("y", checked)}
+            onChange={(_, checked) => props.histogramCallback("y", checked)}
           />
         </Grid>
       </Grid>

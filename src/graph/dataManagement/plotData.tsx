@@ -4,7 +4,6 @@
   easily.
 */
 
-import staticFileReader from "graph/components/modals/staticFCSFiles/staticFileReader";
 import dataManager from "./dataManager";
 import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
@@ -12,6 +11,8 @@ import ObserversFunctionality, {
   publishDecorator,
 } from "./observersFunctionality";
 import { generateColor } from "graph/utils/color";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import FCSServices from "services/FCSServices/FCSServices";
 
 /* TypeScript does not deal well with decorators. Your linter might
    indicate a problem with this function but it does not exist */
@@ -31,11 +32,11 @@ const conditionalUpdateDecorator = () => {
 };
 
 const DEFAULT_COLOR = "#000";
-const MAX_EVENT_SIZE = 100000;
 
 export interface PlotDataState {
-  id: string;
+  id?: string;
   ranges: Map<string, [number, number]>;
+  rangePlotType: Map<string, string>;
   file: FCSFile;
   gates: {
     gate: Gate;
@@ -56,6 +57,15 @@ export interface PlotDataState {
   yPlotType: string;
   histogramAxis: "horizontal" | "vertical";
   label: string;
+  dimensions: {
+    w: number;
+    h: number;
+  };
+  positions: {
+    x: number;
+    y: number;
+  };
+  parentPlotId: string;
 }
 
 export default class PlotData extends ObserversFunctionality {
@@ -63,6 +73,7 @@ export default class PlotData extends ObserversFunctionality {
 
   readonly id: string;
   ranges: Map<string, [number, number]> = new Map();
+  rangePlotType: Map<string, string> = new Map();
   file: FCSFile;
   gates: {
     displayOnlyPointsInGate: boolean;
@@ -75,19 +86,43 @@ export default class PlotData extends ObserversFunctionality {
   }[] = [];
   xAxis: string = "";
   yAxis: string = "";
+  yHistogram: boolean = false;
+  xHistogram: boolean = false;
   positionInWorkspace: [number, number];
   plotWidth: number = 0;
   plotHeight: number = 0;
   plotScale: number = 2;
-  xPlotType: string = "lin";
-  yPlotType: string = "lin";
+  xPlotType: string = "";
+  yPlotType: string = "";
   histogramAxis: "horizontal" | "vertical" = "vertical";
   label: string = "";
   histogramOverlays: {
     color: string;
-    plot: string;
+    plot: any;
+    plotId: string;
+    plotSource: string;
   }[] = [];
-
+  histogramBarOverlays: {
+    color: string;
+    plot: any;
+    plotId: string;
+    plotSource: string;
+  }[] = [];
+  dimensions: {
+    w: number;
+    h: number;
+  } = {
+    w: 10,
+    h: 12,
+  };
+  positions: {
+    x: number;
+    y: number;
+  } = {
+    x: -1,
+    y: -1,
+  };
+  parentPlotId: string = "";
   private changed: boolean = false;
   private randomSelection: number[] | null = null;
 
@@ -99,12 +134,53 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   setupPlot() {
+    try {
+      const fscssc = this.getFSCandSSCAxis();
+      if (this.xAxis === "" && this.yAxis === "") {
+        this.xAxis = this.file.axes[fscssc.fsc];
+        this.yAxis = this.file.axes[fscssc.ssc];
+      }
+    } catch {}
+
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
+    this.xPlotType =
+      this.xAxis.toLowerCase().includes("fsc") ||
+      this.xAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
+    console.log(this.xAxis.toLowerCase());
+    this.yPlotType =
+      this.yAxis.toLowerCase().includes("fsc") ||
+      this.yAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
+
     this.label = "Plot " + PlotData.instaceCount++;
+
     this.updateGateObservers();
-    this.updateRandomSelection();
+  }
+
+  getFSCandSSCAxis(): { fsc: number; ssc: number } {
+    let hasFSC: null | number = null;
+    let hasSSC: null | number = null;
+    for (
+      let i = 0;
+      i < this.file.axes.length && (hasFSC === null || hasSSC === null);
+      i++
+    ) {
+      const axis = this.file.axes[i];
+      if (axis.toUpperCase().indexOf("FSC") !== -1) {
+        hasFSC = i;
+      } else if (axis.toUpperCase().indexOf("SSC") !== -1) {
+        hasSSC = i;
+      }
+    }
+    if (hasSSC === null || hasFSC === null) {
+      throw Error("FSC or SSC axis not found");
+    }
+    return { fsc: hasFSC, ssc: hasSSC };
   }
 
   getOverlays() {
@@ -116,32 +192,6 @@ export default class PlotData extends ObserversFunctionality {
     });
   }
 
-  private updateRandomSelection() {
-    const pointCount = this.getXandYData().xAxis.length;
-    const axisCount = this.file.axes.length;
-    if (pointCount * axisCount > MAX_EVENT_SIZE) {
-      const selectedPointsCount = Math.round(MAX_EVENT_SIZE / axisCount);
-      let permutation = Array(pointCount)
-        .fill(0)
-        .map((_, i) => i);
-      for (let i = 0; i < pointCount; i++) {
-        const temp = permutation[i];
-        const rnd = Math.round(Math.random() * pointCount);
-        permutation[i] = permutation[rnd];
-        permutation[rnd] = temp;
-      }
-      this.randomSelection = permutation.filter(
-        (_, i) => i < selectedPointsCount
-      );
-    } else this.randomSelection = null;
-    this.axisDataCache = null;
-  }
-
-  private filterIndexesFromRandomSelection(arr: any[]) {
-    if (this.randomSelection === null) return arr;
-    return this.randomSelection.map((e) => arr[e]);
-  }
-
   export(): string {
     const state: any = this.getState();
     state.file = "local://" + state.file.name;
@@ -150,11 +200,6 @@ export default class PlotData extends ObserversFunctionality {
 
   import(plotJSON: string) {
     const plot = JSON.parse(plotJSON);
-    if (plot.file.split("://")[0] === "local") {
-      const file = staticFileReader(plot.file.split("://")[1]);
-      const id = dataManager.addNewFileToWorkspace(file);
-      plot.file = dataManager.getFile(id);
-    }
     this.setState(plot);
   }
 
@@ -176,7 +221,8 @@ export default class PlotData extends ObserversFunctionality {
     return {
       id: this.id,
       label: this.label,
-      ranges: this.ranges,
+      ranges: new Map(this.ranges),
+      rangePlotType: new Map(this.rangePlotType),
       file: this.file,
       gates: this.gates,
       population: this.population,
@@ -189,6 +235,9 @@ export default class PlotData extends ObserversFunctionality {
       xPlotType: this.xPlotType,
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
+      dimensions: this.dimensions,
+      positions: this.positions,
+      parentPlotId: this.parentPlotId,
     };
   }
 
@@ -209,36 +258,85 @@ export default class PlotData extends ObserversFunctionality {
     if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
     if (state.histogramAxis !== undefined)
       this.histogramAxis = state.histogramAxis;
+    if (state.dimensions !== undefined) this.dimensions = state.dimensions;
+    if (state.positions !== undefined) this.positions = state.positions;
+    if (state.rangePlotType) this.rangePlotType = state.rangePlotType;
   }
 
   update(state: any) {
     if (state.label !== undefined) this.label = state.label;
     this.plotUpdated();
+
+    dataManager.redrawPlotIds.push(this.id);
+    if (this.parentPlotId) dataManager.redrawPlotIds.push(this.parentPlotId);
   }
 
   /* MULTI PLOT INTERACTION */
 
-  addOverlay(plotData: PlotData, color?: string) {
-    if (color === undefined) color = generateColor();
+  addOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
+    if (!color) color = generateColor();
     this.histogramOverlays.push({
-      plot: plotData.id,
+      plot: COMMON_CONSTANTS.FILE === plotSource ? plotData : {},
       color: color,
+      plotId: plotId,
+      plotSource: plotSource,
     });
     this.plotUpdated();
+    this.initiateAutoSave();
+  }
+
+  initiateAutoSave() {
+    if (dataManager.letUpdateBeCalledForAutoSave)
+      dataManager.workspaceUpdated();
+  }
+
+  addBarOverlay(
+    plotData: PlotData,
+    color?: string,
+    plotId?: string,
+    plotSource?: string
+  ) {
+    if (!color) color = generateColor();
+    this.histogramBarOverlays.push({
+      plot: COMMON_CONSTANTS.FILE === plotSource ? plotData : {},
+      color: color,
+      plotId: plotId,
+      plotSource: plotSource,
+    });
+    this.plotUpdated();
+    this.initiateAutoSave();
+  }
+
+  removeBarOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plotId !== ploDataID
+    );
+    this.plotUpdated();
+    this.initiateAutoSave();
+  }
+
+  removeAnyOverlay(ploDataID: string) {
+    this.histogramBarOverlays = this.histogramBarOverlays.filter(
+      (x) => x.plotId !== ploDataID
+    );
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (x) => x.plotId !== ploDataID
+    );
+    this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   removeOverlay(plotDataID: string) {
-    const oldLength = this.histogramOverlays.length;
-    const without = this.histogramOverlays.filter((e) => e.plot != plotDataID);
-    if (without.length < oldLength - 1 || without.length === oldLength) {
-      throw Error(
-        "Try to remove " +
-          (oldLength - without.length).toString() +
-          " overlay(s). Should be exactly 1."
-      );
-    }
-    this.histogramOverlays = without;
+    this.histogramOverlays = this.histogramOverlays.filter(
+      (e) => e.plotId !== plotDataID
+    );
     this.plotUpdated();
+    this.initiateAutoSave();
   }
 
   createSubpop(inverse: boolean = false) {
@@ -250,8 +348,24 @@ export default class PlotData extends ObserversFunctionality {
     });
     const newPlotData = new PlotData();
     newPlotData.setState(this.getState());
-    newPlotData.population = [...newGates, ...this.population];
+    newPlotData.parentPlotId = this.id;
     newPlotData.gates = [];
+    newPlotData.population = [
+      newGates[newGates.length - 1],
+      ...this.population,
+    ];
+    newPlotData.updateGateObservers();
+    newPlotData.positions = {
+      x: -1,
+      y: -1,
+    };
+    newPlotData.dimensions = {
+      w: 10,
+      h: 12,
+    };
+    newPlotData.parentPlotId = this.id;
+    newPlotData.gates = [];
+    dataManager.redrawPlotIds.push(this.id);
     return dataManager.addNewPlotToWorkspace(newPlotData);
   }
 
@@ -273,8 +387,6 @@ export default class PlotData extends ObserversFunctionality {
 
     this.axisDataCache = null;
     this.updateGateObservers();
-    this.updateRandomSelection();
-
     this.plotUpdated();
   }
 
@@ -292,8 +404,41 @@ export default class PlotData extends ObserversFunctionality {
 
     this.axisDataCache = null;
     this.updateGateObservers();
-    this.updateRandomSelection();
+    this.plotUpdated();
+  }
 
+  @publishDecorator()
+  addPopulation(gate: Gate) {
+    const gateQuery = this.population.filter((g) => g.gate.id === gate.id);
+    if (gateQuery.length > 0) {
+      throw Error(
+        "Adding the same gate with ID = " + gate.id + " twice to plot"
+      );
+    }
+    this.population.push({
+      gate: gate,
+      inverseGating: false,
+    });
+
+    this.axisDataCache = null;
+    this.updateGateObservers();
+    this.plotUpdated();
+  }
+
+  @publishDecorator()
+  removePopulation(gate: Gate) {
+    const gateQuery = this.population.filter((g) => g.gate.id === gate.id);
+    if (gateQuery.length !== 1) {
+      if (gateQuery.length < 1)
+        throw Error("Gate with ID = " + gate.id + " was not found");
+      if (gateQuery.length > 1) {
+        throw Error("Multiple gates with ID = " + gate.id + " were found");
+      }
+    }
+    this.population = this.population.filter((g) => g.gate.id !== gate.id);
+
+    this.axisDataCache = null;
+    this.updateGateObservers();
     this.plotUpdated();
   }
 
@@ -301,11 +446,19 @@ export default class PlotData extends ObserversFunctionality {
     return this.gates.map((e) => e.gate);
   }
 
+  getGatesAndPopulation(): Gate[] {
+    return [
+      ...this.gates.map((e) => e.gate),
+      ...this.population.map((e) => e.gate),
+    ];
+  }
+
   @conditionalUpdateDecorator()
   setWidthAndHeight(w: number, h: number) {
-    this.changed = this.changed || this.plotWidth != w || this.plotHeight != h;
-    this.plotWidth = w;
-    this.plotHeight = h;
+    this.changed =
+      this.changed || this.plotWidth !== w || this.plotHeight !== h;
+    this.plotWidth = w - 40;
+    this.plotHeight = h - 30;
   }
 
   @conditionalUpdateDecorator()
@@ -324,6 +477,7 @@ export default class PlotData extends ObserversFunctionality {
   xAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.yAxis = this.xAxis;
+    this.xHistogram = true;
     this.histogramAxis = "vertical";
   }
 
@@ -331,6 +485,7 @@ export default class PlotData extends ObserversFunctionality {
   yAxisToHistogram() {
     this.changed = this.changed || this.yAxis !== this.xAxis;
     this.xAxis = this.yAxis;
+    this.yHistogram = true;
     this.histogramAxis = "horizontal";
   }
 
@@ -338,12 +493,20 @@ export default class PlotData extends ObserversFunctionality {
   setXAxis(xAxis: string) {
     this.changed = this.changed || xAxis !== this.xAxis;
     this.xAxis = xAxis;
+    this.xPlotType = this.rangePlotType.get(xAxis);
   }
 
   @conditionalUpdateDecorator()
   setYAxis(yAxis: string) {
     this.changed = this.changed || yAxis !== this.yAxis;
     this.yAxis = yAxis;
+    this.yPlotType = this.rangePlotType.get(yAxis);
+  }
+
+  @conditionalUpdateDecorator()
+  disableHistogram(axis: "x" | "y") {
+    if (axis === "x") this.xHistogram = false;
+    else this.yHistogram = false;
   }
 
   /* PLOT STATE GETTERS */
@@ -412,12 +575,13 @@ export default class PlotData extends ObserversFunctionality {
   ): { xAxis: number[]; yAxis: number[] } {
     const xAxisName = targetXAxis !== undefined ? targetXAxis : this.xAxis;
     const yAxisName = targetYAxis !== undefined ? targetYAxis : this.yAxis;
-    const xAxis: number[] = [];
-    const yAxis: number[] = [];
+    let xAxis: number[] = [];
+    let yAxis: number[] = [];
     this.getAxesData().forEach((e) => {
       xAxis.push(e[xAxisName]);
       yAxis.push(e[yAxisName]);
     });
+
     return { xAxis, yAxis };
   }
 
@@ -442,7 +606,10 @@ export default class PlotData extends ObserversFunctionality {
     ) {
       this.findAllRanges();
     }
-    return { x: this.ranges.get(targetXAxis), y: this.ranges.get(targetYAxis) };
+    return {
+      x: this.ranges.get(targetXAxis),
+      y: this.ranges.get(targetYAxis),
+    };
   }
 
   private STD_BIN_SIZE = 50;
@@ -454,8 +621,21 @@ export default class PlotData extends ObserversFunctionality {
           ? this.xAxis
           : this.yAxis
         : targetAxis;
-    const range = this.ranges.get(axisName);
-    const axis = this.getAxis(axisName);
+    let range = this.ranges.get(axisName);
+    let axis = this.getAxis(axisName);
+    if (
+      (this.xAxis === axisName && this.xPlotType === "bi") ||
+      (this.yAxis === axisName && this.yPlotType === "bi")
+    ) {
+      const fcsServices = new FCSServices();
+      const linearRange = this.ranges.get(axisName);
+      axis = fcsServices.logicleMarkTransformer(
+        [...axis],
+        linearRange[0],
+        linearRange[1]
+      );
+      range = [0.5, 1];
+    }
     const binCounts = Array(binCount).fill(0);
     const step = (range[1] - range[0]) / binCount;
     let mx = 0;
@@ -473,9 +653,30 @@ export default class PlotData extends ObserversFunctionality {
       : this.plotHeight / this.STD_BIN_SIZE;
   }
 
-  private axisDataCache: null | any[] = null;
-  getAxesData(filterGating: boolean = true): any[] {
-    if (this.axisDataCache) return this.axisDataCache;
+  resetOriginalRanges() {
+    if (
+      !this?.file ||
+      !this?.file?.remoteData ||
+      !this.file?.plotTypes ||
+      !this?.file?.remoteData?.paramsAnalysis
+    ) {
+      throw Error("No original range exists");
+    }
+    this.findAllRanges();
+  }
+
+  private axisDataCache: null | {
+    data: any[];
+    filterGating: boolean;
+    filterPop: boolean;
+  } = null;
+  getAxesData(filterGating: boolean = true, filterPop: boolean = true): any[] {
+    if (
+      this.axisDataCache !== null &&
+      this.axisDataCache.filterGating === filterGating &&
+      this.axisDataCache.filterPop === filterPop
+    )
+      return this.axisDataCache.data;
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -505,16 +706,19 @@ export default class PlotData extends ObserversFunctionality {
         }
       }
     }
-    for (const gate of this.population) {
-      const x = gate.gate.xAxis;
-      const y = gate.gate.yAxis;
-      data = data.filter((e: any) => {
-        const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-        return gate.inverseGating ? !inside : inside;
-      });
+    if (filterPop) {
+      for (const gate of this.population) {
+        const x = gate.gate.xAxis;
+        const y = gate.gate.yAxis;
+        data = data.filter((e: any) => {
+          const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+          return gate.inverseGating ? !inside : inside;
+        });
+      }
     }
-    // data = this.filterIndexesFromRandomSelection(data);
-    return (this.axisDataCache = data);
+    //@ts-ignore
+    this.axisDataCache = { data, filterGating, filterPop };
+    return data;
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
@@ -539,7 +743,7 @@ export default class PlotData extends ObserversFunctionality {
           this.gateObservers.filter((g) => g.targetGateID === e)[0].observerID
         );
       this.gateObservers = this.gateObservers.filter(
-        (g) => g.targetGateID != e
+        (g) => g.targetGateID !== e
       );
     });
     gateIds = this.population.map((obj) => obj.gate.id);
@@ -560,7 +764,7 @@ export default class PlotData extends ObserversFunctionality {
           "update",
           this.popObservers.filter((g) => g.targetGateID === e)[0].observerID
         );
-      this.popObservers = this.popObservers.filter((g) => g.targetGateID === e);
+      this.popObservers = this.popObservers.filter((g) => g.targetGateID !== e);
     });
   }
 
@@ -569,34 +773,30 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private findAllRanges() {
-    if (typeof this.ranges === "object") {
-      this.ranges = new Map();
-    }
-    if (this.file.name == "erica1") {
-      this.ranges.set("FSC-A", [0, 262144]);
-      this.ranges.set("SSC", [0, 262144]);
-      this.ranges.set("Comp-FITC-A - CD7", [0, 1]);
-      this.ranges.set("Comp-PE-A - CD3", [0, 1]);
-      this.ranges.set("Comp-APC-A - CD45", [0, 1]);
-      this.ranges.set("Time", [0, 1]);
-      return;
-    }
-    const axesData = this.getAxesData();
-    for (const axis of this.file.axes) {
-      if (this.ranges.has(axis)) continue;
+    if (!(this.ranges instanceof Map)) this.ranges = new Map();
+    if (!(this.rangePlotType instanceof Map)) this.rangePlotType = new Map();
+
+    if (this.file.axes.map((e) => this.ranges.has(e)).every((e) => e)) return;
+    if (this.file === undefined) throw Error("No file found for plot");
+    const axesData = this.getAxesData(false, false);
+
+    Object.values(this.file.axes).forEach((axis, i) => {
+      const axisType = this.file.plotTypes[i];
+
+      this.rangePlotType.set(axis, axisType);
       const data = axesData.map((e) => e[axis]);
-      this.ranges.set(axis, this.findRangeBoundries(data));
-    }
+      const boundaries = this.findRangeBoundries(data);
+      this.ranges.set(axis, boundaries);
+    });
   }
 
-  private findRangeBoundries(axisData: number[]): [number, number] {
+  findRangeBoundries(axisData: number[]): [number, number] {
     let min = axisData[0],
       max = axisData[0];
     for (const p of axisData) {
       min = Math.min(p, min);
       max = Math.max(p, max);
     }
-    const d = Math.max(max - min, 1e-10);
     return [min, max];
   }
 }

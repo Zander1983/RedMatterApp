@@ -1,9 +1,10 @@
 import configureStore from "./createStore";
+import { persistStore } from "redux-persist";
 
-let store: any;
+export let store: any;
 
 if (store === undefined) {
   store = configureStore();
 }
 
-export default store;
+export const persistor = persistStore(store);

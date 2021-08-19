@@ -1,19 +1,70 @@
 import PlotData from "./plotData";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import numeral from "numeral";
+import { sqrt } from "mathjs";
 
 export default class PlotStats {
   plot: PlotData;
 
-  getPlotStats(plot: PlotData) {
+  getPlotStats(plot: PlotData, statsX: number, statsY: number) {
     this.plot = plot;
-    const means = this.getMeans();
+    const stat = this.getStats(statsX, statsY);
+    const pointsOutSideOfRangeObj = this.getPointsOutOfRange();
     const pop = this.getPopulationStats();
     return {
-      meanX: means.x,
-      meanY: means.y,
+      statX: stat.x,
+      statY: stat.y,
+      pointsOutSideOfRangeObj: pointsOutSideOfRangeObj,
       filePopulationSize: pop.fileSize,
       gatedFilePopulationSize: pop.plotSize,
       gatedFilePopulationPercentage: pop.percentage,
     };
+  }
+
+  getPointsOutOfRange() {
+    let xyRange = this.plot.getXandYRanges();
+    let xRange = xyRange.x;
+    let yRange = xyRange.y;
+
+    let xMin = xRange[0];
+    let xMax = xRange[1];
+    let yMin = yRange[0];
+    let yMax = yRange[1];
+
+    let data = this.plot.getXandYData();
+
+    let length = Object.keys(data.xAxis).length;
+
+    let count = 0;
+
+    for (let i = 0; i < length; i++) {
+      let x = data.xAxis[i];
+      let y = data.yAxis[i];
+
+      if (x < xMin || x > xMax || y < yMin || y > yMax) {
+        count++;
+      }
+    }
+    return {
+      count: count,
+      percentage: count ? this.parseNum((count / length) * 100) : 0,
+    };
+  }
+
+  private getStats(statX: number, statY: number) {
+    const data = this.plot.getXandYData();
+    let x = this.getMedianOrMean(statX, data.xAxis);
+    let y = this.getMedianOrMean(statY, data.yAxis);
+    return { x: x, y: y };
+  }
+
+  private getMedianOrMean(val: number, axis: Array<number>) {
+    switch (val) {
+      case COMMON_CONSTANTS.DROPDOWNS.STATS.Mean:
+        return this.getMean(axis);
+      case COMMON_CONSTANTS.DROPDOWNS.STATS.Median:
+        return this.getMedianValue(axis);
+    }
   }
 
   private getPopulationStats() {
@@ -32,27 +83,40 @@ export default class PlotStats {
     };
   }
 
-  private getMeans() {
-    const data = this.plot.getXandYData();
-    let sumX = 0;
-    let sumY = 0;
-    data.xAxis.forEach((e) => (sumX += e));
-    data.yAxis.forEach((e) => (sumY += e));
-    let countX = data.xAxis.length;
-    let countY = data.yAxis.length;
-    let x: number = sumX / countX;
-    let y: number = sumY / countY;
-    const parseNum = (num: number) => {
-      if (num > 1e6 || num < 1e-6) {
-        return num.toExponential();
-      }
-      if (num < 1) {
-        return num.toFixed(6);
-      }
-      if (num > 1) {
-        return num.toFixed(2);
-      }
-    };
-    return { x: parseNum(x), y: parseNum(y) };
+  private getMean(axis: Array<number>) {
+    let sum = 0;
+    axis.forEach((e) => (sum += e));
+    let count = axis.length;
+    return numeral(this.parseNum(sum / count)).format("0a");
+  }
+
+  private parseNum = (num: number) => {
+    if (num > 1e6 || num < 1e-6) {
+      return num.toExponential();
+    }
+    if (num < 1) {
+      return num.toFixed(6);
+    }
+    if (num > 1) {
+      return num.toFixed(2);
+    }
+  };
+
+  private getMedianValue(axis: Array<number>) {
+    let axisSort = axis.sort((a, b) => {
+      return a - b;
+    });
+
+    let length = axisSort.length;
+    let n = Math.floor(length / 2);
+    let value;
+
+    if (length % 2 === 0) {
+      value = this.parseNum((axisSort[n] + axisSort[n - 1]) / 2);
+    } else {
+      value = this.parseNum(axisSort[n]);
+    }
+
+    return numeral(value).format("0a");
   }
 }

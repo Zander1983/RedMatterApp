@@ -1,7 +1,9 @@
 import { Button, Grid } from "@material-ui/core";
-import { NavLink } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 export default function Terms() {
+  const history = useHistory();
+
   return (
     <Grid
       container
@@ -43,15 +45,14 @@ export default function Terms() {
           textAlign: "center",
         }}
       >
-        <NavLink to="/">
-          <Button
-            style={{
-              border: "solid 1px #000",
-            }}
-          >
-            Go back
-          </Button>
-        </NavLink>
+        <Button
+          style={{
+            border: "solid 1px #000",
+          }}
+          onClick={() => history.goBack()}
+        >
+          Go back
+        </Button>
       </div>
     </Grid>
   );
