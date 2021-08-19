@@ -3,6 +3,8 @@ import { Button, Grid, TextField } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import React, { useCallback, useEffect } from "react";
 import { snackbarService } from "uno-material-ui";
+import PlotData from "graph/dataManagement/plotData";
+import { Divider } from "antd";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -39,6 +41,7 @@ function RangeResizeModal(props: {
     maxX: number;
     minY: number;
     maxY: number;
+    plot: PlotData;
   };
   callback: (
     minX: number,
@@ -88,6 +91,20 @@ function RangeResizeModal(props: {
     }
   };
 
+  const setDefaultRanges = (axis: "x" | "y") => {
+    const axisName = axis === "x" ? props.inits.axisX : props.inits.axisY;
+    //@ts-ignore
+    const data = props.inits.plot.getAxisData(axisName);
+    const ranges = props.inits.plot.findRangeBoundries(data);
+    if (axis === "x") {
+      setMinX(ranges[0].toString());
+      setMaxX(ranges[1].toString());
+    } else {
+      setMinY(ranges[0].toString());
+      setMaxY(ranges[1].toString());
+    }
+  };
+
   return (
     <Modal
       open={props.open}
@@ -103,10 +120,10 @@ function RangeResizeModal(props: {
           container
           alignItems="center"
           direction="row"
-          style={{ padding: "2rem 1rem" }}
+          style={{ padding: "2rem 1rem 1rem 1rem" }}
         >
           {props.inits.histogramAxis !== "horizontal" ? (
-            <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+            <Grid item xs={12} md={props.inits.histogramAxis ? 12 : 6}>
               <h3>Edit {props.inits.axisX} range</h3>
               <TextField
                 label="Range min"
@@ -123,11 +140,24 @@ function RangeResizeModal(props: {
                   setMaxX(e.target.value);
                 }}
               />
+              <br />
+              <Button
+                variant="contained"
+                style={{
+                  marginTop: 15,
+                  backgroundColor: "#6666aa",
+                  color: "white",
+                  marginLeft: 20,
+                }}
+                onClick={() => setDefaultRanges("x")}
+              >
+                Set Default
+              </Button>
             </Grid>
           ) : null}
 
           {props.inits.histogramAxis !== "vertical" ? (
-            <Grid item xs={12} md={6} style={{ marginBottom: "2rem" }}>
+            <Grid item xs={12} md={props.inits.histogramAxis ? 12 : 6}>
               <h3>Edit {props.inits.axisY} range</h3>
               <TextField
                 label="Range min"
@@ -144,9 +174,22 @@ function RangeResizeModal(props: {
                   setMaxY(e.target.value);
                 }}
               />
+              <br />
+              <Button
+                variant="contained"
+                style={{
+                  marginTop: 15,
+                  backgroundColor: "#6666aa",
+                  color: "white",
+                  marginLeft: 20,
+                }}
+                onClick={() => setDefaultRanges("y")}
+              >
+                Set Default
+              </Button>
             </Grid>
           ) : null}
-
+          <Divider></Divider>
           <br />
           <Grid
             container
@@ -157,6 +200,9 @@ function RangeResizeModal(props: {
             <Button
               variant="contained"
               color="primary"
+              style={{
+                backgroundColor: "#6666aa",
+              }}
               onClick={() => {
                 commitRangeChange();
               }}
@@ -177,21 +223,6 @@ function RangeResizeModal(props: {
             >
               Cancel
             </Button>
-
-            {/* <Button
-              variant="contained"
-              style={{
-                backgroundColor: "#6666aa",
-                color: "white",
-                marginLeft: 20,
-              }}
-              onClick={() => {
-                props.callback(69, 420, props.inits.axis.split(" ")[0]);
-                props.closeCall.f(props.closeCall.ref);
-              }}
-            >
-              Set Default
-            </Button> */}
           </Grid>
         </Grid>
       </div>

@@ -768,7 +768,7 @@ export default class PlotData extends ObserversFunctionality {
     });
   }
 
-  private getAxisData(axis: string): number[] {
+  getAxisData(axis: string): number[] {
     return this.file.getAxisPoints(axis);
   }
 

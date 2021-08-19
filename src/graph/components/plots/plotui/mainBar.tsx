@@ -174,6 +174,7 @@ export default function MainBar(props: any) {
           maxX: rangeResizeModalTargetMaxX,
           minY: rangeResizeModalTargetMinY,
           maxY: rangeResizeModalTargetMaxY,
+          plot: plot.plotData as PlotData,
         }}
         callback={setAxisRange}
       ></RangeResizeModal>
