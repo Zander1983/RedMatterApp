@@ -8,7 +8,7 @@ import dataManager from "graph/dataManagement/dataManager";
 const leftPadding = 70;
 const rightPadding = 50;
 const topPadding = 50;
-const bottomPadding = 50;
+const bottomPadding = 10;
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
