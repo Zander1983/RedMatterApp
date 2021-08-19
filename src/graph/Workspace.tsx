@@ -26,7 +26,7 @@ import PrototypeNotice from "./PrototypeNotice";
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
-import GatetNamePrompt from "./components/modals/GateNamePrompt";
+import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import FCSFile from "graph/dataManagement/fcsFile";
@@ -431,7 +431,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       {/* == MODALS == */}
       {initPlot ? (
         <div>
-          <GatetNamePrompt open={namePromptOpen} sendName={renameGate} />
+          <GateNamePrompt open={namePromptOpen} sendName={renameGate} />
 
           <AddFileModal
             open={addFileModalOpen}

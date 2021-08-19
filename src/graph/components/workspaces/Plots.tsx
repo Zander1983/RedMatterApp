@@ -31,6 +31,7 @@ const MINW = 10;
 const MINH = 12;
 
 export const resetPlotSizes = (id?: string) => {
+  console.log("reset plot size called");
   let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
   if (id) tPlots = [id];
   for (const id of tPlots) {

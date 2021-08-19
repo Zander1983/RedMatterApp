@@ -1,4 +1,5 @@
 import React from "react";
+import { resetPlotSizes } from "./components/workspaces/Plots";
 
 const SmallScreenNotice = () => {
   const [resizeListener, setResizeListener] = React.useState(false);
@@ -9,6 +10,7 @@ const SmallScreenNotice = () => {
     setResizeListener(true);
     window.addEventListener("resize", () => {
       setShowSmallScreenNotice(window.innerWidth < 1165);
+      resetPlotSizes();
     });
   }
 

@@ -14,6 +14,8 @@ import dataManager from "../../../dataManagement/dataManager";
 import RangeResizeModal from "../../modals/rangeResizeModal";
 import PlotData from "graph/dataManagement/plotData";
 import Grain from "@material-ui/icons/Grain";
+import normalGatingIcon from "../../../../assets/images/normalGatingIcon.png";
+import inverseGatingIcon from "../../../../assets/images/inverseGatingIcon.png";
 
 import gate from "../../../img/gate.png";
 
@@ -215,6 +217,7 @@ export default function MainBar(props: any) {
           // display: "table",
           display: "flex",
           justifyContent: "space-between",
+          gap: 5,
         }}
         direction="row"
       >
@@ -225,7 +228,6 @@ export default function MainBar(props: any) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            width: "25%",
             height: "1.7rem",
           }}
         >
@@ -254,7 +256,7 @@ export default function MainBar(props: any) {
             size="small"
             onClick={() => polygonGatingSetter()}
             style={{
-              width: "45%",
+              flex: 1,
               color: "white",
               height: "1.7rem",
               fontSize: "12",
@@ -266,6 +268,7 @@ export default function MainBar(props: any) {
             ) : (
               <img
                 src={gate}
+                alt={"gate"}
                 style={{
                   height: "1.2rem",
                   fill: "none",
@@ -276,95 +279,112 @@ export default function MainBar(props: any) {
             )}
           </Button>
         </Tooltip>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => {
-            const rangesX = plot.plotData.ranges.get(plot.plotData.xAxis);
-            setRangeResizeModalTargetMinX(rangesX[0]);
-            setRangeResizeModalTargetMaxX(rangesX[1]);
-            const rangesY = plot.plotData.ranges.get(plot.plotData.yAxis);
-            setRangeResizeModalTargetMinY(rangesY[0]);
-            setRangeResizeModalTargetMaxY(rangesY[1]);
-            setRangeResizeModalAxisX(plot.plotData.xAxis);
-            setRangeResizeModalAxisY(plot.plotData.yAxis);
-            setOpenResize(true);
-          }}
-          style={{
-            width: "25%",
-            height: "1.7rem",
-            fontSize: 12,
-            color: "white",
-            backgroundColor: "#6666aa",
-          }}
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button creates a subpopulation given your current gates
+              </h3>
+            </React.Fragment>
+          }
         >
-          <TuneIcon />
-        </Button>
-
-        {/* <Button
-          variant="contained"
-          size="medium"
-          onClick={() => {
-            const ranges = plot.plotData.ranges.get(plot.plotData.xAxis);
-            setRangeResizeModalTargetMinY(ranges[0]);
-            setRangeResizeModalTargetMaxY(ranges[1]);
-            setOpenResize(true);
-            setRangeResizeModalAxisX(plot.plotData.xAxis + " (X Axis)");
-          }}
-          style={{
-            width: "47%",
-            fontSize: 12,
-            color: "white",
-            marginTop: 5,
-            marginRight: 5,
-            marginLeft: 5,
-            backgroundColor: "#6666aa",
-          }}
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              flex: 1,
+              height: "1.7rem",
+              fontSize: 12,
+              color: "white",
+              backgroundColor: "#6666aa",
+            }}
+            onClick={() => {
+              if (plot.plotData.gates.length === 0) {
+                setEmptySubpopModalOpen(true);
+                return;
+              }
+              dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
+            }}
+          >
+            {/* Subpop */}
+            <img
+              src={normalGatingIcon}
+              alt={"Suppopulation"}
+              style={{ width: 20, height: 20 }}
+            />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button creates a inverse subpopulation given your current
+                gates
+              </h3>
+            </React.Fragment>
+          }
         >
-          Edit X axis
-        </Button> */}
-        {/* <Button
-          style={{
-            backgroundColor: "#66a",
-            flex: "1 1 auto",
-            color: "white",
-            marginRight: 5,
-            marginLeft: 5,
-            fontSize: 12,
-          }}
-          variant="contained"
-          size="medium"
-          onClick={() => {
-            if (plot.plotData.gates.length === 0) {
-              setEmptySubpopModalOpen(true);
-              return;
-            }
-            dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
-          }}
+          <Button
+            variant="contained"
+            size="small"
+            style={{
+              flex: 1,
+              height: "1.7rem",
+              fontSize: 12,
+              color: "white",
+              backgroundColor: "#6666aa",
+            }}
+            onClick={() => {
+              if (plot.plotData.gates.length === 0) {
+                setEmptySubpopModalOpen(true);
+                return;
+              }
+              dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
+            }}
+          >
+            {/* Inverse Subpop */}
+            <img
+              src={inverseGatingIcon}
+              alt={"Suppopulation"}
+              style={{ width: 20, height: 20 }}
+            />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button opens a page for editing details of your plot, such
+                as ranges
+              </h3>
+            </React.Fragment>
+          }
         >
-          Subpop
-        </Button>
-        <Button
-          style={{
-            ...classes.mainButton,
-            flex: "1 1 auto",
-            marginRight: 5,
-            marginLeft: 5,
-            color: "white",
-            fontSize: 12,
-          }}
-          variant="contained"
-          size="medium"
-          onClick={() => {
-            if (plot.plotData.gates.length === 0) {
-              setEmptySubpopModalOpen(true);
-              return;
-            }
-            dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
-          }}
-        >
-          Inverse Subpop
-        </Button> */}
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => {
+              const rangesX = plot.plotData.ranges.get(plot.plotData.xAxis);
+              setRangeResizeModalTargetMinX(rangesX[0]);
+              setRangeResizeModalTargetMaxX(rangesX[1]);
+              const rangesY = plot.plotData.ranges.get(plot.plotData.yAxis);
+              setRangeResizeModalTargetMinY(rangesY[0]);
+              setRangeResizeModalTargetMaxY(rangesY[1]);
+              setRangeResizeModalAxisX(plot.plotData.xAxis);
+              setRangeResizeModalAxisY(plot.plotData.yAxis);
+              setOpenResize(true);
+            }}
+            style={{
+              flex: 1,
+              height: "1.7rem",
+              fontSize: 12,
+              color: "white",
+              backgroundColor: "#6666aa",
+            }}
+          >
+            <TuneIcon />
+          </Button>
+        </Tooltip>
       </Grid>
       {/* <Button style={{ display: "inline-block"}}
         variant="contained"
