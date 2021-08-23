@@ -47,8 +47,8 @@ const classes = {
 };
 
 let interval: any = {};
-var plotDownloadingFiles: any[] = [];
-var filePlotIdDict: any = {};
+let filePlotIdDict: any = {};
+let plotDownloadingFiles: any = {};
 
 function PlotComponent(props: {
   index: number;
@@ -64,7 +64,6 @@ function PlotComponent(props: {
     x: null,
     y: null,
   });
-
   const setPlotType = (axis: "x" | "y", value: string) => {
     axis === "x"
       ? props.plot.plotData.setXAxisPlotType(value)
@@ -209,7 +208,13 @@ function PlotComponent(props: {
 
   const downloadFile = (fileId: string) => {
     dataManager.downloadFileEvents([fileId]);
-    plotDownloadingFiles = plotDownloadingFiles.concat(fileId);
+    let plotDataId = props.plot.plotData.id;
+    if (plotDownloadingFiles[plotDataId]) {
+      plotDownloadingFiles[plotDataId] =
+        plotDownloadingFiles[plotDataId].concat(fileId);
+    } else {
+      plotDownloadingFiles[plotDataId] = [fileId];
+    }
     snackbarService.showSnackbar(
       "Overlay will be added after file events download",
       "warning"
@@ -316,22 +321,23 @@ function PlotComponent(props: {
     }
 
     let downloadedListner = dataManager.addObserver("updateDownloaded", () => {
-      if (plotDownloadingFiles.length > 0) {
+      if (
+        Object.keys(plotDownloadingFiles).length > 0 &&
+        plotDownloadingFiles[props.plot.plotData.id]
+      ) {
+        let plotDownFiles = plotDownloadingFiles[props.plot.plotData.id];
         let files = dataManager.downloaded.filter((x) =>
-          plotDownloadingFiles.includes(x.id)
+          plotDownFiles.includes(x.id)
         );
         if (files && files.length > 0) {
           snackbarService.showSnackbar("Overlay added", "success");
-          setTimeout(() => {
-            addFile(
-              files[0].id,
-              filePlotIdDict[files[0].id].type,
-              COMMON_CONSTANTS.FILE
-            );
-          }, 0);
-          plotDownloadingFiles = plotDownloadingFiles.filter(
-            (x) => x !== files[0].id
+          addFile(
+            files[0].id,
+            filePlotIdDict[files[0].id].type,
+            COMMON_CONSTANTS.FILE
           );
+          plotDownFiles = plotDownFiles.filter((x: any) => x !== files[0].id);
+          plotDownloadingFiles[props.plot.plotData.id] = plotDownFiles;
         }
       }
       setDownloadedFiles(dataManager.downloaded);
@@ -948,6 +954,7 @@ function PlotComponent(props: {
                             {e.label}
                           </span>
                           <Button
+                            id={`${props.plot.plotData.id}_${e.id}_bar_file`}
                             style={{
                               backgroundColor: isOptionSelected(
                                 filePlotIdDict[e.id]
@@ -989,6 +996,7 @@ function PlotComponent(props: {
                             )}
                           </Button>
                           <Button
+                            id={`${props.plot.plotData.id}_${e.id}_line_file`}
                             style={{
                               backgroundColor: isOptionSelected(
                                 filePlotIdDict[e.id]

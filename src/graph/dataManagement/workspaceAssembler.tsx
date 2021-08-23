@@ -220,6 +220,7 @@ export default class WorkspaceAssembler {
     targetWorkspace.plots = plots;
 
     targetWorkspace.setupWorkspace();
+
     dataManager.letUpdateBeCalledForAutoSave = true;
   }
 }

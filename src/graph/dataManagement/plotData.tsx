@@ -585,9 +585,10 @@ export default class PlotData extends ObserversFunctionality {
     return { xAxis, yAxis };
   }
 
-  getAxis(targetAxis: string): number[] {
+  getAxis(targetAxis: string, externalPopulation: any = []): number[] {
     const data: number[] = [];
-    this.getAxesData().forEach((e) => {
+
+    this.getAxesData(true, true, externalPopulation).forEach((e) => {
       data.push(e[targetAxis]);
     });
     return data;
@@ -613,7 +614,11 @@ export default class PlotData extends ObserversFunctionality {
   }
 
   private STD_BIN_SIZE = 50;
-  getBins(binCount?: number, targetAxis?: string) {
+  getBins(
+    binCount?: number,
+    targetAxis?: string,
+    externalPopulation: any = []
+  ) {
     binCount = binCount === undefined ? this.getBinCount() : binCount;
     const axisName =
       targetAxis === undefined
@@ -622,7 +627,8 @@ export default class PlotData extends ObserversFunctionality {
           : this.yAxis
         : targetAxis;
     let range = this.ranges.get(axisName);
-    let axis = this.getAxis(axisName);
+
+    let axis = this.getAxis(axisName, externalPopulation);
     if (
       (this.xAxis === axisName && this.xPlotType === "bi") ||
       (this.yAxis === axisName && this.yPlotType === "bi")
@@ -670,13 +676,30 @@ export default class PlotData extends ObserversFunctionality {
     filterGating: boolean;
     filterPop: boolean;
   } = null;
-  getAxesData(filterGating: boolean = true, filterPop: boolean = true): any[] {
+  getAxesData(
+    filterGating: boolean = true,
+    filterPop: boolean = true,
+    externalPopulation: any = []
+  ): any[] {
     if (
       this.axisDataCache !== null &&
       this.axisDataCache.filterGating === filterGating &&
       this.axisDataCache.filterPop === filterPop
-    )
-      return this.axisDataCache.data;
+    ) {
+      let data = JSON.parse(JSON.stringify(this.axisDataCache.data));
+      if (externalPopulation.length > 0) {
+        for (const gate of externalPopulation) {
+          const x = gate.gate.xAxis;
+          const y = gate.gate.yAxis;
+          data = data.filter((e: any) => {
+            const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+            return gate.inverseGating ? !inside : inside;
+          });
+        }
+      }
+      return data;
+    }
+
     let dataAxes: any = {};
     let size;
     for (const axis of this.file.axes) {
@@ -718,6 +741,16 @@ export default class PlotData extends ObserversFunctionality {
     }
     //@ts-ignore
     this.axisDataCache = { data, filterGating, filterPop };
+    if (externalPopulation.length > 0) {
+      for (const gate of externalPopulation) {
+        const x = gate.gate.xAxis;
+        const y = gate.gate.yAxis;
+        data = data.filter((e: any) => {
+          const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
+          return gate.inverseGating ? !inside : inside;
+        });
+      }
+    }
     return data;
   }
 
