@@ -282,9 +282,11 @@ function PlotComponent(props: {
       plotRemoveListner = dataManager.addObserver(
         "removePlotFromWorkspace",
         () => {
+          debugger;
           if (props.plot && props.plot.plotData) {
             let filePlotDataIds: any[] = filePlotIdDict
-              ? Object.values(filePlotIdDict)
+              ? Object.values(filePlotIdDict) &&
+                Object.values(filePlotIdDict).length > 0
                 ? Object.values(filePlotIdDict).map((x: any) => x.id)
                 : []
               : [];
@@ -817,7 +819,7 @@ function PlotComponent(props: {
                     value={"0"}
                   >
                     <MenuItem value={"0"}>Histogram overlays</MenuItem>
-                    {props.plots.map((e: any) => (
+                    {/* {props.plots.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"
                         value={e}
@@ -902,7 +904,7 @@ function PlotComponent(props: {
                           </span>
                         </div>
                       </MenuItem>
-                    ))}
+                    ))} */}
                     {files.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"

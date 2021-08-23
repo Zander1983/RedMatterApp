@@ -741,17 +741,18 @@ export default class PlotData extends ObserversFunctionality {
     }
     //@ts-ignore
     this.axisDataCache = { data, filterGating, filterPop };
+    let newData = JSON.parse(JSON.stringify(data));
     if (externalPopulation.length > 0) {
       for (const gate of externalPopulation) {
         const x = gate.gate.xAxis;
         const y = gate.gate.yAxis;
-        data = data.filter((e: any) => {
+        newData = newData.filter((e: any) => {
           const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
           return gate.inverseGating ? !inside : inside;
         });
       }
     }
-    return data;
+    return newData;
   }
 
   private gateObservers: { observerID: string; targetGateID: string }[] = [];
