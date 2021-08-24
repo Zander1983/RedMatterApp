@@ -47,8 +47,8 @@ const classes = {
 };
 
 let interval: any = {};
-let filePlotIdDict: any = {};
-let plotDownloadingFiles: any = {};
+var filePlotIdDict: any = {};
+var plotDownloadingFiles: any = {};
 
 function PlotComponent(props: {
   index: number;
@@ -105,7 +105,7 @@ function PlotComponent(props: {
             plotDimensions.h
           );
 
-        plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
+        //plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
 
         plot.draw();
       }
@@ -239,6 +239,8 @@ function PlotComponent(props: {
     rerender();
   };
   useEffect(() => {
+    if (!filePlotIdDict[props.plot.plotData.id])
+      filePlotIdDict[props.plot.plotData.id] = {};
     let updateWorkspaceListner = dataManager.addObserver(
       "updateWorkspace",
       () => {
@@ -282,12 +284,13 @@ function PlotComponent(props: {
       plotRemoveListner = dataManager.addObserver(
         "removePlotFromWorkspace",
         () => {
-          debugger;
           if (props.plot && props.plot.plotData) {
-            let filePlotDataIds: any[] = filePlotIdDict
-              ? Object.values(filePlotIdDict) &&
-                Object.values(filePlotIdDict).length > 0
-                ? Object.values(filePlotIdDict).map((x: any) => x.id)
+            let filePlotDataIds: any = filePlotIdDict
+              ? Object.values(filePlotIdDict[props.plot.plotData.id]) &&
+                Object.values(filePlotIdDict[props.plot.plotData.id]).length > 0
+                ? Object.values(filePlotIdDict[props.plot.plotData.id]).map(
+                    (x: any) => x.id
+                  )
                 : []
               : [];
             let plots = dataManager.getAllPlots();
@@ -331,11 +334,16 @@ function PlotComponent(props: {
         let files = dataManager.downloaded.filter((x) =>
           plotDownFiles.includes(x.id)
         );
-        if (files && files.length > 0) {
+        if (
+          files &&
+          files.length > 0 &&
+          filePlotIdDict[props.plot.plotData.id] &&
+          filePlotIdDict[props.plot.plotData.id][files[0].id]
+        ) {
           snackbarService.showSnackbar("Overlay added", "success");
           addFile(
             files[0].id,
-            filePlotIdDict[files[0].id].type,
+            filePlotIdDict[props.plot.plotData.id][files[0].id].type,
             COMMON_CONSTANTS.FILE
           );
           plotDownFiles = plotDownFiles.filter((x: any) => x !== files[0].id);
@@ -375,7 +383,9 @@ function PlotComponent(props: {
     );
     for (let i = 0; i < fileHistOverlay.length; i++) {
       let obj = fileHistOverlay[i];
-      filePlotIdDict[obj.histObj.plot.file.id] = {
+      if (!filePlotIdDict[props.plot.plotData.id])
+        filePlotIdDict[props.plot.plotData.id] = {};
+      filePlotIdDict[props.plot.plotData.id][obj.histObj.plot.file.id] = {
         id: obj.histObj.plotId,
         type: obj.type,
       };
@@ -406,12 +416,18 @@ function PlotComponent(props: {
     setHistogramOverlayOpen(false);
     switch (plotSource) {
       case COMMON_CONSTANTS.FILE:
-        if (filePlotIdDict[pltFlObj.id] && filePlotIdDict[pltFlObj.id].id) {
-          let plotObj = isHistogramSelected(filePlotIdDict[pltFlObj.id].id);
+        if (
+          filePlotIdDict[props.plot.plotData.id] &&
+          filePlotIdDict[props.plot.plotData.id][pltFlObj.id] &&
+          filePlotIdDict[props.plot.plotData.id][pltFlObj.id].id
+        ) {
+          let plotObj = isHistogramSelected(
+            filePlotIdDict[props.plot.plotData.id][pltFlObj.id].id
+          );
           let plotData = plotObj.plot.plot;
           if (plotObj.type === plotType) {
             removeOverlayAsPerType(plotType, plotData.id);
-            filePlotIdDict[pltFlObj.id] = null;
+            filePlotIdDict[props.plot.plotData.id][pltFlObj.id] = null;
           } else {
             addOverlayAsPerType(
               plotType,
@@ -424,8 +440,13 @@ function PlotComponent(props: {
           if (isDownloaded(pltFlObj.id)) {
             addFile(pltFlObj.id, plotType, COMMON_CONSTANTS.FILE);
           } else {
-            if (!filePlotIdDict[pltFlObj.id])
-              filePlotIdDict[pltFlObj.id] = { id: "", type: plotType };
+            if (!filePlotIdDict[props.plot.plotData.id])
+              filePlotIdDict[props.plot.plotData.id] = {};
+            if (!filePlotIdDict[props.plot.plotData.id][pltFlObj.id])
+              filePlotIdDict[props.plot.plotData.id][pltFlObj.id] = {
+                id: "",
+                type: plotType,
+              };
             downloadFile(pltFlObj.id);
             return;
           }
@@ -489,8 +510,15 @@ function PlotComponent(props: {
     addOverlayAsPerType(plotType, newPlotData, "", plotSource);
 
     if (addNewPlot) {
-      if (!filePlotIdDict[id]) filePlotIdDict[id] = {};
-      filePlotIdDict[id] = { id: newPlotData.id, type: plotType };
+      if (!filePlotIdDict[props.plot.plotData.id])
+        filePlotIdDict[props.plot.plotData.id] = {};
+      if (!filePlotIdDict[props.plot.plotData.id][id])
+        filePlotIdDict[props.plot.plotData.id][id] = {};
+
+      filePlotIdDict[props.plot.plotData.id][id] = {
+        id: newPlotData.id,
+        type: plotType,
+      };
     }
   };
 
@@ -555,7 +583,6 @@ function PlotComponent(props: {
       }
       rerender();
     } else {
-      filePlotIdDict = {};
       props.plot.plotData.histogramBarOverlays = [];
       props.plot.plotData.histogramOverlays = [];
       if (targetAxis === "x") {
@@ -911,7 +938,12 @@ function PlotComponent(props: {
                         value={e}
                         style={{
                           backgroundColor: getHistogramSelectedColor(
-                            filePlotIdDict[e.id] ? filePlotIdDict[e.id].id : ""
+                            filePlotIdDict[props.plot.plotData.id]
+                              ? filePlotIdDict[props.plot.plotData.id][e.id]
+                                ? filePlotIdDict[props.plot.plotData.id][e.id]
+                                    .id
+                                : ""
+                              : ""
                           ),
                         }}
                       >
@@ -936,11 +968,12 @@ function PlotComponent(props: {
                             }}
                             onClick={() => {
                               if (
-                                filePlotIdDict[e.id] &&
-                                filePlotIdDict[e.id].id
+                                filePlotIdDict[props.plot.plotData.id][e.id] &&
+                                filePlotIdDict[props.plot.plotData.id][e.id].id
                               ) {
                                 let plotObj = isHistogramSelected(
-                                  filePlotIdDict[e.id].id
+                                  filePlotIdDict[props.plot.plotData.id][e.id]
+                                    .id
                                 );
                                 if (plotObj) {
                                   removeOverlayAsPerType(
@@ -949,7 +982,8 @@ function PlotComponent(props: {
                                   );
                                   setHistogramOverlayOpen(false);
                                 }
-                                filePlotIdDict[e.id] = null;
+                                filePlotIdDict[props.plot.plotData.id][e.id] =
+                                  null;
                               }
                             }}
                           >
@@ -959,8 +993,12 @@ function PlotComponent(props: {
                             id={`${props.plot.plotData.id}_${e.id}_bar_file`}
                             style={{
                               backgroundColor: isOptionSelected(
-                                filePlotIdDict[e.id]
-                                  ? filePlotIdDict[e.id].id
+                                filePlotIdDict[props.plot.plotData.id]
+                                  ? filePlotIdDict[props.plot.plotData.id][e.id]
+                                    ? filePlotIdDict[props.plot.plotData.id][
+                                        e.id
+                                      ].id
+                                    : ""
                                   : "",
                                 COMMON_CONSTANTS.Bar
                               ),
@@ -1001,8 +1039,12 @@ function PlotComponent(props: {
                             id={`${props.plot.plotData.id}_${e.id}_line_file`}
                             style={{
                               backgroundColor: isOptionSelected(
-                                filePlotIdDict[e.id]
-                                  ? filePlotIdDict[e.id].id
+                                filePlotIdDict[props.plot.plotData.id]
+                                  ? filePlotIdDict[props.plot.plotData.id][e.id]
+                                    ? filePlotIdDict[props.plot.plotData.id][
+                                        e.id
+                                      ].id
+                                    : ""
                                   : "",
                                 COMMON_CONSTANTS.Line
                               ),

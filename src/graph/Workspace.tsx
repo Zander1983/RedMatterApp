@@ -191,14 +191,14 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       }
     );
 
-    let updateWorkspaceListner = dataManager.addObserver(
-      "updateWorkspace",
-      () => {
-        if (dataManager.letUpdateBeCalledForAutoSave) {
-          autoSaveWorkspace();
-        }
-      }
-    );
+    // let updateWorkspaceListner = dataManager.addObserver(
+    //   "updateWorkspace",
+    //   () => {
+    //     if (dataManager.letUpdateBeCalledForAutoSave) {
+    //       autoSaveWorkspace();
+    //     }
+    //   }
+    // );
 
     dataManager.letUpdateBeCalledForAutoSave = true;
     return () => {
@@ -206,7 +206,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       dataManager.clearWorkspace();
       setDownloadedFiles([]);
       setDownloadingFiles([]);
-      dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
+      //dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
@@ -597,7 +597,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {props.poke === false ? (
+                  {/* {props.poke === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -620,7 +620,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                         Save Workspace
                       </Button>
                     )
-                  ) : null}
+                  ) : null} */}
                   {props.poke === false ? (
                     <Button
                       variant="contained"
