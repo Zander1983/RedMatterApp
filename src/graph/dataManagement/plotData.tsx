@@ -150,7 +150,6 @@ export default class PlotData extends ObserversFunctionality {
       this.xAxis.toLowerCase().includes("ssc")
         ? "lin"
         : "bi";
-    console.log(this.xAxis.toLowerCase());
     this.yPlotType =
       this.yAxis.toLowerCase().includes("fsc") ||
       this.yAxis.toLowerCase().includes("ssc")
