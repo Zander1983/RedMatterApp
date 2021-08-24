@@ -105,7 +105,7 @@ function PlotComponent(props: {
             plotDimensions.h
           );
 
-        //plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
+        plot = dataManager.getPlotRendererForPlot(plot.plotData.id);
 
         plot.draw();
       }
