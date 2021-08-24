@@ -583,6 +583,7 @@ function PlotComponent(props: {
       }
       rerender();
     } else {
+      filePlotIdDict[props.plot.plotData.id] = {};
       props.plot.plotData.histogramBarOverlays = [];
       props.plot.plotData.histogramOverlays = [];
       if (targetAxis === "x") {
