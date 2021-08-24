@@ -203,7 +203,7 @@ const AppLandingPage = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files has never been easier
               </p>
-              <NavLink
+              {/* <NavLink
                 to={
                   "/" +
                   (process.env.REACT_APP_NO_WORKSPACES === "true"
@@ -221,7 +221,7 @@ const AppLandingPage = () => {
                     ? "Start Analysing"
                     : "Test Red Matter"}
                 </Button>
-              </NavLink>{" "}
+              </NavLink>{" "} */}
               {!isLoggedIn ? (
                 <div>
                   <div>
