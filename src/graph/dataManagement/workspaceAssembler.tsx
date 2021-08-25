@@ -62,7 +62,6 @@ export default class WorkspaceAssembler {
       return e;
     });
 
-    delete plot.ranges;
     delete plot.axisDataCache;
     delete plot.randomSelection;
     delete plot.changed;
@@ -220,6 +219,7 @@ export default class WorkspaceAssembler {
     targetWorkspace.plots = plots;
 
     targetWorkspace.setupWorkspace();
+
     dataManager.letUpdateBeCalledForAutoSave = true;
   }
 }

@@ -67,15 +67,15 @@ const useStyles = makeStyles((theme) => ({
     height: "1.9rem",
   },
   savingProgress: {
-    marginLeft: "-10px",
+    marginLeft: "-5px",
     display: "flex",
-    marginRight: "10px",
+    marginRight: "3px",
     animation: "App-logo-spin 1.4s linear infinite",
   },
   saved: {
-    marginLeft: "-10px",
+    marginLeft: "-5px",
     display: "flex",
-    marginRight: "10px",
+    marginRight: "3px",
     color: green[500],
   },
 }));
@@ -190,12 +190,23 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         setDownloadingFiles(dataManager.downloadingFiles);
       }
     );
+
+    // let updateWorkspaceListner = dataManager.addObserver(
+    //   "updateWorkspace",
+    //   () => {
+    //     if (dataManager.letUpdateBeCalledForAutoSave) {
+    //       autoSaveWorkspace();
+    //     }
+    //   }
+    // );
+
     dataManager.letUpdateBeCalledForAutoSave = true;
     return () => {
       setWorkspaceAlready = false;
       dataManager.clearWorkspace();
       setDownloadedFiles([]);
       setDownloadingFiles([]);
+      //dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
       dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
       dataManager.removeObserver("updateDownloaded", downloadedListner);
     };
@@ -265,7 +276,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       .then((e) => {
         setNewWorkspaceId(e.data.workspaceId);
         setSavingWorkspace(false);
-        snackbarService.showSnackbar("Workspace saved!", "success");
+        // snackbarService.showSnackbar("Workspace saved!", "success");
       })
       .catch((e) => {
         setSavingWorkspace(false);
@@ -586,7 +597,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {props.poke === false ? (
+                  {/* {props.poke === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -597,7 +608,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {/* {savingWorkspace ? (
+                        {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -605,11 +616,11 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )} */}
+                        )}
                         Save Workspace
                       </Button>
                     )
-                  ) : null}
+                  ) : null} */}
                   {props.poke === false ? (
                     <Button
                       variant="contained"
