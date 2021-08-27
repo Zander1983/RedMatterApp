@@ -2,13 +2,13 @@
 // do this just right and this guy IS the de-facto responsible for that.
 // By the way: only workspace has access to this guy too.
 
-import Gate from "./gate/gate";
-import OvalGate from "./gate/ovalGate";
-import PolygonGate from "./gate/polygonGate";
-import PlotData from "./plotData";
-import WorkspaceData from "./workspaceData";
+import Gate from "../gate/gate";
+import OvalGate from "../gate/ovalGate";
+import PolygonGate from "../gate/polygonGate";
+import PlotData from "../plotData";
+import WorkspaceData from "../workspaceData";
 import lodash from "lodash";
-import dataManager from "./dataManager";
+import dataManager from "../dataManager";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 export default class WorkspaceAssembler {

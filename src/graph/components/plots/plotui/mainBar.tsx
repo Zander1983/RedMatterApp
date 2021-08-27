@@ -1,23 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
-import useForceUpdate from "hooks/forceUpdate";
 import CancelIcon from "@material-ui/icons/Cancel";
 
-import CreateIcon from "@material-ui/icons/Create";
 import TuneIcon from "@material-ui/icons/Tune";
 import TouchAppIcon from "@material-ui/icons/TouchApp";
-import ExposureIcon from "@material-ui/icons/Exposure";
-import GrainIcon from "@material-ui/icons/Grain";
 import MessageModal from "../../modals/MessageModal";
 import dataManager from "../../../dataManagement/dataManager";
 import RangeResizeModal from "../../modals/rangeResizeModal";
 import PlotData from "graph/dataManagement/plotData";
-import Grain from "@material-ui/icons/Grain";
 import normalGatingIcon from "../../../../assets/images/normalGatingIcon.png";
 import inverseGatingIcon from "../../../../assets/images/inverseGatingIcon.png";
-
-import gate from "../../../img/gate.png";
+import gate from "../../../../assets/images/gate.png";
 
 const classes = {
   main: {

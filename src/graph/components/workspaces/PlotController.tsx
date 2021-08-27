@@ -5,7 +5,6 @@ import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
 import dataManager from "../../dataManagement/dataManager";
-import WorkspaceData from "graph/dataManagement/workspaceData";
 import Plot from "graph/renderers/plotRender";
 import PlotData from "graph/dataManagement/plotData";
 import { Divider } from "@material-ui/core";
@@ -63,18 +62,18 @@ const standardGridPlotItem = (index: number, plotData: any) => {
   };
 };
 
-interface WorkspaceProps {
+interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
+  workspaceData: any;
 }
+
 interface IState {
   plotMoving?: boolean;
 }
-let intervals: any = null;
 
-class Workspace extends React.Component<WorkspaceProps, IState> {
+class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
-  workspace: WorkspaceData;
   plots: {
     plotData: PlotData;
     plotRender: Plot;
@@ -82,13 +81,12 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
   addPlotLisner: any;
   removePlotLisner: any;
   clearWorkspaceLisner: any;
-  workspaceLoaded = false;
-  constructor(props: WorkspaceProps) {
+
+  constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       plotMoving: true,
     };
-    this.workspace = dataManager.getWorkspace().workspace;
 
     this.update();
 
@@ -110,8 +108,6 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
       "afterClearWorkspace",
       () => this.update()
     );
-
-    this.workspaceLoaded = true;
   }
 
   componentWillUnmount() {
@@ -149,7 +145,6 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
   resizeCanvas(layouts: any) {
     for (let i = 0; i < layouts.length; i++) {
-      let layout = layouts[i];
       let plotId = layouts[i].i;
       let id = `canvas-${plotId}`;
       let displayRef = `display-ref-${plotId}`;
@@ -174,10 +169,10 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
 
       let plot = this.plots.find((x) => x.plotData.id === plotId);
       if (
-        plot.plotData.dimensions.h != layout.h ||
-        plot.plotData.dimensions.w != layout.w ||
-        plot.plotData.positions.x != layout.x ||
-        plot.plotData.positions.y != layout.y
+        plot.plotData.dimensions.h !== layout.h ||
+        plot.plotData.dimensions.w !== layout.w ||
+        plot.plotData.positions.x !== layout.x ||
+        plot.plotData.positions.y !== layout.y
       ) {
         if (!dataManager.redrawPlotIds.includes(plot.plotData.id))
           dataManager.redrawPlotIds.push(plot.plotData.id);
@@ -200,11 +195,14 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
     }
     dataManager.updateWorkspace();
   }
+
   /* This function has to be carefully controlled ensure that the plots will
      not re re-rendered unecessarely, which could slow down app's perfomance
      significatively */
   render() {
-    console.log(`Workspace rendered for the ${++Workspace.renderCalls} time`);
+    console.log(
+      `Workspace rendered for the ${++PlotController.renderCalls} time`
+    );
     let plotGroups: any = {};
     for (const plot of this.plots) {
       const fileId = plot.plotData.file.id;
@@ -311,4 +309,4 @@ class Workspace extends React.Component<WorkspaceProps, IState> {
   }
 }
 
-export default Workspace;
+export default PlotController;

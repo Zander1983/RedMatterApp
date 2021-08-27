@@ -191,17 +191,6 @@ export default class PlotData extends ObserversFunctionality {
     });
   }
 
-  export(): string {
-    const state: any = this.getState();
-    state.file = "local://" + state.file.name;
-    return JSON.stringify(state);
-  }
-
-  import(plotJSON: string) {
-    const plot = JSON.parse(plotJSON);
-    this.setState(plot);
-  }
-
   /* Every new update should result in this function being called,
      this is the function to be observed, as it is called when new
      updates happen. */

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useStore } from "react-redux";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import { useHistory } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -12,8 +12,6 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
-import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
-import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
 import userManager from "Components/users/userManager";
 import Gate from "graph/dataManagement/gate/gate";
@@ -30,7 +28,7 @@ import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import FCSFile from "graph/dataManagement/fcsFile";
-import Plots, { resetPlotSizes } from "./components/workspaces/Plots";
+import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
@@ -83,26 +81,12 @@ const useStyles = makeStyles((theme) => ({
 // ==== Avoid multiple listeners for screen resize ====
 let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
-const staticFiles = [
-  "transduction_1",
-  "transduction_2",
-  "transduction_3",
-  "erica1",
-  "erica2",
-  "erica3",
-].map((e) => {
-  return {
-    label: e,
-    information: "...",
-    fromStatic: e,
-    fileSize: 0,
-    eventCount: 0,
-    lastModified: "X/X/X",
-  };
-});
 
 function Workspace(props: { experimentId: string; poke: Boolean }) {
-  const remoteWorkspace = dataManager.isRemoteWorkspace();
+  //@ts-ignore
+  const workspace = useSelector((state) => state.workspace);
+  console.log("workspace =", workspace);
+
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
@@ -384,9 +368,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       return;
     }
 
-    const file: any = remoteWorkspace
-      ? downloadedFiles[index]
-      : staticFiles[index];
+    const file: any = downloadedFiles[index];
     let newFile: FCSFile;
 
     newFile = new FCSFile({
@@ -668,10 +650,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
               <Grid>
                 {!loading ? (
                   <Plots
-                    {...{
-                      sharedWorkspace: sharedWorkspace,
-                      experimentId: props.experimentId,
-                    }}
+                    sharedWorkspace={sharedWorkspace}
+                    experimentId={props.experimentId}
+                    workspaceData={workspace}
                   ></Plots>
                 ) : (
                   <Grid

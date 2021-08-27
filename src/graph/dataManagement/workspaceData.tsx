@@ -8,7 +8,7 @@ import FCSFile from "./fcsFile";
 import Gate from "./gate/gate";
 import ObserversFunctionality from "./observersFunctionality";
 import PlotData from "./plotData";
-import WorkspaceAssembler from "./workspaceAssembler";
+import WorkspaceAssembler from "./reconstructors/workspaceAssembler";
 
 export interface WorkspaceState {
   plots: PlotData[];
