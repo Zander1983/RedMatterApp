@@ -23,6 +23,8 @@ import {
   DeleteFilled,
   EditOutlined,
 } from "@ant-design/icons";
+import Buttons from "../common/Buttons";
+import { ButtonTypes } from "../../constants";
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
@@ -406,16 +408,11 @@ const Experiment = (props: any) => {
                 justifyContent: "space-between",
               }}
             >
-              <Button
-                variant="contained"
-                style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 50,
-                  marginRight: 20,
-                }}
+              <Buttons
+                type={ButtonTypes.GRAY}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  if (props.poke == false) {
+                  if (props.poke === false) {
                     history.push("/experiments");
                   } else {
                     history.push("/browse-experiments");
@@ -423,7 +420,7 @@ const Experiment = (props: any) => {
                 }}
               >
                 Back
-              </Button>
+              </Buttons>
               <div>
                 {experiment === null ? (
                   <CircularProgress
@@ -479,11 +476,9 @@ const Experiment = (props: any) => {
                 )}
               </div>
 
-              <Button
-                variant="contained"
+              <Buttons
+                type={ButtonTypes.GRAY}
                 style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 50,
                   visibility:
                     experimentData?.files.length === 0 ? "hidden" : "visible",
                 }}
@@ -497,7 +492,7 @@ const Experiment = (props: any) => {
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
                 Workspace
-              </Button>
+              </Buttons>
             </Grid>
             <Grid
               style={{
@@ -589,13 +584,10 @@ const Experiment = (props: any) => {
                       </p>
                     </div>
                     <div>
-                      <Button
-                        variant="contained"
+                      <Buttons
+                        type={ButtonTypes.PURPLE}
                         style={{
-                          backgroundColor: "#6666AA",
-                          maxHeight: 50,
                           marginTop: 5,
-                          color: "white",
                         }}
                         onClick={() => {
                           inputFile.current.click();
@@ -614,7 +606,7 @@ const Experiment = (props: any) => {
                           }}
                         />
                         Upload File
-                      </Button>
+                      </Buttons>
                     </div>
                   </Grid>
                 )}

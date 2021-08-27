@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { FormControlLabel } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import TextField from "@material-ui/core/TextField";
@@ -16,6 +16,7 @@ import { useDispatch, useStore } from "react-redux";
 import PrototypeForm from "Components/home/PrototypeForm";
 import CreateExperimentDialog from "./CreateExperimentDialog";
 import useForceUpdate from "hooks/forceUpdate";
+import Buttons from "../../common/Buttons";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -370,17 +371,14 @@ function CreateExperimentModal(props: {
               marginRight: "auto",
             }}
           >
-            <Button
-              variant="contained"
-              style={{ backgroundColor: "#F44336", color: "white" }}
+            <Buttons
               onClick={() => {
                 props.closeCall.f(props.closeCall.ref);
               }}
             >
               Cancel
-            </Button>
-            <Button
-              variant="contained"
+            </Buttons>
+            <Buttons
               disabled={!confirmEnabled()}
               style={{
                 backgroundColor: confirmEnabled() ? "#6666A9" : "#aaaadb",
@@ -391,7 +389,7 @@ function CreateExperimentModal(props: {
               }}
             >
               Create
-            </Button>
+            </Buttons>
           </div>
         </div>
       </Modal>

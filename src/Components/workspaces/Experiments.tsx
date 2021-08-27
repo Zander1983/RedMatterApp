@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
+import { Grid, CircularProgress } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/CreateExperimentModal";
@@ -12,6 +12,8 @@ import { withStyles, Theme, createStyles } from "@material-ui/core/styles";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch, { SwitchClassKey, SwitchProps } from "@material-ui/core/Switch";
 import { snackbarService } from "uno-material-ui";
+import Buttons from "../common/Buttons";
+import { ButtonTypes } from "../../constants";
 
 interface Styles extends Partial<Record<SwitchClassKey, string>> {
   focusVisible?: string;
@@ -274,16 +276,12 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                   }
                 />{" "}
               </div>
-              <Button
-                variant="contained"
-                style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 40,
-                }}
+              <Buttons
+                type={ButtonTypes.GRAY}
                 onClick={() => setCreateExperimentModal(true)}
               >
                 Create
-              </Button>
+              </Buttons>
             </Grid>
 
             <Grid

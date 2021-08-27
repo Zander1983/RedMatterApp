@@ -1,11 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import { DropzoneArea } from "material-ui-dropzone";
 
 import userManager from "Components/users/userManager";
+import Buttons from "../../common/Buttons";
+import { ButtonTypes } from "../../../constants";
 
 import { snackbarService } from "uno-material-ui";
 import oldBackFileUploader from "utils/oldBackFileUploader";
@@ -137,18 +138,16 @@ function UploadFileModal(props: {
               marginRight: "auto",
             }}
           >
-            <Button
-              variant="contained"
-              style={{ backgroundColor: "#F44336", color: "white" }}
+            <Buttons
+              type={ButtonTypes.RED}
               onClick={() => {
                 props.closeCall.f(props.closeCall.ref);
               }}
               disabled={uploading}
             >
               Cancel
-            </Button>
-            <Button
-              variant="contained"
+            </Buttons>
+            <Buttons
               style={{ backgroundColor: "#43A047", color: "white" }}
               onClick={() => {
                 uploadFileToWorkpace();
@@ -156,7 +155,7 @@ function UploadFileModal(props: {
               }}
             >
               Confirm
-            </Button>
+            </Buttons>
           </div>
         </div>
       </Modal>

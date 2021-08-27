@@ -19,6 +19,9 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import MessageModal from "graph/components/modals/MessageModal";
 
+import Buttons from "../common/Buttons";
+import { ButtonTypes } from "../../constants";
+
 const styles = {
   title: {
     fontSize: 14,
@@ -155,15 +158,14 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
           </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
             <Tooltip title="Delete experiment">
-              <Button
-                size="small"
-                color="secondary"
+              <Buttons
+                size={"small"}
                 startIcon={<DeleteIcon />}
-                variant="outlined"
+                variant={"outlined"}
                 onClick={() => setDeleteConfirmModal(true)}
               >
                 Delete
-              </Button>
+              </Buttons>
             </Tooltip>
           </CardActions>
         </Card>
