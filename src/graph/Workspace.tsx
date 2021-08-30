@@ -34,6 +34,8 @@ import Plots, { resetPlotSizes } from "./components/workspaces/Plots";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
+import { String } from "lodash";
+import XML from "xml-js";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -110,6 +112,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
+  const inputFile = React.useRef(null);
+  const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
   const location = useLocation();
 
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
@@ -432,6 +436,33 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     handleOpen(setLinkShareModalOpen);
   };
 
+  const showFile = async (e: any) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      let text: any = e.target.result;
+      var options = {
+        compact: true,
+        ignoreComment: true,
+        alwaysChildren: true,
+      };
+      var result = XML.xml2json(text, options);
+
+      setFileUploadInputValue("");
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+
+  const parseFlowJoJson = (flowJoJson: any) => {
+    let workspace = flowJoJson["Workspace"];
+    if (
+      workspace &&
+      workspace["SampleList"] &&
+      workspace["SampleList"]["Sample"]
+    ) {
+    }
+  };
+
   return (
     <div
       style={{
@@ -621,6 +652,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       </Button>
                     )
                   ) : null} */}
+
                   {props.poke === false ? (
                     <Button
                       variant="contained"
@@ -634,6 +666,30 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       Clear
                     </Button>
                   ) : null}
+                  <Button
+                    variant="contained"
+                    size="small"
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                    onClick={() => {
+                      inputFile.current.click();
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="file"
+                      ref={inputFile}
+                      value={fileUploadInputValue}
+                      accept=".wsp"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        showFile(e);
+                      }}
+                    />
+                    Import Flow Jo
+                  </Button>
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
