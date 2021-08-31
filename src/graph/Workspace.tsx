@@ -36,6 +36,7 @@ import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
 import { String } from "lodash";
 import XML from "xml-js";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -447,7 +448,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         alwaysChildren: true,
       };
       var result = XML.xml2json(text, options);
-
+      console.log(result);
+      parseFlowJoJson(result);
       setFileUploadInputValue("");
     };
     reader.readAsText(e.target.files[0]);
@@ -460,6 +462,50 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       workspace["SampleList"] &&
       workspace["SampleList"]["Sample"]
     ) {
+      let sample = workspace["SampleList"]["Sample"];
+      let sampleNode = sample["SampleNode"];
+      if (
+        sampleNode["Subpopulations"] &&
+        Object.keys(sampleNode["Subpopulations"]).length > 0
+      ) {
+        let plot = new PlotData();
+        parseSubpopulation(sampleNode["Subpopulations"]);
+      }
+    }
+  };
+
+  const addNewPlot = (plot: PlotData, fileID: string) => {
+    plot.file = dataManager.getFile(fileID);
+    plot.setupPlot();
+    dataManager.addNewPlotToWorkspace(plot);
+  };
+
+  const parseSubpopulation = (subPopulation: any) => {
+    let populations = subPopulation["Population"];
+    if (populations) {
+      if (populations.length == undefined) {
+        populations = [populations];
+      }
+
+      for (let i = 0; i < populations.length; i++) {
+        if (populations["Gate"]) {
+          let gate = populations["Gate"];
+          let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
+          parseGateType(gateType, gate);
+          if (populations["Subpopulations"]) {
+            parseSubpopulation(populations["Subpopulations"]);
+          }
+        }
+      }
+    }
+  };
+
+  const parseGateType = (gateType: string, gate: any) => {
+    switch (gateType) {
+      case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.RECTANGLE:
+        break;
+      case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.ECLIPSE:
+        break;
     }
   };
 
@@ -628,7 +674,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {/* {props.poke === false ? (
+                  {props.poke === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -639,7 +685,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {savingWorkspace ? (
+                        {/* {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -647,11 +693,11 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )}
+                        )} */}
                         Save Workspace
                       </Button>
                     )
-                  ) : null} */}
+                  ) : null}
 
                   {props.poke === false ? (
                     <Button
