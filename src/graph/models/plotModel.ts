@@ -4,62 +4,42 @@
   easily.
 */
 
-import dataManager from "../dataManagement/dataManager";
 import Gate from "../dataManagement/gate/gate";
 import { generateColor } from "graph/utils/color";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import FCSServices from "services/FCSServices/FCSServices";
 import PopulationModel from "graph/models/populationModel";
-import ObserversFunctionality, {
-  publishDecorator,
-} from "graph/dataManagement/observersFunctionality";
+import {
+  AxisName,
+  Dimension,
+  HistogramAxisType,
+  Plot,
+  PlotType,
+  Point2D,
+  Range,
+} from "./types";
+import { createID } from "graph/utils/id";
+import { store } from "redux/store";
 
 const DEFAULT_COLOR = "#000";
 
-export interface PlotModelState {
-  id?: string;
-  ranges: { [index: string]: [number, number] };
-  axisPlotTypes: { [index: string]: string };
-  populationModel: PopulationModel;
-  xAxis: string;
-  yAxis: string;
-  positionInWorkspace: [number, number];
-  plotWidth: number;
-  plotHeight: number;
-  plotScale: number;
-  xPlotType: string;
-  yPlotType: string;
-  histogramAxis: "horizontal" | "vertical";
-  label: string;
-  dimensions: {
-    w: number;
-    h: number;
-  };
-  positions: {
-    x: number;
-    y: number;
-  };
-  parentPlotId: string;
-}
-
-export default class PlotModel extends ObserversFunctionality {
+export default class PlotModel {
   static instaceCount: number = 1;
-
+  
   readonly id: string;
-  ranges: { [index: string]: [number, number] } = {};
-  axisPlotTypes: { [index: string]: string } = {};
-  populationModel: PopulationModel;
-  xAxis: string = "";
-  yAxis: string = "";
+  ranges: { [index: string]: Range } = {};
+  axisPlotTypes: { [index: string]: PlotType } = {};
+  xAxis: AxisName = "";
+  yAxis: AxisName = "";
   yHistogram: boolean = false;
   xHistogram: boolean = false;
   positionInWorkspace: [number, number];
   plotWidth: number = 0;
   plotHeight: number = 0;
   plotScale: number = 2;
-  xPlotType: string = "";
-  yPlotType: string = "";
-  histogramAxis: "horizontal" | "vertical" = "vertical";
+  xPlotType: PlotType = "";
+  yPlotType: PlotType = "";
+  histogramAxis: HistogramAxisType = "vertical";
   label: string = "";
   histogramOverlays: {
     color: string;
@@ -67,87 +47,56 @@ export default class PlotModel extends ObserversFunctionality {
     plotId: string;
     plotSource: string;
   }[] = [];
+  gates: {
+    displayOnlyPointsInGate: true;
+    inverseGating: false;
+    gate: "gate-id";
+  }[] = [];
   histogramBarOverlays: {
     color: string;
     plot: any;
     plotId: string;
     plotSource: string;
   }[] = [];
-  dimensions: {
-    w: number;
-    h: number;
-  } = {
+  dimensions: Dimension = {
     w: 10,
     h: 12,
   };
-  positions: {
-    x: number;
-    y: number;
-  } = {
+  positions: Point2D = {
     x: -1,
     y: -1,
   };
   parentPlotId: string = "";
+  
   private changed: boolean = false;
+  private populationModel: private ;
 
-  constructor() {
-    super();
-    this.id = dataManager.createID();
+  constructor(state: Plot | null) {
+    if (state.id !== undefined) this.id = state.id;
+    else this.id = createID();
+    if (state) this.update(state);
   }
 
-  setupPlot() {
-    const axes = this.populationModel.getAxes();
-    try {
-      const fscssc = this.populationModel.getFSCandSSCAxis();
-      if (this.xAxis === "" && this.yAxis === "") {
-        this.xAxis = axes[fscssc.fsc];
-        this.yAxis = axes[fscssc.ssc];
+  update(state: any) {
+
+      store.
+
+    if (state.label !== undefined) this.label = state.label;
+    const thiskeys = Object.keys(this);
+    for (const key in Object.keys(state)) {
+      if (key in thiskeys) {
+        //@ts-ignore
+        this[key] = state[key];
       }
-    } catch {}
-
-    if (this.xAxis === "") this.xAxis = axes[0];
-    if (this.yAxis === "") this.yAxis = axes[1];
-
-    this.xPlotType =
-      this.xAxis.toLowerCase().includes("fsc") ||
-      this.xAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-    this.yPlotType =
-      this.yAxis.toLowerCase().includes("fsc") ||
-      this.yAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-
-    this.updateGateObservers();
+    }
   }
 
-  getOverlays() {
-    return this.histogramOverlays.map((e: any) => {
-      return {
-        plot: dataManager.getPlot(e.plot),
-        color: e.color,
-      };
-    });
-  }
-
-  export(): string {
-    const state: any = this.getState();
-    return JSON.stringify(state);
-  }
-
-  import(plotJSON: string) {
-    const plot = JSON.parse(plotJSON);
-    this.setState(plot);
-  }
-
-  getState(): PlotModelState {
+  getState(): Plot {
     return {
       id: this.id,
       label: this.label,
       ranges: this.ranges,
       axisPlotTypes: this.axisPlotTypes,
-      populationModel: this.populationModel,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
       positionInWorkspace: this.positionInWorkspace,
@@ -158,46 +107,56 @@ export default class PlotModel extends ObserversFunctionality {
       yPlotType: this.yPlotType,
       histogramAxis: this.histogramAxis,
       dimensions: this.dimensions,
+      histogramOverlays: this.histogramOverlays,
       positions: this.positions,
       parentPlotId: this.parentPlotId,
     };
   }
-
-  setState(state: PlotModelState) {
-    if (state.label !== undefined) this.label = state.label;
-    if (state.ranges !== undefined) this.ranges = state.ranges;
-    if (state.populationModel !== undefined)
-      this.populationModel = state.populationModel;
-    if (state.xAxis !== undefined) this.xAxis = state.xAxis;
-    if (state.yAxis !== undefined) this.yAxis = state.yAxis;
-    if (state.positionInWorkspace !== undefined)
-      this.positionInWorkspace = state.positionInWorkspace;
-    if (state.plotWidth !== undefined) this.plotWidth = state.plotHeight;
-    if (state.plotHeight !== undefined) this.plotHeight = state.plotHeight;
-    if (state.plotScale !== undefined) this.plotScale = state.plotScale;
-    if (state.xPlotType !== undefined) this.xPlotType = state.xPlotType;
-    if (state.yPlotType !== undefined) this.yPlotType = state.yPlotType;
-    if (state.histogramAxis !== undefined)
-      this.histogramAxis = state.histogramAxis;
-    if (state.dimensions !== undefined) this.dimensions = state.dimensions;
-    if (state.positions !== undefined) this.positions = state.positions;
-    if (state.axisPlotTypes) this.axisPlotTypes = state.axisPlotTypes;
+  
+  setupPlot() {
+    try {
+      const fscssc = this.populationModel.getFSCandSSCAxis();
+      if (this.xAxis === "" && this.yAxis === "") {
+        this.xAxis = axes[fscssc.fsc];
+        this.yAxis = axes[fscssc.ssc];
+      }
+    } catch {}
+    
+    if (this.xAxis === "") this.xAxis = axes[0];
+    if (this.yAxis === "") this.yAxis = axes[1];
+    
+    this.xPlotType =
+    this.xAxis.toLowerCase().includes("fsc") ||
+    this.xAxis.toLowerCase().includes("ssc")
+    ? "lin"
+    : "bi";
+    this.yPlotType =
+    this.yAxis.toLowerCase().includes("fsc") ||
+    this.yAxis.toLowerCase().includes("ssc")
+    ? "lin"
+    : "
+    bi";
   }
-
-  update(state: any) {
-    if (state.label !== undefined) this.label = state.label;
-
-    dataManager.redrawPlotIds.push(this.id);
-    if (this.parentPlotId) dataManager.redrawPlotIds.push(this.parentPlotId);
+  private : this.private ,
+  
+  getOverlays() {
+    return this.histogramOverlays.map((e: any) => {
+      return {
+        plot: dataManager.getPlot(e.plot),
+        color: e.color,
+      };
+    });
   }
-
+  
   addOverlay(
     PopulationModel: PopulationModel,
     color?: string,
     plotId?: string,
     plotSource?: string
-  ) {
-    if (!color) color = generateColor();
+    ) {
+      if (!color) color 
+      = generateColor();
+      const axes = this.private .getAxes();
     this.histogramOverlays.push({
       plot: COMMON_CONSTANTS.FILE === plotSource ? PopulationModel : {},
       color: color,
@@ -280,7 +239,6 @@ export default class PlotModel extends ObserversFunctionality {
 
   addGate(gate: Gate, forceGatedPoints: boolean = false) {
     this.populationModel.addGate(gate, forceGatedPoints);
-    this.updateGateObservers();
   }
 
   removeGate(gate: Gate) {
@@ -295,7 +253,6 @@ export default class PlotModel extends ObserversFunctionality {
     this.gates = this.gates.filter((g) => g.gate.id !== gate.id);
 
     this.axisDataCache = null;
-    this.updateGateObservers();
   }
 
   addPopulation(gate: Gate) {
@@ -311,7 +268,6 @@ export default class PlotModel extends ObserversFunctionality {
     });
 
     this.axisDataCache = null;
-    this.updateGateObservers();
   }
 
   removePopulation(gate: Gate) {
@@ -326,7 +282,6 @@ export default class PlotModel extends ObserversFunctionality {
     this.population = this.population.filter((g) => g.gate.id !== gate.id);
 
     this.axisDataCache = null;
-    this.updateGateObservers();
   }
 
   getGates(): Gate[] {

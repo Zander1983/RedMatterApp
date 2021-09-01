@@ -1,4 +1,6 @@
-const actionTypes = {
+import { Workspace } from "../types";
+
+export const graphActions = {
   RESET: "workspace.RESET",
   LOAD_WORKSPACE: "workspace.LOAD_WORKSPACE",
   SET_EXPERIMENT_METADATA: "workspace.SET_EXPERIMENT_METADATA",
@@ -19,86 +21,112 @@ const actionTypes = {
   GATE_METADATA_UPDATE: "workspace.GATE_METADATA_UPDATE",
 };
 
-const initialState: any = {
+const initialState: Workspace = {
+  id: "",
   gates: [],
   files: [],
   plots: [],
   populations: [],
   previousStates: [],
-  remoteID: null,
-  mouseGateState: null,
+  mouseGateState: {
+    active: "",
+    targetPlot: "",
+    polygonGate: {
+      xAxis: "",
+      yAxis: "",
+      isDraggingVertex: 0,
+      isDraggingGate: 0,
+      gatePivot: { x: 0, y: 0 },
+      points: { x: 0, y: 0 },
+      targetEditGate: null,
+      targetPointIndex: null,
+    },
+    ovalGate: {
+      center: { x: 0, y: 0 },
+      primaryP1: { x: 0, y: 0 },
+      primaryP2: { x: 0, y: 0 },
+      secondaryP1: { x: 0, y: 0 },
+      secondaryP2: { x: 0, y: 0 },
+      majorToMinorSize: 0,
+      lastMousePos: { x: 0, y: 0 },
+      ang: 0,
+      xAxis: "",
+      yAxis: "",
+    },
+    histogramGate: {},
+  },
 };
 
 const graphReducers = (state = initialState, action: any) => {
   switch (action.type) {
-    case actionTypes.RESET:
+    case graphActions.RESET:
       return initialState;
-    case actionTypes.LOAD_WORKSPACE:
+    case graphActions.LOAD_WORKSPACE:
       return {
         ...state,
       };
-    case actionTypes.SET_EXPERIMENT_METADATA:
+    case graphActions.SET_EXPERIMENT_METADATA:
       return {
         ...state,
       };
-    case actionTypes.ADD_FILE:
+    case graphActions.ADD_FILE:
       return {
         ...state,
         files: [action.payload.file, ...state.files],
       };
-    case actionTypes.ADD_PLOT:
+    case graphActions.ADD_PLOT:
       return {
         ...state,
       };
-    case actionTypes.ADD_GATE:
+    case graphActions.ADD_GATE:
       return {
         ...state,
       };
-    case actionTypes.DUPLICATE_PLOT:
+    case graphActions.DUPLICATE_PLOT:
       return {
         ...state,
       };
-    case actionTypes.DUPLICATE_GATE:
+    case graphActions.DUPLICATE_GATE:
       return {
         ...state,
       };
-    case actionTypes.SUBPOP_FROM_GATE:
+    case graphActions.SUBPOP_FROM_GATE:
       return {
         ...state,
       };
-    case actionTypes.ADD_GATE_TO_ALL_FILES:
+    case graphActions.ADD_GATE_TO_ALL_FILES:
       return {
         ...state,
       };
-    case actionTypes.LINK_GATE_TO_PLOT:
+    case graphActions.LINK_GATE_TO_PLOT:
       return {
         ...state,
       };
-    case actionTypes.UNLINK_GATE_TO_PLOT:
+    case graphActions.UNLINK_GATE_TO_PLOT:
       return {
         ...state,
       };
-    case actionTypes.REMOVE_GATE_FROM_WORKSPACE:
+    case graphActions.REMOVE_GATE_FROM_WORKSPACE:
       return {
         ...state,
       };
-    case actionTypes.REMOVE_PLOT_FROM_WORKSPACE:
+    case graphActions.REMOVE_PLOT_FROM_WORKSPACE:
       return {
         ...state,
       };
-    case actionTypes.REMOVE_FILE_FROM_WORKSPACE:
+    case graphActions.REMOVE_FILE_FROM_WORKSPACE:
       return {
         ...state,
       };
-    case actionTypes.RANGE_CHANGE:
+    case graphActions.RANGE_CHANGE:
       return {
         ...state,
       };
-    case actionTypes.MOUSE_EVENT:
+    case graphActions.MOUSE_EVENT:
       return {
         ...state,
       };
-    case actionTypes.GATE_METADATA_UPDATE:
+    case graphActions.GATE_METADATA_UPDATE:
       return {
         ...state,
       };
