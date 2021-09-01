@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete, { createFilterOptions } from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { FormControlLabel } from "@material-ui/core";
 
 import { fluorophoresData, deviceData } from "./quesData";
-import { useDispatch, useStore } from "react-redux";
+import { useDispatch, useStore, useSelector } from "react-redux";
 import { store } from "redux/store";
 import { Grid } from "@amcharts/amcharts4/charts";
-
+import { ActionCreators } from "../../redux/actionCreators";
+import { leftShift } from "mathjs";
 
 
 
@@ -61,20 +62,33 @@ function getSteps() {
   ];
 }
 
-
 function FormDeviceType() {
-  const store = useStore();
-  let defaultValue = store.getState().user.experiment.device;
-  try {
-    let defaultValue = store.getState().user.experiment.device;
-    if (defaultValue === undefined) defaultValue = null;
-    if (defaultValue != null) {
-      defaultValue = deviceData.filter((e) => e.value === defaultValue)[0];
-    }
-  } catch (e) {}
   const dispatch = useDispatch();
-  const [deviceType, setDeviceType] = React.useState(defaultValue);
-  const [notFound, setNotFound] = React.useState(false);
+  const [input, setInput] = useState<String>('');
+
+  const [deviceDataFilter, setDeviceDataFilte] = useState<any[]>(deviceData);
+
+  // filterValue;
+  useEffect(() => {
+    var filterValue = deviceData.filter((e:any) => {
+      var words = input.split(/[\s,]+/)
+      if (input !== '' && words[words.length -1].length > 0) {
+        return e.value.toLowerCase().search(words[words.length -1].toLowerCase()) !== -1;
+      } else {
+        return deviceDataFilter;
+      }
+    })
+    setDeviceDataFilte(filterValue)
+  }, [input])
+
+
+  const filterOptions = createFilterOptions({
+    matchFrom: 'start',
+    stringify: (option: any) => option.value,
+  });
+
+
+  const [notFound, setNotFound] = useState(false);
 
   return (
     <div
@@ -87,21 +101,26 @@ function FormDeviceType() {
       }}
     >
       <Autocomplete
+        filterSelectedOptions
         id="combo-box-demo"
-        options={deviceData}
-        onChange={(e) => {
-          dispatch({
-            type: "EXPERIMENT_FORM_DATA",
-            payload: {
-              //@ts-ignore
-              formitem: { key: "device", value: e.target.outerText },
-            },
-          });
-        }}
+        options={deviceDataFilter}
         getOptionLabel={(option) => option.value}
+        filterOptions={filterOptions}
         style={{ width: 400 }}
+          onChange={(e, value ) => {dispatch(
+            ActionCreators.form({
+              type: "EXPERIMENT_FORM_DATA",
+              payload: {
+                //@ts-ignore
+                formitem: { key: "device", value: value.value },
+              },
+            })
+          )
+        }}
         renderInput={(params) => (
-          <TextField {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Optional" variant="outlined" />
+          <TextField  onChange={(e) => {
+            setInput(e.target.value)
+          }} {...params}  size="small" label="Device Type" placeholder="Placeholder" helperText="This Field is Optional" variant="outlined" />
         )}
       />
       <FormControlLabel

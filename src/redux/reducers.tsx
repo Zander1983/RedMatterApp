@@ -25,8 +25,10 @@ const reducer = (state = initialState, action: any) => {
       };
     case actionTypes.EXPERIMENT_FORM_DATA:
       let newExperiment: any = state.experiment;
-      newExperiment[action.payload.formitem.key] =
-        action.payload.formitem.value;
+      if ( action.payload.payload !==  undefined) {
+        newExperiment[action.payload.payload.formitem.key] =
+        action.payload.payload.formitem.value;
+      }
       return {
         ...state,
         experiment: newExperiment,
