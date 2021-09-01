@@ -37,6 +37,10 @@ import SideMenus from "./components/static/SideMenus";
 import { String } from "lodash";
 import XML from "xml-js";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { GateState, Point } from "../graph/dataManagement/gate/gate";
+import PolygonGate, {
+  PolygonGateState,
+} from "./dataManagement/gate/polygonGate";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -449,7 +453,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       };
       var result = XML.xml2json(text, options);
       console.log(result);
-      parseFlowJoJson(result);
+      parseFlowJoJson(JSON.parse(result));
       setFileUploadInputValue("");
     };
     reader.readAsText(e.target.files[0]);
@@ -457,19 +461,28 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
   const parseFlowJoJson = (flowJoJson: any) => {
     let workspace = flowJoJson["Workspace"];
+    let cnt = 0;
     if (
       workspace &&
       workspace["SampleList"] &&
       workspace["SampleList"]["Sample"]
     ) {
       let sample = workspace["SampleList"]["Sample"];
-      let sampleNode = sample["SampleNode"];
-      if (
-        sampleNode["Subpopulations"] &&
-        Object.keys(sampleNode["Subpopulations"]).length > 0
-      ) {
+      let samples = [];
+      if (sample.length == undefined) samples.push(sample);
+      else samples = sample;
+      for (let i = 0; i < samples.length; i++) {
+        let sampleNode = samples[i]["SampleNode"];
         let plot = new PlotData();
-        parseSubpopulation(sampleNode["Subpopulations"]);
+        let fileId = downloadedFiles[cnt].id;
+        if (
+          sampleNode["Subpopulations"] &&
+          Object.keys(sampleNode["Subpopulations"]).length > 0
+        ) {
+          parseSubpopulation(plot, fileId, sampleNode["Subpopulations"]);
+        }
+        addNewPlot(plot, fileId);
+        cnt++;
       }
     }
   };
@@ -480,7 +493,11 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     dataManager.addNewPlotToWorkspace(plot);
   };
 
-  const parseSubpopulation = (subPopulation: any) => {
+  const parseSubpopulation = (
+    plot: PlotData,
+    fileId: string,
+    subPopulation: any
+  ) => {
     let populations = subPopulation["Population"];
     if (populations) {
       if (populations.length == undefined) {
@@ -488,21 +505,79 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       }
 
       for (let i = 0; i < populations.length; i++) {
-        if (populations["Gate"]) {
-          let gate = populations["Gate"];
+        let newPlot = new PlotData();
+        let population = populations[i];
+        let graph = population["Graph"];
+        let axis = graph["Axis"];
+        let xAxis = axis.find((x: any) => x["_attributes"].dimension == "x");
+        let yAxis = axis.find((x: any) => x["_attributes"].dimension == "y");
+        let xAxisName = xAxis["_attributes"].name;
+        let yAxisName = yAxis["_attributes"].name;
+
+        if (population["Gate"]) {
+          let gateAssign: PolygonGateState = {
+            name: population["_attributes"].name,
+            xAxis: `${xAxisName} - ${xAxisName}`,
+            yAxis: `${yAxisName} - ${yAxisName}`,
+            color: graph["_attributes"].foreColor,
+            xAxisType: "lin",
+            yAxisType: "lin",
+            parents: [],
+            points: [],
+          };
+          let polygonGate = new PolygonGate(gateAssign);
+          let gate = population["Gate"];
           let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
-          parseGateType(gateType, gate);
+          parseGateType(gateType, gate, polygonGate, xAxisName, yAxisName);
+          newPlot.population.push({ gate: polygonGate, inverseGating: false });
+          plot.gates.push({
+            gate: polygonGate,
+            inverseGating: false,
+            displayOnlyPointsInGate: false,
+          });
+          dataManager.addNewGateToWorkspace(polygonGate);
           if (populations["Subpopulations"]) {
-            parseSubpopulation(populations["Subpopulations"]);
+            parseSubpopulation(newPlot, fileId, populations["Subpopulations"]);
           }
+          addNewPlot(newPlot, fileId);
         }
       }
     }
   };
 
-  const parseGateType = (gateType: string, gate: any) => {
+  const parseGateType = (
+    gateType: string,
+    gate: any,
+    polygonGate: PolygonGate,
+    xAxisName: string,
+    yAxisName: string
+  ) => {
     switch (gateType) {
       case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.RECTANGLE:
+        let gateRectangle = gate[gateType];
+        let gateDimensions = gateRectangle["gating:dimension"];
+        debugger;
+        let xAxisDimension = gateDimensions.find(
+          (x: any) =>
+            x["data-type:fcs-dimension"]["_attributes"]["data-type:name"] ==
+            xAxisName
+        );
+        let yAxisDimension = gateDimensions.find(
+          (x: any) =>
+            x["data-type:fcs-dimension"]["_attributes"]["data-type:name"] ==
+            yAxisName
+        );
+        debugger;
+        let xMax = xAxisDimension["_attributes"]["gating:max"];
+        let xMin = xAxisDimension["_attributes"]["gating:min"];
+        let yMax = yAxisDimension["_attributes"]["gating:max"];
+        let yMin = yAxisDimension["_attributes"]["gating:min"];
+
+        polygonGate.points.push({ x: xMin, y: yMin });
+        polygonGate.points.push({ x: xMax, y: yMin });
+        polygonGate.points.push({ x: xMax, y: yMax });
+        polygonGate.points.push({ x: xMin, y: yMax });
+
         break;
       case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.ECLIPSE:
         break;
