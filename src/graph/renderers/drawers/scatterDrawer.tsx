@@ -24,10 +24,11 @@ export default class ScatterDrawer extends GraphDrawer {
   }
 
   addPoint = (x: number, y: number, r: number, color: string = "#000") => {
-    this.circle({
+    this.rect({
       x: x * this.scale,
       y: y * this.scale,
-      radius: r * this.scale,
+      w: 2,
+      h: 2,
       fillColor: color,
     });
   };
