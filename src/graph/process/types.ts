@@ -6,7 +6,7 @@ export type FileID = string;
 export type PlotID = string;
 
 export type PlotType = "" | "lin" | "bi";
-export type GateType = "" | "polygon" | "histogram" | "quadrant" | "oval";
+export type GateType = "" | "polygon" | "histogram" | "oval";
 export type AxisName = string;
 export type Color = string;
 export type SrcType = "remote" | "remote-sample";
@@ -30,19 +30,50 @@ export interface HistogramOverlay {
   plotSource: string;
 }
 
+export interface PlotGateType {
+  displayOnlyPointsInGate: true;
+  inverseGating: false;
+  gate: GateID;
+}
+
+export interface PopulationGateType {
+  inverseGating: false;
+  gate: GateID;
+}
+
 export interface Gate {
   id: GateID;
   gateType: GateType;
-  points: Point[];
   name: string;
   color: Color;
+  parents: GateID[];
+}
+
+export interface Gate1D extends Gate {
+  axis: AxisName;
+  axisType: PlotType;
+  axisOriginalRanges: Range;
+}
+
+export interface HistogramGate extends Gate1D {
+  // not defined yet
+}
+
+export interface Gate2D extends Gate {
   xAxis: AxisName;
   xAxisType: PlotType;
-  xAxisOriginalRanges: Point;
+  xAxisOriginalRanges: Range;
   yAxis: AxisName;
   yAxisType: PlotType;
-  yAxisOriginalRanges: Point;
-  parents: [GateID, GateID];
+  yAxisOriginalRanges: Range;
+}
+
+export interface PolygonGate extends Gate2D {
+  points: Point[];
+}
+
+export interface OvalGate extends Gate2D {
+  // not defined yet
 }
 
 export interface File {
@@ -50,8 +81,17 @@ export interface File {
   name: string;
   src: SrcType;
   axes: AxisName[];
-  label: "file-label";
+  label: string;
   plotTypes: PlotType[];
+}
+
+export interface EventsRequestResponse {
+  events: number[][];
+  channels: { key: number; value: AxisName; display: PlotType }[];
+  $locals: {};
+  $op: null;
+  title: string;
+  id: FileID;
 }
 
 export interface Plot {
@@ -62,14 +102,9 @@ export interface Plot {
   axisPlotTypes: {
     [index: string]: PlotType;
   };
-  gates: [
-    {
-      displayOnlyPointsInGate: true;
-      inverseGating: false;
-      gate: GateID;
-    }
-  ];
+  gates: PlotGateType[];
   histogramOverlays: HistogramOverlay[];
+  histogramBarOverlays: HistogramOverlay[];
   population: PopulationID;
   xAxis: AxisName;
   yAxis: AxisName;
@@ -96,12 +131,7 @@ export interface Population {
   defaultAxisPlotTypes: {
     [index: string]: PlotType;
   };
-  gates: [
-    {
-      inverseGating: false;
-      gate: GateID;
-    }
-  ];
+  gates: PopulationGateType[];
 }
 
 export interface GatingState {
@@ -130,6 +160,13 @@ export interface GatingState {
     yAxis: AxisName;
   };
   histogramGate: {};
+}
+
+export interface DatasetMetadata {
+  file: File;
+  requestedAxes: AxisName[];
+  requestedPlotTypes: PlotType[];
+  requestedPop: Gate[];
 }
 
 export interface Workspace {

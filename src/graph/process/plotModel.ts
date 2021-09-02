@@ -8,7 +8,7 @@ import Gate from "../dataManagement/gate/gate";
 import { generateColor } from "graph/utils/color";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import FCSServices from "services/FCSServices/FCSServices";
-import PopulationModel from "graph/models/populationModel";
+import PopulationModel from "graph/process/populationModel";
 import {
   AxisName,
   Dimension,
