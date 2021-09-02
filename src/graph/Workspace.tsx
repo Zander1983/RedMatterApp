@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "react-redux";
 import axios from "axios";
 import { useHistory } from "react-router";
@@ -14,6 +14,7 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import { generateColor } from "graph/utils/color";
 
 import userManager from "Components/users/userManager";
 import Gate from "graph/dataManagement/gate/gate";
@@ -475,28 +476,103 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         let sampleNode = samples[i]["SampleNode"];
         let plot = new PlotData();
         let fileId = downloadedFiles[cnt].id;
+        let transformations = samples[i]["Transformations"];
+        let channelsInfo: any = [];
+        if (transformations) {
+          let logTransformations = transformations["transforms:log"];
+          if (logTransformations && logTransformations.length == undefined)
+            logTransformations = [logTransformations];
+          let linearTransformations = transformations["transforms:linear"];
+          if (
+            linearTransformations &&
+            linearTransformations.length == undefined
+          )
+            linearTransformations = [linearTransformations];
+          if (logTransformations && logTransformations.length > 0) {
+            channelsInfo = channelsInfo.concat(
+              parseChannels(logTransformations, "log")
+            );
+          }
+          if (linearTransformations && linearTransformations.length > 0) {
+            channelsInfo = channelsInfo.concat(
+              parseChannels(linearTransformations, "lin")
+            );
+          }
+        }
+        let mainGraphAxis = sampleNode["Graph"]["Axis"];
+        let xAxis = mainGraphAxis.find(
+          (x: any) => x["_attributes"].dimension == "x"
+        );
+        let yAxis = mainGraphAxis.find(
+          (x: any) => x["_attributes"].dimension == "y"
+        );
+        let xAxisName = xAxis["_attributes"].name;
+        let yAxisName = yAxis["_attributes"].name;
+        plot.xAxis = `${xAxisName} - ${xAxisName}`;
+        plot.yAxis = `${yAxisName} - ${yAxisName}`;
+        let xChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == xAxisName
+        );
+        let yChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == yAxisName
+        );
+        plot.setXAxisPlotType(xChannelInfo.type);
+        plot.setYAxisPlotType(yChannelInfo.type);
+
+        addNewPlot(plot, fileId);
         if (
           sampleNode["Subpopulations"] &&
           Object.keys(sampleNode["Subpopulations"]).length > 0
         ) {
-          parseSubpopulation(plot, fileId, sampleNode["Subpopulations"]);
+          parseSubpopulation(
+            plot,
+            fileId,
+            sampleNode["Subpopulations"],
+            channelsInfo
+          );
         }
-        addNewPlot(plot, fileId);
         cnt++;
       }
     }
+    for (let i = 0; i < flowJoPlots.length; i++) {
+      dataManager.addNewPlotToWorkspace(flowJoPlots[i]);
+    }
   };
+
+  const parseChannels = (transformations: any, type: string) => {
+    let channelArray = [];
+    for (let i = 0; i < transformations.length; i++) {
+      let transformationAttributes = transformations[i]["_attributes"];
+      let rangeMin = transformationAttributes["transforms:minRange"];
+      let rangeMax = transformationAttributes["transforms:maxRange"];
+      let channelName =
+        transformations[i]["data-type:parameter"]["_attributes"][
+          "data-type:name"
+        ];
+      channelArray.push({
+        channelName: channelName,
+        rangeMin: rangeMin,
+        rangeMax: rangeMax,
+        type: type,
+      });
+    }
+    return channelArray;
+  };
+
+  const [flowJoPlots, setFlowJoPlots] = useState([]);
 
   const addNewPlot = (plot: PlotData, fileID: string) => {
     plot.file = dataManager.getFile(fileID);
     plot.setupPlot();
-    dataManager.addNewPlotToWorkspace(plot);
+    flowJoPlots.push(plot);
+    setFlowJoPlots(flowJoPlots);
   };
 
   const parseSubpopulation = (
     plot: PlotData,
     fileId: string,
-    subPopulation: any
+    subPopulation: any,
+    channelsInfo: any
   ) => {
     let populations = subPopulation["Population"];
     if (populations) {
@@ -513,22 +589,38 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         let yAxis = axis.find((x: any) => x["_attributes"].dimension == "y");
         let xAxisName = xAxis["_attributes"].name;
         let yAxisName = yAxis["_attributes"].name;
+        newPlot.xAxis = `${xAxisName} - ${xAxisName}`;
+        newPlot.yAxis = `${yAxisName} - ${yAxisName}`;
+        let xChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == xAxisName
+        );
+        let yChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == yAxisName
+        );
+        newPlot.setXAxisPlotType(xChannelInfo.type);
+        newPlot.setYAxisPlotType(yChannelInfo.type);
 
         if (population["Gate"]) {
           let gateAssign: PolygonGateState = {
             name: population["_attributes"].name,
             xAxis: `${xAxisName} - ${xAxisName}`,
             yAxis: `${yAxisName} - ${yAxisName}`,
-            color: graph["_attributes"].foreColor,
-            xAxisType: "lin",
-            yAxisType: "lin",
+            color: generateColor(),
+            xAxisType: xChannelInfo.type,
+            yAxisType: yChannelInfo.type,
             parents: [],
             points: [],
           };
           let polygonGate = new PolygonGate(gateAssign);
           let gate = population["Gate"];
           let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
-          parseGateType(gateType, gate, polygonGate, xAxisName, yAxisName);
+          parseGateType(
+            gateType,
+            gate,
+            polygonGate,
+            xChannelInfo,
+            yChannelInfo
+          );
           newPlot.population.push({ gate: polygonGate, inverseGating: false });
           plot.gates.push({
             gate: polygonGate,
@@ -536,42 +628,70 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             displayOnlyPointsInGate: false,
           });
           dataManager.addNewGateToWorkspace(polygonGate);
-          if (populations["Subpopulations"]) {
-            parseSubpopulation(newPlot, fileId, populations["Subpopulations"]);
-          }
           addNewPlot(newPlot, fileId);
+          if (population["Subpopulations"]) {
+            parseSubpopulation(
+              newPlot,
+              fileId,
+              population["Subpopulations"],
+              channelsInfo
+            );
+          }
         }
       }
     }
+  };
+
+  const getRangeMinMaxIfPropertyNotThere = (
+    attributes: any,
+    property: string,
+    returnValueIfPropertyNotFound: string
+  ) => {
+    if (property in attributes) {
+      return attributes[property];
+    }
+
+    return returnValueIfPropertyNotFound;
   };
 
   const parseGateType = (
     gateType: string,
     gate: any,
     polygonGate: PolygonGate,
-    xAxisName: string,
-    yAxisName: string
+    xChannelInfo: any,
+    yChannelInfo: any
   ) => {
+    let gateDimensions: any;
+    let xAxisDimension: any;
+    let yAxisDimension: any;
     switch (gateType) {
       case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.RECTANGLE:
         let gateRectangle = gate[gateType];
-        let gateDimensions = gateRectangle["gating:dimension"];
-        debugger;
-        let xAxisDimension = gateDimensions.find(
-          (x: any) =>
-            x["data-type:fcs-dimension"]["_attributes"]["data-type:name"] ==
-            xAxisName
+        gateDimensions = gateRectangle["gating:dimension"];
+
+        xAxisDimension = gateDimensions[0];
+        yAxisDimension = gateDimensions[1];
+
+        let xMax = getRangeMinMaxIfPropertyNotThere(
+          xAxisDimension["_attributes"],
+          "gating:max",
+          xChannelInfo.rangeMax
         );
-        let yAxisDimension = gateDimensions.find(
-          (x: any) =>
-            x["data-type:fcs-dimension"]["_attributes"]["data-type:name"] ==
-            yAxisName
+        let xMin = getRangeMinMaxIfPropertyNotThere(
+          xAxisDimension["_attributes"],
+          "gating:min",
+          "0"
         );
-        debugger;
-        let xMax = xAxisDimension["_attributes"]["gating:max"];
-        let xMin = xAxisDimension["_attributes"]["gating:min"];
-        let yMax = yAxisDimension["_attributes"]["gating:max"];
-        let yMin = yAxisDimension["_attributes"]["gating:min"];
+        let yMax = getRangeMinMaxIfPropertyNotThere(
+          yAxisDimension["_attributes"],
+          "gating:max",
+          yChannelInfo.rangeMax
+        );
+        let yMin = getRangeMinMaxIfPropertyNotThere(
+          yAxisDimension["_attributes"],
+          "gating:min",
+          "0"
+        );
 
         polygonGate.points.push({ x: xMin, y: yMin });
         polygonGate.points.push({ x: xMax, y: yMin });
@@ -580,6 +700,33 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
         break;
       case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.ECLIPSE:
+        break;
+      case COMMON_CONSTANTS.FLOW_JO.GATE_TYPE.POLYGON:
+        let gatePolygon = gate[gateType];
+
+        gateDimensions = gatePolygon["gating:dimension"];
+
+        let xAxisDimensionIndex = 0;
+        let yAxisDimensionIndex = 1;
+
+        xAxisDimension = gateDimensions[xAxisDimensionIndex];
+        yAxisDimension = gateDimensions[yAxisDimensionIndex];
+
+        let gateVertexs = gatePolygon["gating:vertex"];
+
+        for (let i = 0; i < gateVertexs.length; i++) {
+          let gateVertice = gateVertexs[i];
+          let x =
+            gateVertice["gating:coordinate"][xAxisDimensionIndex][
+              "_attributes"
+            ]["data-type:value"];
+          let y =
+            gateVertice["gating:coordinate"][yAxisDimensionIndex][
+              "_attributes"
+            ]["data-type:value"];
+          polygonGate.points.push({ x: x, y: y });
+        }
+
         break;
     }
   };

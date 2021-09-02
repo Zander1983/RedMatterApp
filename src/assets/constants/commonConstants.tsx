@@ -28,6 +28,7 @@ export const COMMON_CONSTANTS = {
     GATE_TYPE: {
       RECTANGLE: "gating:RectangleGate",
       ECLIPSE: "gating:EllipsoidGate",
+      POLYGON: "gating:PolygonGate",
     },
   },
 };
