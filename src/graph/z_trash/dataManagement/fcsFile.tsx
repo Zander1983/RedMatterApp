@@ -1,4 +1,4 @@
-import Gate from "../dataManagement/gate/gate";
+import Gate from "./gate/gate";
 import dataManager from "./dataManager";
 
 export interface FCSFileInput {

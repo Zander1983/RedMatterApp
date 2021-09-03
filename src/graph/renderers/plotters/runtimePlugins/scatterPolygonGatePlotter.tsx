@@ -1,7 +1,7 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
-import { euclidianDistance2D } from "graph/dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 

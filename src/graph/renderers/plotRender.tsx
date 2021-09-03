@@ -15,7 +15,6 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import dataManager from "graph/dataManagement/dataManager";
 
 const plotterFactory = new PlotterFactory();
 
@@ -43,9 +42,6 @@ export default class Plot {
   constructor(plotData: PlotData) {
     if (plotData) {
       this.plotData = plotData;
-      this.plotData.addObserver("plotUpdated", () => {
-        this.update();
-      });
       this.canvas = new Canvas();
     }
   }
@@ -84,7 +80,6 @@ export default class Plot {
 
   draw() {
     if (
-      !dataManager.ready() ||
       this.plotData === undefined ||
       this.plotData === null ||
       !this.validateReady()

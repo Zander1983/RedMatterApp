@@ -7,10 +7,9 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
-import dataManager from "../../../dataManagement/dataManager";
 import Plot from "graph/renderers/plotRender";
+import * as gates from "graph/resources/gates";
 
-import Gate from "../../../dataManagement/gate/gate";
 import { snackbarService } from "uno-material-ui";
 import useForceUpdate from "hooks/forceUpdate";
 
@@ -45,7 +44,7 @@ export default function GateBar(props: any) {
     try {
       const gateID = gates.find((gate) => gate.id === gateId).id;
       if (selected) {
-        dataManager.unlinkGateFromPlot(plot.plotData.id, gateID);
+        plots.remote.unlinkGateFromPlot(plot.plotData.id, gateID);
       } else {
         dataManager.linkGateToPlot(plot.plotData.id, gateID);
       }

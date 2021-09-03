@@ -4,7 +4,7 @@ import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import {
   euclidianDistance2D,
   getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+} from "graph/utils/euclidianPlane";
 
 interface Point {
   x: number;

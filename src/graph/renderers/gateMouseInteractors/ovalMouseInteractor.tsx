@@ -4,7 +4,7 @@ import {
   distLinePoint2D,
   getVectorAngle2D,
   rotateVector2D,
-} from "../../dataManagement/math/euclidianPlane";
+} from "../../utils/euclidianPlane";
 import GateMouseInteractor, {
   Point,
   GateState,
