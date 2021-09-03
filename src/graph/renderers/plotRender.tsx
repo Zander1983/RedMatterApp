@@ -1,206 +1,188 @@
 /*
   Plot - Responsible for keeping all rendering state syncronized.
 */
-import PlotData from "graph/dataManagement/plotData";
-
 import PlotterFactory from "graph/renderers/plotters/plotterFactory";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
-
-import Canvas from "graph/renderers/canvas";
 
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
+import { Plot } from "graph/resources/types";
+import CanvasComponent from "graph/components/CanvasComponent";
+import { useState } from "react";
 
 const plotterFactory = new PlotterFactory();
 
-export default class Plot {
-  plotData: PlotData;
-  canvas: Canvas;
-  plotRender: Function;
-  unsetGating: Function;
+const PlotRenderer = (props: { plot: Plot }) => {
+  const plot = props.plot;
+  const [canvas, setCanvas] = useState(null);
+  const unsetGating: Function;
 
   // Mouse interaction objects
-  mouseInteractors: MouseInteractor[] = [];
-  ovalMouseInteractor: OvalMouseInteractor | null = null;
-  polygonMouseInteractor: PolygonMouseInteractor | null = null;
+  const mouseInteractors: MouseInteractor[] = [];
+  let ovalMouseInteractor: OvalMouseInteractor | null = null;
+  let polygonMouseInteractor: PolygonMouseInteractor | null = null;
 
   // Rendering objects
-  mouseInteractorPlugin: GatePlotterPlugin | null = null;
-  plotter: GraphPlotter | null = null;
-  scatterPlotter: ScatterPlotter | null = null;
-  histogramPlotter: HistogramPlotter | null = null;
+  let mouseInteractorPlugin: GatePlotterPlugin | null = null;
+  let plotter: GraphPlotter | null = null;
+  let scatterPlotter: ScatterPlotter | null = null;
+  let histogramPlotter: HistogramPlotter | null = null;
 
-  /*
-    This class has a constructor because a plot is individual to a file.
-    Existance of a plot can only be on the presence of a file. 
-  */
-  constructor(plotData: PlotData) {
-    if (plotData) {
-      this.plotData = plotData;
-      this.canvas = new Canvas();
-    }
-  }
-
-  /* Whenever plot data gets updated, this should be called to rerender
+  /* Whenever plot data gets updated, should be called to rerender
      what changed */
-  update() {
+  const update = () => {
     // Plot type update
-    if (this.plotData.xAxis === this.plotData.yAxis) {
-      this.plotter = this.histogramPlotter;
+    if (plot.xAxis === plot.yAxis) {
+      plotter = histogramPlotter;
     } else {
-      this.plotter = this.scatterPlotter;
+      plotter = scatterPlotter;
     }
 
-    this.draw();
-  }
+    draw();
+  };
 
-  setup() {
-    this.constructPlotters();
-    this.plotter = this.scatterPlotter;
+  const setup = () => {
+    constructPlotters();
+    plotter = scatterPlotter;
 
-    this.setPlotterState();
-    this.histogramPlotter.setup(this.canvas.getContext());
-    this.scatterPlotter.setup(this.canvas.getContext());
+    setPlotterState();
+    histogramPlotter.setup(canvas.getContext());
+    scatterPlotter.setup(canvas.getContext());
 
-    this.updatePlotter();
+    plotter.update();
 
-    this.contructMouseInteractors();
-    this.setGating("Polygon", true);
-    this.setGating("Polygon", false);
-    this.setGating("Oval", true);
-    this.setGating("Oval", false);
+    contructMouseInteractors();
+    setGating("Polygon", true);
+    setGating("Polygon", false);
+    setGating("Oval", true);
+    setGating("Oval", false);
 
-    setTimeout(() => this.draw(), 20);
-  }
+    setTimeout(() => draw(), 20);
+  };
 
-  draw() {
-    if (
-      this.plotData === undefined ||
-      this.plotData === null ||
-      !this.validateReady()
-    )
-      return;
+  const draw = () => {
+    if (plot === undefined || plot === null || !validateReady()) return;
 
-    this.setCanvasState();
-    this.setPlotterState();
+    setCanvasState();
+    setPlotterState();
 
-    this.updatePlotter();
-    this.canvasRender();
+    plotter.update();
 
-    this.plotter.draw();
-  }
+    canvasRender();
 
-  canvasRender() {
-    this.canvas.canvasRender();
-  }
+    plotter.draw();
+  };
 
-  setPlotRender(plotRender: Function) {
-    this.plotRender = plotRender;
-  }
+  const canvasRender = () => {
+    canvas.canvasRender();
+  };
 
-  setPlotData(plotData: PlotData) {
-    this.plotData = plotData;
-  }
+  const setPlotRender = (plotRender: Function) => {
+    plotRender = plotRender;
+  };
 
-  static typeToClassType = {
+  const setPlotData = (plotData: PlotData) => {
+    plot = plotData;
+  };
+
+  const typeToClassType = {
     Oval: OvalMouseInteractor,
     Polygon: PolygonMouseInteractor,
     Histogram: Error,
   };
 
-  setGating(type: "Oval" | "Histogram" | "Polygon", start: boolean) {
-    this.mouseInteractors
+  const setGating = (
+    type: "Oval" | "Histogram" | "Polygon",
+    start: boolean
+  ) => {
+    mouseInteractors
       .filter((e) => e instanceof Plot.typeToClassType[type])
       .forEach((e) => {
         e.setMouseInteractorState({
-          plotID: this.plotData.id,
-          yAxis: this.plotData.getYAxisName(),
-          xAxis: this.plotData.getXAxisName(),
+          plotID: plot.id,
+          yAxis: plot.xAxis,
+          xAxis: plot.yAxis,
           rerender: () => {
-            this.canvasRender();
-            this.plotter.draw();
+            canvasRender();
+            plotter.draw();
           },
         });
-        e.setup(this.scatterPlotter);
-        e.unsetGating = this.unsetGating;
+        e.setup(scatterPlotter);
+        e.unsetGating = unsetGating;
         start ? e.start() : e.end();
       });
-  }
+  };
 
-  registerMouseEvent(type: string, x: number, y: number) {
-    this.mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
-  }
+  const registerMouseEvent = (type: string, x: number, y: number) => {
+    mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
+  };
 
-  private validateReady(): boolean {
+  const validateReady = (): boolean => {
     if (
-      this.plotData.plotWidth !== 0 &&
-      this.plotData.plotHeight !== 0 &&
-      this.plotData.plotScale !== 0 &&
-      this.plotter.drawer !== null
+      plot.plotWidth !== 0 &&
+      plot.plotHeight !== 0 &&
+      plot.plotScale !== 0 &&
+      plotter.drawer !== null
     ) {
       return true;
     }
     return false;
-  }
+  };
 
-  private setCanvasState() {
+  const setCanvasState = () => {
     const canvasState = {
-      id: this.plotData.id,
-      width: this.plotData.plotWidth,
-      height: this.plotData.plotHeight,
-      scale: this.plotData.plotScale,
-      plot: this,
+      id: plot.id,
+      width: plot.plotWidth,
+      height: plot.plotHeight,
+      scale: plot.plotScale,
     };
-    this.canvas.setCanvasState(canvasState);
-  }
+    canvas.setCanvasState(canvasState);
+  };
 
-  private constructPlotters() {
+  const constructPlotters = () => {
     //@ts-ignore
-    this.scatterPlotter = plotterFactory.makePlotter("scatter", ["heatmap"]);
+    scatterPlotter = plotterFactory.makePlotter("scatter", ["heatmap"]);
     //@ts-ignore
-    this.histogramPlotter = plotterFactory.makePlotter("histogram", []);
-  }
+    histogramPlotter = plotterFactory.makePlotter("histogram", []);
+  };
 
-  private updatePlotter() {
-    this.plotter.update();
-  }
-
-  private setPlotterState() {
+  const setPlotterState = () => {
     /*
       Fills up data to feed all plotters. It's the resposability of a plotter to
       pick only what it needs.
     */
-    const data = this.plotData.getXandYData();
-    const ranges = this.plotData.getXandYRanges();
+    const data = plot.getXandYData();
+    const ranges = plot.getXandYRanges();
     const plotterState = {
-      plotData: this.plotData,
+      plotData: plot,
       xAxis: data.xAxis,
       yAxis: data.yAxis,
-      xAxisName: this.plotData.xAxis,
-      yAxisName: this.plotData.yAxis,
-      width: this.plotData.plotWidth,
-      height: this.plotData.plotHeight,
-      scale: this.plotData.plotScale,
-      direction: this.plotData.histogramAxis,
-      gates: this.plotData.getGatesAndPopulation(),
+      xAxisName: plot.xAxis,
+      yAxisName: plot.yAxis,
+      width: plot.plotWidth,
+      height: plot.plotHeight,
+      scale: plot.plotScale,
+      direction: plot.histogramAxis,
+      gates: plot.getGatesAndPopulation(),
       xRange: ranges.x,
       yRange: ranges.y,
     };
-    this.plotter.setPlotterState(plotterState);
-  }
+    plotter.setPlotterState(plotterState);
+  };
 
-  private contructMouseInteractors() {
-    this.ovalMouseInteractor = new OvalMouseInteractor();
-    this.polygonMouseInteractor = new PolygonMouseInteractor();
+  const contructMouseInteractors = () => {
+    ovalMouseInteractor = new OvalMouseInteractor();
+    polygonMouseInteractor = new PolygonMouseInteractor();
     // by default
-    this.mouseInteractors = [
-      this.ovalMouseInteractor,
-      this.polygonMouseInteractor,
-    ];
-  }
-}
+    mouseInteractors = [ovalMouseInteractor, polygonMouseInteractor];
+  };
+
+  return <CanvasComponent plotID={plot.id} />;
+};
+
+export default PlotRenderer;

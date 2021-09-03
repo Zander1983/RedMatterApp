@@ -55,6 +55,11 @@ const initialState: Workspace = {
     },
     histogramGate: {},
   },
+  mouseEvent: {
+    type: "",
+    x: 0,
+    y: 0,
+  },
 };
 
 const graphReducers = (state = initialState, action: any) => {

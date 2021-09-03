@@ -4,10 +4,10 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
-import dataManager from "../../dataManagement/dataManager";
-import Plot from "graph/renderers/plotRender";
-import PlotData from "graph/dataManagement/plotData";
 import { Divider } from "@material-ui/core";
+import { getFile, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { store } from "redux/store";
+import { Plot, Workspace } from "graph/resources/types";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -29,22 +29,6 @@ const classes = {
 const MINW = 10;
 const MINH = 12;
 
-export const resetPlotSizes = (id?: string) => {
-  let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
-  if (id) tPlots = [id];
-  for (const id of tPlots) {
-    let docIdRef = document.getElementById(`canvas-${id}`);
-    let docDisplayRef: any = document.getElementById(`display-ref-${id}`);
-    let docBarRef: any = document.getElementById(`bar-ref-${id}`);
-
-    if (docBarRef && docDisplayRef && docIdRef) {
-      let width = docDisplayRef.offsetWidth - 55;
-      let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-      docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
-    }
-  }
-};
-
 const standardGridPlotItem = (index: number, plotData: any) => {
   let x = plotData.positions.x;
   let y = plotData.positions.y;
@@ -65,82 +49,19 @@ const standardGridPlotItem = (index: number, plotData: any) => {
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspaceData: any;
-}
-
-interface IState {
+  workspace: Workspace;
   plotMoving?: boolean;
 }
 
-class PlotController extends React.Component<PlotControllerProps, IState> {
+class PlotController extends React.Component<PlotControllerProps> {
   private static renderCalls = 0;
-  plots: {
-    plotData: PlotData;
-    plotRender: Plot;
-  }[] = [];
-  addPlotLisner: any;
-  removePlotLisner: any;
-  clearWorkspaceLisner: any;
+  plots: Plot[] = [];
 
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       plotMoving: true,
     };
-
-    this.update();
-
-    this.addPlotLisner = dataManager.addObserver(
-      "addNewPlotToWorkspace",
-      () => {
-        this.update();
-        const lastPlotId =
-          dataManager.getAllPlots()[dataManager.getAllPlots().length - 1]
-            .plotID;
-        resetPlotSizes(lastPlotId);
-      }
-    );
-    this.removePlotLisner = dataManager.addObserver(
-      "removePlotFromWorkspace",
-      () => this.update()
-    );
-    this.clearWorkspaceLisner = dataManager.addObserver(
-      "afterClearWorkspace",
-      () => this.update()
-    );
-  }
-
-  componentWillUnmount() {
-    dataManager.removeObserver("addNewPlotToWorkspace", this.addPlotLisner);
-    dataManager.removeObserver("removePlotFromWorkspace", this.addPlotLisner);
-    dataManager.removeObserver("afterClearWorkspace", this.addPlotLisner);
-  }
-
-  update() {
-    if (!dataManager.ready()) {
-      this.plots = [];
-      this.forceUpdate();
-    }
-    const plotMap = dataManager.getAllPlots();
-    const plotList: {
-      plotData: PlotData;
-      plotRender: Plot;
-    }[] = [];
-    plotMap.forEach((v) =>
-      plotList.push({
-        plotData: v.plot,
-        plotRender: dataManager.getPlotRendererForPlot(v.plotID),
-      })
-    );
-    this.plots = plotList;
-    this.forceUpdate();
-  }
-
-  updatePlotMovement() {
-    dataManager.updateWorkspace();
-    this.setState({
-      plotMoving: !dataManager.dragLock,
-    });
   }
 
   resizeCanvas(layouts: any) {
@@ -163,66 +84,57 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   savePlotPosition(layouts: any) {
+    let plots = getWorkspace().plots;
+    let plotChanges = [];
     for (let i = 0; i < layouts.length; i++) {
       let layout = layouts[i];
       let plotId = layouts[i].i;
 
-      let plot = this.plots.find((x) => x.plotData.id === plotId);
+      let plot = plots.find((x) => x.id === plotId);
       if (
-        plot.plotData.dimensions.h !== layout.h ||
-        plot.plotData.dimensions.w !== layout.w ||
-        plot.plotData.positions.x !== layout.x ||
-        plot.plotData.positions.y !== layout.y
+        plot.dimensions.h !== layout.h ||
+        plot.dimensions.w !== layout.w ||
+        plot.positions.x !== layout.x ||
+        plot.positions.y !== layout.y
       ) {
-        if (!dataManager.redrawPlotIds.includes(plot.plotData.id))
-          dataManager.redrawPlotIds.push(plot.plotData.id);
-        if (
-          plot.plotData.parentPlotId &&
-          !dataManager.redrawPlotIds.includes(plot.plotData.parentPlotId)
-        ) {
-          dataManager.redrawPlotIds.push(plot.plotData.parentPlotId);
-        }
-        plot.plotData.dimensions = {
+        plot.dimensions = {
           h: layout.h,
           w: layout.w,
         };
-
-        plot.plotData.positions = {
+        plot.positions = {
           x: layout.x,
           y: layout.y,
         };
+        plotChanges.push(plotId);
       }
     }
-    dataManager.updateWorkspace();
+    store.dispatch({
+      action: "workspace.UPDATE_PLOTS",
+      payload: { plots: plotChanges },
+    });
   }
 
-  /* This function has to be carefully controlled ensure that the plots will
-     not re re-rendered unecessarely, which could slow down app's perfomance
-     significatively */
   render() {
     console.log(
       `Workspace rendered for the ${++PlotController.renderCalls} time`
     );
     let plotGroups: any = {};
     for (const plot of this.plots) {
-      const fileId = plot.plotData.file.id;
+      const fileId = getPopulation(plot.population).file;
       if (fileId in plotGroups) {
         plotGroups[fileId].push(plot);
       } else {
         plotGroups[fileId] = [plot];
       }
     }
-    const keys = Object.keys(plotGroups);
-    //@ts-ignore
+    const fileIdKeys = Object.keys(plotGroups);
     if (this.plots.length > 0) {
       return (
         <div>
           <Divider></Divider>
-          {keys.map((key: string) => {
-            const plots: {
-              plotData: PlotData;
-              plotRender: Plot;
-            }[] = plotGroups[key];
+          {fileIdKeys.map((fileId: string) => {
+            const fileName = getFile(fileId).name;
+            const plots: Plot[] = plotGroups[fileId];
             return (
               <div>
                 <div
@@ -234,7 +146,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                   }}
                 >
                   <h3 style={{ color: "white", marginBottom: 0 }}>
-                    {plots[0].plotData.file.name}
+                    {fileName}
                   </h3>
                 </div>
                 <div style={{ marginTop: 3, marginBottom: 10 }}>
@@ -257,22 +169,19 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                   >
                     {
                       //@ts-ignore
-                      plots.map((e, i) => {
+                      plots.map((plot, i) => {
                         return (
                           <div
-                            key={e.plotData.id}
+                            key={plot.id}
                             style={classes.itemOuterDiv}
-                            data-grid={standardGridPlotItem(i, e.plotData)}
-                            id={`workspace-outter-${e.plotData.id}`}
+                            data-grid={standardGridPlotItem(i, plot)}
+                            id={`workspace-outter-${plot.id}`}
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
                               <PlotComponent
-                                index={i}
-                                plot={e.plotRender}
-                                plotIndex={e.plotData.id}
-                                plotFileId={e.plotData.file.id}
+                                plot={plot}
                                 plots={this.plots.filter(
-                                  (x) => x.plotData.id !== e.plotData.id
+                                  (x) => x.id !== plot.id
                                 )}
                                 sharedWorkspace={this.props.sharedWorkspace}
                                 experimentId={this.props.experimentId}
@@ -308,5 +217,21 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     }
   }
 }
+
+// export const resetPlotSizes = (id?: string) => {
+//   let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
+//   if (id) tPlots = [id];
+//   for (const id of tPlots) {
+//     let docIdRef = document.getElementById(`canvas-${id}`);
+//     let docDisplayRef: any = document.getElementById(`display-ref-${id}`);
+//     let docBarRef: any = document.getElementById(`bar-ref-${id}`);
+
+//     if (docBarRef && docDisplayRef && docIdRef) {
+//       let width = docDisplayRef.offsetWidth - 55;
+//       let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
+//       docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+//     }
+//   }
+// };
 
 export default PlotController;

@@ -1,4 +1,4 @@
-import PlotData from "./plotData";
+import PlotData from "../dataManagement/plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
 import { sqrt } from "mathjs";

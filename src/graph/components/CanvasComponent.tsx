@@ -1,45 +1,28 @@
-import dataManager from "graph/dataManagement/dataManager";
-import Plot from "./plotRender";
+import { useRef, useEffect, useState } from "react";
+import { PlotID } from "graph/resources/types";
+import { store } from "redux/store";
 
-interface CanvasState {
-  id: string;
-  width: number;
-  height: number;
-  scale: number;
-  plot: Plot;
-}
-
-/*
-  Canvas use: 
-  1) Instance the canvas
-  2) Set canvas state
-  3) Call useCanvas() to attach canvas to reference
-  4) Call draw()
-
-  You are done!
-  
-  If you want to update:
-  1) Set canvas state
-  2) Call draw()
-  */
-export default class Canvas {
+class Canvas {
   private context: any | null = null;
   private useCanvasCalled = false;
 
-  canvasRender: Function | null = null;
+  private canvasRender: Function | null = null;
 
   id: string;
   width: number = 0;
   height: number = 0;
   scale: number = 2;
-  plot: Plot;
 
-  setCanvasState(state: CanvasState) {
+  setCanvasState(state: {
+    id: PlotID;
+    width: number;
+    height: number;
+    scale: number;
+  }) {
     this.id = state.id;
     this.width = state.width;
     this.height = state.height;
     this.scale = state.scale;
-    this.plot = state.plot;
   }
 
   getContext(): any {
@@ -49,7 +32,10 @@ export default class Canvas {
     return this.context;
   }
 
-  render() {}
+  render() {
+    if (this.canvasRender !== null) this.canvasRender();
+    else throw Error("Null canvasRender() on <canvas>");
+  }
 
   setUseCanvasUsed(value: boolean) {
     this.useCanvasCalled = value;
@@ -69,13 +55,15 @@ export default class Canvas {
     let animationFrameId = 0;
 
     const sendMouseInteraction = (event: Event, lock?: boolean) => {
-      if (lock !== undefined) dataManager.workspaceDragLock(lock);
       //@ts-ignore
       const x = event.offsetX;
       //@ts-ignore
       const y = event.offsetY;
       const type = event.type;
-      this.plot.registerMouseEvent(type, x, y);
+      store.dispatch({
+        action: "workspace.MOUSE_EVENT",
+        payload: { mouseEvent: { type, x, y } },
+      });
     };
 
     const addCanvasListener = (type: string, func: Function) => {
@@ -108,3 +96,52 @@ export default class Canvas {
     return ref;
   }
 }
+
+const CanvasComponent = (props: { plotID: PlotID }) => {
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  let canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvas) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const newCanvas = new Canvas();
+      canvas.setUseCanvasUsed(true);
+      setCanvas(newCanvas);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      canvasRef = newCanvas.useCanvas(canvasRef);
+    }
+    return () => {
+      canvas.setUseCanvasUsed(false);
+    };
+  }, []);
+
+  const id = `canvas-${props.plotID}`;
+
+  return (
+    <canvas
+      onMouseDown={(e) => {
+        e.stopPropagation();
+      }}
+      style={{
+        backgroundColor: "#fff",
+        textAlign: "center",
+        width: canvas.width,
+        height: canvas.height,
+        borderRadius: 5,
+        boxShadow: "1px 3px 4px #bbd",
+        flexGrow: 1,
+      }}
+      ref={canvasRef}
+      id={id}
+    />
+  );
+};
+
+/*
+  Canvas component does 3 things:
+  - Instance = creates a <canvas>
+  - Reset = clears the <canvas>
+  - Get = returns <canvas> context 2D ref
+*/
+
+export default CanvasComponent;

@@ -8,8 +8,11 @@ const getHumanReadableTimeDifference = (date1: Date, date2: Date) => {
   if (years) {
     return years + " year" + numberEnding(years);
   }
-  //TODO: Months! Maybe weeks?
-  const days = Math.floor((temp %= 31536000) / 86400);
+  const months = Math.floor((temp %= 31536000) / 2592000);
+  if (months) {
+    return months + " month" + numberEnding(months);
+  }
+  const days = Math.floor((temp %= 2592000) / 86400);
   if (days) {
     return days + " day" + numberEnding(days);
   }
@@ -25,7 +28,7 @@ const getHumanReadableTimeDifference = (date1: Date, date2: Date) => {
   if (seconds) {
     return seconds + " second" + numberEnding(seconds);
   }
-  return "just now"; //'just now' //or other string you like;
+  return "just now";
 };
 
 export { getHumanReadableTimeDifference };

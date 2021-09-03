@@ -163,6 +163,12 @@ export interface DatasetMetadata {
   requestedPop: PopulationGateType[];
 }
 
+export interface MouseEvent {
+  type: string;
+  x: number;
+  y: number;
+}
+
 export interface Workspace {
   id: WorkspaceID;
   gates: Gate[];
@@ -171,4 +177,5 @@ export interface Workspace {
   populations: Population[];
   previousStates: Workspace[];
   mouseGateState: GatingState;
+  mouseEvent: MouseEvent;
 }

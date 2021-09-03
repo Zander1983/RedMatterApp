@@ -14,8 +14,6 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 
 import userManager from "Components/users/userManager";
-import Gate from "graph/dataManagement/gate/gate";
-import PlotData from "graph/dataManagement/plotData";
 import { API_CALLS } from "assets/constants/apiCalls";
 import { Dbouncer } from "services/Dbouncer";
 import HowToUseModal from "./HowToUseModal";
@@ -85,7 +83,6 @@ let workspaceSharedLocal = false;
 function Workspace(props: { experimentId: string; poke: Boolean }) {
   //@ts-ignore
   const workspace = useSelector((state) => state.workspace);
-  console.log("workspace =", workspace);
 
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();

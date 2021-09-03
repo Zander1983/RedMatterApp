@@ -10,7 +10,7 @@ import {
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
-import LinkReconstructor from "graph/dataManagement/reconstructors/linkReconstructor";
+import LinkReconstructor from "graph/utils/linkReconstructor";
 import dataManager from "graph/dataManagement/dataManager";
 
 const useStyles = makeStyles((theme) => ({
