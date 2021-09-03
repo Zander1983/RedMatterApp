@@ -1,4 +1,4 @@
-import { Workspace } from "../types";
+import { Workspace } from "./types";
 
 export const graphActions = {
   RESET: "workspace.RESET",

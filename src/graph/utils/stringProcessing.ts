@@ -1,4 +1,4 @@
-import { AxisName } from "graph/process/types";
+import { AxisName } from "graph/resources/types";
 
 export const getFSCandSSCAxisOnAxesList = (
   axes: AxisName[]

@@ -30,12 +30,6 @@ export interface HistogramOverlay {
   plotSource: string;
 }
 
-export interface PlotGateType {
-  displayOnlyPointsInGate: true;
-  inverseGating: false;
-  gate: GateID;
-}
-
 export interface PopulationGateType {
   inverseGating: false;
   gate: GateID;
@@ -102,7 +96,7 @@ export interface Plot {
   axisPlotTypes: {
     [index: string]: PlotType;
   };
-  gates: PlotGateType[];
+  gates: GateID[];
   histogramOverlays: HistogramOverlay[];
   histogramBarOverlays: HistogramOverlay[];
   population: PopulationID;
@@ -166,7 +160,7 @@ export interface DatasetMetadata {
   file: File;
   requestedAxes: AxisName[];
   requestedPlotTypes: PlotType[];
-  requestedPop: Gate[];
+  requestedPop: PopulationGateType[];
 }
 
 export interface Workspace {

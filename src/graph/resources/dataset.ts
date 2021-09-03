@@ -38,8 +38,9 @@ export const createDataset = (
   }
 
   let dataset: Dataset;
+  let i = 0;
   for (const list of axes) {
-    dataset.push(new Int32Array(list));
+    dataset[file.axes[i++]] = new Int32Array(list);
   }
 
   if (!metadata) {
@@ -72,7 +73,7 @@ export const getDataset = (metadata: DatasetMetadata): Dataset => {
     Private
 */
 
-type Dataset = Int32Array[];
+type Dataset = { [index: string]: Int32Array };
 
 const hashMetadata = (metadata: DatasetMetadata): DatasetID => {
   return ObjectHash(metadata);

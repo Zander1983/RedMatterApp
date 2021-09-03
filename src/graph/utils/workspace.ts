@@ -8,12 +8,32 @@ import {
   Population,
   PopulationID,
   Workspace,
-} from "graph/process/types";
+} from "graph/resources/types";
 import { store } from "redux/store";
 
 export const getWorkspace = (): Workspace => {
-  return store.getState().workspace;
+  return new ReduxCache().getWorkspace();
 };
+
+class ReduxCache {
+  static instance: ReduxCache | null = null;
+  private workspace: Workspace;
+
+  constructor() {
+    if (ReduxCache.instance) {
+      return ReduxCache.instance;
+    }
+    ReduxCache.instance = this;
+    this.workspace = store.getState().workspace as Workspace;
+    store.subscribe((state: any) => {
+      this.workspace = state.workspace as Workspace;
+    });
+  }
+
+  getWorkspace() {
+    return this.workspace;
+  }
+}
 
 export const getFile = (fileID: FileID): File => {
   const workspace = getWorkspace();

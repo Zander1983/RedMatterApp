@@ -60,12 +60,12 @@ class FCSServices {
   }
 
   logicleMarkTransformer(
-    data: number[],
+    data: number[] | Int32Array,
     rangeBegin?: number,
     rangeEnd?: number
-  ): number[] {
+  ): Int32Array {
     const logicle = new MarkLogicle(rangeBegin, rangeEnd);
-    return data.map((e) => logicle.scale(e));
+    return new Int32Array(data.map((e) => logicle.scale(e)));
   }
 
   logicleInverseMarkTransformer(
