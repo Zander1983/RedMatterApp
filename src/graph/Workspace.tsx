@@ -454,15 +454,48 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       };
       var result = XML.xml2json(text, options);
       console.log(result);
+      setLoading(true);
       parseFlowJoJson(JSON.parse(result));
       setFileUploadInputValue("");
     };
     reader.readAsText(e.target.files[0]);
   };
 
-  const parseFlowJoJson = (flowJoJson: any) => {
+  const getFileOrSkipThisSample = (filesUsed: any, channelsInfo: any) => {
+    let files = downloadedFiles.filter((x) => !filesUsed.includes(x.id));
+    let channels = channelsInfo.map((x: any) => {
+      return `${x.channelName} - ${x.channelName}`;
+    });
+    let fileCanbeUsed = true;
+    let fileId;
+    for (let i = 0; i < files.length; i++) {
+      let file = files[i];
+      let axes = file.channels.map((x: any) => {
+        let value = x.value;
+        if (x.display == "bi") {
+          value = value.replace("Comp-", "");
+          return value;
+        }
+        return value;
+      });
+      for (let j = 0; j < axes.length; j++) {
+        if (!channels.includes(axes[j])) {
+          fileCanbeUsed = false;
+          break;
+        }
+      }
+      if (fileCanbeUsed) {
+        fileId = file.id;
+        break;
+      }
+    }
+
+    return { fileId: fileId ? fileId : null };
+  };
+
+  const parseFlowJoJson = async (flowJoJson: any) => {
     let workspace = flowJoJson["Workspace"];
-    let cnt = 0;
+    let filesUsed: any = [];
     if (
       workspace &&
       workspace["SampleList"] &&
@@ -475,7 +508,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       for (let i = 0; i < samples.length; i++) {
         let sampleNode = samples[i]["SampleNode"];
         let plot = new PlotData();
-        let fileId = downloadedFiles[cnt].id;
+
         let transformations = samples[i]["Transformations"];
         let channelsInfo: any = [];
         if (transformations) {
@@ -490,7 +523,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             linearTransformations = [linearTransformations];
           if (logTransformations && logTransformations.length > 0) {
             channelsInfo = channelsInfo.concat(
-              parseChannels(logTransformations, "log")
+              parseChannels(logTransformations, "bi")
             );
           }
           if (linearTransformations && linearTransformations.length > 0) {
@@ -499,52 +532,68 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             );
           }
         }
-        let mainGraphAxis = sampleNode["Graph"]["Axis"];
-        let xAxis = mainGraphAxis.find(
-          (x: any) => x["_attributes"].dimension == "x"
-        );
-        let yAxis = mainGraphAxis.find(
-          (x: any) => x["_attributes"].dimension == "y"
-        );
-        let xAxisName = xAxis["_attributes"].name;
-        let yAxisName = yAxis["_attributes"].name;
-        plot.xAxis = `${xAxisName} - ${xAxisName}`;
-        plot.yAxis = `${yAxisName} - ${yAxisName}`;
-        let xChannelInfo = channelsInfo.find(
-          (x: any) => x.channelName == xAxisName
-        );
-        let yChannelInfo = channelsInfo.find(
-          (x: any) => x.channelName == yAxisName
-        );
-        plot.setXAxisPlotType(xChannelInfo.type);
-        plot.setYAxisPlotType(yChannelInfo.type);
-
-        addNewPlot(plot, fileId);
-        if (
-          sampleNode["Subpopulations"] &&
-          Object.keys(sampleNode["Subpopulations"]).length > 0
-        ) {
-          parseSubpopulation(
-            plot,
-            fileId,
-            sampleNode["Subpopulations"],
-            channelsInfo
+        let fileObj = getFileOrSkipThisSample(filesUsed, channelsInfo);
+        let fileId = fileObj.fileId;
+        if (fileId) {
+          filesUsed.push(fileId);
+          let mainGraphAxis = sampleNode["Graph"]["Axis"];
+          let xAxis = mainGraphAxis.find(
+            (x: any) => x["_attributes"].dimension == "x"
           );
+          let yAxis = mainGraphAxis.find(
+            (x: any) => x["_attributes"].dimension == "y"
+          );
+          let xAxisName = xAxis["_attributes"].name;
+          let yAxisName = yAxis["_attributes"].name;
+          plot.xAxis = `${xAxisName} - ${xAxisName}`;
+          plot.yAxis = `${yAxisName} - ${yAxisName}`;
+          let xChannelInfo = channelsInfo.find(
+            (x: any) => x.channelName == xAxisName
+          );
+          let yChannelInfo = channelsInfo.find(
+            (x: any) => x.channelName == yAxisName
+          );
+          plot.setXAxisPlotType(xChannelInfo.type);
+          plot.setYAxisPlotType(yChannelInfo.type);
+          addNewPlot(plot, fileId);
+
+          if (
+            sampleNode["Subpopulations"] &&
+            Object.keys(sampleNode["Subpopulations"]).length > 0
+          ) {
+            parseSubpopulation(
+              plot,
+              fileId,
+              sampleNode["Subpopulations"],
+              channelsInfo
+            );
+          }
         }
-        cnt++;
       }
     }
     for (let i = 0; i < flowJoPlots.length; i++) {
-      dataManager.addNewPlotToWorkspace(flowJoPlots[i]);
+      dataManager.addNewPlotToWorkspace(flowJoPlots[i], false);
     }
+    setLoading(false);
   };
 
   const parseChannels = (transformations: any, type: string) => {
     let channelArray = [];
     for (let i = 0; i < transformations.length; i++) {
       let transformationAttributes = transformations[i]["_attributes"];
-      let rangeMin = transformationAttributes["transforms:minRange"];
-      let rangeMax = transformationAttributes["transforms:maxRange"];
+
+      let rangeMin;
+      let rangeMax;
+      if (type == "bi") {
+        rangeMin = "0";
+        rangeMax = Math.pow(
+          10,
+          parseFloat(transformationAttributes["transforms:decades"])
+        ).toString();
+      } else {
+      }
+      rangeMin = transformationAttributes["transforms:minRange"];
+      rangeMax = transformationAttributes["transforms:maxRange"];
       let channelName =
         transformations[i]["data-type:parameter"]["_attributes"][
           "data-type:name"
@@ -563,7 +612,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
   const addNewPlot = (plot: PlotData, fileID: string) => {
     plot.file = dataManager.getFile(fileID);
-    plot.setupPlot();
+    plot.setupPlot(false);
     flowJoPlots.push(plot);
     setFlowJoPlots(flowJoPlots);
   };
@@ -610,6 +659,8 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             yAxisType: yChannelInfo.type,
             parents: [],
             points: [],
+            xAxisOriginalRanges: [xChannelInfo.rangeMin, xChannelInfo.rangeMax],
+            yAxisOriginalRanges: [yChannelInfo.rangeMin, yChannelInfo.rangeMax],
           };
           let polygonGate = new PolygonGate(gateAssign);
           let gate = population["Gate"];

@@ -133,7 +133,7 @@ export default class PlotData extends ObserversFunctionality {
     this.id = dataManager.createID();
   }
 
-  setupPlot() {
+  setupPlot(doDefaultLin = true) {
     try {
       const fscssc = this.getFSCandSSCAxis();
       if (this.xAxis === "" && this.yAxis === "") {
@@ -145,16 +145,18 @@ export default class PlotData extends ObserversFunctionality {
     if (this.xAxis === "") this.xAxis = this.file.axes[0];
     if (this.yAxis === "") this.yAxis = this.file.axes[1];
 
-    this.xPlotType =
-      this.xAxis.toLowerCase().includes("fsc") ||
-      this.xAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-    this.yPlotType =
-      this.yAxis.toLowerCase().includes("fsc") ||
-      this.yAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
+    if (doDefaultLin) {
+      this.xPlotType =
+        this.xAxis.toLowerCase().includes("fsc") ||
+        this.xAxis.toLowerCase().includes("ssc")
+          ? "lin"
+          : "bi";
+      this.yPlotType =
+        this.yAxis.toLowerCase().includes("fsc") ||
+        this.yAxis.toLowerCase().includes("ssc")
+          ? "lin"
+          : "bi";
+    }
 
     this.label = "Plot " + PlotData.instaceCount++;
 
