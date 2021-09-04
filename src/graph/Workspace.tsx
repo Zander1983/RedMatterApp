@@ -19,7 +19,11 @@ import { Dbouncer } from "services/Dbouncer";
 import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import {
+  ExperimentFilesApiFactory,
+  ExperimentFilesApiFetchParamCreator,
+  WorkspacesApiFetchParamCreator,
+} from "api_calls/nodejsback";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
@@ -77,11 +81,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// ==== Avoid multiple listeners for screen resize ====
 let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
 
 function Workspace(props: { experimentId: string; shared: boolean }) {
+  const store = useStore();
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
@@ -91,10 +95,17 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
-  const [initPlot, setInitPlot] = React.useState(false);
+  const [initPlot, setInitPlot] = React.useState(true);
   const location = useLocation();
 
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
+
+  useEffect(() => {
+    store.dispatch({
+      type: "workspace.RESET",
+    });
+    downloadFileMetadata(props.shared, props.experimentId);
+  }, []);
 
   // const verifyWorkspace = async (workspaceId: string) => {
   //   let workspaceData;
@@ -137,18 +148,19 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //         },
   //       }
   //     );
-  //     if (workspaceData.data["state"])
-  //       await loadWorkspaceStatsToDM(
-  //         false,
-  //         JSON.parse(workspaceData.data["state"])
-  //       );
+  //     if (workspaceData.data["state"]) {
+  //     }
+  //     // await loadWorkspaceStatsToDM(
+  //     //   false,
+  //     //   JSON.parse(workspaceData.data["state"])
+  //     // );
   //   } catch (e) {
   //     snackbarService.showSnackbar(
   //       "Could not verify the workspace, reload the page and try again!",
   //       "error"
   //     );
   //   }
-  //   initPlots();
+  //   // initPlots();
   // };
 
   // useEffect(() => {
@@ -252,12 +264,12 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
     let newGate = workspace.gates[workspace.gates.length - 1];
     newGate.name = newName;
     store.dispatch({
-      action: "workspace.UPDATE_GATE",
+      type: "workspace.UPDATE_GATE",
       payload: { gate: newGate },
     });
   };
 
-  // var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
+  // const getFiles = async (isShared: boolean, fileIds: Array<string>) => {
   //   let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
   //   let headers = isShared
   //     ? {}
@@ -265,7 +277,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //         token: userManager.getToken(),
   //       };
 
-  //   let datas = await axios.post(
+  //   let response = await axios.post(
   //     url,
   //     {
   //       experimentId: props.experimentId,
@@ -276,7 +288,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //     }
   //   );
 
-  //   return datas.data;
   // };
 
   // var loadWorkspaceStatsToDM = async (
@@ -355,6 +366,8 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
     handleOpen(setLinkShareModalOpen);
   };
 
+  console.log("current workspace=", workspace);
+
   return (
     <div
       style={{
@@ -430,7 +443,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
         options={{
           yes: () => {
             store.dispatch({
-              action: "workspace.RESET",
+              type: "workspace.RESET",
             });
           },
           no: () => {

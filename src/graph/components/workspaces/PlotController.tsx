@@ -71,11 +71,12 @@ interface PlotControllerProps {
 
 class PlotController extends React.Component<PlotControllerProps> {
   private static renderCalls = 0;
-  plots: Plot[] = [];
 
   constructor(props: PlotControllerProps) {
     super(props);
+    console.log("plot controller called !!!!!!!!!!!!!!!!!!!");
     this.state = {
+      plots: props.workspace.plots,
       plotMoving: true,
     };
   }
@@ -107,6 +108,7 @@ class PlotController extends React.Component<PlotControllerProps> {
       let plotId = layouts[i].i;
 
       let plot = plots.find((x) => x.id === plotId);
+      if (!plot) continue;
       if (
         plot.dimensions.h !== layout.h ||
         plot.dimensions.w !== layout.w ||
@@ -125,7 +127,7 @@ class PlotController extends React.Component<PlotControllerProps> {
       }
     }
     store.dispatch({
-      action: "workspace.UPDATE_PLOTS",
+      type: "workspace.UPDATE_PLOTS",
       payload: { plots: plotChanges },
     });
   }
@@ -135,16 +137,28 @@ class PlotController extends React.Component<PlotControllerProps> {
       `Workspace rendered for the ${++PlotController.renderCalls} time`
     );
     let plotGroups: any = {};
-    for (const plot of this.plots) {
-      const fileId = getPopulation(plot.population).file;
-      if (fileId in plotGroups) {
-        plotGroups[fileId].push(plot);
-      } else {
-        plotGroups[fileId] = [plot];
+    console.log("trying to render", this.props.workspace);
+    for (const plot of this.props.workspace.plots) {
+      try {
+        const population = this.props.workspace.populations.find(
+          (e) => e.id === plot.population
+        );
+        const file = this.props.workspace.files.find(
+          (e) => e.id === population.file
+        );
+        if (file.id in plotGroups) {
+          plotGroups[file.id].push(plot);
+        } else {
+          plotGroups[file.id] = [plot];
+        }
+      } catch {
+        console.error(
+          "[PlotController] Plot has not been rendered due to population not found"
+        );
       }
     }
     const fileIdKeys = Object.keys(plotGroups);
-    if (this.plots.length > 0) {
+    if (this.props.workspace.plots.length > 0) {
       return (
         <div>
           <Divider></Divider>
@@ -196,7 +210,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                             <div id="inner" style={classes.itemInnerDiv}>
                               <PlotComponent
                                 plot={plot}
-                                plots={this.plots.filter(
+                                plots={this.props.workspace.plots.filter(
                                   (x) => x.id !== plot.id
                                 )}
                                 sharedWorkspace={this.props.sharedWorkspace}

@@ -120,10 +120,11 @@ const CanvasComponent = (props: {
     return () => {
       canvas.setUseCanvasUsed(false);
     };
-  }, []);
+  }, [canvasRef]);
 
   const id = `canvas-${props.plotID}`;
 
+  if (canvas === null) return null;
   return (
     <canvas
       onMouseDown={(e) => {

@@ -13,7 +13,7 @@ import {
 
 const commitPopulationChange = (population: Population) => {
   store.dispatch({
-    action: "UPDATE_POPULATION",
+    type: "workspace.UPDATE_POPULATION",
     payload: { population },
   });
 };

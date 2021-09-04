@@ -87,7 +87,7 @@ export default function MainBar(props: { plot: Plot }) {
         else {
           tplot.ranges[axisX] = [minX, maxX];
           store.dispatch({
-            action: "workspace.UPDATE_PLOT",
+            type: "workspace.UPDATE_PLOT",
             payload: { tplot },
           });
         }
@@ -98,7 +98,7 @@ export default function MainBar(props: { plot: Plot }) {
         else {
           tplot.ranges[axisY] = [minY, maxY];
           store.dispatch({
-            action: "workspace.UPDATE_PLOT",
+            type: "workspace.UPDATE_PLOT",
             payload: { tplot },
           });
         }
@@ -107,7 +107,7 @@ export default function MainBar(props: { plot: Plot }) {
 
   const deletePlot = () => {
     store.dispatch({
-      action: "workspace.DELETE_PLOT",
+      type: "workspace.DELETE_PLOT",
       payload: { plot: plot },
     });
   };
@@ -129,13 +129,13 @@ export default function MainBar(props: { plot: Plot }) {
   const polygonGatingSetter = () => {
     if (polygonGating) {
       store.dispatch({
-        action: "workspace.SET_GATING_TYPE",
+        type: "workspace.SET_GATING_TYPE",
         payload: { mouseGateState: "" },
       });
       setPolygonGating(false);
     } else {
       store.dispatch({
-        action: "workspace.SET_GATING_TYPE",
+        type: "workspace.SET_GATING_TYPE",
         payload: { mouseGateState: "polygon" },
       });
       setPolygonGating(true);
@@ -144,7 +144,7 @@ export default function MainBar(props: { plot: Plot }) {
 
   useEffect(() => {
     store.dispatch({
-      action: "workspace.SET_GATING_TYPE",
+      type: "workspace.SET_GATING_TYPE",
       payload: { mouseGateState: "" },
     });
   }, [plot]);

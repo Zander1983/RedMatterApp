@@ -33,7 +33,7 @@ import { getDataset } from "./dataset";
 
 const commitPlotChange = (plot: Plot) => {
   store.dispatch({
-    action: "UPDATE_PLOT",
+    type: "workspace.UPDATE_PLOT",
     payload: { plot },
   });
 };
@@ -45,7 +45,7 @@ export const createPlot = ({
 }: {
   clonePlot?: Plot;
   id?: PlotID;
-  population?: PopulationID;
+  population?: Population;
 }): Plot => {
   let newPlot: Plot = {
     id: "",
@@ -72,16 +72,19 @@ export const createPlot = ({
   if (clonePlot) newPlot = clonePlot;
   if (id) newPlot.id = id;
   else newPlot.id = createID();
-  if (population) newPlot.population = population;
+  if (population)
+    newPlot.population =
+      typeof population === "string" ? population : population.id;
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
-  setupPlot(newPlot);
   return newPlot;
 };
 
-export const setupPlot = (plot: Plot) => {
-  const population = getPopulation(plot.population);
+export const setupPlot = (plot: Plot, incPopulation?: Population) => {
+  const population = incPopulation
+    ? incPopulation
+    : getPopulation(plot.population);
   const file = getFile(population.file);
   const axes = file.axes;
   try {
@@ -173,12 +176,12 @@ export const removeOverlay = (plot: Plot, targetPlot: string) => {
 };
 
 export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
-  let newPlot = createPlot(plot);
+  let newPlot = createPlot({ clonePlot: plot });
   let newPopulation = populations.createPopulation({
     clonePopulation: getPopulation(plot.population),
   });
   store.dispatch({
-    action: "workspace.ADD_POPULATION",
+    type: "workspace.ADD_POPULATION",
     payload: { population: newPopulation },
   });
   newPlot.population = newPopulation.id;
@@ -192,7 +195,7 @@ export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
     h: 12,
   };
   store.dispatch({
-    action: "workspace.ADD_PLOT",
+    type: "workspace.ADD_PLOT",
     payload: {
       plot: newPlot,
     },
@@ -558,28 +561,29 @@ export const getPointColors = (plot: Plot) => {
   return colors;
 };
 
-export const createNewPlotFromFile = (file: File) => {
+export const createNewPlotFromFile = async (file: File) => {
   const workspace = getWorkspace();
   const popQuery = workspace.populations.filter(
     (e) => e.file === file.id && e.gates.length === 0
   );
   let population: Population;
-  if (popQuery) {
+  if (popQuery.length > 0) {
     population = popQuery[0];
   } else {
     population = populations.createPopulation({
       file: file.id,
     });
-    store.dispatch({
-      action: "ADD_POPULATION",
+    await store.dispatch({
+      type: "workspace.ADD_POPULATION",
       payload: { population },
     });
   }
-  const plot = createPlot({ population: population.id });
-  store.dispatch({
-    action: "ADD_PLOT",
+  const plot = createPlot({ population: population });
+  await store.dispatch({
+    type: "workspace.ADD_PLOT",
     payload: { plot },
   });
+  setupPlot(plot, population);
 };
 
 export const createSubpopPlot = (plot: Plot, additionalGates?: Gate[]) => {

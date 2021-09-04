@@ -28,29 +28,6 @@ export const publishDecorator = () => {
   };
 };
 
-/*
-  How does an observer work?
-
-  You inherit into the class you want. Now, any one can add themselves as
-  observer to any public call in this class. For example:
-
-  class Observed extends ObserversFunctionality {
-    private num: number = 3;
-    
-    @publishDecorator()
-    public getNum() {
-      const num = this.num++
-      return num
-    }
-  }
-
-  const obs = new Observed()
-  obs.addObserver('getNum', () => { console.log("someone just called getNum() on Observed...") })
-
-  obj.getNum()
-  >>> "someone just called getNum() on Observed..."
-*/
-
 export default abstract class ObserversFunctionality {
   private observers: Map<
     string,

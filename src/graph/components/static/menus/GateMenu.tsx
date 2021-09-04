@@ -28,7 +28,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
     gate.color = color;
     store.dispatch({
-      action: "GATE_UPDATE",
+      type: "workspace.GATE_UPDATE",
       payload: { gate },
     });
   };
@@ -36,14 +36,14 @@ export default function GateMenu(props: { gates: Gate[] }) {
   const setGateName = (gate: Gate, name: any) => {
     gate.name = name;
     store.dispatch({
-      action: "GATE_UPDATE",
+      type: "workspace.GATE_UPDATE",
       payload: { gate },
     });
   };
 
   const deleteGate = (gate: Gate) => {
     store.dispatch({
-      action: "workspace.DELETE_GATE",
+      type: "workspace.DELETE_GATE",
       payload: { gate: gate },
     });
   };
@@ -54,7 +54,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
     });
     newGate.name = gate.name + " clone";
     store.dispatch({
-      action: "workspace.CREATE_GATE",
+      type: "workspace.CREATE_GATE",
       payload: { newGate },
     });
   };

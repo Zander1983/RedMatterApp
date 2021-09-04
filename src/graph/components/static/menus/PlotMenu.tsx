@@ -45,7 +45,7 @@ export default function PlotMenu(props: {
   const setPlotLabel = (plot: Plot, label: string) => {
     plot.label = label;
     store.dispatch({
-      action: "PLOT_UPDATE",
+      type: "workspace.PLOT_UPDATE",
       payload: { plot },
     });
   };
@@ -56,14 +56,14 @@ export default function PlotMenu(props: {
   //   });
   //   newGate.name = gate.name + " clone";
   //   store.dispatch({
-  //     action: "workspace.CREATE_GATE",
+  //     type: "workspace.CREATE_GATE",
   //     payload: { newGate },
   //   });
   // };
 
   const deletePlot = (plot: Plot) => {
     store.dispatch({
-      action: "workspace.DELETE_PLOT",
+      type: "workspace.DELETE_PLOT",
       payload: { plot: plot },
     });
   };
@@ -74,7 +74,7 @@ export default function PlotMenu(props: {
     });
     newPlot.label = plot.label + " clone";
     store.dispatch({
-      action: "workspace.ADD_PLOT",
+      type: "workspace.ADD_PLOT",
       payload: { plot: newPlot },
     });
   };

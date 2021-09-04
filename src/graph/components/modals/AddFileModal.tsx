@@ -51,332 +51,305 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function AddFileModal(props: {
-  open: boolean;
-  closeCall: { f: Function; ref: Function };
-  isShared: boolean;
-  experimentId: string;
-  filesMetadata: File[];
-  // downloaded: any[];
-  // filesMetadata: any[];
-  // downloading: any[];
-  // onDownloadFileEvents: (fileIds: any[]) => void;
-  // addFileToWorkspace: (index: number) => void;
-}): JSX.Element {
-  const classes = useStyles();
+const AddFileModal = React.memo(
+  (props: {
+    open: boolean;
+    closeCall: { f: Function; ref: Function };
+    isShared: boolean;
+    experimentId: string;
+    filesMetadata: File[];
+  }): JSX.Element => {
+    const classes = useStyles();
 
-  const filesMetadata = props.filesMetadata;
+    const filesMetadata = props.filesMetadata;
 
-  const [onHover, setOnHover] = React.useState(-1);
-  // const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
-  // const addFile = (index: number) => {
-  //   props.addFileToWorkspace(index);
-  // };
+    const [onHover, setOnHover] = React.useState(-1);
 
-  const [downloading, setDowloading] = useState<FileID[]>([]);
+    const [downloading, setDowloading] = useState<FileID[]>([]);
 
-  const downloadFile = async (fileId: string) => {
-    setDowloading(downloading.concat(fileId));
-    const file = await downloadFileEvent(
-      props.isShared,
-      fileId,
-      props.experimentId
-    );
-    setDowloading(downloading.filter((e) => e !== fileId));
-    PlotResource.createNewPlotFromFile(getFile(file));
-  };
+    const downloadFile = async (fileId: string) => {
+      setDowloading(downloading.concat(fileId));
+      const file = await downloadFileEvent(
+        props.isShared,
+        fileId,
+        props.experimentId
+      );
+      setDowloading(downloading.filter((e) => e !== fileId));
+      PlotResource.createNewPlotFromFile(getFile(file));
+    };
 
-  const downloadAll = () => {
-    let files = filesMetadata.map((e) => e.id);
-    const workspace = getWorkspace();
-    files.filter((e) => !(e in workspace.files.map((e) => e.id)));
-    // props.onDownloadFileEvents(downloadingFileIds);
-  };
+    const downloadAll = () => {
+      let files = filesMetadata.map((e) => e.id);
+      const workspace = getWorkspace();
+      files = files.filter((e) => !(e in workspace.files.map((e) => e.id)));
+      files.forEach((e) => downloadFile(e));
+      // props.onDownloadFileEvents(downloadingFileIds);
+    };
 
-  return (
-    <Modal
-      open={props.open}
-      onClose={() => {
-        props.closeCall.f(props.closeCall.ref);
-      }}
-      onRendered={() => {
-        // if (!downloadCopied) {
-        //   downloaded = downloaded.concat(props.downloaded);
-        //   setDownloadCopied(true);
-        // }
-      }}
-    >
-      <div className={classes.fileSelectModal}>
-        <h2>Open file</h2>
+    return (
+      <Modal
+        open={props.open}
+        onClose={() => {
+          props.closeCall.f(props.closeCall.ref);
+        }}
+      >
+        <div className={classes.fileSelectModal}>
+          <h2>Open file</h2>
 
-        <p
-          style={{
-            color: "#777",
-            fontSize: 15,
-            textAlign: "center",
-          }}
-        >
-          Load and use your Flow Analysis files.
-        </p>
-
-        <div>
-          <Button
-            size="large"
-            variant="contained"
+          <p
             style={{
-              backgroundColor: "#66d",
-              color: "white",
-              marginBottom: 15,
-            }}
-            startIcon={
-              <DownloadOutlined style={{ fontSize: 15, color: "white" }} />
-            }
-            onClick={() => {
-              downloadAll();
+              color: "#777",
+              fontSize: 15,
+              textAlign: "center",
             }}
           >
-            Load all files
-          </Button>
-        </div>
+            Load and use your Flow Analysis files.
+          </p>
 
-        {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
-          <div
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 20,
-            }}
-          >
+          <div>
             <Button
+              size="large"
+              variant="contained"
               style={{
                 backgroundColor: "#66d",
                 color: "white",
-                fontSize: 13,
-                marginLeft: 20,
+                marginBottom: 15,
+              }}
+              startIcon={
+                <DownloadOutlined style={{ fontSize: 15, color: "white" }} />
+              }
+              onClick={() => {
+                downloadAll();
               }}
             >
-              Upload file (Anonymous)
+              Load all files
             </Button>
           </div>
-        ) : null}
 
-        <div
-          style={{
-            backgroundColor: "#fff",
-            padding: 15,
-            textAlign: "left",
-            maxHeight: 500,
-            overflowY: "scroll",
-            border: "solid #ddd",
-            borderRadius: 5,
-            borderWidth: 0.3,
-          }}
-        >
-          {filesMetadata.map((fileMetadata: any, i: number) => {
-            const divider =
-              i === filesMetadata.length - 1 ? null : (
-                <Divider className={classes.fileSelectDivider} />
-              );
+          {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
+            <div
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 20,
+              }}
+            >
+              <Button
+                style={{
+                  backgroundColor: "#66d",
+                  color: "white",
+                  fontSize: 13,
+                  marginLeft: 20,
+                }}
+              >
+                Upload file (Anonymous)
+              </Button>
+            </div>
+          ) : null}
 
-            const isDownloading =
-              downloading.filter((e) => e === fileMetadata.id).length > 0;
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: 15,
+              textAlign: "left",
+              maxHeight: 500,
+              overflowY: "scroll",
+              border: "solid #ddd",
+              borderRadius: 5,
+              borderWidth: 0.3,
+            }}
+          >
+            {filesMetadata.map((fileMetadata: File, i: number) => {
+              const divider =
+                i === filesMetadata.length - 1 ? null : (
+                  <Divider className={classes.fileSelectDivider} />
+                );
 
-            let isDownloaded =
-              !isDownloading && getFile(fileMetadata.id).downloaded;
+              const isDownloading =
+                downloading.filter((e) => e === fileMetadata.id).length > 0;
 
-            return (
-              <div key={i.toString() + fileMetadata.title}>
+              let isDownloaded = fileMetadata.downloaded;
+
+              return (
                 <div
-                  onMouseEnter={() => setOnHover(i)}
-                  onMouseLeave={() => setOnHover(-1)}
-                  className={
-                    onHover === i
-                      ? classes.fileSelectFileContainerHover
-                      : classes.fileSelectFileContainer
-                  }
+                  key={i.toString() + (fileMetadata.name || fileMetadata.label)}
                 >
-                  <Grid container direction="row">
-                    <Grid container direction="row">
-                      <p style={{ width: "100%" }}>
-                        <b>Title:</b>{" "}
-                        <a
-                          style={{
-                            color: "#777",
-                            fontSize: 14,
-                          }}
-                        >
-                          {fileMetadata.label}
-                        </a>
-                      </p>
-                      <div style={{ display: "inline-block" }}>
-                        <p
-                          style={{
-                            marginTop: -6,
-                            display: "inline-block",
-                          }}
-                        >
-                          <b>Date:</b>{" "}
-                          <a
-                            style={{
-                              color: "#777",
-                              fontSize: 14,
-                            }}
-                          >
-                            {getHumanReadableTimeDifference(
-                              new Date(fileMetadata.createdOn),
-                              new Date()
-                            )}
-                          </a>
-                        </p>
-                        <p
-                          style={{
-                            marginTop: -6,
-                            display: "inline-block",
-                            marginLeft: 10,
-                          }}
-                        >
-                          <b>Size:</b>{" "}
-                          <a
-                            style={{
-                              color: "#777",
-                              fontSize: 14,
-                            }}
-                          >
-                            {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                          </a>
-                        </p>
-                        <p
-                          style={{
-                            marginTop: -6,
-                            display: "inline-block",
-                            marginLeft: 10,
-                          }}
-                        >
-                          <b>Events:</b>{" "}
-                          <a
-                            style={{
-                              color: "#777",
-                              fontSize: 14,
-                            }}
-                          >
-                            {fileMetadata.eventCount}
-                          </a>
-                        </p>
-                      </div>
-                    </Grid>
-                  </Grid>
                   <div
-                    style={{
-                      marginBottom: 10,
-                      marginLeft: -20,
-                      textAlign: "right",
-                    }}
+                    onMouseEnter={() => setOnHover(i)}
+                    onMouseLeave={() => setOnHover(-1)}
+                    className={
+                      onHover === i
+                        ? classes.fileSelectFileContainerHover
+                        : classes.fileSelectFileContainer
+                    }
                   >
-                    <Grid
+                    <Grid container direction="row">
+                      <Grid container direction="row">
+                        <p style={{ width: "100%" }}>
+                          <b>Title:</b>{" "}
+                          <a
+                            style={{
+                              color: "#777",
+                              fontSize: 14,
+                            }}
+                          >
+                            {fileMetadata.label}
+                          </a>
+                        </p>
+                        <div style={{ display: "inline-block" }}>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                            }}
+                          >
+                            <b>Date:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {getHumanReadableTimeDifference(
+                                new Date(fileMetadata.createdOn),
+                                new Date()
+                              )}
+                            </a>
+                          </p>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
+                            }}
+                          >
+                            <b>Size:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                            </a>
+                          </p>
+                          <p
+                            style={{
+                              marginTop: -6,
+                              display: "inline-block",
+                              marginLeft: 10,
+                            }}
+                          >
+                            <b>Events:</b>{" "}
+                            <a
+                              style={{
+                                color: "#777",
+                                fontSize: 14,
+                              }}
+                            >
+                              {fileMetadata.eventCount}
+                            </a>
+                          </p>
+                        </div>
+                      </Grid>
+                    </Grid>
+                    <div
                       style={{
+                        marginBottom: 10,
+                        marginLeft: -20,
                         textAlign: "right",
-                        flex: 1,
-                        flexDirection: "row",
-                        display: "inline-block",
                       }}
                     >
-                      <Grid style={{ display: "inline-block" }}>
-                        {isDownloaded
-                          ? "Loaded"
-                          : isDownloading
-                          ? "Loading..."
-                          : "Remote"}
-                      </Grid>
                       <Grid
                         style={{
+                          textAlign: "right",
+                          flex: 1,
+                          flexDirection: "row",
                           display: "inline-block",
                         }}
                       >
+                        <Grid style={{ display: "inline-block" }}>
+                          {isDownloaded
+                            ? "Loaded"
+                            : isDownloading
+                            ? "Loading..."
+                            : "Remote"}
+                        </Grid>
                         <Grid
                           style={{
-                            borderRadius: "100%",
-                            width: 13,
-                            height: 13,
-                            position: "relative",
-                            top: 2,
-                            marginLeft: 10,
-                            backgroundColor: isDownloaded
-                              ? "green"
-                              : isDownloading
-                              ? "#66d"
-                              : "#d66",
+                            display: "inline-block",
                           }}
-                        ></Grid>
-                      </Grid>
-                    </Grid>
-                    {isDownloaded === false ? (
-                      <Button
-                        style={{
-                          backgroundColor: "#66d",
-                          color: "white",
-                          fontSize: 13,
-                          marginLeft: 20,
-                        }}
-                        onClick={() => downloadFile(fileMetadata.id)}
-                      >
-                        {isDownloading ? (
-                          <CircularProgress
+                        >
+                          <Grid
                             style={{
-                              color: "white",
-                              width: 23,
-                              height: 23,
+                              borderRadius: "100%",
+                              width: 13,
+                              height: 13,
+                              position: "relative",
+                              top: 2,
+                              marginLeft: 10,
+                              backgroundColor: isDownloaded
+                                ? "green"
+                                : isDownloading
+                                ? "#66d"
+                                : "#d66",
                             }}
-                          />
-                        ) : (
-                          "Download"
-                        )}
-                      </Button>
-                    ) : null}
-                    {isDownloaded ? (
-                      <Button
-                        style={{
-                          backgroundColor: isDownloaded ? "#66d" : "#99d",
-                          color: "white",
-                          fontSize: 13,
-                          marginLeft: 20,
-                        }}
-                        onClick={() => {
-                          PlotResource.createNewPlotFromFile(
-                            getFile(fileMetadata.id)
-                          );
-                          // let index: number;
-                          // for (let i = 0; i < props.downloaded.length; i++) {
-                          //   if (props.downloaded[i].id === fileMetadata.id) {
-                          //     index = i;
-                          //     break;
-                          //   }
-                          // }
-                          // if (index === undefined) {
-                          //   snackbarService.showSnackbar(
-                          //     "File is not dowloaded",
-                          //     "error"
-                          //   );
-                          //   return;
-                          // }
-                          // addFile(index);
-                          // props.closeCall.f(props.closeCall.ref);
-                        }}
-                        disabled={!isDownloaded}
-                      >
-                        Add to Workspace
-                      </Button>
-                    ) : null}
+                          ></Grid>
+                        </Grid>
+                      </Grid>
+                      {isDownloaded === false ? (
+                        <Button
+                          style={{
+                            backgroundColor: "#66d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={() => downloadFile(fileMetadata.id)}
+                        >
+                          {isDownloading ? (
+                            <CircularProgress
+                              style={{
+                                color: "white",
+                                width: 23,
+                                height: 23,
+                              }}
+                            />
+                          ) : (
+                            "Download"
+                          )}
+                        </Button>
+                      ) : null}
+                      {isDownloaded ? (
+                        <Button
+                          style={{
+                            backgroundColor: isDownloaded ? "#66d" : "#99d",
+                            color: "white",
+                            fontSize: 13,
+                            marginLeft: 20,
+                          }}
+                          onClick={() => {
+                            PlotResource.createNewPlotFromFile(
+                              getFile(fileMetadata.id)
+                            );
+                          }}
+                          disabled={!isDownloaded}
+                        >
+                          Add to Workspace
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
+                  {divider}
                 </div>
-                {divider}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </Modal>
-  );
-}
+      </Modal>
+    );
+  }
+);
 
 export default AddFileModal;

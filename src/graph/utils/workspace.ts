@@ -26,12 +26,15 @@ class ReduxCache {
     ReduxCache.instance = this;
     this.workspace = store.getState().workspace as Workspace;
     store.subscribe((state: any) => {
+      if (!state || !state?.workspace) return;
       this.workspace = state.workspace as Workspace;
     });
   }
 
   getWorkspace() {
-    return this.workspace;
+    // TODO FIX CACHING SYNCHRONICITY BROKEN
+    return store.getState().workspace;
+    // return this.workspace;
   }
 }
 

@@ -131,10 +131,10 @@ function PlotComponent(props: {
         <Divider style={{ marginBottom: 10 }}></Divider>
       </div>
 
-      <SideSelector
+      {/* <SideSelector
         {...props}
         canvasComponent={<PlotRenderer plot={plot}></PlotRenderer>}
-      ></SideSelector>
+      ></SideSelector> */}
     </div>
   );
 }
