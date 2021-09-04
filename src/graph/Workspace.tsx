@@ -199,7 +199,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         dataManager.files.length == dataManager.downloaded.length
       ) {
         initiateParseFlowJo(flowJoJson);
-        importFlowJo = false;
         flowJoJson = {};
       }
     });
@@ -622,9 +621,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
           parseFloat(transformationAttributes["transforms:decades"])
         ).toString();
       } else {
+        rangeMin = transformationAttributes["transforms:minRange"];
+        rangeMax = transformationAttributes["transforms:maxRange"];
       }
-      rangeMin = transformationAttributes["transforms:minRange"];
-      rangeMax = transformationAttributes["transforms:maxRange"];
       let channelName =
         transformations[i]["data-type:parameter"]["_attributes"][
           "data-type:name"
@@ -753,7 +752,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
         xAxisDimension = gateDimensions[0];
         yAxisDimension = gateDimensions[1];
-
         let xMax = getRangeMinMaxIfPropertyNotThere(
           xAxisDimension["_attributes"],
           "gating:max",
@@ -793,7 +791,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
         xAxisDimension = gateDimensions[xAxisDimensionIndex];
         yAxisDimension = gateDimensions[yAxisDimensionIndex];
-
         let gateVertexs = gatePolygon["gating:vertex"];
 
         for (let i = 0; i < gateVertexs.length; i++) {
