@@ -1,9 +1,9 @@
 import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
-import PlotData from "graph/dataManagement/plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import dataManager from "graph/dataManagement/dataManager";
+import * as PlotResource from "graph/resources/plots";
+import { getPlot } from "graph/utils/workspace";
 
 const leftPadding = 70;
 const rightPadding = 50;
@@ -90,36 +90,32 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   public update() {
     super.update(true);
     const ranges = {
-      x: this.plotData.ranges.get(this.xAxisName),
-      y: this.plotData.ranges.get(this.xAxisName),
+      x: this.plot.ranges[this.xAxisName],
+      y: this.plot.ranges[this.xAxisName],
     };
-    if (this.plotData.histogramAxis === "vertical") {
+    const axesData = PlotResource.getXandYData(this.plot);
+    if (this.plot.histogramAxis === "vertical") {
       const hbins = (this.width - rightPadding) / 50;
       const xRange =
-        this.plotData.xPlotType === "lin"
+        this.plot.xPlotType === "lin"
           ? ranges.x
-          : this.plotData.findRangeBoundries(
-              this.plotData.getAxesData().map((e) => e[this.plotData.xAxis])
-            );
-
+          : PlotResource.findRangeBoundries(this.plot, axesData[0]);
       this.xLabels = this.transformer.getAxisLabels(
-        this.plotData.xPlotType,
+        this.plot.xPlotType,
         xRange,
-        this.plotData.xPlotType === "bi" ? Math.round(hbins / 2) : hbins
+        this.plot.xPlotType === "bi" ? Math.round(hbins / 2) : hbins
       );
     } else {
       const vbins = (this.height - bottomPadding) / 50;
       const yRange =
-        this.plotData.yPlotType === "lin"
+        this.plot.yPlotType === "lin"
           ? ranges.y
-          : this.plotData.findRangeBoundries(
-              this.plotData.getAxesData().map((e) => e[this.plotData.yAxis])
-            );
+          : PlotResource.findRangeBoundries(this.plot, axesData[1]);
 
       this.yLabels = this.transformer.getAxisLabels(
-        this.plotData.yPlotType,
+        this.plot.yPlotType,
         yRange,
-        this.plotData.yPlotType === "bi" ? Math.round(vbins / 2) : vbins
+        this.plot.yPlotType === "bi" ? Math.round(vbins / 2) : vbins
       );
     }
   }
@@ -132,174 +128,174 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   @applyPlugin()
   public draw() {
     const hideY =
-      this.plotData.xAxis === this.plotData.yAxis &&
-      this.plotData.histogramAxis === "vertical";
+      this.plot.xAxis === this.plot.yAxis &&
+      this.plot.histogramAxis === "vertical";
 
     const hideX =
-      this.plotData.xAxis === this.plotData.yAxis &&
-      this.plotData.histogramAxis === "horizontal";
+      this.plot.xAxis === this.plot.yAxis &&
+      this.plot.histogramAxis === "horizontal";
 
     super.draw({
       lines: false,
       vbins: (this.height - bottomPadding) / 50,
       hbins: (this.width - rightPadding) / 50,
-      xAxisLabel: !hideX ? this.plotData.xAxis : "",
-      yAxisLabel: !hideY ? this.plotData.yAxis : "",
+      xAxisLabel: !hideX ? this.plot.xAxis : "",
+      yAxisLabel: !hideY ? this.plot.yAxis : "",
     });
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
-    let mainHist = this.plotData.getBins(this.bins, axis);
+    // let mainHist = PlotResource.getBins(this.plot, this.bins, axis);
 
-    let globlMax = mainHist.max;
+    // let globlMax = mainHist.max;
 
-    let range = this.plotData.ranges.get(axis);
+    let range = this.plot.ranges[axis];
 
-    const overlaysObj = this.plotData.histogramOverlays;
-    const overlays = [];
+    // const overlaysObj = this.plot.histogramOverlays;
+    // const overlays = [];
 
     this.rangeMin = range[0];
     this.rangeMax = range[1];
 
-    for (const overlay of overlaysObj) {
-      if (!overlay) continue;
-      let newPlotData;
+    // for (const overlay of overlaysObj) {
+    //   if (!overlay) continue;
+    //   let newPlotData;
 
-      switch (overlay.plotSource) {
-        case COMMON_CONSTANTS.PLOT:
-          newPlotData = dataManager.getPlot(overlay.plotId);
-          break;
-        case COMMON_CONSTANTS.FILE:
-          newPlotData = new PlotData();
-          newPlotData.file = overlay.plot.file;
-          newPlotData.population = overlay.plot.population;
-          newPlotData.setupPlot();
-          newPlotData.getXandYRanges();
-          break;
-      }
-      newPlotData.ranges.set(axis, [range[0], range[1]]);
-      const overlayRes = newPlotData.getBins(
-        Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
-        axis,
-        this.plotData.population
-      );
-      overlayRes.list = overlayRes.list.map(
-        (e: any) => e / this.DRAW_DIVISION_CONST
-      );
-      overlays.push({
-        ...overlayRes,
-        color: overlay.color,
-      });
-      const lastMax = newPlotData.getBins(Math.round(this.bins) - 1, axis).max;
-      if (lastMax > globlMax) globlMax = lastMax;
-    }
-    this.globalMax = globlMax;
-    const barOverlays = this.plotData.histogramBarOverlays;
-    let binsArray = [];
-    let parentBinsArray = [];
-    let mainPlotColor =
-      this.plotData.population && this.plotData.population.length > 0
-        ? this.plotData.population[0].gate.color
-        : "";
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: mainHist.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
+    //   switch (overlay.plotSource) {
+    //     case "plot":
+    //       newPlotData = getPlot(overlay.plotId);
+    //       break;
+    //     case "file":
+    //       newPlotData = new PlotData();
+    //       newPlotData.file = overlay.plot.file;
+    //       newPlotData.population = overlay.plot.population;
+    //       newPlotData.setupPlot();
+    //       newPlotData.getXandYRanges();
+    //       break;
+    //   }
+    //   newPlotData.ranges.set(axis, [range[0], range[1]]);
+    //   const overlayRes = newPlotData.getBins(
+    //     Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
+    //     axis,
+    //     this.plot.population
+    //   );
+    //   overlayRes.list = overlayRes.list.map(
+    //     (e: any) => e / this.DRAW_DIVISION_CONST
+    //   );
+    //   overlays.push({
+    //     ...overlayRes,
+    //     color: overlay.color,
+    //   });
+    //   const lastMax = newPlotData.getBins(Math.round(this.bins) - 1, axis).max;
+    //   if (lastMax > globlMax) globlMax = lastMax;
+    // }
+    // this.globalMax = globlMax;
+    // const barOverlays = this.plot.histogramBarOverlays;
+    // let binsArray = [];
+    // let parentBinsArray = [];
+    // let mainPlotColor =
+    //   this.plot.population && this.plot.population.length > 0
+    //     ? this.plot.population[0].gate.color
+    //     : "";
+    // for (let i = 0; i < this.bins; i++) {
+    //   binsArray.push({
+    //     value: mainHist.list[i] / globlMax,
+    //     color: mainPlotColor,
+    //   });
+    // }
 
-    if (barOverlays) {
-      for (let i = 0; i < barOverlays.length; i++) {
-        if (!barOverlays[i]) continue;
-        let newPlotData;
-        switch (barOverlays[i].plotSource) {
-          case COMMON_CONSTANTS.PLOT:
-            newPlotData = dataManager.getPlot(barOverlays[i].plotId);
-            break;
-          case COMMON_CONSTANTS.FILE:
-            newPlotData = barOverlays[i].plot;
-            break;
-        }
-        const lastMax = newPlotData.getBins(
-          Math.round(this.bins) - 1,
-          axis
-        ).max;
-        if (lastMax > globlMax) globlMax = lastMax;
-      }
-      this.globalMax = globlMax;
-      for (let i = 0; i < barOverlays.length; i++) {
-        let newPlotData;
-        switch (barOverlays[i].plotSource) {
-          case COMMON_CONSTANTS.PLOT:
-            newPlotData = dataManager.getPlot(barOverlays[i].plotId);
-            break;
-          case COMMON_CONSTANTS.FILE:
-            newPlotData = new PlotData();
-            newPlotData.file = barOverlays[i].plot.file;
-            newPlotData.population = barOverlays[i].plot.population;
-            newPlotData.getXandYRanges();
-            newPlotData.setupPlot();
-            break;
-        }
-        newPlotData.ranges.set(axis, [range[0], range[1]]);
-        let overlayMainHist = newPlotData.getBins(
-          this.bins,
-          axis,
-          this.plotData.population
-        );
-        let binsArray = [];
-        for (let j = 0; j < this.bins; j++) {
-          binsArray.push({
-            value: overlayMainHist.list[j] / globlMax,
-            color: barOverlays[i].color,
-          });
-        }
-        parentBinsArray.push(binsArray);
-        binsArray = [];
-      }
-    }
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: mainHist.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
-    for (let i = 0; i < binsArray.length; i++) {
-      let binsAscArray = [];
-      binsAscArray.push(binsArray[i]);
-      for (let j = 0; j < parentBinsArray.length; j++) {
-        binsAscArray.push(parentBinsArray[j][i]);
-      }
-      binsAscArray.sort((a, b) => {
-        return b.value - a.value;
-      });
+    // if (barOverlays) {
+    //   for (let i = 0; i < barOverlays.length; i++) {
+    //     if (!barOverlays[i]) continue;
+    //     let newPlotData;
+    //     switch (barOverlays[i].plotSource) {
+    //       case COMMON_CONSTANTS.PLOT:
+    //         newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+    //         break;
+    //       case COMMON_CONSTANTS.FILE:
+    //         newPlotData = barOverlays[i].plot;
+    //         break;
+    //     }
+    //     const lastMax = newPlotData.getBins(
+    //       Math.round(this.bins) - 1,
+    //       axis
+    //     ).max;
+    //     if (lastMax > globlMax) globlMax = lastMax;
+    //   }
+    //   this.globalMax = globlMax;
+    //   for (let i = 0; i < barOverlays.length; i++) {
+    //     let newPlotData;
+    //     switch (barOverlays[i].plotSource) {
+    //       case COMMON_CONSTANTS.PLOT:
+    //         newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+    //         break;
+    //       case COMMON_CONSTANTS.FILE:
+    //         newPlotData = new PlotData();
+    //         newPlotData.file = barOverlays[i].plot.file;
+    //         newPlotData.population = barOverlays[i].plot.population;
+    //         newPlotData.getXandYRanges();
+    //         newPlotData.setupPlot();
+    //         break;
+    //     }
+    //     newPlotData.ranges.set(axis, [range[0], range[1]]);
+    //     let overlayMainHist = newPlotData.getBins(
+    //       this.bins,
+    //       axis,
+    //       this.plot.population
+    //     );
+    //     let binsArray = [];
+    //     for (let j = 0; j < this.bins; j++) {
+    //       binsArray.push({
+    //         value: overlayMainHist.list[j] / globlMax,
+    //         color: barOverlays[i].color,
+    //       });
+    //     }
+    //     parentBinsArray.push(binsArray);
+    //     binsArray = [];
+    //   }
+    // }
+    // for (let i = 0; i < this.bins; i++) {
+    //   binsArray.push({
+    //     value: mainHist.list[i] / globlMax,
+    //     color: mainPlotColor,
+    //   });
+    // }
+    // for (let i = 0; i < binsArray.length; i++) {
+    //   let binsAscArray = [];
+    //   binsAscArray.push(binsArray[i]);
+    //   for (let j = 0; j < parentBinsArray.length; j++) {
+    //     binsAscArray.push(parentBinsArray[j][i]);
+    //   }
+    //   binsAscArray.sort((a, b) => {
+    //     return b.value - a.value;
+    //   });
 
-      for (let j = 0; j < binsAscArray.length; j++) {
-        if (binsAscArray[j]) {
-          if (binsAscArray[j].color)
-            this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
-          else this.drawer.addBin(i, binsAscArray[j].value);
-        }
-      }
-    }
+    //   for (let j = 0; j < binsAscArray.length; j++) {
+    //     if (binsAscArray[j]) {
+    //       if (binsAscArray[j].color)
+    //         this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
+    //       else this.drawer.addBin(i, binsAscArray[j].value);
+    //     }
+    //   }
+    // }
 
-    for (const overlay of overlays) {
-      const curve = overlay.list
-        .map((e: any, i: number) => {
-          return this.drawer.getBinPos(
-            i,
-            e / globlMax,
-            Math.floor(this.bins / this.DRAW_DIVISION_CONST)
-          );
-        })
-        .sort((a: any, b: any) => {
-          return a.x - b.x;
-        });
-      this.drawer.curve({
-        points: curve,
-        strokeColor: overlay.color,
-        lineWidth: 6,
-      });
-    }
+    // for (const overlay of overlays) {
+    //   const curve = overlay.list
+    //     .map((e: any, i: number) => {
+    //       return this.drawer.getBinPos(
+    //         i,
+    //         e / globlMax,
+    //         Math.floor(this.bins / this.DRAW_DIVISION_CONST)
+    //       );
+    //     })
+    //     .sort((a: any, b: any) => {
+    //       return a.x - b.x;
+    //     });
+    //   this.drawer.curve({
+    //     points: curve,
+    //     strokeColor: overlay.color,
+    //     lineWidth: 6,
+    //   });
+    // }
   }
 }

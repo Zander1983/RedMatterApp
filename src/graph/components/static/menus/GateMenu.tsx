@@ -15,7 +15,7 @@ import FileCopy from "@material-ui/icons/FileCopy";
 
 import { snackbarService } from "uno-material-ui";
 import { getGate, getWorkspace } from "graph/utils/workspace";
-import { Gate } from "graph/resources/types";
+import { Gate, PolygonGate } from "graph/resources/types";
 import * as GateResource from "graph/resources/types";
 import { store } from "redux/store";
 import { createGate } from "graph/resources/gates";
@@ -191,8 +191,8 @@ export default function GateMenu(props: { gates: Gate[] }) {
                 />
               </TableCell>
               <TableCell>{gate.gateType}</TableCell>
-              <TableCell>{gate.xAxis}</TableCell>
-              <TableCell>{gate.yAxis}</TableCell>
+              <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
+              <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -4,7 +4,7 @@ import { Button } from "@material-ui/core";
 import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 import GetAppIcon from "@material-ui/icons/GetApp";
 
-import PlotStats from "graph/util/stats";
+// import PlotStats from "graph/util/stats";
 
 import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
@@ -12,8 +12,10 @@ import PlotMenu from "./menus/PlotMenu";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { CSVCreator, CSVObject } from "services/CSVCreator";
+import { getWorkspace } from "graph/utils/workspace";
+import { Workspace } from "graph/resources/types";
 
-export default function SideMenus() {
+export default function SideMenus(props: { workspace: Workspace }) {
   const ref = React.useRef(null);
   // == General modal logic ==
 
@@ -255,10 +257,11 @@ export default function SideMenus() {
           overflowY: "auto",
         }}
       >
-        {fileMenuOpen ? <FileMenu /> : null}
-        {gateMenuOpen ? <GateMenu /> : null}
+        {fileMenuOpen ? <FileMenu files={props.workspace.files} /> : null}
+        {gateMenuOpen ? <GateMenu gates={props.workspace.gates} /> : null}
         {plotMenuOpen ? (
           <PlotMenu
+            plots={props.workspace.plots}
             onStatChange={(e) => {
               e["x"] ? setStatsX(e["value"]) : setStatsY(e["value"]);
             }}

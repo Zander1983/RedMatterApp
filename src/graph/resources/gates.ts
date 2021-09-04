@@ -12,7 +12,7 @@ export const createGate = ({
 }): Gate => {
   const newGate: PolygonGate = {
     id: "",
-    gateType: "",
+    gateType: "polygon",
     name: "",
     color: "",
     parents: [],

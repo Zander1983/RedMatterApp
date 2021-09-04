@@ -1,12 +1,16 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
 import { snackbarService } from "uno-material-ui";
 import { DownloadOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
-import { File } from "graph/resources/types";
+import { File, FileID } from "graph/resources/types";
+import { downloadFileEvent } from "services/FileService";
+import * as PlotResource from "graph/resources/plots";
+import { getFile, getWorkspace } from "graph/utils/workspace";
+import { store } from "redux/store";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -47,13 +51,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let downloaded: any[] = [];
-
 function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
-  files: File[];
+  experimentId: string;
+  filesMetadata: File[];
   // downloaded: any[];
   // filesMetadata: any[];
   // downloading: any[];
@@ -62,38 +65,32 @@ function AddFileModal(props: {
 }): JSX.Element {
   const classes = useStyles();
 
-  const [filesMetadata, setFilesMetadata] = React.useState([]);
-
-  useEffect(() => {
-    setFilesMetadata(props.files);
-    return () => {
-      downloaded = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const filesMetadata = props.filesMetadata;
 
   const [onHover, setOnHover] = React.useState(-1);
-  const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
-  const addFile = (index: number) => {
-    props.addFileToWorkspace(index);
-  };
+  // const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
+  // const addFile = (index: number) => {
+  //   props.addFileToWorkspace(index);
+  // };
 
-  const downloadFile = (fileId: string) => {
-    props.onDownloadFileEvents([fileId]);
-    let id = "";
-    id = dataManager.addObserver("addNewFileToWorkspace", () => {
-      const plot = new PlotData();
-      plot.file = dataManager.getFile(fileId);
-      plot.setupPlot();
-      dataManager.addNewPlotToWorkspace(plot);
-      dataManager.removeObserver("addNewFileToWorkspace", id);
-      props.closeCall.f(props.closeCall.ref);
-    });
+  const [downloading, setDowloading] = useState<FileID[]>([]);
+
+  const downloadFile = async (fileId: string) => {
+    setDowloading(downloading.concat(fileId));
+    const file = await downloadFileEvent(
+      props.isShared,
+      fileId,
+      props.experimentId
+    );
+    setDowloading(downloading.filter((e) => e !== fileId));
+    PlotResource.createNewPlotFromFile(getFile(file));
   };
 
   const downloadAll = () => {
-    let downloadingFileIds = filesMetadata.map((e) => e.id);
-    props.onDownloadFileEvents(downloadingFileIds);
+    let files = filesMetadata.map((e) => e.id);
+    const workspace = getWorkspace();
+    files.filter((e) => !(e in workspace.files.map((e) => e.id)));
+    // props.onDownloadFileEvents(downloadingFileIds);
   };
 
   return (
@@ -103,10 +100,10 @@ function AddFileModal(props: {
         props.closeCall.f(props.closeCall.ref);
       }}
       onRendered={() => {
-        if (!downloadCopied) {
-          downloaded = downloaded.concat(props.downloaded);
-          setDownloadCopied(true);
-        }
+        // if (!downloadCopied) {
+        //   downloaded = downloaded.concat(props.downloaded);
+        //   setDownloadCopied(true);
+        // }
       }}
     >
       <div className={classes.fileSelectModal}>
@@ -176,213 +173,206 @@ function AddFileModal(props: {
             borderWidth: 0.3,
           }}
         >
-          {downloadCopied ? (
-            filesMetadata.map((fileMetadata: any, i: number) => {
-              const divider =
-                i === filesMetadata.length - 1 ? null : (
-                  <Divider className={classes.fileSelectDivider} />
-                );
-              let isDownloaded =
-                //@ts-ignore
-                props.downloaded.length > 0
-                  ? props.downloaded.filter((e) => e.id === fileMetadata.id)
-                      .length > 0
-                  : false;
+          {filesMetadata.map((fileMetadata: any, i: number) => {
+            const divider =
+              i === filesMetadata.length - 1 ? null : (
+                <Divider className={classes.fileSelectDivider} />
+              );
 
-              const isDownloading =
-                props.downloading.length > 0
-                  ? props.downloading.filter((e) => e === fileMetadata.id)
-                      .length > 0
-                  : false;
+            const isDownloading =
+              downloading.filter((e) => e === fileMetadata.id).length > 0;
 
-              return (
-                <div key={i.toString() + fileMetadata.title}>
-                  <div
-                    onMouseEnter={() => setOnHover(i)}
-                    onMouseLeave={() => setOnHover(-1)}
-                    className={
-                      onHover === i
-                        ? classes.fileSelectFileContainerHover
-                        : classes.fileSelectFileContainer
-                    }
-                  >
+            let isDownloaded =
+              !isDownloading && getFile(fileMetadata.id).downloaded;
+
+            return (
+              <div key={i.toString() + fileMetadata.title}>
+                <div
+                  onMouseEnter={() => setOnHover(i)}
+                  onMouseLeave={() => setOnHover(-1)}
+                  className={
+                    onHover === i
+                      ? classes.fileSelectFileContainerHover
+                      : classes.fileSelectFileContainer
+                  }
+                >
+                  <Grid container direction="row">
                     <Grid container direction="row">
-                      <Grid container direction="row">
-                        <p style={{ width: "100%" }}>
-                          <b>Title:</b>{" "}
+                      <p style={{ width: "100%" }}>
+                        <b>Title:</b>{" "}
+                        <a
+                          style={{
+                            color: "#777",
+                            fontSize: 14,
+                          }}
+                        >
+                          {fileMetadata.label}
+                        </a>
+                      </p>
+                      <div style={{ display: "inline-block" }}>
+                        <p
+                          style={{
+                            marginTop: -6,
+                            display: "inline-block",
+                          }}
+                        >
+                          <b>Date:</b>{" "}
                           <a
                             style={{
                               color: "#777",
                               fontSize: 14,
                             }}
                           >
-                            {fileMetadata.label}
+                            {getHumanReadableTimeDifference(
+                              new Date(fileMetadata.createdOn),
+                              new Date()
+                            )}
                           </a>
                         </p>
-                        <div style={{ display: "inline-block" }}>
-                          <p
+                        <p
+                          style={{
+                            marginTop: -6,
+                            display: "inline-block",
+                            marginLeft: 10,
+                          }}
+                        >
+                          <b>Size:</b>{" "}
+                          <a
                             style={{
-                              marginTop: -6,
-                              display: "inline-block",
+                              color: "#777",
+                              fontSize: 14,
                             }}
                           >
-                            <b>Date:</b>{" "}
-                            <a
-                              style={{
-                                color: "#777",
-                                fontSize: 14,
-                              }}
-                            >
-                              {getHumanReadableTimeDifference(
-                                new Date(fileMetadata.createdOn),
-                                new Date()
-                              )}
-                            </a>
-                          </p>
-                          <p
+                            {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                          </a>
+                        </p>
+                        <p
+                          style={{
+                            marginTop: -6,
+                            display: "inline-block",
+                            marginLeft: 10,
+                          }}
+                        >
+                          <b>Events:</b>{" "}
+                          <a
                             style={{
-                              marginTop: -6,
-                              display: "inline-block",
-                              marginLeft: 10,
+                              color: "#777",
+                              fontSize: 14,
                             }}
                           >
-                            <b>Size:</b>{" "}
-                            <a
-                              style={{
-                                color: "#777",
-                                fontSize: 14,
-                              }}
-                            >
-                              {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                            </a>
-                          </p>
-                          <p
-                            style={{
-                              marginTop: -6,
-                              display: "inline-block",
-                              marginLeft: 10,
-                            }}
-                          >
-                            <b>Events:</b>{" "}
-                            <a
-                              style={{
-                                color: "#777",
-                                fontSize: 14,
-                              }}
-                            >
-                              {fileMetadata.eventCount}
-                            </a>
-                          </p>
-                        </div>
-                      </Grid>
+                            {fileMetadata.eventCount}
+                          </a>
+                        </p>
+                      </div>
                     </Grid>
-                    <div
+                  </Grid>
+                  <div
+                    style={{
+                      marginBottom: 10,
+                      marginLeft: -20,
+                      textAlign: "right",
+                    }}
+                  >
+                    <Grid
                       style={{
-                        marginBottom: 10,
-                        marginLeft: -20,
                         textAlign: "right",
+                        flex: 1,
+                        flexDirection: "row",
+                        display: "inline-block",
                       }}
                     >
+                      <Grid style={{ display: "inline-block" }}>
+                        {isDownloaded
+                          ? "Loaded"
+                          : isDownloading
+                          ? "Loading..."
+                          : "Remote"}
+                      </Grid>
                       <Grid
                         style={{
-                          textAlign: "right",
-                          flex: 1,
-                          flexDirection: "row",
                           display: "inline-block",
                         }}
                       >
-                        <Grid style={{ display: "inline-block" }}>
-                          {isDownloaded
-                            ? "Loaded"
-                            : isDownloading
-                            ? "Loading..."
-                            : "Remote"}
-                        </Grid>
                         <Grid
                           style={{
-                            display: "inline-block",
+                            borderRadius: "100%",
+                            width: 13,
+                            height: 13,
+                            position: "relative",
+                            top: 2,
+                            marginLeft: 10,
+                            backgroundColor: isDownloaded
+                              ? "green"
+                              : isDownloading
+                              ? "#66d"
+                              : "#d66",
                           }}
-                        >
-                          <Grid
-                            style={{
-                              borderRadius: "100%",
-                              width: 13,
-                              height: 13,
-                              position: "relative",
-                              top: 2,
-                              marginLeft: 10,
-                              backgroundColor: isDownloaded
-                                ? "green"
-                                : isDownloading
-                                ? "#66d"
-                                : "#d66",
-                            }}
-                          ></Grid>
-                        </Grid>
+                        ></Grid>
                       </Grid>
-                      {isDownloaded === false ? (
-                        <Button
-                          style={{
-                            backgroundColor: "#66d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => downloadFile(fileMetadata.id)}
-                        >
-                          {isDownloading ? (
-                            <CircularProgress
-                              style={{
-                                color: "white",
-                                width: 23,
-                                height: 23,
-                              }}
-                            />
-                          ) : (
-                            "Download"
-                          )}
-                        </Button>
-                      ) : null}
-                      {isDownloaded ? (
-                        <Button
-                          style={{
-                            backgroundColor: isDownloaded ? "#66d" : "#99d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            let index: number;
-                            for (let i = 0; i < props.downloaded.length; i++) {
-                              if (props.downloaded[i].id === fileMetadata.id) {
-                                index = i;
-                                break;
-                              }
-                            }
-                            if (index === undefined) {
-                              snackbarService.showSnackbar(
-                                "File is not dowloaded",
-                                "error"
-                              );
-                              return;
-                            }
-                            addFile(index);
-                            props.closeCall.f(props.closeCall.ref);
-                          }}
-                          disabled={!isDownloaded}
-                        >
-                          Add to Workspace
-                        </Button>
-                      ) : null}
-                    </div>
+                    </Grid>
+                    {isDownloaded === false ? (
+                      <Button
+                        style={{
+                          backgroundColor: "#66d",
+                          color: "white",
+                          fontSize: 13,
+                          marginLeft: 20,
+                        }}
+                        onClick={() => downloadFile(fileMetadata.id)}
+                      >
+                        {isDownloading ? (
+                          <CircularProgress
+                            style={{
+                              color: "white",
+                              width: 23,
+                              height: 23,
+                            }}
+                          />
+                        ) : (
+                          "Download"
+                        )}
+                      </Button>
+                    ) : null}
+                    {isDownloaded ? (
+                      <Button
+                        style={{
+                          backgroundColor: isDownloaded ? "#66d" : "#99d",
+                          color: "white",
+                          fontSize: 13,
+                          marginLeft: 20,
+                        }}
+                        onClick={() => {
+                          PlotResource.createNewPlotFromFile(
+                            getFile(fileMetadata.id)
+                          );
+                          // let index: number;
+                          // for (let i = 0; i < props.downloaded.length; i++) {
+                          //   if (props.downloaded[i].id === fileMetadata.id) {
+                          //     index = i;
+                          //     break;
+                          //   }
+                          // }
+                          // if (index === undefined) {
+                          //   snackbarService.showSnackbar(
+                          //     "File is not dowloaded",
+                          //     "error"
+                          //   );
+                          //   return;
+                          // }
+                          // addFile(index);
+                          // props.closeCall.f(props.closeCall.ref);
+                        }}
+                        disabled={!isDownloaded}
+                      >
+                        Add to Workspace
+                      </Button>
+                    ) : null}
                   </div>
-                  {divider}
                 </div>
-              );
-            })
-          ) : (
-            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-          )}
+                {divider}
+              </div>
+            );
+          })}
         </div>
       </div>
     </Modal>

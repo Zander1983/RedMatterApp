@@ -1,16 +1,12 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import PolygonGate from "graph/dataManagement/gate/polygonGate";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import { euclidianDistance2D } from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
+import * as PlotResource from "graph/resources/plots";
+import { Point, PolygonGate, Range } from "graph/resources/types";
 
 export interface ScatterPolygonGatePlotterState {}
-
-interface Point {
-  x: number;
-  y: number;
-}
 
 interface PolygonGateState {
   points: Point[];
@@ -42,8 +38,8 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
   protected drawGate(gate: PolygonGate) {
     if (
-      gate.xAxisType !== this.plotter.plotData.xPlotType ||
-      gate.yAxisType !== this.plotter.plotData.yPlotType
+      gate.xAxisType !== this.plotter.plot.xPlotType ||
+      gate.yAxisType !== this.plotter.plot.yPlotType
     ) {
       return;
     }
@@ -52,8 +48,8 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     for (let i = 0; i < pointCount; i++) {
       let p = gate.points[i];
       let pp = gate.points[(i + 1) % gate.points.length];
-      p = this.plotter.transformer.toConcretePoint({ ...p }, undefined, true);
-      pp = this.plotter.transformer.toConcretePoint({ ...pp }, undefined, true);
+      p = this.plotter.transformer.toConcretePoint(p, undefined, true);
+      pp = this.plotter.transformer.toConcretePoint(pp, undefined, true);
       let color = "#f00";
       let size = 2;
       if (
@@ -115,9 +111,9 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     points: Point[];
     newRanges: [[number, number], [number, number]];
   } {
-    let ranges: any = this.plotter.plotData.getXandYRanges();
-    const xBi = this.plotter.plotData.xPlotType === "bi";
-    const yBi = this.plotter.plotData.yPlotType === "bi";
+    let ranges = PlotResource.getXandYRanges(this.plotter.plot);
+    const xBi = this.plotter.plot.xPlotType === "bi";
+    const yBi = this.plotter.plot.yPlotType === "bi";
     if (xBi || yBi) {
       const fcsServices = new FCSServices();
       pts = pts.map((e) => {
@@ -136,13 +132,17 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
           y: yBi ? logiclizedy : e.y,
         };
       });
-      ranges = [xBi ? [0.5, 1] : ranges.x, yBi ? [0.5, 1] : ranges.y];
-    } else {
-      ranges = [ranges.x, ranges.y];
+      ranges = {
+        x: xBi ? ([0.5, 1] as Range) : ranges.x,
+        y: yBi ? ([0.5, 1] as Range) : ranges.y,
+      };
     }
+    //  else {
+    //   ranges = [ranges.x, ranges.y];
+    // }
     return {
       points: pts,
-      newRanges: ranges,
+      newRanges: [ranges.x, ranges.y],
     };
   }
 

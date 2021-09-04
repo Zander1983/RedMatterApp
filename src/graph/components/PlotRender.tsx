@@ -12,7 +12,7 @@ import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
-import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
+// import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import * as PlotResource from "graph/resources/plots";
 import { getGate, getPopulation } from "graph/utils/workspace";
@@ -20,9 +20,10 @@ import { getGate, getPopulation } from "graph/utils/workspace";
 const plotterFactory = new PlotterFactory();
 
 const typeToClassType = {
-  Oval: OvalMouseInteractor,
-  Polygon: PolygonMouseInteractor,
-  Histogram: Error,
+  // Oval: OvalMouseInteractor,
+  oval: Error,
+  polygon: PolygonMouseInteractor,
+  histogram: Error,
 };
 
 const PlotRenderer = (props: { plot: Plot }) => {
@@ -33,7 +34,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
 
   // Mouse interaction objects
   let mouseInteractors: MouseInteractor[] = [];
-  let ovalMouseInteractor: OvalMouseInteractor | null = null;
+  // let ovalMouseInteractor: OvalMouseInteractor | null = null;
   let polygonMouseInteractor: PolygonMouseInteractor | null = null;
 
   // Rendering objects
@@ -52,10 +53,10 @@ const PlotRenderer = (props: { plot: Plot }) => {
     plotter.update();
 
     contructMouseInteractors();
-    setGating("Polygon", true);
-    setGating("Polygon", false);
-    setGating("Oval", true);
-    setGating("Oval", false);
+    setGating("polygon", true);
+    setGating("polygon", false);
+    setGating("oval", true);
+    setGating("oval", false);
 
     setTimeout(() => draw(), 20);
   };
@@ -88,7 +89,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
   };
 
   const setGating = (
-    type: "Oval" | "Histogram" | "Polygon",
+    type: "oval" | "histogram" | "polygon",
     start: boolean
   ) => {
     mouseInteractors
@@ -163,9 +164,9 @@ const PlotRenderer = (props: { plot: Plot }) => {
   };
 
   const contructMouseInteractors = () => {
-    ovalMouseInteractor = new OvalMouseInteractor();
+    // ovalMouseInteractor = new OvalMouseInteractor();
     polygonMouseInteractor = new PolygonMouseInteractor();
-    mouseInteractors = [ovalMouseInteractor, polygonMouseInteractor];
+    mouseInteractors = [polygonMouseInteractor];
   };
 
   useEffect(() => {

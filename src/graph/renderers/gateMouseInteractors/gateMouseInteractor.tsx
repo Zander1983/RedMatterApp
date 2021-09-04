@@ -1,11 +1,7 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import { Gate } from "graph/resources/types";
+import { Gate, Point } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
-
-export interface Point {
-  x: number;
-  y: number;
-}
+import * as PlotResource from "graph/resources/plots";
 
 export interface GateState {
   lastMousePos: Point;
@@ -74,10 +70,12 @@ export default abstract class GateMouseInteractor {
   protected abstract editGateEvent(type: string, point: Point): void;
 
   createAndAddGate() {
+    // TODO
     const gate = this.instanceGate();
-    dataManager.addNewGateToWorkspace(gate);
-    dataManager.linkGateToPlot(this.plotID, gate.id);
-    dataManager.clonePlot(this.plotID);
+    PlotResource.createSubpopPlot(this.plotter.plot, [gate]);
+    // dataManager.addNewGateToWorkspace(gate);
+    // dataManager.linkGateToPlot(this.plotID, gate.id);
+    // dataManager.clonePlot(this.plotID);
     this.end();
   }
 

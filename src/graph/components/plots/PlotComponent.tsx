@@ -7,6 +7,7 @@ import SideSelector from "./SideSelector";
 import { Plot } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import PlotRenderer from "graph/components/PlotRender";
+import { getGate } from "graph/utils/workspace";
 
 const classes = {
   itemOuterDiv: {
@@ -117,11 +118,15 @@ function PlotComponent(props: {
       ref={displayRef}
     >
       <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
-        <MainBar plotIndex={props.plot.id} plot={plot}></MainBar>
+        <MainBar plot={plot}></MainBar>
 
         <Divider></Divider>
 
-        <GateBar plot={plot} onGateDoubleClick={onGateDoubleClick}></GateBar>
+        <GateBar
+          plot={plot}
+          gates={plot.gates.map((e) => getGate(e))}
+          onGateDoubleClick={onGateDoubleClick}
+        ></GateBar>
 
         <Divider style={{ marginBottom: 10 }}></Divider>
       </div>

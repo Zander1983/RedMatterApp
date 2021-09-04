@@ -3,13 +3,13 @@ import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getFile, getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
-import { File, Workspace } from "graph/resources/types";
+import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
   experimentId: string
-) => {
+): Promise<FileID[]> => {
   let params;
   if (workspaceIsShared) {
     params = ExperimentFilesApiFetchParamCreator(
@@ -27,6 +27,7 @@ export const downloadFileMetadata = async (
   //@ts-ignore
   const response = await axios.get(params.url, params.options).data["files"];
   const workspace: Workspace = store.getState().workspace;
+  let newFilesIds: FileID[] = [];
   for (let newFile of response) {
     let file: any = {};
     file.createdOn = new Date(newFile.createdOn);
@@ -42,14 +43,16 @@ export const downloadFileMetadata = async (
       action: "workspace.UPDATE_FILE",
       payload: { file },
     });
+    newFilesIds.push(file.id);
   }
+  return newFilesIds;
 };
 
 export const downloadFileEvent = async (
   workspaceIsShared: boolean,
   fileId: string,
   experimentId: string
-) => {
+): Promise<FileID> => {
   const workspace = getWorkspace();
   const fileQuery = workspace.files.filter((e) => e.id === fileId);
   if (fileQuery.length > 0) {
@@ -92,4 +95,5 @@ export const downloadFileEvent = async (
     action: "workspace.UPDATE_FILE",
     payload: { file },
   });
+  return file.id;
 };

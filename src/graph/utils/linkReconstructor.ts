@@ -1,5 +1,4 @@
 import { Workspace } from "graph/resources/types";
-import firebase from "utils/firebase";
 import { createID } from "./id";
 
 export default class LinkReconstructor {
@@ -50,25 +49,26 @@ export default class LinkReconstructor {
   }
 
   private saveToCloud(workspaceJSON: string): string {
-    const newURLID = createID().substr(0, 10);
-    firebase.saveToCloud("linkshortening", {
-      workspaceJSON: workspaceJSON,
-      workspaceID: newURLID,
-    });
-    return newURLID;
+    return "";
+    // const newURLID = createID().substr(0, 10);
+    // firebase.saveToCloud("linkshortening", {
+    //   workspaceJSON: workspaceJSON,
+    //   workspaceID: newURLID,
+    // });
+    // return newURLID;
   }
 
   private retrieveFromCloud(
     token: string,
     callback: (workspaceJSON: string) => void
   ) {
-    firebase.retrieveFromCloud(
-      "linkshortening",
-      "workspaceID",
-      token,
-      (collection: any) => {
-        callback(collection.workspaceJSON);
-      }
-    );
+    // firebase.retrieveFromCloud(
+    //   "linkshortening",
+    //   "workspaceID",
+    //   token,
+    //   (collection: any) => {
+    //     callback(collection.workspaceJSON);
+    //   }
+    // );
   }
 }

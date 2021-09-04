@@ -19,10 +19,7 @@ export default class ScatterHeatmapperPlugin extends PlotterPlugin {
     const plotter = this.plotter;
     for (const special of this.specialPoints) {
       if (special.text !== undefined) {
-        const { x, y } = plotter.transformer.toConcretePoint({
-          x: special.x,
-          y: special.y,
-        });
+        const { x, y } = plotter.transformer.toConcretePoint(special);
         this.plotter.drawer.text({
           x: (x + 5) * this.plotter.scale,
           y: (y - 5) * this.plotter.scale,

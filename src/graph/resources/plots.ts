@@ -15,6 +15,8 @@ import {
   PopulationGateType,
   PopulationID,
   GateID,
+  File,
+  Population,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -70,6 +72,10 @@ export const createPlot = ({
   if (clonePlot) newPlot = clonePlot;
   if (id) newPlot.id = id;
   else newPlot.id = createID();
+  if (population) newPlot.population = population;
+  if (newPlot.population === "") {
+    throw Error("Plot without population");
+  }
   setupPlot(newPlot);
   return newPlot;
 };
@@ -198,16 +204,16 @@ export const addGate = (plot: Plot, gate: GateID) => {
   commitPlotChange(plot);
 };
 
-export const removeGate = (plot: Plot, gate: Gate) => {
-  const gateQuery = plot.gates.filter((g) => g === gate.id);
+export const removeGate = (plot: Plot, gate: GateID) => {
+  const gateQuery = plot.gates.filter((g) => g === gate);
   if (gateQuery.length !== 1) {
     if (gateQuery.length < 1)
-      throw Error("Gate with ID = " + gate.id + " was not found");
+      throw Error("Gate with ID = " + gate + " was not found");
     if (gateQuery.length > 1) {
-      throw Error("Multiple gates with ID = " + gate.id + " were found");
+      throw Error("Multiple gates with ID = " + gate + " were found");
     }
   }
-  plot.gates = plot.gates.filter((g) => g !== gate.id);
+  plot.gates = plot.gates.filter((g) => g !== gate);
   commitPlotChange(plot);
 };
 
@@ -405,9 +411,14 @@ export const getBinCount = (plot: Plot) => {
     : plot.plotHeight / STD_BIN_SIZE;
 };
 
-export const resetOriginalRanges = (plot: Plot) => {
+export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   const population = getPopulation(plot.population);
-  plot.ranges = population.defaultRanges;
+  if (axis) {
+    const axisName = axis === "x" ? plot.xAxis : plot.yAxis;
+    plot.ranges[axisName] = population.defaultRanges[axisName];
+  } else {
+    plot.ranges = population.defaultRanges;
+  }
   commitPlotChange(plot);
 };
 
@@ -463,13 +474,13 @@ export const getXandYData = (plot: Plot): [Int32Array, Int32Array] => {
 
 export const findRangeBoundries = (
   plot: Plot,
-  axisData: number[]
+  axisData: Int32Array
 ): [number, number] => {
   let min = axisData[0],
     max = axisData[0];
-  for (const p of axisData) {
-    min = Math.min(p, min);
-    max = Math.max(p, max);
+  for (let i = 0; i < axisData.length; i++) {
+    min = Math.min(axisData[i], min);
+    max = Math.max(axisData[i], max);
   }
   return [min, max];
 };
@@ -545,4 +556,33 @@ export const getPointColors = (plot: Plot) => {
     colors.push(ans.color);
   }
   return colors;
+};
+
+export const createNewPlotFromFile = (file: File) => {
+  const workspace = getWorkspace();
+  const popQuery = workspace.populations.filter(
+    (e) => e.file === file.id && e.gates.length === 0
+  );
+  let population: Population;
+  if (popQuery) {
+    population = popQuery[0];
+  } else {
+    population = populations.createPopulation({
+      file: file.id,
+    });
+    store.dispatch({
+      action: "ADD_POPULATION",
+      payload: { population },
+    });
+  }
+  const plot = createPlot({ population: population.id });
+  store.dispatch({
+    action: "ADD_PLOT",
+    payload: { plot },
+  });
+};
+
+export const createSubpopPlot = (plot: Plot, additionalGates?: Gate[]) => {
+  // TODO
+  // createNewPlotFromFile(getFile(getPopulation(plot.population).file));
 };

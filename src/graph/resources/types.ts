@@ -10,7 +10,8 @@ export type GateType = "" | "polygon" | "histogram" | "oval";
 export type AxisName = string;
 export type Color = string;
 export type SrcType = "remote" | "remote-sample";
-export type Point = [number, number];
+export type Point = { x: number; y: number };
+export type PointObj = { x: number; y: number };
 export type HistogramAxisType = "" | "horizontal" | "vertical";
 export type Range = [number, number];
 
@@ -50,6 +51,7 @@ export interface Gate1D extends Gate {
 }
 
 export interface HistogramGate extends Gate1D {
+  gateType: "histogram";
   // not defined yet
 }
 
@@ -64,9 +66,11 @@ export interface Gate2D extends Gate {
 
 export interface PolygonGate extends Gate2D {
   points: Point[];
+  gateType: "polygon";
 }
 
 export interface OvalGate extends Gate2D {
+  gateType: "oval";
   // not defined yet
 }
 

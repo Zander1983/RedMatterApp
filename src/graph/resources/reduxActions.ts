@@ -5,10 +5,9 @@ export const graphActions = {
   LOAD_WORKSPACE: "workspace.LOAD_WORKSPACE",
   SET_EXPERIMENT_METADATA: "workspace.SET_EXPERIMENT_METADATA",
   ADD_FILE: "workspace.ADD_FILE",
+  ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
   ADD_GATE: "workspace.ADD_GATE",
-  DUPLICATE_PLOT: "workspace.DUPLICATE_PLOT",
-  DUPLICATE_GATE: "workspace.DUPLICATE_GATE",
   SUBPOP_FROM_GATE: "workspace.SUBPOP_FROM_GATE",
   ADD_GATE_TO_ALL_FILES: "workspace.ADD_GATE_TO_ALL_FILES",
   LINK_GATE_TO_PLOT: "workspace.LINK_GATE_TO_PLOT",
@@ -79,14 +78,6 @@ const graphReducers = (state = initialState, action: any) => {
         ...state,
       };
     case graphActions.ADD_GATE:
-      return {
-        ...state,
-      };
-    case graphActions.DUPLICATE_PLOT:
-      return {
-        ...state,
-      };
-    case graphActions.DUPLICATE_GATE:
       return {
         ...state,
       };

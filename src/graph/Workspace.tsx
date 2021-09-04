@@ -245,7 +245,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
 
   // const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
-  // const [downloadedFiles, setDownloadedFiles] = React.useState([]);
+  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   // const [downloadingFiles, setDownloadingFiles] = React.useState([]);
 
   const renameGate = (newName: string) => {
@@ -309,7 +309,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //     return;
   //   }
 
-  //   const file: any = downloadedFiles[index];
+  // const file: any = downloadedFiles[index];
   //   let newFile: FCSFile;
 
   //   newFile = new FCSFile({
@@ -371,7 +371,8 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
-            files={workspace.files}
+            experimentId={props.experimentId}
+            filesMetadata={workspace.files}
             // downloaded={downloadedFiles}
             // downloading={downloadingFiles}
             // filesMetadata={files}
@@ -439,7 +440,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
       />
 
       {/* == STATIC ELEMENTS == */}
-      <SideMenus></SideMenus>
+      <SideMenus workspace={workspace}></SideMenus>
 
       {/* == NOTICES == */}
       <SmallScreenNotice />
