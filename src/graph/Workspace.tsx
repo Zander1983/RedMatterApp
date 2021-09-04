@@ -109,6 +109,9 @@ const staticFiles = [
   };
 });
 
+let flowJoJson = {};
+let importFlowJo = false;
+
 function Workspace(props: { experimentId: string; poke: Boolean }) {
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
@@ -121,7 +124,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
   const location = useLocation();
-
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
   const verifyWorkspace = async (workspaceId: string) => {
@@ -192,6 +194,14 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
     var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       setDownloadedFiles(dataManager.downloaded);
+      if (
+        importFlowJo &&
+        dataManager.files.length == dataManager.downloaded.length
+      ) {
+        initiateParseFlowJo(flowJoJson);
+        importFlowJo = false;
+        flowJoJson = {};
+      }
     });
 
     var downloadingListner = dataManager.addObserver(
@@ -235,7 +245,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       setObserverAdded(true);
       dataManager.addObserver(
         "addNewGateToWorkspace",
-        getNameAndOpenModal,
+        (e: any) => {
+          if (!importFlowJo) getNameAndOpenModal(e);
+        },
         true
       );
     }
@@ -454,15 +466,35 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       };
       var result = XML.xml2json(text, options);
       console.log(result);
+      result = JSON.parse(result);
+      importFlowJo = true;
       setLoading(true);
-      parseFlowJoJson(JSON.parse(result));
       setFileUploadInputValue("");
+      if (dataManager.files.length == downloadedFiles.length) {
+        initiateParseFlowJo(result);
+      } else {
+        flowJoJson = result;
+        let fileIds = dataManager.files.map((x) => x.id);
+        handleDownLoadFileEvents(fileIds);
+        snackbarService.showSnackbar(
+          "File events are getting downloaded then import will happen!!",
+          "warning"
+        );
+      }
     };
     reader.readAsText(e.target.files[0]);
   };
 
+  const initiateParseFlowJo = async (flowJoJson: any) => {
+    await parseFlowJoJson(flowJoJson);
+    setTimeout(() => {
+      setLoading(false);
+      importFlowJo = false;
+    }, 4000);
+  };
+
   const getFileOrSkipThisSample = (filesUsed: any, channelsInfo: any) => {
-    let files = downloadedFiles.filter((x) => !filesUsed.includes(x.id));
+    let files = dataManager.downloaded.filter((x) => !filesUsed.includes(x.id));
     let channels = channelsInfo.map((x: any) => {
       return `${x.channelName} - ${x.channelName}`;
     });
@@ -574,7 +606,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     for (let i = 0; i < flowJoPlots.length; i++) {
       dataManager.addNewPlotToWorkspace(flowJoPlots[i], false);
     }
-    setLoading(false);
   };
 
   const parseChannels = (transformations: any, type: string) => {
