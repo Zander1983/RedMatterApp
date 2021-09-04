@@ -5,13 +5,13 @@ import CancelIcon from "@material-ui/icons/Cancel";
 
 import TuneIcon from "@material-ui/icons/Tune";
 import TouchAppIcon from "@material-ui/icons/TouchApp";
-import MessageModal from "../../modals/MessageModal";
-import dataManager from "../../../dataManagement/dataManager";
-import RangeResizeModal from "../../modals/rangeResizeModal";
-import PlotData from "graph/dataManagement/plotData";
+import MessageModal from "../modals/MessageModal";
+import RangeResizeModal from "../modals/rangeResizeModal";
 import normalGatingIcon from "../../../../assets/images/normalGatingIcon.png";
 import inverseGatingIcon from "../../../../assets/images/inverseGatingIcon.png";
 import gate from "../../../../assets/images/gate.png";
+import { useStore } from "react-redux";
+import { Plot } from "graph/resources/types";
 
 const classes = {
   main: {
@@ -36,7 +36,8 @@ const classes = {
   },
 };
 
-export default function MainBar(props: any) {
+export default function MainBar(props: { plot: Plot }) {
+  const store = useStore();
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
@@ -92,13 +93,13 @@ export default function MainBar(props: any) {
         if (minY === 69 && maxY === 420) e.resetOriginalRanges();
         else e.ranges.set(axisY, [minY, maxY]);
     });
-
-    targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
-
-    dataManager.updateWorkspace();
   };
 
   const deletePlot = () => {
+    store.dispatch({
+      action: "workspace.DELETE_PLOT",
+      payload: { plot: plot },
+    });
     dataManager.removePlotFromWorkspace(plot.plotData.id);
   };
 

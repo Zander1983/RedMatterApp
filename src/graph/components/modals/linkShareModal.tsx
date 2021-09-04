@@ -11,7 +11,7 @@ import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import LinkReconstructor from "graph/utils/linkReconstructor";
-import dataManager from "graph/dataManagement/dataManager";
+import { getWorkspace } from "graph/utils/workspace";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -46,10 +46,7 @@ function LinkShareModal(props: {
   const linkReconstructor = new LinkReconstructor();
   let link = "";
   if (props.open) {
-    link = linkReconstructor.store(
-      dataManager.currentWorkspace,
-      props.workspaceId
-    );
+    link = linkReconstructor.store(getWorkspace(), props.workspaceId);
   }
 
   function copyToClipBoard() {

@@ -1,6 +1,5 @@
-import dataManager from "../../dataManagement/dataManager";
-import Gate from "../../dataManagement/gate/gate";
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
+import { Gate } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 
 export interface Point {

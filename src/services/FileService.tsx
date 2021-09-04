@@ -1,7 +1,10 @@
 import axios from "axios";
 import userManager from "Components/users/userManager";
 import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
-import { getWorkspace } from "graph/utils/workspace";
+import { getFile, getWorkspace } from "graph/utils/workspace";
+import { store } from "redux/store";
+import { File, Workspace } from "graph/resources/types";
+import { createFile } from "graph/resources/files";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
@@ -21,8 +24,25 @@ export const downloadFileMetadata = async (
       userManager.getToken()
     );
   }
-  const response = await axios.get(params.url, params.options);
-  return response;
+  //@ts-ignore
+  const response = await axios.get(params.url, params.options).data["files"];
+  const workspace: Workspace = store.getState().workspace;
+  for (let newFile of response) {
+    let file: any = {};
+    file.createdOn = new Date(newFile.createdOn);
+    file.name = file.label = newFile.label;
+    file.axes = newFile.channels;
+    file.experimentId = newFile.experimentId;
+    file.fileSize = newFile.fileSize;
+    file.eventCount = newFile.eventCount;
+    if (newFile.id in workspace.files.map((e: File) => e.id)) {
+      file = { ...getFile(newFile.id), ...file };
+    }
+    store.dispatch({
+      action: "workspace.UPDATE_FILE",
+      payload: { file },
+    });
+  }
 };
 
 export const downloadFileEvent = async (
@@ -57,13 +77,19 @@ export const downloadFileEvent = async (
       }
     );
   }
-  const files = response.data;
+  const file = response.data;
   //TODO remove
-  for (const file of files) {
+  if (file.events.length > 2000)
     //@ts-ignore
-    if (file.events.length > 2000)
-      //@ts-ignore
-      file.events = file.events.slice(0, 2000);
-  }
-  return files;
+    file.events = file.events.slice(0, 2000);
+  let newFile = createFile({
+    requestData: file,
+    id: fileId,
+  });
+  newFile = { ...newFile, ...getFile(fileId) };
+  newFile.downloaded = true;
+  store.dispatch({
+    action: "workspace.UPDATE_FILE",
+    payload: { file },
+  });
 };

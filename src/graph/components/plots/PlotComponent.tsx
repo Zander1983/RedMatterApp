@@ -6,7 +6,7 @@ import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
 import { Plot } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
-import PlotRenderer from "graph/renderers/plotRender";
+import PlotRenderer from "graph/components/PlotRender";
 
 const classes = {
   itemOuterDiv: {

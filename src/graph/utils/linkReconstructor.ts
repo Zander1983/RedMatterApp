@@ -1,9 +1,9 @@
-import dataManager from "../dataManager";
-import WorkspaceData from "../workspaceData";
+import { Workspace } from "graph/resources/types";
 import firebase from "utils/firebase";
+import { createID } from "./id";
 
 export default class LinkReconstructor {
-  store(workspace: WorkspaceData, newWorkSpaceId: string): string {
+  store(workspace: Workspace, newWorkSpaceId: string): string {
     if (workspace === null || workspace === undefined) return "";
     let currentHost = window.location.href;
     if (currentHost.includes("?")) {
@@ -40,7 +40,6 @@ export default class LinkReconstructor {
   private getQueryParams() {
     let queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-
     const keys = Array.from(urlParams.keys());
     const values = Array.from(urlParams.values());
     let dict: any = {};
@@ -51,7 +50,7 @@ export default class LinkReconstructor {
   }
 
   private saveToCloud(workspaceJSON: string): string {
-    const newURLID = dataManager.createID().substr(0, 10);
+    const newURLID = createID().substr(0, 10);
     firebase.saveToCloud("linkshortening", {
       workspaceJSON: workspaceJSON,
       workspaceID: newURLID,

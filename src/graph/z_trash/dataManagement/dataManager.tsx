@@ -497,13 +497,7 @@ class DataManager extends ObserversFunctionality {
     return this.experimentId;
   }
 
-  async downloadFileMetadata() {
-    let response: any = await FileService.downloadFileMetadata(
-      this.workspaceIsShared,
-      this.experimentId
-    );
-    this.files = response.data.files;
-  }
+  async downloadFileMetadata() {}
 
   async downloadFileEvents(fileIds: Array<string>) {
     let downloadedFileIds = this.downloaded.map((x) => x.id);

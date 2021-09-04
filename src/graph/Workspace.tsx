@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useStore } from "react-redux";
 import axios from "axios";
 import { useHistory } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -25,11 +25,12 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import FCSFile from "graph/dataManagement/fcsFile";
 import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
-import dataManager from "graph/dataManagement/dataManager";
-import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
+import { downloadFileMetadata } from "services/FileService";
+import { getFile } from "./utils/workspace";
+import { FileID, Workspace as WorkspaceType } from "./resources/types";
+import { store } from "redux/store";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -80,9 +81,9 @@ const useStyles = makeStyles((theme) => ({
 let setWorkspaceAlready = false;
 let workspaceSharedLocal = false;
 
-function Workspace(props: { experimentId: string; poke: Boolean }) {
+function Workspace(props: { experimentId: string; shared: boolean }) {
   //@ts-ignore
-  const workspace = useSelector((state) => state.workspace);
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -95,152 +96,110 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
-  const verifyWorkspace = async (workspaceId: string) => {
-    let workspaceData;
-    try {
-      workspaceData = await axios.post(
-        "/api/verifyWorkspace",
-        {
-          workspaceId: workspaceId,
-          experimentId: props.experimentId,
-        },
-        {}
-      );
-      dataManager.setWorkspaceIsShared(workspaceData.data["isShared"]);
-      setSharedWorkspace(workspaceData.data["isShared"]);
-    } catch (e) {
-      snackbarService.showSnackbar(
-        "Could not verify the workspace, reload the page and try again!",
-        "error"
-      );
-    }
-    workspaceSharedLocal = workspaceData.data["isShared"];
-    initPlots(workspaceData.data["isShared"]);
-    if (workspaceData && workspaceData.data["isShared"])
-      loadWorkspaceStatsToDM(
-        workspaceData.data["isShared"],
-        JSON.parse(workspaceData.data["state"])
-      );
-  };
+  // const verifyWorkspace = async (workspaceId: string) => {
+  //   let workspaceData;
+  //   try {
+  //     workspaceData = await axios.post(
+  //       "/api/verifyWorkspace",
+  //       {
+  //         workspaceId: workspaceId,
+  //         experimentId: props.experimentId,
+  //       },
+  //       {}
+  //     );
+  //     setSharedWorkspace(workspaceData.data["isShared"]);
+  //   } catch (e) {
+  //     snackbarService.showSnackbar(
+  //       "Could not verify the workspace, reload the page and try again!",
+  //       "error"
+  //     );
+  //   }
+  //   workspaceSharedLocal = workspaceData.data["isShared"];
+  //   initPlots(workspaceData.data["isShared"]);
+  //   if (workspaceData && workspaceData.data["isShared"])
+  //     loadWorkspaceStatsToDM(
+  //       workspaceData.data["isShared"],
+  //       JSON.parse(workspaceData.data["state"])
+  //     );
+  // };
 
-  const getWorkspace = async () => {
-    let workspaceData;
-    try {
-      workspaceData = await axios.post(
-        "/api/getWorkspace",
-        {
-          experimentId: props.experimentId,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      );
-      if (workspaceData.data["state"])
-        await loadWorkspaceStatsToDM(
-          false,
-          JSON.parse(workspaceData.data["state"])
-        );
-    } catch (e) {
-      snackbarService.showSnackbar(
-        "Could not verify the workspace, reload the page and try again!",
-        "error"
-      );
-    }
-    initPlots();
-  };
+  // const getWorkspace = async () => {
+  //   let workspaceData;
+  //   try {
+  //     workspaceData = await axios.post(
+  //       "/api/getWorkspace",
+  //       {
+  //         experimentId: props.experimentId,
+  //       },
+  //       {
+  //         headers: {
+  //           token: userManager.getToken(),
+  //         },
+  //       }
+  //     );
+  //     if (workspaceData.data["state"])
+  //       await loadWorkspaceStatsToDM(
+  //         false,
+  //         JSON.parse(workspaceData.data["state"])
+  //       );
+  //   } catch (e) {
+  //     snackbarService.showSnackbar(
+  //       "Could not verify the workspace, reload the page and try again!",
+  //       "error"
+  //     );
+  //   }
+  //   initPlots();
+  // };
 
-  useEffect(() => {
-    dataManager.setExperimentId(props.experimentId);
+  // useEffect(() => {
+  //   let workspaceId = new URLSearchParams(location.search).get("id");
+  //   if (workspaceId) {
+  //     verifyWorkspace(workspaceId);
+  //   } else {
+  //     getWorkspace();
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
-    let workspaceId = new URLSearchParams(location.search).get("id");
-    if (workspaceId) {
-      verifyWorkspace(workspaceId);
-    } else {
-      getWorkspace();
-    }
+  // const autoSaveWorkspace = () => {
+  //   if (!workspaceSharedLocal) {
+  //     setSavingWorkspace(true);
+  //     saveWorkspace();
+  //   }
+  // };
 
-    var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
-      setDownloadedFiles(dataManager.downloaded);
-    });
+  // const initPlots = async (workSpaceShared: boolean = false) => {
+  //   if (props.experimentId !== undefined && !setWorkspaceAlready) {
+  //     setWorkspaceAlready = true;
+  //     dataManager.setWorkspaceID(props.experimentId);
+  //     dataManager.addObserver("setWorkspaceLoading", () => {
+  //       const isLoading = dataManager.isWorkspaceLoading();
+  //       setLoading(isLoading);
+  //       if (!isLoading) {
+  //         setLoadModal(false);
+  //       }
+  //     });
+  //   }
 
-    var downloadingListner = dataManager.addObserver(
-      "updateDownloadingFiles",
-      () => {
-        setDownloadingFiles(dataManager.downloadingFiles);
-      }
-    );
+  //   if (
+  //     !workSpaceShared &&
+  //     process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
+  //     !isLoggedIn
+  //   ) {
+  //     history.push("/login");
+  //   }
 
-    // let updateWorkspaceListner = dataManager.addObserver(
-    //   "updateWorkspace",
-    //   () => {
-    //     if (dataManager.letUpdateBeCalledForAutoSave) {
-    //       autoSaveWorkspace();
-    //     }
-    //   }
-    // );
+  //   await downloadFileMetadata(props.shared, props.experimentId);
 
-    dataManager.letUpdateBeCalledForAutoSave = true;
-    return () => {
-      setWorkspaceAlready = false;
-      dataManager.clearWorkspace();
-      setDownloadedFiles([]);
-      setDownloadingFiles([]);
-      //dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
-      dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
-      dataManager.removeObserver("updateDownloaded", downloadedListner);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const autoSaveWorkspace = () => {
-    if (!workspaceSharedLocal) {
-      setSavingWorkspace(true);
-      saveWorkspace();
-    }
-  };
-
-  const initPlots = async (workSpaceShared: boolean = false) => {
-    if (observerAdded === false) {
-      setObserverAdded(true);
-      dataManager.addObserver(
-        "addNewGateToWorkspace",
-        getNameAndOpenModal,
-        true
-      );
-    }
-    if (props.experimentId !== undefined && !setWorkspaceAlready) {
-      setWorkspaceAlready = true;
-      dataManager.setWorkspaceID(props.experimentId);
-      dataManager.addObserver("setWorkspaceLoading", () => {
-        const isLoading = dataManager.isWorkspaceLoading();
-        setLoading(isLoading);
-        if (!isLoading) {
-          setLoadModal(false);
-        }
-      });
-    }
-
-    if (
-      !workSpaceShared &&
-      process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
-      !isLoggedIn
-    ) {
-      history.push("/login");
-    }
-
-    await dataManager.downloadFileMetadata();
-
-    setInitPlot(true);
-  };
+  //   setInitPlot(true);
+  // };
 
   const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
 
   const upsertWorkSpace = (isShared: boolean = false) => {
     setSavingWorkspace(true);
-    let stateJson = dataManager.getWorkspaceJSON();
+    let stateJson = workspace;
     const updateWorkSpace = WorkspacesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).upsertWorkSpace(userManager.getToken(), {
@@ -284,111 +243,96 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
 
-  const [observerAdded, setObserverAdded] = React.useState(false);
-  const [gateToSend, setGateToSend] = React.useState(null);
+  // const [gateToSend, setGateToSend] = React.useState(null);
   const [namePromptOpen, setNamePromptOpen] = React.useState(false);
-  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
-  const [downloadingFiles, setDownloadingFiles] = React.useState([]);
+  // const [downloadedFiles, setDownloadedFiles] = React.useState([]);
+  // const [downloadingFiles, setDownloadingFiles] = React.useState([]);
 
-  const getNameAndOpenModal = (gate: Gate) => {
-    setNamePromptOpen(true);
-    setGateToSend(gate);
-  };
-
-  const renameGate = (newName: String) => {
-    dataManager.getGate(gateToSend[0].id).update({ name: newName });
-    setNamePromptOpen(false);
-    dataManager.workspaceUpdated();
-    resetPlotSizes();
-    dataManager
-      .getAllPlots()
-      .filter(
-        (e) =>
-          e.plot.gates.filter((g) => g.gate.id === gateToSend[0].id).length > 0
-      )
-      .forEach((e) => dataManager.getPlotRendererForPlot(e.plotID).draw());
-  };
-
-  var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
-    let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
-    let headers = isShared
-      ? {}
-      : {
-          token: userManager.getToken(),
-        };
-
-    let datas = await axios.post(
-      url,
-      {
-        experimentId: props.experimentId,
-        fileIds: fileIds,
-      },
-      {
-        headers: headers,
-      }
-    );
-
-    return datas.data;
-  };
-
-  var loadWorkspaceStatsToDM = async (
-    workspaceShared: boolean,
-    workspaceStatearg: any
-  ) => {
-    if (workspaceStatearg) {
-      setLoading(true);
-      let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
-      let stateFileIds = workspaceStateReload.getFileIds();
-      if (stateFileIds && stateFileIds.length) {
-        setDownloadingFiles(stateFileIds);
-        let eventFiles = await getFiles(workspaceShared, stateFileIds);
-        dataManager.updateDownloaded(eventFiles);
-        if (!dataManager.ready()) {
-          dataManager.createWorkspace();
-        }
-        for (let i = 0; i < eventFiles.length; i++) {
-          workspaceStateReload.addFile(eventFiles[i]);
-        }
-        dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
-      }
-    }
-    setLoading(false);
-  };
-
-  const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    dataManager.downloadFileEvents(fileIds);
-  };
-
-  const addFile = (index: number) => {
-    if (!dataManager.ready()) {
-      snackbarService.showSnackbar("Something went wrong, try again!", "error");
-      return;
-    }
-
-    const file: any = downloadedFiles[index];
-    let newFile: FCSFile;
-
-    newFile = new FCSFile({
-      name: file.title,
-      id: file.id,
-      src: "remote",
-      axes: file.channels.map((e: any) => e.value),
-      data: file.events,
-      plotTypes: file.channels.map((e: any) => e.display),
-      remoteData: file,
+  const renameGate = (newName: string) => {
+    let newGate = workspace.gates[workspace.gates.length - 1];
+    newGate.name = newName;
+    store.dispatch({
+      action: "workspace.UPDATE_GATE",
+      payload: { gate: newGate },
     });
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    plot.setupPlot();
-    dataManager.addNewPlotToWorkspace(plot);
   };
+
+  // var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
+  //   let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
+  //   let headers = isShared
+  //     ? {}
+  //     : {
+  //         token: userManager.getToken(),
+  //       };
+
+  //   let datas = await axios.post(
+  //     url,
+  //     {
+  //       experimentId: props.experimentId,
+  //       fileIds: fileIds,
+  //     },
+  //     {
+  //       headers: headers,
+  //     }
+  //   );
+
+  //   return datas.data;
+  // };
+
+  // var loadWorkspaceStatsToDM = async (
+  //   workspaceShared: boolean,
+  //   workspaceStatearg: any
+  // ) => {
+  //   if (workspaceStatearg) {
+  //     setLoading(true);
+  //     let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
+  //     let stateFileIds = workspaceStateReload.getFileIds();
+  //     if (stateFileIds && stateFileIds.length) {
+  //       setDownloadingFiles(stateFileIds);
+  //       let eventFiles = await getFiles(workspaceShared, stateFileIds);
+  //       dataManager.updateDownloaded(eventFiles);
+  //       if (!dataManager.ready()) {
+  //         dataManager.createWorkspace();
+  //       }
+  //       for (let i = 0; i < eventFiles.length; i++) {
+  //         workspaceStateReload.addFile(eventFiles[i]);
+  //       }
+  //       dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
+  //     }
+  //   }
+  //   setLoading(false);
+  // };
+
+  // const addFile = (index: number) => {
+  //   if (!dataManager.ready()) {
+  //     snackbarService.showSnackbar("Something went wrong, try again!", "error");
+  //     return;
+  //   }
+
+  //   const file: any = downloadedFiles[index];
+  //   let newFile: FCSFile;
+
+  //   newFile = new FCSFile({
+  //     name: file.title,
+  //     id: file.id,
+  //     src: "remote",
+  //     axes: file.channels.map((e: any) => e.value),
+  //     data: file.events,
+  //     plotTypes: file.channels.map((e: any) => e.display),
+  //     remoteData: file,
+  //   });
+  //   const fileID = dataManager.addNewFileToWorkspace(newFile);
+  //   const plot = new PlotData();
+  //   plot.file = dataManager.getFile(fileID);
+  //   plot.setupPlot();
+  //   dataManager.addNewPlotToWorkspace(plot);
+  // };
 
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
       upsertWorkSpace(true);
     } else if (sharedWorkspace) {
-      let stateJson = dataManager.getWorkspaceJSON();
+      let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {
         newWorkspaceDB = await axios.post(
@@ -427,15 +371,16 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
             isShared={sharedWorkspace}
-            downloaded={downloadedFiles}
-            downloading={downloadingFiles}
-            filesMetadata={dataManager.files}
-            onDownloadFileEvents={(fileIds) => {
-              handleDownLoadFileEvents(fileIds);
-            }}
-            addFileToWorkspace={(index) => {
-              addFile(index);
-            }}
+            files={workspace.files}
+            // downloaded={downloadedFiles}
+            // downloading={downloadingFiles}
+            // filesMetadata={files}
+            // onDownloadFileEvents={(fileIds) => {
+            //   handleDownLoadFileEvents(fileIds);
+            // }}
+            // addFileToWorkspace={(index) => {
+            //   addFile(index);
+            // }}
           />
 
           <GenerateReportModal
@@ -483,7 +428,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         }
         options={{
           yes: () => {
-            dataManager.clearWorkspace(true);
+            store.dispatch({
+              action: "workspace.RESET",
+            });
           },
           no: () => {
             handleClose(setClearModal);
@@ -542,7 +489,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       className={classes.topButton}
                       startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                       onClick={() => {
-                        dataManager.letUpdateBeCalledForAutoSave = false;
                         history.goBack();
                       }}
                     >
@@ -576,7 +522,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {/* {props.poke === false ? (
+                  {/* {props.shared === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -600,7 +546,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       </Button>
                     )
                   ) : null} */}
-                  {props.poke === false ? (
+                  {props.shared === false ? (
                     <Button
                       variant="contained"
                       size="small"
@@ -621,7 +567,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       paddingRight: 20,
                     }}
                   >
-                    {props.poke === true ? (
+                    {props.shared === true ? (
                       <Button
                         variant="contained"
                         size="large"
@@ -649,7 +595,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <Plots
                     sharedWorkspace={sharedWorkspace}
                     experimentId={props.experimentId}
-                    workspaceData={workspace}
+                    workspace={workspace}
                   ></Plots>
                 ) : (
                   <Grid

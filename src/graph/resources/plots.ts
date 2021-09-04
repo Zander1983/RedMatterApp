@@ -36,13 +36,15 @@ const commitPlotChange = (plot: Plot) => {
   });
 };
 
-export const createPlot = (
-  clonePlot?: Plot,
-  params?: {
-    id?: PlotID;
-    population?: PopulationID;
-  }
-): Plot => {
+export const createPlot = ({
+  clonePlot,
+  id,
+  population,
+}: {
+  clonePlot?: Plot;
+  id?: PlotID;
+  population?: PopulationID;
+}): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
@@ -66,7 +68,7 @@ export const createPlot = (
     parentPlotId: "",
   };
   if (clonePlot) newPlot = clonePlot;
-  if (params?.id) newPlot.id = params.id;
+  if (id) newPlot.id = id;
   else newPlot.id = createID();
   setupPlot(newPlot);
   return newPlot;
@@ -409,7 +411,7 @@ export const resetOriginalRanges = (plot: Plot) => {
   commitPlotChange(plot);
 };
 
-export const getPlotData = (plot: Plot): [Int32Array, Int32Array] => {
+export const getXandYData = (plot: Plot): [Int32Array, Int32Array] => {
   // if (
   //   plot.axisDataCache !== null &&
   //   plot.axisDataCache.filterGating === filterGating &&

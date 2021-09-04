@@ -13,142 +13,101 @@ import Button from "@material-ui/core/Button";
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
-import dataManager from "graph/dataManagement/dataManager";
-import Gate from "graph/dataManagement/gate/gate";
-import PlotData from "graph/dataManagement/plotData";
 import { snackbarService } from "uno-material-ui";
+import { getGate, getWorkspace } from "graph/utils/workspace";
+import { Gate } from "graph/resources/types";
+import * as GateResource from "graph/resources/types";
+import { store } from "redux/store";
+import { createGate } from "graph/resources/gates";
 
 const classes = {
   table: {},
 };
 
-export default function GateMenu() {
-  const [gates, setGates] = React.useState(dataManager.getAllGates());
-  const [observersSetup, setObserversSetup] = React.useState(false);
-  const [observerIds, setObserverIds] = React.useState([]);
-
-  const resetAll = () => {
-    setGates(dataManager.getAllGates());
-  };
-
-  const resetGates = (gateID: string) => {
-    const subGate = {
-      gate: dataManager.getGate(gateID),
-      gateID: gateID,
-    };
-    const newGates = gates.map((g) => {
-      if (g.gateID === gateID) {
-        return subGate;
-      } else {
-        return g;
-      }
-    });
-    setGates(newGates);
-  };
-
+export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
-    gate.update({
-      color: `rgb(${color.rgb.r},${color.rgb.g},${color.rgb.b})`,
+    gate.color = color;
+    store.dispatch({
+      action: "GATE_UPDATE",
+      payload: { gate },
     });
-    resetGates(gate.id);
+  };
+
+  const setGateName = (gate: Gate, name: any) => {
+    gate.name = name;
+    store.dispatch({
+      action: "GATE_UPDATE",
+      payload: { gate },
+    });
   };
 
   const deleteGate = (gate: Gate) => {
-    dataManager.removeGateFromWorkspace(gate.id);
+    store.dispatch({
+      action: "workspace.DELETE_GATE",
+      payload: { gate: gate },
+    });
   };
 
   const cloneGate = (gate: Gate) => {
-    const { constructor } = gate;
-    const gateState = JSON.parse(JSON.stringify(gate.getState()));
-    gateState.name = gateState.name + " clone";
-    //@ts-ignore
-    const newGate = new constructor(gateState);
-    dataManager.addNewGateToWorkspace(newGate);
-  };
-
-  useEffect(() => {
-    if (!observersSetup) {
-      setObserversSetup(true);
-      setObserverIds([
-        {
-          target: "addNewGateToWorkspace",
-          value: dataManager.addObserver("addNewGateToWorkspace", () => {
-            resetAll();
-          }),
-        },
-        {
-          target: "removeGateFromWorkspace",
-          value: dataManager.addObserver("removeGateFromWorkspace", () => {
-            resetAll();
-          }),
-        },
-        {
-          target: "clearWorkspace",
-          value: dataManager.addObserver("clearWorkspace", () => {
-            resetAll();
-          }),
-        },
-      ]);
-    }
-    return () => {
-      observerIds.forEach((e) => {
-        dataManager.removeObserver(e.terget, e.value);
-      });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const applyGateToAllFiles = async (params: {
-    gateID: string;
-    gate: Gate;
-  }) => {
-    const { gate, gateID } = params;
-    let downloadSnackbar = false;
-    const promises = dataManager.files
-      .filter((e) => {
-        for (const file of dataManager.getAllFiles()) {
-          if (e.id === file.fileID) return false;
-        }
-        return true;
-      })
-      .map((e) => {
-        if (downloadSnackbar === false) {
-          downloadSnackbar = true;
-          snackbarService.showSnackbar("Downloading files...", "info");
-        }
-        return dataManager.downloadFileEvent(e.id);
-      });
-    await Promise.all(promises);
-    let files = dataManager.getAllFiles();
-    const plots = dataManager.getAllPlots();
-    // Check gates that already
-    plots.forEach((plot) => {
-      if (
-        plot.plot.population.length === 1 &&
-        plot.plot.population.filter((plotGate) => plotGate.gate.id === gateID)
-          .length > 0
-      ) {
-        files = files.filter((file) => file.fileID !== plot.plot.file.id);
-      }
+    let newGate = createGate({
+      cloneGate: gate,
     });
-
-    for (const file of files) {
-      const plot = new PlotData();
-      plot.file = file.file;
-      plot.population = [
-        {
-          inverseGating: false,
-          gate: gate,
-        },
-      ];
-      plot.setXAxis(gate.xAxis);
-      plot.setYAxis(gate.yAxis);
-      plot.setXAxisPlotType(gate.xAxisType);
-      plot.setYAxisPlotType(gate.yAxisType);
-      dataManager.addNewPlotToWorkspace(plot);
-    }
-    dataManager.updateWorkspace();
+    newGate.name = gate.name + " clone";
+    store.dispatch({
+      action: "workspace.CREATE_GATE",
+      payload: { newGate },
+    });
   };
+
+  const applyGateToAllFiles = async (gate: Gate) => {
+    //TODO
+    // const { gate, gateID } = params;
+    // let downloadSnackbar = false;
+    // const promises = dataManager.files
+    //   .filter((e) => {
+    //     for (const file of dataManager.getAllFiles()) {
+    //       if (e.id === file.fileID) return false;
+    //     }
+    //     return true;
+    //   })
+    //   .map((e) => {
+    //     if (downloadSnackbar === false) {
+    //       downloadSnackbar = true;
+    //       snackbarService.showSnackbar("Downloading files...", "info");
+    //     }
+    //     return dataManager.downloadFileEvent(e.id);
+    //   });
+    // await Promise.all(promises);
+    // let files = dataManager.getAllFiles();
+    // const plots = dataManager.getAllPlots();
+    // // Check gates that already
+    // plots.forEach((plot) => {
+    //   if (
+    //     plot.plot.population.length === 1 &&
+    //     plot.plot.population.filter((plotGate) => plotGate.gate.id === gateID)
+    //       .length > 0
+    //   ) {
+    //     files = files.filter((file) => file.fileID !== plot.plot.file.id);
+    //   }
+    // });
+    // for (const file of files) {
+    //   const plot = new PlotData();
+    //   plot.file = file.file;
+    //   plot.population = [
+    //     {
+    //       inverseGating: false,
+    //       gate: gate,
+    //     },
+    //   ];
+    //   plot.setXAxis(gate.xAxis);
+    //   plot.setYAxis(gate.yAxis);
+    //   plot.setXAxisPlotType(gate.xAxisType);
+    //   plot.setYAxisPlotType(gate.yAxisType);
+    //   dataManager.addNewPlotToWorkspace(plot);
+    // }
+    // dataManager.updateWorkspace();
+  };
+  const workspace = getWorkspace();
 
   return (
     <TableContainer component={Paper}>
@@ -157,7 +116,7 @@ export default function GateMenu() {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
-            {dataManager.files.length > 1 ? <TableCell></TableCell> : null}
+            {workspace.files.length > 1 ? <TableCell></TableCell> : null}
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
             <TableCell>Type</TableCell>
@@ -166,8 +125,8 @@ export default function GateMenu() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {gates.map((gate) => (
-            <TableRow key={gate.gateID}>
+          {props.gates.map((gate) => (
+            <TableRow key={gate.id}>
               <TableCell>
                 <Button
                   style={{
@@ -175,7 +134,7 @@ export default function GateMenu() {
                     padding: 0,
                     minWidth: 0,
                   }}
-                  onClick={() => deleteGate(gate.gate)}
+                  onClick={() => deleteGate(gate)}
                 >
                   <Delete></Delete>
                 </Button>
@@ -187,12 +146,12 @@ export default function GateMenu() {
                     padding: 0,
                     minWidth: 0,
                   }}
-                  onClick={() => cloneGate(gate.gate)}
+                  onClick={() => cloneGate(gate)}
                 >
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell>
-              {dataManager.files.length > 1 ? (
+              {workspace.files.length > 1 ? (
                 <TableCell>
                   <Button
                     style={{
@@ -208,33 +167,32 @@ export default function GateMenu() {
               ) : null}
               <TableCell>
                 <TextField
-                  value={gate.gate.name}
+                  value={gate.name}
                   inputProps={{ "aria-label": "naked" }}
                   style={{
                     fontSize: 14,
                   }}
                   onChange={(e) => {
                     const newName = e.target.value;
-                    gate.gate.update({ name: newName });
-                    resetGates(gate.gateID);
+                    setGateName(gate, newName);
                   }}
                 />
               </TableCell>
               <TableCell>
                 <HuePicker
-                  color={gate.gate.color}
+                  color={gate.color}
                   width="150px"
                   onChange={(color, _) => {
-                    gate.gate.color =
+                    gate.color =
                       `rgba(${color.rgb.r},${color.rgb.g},` +
                       `${color.rgb.b},${color.rgb.a})`;
-                    setGateColor(gate.gate, color);
+                    setGateColor(gate, color);
                   }}
                 />
               </TableCell>
-              <TableCell>{gate.gate.getGateType()}</TableCell>
-              <TableCell>{gate.gate.xAxis}</TableCell>
-              <TableCell>{gate.gate.yAxis}</TableCell>
+              <TableCell>{gate.gateType}</TableCell>
+              <TableCell>{gate.xAxis}</TableCell>
+              <TableCell>{gate.yAxis}</TableCell>
             </TableRow>
           ))}
         </TableBody>

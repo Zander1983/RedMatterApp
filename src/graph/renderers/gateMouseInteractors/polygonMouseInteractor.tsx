@@ -1,4 +1,3 @@
-import PolygonGate from "../../dataManagement/gate/polygonGate";
 import { euclidianDistance2D } from "../../utils/euclidianPlane";
 import GateMouseInteractor, {
   Point,
@@ -7,7 +6,6 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import Gate from "graph/dataManagement/gate/gate";
 
 export const selectPointDist = 15;
 
@@ -87,10 +85,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   private validateGateOnSpace(gate: Gate) {
     return (
-      gate.xAxis === this.plotter.plotData.xAxis &&
-      gate.yAxis === this.plotter.plotData.yAxis &&
-      gate.xAxisType === this.plotter.plotData.xPlotType &&
-      gate.yAxisType === this.plotter.plotData.yPlotType
+      gate.xAxis === this.plotter.plot.xAxis &&
+      gate.yAxis === this.plotter.plot.yAxis &&
+      gate.xAxisType === this.plotter.plot.xPlotType &&
+      gate.yAxisType === this.plotter.plot.yPlotType
     );
   }
 
@@ -204,8 +202,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     checkNotNullOrUndefined(yAxis);
 
     let originalRanges = [
-      this.plotter.plotData.ranges.get(this.plotter.plotData.xAxis),
-      this.plotter.plotData.ranges.get(this.plotter.plotData.yAxis),
+      this.plotter.plot.ranges.get(this.plotter.plot.xAxis),
+      this.plotter.plot.ranges.get(this.plotter.plot.yAxis),
     ];
 
     const newGate = new PolygonGate({
@@ -215,15 +213,15 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         return e;
       }),
       xAxis: xAxis,
-      xAxisType: this.plotter.plotData.xPlotType,
+      xAxisType: this.plotter.plot.xPlotType,
       xAxisOriginalRanges: originalRanges[0],
       yAxis: yAxis,
-      yAxisType: this.plotter.plotData.yPlotType,
+      yAxisType: this.plotter.plot.yPlotType,
       yAxisOriginalRanges: originalRanges[1],
-      parents: this.plotter.plotData.population.map((e) => e.gate),
+      parents: this.plotter.plot.population.map((e) => e.gate),
     });
 
-    for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
+    for (const gate of this.plotter.plot.population.map((e) => e.gate)) {
       gate.children.push(newGate);
     }
 

@@ -1,4 +1,6 @@
+import numeral from "numeral";
 import React, { useEffect } from "react";
+
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
@@ -10,35 +12,22 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
-import dataManager from "graph/dataManagement/dataManager";
-import PlotStats from "graph/dataManagement/stats";
-import ObserverList from "graph/dataManagement/observeList";
-import PlotData from "graph/dataManagement/plotData";
-import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
-
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import numeral from "numeral";
-
-interface Dictionary {
-  [key: string]: number;
-}
-
-const classes = {
-  table: {},
-};
+import { Gate, Plot, PopulationGateType } from "graph/resources/types";
+import { store } from "redux/store";
+import { createPlot } from "graph/resources/plots";
+import PlotStats from "graph/utils/stats";
+import { getFile, getGate, getPopulation } from "graph/utils/workspace";
 
 const statsProvider = new PlotStats();
 
 export default function PlotMenu(props: {
-  onStatChange: (statObj: any) => void;
-}): JSX.Element {
-  const observerListProvider = new ObserverList();
-  const [plots, setPlots] = React.useState([]);
-  const [setup, setSetup] = React.useState(false);
+  plots: Plot[];
+  onStatChange: (params: { x: any; value: any }) => void;
+}) {
   const [statsX, setStatsX] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
@@ -46,38 +35,51 @@ export default function PlotMenu(props: {
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
 
-  const setupObservers = () => {
-    observerListProvider.setup(
-      (newList: ObserversFunctionality[]) => {
-        setPlots(newList);
-      },
-      () => dataManager.getAllPlots().map((e) => e.plot),
-      (id: string) => dataManager.getPlot(id),
-      dataManager,
-      ["addNewPlotToWorkspace", "removePlotFromWorkspace", "clearWorkspace"],
-      ["plotUpdated"]
-    );
-  };
-
   const getDropdownValue = (e: string) => {
-    let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.STATS;
+    let statObj: {
+      [key: string]: number;
+    } = COMMON_CONSTANTS.DROPDOWNS.STATS;
     return statObj[e];
   };
 
-  const deletePlot = (plot: PlotData, index: number) => {
-    dataManager.removePlotFromWorkspace(plot.id);
-    percentages.splice(index, 1);
+  const setPlotLabel = (plot: Plot, label: string) => {
+    plot.label = label;
+    store.dispatch({
+      action: "PLOT_UPDATE",
+      payload: { plot },
+    });
   };
 
-  const clonePlot = (plot: PlotData) => {
-    const newPlot = new PlotData();
-    newPlot.setState(plot.getState());
-    plot.setupPlot();
-    dataManager.addNewPlotToWorkspace(newPlot);
+  // const cloneGate = (gate: Plot) => {
+  //   let newGate = createGate({
+  //     cloneGate: gate,
+  //   });
+  //   newGate.name = gate.name + " clone";
+  //   store.dispatch({
+  //     action: "workspace.CREATE_GATE",
+  //     payload: { newGate },
+  //   });
+  // };
+
+  const deletePlot = (plot: Plot) => {
+    store.dispatch({
+      action: "workspace.DELETE_PLOT",
+      payload: { plot: plot },
+    });
+  };
+
+  const clonePlot = (plot: Plot) => {
+    let newPlot = createPlot({
+      clonePlot: plot,
+    });
+    newPlot.label = plot.label + " clone";
+    store.dispatch({
+      action: "workspace.ADD_PLOT",
+      payload: { plot: newPlot },
+    });
   };
 
   let percentages: any[] = [];
-  const [sd, setSd] = React.useState(null);
 
   const getMean = (list: Array<number>) => {
     let sum = 0;
@@ -102,20 +104,9 @@ export default function PlotMenu(props: {
     return sd;
   };
 
-  useEffect(() => {
-    if (!setup) {
-      setupObservers();
-      setSetup(true);
-    }
-    return () => {
-      observerListProvider.kill();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sd]);
-
   return (
     <TableContainer component={Paper}>
-      <Table style={classes.table}>
+      <Table>
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
@@ -167,7 +158,7 @@ export default function PlotMenu(props: {
           </TableRow>
         </TableHead>
         <TableBody>
-          {plots.map((plot, i) => {
+          {props.plots.map((plot, i) => {
             const type =
               plot.xAxis === plot.yAxis ? "histogram" : "scatterplot";
             let stats = statsProvider.getPlotStats(plot, statsX, statsY);
@@ -195,7 +186,7 @@ export default function PlotMenu(props: {
                       padding: 0,
                       minWidth: 0,
                     }}
-                    onClick={() => deletePlot(plot, i)}
+                    onClick={() => deletePlot(plot)}
                   >
                     <Delete></Delete>
                   </Button>
@@ -223,26 +214,28 @@ export default function PlotMenu(props: {
                     }}
                     onChange={(e) => {
                       const newLabel = e.target.value;
-                      plot.update({ label: newLabel });
+                      setPlotLabel(plot, newLabel);
                     }}
                   />
                 </TableCell>
-                <TableCell>{plot.file.name}</TableCell>
+                <TableCell>
+                  {getFile(getPopulation(plot.population).file).name}
+                </TableCell>
                 <TableCell>
                   {plot.population.length === 0
                     ? "All"
-                    : plot.population
-                        .reverse()
-                        .map((e: any) => (
+                    : getPopulation(plot.population)
+                        .gates.reverse()
+                        .map((e: PopulationGateType) => (
                           <b
                             style={{
-                              color: e.gate.color,
+                              color: getGate(e.gate).color,
                             }}
                           >
                             {e.inverseGating ? (
                               <b style={{ color: "#f00" }}>not </b>
                             ) : null}{" "}
-                            {e.gate.name}
+                            {getGate(e.gate).name}
                           </b>
                         ))
                         //@ts-ignore

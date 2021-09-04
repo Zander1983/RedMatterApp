@@ -218,20 +218,20 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 }
 
-// export const resetPlotSizes = (id?: string) => {
-//   let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
-//   if (id) tPlots = [id];
-//   for (const id of tPlots) {
-//     let docIdRef = document.getElementById(`canvas-${id}`);
-//     let docDisplayRef: any = document.getElementById(`display-ref-${id}`);
-//     let docBarRef: any = document.getElementById(`bar-ref-${id}`);
+export const resetPlotSizes = (id?: string) => {
+  let tPlots = dataManager.getAllPlots().map((e) => e.plotID);
+  if (id) tPlots = [id];
+  for (const id of tPlots) {
+    let docIdRef = document.getElementById(`canvas-${id}`);
+    let docDisplayRef: any = document.getElementById(`display-ref-${id}`);
+    let docBarRef: any = document.getElementById(`bar-ref-${id}`);
 
-//     if (docBarRef && docDisplayRef && docIdRef) {
-//       let width = docDisplayRef.offsetWidth - 55;
-//       let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-//       docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
-//     }
-//   }
-// };
+    if (docBarRef && docDisplayRef && docIdRef) {
+      let width = docDisplayRef.offsetWidth - 55;
+      let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
+      docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+    }
+  }
+};
 
 export default PlotController;

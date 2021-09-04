@@ -3,13 +3,10 @@ import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import { Button, CircularProgress, Divider, Grid } from "@material-ui/core";
-import FCSFile from "graph/dataManagement/fcsFile";
-import dataManager from "graph/dataManagement/dataManager";
-import PlotData from "graph/dataManagement/plotData";
 import { snackbarService } from "uno-material-ui";
-import { ConsoleSqlOutlined, DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
-import useForceUpdate from "hooks/forceUpdate";
+import { File } from "graph/resources/types";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -56,22 +53,19 @@ function AddFileModal(props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   isShared: boolean;
-  downloaded: any[];
-  filesMetadata: any[];
-  downloading: any[];
-  onDownloadFileEvents: (fileIds: any[]) => void;
-  addFileToWorkspace: (index: number) => void;
+  files: File[];
+  // downloaded: any[];
+  // filesMetadata: any[];
+  // downloading: any[];
+  // onDownloadFileEvents: (fileIds: any[]) => void;
+  // addFileToWorkspace: (index: number) => void;
 }): JSX.Element {
   const classes = useStyles();
 
   const [filesMetadata, setFilesMetadata] = React.useState([]);
 
   useEffect(() => {
-    setFilesMetadata(props.filesMetadata);
-    dataManager.addObserver("clearWorkspace", () => {
-      downloaded = [];
-      dataManager.setWorkspaceLoading(false);
-    });
+    setFilesMetadata(props.files);
     return () => {
       downloaded = [];
     };

@@ -1,8 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { PlotID } from "graph/resources/types";
-import { store } from "redux/store";
 
-class Canvas {
+export class CanvasManager {
   private context: any | null = null;
   private useCanvasCalled = false;
 
@@ -12,6 +11,12 @@ class Canvas {
   width: number = 0;
   height: number = 0;
   scale: number = 2;
+
+  setMouseEvent: (type: string, x: number, y: number) => void;
+
+  constructor(setMouseEvent: (type: string, x: number, y: number) => void) {
+    this.setMouseEvent = setMouseEvent;
+  }
 
   setCanvasState(state: {
     id: PlotID;
@@ -60,10 +65,7 @@ class Canvas {
       //@ts-ignore
       const y = event.offsetY;
       const type = event.type;
-      store.dispatch({
-        action: "workspace.MOUSE_EVENT",
-        payload: { mouseEvent: { type, x, y } },
-      });
+      this.setMouseEvent(type, x, y);
     };
 
     const addCanvasListener = (type: string, func: Function) => {
@@ -97,18 +99,23 @@ class Canvas {
   }
 }
 
-const CanvasComponent = (props: { plotID: PlotID }) => {
-  const [canvas, setCanvas] = useState<Canvas | null>(null);
+const CanvasComponent = (props: {
+  plotID: PlotID;
+  setCanvas: (canvas: CanvasManager) => void;
+  setMouseEvent: (type: string, x: number, y: number) => void;
+}) => {
+  const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   let canvasRef = useRef(null);
 
   useEffect(() => {
     if (!canvas) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      const newCanvas = new Canvas();
+      const newCanvas = new CanvasManager(props.setMouseEvent);
       canvas.setUseCanvasUsed(true);
       setCanvas(newCanvas);
       // eslint-disable-next-line react-hooks/exhaustive-deps
       canvasRef = newCanvas.useCanvas(canvasRef);
+      props.setCanvas(canvas);
     }
     return () => {
       canvas.setUseCanvasUsed(false);
@@ -136,12 +143,5 @@ const CanvasComponent = (props: { plotID: PlotID }) => {
     />
   );
 };
-
-/*
-  Canvas component does 3 things:
-  - Instance = creates a <canvas>
-  - Reset = clears the <canvas>
-  - Get = returns <canvas> context 2D ref
-*/
 
 export default CanvasComponent;

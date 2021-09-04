@@ -72,11 +72,16 @@ export interface OvalGate extends Gate2D {
 
 export interface File {
   id: FileID;
-  name: string;
-  src: SrcType;
+  experimentId: string;
+  createdOn: Date;
+  fileSize: number;
+  eventCount: number;
+  name?: string;
+  src?: SrcType;
   axes: AxisName[];
   label: string;
-  plotTypes: PlotType[];
+  plotTypes?: PlotType[];
+  downloaded: boolean;
 }
 
 export interface EventsRequestResponse {
@@ -163,12 +168,6 @@ export interface DatasetMetadata {
   requestedPop: PopulationGateType[];
 }
 
-export interface MouseEvent {
-  type: string;
-  x: number;
-  y: number;
-}
-
 export interface Workspace {
   id: WorkspaceID;
   gates: Gate[];
@@ -177,5 +176,4 @@ export interface Workspace {
   populations: Population[];
   previousStates: Workspace[];
   mouseGateState: GatingState;
-  mouseEvent: MouseEvent;
 }

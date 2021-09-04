@@ -1,52 +1,47 @@
-/*
-  Plot - Responsible for keeping all rendering state syncronized.
-*/
+import { useEffect, useState } from "react";
+
+import { Gate, Plot } from "graph/resources/types";
+
+import CanvasComponent, {
+  CanvasManager,
+} from "graph/components/CanvasComponent";
+
 import PlotterFactory from "graph/renderers/plotters/plotterFactory";
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
-import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-
 import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import { Plot } from "graph/resources/types";
-import CanvasComponent from "graph/components/CanvasComponent";
-import { useState } from "react";
+import * as PlotResource from "graph/resources/plots";
+import { getGate, getPopulation } from "graph/utils/workspace";
 
 const plotterFactory = new PlotterFactory();
 
+const typeToClassType = {
+  Oval: OvalMouseInteractor,
+  Polygon: PolygonMouseInteractor,
+  Histogram: Error,
+};
+
 const PlotRenderer = (props: { plot: Plot }) => {
+  const [canvas, setCanvas] = useState<CanvasManager | null>(null);
+  const [configured, setConfigured] = useState<boolean>(false);
+
   const plot = props.plot;
-  const [canvas, setCanvas] = useState(null);
-  const unsetGating: Function;
 
   // Mouse interaction objects
-  const mouseInteractors: MouseInteractor[] = [];
+  let mouseInteractors: MouseInteractor[] = [];
   let ovalMouseInteractor: OvalMouseInteractor | null = null;
   let polygonMouseInteractor: PolygonMouseInteractor | null = null;
 
   // Rendering objects
-  let mouseInteractorPlugin: GatePlotterPlugin | null = null;
   let plotter: GraphPlotter | null = null;
   let scatterPlotter: ScatterPlotter | null = null;
   let histogramPlotter: HistogramPlotter | null = null;
 
-  /* Whenever plot data gets updated, should be called to rerender
-     what changed */
-  const update = () => {
-    // Plot type update
-    if (plot.xAxis === plot.yAxis) {
-      plotter = histogramPlotter;
-    } else {
-      plotter = scatterPlotter;
-    }
-
-    draw();
-  };
-
-  const setup = () => {
+  const configure = () => {
     constructPlotters();
     plotter = scatterPlotter;
 
@@ -65,35 +60,31 @@ const PlotRenderer = (props: { plot: Plot }) => {
     setTimeout(() => draw(), 20);
   };
 
+  const update = () => {
+    if (plot.xAxis === plot.yAxis) {
+      plotter = histogramPlotter;
+    } else {
+      plotter = scatterPlotter;
+    }
+
+    draw();
+  };
+
   const draw = () => {
-    if (plot === undefined || plot === null || !validateReady()) return;
+    if (!validateReady()) return;
 
     setCanvasState();
     setPlotterState();
 
     plotter.update();
 
-    canvasRender();
+    canvas.render();
 
     plotter.draw();
   };
 
-  const canvasRender = () => {
-    canvas.canvasRender();
-  };
-
-  const setPlotRender = (plotRender: Function) => {
-    plotRender = plotRender;
-  };
-
-  const setPlotData = (plotData: PlotData) => {
-    plot = plotData;
-  };
-
-  const typeToClassType = {
-    Oval: OvalMouseInteractor,
-    Polygon: PolygonMouseInteractor,
-    Histogram: Error,
+  const unsetGating = () => {
+    console.log("unsetGating");
   };
 
   const setGating = (
@@ -101,14 +92,14 @@ const PlotRenderer = (props: { plot: Plot }) => {
     start: boolean
   ) => {
     mouseInteractors
-      .filter((e) => e instanceof Plot.typeToClassType[type])
+      .filter((e) => e instanceof typeToClassType[type])
       .forEach((e) => {
         e.setMouseInteractorState({
           plotID: plot.id,
           yAxis: plot.xAxis,
           xAxis: plot.yAxis,
           rerender: () => {
-            canvasRender();
+            canvas.render();
             plotter.draw();
           },
         });
@@ -116,10 +107,6 @@ const PlotRenderer = (props: { plot: Plot }) => {
         e.unsetGating = unsetGating;
         start ? e.start() : e.end();
       });
-  };
-
-  const registerMouseEvent = (type: string, x: number, y: number) => {
-    mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
   };
 
   const validateReady = (): boolean => {
@@ -152,23 +139,23 @@ const PlotRenderer = (props: { plot: Plot }) => {
   };
 
   const setPlotterState = () => {
-    /*
-      Fills up data to feed all plotters. It's the resposability of a plotter to
-      pick only what it needs.
-    */
-    const data = plot.getXandYData();
-    const ranges = plot.getXandYRanges();
+    const data = PlotResource.getXandYData(plot);
+    const ranges = PlotResource.getXandYRanges(plot);
+    const gates: Gate[] = [
+      ...plot.gates.map((e) => getGate(e)),
+      ...getPopulation(plot.population).gates.map((e) => getGate(e.gate)),
+    ];
     const plotterState = {
-      plotData: plot,
-      xAxis: data.xAxis,
-      yAxis: data.yAxis,
+      plot: plot,
+      xAxis: data[0],
+      yAxis: data[1],
       xAxisName: plot.xAxis,
       yAxisName: plot.yAxis,
       width: plot.plotWidth,
       height: plot.plotHeight,
       scale: plot.plotScale,
       direction: plot.histogramAxis,
-      gates: plot.getGatesAndPopulation(),
+      gates: gates,
       xRange: ranges.x,
       yRange: ranges.y,
     };
@@ -178,11 +165,28 @@ const PlotRenderer = (props: { plot: Plot }) => {
   const contructMouseInteractors = () => {
     ovalMouseInteractor = new OvalMouseInteractor();
     polygonMouseInteractor = new PolygonMouseInteractor();
-    // by default
     mouseInteractors = [ovalMouseInteractor, polygonMouseInteractor];
   };
 
-  return <CanvasComponent plotID={plot.id} />;
+  useEffect(() => {
+    if (!configured) {
+      setConfigured(true);
+      configure();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(update);
+
+  return (
+    <CanvasComponent
+      plotID={plot.id}
+      setCanvas={setCanvas}
+      setMouseEvent={(type, x, y) => {
+        mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
+      }}
+    />
+  );
 };
 
 export default PlotRenderer;
