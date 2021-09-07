@@ -10,7 +10,7 @@ import * as PlotResource from "graph/resources/plots";
 export const leftPadding = 70;
 export const rightPadding = 50;
 export const topPadding = 50;
-export const bottomPadding = 10;
+export const bottomPadding = 50;
 
 export interface GraphPlotterState extends PlotterState {
   plot: Plot;

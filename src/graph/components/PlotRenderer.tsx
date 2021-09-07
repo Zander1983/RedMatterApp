@@ -63,6 +63,9 @@ const PlotRenderer = (props: { plot: Plot }) => {
   const draw = () => {
     if (!validateReady()) return;
 
+    setCanvasState();
+    canvas.render();
+
     let selectedPlotter = plotter;
     if (plot.xAxis === plot.yAxis) {
       setPlotter(histogramPlotter);
@@ -72,18 +75,23 @@ const PlotRenderer = (props: { plot: Plot }) => {
       selectedPlotter = scatterPlotter;
     }
 
-    setCanvasState();
     setPlotterState(selectedPlotter);
-
     selectedPlotter.update();
-
-    canvas.render();
-
     selectedPlotter.draw();
   };
 
+  const setCanvasState = () => {
+    const canvasState = {
+      id: plot.id,
+      width: plot.plotWidth,
+      height: plot.plotHeight,
+      scale: plot.plotScale,
+    };
+    canvas.setCanvasState(canvasState);
+  };
+
   const unsetGating = () => {
-    console.log("unsetGating");
+    mouseInteractors.forEach((e) => e.unsetGating());
   };
 
   const setGating = (
@@ -111,16 +119,6 @@ const PlotRenderer = (props: { plot: Plot }) => {
         e.unsetGating = unsetGating;
         start ? e.start() : e.end();
       });
-  };
-
-  const setCanvasState = () => {
-    const canvasState = {
-      id: plot.id,
-      width: plot.plotWidth,
-      height: plot.plotHeight,
-      scale: plot.plotScale,
-    };
-    canvas.setCanvasState(canvasState);
   };
 
   const setPlotterState = (inpPlotter?: GraphPlotter) => {
@@ -187,15 +185,19 @@ const PlotRenderer = (props: { plot: Plot }) => {
       setGating("oval", true, selectedMouseInteractors, scatterPlotter);
       //@ts-ignore
       setGating("oval", false, selectedMouseInteractors, scatterPlotter);
+
+      setTimeout(() => draw(), 1000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
 
-  useEffect(draw);
+  useEffect(draw, [props.plot]);
 
   return (
     <CanvasComponent
       plotID={plot.id}
+      width={plot.plotWidth}
+      height={plot.plotHeight}
       setCanvas={(canvas) => {
         setCanvas(canvas);
       }}

@@ -104,12 +104,12 @@ class PlotController extends React.Component<PlotControllerProps> {
     }
   }
 
-  setPlotsSize(layouts: any) {
-    for (let i = 0; i < layouts.length; i++) {
-      let plotId = layouts[i].i;
-      let id = `canvas-${plotId}`;
-      let displayRef = `display-ref-${plotId}`;
-      let barRef = `bar-ref-${plotId}`;
+  setPlotsSize() {
+    const plots = this.props.workspace.plots;
+    for (let plot of plots) {
+      let id = `canvas-${plot.id}`;
+      let displayRef = `display-ref-${plot.id}`;
+      let barRef = `bar-ref-${plot.id}`;
 
       let docIdRef = document.getElementById(id);
       let docDisplayRef: any = document.getElementById(displayRef);
@@ -118,9 +118,9 @@ class PlotController extends React.Component<PlotControllerProps> {
       if (docBarRef && docDisplayRef && docIdRef) {
         let width = docDisplayRef.offsetWidth - 55;
         let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-        const plot = getPlot(plotId);
         plot.plotHeight = height;
-        plot.plotHeight = width;
+        plot.plotWidth = width;
+        docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
         store.dispatch({
           type: "workspace.UPDATE_PLOT",
           payload: { plot },
@@ -159,6 +159,13 @@ class PlotController extends React.Component<PlotControllerProps> {
       type: "workspace.UPDATE_PLOTS",
       payload: { plots: plotChanges },
     });
+  }
+
+  componentWillReceiveProps(nextProps: any) {
+    if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
+      setTimeout(() => this.setPlotsSize());
+    }
+    this.setState(nextProps);
   }
 
   render() {
@@ -222,7 +229,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                       this.resizeCanvas(layout);
                     }}
                     onResizeStop={(layout: any) => {
-                      this.setPlotsSize(layout);
+                      this.setPlotsSize();
                     }}
                   >
                     {

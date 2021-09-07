@@ -11,10 +11,10 @@ export const graphActions = {
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
   UPDATE_PLOT: "workspace.UPDATE_PLOT",
   UPDATE_GATE: "workspace.UPDATE_GATE",
-  REMOVE_GATE: "workspace.REMOVE_GATE",
-  REMOVE_POPULATION: "workspace.REMOVE_POPULATION",
-  REMOVE_PLOT: "workspace.REMOVE_PLOT",
-  REMOVE_FILE: "workspace.REMOVE_FILE",
+  DELETE_GATE: "workspace.DELETE_GATE",
+  DELETE_POPULATION: "workspace.DELETE_POPULATION",
+  DELETE_PLOT: "workspace.DELETE_PLOT",
+  DELETE_FILE: "workspace.DELETE_FILE",
   RANGE_CHANGE: "workspace.RANGE_CHANGE",
   MOUSE_EVENT: "workspace.MOUSE_EVENT",
   GATE_METADATA_UPDATE: "workspace.GATE_METADATA_UPDATE",
@@ -151,22 +151,28 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
       };
 
-    case graphActions.REMOVE_GATE:
+    case graphActions.DELETE_GATE:
       return {
         ...state,
       };
 
-    case graphActions.REMOVE_POPULATION:
+    case graphActions.DELETE_POPULATION:
       return {
         ...state,
       };
 
-    case graphActions.REMOVE_PLOT:
+    case graphActions.DELETE_PLOT:
+      const deletePlot: Plot = action.payload.plot;
+      if (!state.plots.find((e) => e.id === deletePlot.id)) {
+        console.error("[workspace.DELETE_PLOT] Plot does not exist");
+        return state;
+      }
+      state.plots = state.plots.filter((e) => e.id !== deletePlot.id);
       return {
         ...state,
       };
 
-    case graphActions.REMOVE_FILE:
+    case graphActions.DELETE_FILE:
       return {
         ...state,
       };

@@ -85,10 +85,8 @@ export class CanvasManager {
 
     this.canvasRender = () => {
       const { width, height } = canvas.getBoundingClientRect();
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width * this.scale;
-        canvas.height = height * this.scale;
-      }
+      canvas.width = width * this.scale;
+      canvas.height = height * this.scale;
       context.fillStyle = "#fff";
       context.fillRect(0, 0, canvas.width, canvas.height);
       // canvas is now ready to be drawn on.
@@ -105,6 +103,8 @@ export class CanvasManager {
 
 const CanvasComponent = (props: {
   plotID: PlotID;
+  width: number;
+  height: number;
   setCanvas: (canvas: CanvasManager) => void;
   setMouseEvent: (type: string, x: number, y: number) => void;
 }) => {
@@ -138,8 +138,8 @@ const CanvasComponent = (props: {
       style={{
         backgroundColor: "#fff",
         textAlign: "center",
-        width: canvas?.width,
-        height: canvas?.height,
+        width: props.width,
+        height: props.height,
         borderRadius: 5,
         boxShadow: "1px 3px 4px #bbd",
         flexGrow: 1,
