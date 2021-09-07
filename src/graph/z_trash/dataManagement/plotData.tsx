@@ -616,7 +616,7 @@ export default class PlotData extends ObserversFunctionality {
         : targetAxis;
     let range = this.ranges.get(axisName);
 
-    let axis: Int32Array | number[] = this.getAxis(
+    let axis: Float32Array | number[] = this.getAxis(
       axisName,
       externalPopulation
     );

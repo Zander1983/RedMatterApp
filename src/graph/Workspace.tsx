@@ -35,6 +35,7 @@ import { downloadFileMetadata } from "services/FileService";
 import { getFile } from "./utils/workspace";
 import { FileID, Workspace as WorkspaceType } from "./resources/types";
 import { store } from "redux/store";
+import PlotController from "./components/workspaces/PlotController";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -366,8 +367,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
     handleOpen(setLinkShareModalOpen);
   };
 
-  console.log("current workspace=", workspace);
-
   return (
     <div
       style={{
@@ -606,11 +605,11 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
 
               <Grid>
                 {!loading ? (
-                  <Plots
+                  <PlotController
                     sharedWorkspace={sharedWorkspace}
                     experimentId={props.experimentId}
                     workspace={workspace}
-                  ></Plots>
+                  ></PlotController>
                 ) : (
                   <Grid
                     container

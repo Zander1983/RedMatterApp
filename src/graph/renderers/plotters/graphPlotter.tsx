@@ -21,8 +21,8 @@ export interface GraphPlotterState extends PlotterState {
 
   gates?: Gate[];
 
-  xAxis: Int32Array;
-  yAxis: Int32Array;
+  xAxis: Float32Array;
+  yAxis: Float32Array;
 
   xAxisName?: string;
   yAxisName?: string;
@@ -56,8 +56,8 @@ export default class GraphPlotter extends Plotter {
   width: number = 0;
   height: number = 0;
   scale: number = 2;
-  xAxis: Int32Array;
-  yAxis: Int32Array;
+  xAxis: Float32Array;
+  yAxis: Float32Array;
   xAxisName: string;
   yAxisName: string;
   xLabels: Label[] = [];

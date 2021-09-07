@@ -14,8 +14,12 @@ export class CanvasManager {
 
   setMouseEvent: (type: string, x: number, y: number) => void;
 
-  constructor(setMouseEvent: (type: string, x: number, y: number) => void) {
+  constructor(
+    setMouseEvent: (type: string, x: number, y: number) => void,
+    ref: any
+  ) {
     this.setMouseEvent = setMouseEvent;
+    this.useCanvas(ref);
   }
 
   setCanvasState(state: {
@@ -108,23 +112,24 @@ const CanvasComponent = (props: {
   let canvasRef = useRef(null);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!canvas && canvasRef.current) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      const newCanvas = new CanvasManager(props.setMouseEvent);
-      canvas.setUseCanvasUsed(true);
+      const newCanvas = new CanvasManager(props.setMouseEvent, canvasRef);
       setCanvas(newCanvas);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      canvasRef = newCanvas.useCanvas(canvasRef);
-      props.setCanvas(canvas);
+      newCanvas.setUseCanvasUsed(true);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      props.setCanvas(newCanvas);
     }
     return () => {
-      canvas.setUseCanvasUsed(false);
+      if (canvas) {
+        canvas.setUseCanvasUsed(false);
+      }
     };
-  }, [canvasRef]);
+  }, [canvasRef.current]);
 
   const id = `canvas-${props.plotID}`;
 
-  if (canvas === null) return null;
   return (
     <canvas
       onMouseDown={(e) => {
@@ -133,8 +138,8 @@ const CanvasComponent = (props: {
       style={{
         backgroundColor: "#fff",
         textAlign: "center",
-        width: canvas.width,
-        height: canvas.height,
+        width: canvas?.width,
+        height: canvas?.height,
         borderRadius: 5,
         boxShadow: "1px 3px 4px #bbd",
         flexGrow: 1,

@@ -75,7 +75,7 @@ const AddFileModal = React.memo(
         props.experimentId
       );
       setDowloading(downloading.filter((e) => e !== fileId));
-      PlotResource.createNewPlotFromFile(getFile(file));
+      await PlotResource.createNewPlotFromFile(getFile(file));
     };
 
     const downloadAll = () => {

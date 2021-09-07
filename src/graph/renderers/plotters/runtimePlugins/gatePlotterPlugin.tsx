@@ -33,21 +33,21 @@ export default abstract class Gate2DPlotterPlugin extends PlotterPlugin {
   /* Every point that is inside the current available gates
      is painted a certain color. It's up to the children to
      determine which points are present or not */
-  protected getPointColors_AFTER(index: number, ret: string[]): string[] {
-    //TODO
-    return [];
-    // this.gates.forEach((gate) => {
-    //   if (gate.color !== null) {
-    //     this.plotter.xAxis.forEach((e, i) => {
-    //       const p = { x: e, y: this.plotter.yAxis[i] };
-    //       if (gate.isPointInside(p)) {
-    //         ret[i] = gate.color;
-    //       }
-    //     });
-    //   }
-    // });
-    // return ret;
-  }
+  // protected getPointColors_AFTER(index: number, ret: string[]): string[] {
+  //TODO
+  // return [];
+  // this.gates.forEach((gate) => {
+  //   if (gate.color !== null) {
+  //     this.plotter.xAxis.forEach((e, i) => {
+  //       const p = { x: e, y: this.plotter.yAxis[i] };
+  //       if (gate.isPointInside(p)) {
+  //         ret[i] = gate.color;
+  //       }
+  //     });
+  //   }
+  // });
+  // return ret;
+  // }
 
   protected abstract drawGate(gate: Gate): void;
   protected abstract drawGating(): void;

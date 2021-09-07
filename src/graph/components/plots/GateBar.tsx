@@ -236,7 +236,7 @@ export default function GateBar(props: {
   //             }
   //           }
   //         }}
-  //         onReset={() => console.log("emptied0")}
+  //         onReset={() => console.log("emptied")}
   //         renderOption={(option, { selected }) => (
   //           <Button
   //             onClick={() => {

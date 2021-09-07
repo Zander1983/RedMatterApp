@@ -6,7 +6,7 @@ import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
 import { Plot } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
-import PlotRenderer from "graph/components/PlotRender";
+import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
 
 const classes = {
@@ -131,10 +131,10 @@ function PlotComponent(props: {
         <Divider style={{ marginBottom: 10 }}></Divider>
       </div>
 
-      {/* <SideSelector
+      <SideSelector
         {...props}
         canvasComponent={<PlotRenderer plot={plot}></PlotRenderer>}
-      ></SideSelector> */}
+      ></SideSelector>
     </div>
   );
 }

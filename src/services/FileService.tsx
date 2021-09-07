@@ -33,7 +33,6 @@ export const downloadFileMetadata = async (
     let file: any = {};
     file.createdOn = new Date(newFile.createdOn);
     file.name = file.label = newFile.label;
-    file.axes = newFile.channels;
     file.experimentId = newFile.experimentId;
     file.fileSize = newFile.fileSize;
     file.eventCount = newFile.eventCount;
@@ -96,7 +95,7 @@ export const downloadFileEvent = async (
   if (file.events.length > 2000)
     //@ts-ignore
     file.events = file.events.slice(0, 2000);
-  let newFile = createFile({
+  let newFile = await createFile({
     requestData: file,
     id: fileId,
   });

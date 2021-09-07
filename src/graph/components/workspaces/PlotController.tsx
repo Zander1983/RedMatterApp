@@ -5,7 +5,12 @@ import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
 import { Divider } from "@material-ui/core";
-import { getFile, getPopulation, getWorkspace } from "graph/utils/workspace";
+import {
+  getFile,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
 import { store } from "redux/store";
 import { Plot, Workspace } from "graph/resources/types";
 
@@ -74,7 +79,6 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   constructor(props: PlotControllerProps) {
     super(props);
-    console.log("plot controller called !!!!!!!!!!!!!!!!!!!");
     this.state = {
       plots: props.workspace.plots,
       plotMoving: true,
@@ -96,6 +100,31 @@ class PlotController extends React.Component<PlotControllerProps> {
         let width = docDisplayRef.offsetWidth - 55;
         let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+      }
+    }
+  }
+
+  setPlotsSize(layouts: any) {
+    for (let i = 0; i < layouts.length; i++) {
+      let plotId = layouts[i].i;
+      let id = `canvas-${plotId}`;
+      let displayRef = `display-ref-${plotId}`;
+      let barRef = `bar-ref-${plotId}`;
+
+      let docIdRef = document.getElementById(id);
+      let docDisplayRef: any = document.getElementById(displayRef);
+      let docBarRef: any = document.getElementById(barRef);
+
+      if (docBarRef && docDisplayRef && docIdRef) {
+        let width = docDisplayRef.offsetWidth - 55;
+        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
+        const plot = getPlot(plotId);
+        plot.plotHeight = height;
+        plot.plotHeight = width;
+        store.dispatch({
+          type: "workspace.UPDATE_PLOT",
+          payload: { plot },
+        });
       }
     }
   }
@@ -137,7 +166,6 @@ class PlotController extends React.Component<PlotControllerProps> {
       `Workspace rendered for the ${++PlotController.renderCalls} time`
     );
     let plotGroups: any = {};
-    console.log("trying to render", this.props.workspace);
     for (const plot of this.props.workspace.plots) {
       try {
         const population = this.props.workspace.populations.find(
@@ -194,7 +222,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                       this.resizeCanvas(layout);
                     }}
                     onResizeStop={(layout: any) => {
-                      this.resizeCanvas(layout);
+                      this.setPlotsSize(layout);
                     }}
                   >
                     {

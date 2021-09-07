@@ -17,6 +17,7 @@ import {
   GateID,
   File,
   Population,
+  Gate2D,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -29,7 +30,11 @@ import {
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
 import { store } from "redux/store";
 import * as populations from "./populations";
-import { getDataset } from "./dataset";
+import {
+  getDataset,
+  getDatasetColors,
+  getDatasetFilteredPoints,
+} from "./dataset";
 
 const commitPlotChange = (plot: Plot) => {
   store.dispatch({
@@ -58,9 +63,9 @@ export const createPlot = ({
     xAxis: "",
     yAxis: "",
     positionInWorkspace: [0, 0],
-    plotWidth: 0,
-    plotHeight: 0,
-    plotScale: 0,
+    plotWidth: 400,
+    plotHeight: 400,
+    plotScale: 2,
     xPlotType: "lin",
     yPlotType: "lin",
     histogramAxis: "horizontal",
@@ -72,16 +77,19 @@ export const createPlot = ({
   if (clonePlot) newPlot = clonePlot;
   if (id) newPlot.id = id;
   else newPlot.id = createID();
-  if (population)
+  if (population) {
+    newPlot.ranges = population?.defaultRanges;
+    newPlot.axisPlotTypes = population?.defaultAxisPlotTypes;
     newPlot.population =
       typeof population === "string" ? population : population.id;
+  }
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
-  return newPlot;
+  return setupPlot(newPlot);
 };
 
-export const setupPlot = (plot: Plot, incPopulation?: Population) => {
+export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
   const population = incPopulation
     ? incPopulation
     : getPopulation(plot.population);
@@ -94,7 +102,6 @@ export const setupPlot = (plot: Plot, incPopulation?: Population) => {
       plot.yAxis = fscssc.ssc;
     }
   } catch {}
-
   if (plot.xAxis === "") plot.xAxis = axes[0];
   if (plot.yAxis === "") plot.yAxis = axes[1];
 
@@ -108,7 +115,7 @@ export const setupPlot = (plot: Plot, incPopulation?: Population) => {
     plot.yAxis.toLowerCase().includes("ssc")
       ? "lin"
       : "bi";
-  commitPlotChange(plot);
+  return plot;
 };
 
 export const getPlotOverlays = (plot: Plot) => {
@@ -353,15 +360,9 @@ export const getYAxisName = (plot: Plot) => {
   return plot.yAxis;
 };
 
-export const getAxis = (plot: Plot, targetAxis: AxisName): Int32Array => {
-  const population = getPopulation(plot.population);
-  const file = getFile(population.file);
-  const data = getDataset({
-    file,
-    requestedAxes: [targetAxis],
-    requestedPlotTypes: [plot.axisPlotTypes[targetAxis]],
-    requestedPop: population.gates,
-  });
+export const getAxis = (plot: Plot, targetAxis: AxisName): Float32Array => {
+  const file = getPlotFile(plot);
+  const data = getDataset(file.id);
   return data[targetAxis];
 };
 
@@ -391,7 +392,7 @@ export const getBins = (plot: Plot, binCount?: number, targetAxis?: string) => {
   ) {
     const fcsServices = new FCSServices();
     const linearRange = plot.ranges[axisName];
-    axis = new Int32Array(
+    axis = new Float32Array(
       fcsServices.logicleMarkTransformer(axis, linearRange[0], linearRange[1])
     );
     range = [0.5, 1];
@@ -425,59 +426,17 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   commitPlotChange(plot);
 };
 
-export const getXandYData = (plot: Plot): [Int32Array, Int32Array] => {
-  // if (
-  //   plot.axisDataCache !== null &&
-  //   plot.axisDataCache.filterGating === filterGating &&
-  //   plot.axisDataCache.filterPop === filterPop
-  // )
-  //   return plot.axisDataCache.data;
-  // let dataAxes: any = {};
-  // let size;
-  // for (const axis of plot.file.axes) {
-  //   dataAxes[axis] = plot.getAxisData(axis);
-  //   if (size !== undefined && dataAxes[axis].length !== size) {
-  //     throw Error("Axes of different size were found");
-  //   } else if (size === undefined) size = dataAxes[axis].length;
-  // }
-  // let data = Array(size)
-  //   .fill(0)
-  //   .map((_, i) => {
-  //     const obj: any = {};
-  //     for (const axis of plot.file.axes) {
-  //       obj[axis] = dataAxes[axis][i];
-  //     }
-  //     return obj;
-  //   });
-  // if (filterGating) {
-  //   for (const gate of plot.gates) {
-  //     if (gate.displayOnlyPointsInGate) {
-  //       const x = gate.gate.xAxis;
-  //       const y = gate.gate.yAxis;
-  //       data = data.filter((e: any) => {
-  //         const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-  //         return gate.inverseGating ? !inside : inside;
-  //       });
-  //     }
-  //   }
-  // }
-  // if (filterPop) {
-  //   for (const gate of plot.population) {
-  //     const x = gate.gate.xAxis;
-  //     const y = gate.gate.yAxis;
-  //     data = data.filter((e: any) => {
-  //       const inside = gate.gate.isPointInside({ x: e[x], y: e[y] });
-  //       return gate.inverseGating ? !inside : inside;
-  //     });
-  //   }
-  // }
-
-  return [getAxis(plot, plot.xAxis), getAxis(plot, plot.yAxis)];
+export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
 };
 
 export const findRangeBoundries = (
   plot: Plot,
-  axisData: Int32Array
+  axisData: Float32Array
 ): [number, number] => {
   let min = axisData[0],
     max = axisData[0];
@@ -488,77 +447,22 @@ export const findRangeBoundries = (
   return [min, max];
 };
 
-export const getPointColors = (plot: Plot) => {
+export const getPlotFile = (plot: Plot): File => {
   const population = getPopulation(plot.population);
-  const file = getFile(population.file);
-  const gates = plot.gates
-    .map((gate) => {
-      return { gate, inverseGating: false } as PopulationGateType;
-    })
-    .concat(population.gates);
-  const data = getDataset({
-    file,
-    requestedAxes: file.axes,
-    requestedPlotTypes: file.axes.map((e) => plot.axisPlotTypes[e]),
-    requestedPop: population.gates,
-  });
+  return getFile(population.file);
+};
 
-  const allGates = getWorkspace().gates;
-  const colors: string[] = [];
-
-  const isPointInside = (gate: any, point: number[]): boolean => {
-    const p = {
-      x: point[gate.gate.xAxis],
-      y: point[gate.gate.yAxis],
-    };
-    return gate.gate.isPointInside(p)
-      ? !gate.inverseGating
-      : gate.inverseGating;
-  };
-
-  const gateDFS = (
-    point: number[],
-    gate: any,
-    currentDepth: number
-  ): { depth: number; color: string | null } => {
-    if (!isPointInside(gate, point)) {
-      return { depth: 0, color: null };
-    }
-    let ans = { depth: currentDepth, color: gate.gate.color };
-    for (const child of gate.gate.children) {
-      const cAns = gateDFS(
-        point,
-        { gate: child, inverseGating: false },
-        currentDepth + 1
-      );
-      if (cAns.color !== null && cAns.depth > ans.depth) {
-        ans = cAns;
-      }
-    }
-    return ans;
-  };
-
-  const default_color =
-    plot.population.length === 0
-      ? "#000"
-      : getGate(population.gates[0].gate).color;
-  const popSize = data[file.axes[0]].length;
-  const points: number[][] = [];
-  const axes = Object.keys(data);
-  for (let i = 0; i < popSize; i++) {
-    points.push(axes.map((e) => data[e][i]));
-  }
-  for (let i = 0; i < popSize; i++) {
-    let ans = { depth: 0, color: default_color };
-    for (const gate of plot.gates) {
-      const cAns = gateDFS(points[i], gate, 1);
-      if (cAns.color !== null && cAns.depth > ans.depth) {
-        ans = cAns;
-      }
-    }
-    colors.push(ans.color);
-  }
-  return colors;
+export const getPointColors = (plot: Plot) => {
+  const dataset = getDataset(getPlotFile(plot).id);
+  const gates = plot.gates.map((e) => getGate(e));
+  const populationGates = getPopulation(plot.population).gates.map((e) =>
+    getGate(e.gate)
+  );
+  const stdColor =
+    populationGates.length > 0
+      ? populationGates[populationGates.length - 1].color
+      : "#000";
+  return getDatasetColors(dataset, gates, stdColor);
 };
 
 export const createNewPlotFromFile = async (file: File) => {
@@ -578,15 +482,25 @@ export const createNewPlotFromFile = async (file: File) => {
       payload: { population },
     });
   }
-  const plot = createPlot({ population: population });
+  const plot = createPlot({ population });
   await store.dispatch({
     type: "workspace.ADD_PLOT",
     payload: { plot },
   });
-  setupPlot(plot, population);
+  await setupPlot(plot, population);
 };
 
 export const createSubpopPlot = (plot: Plot, additionalGates?: Gate[]) => {
   // TODO
   // createNewPlotFromFile(getFile(getPopulation(plot.population).file));
+};
+
+export const getXandYDataAndColors = (plot: Plot) => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  const plotGates = plot.gates.map((e) => getGate(e));
+  const colors = getDatasetColors(dataset, plotGates);
+  return { points: filteredPoints, colors };
 };

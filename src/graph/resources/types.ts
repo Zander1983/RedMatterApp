@@ -14,6 +14,7 @@ export type Point = { x: number; y: number };
 export type PointObj = { x: number; y: number };
 export type HistogramAxisType = "" | "horizontal" | "vertical";
 export type Range = [number, number];
+export type Dataset = { [index: string]: Float32Array };
 
 export interface Dimension {
   w: number;
@@ -163,13 +164,6 @@ export interface GatingState {
     yAxis: AxisName;
   };
   histogramGate: {};
-}
-
-export interface DatasetMetadata {
-  file: File;
-  requestedAxes: AxisName[];
-  requestedPlotTypes: PlotType[];
-  requestedPop: PopulationGateType[];
 }
 
 export interface Workspace {

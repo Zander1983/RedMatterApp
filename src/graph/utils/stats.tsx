@@ -61,7 +61,7 @@ export default class PlotStats {
     return { x: x, y: y };
   }
 
-  private getMedianOrMean(val: number, axis: Int32Array) {
+  private getMedianOrMean(val: number, axis: Float32Array) {
     switch (val) {
       case COMMON_CONSTANTS.DROPDOWNS.STATS.Mean:
         return this.getMean(axis);
@@ -73,12 +73,7 @@ export default class PlotStats {
   private getPopulationStats() {
     const plotSize = PlotResource.getXandYData(this.plot)[0].length;
     const file = getFile(getPopulation(this.plot.population).file);
-    const fileSize = DatasetResource.getDataset({
-      file,
-      requestedAxes: [file.axes[0]],
-      requestedPlotTypes: ["lin"],
-      requestedPop: [],
-    })[file.axes[0]].length;
+    const fileSize = DatasetResource.getDataset(file.id)[file.axes[0]].length;
     let percentage: number | string = 100 * (plotSize / fileSize);
     if (percentage < 1) {
       percentage = " < 1%";
@@ -92,7 +87,7 @@ export default class PlotStats {
     };
   }
 
-  private getMean(axis: Int32Array) {
+  private getMean(axis: Float32Array) {
     let sum = 0;
     axis.forEach((e) => (sum += e));
     let count = axis.length;
@@ -111,7 +106,7 @@ export default class PlotStats {
     }
   };
 
-  private getMedianValue(axis: Int32Array) {
+  private getMedianValue(axis: Float32Array) {
     let axisSort = axis.sort((a, b) => {
       return a - b;
     });

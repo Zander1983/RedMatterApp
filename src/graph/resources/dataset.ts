@@ -1,17 +1,21 @@
-import { DatasetMetadata, File } from "./types";
-const ObjectHash = require("object-hash");
+import { getGate } from "graph/utils/workspace";
+import { getPlotFile } from "./plots";
+import {
+  Color,
+  Dataset,
+  File,
+  FileID,
+  Gate,
+  PopulationGateType,
+} from "./types";
+
+import * as GateResource from "graph/resources/gates";
 
 /*
     Public
 */
 
-export type DatasetID = string;
-
-export const createDataset = (
-  data: number[][],
-  file: File,
-  metadata?: DatasetMetadata
-): DatasetID => {
+export const createDataset = (data: number[][], file: File): FileID => {
   if (data.length === 0 || data[0].length === 0) {
     throw Error("Empty dataset");
   }
@@ -37,55 +41,34 @@ export const createDataset = (
     }
   }
 
-  let dataset: Dataset;
+  let dataset: Dataset = {};
   let i = 0;
   for (const list of axes) {
-    dataset[file.axes[i++]] = new Int32Array(list);
-  }
-
-  if (!metadata) {
-    metadata = {
-      file,
-      requestedPop: [],
-      requestedAxes: file.axes,
-      requestedPlotTypes: [],
-    };
+    dataset[file.axes[i++]] = new Float32Array(list);
   }
 
   const storage = new DatasetStorage();
-  const id = storage.store({ metadata, dataset });
+  const id = storage.store(file.id, dataset);
   return id;
 };
 
-export const deleteDataset = (id: DatasetID) => {
+export const deleteDataset = (id: FileID) => {
   const storage = new DatasetStorage();
   storage.delete(id);
 };
 
-export const getDataset = (metadata: DatasetMetadata): Dataset => {
-  const hash = hashMetadata(metadata);
+export const getDataset = (fileId: FileID): Dataset => {
   const storage = new DatasetStorage();
-  const { dataset } = storage.retrieve(hash);
-  return dataset;
+  return storage.retrieve(fileId);
 };
 
 /*
     Private
 */
 
-type Dataset = { [index: string]: Int32Array };
-
-const hashMetadata = (metadata: DatasetMetadata): DatasetID => {
-  return ObjectHash(metadata);
-};
-
-type DatasetStorageType = {
-  dataset: Dataset;
-  metadata: DatasetMetadata;
-};
 class DatasetStorage {
   static instance: DatasetStorage | null = null;
-  datasets: Map<DatasetID, DatasetStorageType> = new Map();
+  datasets: Map<FileID, Dataset> = new Map();
 
   constructor() {
     if (DatasetStorage.instance) {
@@ -94,23 +77,126 @@ class DatasetStorage {
     DatasetStorage.instance = this;
   }
 
-  retrieve(id: DatasetID): DatasetStorageType {
+  retrieve(id: FileID): Dataset {
     if (!this.datasets.has(id)) {
       throw Error("Dataset not found");
     }
     return this.datasets.get(id);
   }
 
-  store(datasetObj: DatasetStorageType): DatasetID {
-    const id = hashMetadata(datasetObj.metadata);
-    this.datasets.set(id, datasetObj);
+  store(id: string, dataset: Dataset): FileID {
+    this.datasets.set(id, dataset);
     return id;
   }
 
-  delete(id: DatasetID) {
+  delete(id: FileID) {
     if (!this.datasets.has(id)) {
       throw Error("Dataset not found");
     }
     return this.datasets.delete(id);
   }
 }
+
+/*
+    Transformations
+*/
+
+const isPointInside = (gate: any, point: number[]): boolean => {
+  const p = {
+    x: point[gate.gate.xAxis],
+    y: point[gate.gate.yAxis],
+  };
+  return gate.gate.isPointInside(p) ? !gate.inverseGating : gate.inverseGating;
+};
+
+const gateDFS = (
+  point: number[],
+  gate: any,
+  currentDepth: number
+): { depth: number; color: string | null } => {
+  if (!isPointInside(gate, point)) {
+    return { depth: 0, color: null };
+  }
+  let ans = { depth: currentDepth, color: gate.gate.color };
+  for (const child of gate.gate.children) {
+    const cAns = gateDFS(
+      point,
+      { gate: child, inverseGating: false },
+      currentDepth + 1
+    );
+    if (cAns.color !== null && cAns.depth > ans.depth) {
+      ans = cAns;
+    }
+  }
+  return ans;
+};
+
+export const getDatasetColors = (
+  dataset: Dataset,
+  gates: Gate[],
+  stdColor: Color = "#000"
+): string[] => {
+  const colors: string[] = [];
+  const axes = Object.keys(dataset);
+  const dataLength = dataset[axes[0]].length;
+
+  for (let i = 0; i < dataLength; i++) {
+    let ans = { depth: 0, color: stdColor };
+    const x: number[] = [];
+    for (const key of axes) {
+      x.push(dataset[key][i]);
+    }
+    for (const gate of gates) {
+      const cAns = gateDFS(x, gate, 1);
+      if (cAns.color !== null && cAns.depth > ans.depth) {
+        ans = cAns;
+      }
+    }
+    colors.push(ans.color);
+  }
+  return colors;
+};
+
+export const getDatasetFilteredPoints = (
+  dataset: Dataset,
+  targets: PopulationGateType[]
+): Dataset => {
+  const gates = targets.map((e) => {
+    return {
+      gate: getGate(e.gate),
+      inverseGating: e.inverseGating,
+    };
+  });
+  const axes = Object.keys(dataset);
+  const size = dataset[axes[0]].length;
+  for (const axis of Object.keys(dataset)) {
+    if (dataset[axis].length !== size)
+      throw Error("Axes of different size were found");
+  }
+  const transformedDataset: Dataset = {};
+  const addIndexes: number[] = [];
+  for (let i = 0; i < size; i++) {
+    const x: number[] = [];
+    for (const axis of axes) {
+      x.push(dataset[axis][i]);
+    }
+    let dontAdd = false;
+    for (const gate of gates) {
+      const inside = isPointInside(gate, x);
+      if (gate.inverseGating ? inside : !inside) {
+        dontAdd = true;
+        break;
+      }
+    }
+    if (dontAdd) continue;
+    addIndexes.push(i);
+  }
+  for (const axis of axes) {
+    transformedDataset[axis] = new Float32Array(addIndexes.length);
+  }
+  for (let i = 0; i < addIndexes.length; i++) {
+    for (const axis of axes)
+      transformedDataset[axis][i] = dataset[axis][addIndexes[i]];
+  }
+  return transformedDataset;
+};
