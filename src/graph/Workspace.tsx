@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "react-redux";
 import axios from "axios";
 import { useHistory } from "react-router";
@@ -14,6 +14,7 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import { generateColor } from "graph/utils/color";
 
 import userManager from "Components/users/userManager";
 import Gate from "graph/dataManagement/gate/gate";
@@ -34,6 +35,14 @@ import Plots, { resetPlotSizes } from "./components/workspaces/Plots";
 import dataManager from "graph/dataManagement/dataManager";
 import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
 import SideMenus from "./components/static/SideMenus";
+import { String } from "lodash";
+import XML from "xml-js";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { GateState, Point } from "../graph/dataManagement/gate/gate";
+import PolygonGate, {
+  PolygonGateState,
+} from "./dataManagement/gate/polygonGate";
+import { ParseFlowJoJson } from "services/FlowJoParser";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -101,6 +110,9 @@ const staticFiles = [
   };
 });
 
+let flowJoJson = {};
+let importFlowJo = false;
+
 function Workspace(props: { experimentId: string; poke: Boolean }) {
   const remoteWorkspace = dataManager.isRemoteWorkspace();
   const history = useHistory();
@@ -110,8 +122,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(false);
+  const inputFile = React.useRef(null);
+  const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
   const location = useLocation();
-
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
   const verifyWorkspace = async (workspaceId: string) => {
@@ -182,6 +195,13 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
     var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
       setDownloadedFiles(dataManager.downloaded);
+      if (
+        importFlowJo &&
+        dataManager.files.length == dataManager.downloaded.length
+      ) {
+        initiateParseFlowJo(flowJoJson);
+        flowJoJson = {};
+      }
     });
 
     var downloadingListner = dataManager.addObserver(
@@ -225,7 +245,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       setObserverAdded(true);
       dataManager.addObserver(
         "addNewGateToWorkspace",
-        getNameAndOpenModal,
+        (e: any) => {
+          if (!importFlowJo) getNameAndOpenModal(e);
+        },
         true
       );
     }
@@ -432,6 +454,44 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     handleOpen(setLinkShareModalOpen);
   };
 
+  const importFlowJoFunc = async (e: any) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      let text: any = e.target.result;
+      var options = {
+        compact: true,
+        ignoreComment: true,
+        alwaysChildren: true,
+      };
+      var result = XML.xml2json(text, options);
+      result = JSON.parse(result);
+      importFlowJo = true;
+      setLoading(true);
+      setFileUploadInputValue("");
+      if (dataManager.files.length == downloadedFiles.length) {
+        initiateParseFlowJo(result);
+      } else {
+        flowJoJson = result;
+        let fileIds = dataManager.files.map((x) => x.id);
+        handleDownLoadFileEvents(fileIds);
+        snackbarService.showSnackbar(
+          "File events are getting downloaded then import will happen!!",
+          "warning"
+        );
+      }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+
+  const initiateParseFlowJo = async (flowJoJson: any) => {
+    await ParseFlowJoJson(flowJoJson);
+    setTimeout(() => {
+      setLoading(false);
+      importFlowJo = false;
+    }, 4000);
+  };
+
   return (
     <div
       style={{
@@ -597,7 +657,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {/* {props.poke === false ? (
+                  {props.poke === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -608,7 +668,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {savingWorkspace ? (
+                        {/* {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -616,11 +676,12 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )}
+                        )} */}
                         Save Workspace
                       </Button>
                     )
-                  ) : null} */}
+                  ) : null}
+
                   {props.poke === false ? (
                     <Button
                       variant="contained"
@@ -634,6 +695,30 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       Clear
                     </Button>
                   ) : null}
+                  <Button
+                    variant="contained"
+                    size="small"
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                    onClick={() => {
+                      inputFile.current.click();
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="file"
+                      ref={inputFile}
+                      value={fileUploadInputValue}
+                      accept=".wsp"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        importFlowJoFunc(e);
+                      }}
+                    />
+                    Import Flow Jo
+                  </Button>
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
