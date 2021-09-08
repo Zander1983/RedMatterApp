@@ -11,6 +11,8 @@ import AddUsersModal from "./addUsersModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
+import AppBar from "@material-ui/core/AppBar";
+import Tabs from "@material-ui/core/Tabs";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -272,6 +274,29 @@ export default function Plans(props: any) {
         }}
       >
         <script src="https://js.stripe.com/v3/"></script>
+        <div className={classes.root}>
+          <AppBar position="static">
+            <Tabs
+              variant="fullWidth"
+              // value={value}
+              // onChange={handleChange}
+              aria-label="nav tabs example"
+            >
+              <LinkTab label="Page One" href="/drafts" {...a11yProps(0)} />
+              <LinkTab label="Page Two" href="/trash" {...a11yProps(1)} />
+              <LinkTab label="Page Three" href="/spam" {...a11yProps(2)} />
+            </Tabs>
+          </AppBar>
+          <TabPanel value={value} index={0}>
+            Page One
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            Page Two
+          </TabPanel>
+          <TabPanel value={value} index={2}>
+            Page Three
+          </TabPanel>
+        </div>
         <Grid
           item
           style={{
