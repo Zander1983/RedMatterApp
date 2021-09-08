@@ -127,27 +127,23 @@ export default function MainBar(props: { plot: Plot }) {
   // };
 
   const polygonGatingSetter = () => {
+    let plot = props.plot;
     if (polygonGating) {
+      plot.gatingActive = "";
       store.dispatch({
-        type: "workspace.SET_GATING_TYPE",
-        payload: { mouseGateState: "" },
+        type: "workspace.UPDATE_PLOT",
+        payload: { plot: plot },
       });
       setPolygonGating(false);
     } else {
+      plot.gatingActive = "polygon";
       store.dispatch({
-        type: "workspace.SET_GATING_TYPE",
-        payload: { mouseGateState: "polygon" },
+        type: "workspace.UPDATE_PLOT",
+        payload: { plot: plot },
       });
       setPolygonGating(true);
     }
   };
-
-  useEffect(() => {
-    store.dispatch({
-      type: "workspace.SET_GATING_TYPE",
-      payload: { mouseGateState: "" },
-    });
-  }, [plot]);
 
   // const downloadCanvasAsImage = () => {
   //   let downloadLink = document.createElement("a");

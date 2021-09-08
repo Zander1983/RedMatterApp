@@ -6,10 +6,13 @@ import {
   File,
   FileID,
   Gate,
+  Gate2D,
+  PolygonGate,
   PopulationGateType,
 } from "./types";
 
 import * as GateResource from "graph/resources/gates";
+import { pointInsidePolygon } from "graph/utils/euclidianPlane";
 
 /*
     Public
@@ -101,45 +104,63 @@ class DatasetStorage {
     Transformations
 */
 
-const isPointInside = (gate: any, point: number[]): boolean => {
+let axesLookup: { [index: string]: number } = {};
+
+const isPointInside = (
+  gate: { gate: PolygonGate; inverseGating: boolean },
+  point: number[]
+): boolean => {
   const p = {
-    x: point[gate.gate.xAxis],
-    y: point[gate.gate.yAxis],
+    x: point[axesLookup[gate.gate.xAxis]],
+    y: point[axesLookup[gate.gate.yAxis]],
   };
-  return gate.gate.isPointInside(p) ? !gate.inverseGating : gate.inverseGating;
+  let pointInside = false;
+  if (gate.gate.gateType === "polygon") {
+    pointInsidePolygon(p, gate.gate.points);
+  } else {
+    throw Error("gate type not supported");
+  }
+  return pointInside ? !gate.inverseGating : gate.inverseGating;
 };
 
 const gateDFS = (
   point: number[],
-  gate: any,
+  gate: { gate: PolygonGate; inverseGating: boolean },
   currentDepth: number
 ): { depth: number; color: string | null } => {
   if (!isPointInside(gate, point)) {
     return { depth: 0, color: null };
   }
   let ans = { depth: currentDepth, color: gate.gate.color };
-  for (const child of gate.gate.children) {
-    const cAns = gateDFS(
-      point,
-      { gate: child, inverseGating: false },
-      currentDepth + 1
-    );
-    if (cAns.color !== null && cAns.depth > ans.depth) {
-      ans = cAns;
-    }
-  }
+  // for (const child of gate.gate.children) {
+  //   const cAns = gateDFS(
+  //     point,
+  //     { gate: child, inverseGating: false },
+  //     currentDepth + 1
+  //   );
+  //   if (cAns.color !== null && cAns.depth > ans.depth) {
+  //     ans = cAns;
+  //   }
+  // }
   return ans;
 };
 
 export const getDatasetColors = (
   dataset: Dataset,
-  gates: Gate[],
+  targets: PopulationGateType[],
   stdColor: Color = "#000"
 ): string[] => {
   const colors: string[] = [];
   const axes = Object.keys(dataset);
+  axesLookup = {};
+  axes.forEach((e, i) => (axesLookup[e] = i));
   const dataLength = dataset[axes[0]].length;
-
+  const gates = targets.map((e) => {
+    return {
+      gate: getGate(e.gate) as PolygonGate,
+      inverseGating: e.inverseGating,
+    };
+  });
   for (let i = 0; i < dataLength; i++) {
     let ans = { depth: 0, color: stdColor };
     const x: number[] = [];
@@ -163,7 +184,7 @@ export const getDatasetFilteredPoints = (
 ): Dataset => {
   const gates = targets.map((e) => {
     return {
-      gate: getGate(e.gate),
+      gate: getGate(e.gate) as PolygonGate,
       inverseGating: e.inverseGating,
     };
   });

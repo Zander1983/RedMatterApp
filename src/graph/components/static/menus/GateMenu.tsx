@@ -48,7 +48,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
     });
   };
 
-  const cloneGate = (gate: Gate) => {
+  const cloneGate = (gate: PolygonGate) => {
     let newGate = createGate({
       cloneGate: gate,
     });
@@ -146,7 +146,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
                     padding: 0,
                     minWidth: 0,
                   }}
-                  onClick={() => cloneGate(gate)}
+                  onClick={() => cloneGate(gate as PolygonGate)}
                 >
                   <FileCopy></FileCopy>
                 </Button>

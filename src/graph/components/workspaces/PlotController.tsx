@@ -163,7 +163,7 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
-      setTimeout(() => this.setPlotsSize());
+      setTimeout(() => this.setPlotsSize(), 50);
     }
     this.setState(nextProps);
   }

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { PlotID } from "graph/resources/types";
+import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 
 export class CanvasManager {
   private context: any | null = null;

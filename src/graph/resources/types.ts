@@ -123,6 +123,7 @@ export interface Plot {
   dimensions: Dimension;
   positions: Point2D;
   parentPlotId: PlotID;
+  gatingActive: GateType;
 }
 
 export interface Population {
@@ -138,34 +139,6 @@ export interface Population {
   gates: PopulationGateType[];
 }
 
-export interface GatingState {
-  active: GateType;
-  targetPlot: PlotID;
-  polygonGate: {
-    xAxis: AxisName;
-    yAxis: AxisName;
-    isDraggingVertex: number;
-    isDraggingGate: number;
-    gatePivot: { x: number; y: number };
-    points: { x: number; y: number };
-    targetEditGate: null;
-    targetPointIndex: null;
-  };
-  ovalGate: {
-    center: { x: number; y: number };
-    primaryP1: { x: number; y: number };
-    primaryP2: { x: number; y: number };
-    secondaryP1: { x: number; y: number };
-    secondaryP2: { x: number; y: number };
-    majorToMinorSize: number;
-    lastMousePos: { x: number; y: number };
-    ang: number;
-    xAxis: AxisName;
-    yAxis: AxisName;
-  };
-  histogramGate: {};
-}
-
 export interface Workspace {
   id: WorkspaceID;
   gates: Gate[];
@@ -173,5 +146,4 @@ export interface Workspace {
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
-  mouseGateState: GatingState;
 }

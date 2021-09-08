@@ -73,6 +73,7 @@ export const createPlot = ({
     dimensions: { w: 10, h: 12 },
     positions: { x: 0, y: 0 },
     parentPlotId: "",
+    gatingActive: "",
   };
   if (clonePlot) newPlot = clonePlot;
   if (id) newPlot.id = id;
@@ -454,7 +455,9 @@ export const getPlotFile = (plot: Plot): File => {
 
 export const getPointColors = (plot: Plot) => {
   const dataset = getDataset(getPlotFile(plot).id);
-  const gates = plot.gates.map((e) => getGate(e));
+  const gates = plot.gates.map((e) => {
+    return { gate: e, inverseGating: false } as PopulationGateType;
+  });
   const populationGates = getPopulation(plot.population).gates.map((e) =>
     getGate(e.gate)
   );
@@ -488,11 +491,27 @@ export const createNewPlotFromFile = async (file: File) => {
     payload: { plot },
   });
   await setupPlot(plot, population);
+  return plot.id;
 };
 
-export const createSubpopPlot = (plot: Plot, additionalGates?: Gate[]) => {
-  // TODO
-  // createNewPlotFromFile(getFile(getPopulation(plot.population).file));
+export const createSubpopPlot = async (
+  plot: Plot,
+  additionalGates?: Gate[]
+) => {
+  const newPlotId = await createNewPlotFromFile(
+    getFile(getPopulation(plot.population).file)
+  );
+  let pop = getPopulation(getPlot(newPlotId).population);
+  pop.gates = [
+    ...pop.gates,
+    ...additionalGates.map((e) => {
+      return { gate: e.id, inverseGating: false } as PopulationGateType;
+    }),
+  ];
+  store.dispatch({
+    type: "workspace.UPDATE_POPULATION",
+    payload: { population: pop },
+  });
 };
 
 export const getXandYDataAndColors = (plot: Plot) => {
@@ -500,7 +519,9 @@ export const getXandYDataAndColors = (plot: Plot) => {
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  const plotGates = plot.gates.map((e) => getGate(e));
+  const plotGates = plot.gates.map((e) => {
+    return { gate: e, inverseGating: false } as PopulationGateType;
+  });
   const colors = getDatasetColors(dataset, plotGates);
   return { points: filteredPoints, colors };
 };

@@ -2,6 +2,8 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import { Gate, Point } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
+import { getPlot } from "graph/utils/workspace";
+import { store } from "redux/store";
 
 export interface GateState {
   lastMousePos: Point;
@@ -15,15 +17,10 @@ export interface MouseInteractorState {
 }
 
 export default abstract class GateMouseInteractor {
-  static targetGate: Gate;
-  static targetPlugin: GatePlotterPlugin;
-
-  protected started: boolean = false;
+  started: boolean = false;
   protected plugin: GatePlotterPlugin;
   protected lastMousePos: Point;
   private rerenderLastTimestamp: any = 0;
-
-  unsetGating: Function;
 
   plotID: string;
   rerender: Function;
@@ -48,10 +45,21 @@ export default abstract class GateMouseInteractor {
   }
 
   end() {
-    this.started = false;
     this.clearGateState();
     this.setPluginState();
     this.unsetGating();
+  }
+
+  unsetGating() {
+    this.started = false;
+    let plot = this.plotter.plot;
+    if (plot.gatingActive !== "") {
+      plot.gatingActive = "";
+      store.dispatch({
+        type: "workspace.UPDATE_PLOT",
+        payload: { plot },
+      });
+    }
   }
 
   setPluginState() {
@@ -69,13 +77,13 @@ export default abstract class GateMouseInteractor {
   protected abstract gateEvent(type: string, point: Point): void;
   protected abstract editGateEvent(type: string, point: Point): void;
 
-  createAndAddGate() {
-    // TODO
+  async createAndAddGate() {
     const gate = this.instanceGate();
+    await store.dispatch({
+      type: "workspace.ADD_GATE",
+      payload: { gate },
+    });
     PlotResource.createSubpopPlot(this.plotter.plot, [gate]);
-    // dataManager.addNewGateToWorkspace(gate);
-    // dataManager.linkGateToPlot(this.plotID, gate.id);
-    // dataManager.clonePlot(this.plotID);
     this.end();
   }
 
@@ -86,6 +94,7 @@ export default abstract class GateMouseInteractor {
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }
+
     if (this.started) {
       this.gateEvent(type, p);
       this.setPluginState();

@@ -15,9 +15,6 @@ export const graphActions = {
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
-  RANGE_CHANGE: "workspace.RANGE_CHANGE",
-  MOUSE_EVENT: "workspace.MOUSE_EVENT",
-  GATE_METADATA_UPDATE: "workspace.GATE_METADATA_UPDATE",
 };
 
 const initialState: Workspace = {
@@ -27,33 +24,6 @@ const initialState: Workspace = {
   plots: [],
   populations: [],
   previousStates: [],
-  mouseGateState: {
-    active: "",
-    targetPlot: "",
-    polygonGate: {
-      xAxis: "",
-      yAxis: "",
-      isDraggingVertex: 0,
-      isDraggingGate: 0,
-      gatePivot: { x: 0, y: 0 },
-      points: { x: 0, y: 0 },
-      targetEditGate: null,
-      targetPointIndex: null,
-    },
-    ovalGate: {
-      center: { x: 0, y: 0 },
-      primaryP1: { x: 0, y: 0 },
-      primaryP2: { x: 0, y: 0 },
-      secondaryP1: { x: 0, y: 0 },
-      secondaryP2: { x: 0, y: 0 },
-      majorToMinorSize: 0,
-      lastMousePos: { x: 0, y: 0 },
-      ang: 0,
-      xAxis: "",
-      yAxis: "",
-    },
-    histogramGate: {},
-  },
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -101,7 +71,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       };
 
     case graphActions.ADD_GATE:
-      const newGate: Gate = action.payload.file;
+      const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
         console.error("[workspace.ADD_GATE] Gate already in workspace");
         return state;
@@ -177,20 +147,6 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
       };
 
-    case graphActions.RANGE_CHANGE:
-      return {
-        ...state,
-      };
-
-    case graphActions.MOUSE_EVENT:
-      return {
-        ...state,
-      };
-
-    case graphActions.GATE_METADATA_UPDATE:
-      return {
-        ...state,
-      };
     default:
       return state;
   }

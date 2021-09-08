@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Gate, Plot } from "graph/resources/types";
+import { Gate, GateType, Plot } from "graph/resources/types";
 
 import CanvasComponent, {
   CanvasManager,
@@ -16,6 +16,7 @@ import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInter
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import * as PlotResource from "graph/resources/plots";
 import { getGate, getPopulation } from "graph/utils/workspace";
+import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 
 const plotterFactory = new PlotterFactory();
 
@@ -26,10 +27,7 @@ const typeToClassType = {
   histogram: Error,
 };
 
-// Rendering objects
-// let plotter: GraphPlotter | null = null;
-// let scatterPlotter: ScatterPlotter | null = null;
-// let histogramPlotter: HistogramPlotter | null = null;
+let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 
 const PlotRenderer = (props: { plot: Plot }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
@@ -40,11 +38,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
   );
   const [histogramPlotter, setHistogramPlotter] =
     useState<HistogramPlotter | null>(null);
-  const [mouseInteractors, setMouseInteractors] = useState<MouseInteractor[]>(
-    []
-  );
-  const [polygonMouseInteractor, setPolygonMouseInteractor] =
-    useState<PolygonMouseInteractor | null>(null);
+  const [lastGatingType, setLastGatingType] = useState<GateType>("");
   const plot = props.plot;
 
   const validateReady = (): boolean => {
@@ -78,6 +72,14 @@ const PlotRenderer = (props: { plot: Plot }) => {
     setPlotterState(selectedPlotter);
     selectedPlotter.update();
     selectedPlotter.draw();
+    const gatingType = plot.gatingActive;
+    if (lastGatingType !== gatingType) {
+      unsetGating("polygon");
+      if (gatingType === "polygon") {
+        setGating("polygon", true);
+      }
+      setLastGatingType(gatingType);
+    }
   };
 
   const setCanvasState = () => {
@@ -90,19 +92,20 @@ const PlotRenderer = (props: { plot: Plot }) => {
     canvas.setCanvasState(canvasState);
   };
 
-  const unsetGating = () => {
-    mouseInteractors.forEach((e) => e.unsetGating());
+  const unsetGating = (type: "oval" | "histogram" | "polygon") => {
+    mouseInteractorInstances[plot.id]
+      //@ts-ignore
+      .filter((e) => !(e instanceof typeToClassType[type]))
+      .forEach((e) => e.unsetGating());
   };
 
   const setGating = (
     type: "oval" | "histogram" | "polygon",
     start: boolean,
-    inpMouseInteractors?: MouseInteractor[],
     inpPlotter?: GraphPlotter
   ) => {
-    if (!inpMouseInteractors) inpMouseInteractors = mouseInteractors;
     if (!inpPlotter) inpPlotter = plotter;
-    inpMouseInteractors
+    mouseInteractorInstances[plot.id]
       .filter((e) => e instanceof typeToClassType[type])
       .forEach((e) => {
         e.setMouseInteractorState({
@@ -110,13 +113,11 @@ const PlotRenderer = (props: { plot: Plot }) => {
           yAxis: plot.xAxis,
           xAxis: plot.yAxis,
           rerender: () => {
-            canvas.render();
-            plotter.draw();
+            draw();
           },
         });
         //@ts-ignore
         e.setup(inpPlotter);
-        e.unsetGating = unsetGating;
         start ? e.start() : e.end();
       });
   };
@@ -146,6 +147,12 @@ const PlotRenderer = (props: { plot: Plot }) => {
     inpPlotter.setPlotterState(plotterState);
   };
 
+  const setMouseEvent = (type: string, x: number, y: number) => {
+    mouseInteractorInstances[plot.id].forEach((e) => {
+      e.registerMouseEvent(type, x, y);
+    });
+  };
+
   useEffect(() => {
     if (!configured && canvas) {
       setConfigured(true);
@@ -171,22 +178,17 @@ const PlotRenderer = (props: { plot: Plot }) => {
 
       scatterPlotter.update();
 
-      const selectedPolygonMouseInteractor = new PolygonMouseInteractor();
-      setPolygonMouseInteractor(selectedPolygonMouseInteractor);
+      mouseInteractorInstances[plot.id] = [new PolygonMouseInteractor()];
 
-      const selectedMouseInteractors = [selectedPolygonMouseInteractor];
-      setMouseInteractors(selectedMouseInteractors);
+      for (const mouseInteractor of mouseInteractorInstances[plot.id]) {
+        //@ts-ignore
+        mouseInteractor.setup(scatterPlotter);
+      }
 
       //@ts-ignore
-      setGating("polygon", true, selectedMouseInteractors, scatterPlotter);
+      setGating("polygon", true, scatterPlotter);
       //@ts-ignore
-      setGating("polygon", false, selectedMouseInteractors, scatterPlotter);
-      //@ts-ignore
-      setGating("oval", true, selectedMouseInteractors, scatterPlotter);
-      //@ts-ignore
-      setGating("oval", false, selectedMouseInteractors, scatterPlotter);
-
-      setTimeout(() => draw(), 1000);
+      setGating("polygon", false, scatterPlotter);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
@@ -201,9 +203,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
       setCanvas={(canvas) => {
         setCanvas(canvas);
       }}
-      setMouseEvent={(type, x, y) => {
-        mouseInteractors.forEach((e) => e.registerMouseEvent(type, x, y));
-      }}
+      setMouseEvent={setMouseEvent}
     />
   );
 };

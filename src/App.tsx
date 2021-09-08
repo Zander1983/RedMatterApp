@@ -171,7 +171,11 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
-  }, [dispatch]);
+  }, []);
+
+  // dispatch({
+  //   type: "workspace.RESET",
+  // });
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

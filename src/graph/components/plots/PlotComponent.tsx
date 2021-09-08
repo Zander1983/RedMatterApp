@@ -122,11 +122,7 @@ function PlotComponent(props: {
 
         <Divider></Divider>
 
-        <GateBar
-          plot={plot}
-          gates={plot.gates.map((e) => getGate(e))}
-          onGateDoubleClick={onGateDoubleClick}
-        ></GateBar>
+        <GateBar plot={plot} onGateDoubleClick={onGateDoubleClick}></GateBar>
 
         <Divider style={{ marginBottom: 10 }}></Divider>
       </div>

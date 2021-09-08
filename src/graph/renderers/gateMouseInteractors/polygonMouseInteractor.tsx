@@ -7,6 +7,9 @@ import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygon
 import ScatterPlotter from "../plotters/scatterPlotter";
 import { Gate, Point, PolygonGate } from "graph/resources/types";
 import { createGate } from "graph/resources/gates";
+import { getPopulation, getWorkspace } from "graph/utils/workspace";
+import { generateColor } from "graph/utils/color";
+import { createID } from "graph/utils/id";
 
 export const selectPointDist = 15;
 
@@ -187,41 +190,46 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.targetPointIndex = null;
   }
 
-  protected instanceGate(): Gate {
-    return createGate({ id: "123" });
-    // TODO
-    // if (!this.started) return;
-    // const { points, xAxis, yAxis } = this.getGatingState();
-    // const checkNotNullOrUndefined = (x: any): void => {
-    //   if (x === null || x === undefined) {
-    //     throw Error("Invalid gate params on instancing");
-    //   }
-    // };
-    // checkNotNullOrUndefined(points);
-    // checkNotNullOrUndefined(xAxis);
-    // checkNotNullOrUndefined(yAxis);
-    // let originalRanges = [
-    //   this.plotter.plot.ranges.get(this.plotter.plot.xAxis),
-    //   this.plotter.plot.ranges.get(this.plotter.plot.yAxis),
-    // ];
-    // const newGate = new PolygonGate({
-    //   points: [...points].map((e) => {
-    //     e = this.plotter.transformer.toAbstractPoint(e);
-    //     e = this.plotter.transformer.rawAbstractLogicleToLinear(e);
-    //     return e;
-    //   }),
-    //   xAxis: xAxis,
-    //   xAxisType: this.plotter.plot.xPlotType,
-    //   xAxisOriginalRanges: originalRanges[0],
-    //   yAxis: yAxis,
-    //   yAxisType: this.plotter.plot.yPlotType,
-    //   yAxisOriginalRanges: originalRanges[1],
-    //   parents: this.plotter.plot.population.map((e) => e.gate),
-    // });
+  protected instanceGate(): PolygonGate {
+    if (!this.started) return;
+    const { points, xAxis, yAxis } = this.getGatingState();
+    const checkNotNullOrUndefined = (x: any): void => {
+      if (x === null || x === undefined) {
+        throw Error("Invalid gate params on instancing");
+      }
+    };
+    checkNotNullOrUndefined(points);
+    checkNotNullOrUndefined(xAxis);
+    checkNotNullOrUndefined(yAxis);
+    let originalRanges = [
+      this.plotter.plot.ranges[this.plotter.plot.xAxis],
+      this.plotter.plot.ranges[this.plotter.plot.yAxis],
+    ];
+    const procPoints = [...points].map((e) => {
+      e = this.plotter.transformer.toAbstractPoint(e);
+      e = this.plotter.transformer.rawAbstractLogicleToLinear(e);
+      return e;
+    });
+    const newGate: PolygonGate = {
+      points: procPoints,
+      xAxis: xAxis,
+      xAxisType: this.plotter.plot.xPlotType,
+      xAxisOriginalRanges: originalRanges[0],
+      yAxis: yAxis,
+      yAxisType: this.plotter.plot.yPlotType,
+      yAxisOriginalRanges: originalRanges[1],
+      parents: getPopulation(this.plotter.plot.population).gates.map(
+        (e) => e.gate
+      ),
+      color: generateColor(),
+      gateType: "polygon",
+      id: createID(),
+      name: "New Gate",
+    };
     // for (const gate of this.plotter.plot.population.map((e) => e.gate)) {
     //   gate.children.push(newGate);
     // }
-    // return newGate;
+    return newGate;
   }
 
   setup(plotter: ScatterPlotter) {

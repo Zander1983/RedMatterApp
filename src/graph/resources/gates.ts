@@ -7,9 +7,9 @@ export const createGate = ({
   cloneGate,
   id,
 }: {
-  cloneGate?: Gate;
+  cloneGate?: PolygonGate;
   id?: GateID;
-}): Gate => {
+}): PolygonGate => {
   const newGate: PolygonGate = {
     id: "",
     gateType: "polygon",
