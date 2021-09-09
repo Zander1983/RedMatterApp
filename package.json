@@ -34,6 +34,7 @@
     "memoizee": "*",
     "node-kmeans": "^1.1.9",
     "numeral": "^2.0.6",
+    "object-hash": "^2.2.0",
     "portable-fetch": "^3.0.0",
     "q": "*",
     "react": "^17.0.1",

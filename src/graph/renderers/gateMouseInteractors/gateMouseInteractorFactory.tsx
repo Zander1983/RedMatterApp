@@ -1,16 +1,16 @@
 import GatePlotterPlugin from "../plotters/runtimePlugins/gatePlotterPlugin";
-import OvalMousePlotterPlugin from "../plotters/runtimePlugins/scatterOvalGatePlotter";
+// import OvalMousePlotterPlugin from "../plotters/runtimePlugins/scatterOvalGatePlotter";
 import GateMouseInteractor from "./gateMouseInteractor";
-import OvalMouseInteractor from "./ovalMouseInteractor";
+// import OvalMouseInteractor from "./ovalMouseInteractor";
 
 export default class GateMouseInteractorFactory {
   makeGateMouseInteractor(gate: string): {
     mouseInteractor: GateMouseInteractor;
     plotterPlugin: GatePlotterPlugin;
   } {
-    if (gate === "oval") {
-      return this.makeOvalGateMouseInteractor();
-    }
+    // if (gate === "oval") {
+    //   return this.makeOvalGateMouseInteractor();
+    // }
     // if (gate === "line") {
     //   return this.makeHistogramGateMouseInteractor();
     // }
@@ -20,15 +20,15 @@ export default class GateMouseInteractorFactory {
     throw Error("Unrecognized type of gate mouse interactor: " + gate);
   }
 
-  makeOvalGateMouseInteractor(): {
-    mouseInteractor: GateMouseInteractor;
-    plotterPlugin: GatePlotterPlugin;
-  } {
-    return {
-      mouseInteractor: new OvalMouseInteractor(),
-      plotterPlugin: new OvalMousePlotterPlugin(),
-    };
-  }
+  // makeOvalGateMouseInteractor(): {
+  //   mouseInteractor: GateMouseInteractor;
+  //   plotterPlugin: GatePlotterPlugin;
+  // } {
+  //   return {
+  //     mouseInteractor: new OvalMouseInteractor(),
+  //     plotterPlugin: new OvalMousePlotterPlugin(),
+  //   };
+  // }
 
   // makeHistogramGateMouseInteractor(): HistogramGateMouseInteractor {
   //   return new HistogramGateMouseInteractor();

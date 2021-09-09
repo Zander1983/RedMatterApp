@@ -1,10 +1,11 @@
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, Grid, TextField } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
-import React, { useCallback, useEffect } from "react";
+import React, { useEffect } from "react";
 import { snackbarService } from "uno-material-ui";
-import PlotData from "graph/dataManagement/plotData";
 import { Divider } from "antd";
+import { HistogramAxisType, Plot } from "graph/resources/types";
+import * as PlotResource from "graph/resources/plots";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -30,18 +31,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function RangeResizeModal(props: {
+const RangeResizeModal = (props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   inits: {
-    histogramAxis: null | "vertical" | "horizontal";
+    histogramAxis: HistogramAxisType;
     axisX: string;
     axisY: string;
     minX: number;
     maxX: number;
     minY: number;
     maxY: number;
-    plot: PlotData;
+    plot: Plot;
   };
   callback: (
     minX: number,
@@ -51,7 +52,7 @@ function RangeResizeModal(props: {
     axisX: string,
     axisY: string
   ) => void;
-}): JSX.Element {
+}) => {
   const classes = useStyles();
   const [minX, setMinX] = React.useState("0");
   const [maxX, setMaxX] = React.useState("0");
@@ -72,7 +73,7 @@ function RangeResizeModal(props: {
       const iMaxX = parseFloat(maxX);
       const iMinY = parseFloat(minY);
       const iMaxY = parseFloat(maxY);
-      if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw "";
+      if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw Error("Invalid ranges");
       props.callback(
         iMinX,
         iMaxX,
@@ -92,10 +93,9 @@ function RangeResizeModal(props: {
   };
 
   const setDefaultRanges = (axis: "x" | "y") => {
-    const axisName = axis === "x" ? props.inits.axisX : props.inits.axisY;
-    //@ts-ignore
-    const data = props.inits.plot.getAxisData(axisName);
-    const ranges = props.inits.plot.findRangeBoundries(data);
+    const allData = PlotResource.getXandYData(props.inits.plot);
+    const data = axis === "x" ? allData[0] : allData[1];
+    const ranges = PlotResource.findRangeBoundries(props.inits.plot, data);
     if (axis === "x") {
       setMinX(ranges[0].toString());
       setMaxX(ranges[1].toString());
@@ -228,6 +228,6 @@ function RangeResizeModal(props: {
       </div>
     </Modal>
   );
-}
+};
 
 export default RangeResizeModal;

@@ -7,36 +7,13 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-
-import dataManager from "graph/dataManagement/dataManager";
+import { File } from "graph/resources/types";
 
 const classes = {
   table: {},
 };
 
-export default function FileMenu() {
-  const [files, setFiles] = React.useState(dataManager.getAllFiles());
-  const [observersSetup, setObserversSetup] = React.useState(false);
-
-  const resetAll = () => {
-    setFiles(dataManager.getAllFiles());
-  };
-
-  useEffect(() => {
-    if (!observersSetup) {
-      setObserversSetup(true);
-      dataManager.addObserver("addNewFileToWorkspace", () => {
-        resetAll();
-      });
-      dataManager.addObserver("removeFileFromWorkspace", () => {
-        resetAll();
-      });
-      dataManager.addObserver("clearWorkspace", () => {
-        resetAll();
-      });
-    }
-  }, [observersSetup]);
-
+export default function FileMenu(props: { files: File[] }) {
   return (
     <TableContainer component={Paper}>
       <Table style={classes.table}>
@@ -46,11 +23,11 @@ export default function FileMenu() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {files.map((file) => (
-            <TableRow key={file.fileID}>
+          {props.files.map((file) => (
+            <TableRow key={file.id}>
               <TableCell>
                 <TextField
-                  value={file.file.name}
+                  value={file.name}
                   inputProps={{ "aria-label": "naked" }}
                   style={{
                     fontSize: 14,

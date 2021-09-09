@@ -4,8 +4,7 @@ import { Button } from "@material-ui/core";
 import KeyboardBackspace from "@material-ui/icons/KeyboardBackspace";
 import GetAppIcon from "@material-ui/icons/GetApp";
 
-import PlotStats from "graph/dataManagement/stats";
-import dataManager from "graph/dataManagement/dataManager";
+// import PlotStats from "graph/util/stats";
 
 import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
@@ -13,8 +12,10 @@ import PlotMenu from "./menus/PlotMenu";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { CSVCreator, CSVObject } from "services/CSVCreator";
+import { getWorkspace } from "graph/utils/workspace";
+import { Workspace } from "graph/resources/types";
 
-export default function SideMenus() {
+export default function SideMenus(props: { workspace: Workspace }) {
   const ref = React.useRef(null);
   // == General modal logic ==
 
@@ -28,96 +29,96 @@ export default function SideMenus() {
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
 
-  const downloadCsv = () => {
-    let statsProvider = new PlotStats();
-    let tableNames = ["Stats data", "Gates data", "Files data"];
-    let csvCreator = new CSVCreator(tableNames);
+  // const downloadCsv = () => {
+  //   let statsProvider = new PlotStats();
+  //   let tableNames = ["Stats data", "Gates data", "Files data"];
+  //   let csvCreator = new CSVCreator(tableNames);
 
-    let tables = [];
+  //   let tables = [];
 
-    let table: CSVObject = {
-      headers: [],
-      body: [],
-    };
+  //   let table: CSVObject = {
+  //     headers: [],
+  //     body: [],
+  //   };
 
-    let plots = dataManager.getAllPlots();
-    let statsArray = [];
-    for (let i = 0; i < plots.length; i++) {
-      let plot = plots[i].plot;
-      let stats = statsProvider.getPlotStats(plot, statsX, statsY);
-      const histogram = plot.xAxis === plot.yAxis ? true : false;
-      let type = histogram ? "histogram" : "scatterplot";
-      let furbishedStats = {
-        type: type,
-        Name: plots[i].plot.label,
-        "From file": plot.file.name,
-        population:
-          plot.population.length === 0
-            ? "All"
-            : plot.population
-                .reverse()
-                .map(
-                  (e: any) => `${e.inverseGating ? "not " : ""} ${e.gate.name}`
-                )
-                .reduce((prev, curr) => `${prev} & ${curr}`),
-        Brute: `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`,
-        Percentage: stats.gatedFilePopulationPercentage,
-        MedianX: histogram ? `~` : stats.statX,
-        MedianY: histogram ? `~` : stats.statY,
-        "Points outside": stats.pointsOutSideOfRangeObj.count,
-        "% of Points outside": stats.pointsOutSideOfRangeObj.percentage,
-      };
-      statsArray.push(furbishedStats);
-    }
+  //   let plots = dataManager.getAllPlots();
+  //   let statsArray = [];
+  //   for (let i = 0; i < plots.length; i++) {
+  //     let plot = plots[i].plot;
+  //     let stats = statsProvider.getPlotStats(plot, statsX, statsY);
+  //     const histogram = plot.xAxis === plot.yAxis ? true : false;
+  //     let type = histogram ? "histogram" : "scatterplot";
+  //     let furbishedStats = {
+  //       type: type,
+  //       Name: plots[i].plot.label,
+  //       "From file": plot.file.name,
+  //       population:
+  //         plot.population.length === 0
+  //           ? "All"
+  //           : plot.population
+  //               .reverse()
+  //               .map(
+  //                 (e: any) => `${e.inverseGating ? "not " : ""} ${e.gate.name}`
+  //               )
+  //               .reduce((prev, curr) => `${prev} & ${curr}`),
+  //       Brute: `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`,
+  //       Percentage: stats.gatedFilePopulationPercentage,
+  //       MedianX: histogram ? `~` : stats.statX,
+  //       MedianY: histogram ? `~` : stats.statY,
+  //       "Points outside": stats.pointsOutSideOfRangeObj.count,
+  //       "% of Points outside": stats.pointsOutSideOfRangeObj.percentage,
+  //     };
+  //     statsArray.push(furbishedStats);
+  //   }
 
-    let statsHeader = COMMON_CONSTANTS.SIDE_MENU.STATS;
-    let keys = Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS);
-    statsHeader[6] = `${
-      statsX === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
-    } X`;
-    statsHeader[7] = `${
-      statsY === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
-    } Y`;
+  //   let statsHeader = COMMON_CONSTANTS.SIDE_MENU.STATS;
+  //   let keys = Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS);
+  //   statsHeader[6] = `${
+  //     statsX === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+  //   } X`;
+  //   statsHeader[7] = `${
+  //     statsY === COMMON_CONSTANTS.DROPDOWNS.STATS.Median ? keys[0] : keys[1]
+  //   } Y`;
 
-    table.headers = statsHeader;
-    table.body = statsArray;
-    tables.push(JSON.parse(JSON.stringify(table)));
+  //   table.headers = statsHeader;
+  //   table.body = statsArray;
+  //   tables.push(JSON.parse(JSON.stringify(table)));
 
-    let gates = dataManager.getAllGates();
+  //   let gates = dataManager.getAllGates();
 
-    let plotsArray = [];
-    for (let i = 0; i < gates.length; i++) {
-      let gate = gates[i];
-      let furbishedPlots = {
-        Name: gate.gate.name,
-        Color: gate.gate.color,
-        Type: gate.gate.getGateType(),
-        "X Axiz": gate.gate.xAxis,
-        "Y Axis": gate.gate.yAxis,
-      };
-      plotsArray.push(furbishedPlots);
-    }
+  //   let plotsArray = [];
+  //   for (let i = 0; i < gates.length; i++) {
+  //     let gate = gates[i];
+  //     let furbishedPlots = {
+  //       Name: gate.gate.name,
+  //       Color: gate.gate.color,
+  //       Type: gate.gate.getGateType(),
+  //       "X Axiz": gate.gate.xAxis,
+  //       "Y Axis": gate.gate.yAxis,
+  //     };
+  //     plotsArray.push(furbishedPlots);
+  //   }
 
-    table.headers = COMMON_CONSTANTS.SIDE_MENU.GATE;
-    table.body = plotsArray;
-    tables.push(JSON.parse(JSON.stringify(table)));
+  //   table.headers = COMMON_CONSTANTS.SIDE_MENU.GATE;
+  //   table.body = plotsArray;
+  //   tables.push(JSON.parse(JSON.stringify(table)));
 
-    let files = dataManager.getAllFiles();
-    let filesArray = [];
-    for (let i = 0; i < files.length; i++) {
-      let fileObj = files[i];
-      let furbishedFiles = {
-        Name: fileObj.file.name,
-      };
-      filesArray.push(furbishedFiles);
-    }
+  //   let files = dataManager.getAllFiles();
+  //   let filesArray = [];
+  //   for (let i = 0; i < files.length; i++) {
+  //     let fileObj = files[i];
+  //     let furbishedFiles = {
+  //       Name: fileObj.file.name,
+  //     };
+  //     filesArray.push(furbishedFiles);
+  //   }
 
-    table.headers = ["Name"];
-    table.body = filesArray;
-    tables.push(JSON.parse(JSON.stringify(table)));
+  //   table.headers = ["Name"];
+  //   table.body = filesArray;
+  //   tables.push(JSON.parse(JSON.stringify(table)));
 
-    csvCreator.exportToCSV(tables);
-  };
+  //   csvCreator.exportToCSV(tables);
+  // };
 
   const click = (target: string | undefined) => {
     let p = [
@@ -228,7 +229,7 @@ export default function SideMenus() {
             </Button>
           ) : null}
         </div>
-        <div>
+        {/* <div>
           <Button
             variant="contained"
             size="large"
@@ -247,7 +248,7 @@ export default function SideMenus() {
             ></GetAppIcon>
             Download .csv
           </Button>
-        </div>
+        </div> */}
       </div>
       <div
         style={{
@@ -256,10 +257,11 @@ export default function SideMenus() {
           overflowY: "auto",
         }}
       >
-        {fileMenuOpen ? <FileMenu /> : null}
-        {gateMenuOpen ? <GateMenu /> : null}
+        {fileMenuOpen ? <FileMenu files={props.workspace.files} /> : null}
+        {gateMenuOpen ? <GateMenu gates={props.workspace.gates} /> : null}
         {plotMenuOpen ? (
           <PlotMenu
+            plots={props.workspace.plots}
             onStatChange={(e) => {
               e["x"] ? setStatsX(e["value"]) : setStatsY(e["value"]);
             }}
