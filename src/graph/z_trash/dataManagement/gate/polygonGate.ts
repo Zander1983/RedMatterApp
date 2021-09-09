@@ -2,7 +2,7 @@ import Gate, { GateState, Point } from "./gate";
 import { pointInsidePolygon } from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 
-interface PolygonGateState extends GateState {
+export interface PolygonGateState extends GateState {
   points: Point[];
 }
 

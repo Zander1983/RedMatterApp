@@ -113,7 +113,6 @@ const PlotRenderer = (props: {
           xAxis: plot.xAxis,
           yAxis: plot.yAxis,
           rerender: () => {
-            console.log("gate mouse interactor called draw");
             draw();
           },
         });

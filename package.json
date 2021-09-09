@@ -70,6 +70,7 @@
     "uno-material-ui": "^2.0.10",
     "uuid": "^8.3.2",
     "web-vitals": "^1.1.0",
+    "xml-js": "^1.6.11",
     "yup": "^0.32.9"
   },
   "scripts": {

@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
 import { useSelector, useStore } from "react-redux";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -12,6 +12,9 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
+import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
+import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import { generateColor } from "graph/utils/color";
 
 import userManager from "Components/users/userManager";
 import { API_CALLS } from "assets/constants/apiCalls";
@@ -36,6 +39,10 @@ import { getFile } from "./utils/workspace";
 import { FileID, Workspace as WorkspaceType } from "./resources/types";
 import { store } from "redux/store";
 import PlotController from "./components/workspaces/PlotController";
+import { String } from "lodash";
+import XML from "xml-js";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+// import { ParseFlowJoJson } from "services/FlowJoParser";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -90,6 +97,10 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
+  let flowJoJson = {};
+  let importFlowJo = false;
+
+  const remoteWorkspace = true;
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
@@ -97,14 +108,34 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(true);
+  const inputFile = React.useRef(null);
+  const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
   const location = useLocation();
-
   const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
   useEffect(() => {
     store.dispatch({
       type: "workspace.RESET",
     });
+    // dataManager.setExperimentId(props.experimentId);
+
+    // let workspaceId = new URLSearchParams(location.search).get("id");
+    // if (workspaceId) {
+    //   verifyWorkspace(workspaceId);
+    // } else {
+    //   getWorkspace();
+    // }
+
+    // var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
+    //   setDownloadedFiles(dataManager.downloaded);
+    //   if (
+    //     importFlowJo &&
+    //     dataManager.files.length == dataManager.downloaded.length
+    //   ) {
+    //     initiateParseFlowJo(flowJoJson);
+    //     flowJoJson = {};
+    //   }
+    // });
     downloadFileMetadata(props.shared, props.experimentId);
   }, []);
 
@@ -203,6 +234,48 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   //   }
 
   //   await downloadFileMetadata(props.shared, props.experimentId);
+
+  //   setInitPlot(true);
+  // };
+  // const autoSaveWorkspace = () => {
+  //   if (!workspaceSharedLocal) {
+  //     setSavingWorkspace(true);
+  //     saveWorkspace();
+  //   }
+  // };
+
+  // const initPlots = async (workSpaceShared: boolean = false) => {
+  //   if (observerAdded === false) {
+  //     setObserverAdded(true);
+  //     dataManager.addObserver(
+  //       "addNewGateToWorkspace",
+  //       (e: any) => {
+  //         if (!importFlowJo) getNameAndOpenModal(e);
+  //       },
+  //       true
+  //     );
+  //   }
+  //   if (props.experimentId !== undefined && !setWorkspaceAlready) {
+  //     setWorkspaceAlready = true;
+  //     dataManager.setWorkspaceID(props.experimentId);
+  //     dataManager.addObserver("setWorkspaceLoading", () => {
+  //       const isLoading = dataManager.isWorkspaceLoading();
+  //       setLoading(isLoading);
+  //       if (!isLoading) {
+  //         setLoadModal(false);
+  //       }
+  //     });
+  //   }
+
+  //   if (
+  //     !workSpaceShared &&
+  //     process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
+  //     !isLoggedIn
+  //   ) {
+  //     history.push("/login");
+  //   }
+
+  //   await dataManager.downloadFileMetadata();
 
   //   setInitPlot(true);
   // };
@@ -366,6 +439,44 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
     }
     handleOpen(setLinkShareModalOpen);
   };
+
+  const importFlowJoFunc = async (e: any) => {
+    // e.preventDefault();
+    // const reader = new FileReader();
+    // reader.onload = async (e) => {
+    //   let text: any = e.target.result;
+    //   var options = {
+    //     compact: true,
+    //     ignoreComment: true,
+    //     alwaysChildren: true,
+    //   };
+    //   var result = XML.xml2json(text, options);
+    //   result = JSON.parse(result);
+    //   importFlowJo = true;
+    //   setLoading(true);
+    //   setFileUploadInputValue("");
+    //   if (dataManager.files.length == downloadedFiles.length) {
+    //     initiateParseFlowJo(result);
+    //   } else {
+    //     flowJoJson = result;
+    //     let fileIds = dataManager.files.map((x) => x.id);
+    //     handleDownLoadFileEvents(fileIds);
+    //     snackbarService.showSnackbar(
+    //       "File events are getting downloaded then import will happen!!",
+    //       "warning"
+    //     );
+    //   }
+    // };
+    // reader.readAsText(e.target.files[0]);
+  };
+
+  // const initiateParseFlowJo = async (flowJoJson: any) => {
+  //   await ParseFlowJoJson(flowJoJson);
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //     importFlowJo = false;
+  //   }, 4000);
+  // };
 
   return (
     <div
@@ -535,7 +646,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {/* {props.shared === false ? (
+                  {props.shared === false ? (
                     sharedWorkspace ? null : (
                       <Button
                         variant="contained"
@@ -546,7 +657,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {savingWorkspace ? (
+                        {/* {savingWorkspace ? (
                           <div className={classes.savingProgress}>
                             <AutorenewRoundedIcon />
                           </div>
@@ -554,11 +665,12 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                           <div className={classes.saved}>
                             <CheckCircleRoundedIcon />
                           </div>
-                        )}
+                        )} */}
                         Save Workspace
                       </Button>
                     )
-                  ) : null} */}
+                  ) : null}
+
                   {props.shared === false ? (
                     <Button
                       variant="contained"
@@ -572,6 +684,30 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                       Clear
                     </Button>
                   ) : null}
+                  <Button
+                    variant="contained"
+                    size="small"
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                    onClick={() => {
+                      inputFile.current.click();
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="file"
+                      ref={inputFile}
+                      value={fileUploadInputValue}
+                      accept=".wsp"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        importFlowJoFunc(e);
+                      }}
+                    />
+                    Import Flow Jo
+                  </Button>
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid
