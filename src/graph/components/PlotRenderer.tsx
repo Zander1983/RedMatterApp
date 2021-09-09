@@ -190,6 +190,7 @@ const PlotRenderer = (props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(draw, [props]);
 
   return (
