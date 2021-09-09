@@ -23,6 +23,7 @@ export const createGate = ({
     yAxisType: "",
     yAxisOriginalRanges: [0, 0],
     points: [],
+    children: [],
   };
   if (id) newGate.id = id;
   else newGate.id = createID();

@@ -192,7 +192,9 @@ export default function GateBar(props: {
               variant="outlined"
               label={
                 allGates.length > 0
-                  ? `Population (${props.plot.population.length})`
+                  ? `Population (${
+                      getPopulation(props.plot.population).gates.length
+                    })`
                   : "Population: All"
               }
             />

@@ -7,12 +7,18 @@ import PlotComponent from "../plots/PlotComponent";
 import { Divider } from "@material-ui/core";
 import {
   getFile,
+  getGate,
   getPlot,
   getPopulation,
   getWorkspace,
 } from "graph/utils/workspace";
 import { store } from "redux/store";
-import { Plot, Workspace } from "graph/resources/types";
+import {
+  Gate,
+  Plot,
+  PlotSpecificWorkspaceData,
+  Workspace,
+} from "graph/resources/types";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -168,6 +174,28 @@ class PlotController extends React.Component<PlotControllerProps> {
     this.setState(nextProps);
   }
 
+  componentDidMount() {
+    window.addEventListener("resize", () => {
+      resetPlotSizes();
+    });
+  }
+
+  getPlotRelevantResources(plot: Plot) {
+    const population = getPopulation(plot.population);
+    const file = getFile(population.file);
+    const gates: Gate[] = [
+      ...plot.gates.map((e) => getGate(e)),
+      ...population.gates.map((e) => getGate(e.gate)),
+    ];
+    const workspaceForPlot: PlotSpecificWorkspaceData = {
+      file,
+      gates,
+      plot,
+      population,
+    };
+    return workspaceForPlot;
+  }
+
   render() {
     console.log(
       `Workspace rendered for the ${++PlotController.renderCalls} time`
@@ -244,9 +272,8 @@ class PlotController extends React.Component<PlotControllerProps> {
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
                               <PlotComponent
-                                plot={plot}
-                                plots={this.props.workspace.plots.filter(
-                                  (x) => x.id !== plot.id
+                                plotRelevantResources={this.getPlotRelevantResources(
+                                  plot
                                 )}
                                 sharedWorkspace={this.props.sharedWorkspace}
                                 experimentId={this.props.experimentId}

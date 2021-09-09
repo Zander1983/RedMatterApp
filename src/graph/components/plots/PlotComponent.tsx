@@ -4,10 +4,9 @@ import { Divider } from "@material-ui/core";
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
-import { Plot } from "graph/resources/types";
+import { Gate, Plot, PlotSpecificWorkspaceData } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import PlotRenderer from "graph/components/PlotRenderer";
-import { getGate } from "graph/utils/workspace";
 
 const classes = {
   itemOuterDiv: {
@@ -38,12 +37,12 @@ const classes = {
 };
 
 function PlotComponent(props: {
-  plot: Plot;
-  plots: any;
+  plotRelevantResources: PlotSpecificWorkspaceData;
   sharedWorkspace: boolean;
   experimentId: string;
 }) {
-  var plot = props.plot;
+  const { plot, file, gates, population } = props.plotRelevantResources;
+
   const xAxis = plot.xAxis;
   const yAxis = plot.yAxis;
   const plotId = plot.id;
@@ -129,7 +128,13 @@ function PlotComponent(props: {
 
       <SideSelector
         {...props}
-        canvasComponent={<PlotRenderer plot={plot}></PlotRenderer>}
+        canvasComponent={
+          <PlotRenderer
+            plot={plot}
+            plotGates={gates}
+            population={population}
+          ></PlotRenderer>
+        }
       ></SideSelector>
     </div>
   );

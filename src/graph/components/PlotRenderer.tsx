@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Gate, GateType, Plot } from "graph/resources/types";
+import { Gate, GateType, Plot, Population } from "graph/resources/types";
 
 import CanvasComponent, {
   CanvasManager,
@@ -11,11 +11,8 @@ import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import HistogramPlotter from "graph/renderers/plotters/histogramPlotter";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 
-import MouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
-// import OvalMouseInteractor from "graph/renderers/gateMouseInteractors/ovalMouseInteractor";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import * as PlotResource from "graph/resources/plots";
-import { getGate, getPopulation } from "graph/utils/workspace";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 
 const plotterFactory = new PlotterFactory();
@@ -29,7 +26,11 @@ const typeToClassType = {
 
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 
-const PlotRenderer = (props: { plot: Plot }) => {
+const PlotRenderer = (props: {
+  plot: Plot;
+  plotGates: Gate[];
+  population: Population;
+}) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
   const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
@@ -70,7 +71,6 @@ const PlotRenderer = (props: { plot: Plot }) => {
     }
 
     setPlotterState(selectedPlotter);
-    selectedPlotter.update();
     selectedPlotter.draw();
     const gatingType = plot.gatingActive;
     if (lastGatingType !== gatingType) {
@@ -110,9 +110,10 @@ const PlotRenderer = (props: { plot: Plot }) => {
       .forEach((e) => {
         e.setMouseInteractorState({
           plotID: plot.id,
-          yAxis: plot.xAxis,
-          xAxis: plot.yAxis,
+          xAxis: plot.xAxis,
+          yAxis: plot.yAxis,
           rerender: () => {
+            console.log("gate mouse interactor called draw");
             draw();
           },
         });
@@ -126,10 +127,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
     if (!inpPlotter) inpPlotter = plotter;
     const data = PlotResource.getXandYData(plot);
     const ranges = PlotResource.getXandYRanges(plot);
-    const gates: Gate[] = [
-      ...plot.gates.map((e) => getGate(e)),
-      ...getPopulation(plot.population).gates.map((e) => getGate(e.gate)),
-    ];
+
     const plotterState = {
       plot: plot,
       xAxis: data[0],
@@ -140,7 +138,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
       height: plot.plotHeight,
       scale: plot.plotScale,
       direction: plot.histogramAxis,
-      gates: gates,
+      gates: props.plotGates,
       xRange: ranges.x,
       yRange: ranges.y,
     };
@@ -193,7 +191,7 @@ const PlotRenderer = (props: { plot: Plot }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
 
-  useEffect(draw, [props.plot]);
+  useEffect(draw, [props]);
 
   return (
     <CanvasComponent

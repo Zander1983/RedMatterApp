@@ -10,7 +10,11 @@ import { snackbarService } from "uno-material-ui";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import useForceUpdate from "hooks/forceUpdate";
-import { Plot, PlotType } from "graph/resources/types";
+import {
+  Plot,
+  PlotSpecificWorkspaceData,
+  PlotType,
+} from "graph/resources/types";
 import { getFile, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 
@@ -46,28 +50,28 @@ var filePlotIdDict: any = {};
 var plotDownloadingFiles: any = {};
 
 function PlotComponent(props: {
-  plot: Plot;
-  plots: any;
+  plotRelevantResources: PlotSpecificWorkspaceData;
   sharedWorkspace: boolean;
   experimentId: string;
   canvasComponent: ReactNode;
 }) {
+  const { plot, file, gates, population } = props.plotRelevantResources;
+
   const rerender = useForceUpdate();
-  var plot = props.plot;
-  const xAxis = props.plot.xAxis;
-  const yAxis = props.plot.yAxis;
+  const xAxis = plot.xAxis;
+  const yAxis = plot.yAxis;
   const axes = getFile(getPopulation(plot.population).file).axes;
 
   const displayRef = React.useRef();
   const barRef = React.useRef();
 
-  const yPlotType = props.plot.yPlotType;
-  const xPlotType = props.plot.xPlotType;
+  const yPlotType = plot.yPlotType;
+  const xPlotType = plot.xPlotType;
 
   let oldXAxisValue: string | null = null;
   let oldYAxisValue: string | null = null;
 
-  // var files = dataManager.files.filter((x) => x.id !== props.plotFileId);
+  // var files = dataManager.files.filter((x) => x.id !== plotFileId);
 
   const [plotSetup, setPlotSetup] = React.useState(false);
   const [oldAxis, setOldAxis] = React.useState({
@@ -111,7 +115,7 @@ function PlotComponent(props: {
       if (
         plotDimensions !== undefined &&
         plot !== undefined &&
-        props.plot !== undefined
+        plot !== undefined
       ) {
         const { w, h } = plotDimensions;
         PlotResource.setWidthAndHeight(plot, w, h);
@@ -185,7 +189,7 @@ function PlotComponent(props: {
 
   // const downloadFile = (fileId: string) => {
   //   dataManager.downloadFileEvents([fileId]);
-  //   let plotDataId = props.props.plot.id;
+  //   let plotDataId = props.plot.id;
   //   if (plotDownloadingFiles[plotDataId]) {
   //     plotDownloadingFiles[plotDataId] =
   //       plotDownloadingFiles[plotDataId].concat(fileId);
@@ -217,23 +221,23 @@ function PlotComponent(props: {
   // };
 
   // useEffect(() => {
-  //   if (!filePlotIdDict[props.props.plot.id])
-  //     filePlotIdDict[props.props.plot.id] = {};
+  //   if (!filePlotIdDict[props.plot.id])
+  //     filePlotIdDict[props.plot.id] = {};
   //   let updateWorkspaceListner = dataManager.addObserver(
   //     "updateWorkspace",
   //     () => {
   //       if (
   //         dataManager.letUpdateBeCalledForAutoSave &&
+  //         plot &&
   //         props.plot &&
-  //         props.props.plot &&
-  //         (dataManager.redrawPlotIds.includes(props.plot?.plotData?.id) ||
+  //         (dataManager.redrawPlotIds.includes(plot?.plotData?.id) ||
   //           dataManager.redrawPlotIds.includes(
-  //             props.plot?.plotData?.parentPlotId
+  //             plot?.plotData?.parentPlotId
   //           ))
   //       ) {
   //         plotUpdater();
   //         let inx = dataManager.redrawPlotIds.findIndex(
-  //           (x) => x == props.props.plot.id
+  //           (x) => x == props.plot.id
   //         );
   //         delete dataManager.redrawPlotIds[inx];
   //       }
@@ -245,14 +249,14 @@ function PlotComponent(props: {
   //     () => {
   //       if (
   //         dataManager.letUpdateBeCalledForAutoSave &&
-  //         (dataManager.redrawPlotIds.includes(props.plot?.plotData?.id) ||
+  //         (dataManager.redrawPlotIds.includes(plot?.plotData?.id) ||
   //           dataManager.redrawPlotIds.includes(
-  //             props.plot?.plotData?.parentPlotId
+  //             plot?.plotData?.parentPlotId
   //           ))
   //       ) {
   //         updatePlotMovement();
   //         let inx = dataManager.redrawPlotIds.findIndex(
-  //           (x) => x == props.props.plot.id
+  //           (x) => x == props.plot.id
   //         );
   //         delete dataManager.redrawPlotIds[inx];
   //       }
@@ -263,11 +267,11 @@ function PlotComponent(props: {
   //     plotRemoveListner = dataManager.addObserver(
   //       "removePlotFromWorkspace",
   //       () => {
-  //         if (props.plot && props.props.plot) {
+  //         if (plot && props.plot) {
   //           let filePlotDataIds: any = filePlotIdDict
-  //             ? Object.values(filePlotIdDict[props.props.plot.id]) &&
-  //               Object.values(filePlotIdDict[props.props.plot.id]).length > 0
-  //               ? Object.values(filePlotIdDict[props.props.plot.id]).map(
+  //             ? Object.values(filePlotIdDict[props.plot.id]) &&
+  //               Object.values(filePlotIdDict[props.plot.id]).length > 0
+  //               ? Object.values(filePlotIdDict[props.plot.id]).map(
   //                   (x: any) => x.id
   //                 )
   //               : []
@@ -276,21 +280,21 @@ function PlotComponent(props: {
   //           let existingPlotDataIds = plots.map((x: any) => x.plotID);
   //           let plotData: any = [];
   //           plotData = plotData.concat(
-  //             props.props.plot.histogramBarOverlays.filter(
+  //             props.plot.histogramBarOverlays.filter(
   //               (x: any) =>
   //                 !existingPlotDataIds.includes(x.plotId) &&
   //                 !filePlotDataIds.includes(x.plotId)
   //             )
   //           );
   //           plotData = plotData.concat(
-  //             props.props.plot.histogramOverlays.filter(
+  //             props.plot.histogramOverlays.filter(
   //               (x: any) =>
   //                 !existingPlotDataIds.includes(x.plotId) &&
   //                 !filePlotDataIds.includes(x.plotId)
   //             )
   //           );
   //           if (plotData && plotData.length > 0) {
-  //             props.props.plot.removeAnyOverlay(plotData[0].plotId);
+  //             props.plot.removeAnyOverlay(plotData[0].plotId);
   //             plotUpdater();
   //           }
   //         }
@@ -307,26 +311,26 @@ function PlotComponent(props: {
   //   let downloadedListner = dataManager.addObserver("updateDownloaded", () => {
   //     if (
   //       Object.keys(plotDownloadingFiles).length > 0 &&
-  //       plotDownloadingFiles[props.props.plot.id]
+  //       plotDownloadingFiles[props.plot.id]
   //     ) {
-  //       let plotDownFiles = plotDownloadingFiles[props.props.plot.id];
+  //       let plotDownFiles = plotDownloadingFiles[props.plot.id];
   //       let files = dataManager.downloaded.filter((x) =>
   //         plotDownFiles.includes(x.id)
   //       );
   //       if (
   //         files &&
   //         files.length > 0 &&
-  //         filePlotIdDict[props.props.plot.id] &&
-  //         filePlotIdDict[props.props.plot.id][files[0].id]
+  //         filePlotIdDict[props.plot.id] &&
+  //         filePlotIdDict[props.plot.id][files[0].id]
   //       ) {
   //         snackbarService.showSnackbar("Overlay added", "success");
   //         addFile(
   //           files[0].id,
-  //           filePlotIdDict[props.props.plot.id][files[0].id].type,
+  //           filePlotIdDict[props.plot.id][files[0].id].type,
   //           COMMON_CONSTANTS.FILE
   //         );
   //         plotDownFiles = plotDownFiles.filter((x: any) => x !== files[0].id);
-  //         plotDownloadingFiles[props.props.plot.id] = plotDownFiles;
+  //         plotDownloadingFiles[props.plot.id] = plotDownFiles;
   //       }
   //     }
   //     setDownloadedFiles(dataManager.downloaded);
@@ -347,14 +351,14 @@ function PlotComponent(props: {
   //   });
   //   let fileHistOverlay: any = [];
   //   fileHistOverlay = fileHistOverlay.concat(
-  //     props.props.plot.histogramBarOverlays
+  //     props.plot.histogramBarOverlays
   //       .filter((x) => x.plotSource === COMMON_CONSTANTS.FILE)
   //       .map((y) => {
   //         return { histObj: y, type: COMMON_CONSTANTS.Bar };
   //       })
   //   );
   //   fileHistOverlay = fileHistOverlay.concat(
-  //     props.props.plot.histogramOverlays
+  //     props.plot.histogramOverlays
   //       .filter((x) => x.plotSource === COMMON_CONSTANTS.FILE)
   //       .map((y) => {
   //         return { histObj: y, type: COMMON_CONSTANTS.Line };
@@ -362,9 +366,9 @@ function PlotComponent(props: {
   //   );
   //   for (let i = 0; i < fileHistOverlay.length; i++) {
   //     let obj = fileHistOverlay[i];
-  //     if (!filePlotIdDict[props.props.plot.id])
-  //       filePlotIdDict[props.props.plot.id] = {};
-  //     filePlotIdDict[props.props.plot.id][obj.histObj.plot.file.id] = {
+  //     if (!filePlotIdDict[props.plot.id])
+  //       filePlotIdDict[props.plot.id] = {};
+  //     filePlotIdDict[props.plot.id][obj.histObj.plot.file.id] = {
   //       id: obj.histObj.plotId,
   //       type: obj.type,
   //     };
@@ -393,17 +397,17 @@ function PlotComponent(props: {
   //   switch (plotSource) {
   //     case COMMON_CONSTANTS.FILE:
   //       if (
-  //         filePlotIdDict[props.props.plot.id] &&
-  //         filePlotIdDict[props.props.plot.id][pltFlObj.id] &&
-  //         filePlotIdDict[props.props.plot.id][pltFlObj.id].id
+  //         filePlotIdDict[props.plot.id] &&
+  //         filePlotIdDict[props.plot.id][pltFlObj.id] &&
+  //         filePlotIdDict[props.plot.id][pltFlObj.id].id
   //       ) {
   //         let plotObj = isHistogramSelected(
-  //           filePlotIdDict[props.props.plot.id][pltFlObj.id].id
+  //           filePlotIdDict[props.plot.id][pltFlObj.id].id
   //         );
   //         let plotData = plotObj.plot.plot;
   //         if (plotObj.type === plotType) {
   //           removeOverlayAsPerType(plotType, plotData.id);
-  //           filePlotIdDict[props.props.plot.id][pltFlObj.id] = null;
+  //           filePlotIdDict[props.plot.id][pltFlObj.id] = null;
   //         } else {
   //           addOverlayAsPerType(
   //             plotType,
@@ -416,10 +420,10 @@ function PlotComponent(props: {
   //         if (isDownloaded(pltFlObj.id)) {
   //           addFile(pltFlObj.id, plotType, COMMON_CONSTANTS.FILE);
   //         } else {
-  //           if (!filePlotIdDict[props.props.plot.id])
-  //             filePlotIdDict[props.props.plot.id] = {};
-  //           if (!filePlotIdDict[props.props.plot.id][pltFlObj.id])
-  //             filePlotIdDict[props.props.plot.id][pltFlObj.id] = {
+  //           if (!filePlotIdDict[props.plot.id])
+  //             filePlotIdDict[props.plot.id] = {};
+  //           if (!filePlotIdDict[props.plot.id][pltFlObj.id])
+  //             filePlotIdDict[props.plot.id][pltFlObj.id] = {
   //               id: "",
   //               type: plotType,
   //             };
@@ -477,21 +481,21 @@ function PlotComponent(props: {
   //     newPlotData = plotData;
   //   }
 
-  //   let plotRanges = props.props.plot.ranges.get(props.props.plot.xAxis);
-  //   let newPlotRanges = newPlotData.ranges.get(props.props.plot.xAxis);
+  //   let plotRanges = props.plot.ranges.get(props.plot.xAxis);
+  //   let newPlotRanges = newPlotData.ranges.get(props.plot.xAxis);
 
   //   let obj = getMinMax(plotRanges, newPlotRanges);
-  //   setAxisRange(obj.min, obj.max, props.props.plot.xAxis);
+  //   setAxisRange(obj.min, obj.max, props.plot.xAxis);
 
   //   addOverlayAsPerType(plotType, newPlotData, "", plotSource);
 
   //   if (addNewPlot) {
-  //     if (!filePlotIdDict[props.props.plot.id])
-  //       filePlotIdDict[props.props.plot.id] = {};
-  //     if (!filePlotIdDict[props.props.plot.id][id])
-  //       filePlotIdDict[props.props.plot.id][id] = {};
+  //     if (!filePlotIdDict[props.plot.id])
+  //       filePlotIdDict[props.plot.id] = {};
+  //     if (!filePlotIdDict[props.plot.id][id])
+  //       filePlotIdDict[props.plot.id][id] = {};
 
-  //     filePlotIdDict[props.props.plot.id][id] = {
+  //     filePlotIdDict[props.plot.id][id] = {
   //       id: newPlotData.id,
   //       type: plotType,
   //     };
@@ -499,10 +503,10 @@ function PlotComponent(props: {
   // };
 
   // const isHistogramSelected = (plotId: string) => {
-  //   let plot1 = props.props.plot.histogramBarOverlays.find(
+  //   let plot1 = props.plot.histogramBarOverlays.find(
   //     (x) => x.plotId === plotId
   //   );
-  //   let plot2 = props.props.plot.histogramOverlays.find(
+  //   let plot2 = props.plot.histogramOverlays.find(
   //     (x) => x.plotId === plotId
   //   );
 
@@ -543,7 +547,7 @@ function PlotComponent(props: {
 
   const handleHist = (targetAxis: "x" | "y") => {
     if (isPlotHistogram()) {
-      props.plot.histogramAxis = "";
+      plot.histogramAxis = "";
       if (targetAxis === "x") {
         const axis =
           oldYAxisValue && oldYAxisValue !== xAxis
@@ -580,17 +584,17 @@ function PlotComponent(props: {
   // ) => {
   //   switch (type) {
   //     case COMMON_CONSTANTS.Bar:
-  //       props.props.plot.addBarOverlay(
+  //       props.plot.addBarOverlay(
   //         plotData,
   //         color,
   //         plotData.id,
   //         plotSource
   //       );
-  //       props.props.plot.removeOverlay(plotData.id);
+  //       props.plot.removeOverlay(plotData.id);
   //       break;
   //     case COMMON_CONSTANTS.Line:
-  //       props.props.plot.addOverlay(plotData, color, plotData.id, plotSource);
-  //       props.props.plot.removeBarOverlay(plotData.id);
+  //       props.plot.addOverlay(plotData, color, plotData.id, plotSource);
+  //       props.plot.removeBarOverlay(plotData.id);
   //       break;
   //   }
   // };
@@ -598,21 +602,21 @@ function PlotComponent(props: {
   // const removeOverlayAsPerType = (type: string, plotDataId: string) => {
   //   switch (type) {
   //     case COMMON_CONSTANTS.Bar:
-  //       props.props.plot.removeBarOverlay(plotDataId);
+  //       props.plot.removeBarOverlay(plotDataId);
   //       break;
   //     case COMMON_CONSTANTS.Line:
-  //       props.props.plot.removeOverlay(plotDataId);
+  //       props.plot.removeOverlay(plotDataId);
   //       break;
   //   }
   // };
 
   // const setAxisRange = (min: number, max: number, axis: string) => {
-  //   if (min === 69 && max === 420) props.props.plot.resetOriginalRanges();
-  //   else props.props.plot.ranges.set(axis, [min, max]);
+  //   if (min === 69 && max === 420) props.plot.resetOriginalRanges();
+  //   else props.plot.ranges.set(axis, [min, max]);
   //   if (lastUpdate + 100 < new Date().getTime()) {
-  //     dataManager.redrawPlotIds.push(props.props.plot.id);
-  //     if (props.props.plot.parentPlotId) {
-  //       dataManager.redrawPlotIds.push(props.props.plot.parentPlotId);
+  //     dataManager.redrawPlotIds.push(props.plot.id);
+  //     if (props.plot.parentPlotId) {
+  //       dataManager.redrawPlotIds.push(props.plot.parentPlotId);
   //     }
   //     dataManager.updateWorkspace();
   //     setLastUpdate(new Date().getTime());
@@ -718,14 +722,14 @@ function PlotComponent(props: {
                   setAxis("x", e.target.value)
                 );
               }}
-              disabled={props.plot.histogramAxis === "horizontal"}
+              disabled={plot.histogramAxis === "horizontal"}
               value={xAxis}
             >
-              {Object.keys(
-                getPopulation(props.plot.population).defaultRanges
-              ).map((e: any) => (
-                <MenuItem value={e}>{e}</MenuItem>
-              ))}
+              {Object.keys(getPopulation(plot.population).defaultRanges).map(
+                (e: any) => (
+                  <MenuItem value={e}>{e}</MenuItem>
+                )
+              )}
               <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
               <MenuItem
                 value={"hist"}
@@ -768,7 +772,7 @@ function PlotComponent(props: {
                   value={"0"}
                 >
                   <MenuItem value={"0"}>Histogram overlays</MenuItem> */}
-            {/* {props.plots.map((e: any) => (
+            {/* {plots.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"
                         value={e}
@@ -860,9 +864,9 @@ function PlotComponent(props: {
                       value={e}
                       style={{
                         backgroundColor: getHistogramSelectedColor(
-                          filePlotIdDict[props.props.plot.id]
-                            ? filePlotIdDict[props.props.plot.id][e.id]
-                              ? filePlotIdDict[props.props.plot.id][e.id].id
+                          filePlotIdDict[props.plot.id]
+                            ? filePlotIdDict[props.plot.id][e.id]
+                              ? filePlotIdDict[props.plot.id][e.id].id
                               : ""
                             : ""
                         ),
@@ -889,11 +893,11 @@ function PlotComponent(props: {
                           }}
                           onClick={() => {
                             if (
-                              filePlotIdDict[props.props.plot.id][e.id] &&
-                              filePlotIdDict[props.props.plot.id][e.id].id
+                              filePlotIdDict[props.plot.id][e.id] &&
+                              filePlotIdDict[props.plot.id][e.id].id
                             ) {
                               let plotObj = isHistogramSelected(
-                                filePlotIdDict[props.props.plot.id][e.id].id
+                                filePlotIdDict[props.plot.id][e.id].id
                               );
                               if (plotObj) {
                                 removeOverlayAsPerType(
@@ -902,19 +906,19 @@ function PlotComponent(props: {
                                 );
                                 setHistogramOverlayOpen(false);
                               }
-                              filePlotIdDict[props.props.plot.id][e.id] = null;
+                              filePlotIdDict[props.plot.id][e.id] = null;
                             }
                           }}
                         >
                           {e.label}
                         </span>
                         <Button
-                          id={`${props.props.plot.id}_${e.id}_bar_file`}
+                          id={`${props.plot.id}_${e.id}_bar_file`}
                           style={{
                             backgroundColor: isOptionSelected(
-                              filePlotIdDict[props.props.plot.id]
-                                ? filePlotIdDict[props.props.plot.id][e.id]
-                                  ? filePlotIdDict[props.props.plot.id][e.id].id
+                              filePlotIdDict[props.plot.id]
+                                ? filePlotIdDict[props.plot.id][e.id]
+                                  ? filePlotIdDict[props.plot.id][e.id].id
                                   : ""
                                 : "",
                               COMMON_CONSTANTS.Bar
@@ -953,12 +957,12 @@ function PlotComponent(props: {
                           )}
                         </Button>
                         <Button
-                          id={`${props.props.plot.id}_${e.id}_line_file`}
+                          id={`${props.plot.id}_${e.id}_line_file`}
                           style={{
                             backgroundColor: isOptionSelected(
-                              filePlotIdDict[props.props.plot.id]
-                                ? filePlotIdDict[props.props.plot.id][e.id]
-                                  ? filePlotIdDict[props.props.plot.id][e.id].id
+                              filePlotIdDict[props.plot.id]
+                                ? filePlotIdDict[props.plot.id][e.id]
+                                  ? filePlotIdDict[props.plot.id][e.id].id
                                   : ""
                                 : "",
                               COMMON_CONSTANTS.Line

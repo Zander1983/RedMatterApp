@@ -474,7 +474,7 @@ export const createNewPlotFromFile = async (file: File) => {
     (e) => e.file === file.id && e.gates.length === 0
   );
   let population: Population;
-  if (popQuery.length > 0) {
+  if (popQuery.length > 0 && false) {
     population = popQuery[0];
   } else {
     population = populations.createPopulation({
@@ -508,9 +508,11 @@ export const createSubpopPlot = async (
       return { gate: e.id, inverseGating: false } as PopulationGateType;
     }),
   ];
-  store.dispatch({
+  await store.dispatch({
     type: "workspace.UPDATE_POPULATION",
-    payload: { population: pop },
+    payload: {
+      population: pop,
+    },
   });
 };
 

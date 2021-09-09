@@ -7,6 +7,7 @@ import FCSServices from "services/FCSServices/FCSServices";
 import { OvalGate, PolygonGate } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import { getDataset } from "graph/resources/dataset";
+import { getPopulation } from "graph/utils/workspace";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
@@ -136,11 +137,12 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   }
 
   public drawPoints() {
-    const pointCount = this.xAxis.length;
     const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
+    let xData = points[this.plot.xAxis];
+    let yData = points[this.plot.yAxis];
+    const pointCount = xData.length;
+
     const fcsServices = new FCSServices();
-    let xData = this.xAxis;
-    let yData = this.yAxis;
     let customRanges: [[number, number], [number, number]] = [
       this.ranges.x,
       this.ranges.y,

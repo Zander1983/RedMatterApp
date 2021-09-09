@@ -117,8 +117,18 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       };
 
     case graphActions.UPDATE_GATE:
+      const updateGate: Gate = action.payload.gate;
+      if (!state.gates.find((e) => e.id === updateGate.id)) {
+        console.error("[workspace.UPDATE_GATE] Gate does not exist");
+        return state;
+      }
+      state.gates = state.gates.map((e) => {
+        if (e.id === updateGate.id) return { ...e, ...updateGate };
+        else return e;
+      });
       return {
         ...state,
+        gates: state.gates,
       };
 
     case graphActions.DELETE_GATE:

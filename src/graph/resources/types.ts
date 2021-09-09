@@ -43,6 +43,7 @@ export interface Gate {
   name: string;
   color: Color;
   parents: GateID[];
+  children: GateID[];
 }
 
 export interface Gate1D extends Gate {
@@ -146,4 +147,11 @@ export interface Workspace {
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
+}
+
+export interface PlotSpecificWorkspaceData {
+  gates: Gate[];
+  file: File;
+  plot: Plot;
+  population: Population;
 }

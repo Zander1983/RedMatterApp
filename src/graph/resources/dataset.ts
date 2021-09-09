@@ -7,12 +7,14 @@ import {
   FileID,
   Gate,
   Gate2D,
+  Point,
   PolygonGate,
   PopulationGateType,
 } from "./types";
 
 import * as GateResource from "graph/resources/gates";
 import { pointInsidePolygon } from "graph/utils/euclidianPlane";
+import FCSServices from "services/FCSServices/FCSServices";
 
 /*
     Public
@@ -106,9 +108,10 @@ class DatasetStorage {
 
 let axesLookup: { [index: string]: number } = {};
 
-const isPointInside = (
+export const isPointInside = (
   gate: { gate: PolygonGate; inverseGating: boolean },
-  point: number[]
+  point: number[],
+  cond: boolean = false
 ): boolean => {
   const p = {
     x: point[axesLookup[gate.gate.xAxis]],
@@ -116,7 +119,7 @@ const isPointInside = (
   };
   let pointInside = false;
   if (gate.gate.gateType === "polygon") {
-    pointInsidePolygon(p, gate.gate.points);
+    pointInside = pointInsidePolygon(p, gate.gate.points);
   } else {
     throw Error("gate type not supported");
   }
@@ -196,15 +199,16 @@ export const getDatasetFilteredPoints = (
   }
   const transformedDataset: Dataset = {};
   const addIndexes: number[] = [];
+  let dontAdd = false;
   for (let i = 0; i < size; i++) {
+    dontAdd = false;
     const x: number[] = [];
     for (const axis of axes) {
       x.push(dataset[axis][i]);
     }
-    let dontAdd = false;
     for (const gate of gates) {
-      const inside = isPointInside(gate, x);
-      if (gate.inverseGating ? inside : !inside) {
+      const inside = isPointInside(gate, x, i < 10);
+      if (!inside) {
         dontAdd = true;
         break;
       }
@@ -220,4 +224,44 @@ export const getDatasetFilteredPoints = (
       transformedDataset[axis][i] = dataset[axis][addIndexes[i]];
   }
   return transformedDataset;
+};
+
+export const isPointInsideWithLogicle = (
+  gate: { gate: PolygonGate; inverseGating: boolean },
+  point: Point,
+  forceRaw: boolean = false
+): boolean => {
+  let points = gate.gate.points.map((e) => {
+    return { ...e };
+  });
+  if (forceRaw) {
+    return pointInsidePolygon(point, points);
+  }
+  const ranges = [gate.gate.xAxisOriginalRanges, gate.gate.yAxisOriginalRanges];
+  const fcsServices = new FCSServices();
+  const convert = (e: { x: number; y: number }) => {
+    if (gate.gate.xAxisType === "bi")
+      e.x = fcsServices.logicleMarkTransformer(
+        [e.x],
+        ranges[0][0],
+        ranges[0][1]
+      )[0];
+    if (gate.gate.yAxisType === "bi")
+      e.y = fcsServices.logicleMarkTransformer(
+        [e.y],
+        ranges[1][0],
+        ranges[1][1]
+      )[0];
+    return e;
+  };
+  const rawConvert = (e: { x: number; y: number }) => {
+    if (gate.gate.xAxisType === "bi")
+      e.x = (e.x - ranges[0][0]) / (ranges[0][1] - ranges[0][0]);
+    if (gate.gate.yAxisType === "bi")
+      e.y = (e.y - ranges[1][0]) / (ranges[1][1] - ranges[1][0]);
+    return e;
+  };
+  points = points.map((e) => rawConvert(e));
+  point = convert(point);
+  return pointInsidePolygon(point, points);
 };

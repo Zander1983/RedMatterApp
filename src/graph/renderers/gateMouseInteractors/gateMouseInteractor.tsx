@@ -79,9 +79,16 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
+    gate.name = "Unammed gate";
     await store.dispatch({
       type: "workspace.ADD_GATE",
       payload: { gate },
+    });
+    let plot = this.plotter.plot;
+    plot.gates = [...plot.gates, gate.id];
+    store.dispatch({
+      type: "workspace.UPDATE_PLOT",
+      payload: { plot },
     });
     PlotResource.createSubpopPlot(this.plotter.plot, [gate]);
     this.end();

@@ -7,9 +7,11 @@ import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygon
 import ScatterPlotter from "../plotters/scatterPlotter";
 import { Gate, Point, PolygonGate } from "graph/resources/types";
 import { createGate } from "graph/resources/gates";
-import { getPopulation, getWorkspace } from "graph/utils/workspace";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
+import { isPointInsideWithLogicle } from "graph/resources/dataset";
+import { store } from "redux/store";
 
 export const selectPointDist = 15;
 
@@ -87,101 +89,111 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.isDraggingGate = false;
   }
 
-  private validateGateOnSpace(gate: Gate) {
-    // return (
-    //   gate.xAxis === this.plotter.plot.xAxis &&
-    //   gate.yAxis === this.plotter.plot.yAxis &&
-    //   gate.xAxisType === this.plotter.plot.xPlotType &&
-    //   gate.yAxisType === this.plotter.plot.yPlotType
-    // );
+  private validateGateOnSpace(gate: PolygonGate) {
+    return (
+      gate.xAxis === this.plotter.plot.xAxis &&
+      gate.yAxis === this.plotter.plot.yAxis &&
+      gate.xAxisType === this.plotter.plot.xPlotType &&
+      gate.yAxisType === this.plotter.plot.yPlotType
+    );
   }
 
   private detectGatesClicked(mouse: Point) {
-    // const abstractMouse = this.plotter.transformer.toAbstractPoint(
-    //   { ...mouse },
-    //   true
-    // );
-    // this.plotter.gates
-    //   .filter((e) => this.validateGateOnSpace(e))
-    //   .forEach((gate) => {
-    //     if ((gate as PolygonGate).isPointInside(abstractMouse, true)) {
-    //       this.isDraggingGate = true;
-    //       this.gatePivot = abstractMouse;
-    //       this.targetEditGate = gate as PolygonGate;
-    //       return;
-    //     }
-    //   });
+    const abstractMouse = this.plotter.transformer.toAbstractPoint(
+      { ...mouse },
+      true
+    );
+    this.plotter.gates
+      .filter((e) => this.validateGateOnSpace(e as PolygonGate))
+      .forEach((gate) => {
+        if (
+          isPointInsideWithLogicle(
+            { gate: gate as PolygonGate, inverseGating: false },
+            abstractMouse,
+            true
+          )
+        ) {
+          this.isDraggingGate = true;
+          this.gatePivot = abstractMouse;
+          this.targetEditGate = gate as PolygonGate;
+          return;
+        }
+      });
   }
 
   private detectPointsClicked(mouse: Point) {
-    // this.plotter.gates.forEach((gate) => {
-    //   if (gate instanceof PolygonGate && this.targetEditGate === null)
-    //     gate.points.forEach((p, i) => {
-    //       if (
-    //         this.targetEditGate === null &&
-    //         euclidianDistance2D(
-    //           mouse,
-    //           this.plotter.transformer.toConcretePoint(
-    //             { ...p },
-    //             undefined,
-    //             true
-    //           )
-    //         ) <= selectPointDist
-    //       ) {
-    //         this.targetEditGate = gate;
-    //         this.targetPointIndex = i;
-    //         this.isDraggingVertex = true;
-    //       }
-    //     });
-    // });
+    this.plotter.gates.forEach((gate) => {
+      if (gate.gateType === "polygon" && this.targetEditGate === null)
+        gate.points.forEach((p, i) => {
+          if (
+            this.targetEditGate === null &&
+            euclidianDistance2D(
+              mouse,
+              this.plotter.transformer.toConcretePoint(
+                { ...p },
+                undefined,
+                true
+              )
+            ) <= selectPointDist
+          ) {
+            this.targetEditGate = gate;
+            this.targetPointIndex = i;
+            this.isDraggingVertex = true;
+          }
+        });
+    });
   }
 
   private gateMoveToMousePosition(mouse: Point) {
-    //TODO
-    // const gatePivot = this.plotter.transformer.toConcretePoint(
-    //   {
-    //     ...this.gatePivot,
-    //   },
-    //   undefined,
-    //   true
-    // );
-    // let offset = {
-    //   x: mouse.x - gatePivot.x,
-    //   y: mouse.y - gatePivot.y,
-    // };
-    // this.gatePivot = this.plotter.transformer.toAbstractPoint(
-    //   {
-    //     ...mouse,
-    //   },
-    //   true
-    // );
-    // const gateState = this.targetEditGate.getState();
-    // for (let index = 0; index < gateState.points.length; index++) {
-    //   gateState.points[index] = this.plotter.transformer.toConcretePoint(
-    //     gateState.points[index],
-    //     undefined,
-    //     true
-    //   );
-    //   gateState.points[index] = {
-    //     x: gateState.points[index].x + offset.x,
-    //     y: gateState.points[index].y + offset.y,
-    //   };
-    //   gateState.points[index] = this.plotter.transformer.toAbstractPoint(
-    //     gateState.points[index],
-    //     true
-    //   );
-    // }
-    // this.targetEditGate.update(gateState);
+    const gatePivot = this.plotter.transformer.toConcretePoint(
+      {
+        ...this.gatePivot,
+      },
+      undefined,
+      true
+    );
+    let offset = {
+      x: mouse.x - gatePivot.x,
+      y: mouse.y - gatePivot.y,
+    };
+    this.gatePivot = this.plotter.transformer.toAbstractPoint(
+      {
+        ...mouse,
+      },
+      true
+    );
+    const gateState = this.targetEditGate;
+    for (let index = 0; index < gateState.points.length; index++) {
+      gateState.points[index] = this.plotter.transformer.toConcretePoint(
+        gateState.points[index],
+        undefined,
+        true
+      );
+      gateState.points[index] = {
+        x: gateState.points[index].x + offset.x,
+        y: gateState.points[index].y + offset.y,
+      };
+      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+        gateState.points[index],
+        true
+      );
+    }
+    store.dispatch({
+      type: "workspace.UPDATE_GATE",
+      payload: { gate: gateState },
+    });
   }
 
   private pointMoveToMousePosition(mouse: Point) {
-    //TODO
-    // const gateState = this.targetEditGate.getState();
-    // gateState.points[this.targetPointIndex] =
-    //   this.plotter.transformer.rawAbstractLogicleToLinear(
-    //     this.plotter.transformer.toAbstractPoint(mouse)
-    //   );
-    // this.targetEditGate.update(gateState);
+    const gateState = this.targetEditGate;
+    gateState.points[this.targetPointIndex] =
+      this.plotter.transformer.rawAbstractLogicleToLinear(
+        this.plotter.transformer.toAbstractPoint(mouse)
+      );
+    store.dispatch({
+      type: "workspace.UPDATE_GATE",
+      payload: { gate: gateState },
+    });
   }
 
   private reset() {
@@ -225,10 +237,19 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       gateType: "polygon",
       id: createID(),
       name: "New Gate",
+      children: [],
     };
-    // for (const gate of this.plotter.plot.population.map((e) => e.gate)) {
-    //   gate.children.push(newGate);
-    // }
+    const popGates = getPopulation(this.plotter.plot.population).gates.map(
+      (e) => e.gate
+    );
+    for (let gate of popGates) {
+      let popGate = getGate(gate);
+      popGate.children.push(newGate.id);
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate: popGate },
+      });
+    }
     return newGate;
   }
 
