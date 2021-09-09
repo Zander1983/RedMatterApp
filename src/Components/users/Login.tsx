@@ -76,6 +76,7 @@ const Login = (props: any) => {
         );
         return;
       }
+      //@ts-ignore
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");
     }
