@@ -70,7 +70,7 @@ const PlotRenderer = React.memo(
       setPlotterState(selectedPlotter);
       selectedPlotter.draw();
       const gatingType = plot.gatingActive;
-      if (lastGatingType !== gatingType) {
+      if (lastGatingType !== gatingType && plot.xAxis !== plot.yAxis) {
         unsetGating("polygon");
         if (gatingType === "polygon") {
           setGating("polygon", true);

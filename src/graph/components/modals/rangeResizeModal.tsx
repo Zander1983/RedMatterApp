@@ -59,7 +59,7 @@ const RangeResizeModal = (props: {
     setMinY(plotMinY.toString());
     setMaxY(plotMaxY.toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.plot]);
+  }, [props.plot, props.open]);
 
   const setPlotsAxisRanges = (xRange: Range, yRange: Range) => {
     const histogramAxis = plot.histogramAxis;
@@ -97,23 +97,28 @@ const RangeResizeModal = (props: {
   };
 
   const commitRangeChange = () => {
-    // try {
-    const iMinX = parseFloat(minX);
-    const iMaxX = parseFloat(maxX);
-    const iMinY = parseFloat(minY);
-    const iMaxY = parseFloat(maxY);
-    if (isNaN(iMinX + iMinY + iMaxX + iMaxY)) throw Error("Invalid ranges");
+    try {
+      const iMinX = parseFloat(minX);
+      const iMaxX = parseFloat(maxX);
+      const iMinY = parseFloat(minY);
+      const iMaxY = parseFloat(maxY);
+      if (
+        isNaN(iMinX + iMinY + iMaxX + iMaxY) ||
+        iMinX >= iMaxX ||
+        iMinY >= iMaxY
+      )
+        throw Error("Invalid ranges");
 
-    setPlotsAxisRanges([iMinX, iMinY] as Range, [iMaxX, iMaxY] as Range);
+      setPlotsAxisRanges([iMinX, iMaxX] as Range, [iMinY, iMaxY] as Range);
 
-    setMinX(iMinX.toString());
-    setMaxX(iMaxX.toString());
-    setMinY(iMinY.toString());
-    setMaxY(iMaxY.toString());
-    props.closeCall.f(props.closeCall.ref);
-    // } catch {
-    //   snackbarService.showSnackbar("Invalid ranges", "error");
-    // }
+      setMinX(iMinX.toString());
+      setMaxX(iMaxX.toString());
+      setMinY(iMinY.toString());
+      setMaxY(iMaxY.toString());
+      props.closeCall.f(props.closeCall.ref);
+    } catch {
+      snackbarService.showSnackbar("Invalid ranges", "error");
+    }
   };
 
   const setDefaultRanges = (axis: "x" | "y") => {

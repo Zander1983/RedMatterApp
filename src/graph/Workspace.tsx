@@ -95,6 +95,7 @@ let workspaceSharedLocal = false;
 function Workspace(props: { experimentId: string; shared: boolean }) {
   const store = useStore();
   //@ts-ignore
+  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   let flowJoJson = {};

@@ -30,6 +30,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   plotter: ScatterPlotter | null = null;
   protected plugin: ScatterPolygonGatePlotter;
 
+  private lastGateUpdate: Date = new Date();
+  private updateParams: Gate | null = null;
+
   private points: Point[] = [];
   xAxis: string;
   yAxis: string;
@@ -200,6 +203,13 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.isDraggingVertex = false;
     this.targetEditGate = null;
     this.targetPointIndex = null;
+  }
+
+  protected gateUpdater(gate: Gate) {
+    store.dispatch({
+      type: "workspace.UPDATE_GATE",
+      payload: { gate },
+    });
   }
 
   protected instanceGate(): PolygonGate {

@@ -138,8 +138,8 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
   public drawPoints() {
     const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
-    let xData = points[this.plot.xAxis];
-    let yData = points[this.plot.yAxis];
+    let xData = points[0];
+    let yData = points[1];
     const pointCount = xData.length;
 
     const fcsServices = new FCSServices();

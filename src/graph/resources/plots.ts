@@ -18,6 +18,7 @@ import {
   File,
   Population,
   Gate2D,
+  Dataset,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -377,7 +378,11 @@ export const getXandYRanges = (
   return { x: plot.ranges[targetXAxis], y: plot.ranges[targetYAxis] };
 };
 
-export const getBins = (plot: Plot, binCount?: number, targetAxis?: string) => {
+export const getHistogramBins = (
+  plot: Plot,
+  binCount?: number,
+  targetAxis?: string
+) => {
   binCount = binCount === undefined ? getBinCount(plot) : binCount;
   const axisName =
     targetAxis === undefined
@@ -386,7 +391,7 @@ export const getBins = (plot: Plot, binCount?: number, targetAxis?: string) => {
         : plot.yAxis
       : targetAxis;
   let range = plot.ranges[axisName];
-  let axis = getAxis(plot, axisName);
+  let axis = getPopulationGatesFilteredData(plot)[targetAxis];
   if (
     (plot.xAxis === axisName && plot.xPlotType === "bi") ||
     (plot.yAxis === axisName && plot.yPlotType === "bi")
@@ -427,12 +432,37 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   commitPlotChange(plot);
 };
 
+export const getPopulationGatesFilteredData = (plot: Plot): Dataset => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  return filteredPoints;
+};
+
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
+};
+
+export const getXandYDataAndColors = (
+  plot: Plot
+): { points: [Float32Array, Float32Array]; colors: string[] } => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  const plotGates = plot.gates.map((e) => {
+    return { gate: e, inverseGating: false } as PopulationGateType;
+  });
+  const colors = getDatasetColors(dataset, plotGates);
+  return {
+    points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
+    colors,
+  };
 };
 
 export const findRangeBoundries = (
@@ -504,16 +534,4 @@ export const createSubpopPlot = async (
       population: pop,
     },
   });
-};
-
-export const getXandYDataAndColors = (plot: Plot) => {
-  const file = getPlotFile(plot);
-  const dataset = getDataset(file.id);
-  const population = getPopulation(plot.population);
-  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  const plotGates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const colors = getDatasetColors(dataset, plotGates);
-  return { points: filteredPoints, colors };
 };
