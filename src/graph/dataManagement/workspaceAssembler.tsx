@@ -13,43 +13,44 @@ import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 
 export default class WorkspaceAssembler {
   exportWorkspace(workspace: WorkspaceData): string {
-    const files: string[] = [];
-    workspace.files.forEach((e) => {
-      files.push(e.src + "://" + e.id);
-    });
-    const gates: Gate[] = [];
-    workspace.gates.forEach((e) => {
-      e = lodash.cloneDeep(e);
-      e.parents = e.parents.map((p: any) => p.id);
-      e.children = e.children.map((c: any) => c.id);
-      const gateObj = JSON.parse(JSON.stringify(e));
-      delete gateObj.observers;
-      gates.push(gateObj);
-    });
-    const plots: object[] = [];
-    workspace.plots.forEach((plot: any) => {
-      let nplot = lodash.cloneDeep(plot);
-      nplot.histogramBarOverlays.forEach((x: any) => {
-        if (x.plot && Object.keys(x.plot).length > 0)
-          x.plot = this.parsePlot(x.plot);
-      });
-      nplot.histogramOverlays.forEach((x: any) => {
-        if (x.plot && Object.keys(x.plot).length > 0)
-          x.plot = this.parsePlot(x.plot);
-      });
-      let p = this.parsePlot(nplot);
-      plots.push(p);
-    });
-    const name =
-      workspace.workspaceName === undefined ? "" : workspace.workspaceName;
+    // const files: string[] = [];
+    // workspace.files.forEach((e) => {
+    //   files.push(e.src + "://" + e.id);
+    // });
+    // const gates: Gate[] = [];
+    // workspace.gates.forEach((e) => {
+    //   e = lodash.cloneDeep(e);
+    //   e.parents = e.parents.map((p: any) => p.id);
+    //   e.children = e.children.map((c: any) => c.id);
+    //   const gateObj = JSON.parse(JSON.stringify(e));
+    //   delete gateObj.observers;
+    //   gates.push(gateObj);
+    // });
+    // const plots: object[] = [];
+    // workspace.plots.forEach((plot: any) => {
+    //   let nplot = lodash.cloneDeep(plot);
+    //   nplot.histogramBarOverlays.forEach((x: any) => {
+    //     if (x.plot && Object.keys(x.plot).length > 0)
+    //       x.plot = this.parsePlot(x.plot);
+    //   });
+    //   nplot.histogramOverlays.forEach((x: any) => {
+    //     if (x.plot && Object.keys(x.plot).length > 0)
+    //       x.plot = this.parsePlot(x.plot);
+    //   });
+    //   let p = this.parsePlot(nplot);
+    //   plots.push(p);
+    // });
+    // const name =
+    //   workspace.workspaceName === undefined ? "" : workspace.workspaceName;
+    // const workspaceJSON = JSON.stringify({
+    //   name,
+    //   files,
+    //   gates,
+    //   plots: plots === null || plots === undefined ? [] : plots,
+    // });
+    // return workspaceJSON;
 
-    const workspaceJSON = JSON.stringify({
-      name,
-      files,
-      gates,
-      plots: plots === null || plots === undefined ? [] : plots,
-    });
-    return workspaceJSON;
+    return "";
   }
   parsePlot(plot: any) {
     plot = lodash.cloneDeep(plot);
