@@ -35,6 +35,10 @@ const styles = {
     borderBottom: "solid 1px white",
     height: 30,
   },
+  fileEditInput: {
+    borderBottom: "solid 1px white",
+    height: 30,
+  },
 };
 
 const fileTempIdMap: any = {};
@@ -44,6 +48,8 @@ const Experiment = (props: any) => {
 
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
+  const [editingFileName, setEditingFileName] = useState<null | string>(null);
+  const [newFileName, setNewFileName] = useState<string>("");
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
@@ -333,6 +339,23 @@ const Experiment = (props: any) => {
 
   useEffect(() => {}, [experimentData]);
 
+  const updateExperimentFileName = (id: string, label: string) => {
+    const updatFileName = ExperimentFilesApiFetchParamCreator({
+      apiKey: userManager.getToken(),
+    }).editFiles(props.id, id, label, userManager.getToken());
+    axios
+      .put(updatFileName.url, { label }, updatFileName.options)
+      .then((e) => {
+        fetchExperimentData();
+      })
+      .catch((e) =>
+        snackbarService.showSnackbar(
+          "Could not edit file name, try again",
+          "error"
+        )
+      );
+  };
+
   return (
     <>
       {}
@@ -619,7 +642,7 @@ const Experiment = (props: any) => {
                           }}
                         >
                           <h3>
-                            <b
+                            {/* <b
                               style={{
                                 backgroundColor: "#ddf",
                                 border: "solid 1px #ddd",
@@ -628,7 +651,7 @@ const Experiment = (props: any) => {
                               }}
                             >
                               .{e.label?.substr(-3).toLowerCase()} file
-                            </b>
+                            </b> */}
                             <div style={{ display: "inline", width: 10 }}>
                               <Button
                                 onClick={() => {
@@ -641,7 +664,58 @@ const Experiment = (props: any) => {
                                 ></DeleteFilled>
                               </Button>
                             </div>
-                            {e.label}
+                            {editingFileName === e.id ? (
+                              <TextField
+                                style={{
+                                  width: "60%",
+                                }}
+                                InputProps={{
+                                  className: classes.fileEditInput,
+                                }}
+                                value={
+                                  editingFileName === e.id
+                                    ? newFileName
+                                    : e.label
+                                }
+                                onChange={(newName: any) => {
+                                  let newExperimentData = experimentData;
+                                  newExperimentData.files.forEach((f: any) => {
+                                    if (f.id === e.id)
+                                      f.label = newName.target.value;
+                                  });
+                                  setNewFileName(newName.target.value);
+                                  setExperimentData(newExperimentData);
+                                }}
+                                onKeyDown={(event: any) => {
+                                  if (event.keyCode === 13) {
+                                    updateExperimentFileName(e.id, newFileName);
+                                    setEditingFileName(null);
+                                  }
+                                }}
+                              ></TextField>
+                            ) : (
+                              <>{e.label}</>
+                            )}
+                            <Button
+                              style={{
+                                fontSize: 16,
+                                maxWidth: 30,
+                                minWidth: 30,
+                              }}
+                              onClick={() => {
+                                setNewFileName(e.label);
+                                setEditingFileName(
+                                  editingFileName ? null : e.id
+                                );
+                              }}
+                            >
+                              <EditOutlined
+                                style={{
+                                  color: "#66d",
+                                  marginTop: -4,
+                                }}
+                              />
+                            </Button>
                             {"   "}•{"   "}
                             <b
                               style={{

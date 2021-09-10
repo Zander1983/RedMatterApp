@@ -115,9 +115,12 @@ class DataManager extends ObserversFunctionality {
 
   @publishDecorator()
   @updateWorkspaceDecorator()
-  addNewPlotToWorkspace(plotData: PlotData): PlotID {
+  addNewPlotToWorkspace(
+    plotData: PlotData,
+    doDefaultLin: boolean = true
+  ): PlotID {
     this.currentWorkspace.plots.set(plotData.id, plotData);
-    plotData.setupPlot();
+    plotData.setupPlot(doDefaultLin);
     return plotData.id;
   }
 

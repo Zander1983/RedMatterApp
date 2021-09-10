@@ -188,6 +188,15 @@ export default function GateBar(props: any) {
           options={gates}
           value={gates.filter((e: any) => gateInPopulation(e.id))}
           noOptionsText={"All"}
+          onChange={(e, o) => {
+            if (o.length === 0) {
+              for (const gate of gates.filter((e: any) =>
+                gateInPopulation(e.id)
+              )) {
+                removeGateFromPopulation(gate.id);
+              }
+            }
+          }}
           disableCloseOnSelect
           getOptionLabel={(option) => option.name}
           renderOption={(option, { selected }) => (
@@ -262,6 +271,16 @@ export default function GateBar(props: any) {
           value={gates.filter((e: any) => gateInPlotGates(e.id))}
           disableCloseOnSelect
           getOptionLabel={(option) => option.name}
+          onChange={(e, o) => {
+            if (o.length === 0) {
+              for (const gate of gates.filter((e: any) =>
+                gateInPlotGates(e.id)
+              )) {
+                changeGatePlotState(gate.id, true);
+              }
+            }
+          }}
+          onReset={() => console.log("emptied0")}
           renderOption={(option, { selected }) => (
             <Button
               onClick={() => {

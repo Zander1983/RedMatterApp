@@ -180,7 +180,8 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       newPlotData.ranges.set(axis, [range[0], range[1]]);
       const overlayRes = newPlotData.getBins(
         Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
-        axis
+        axis,
+        this.plotData.population
       );
       overlayRes.list = overlayRes.list.map(
         (e: any) => e / this.DRAW_DIVISION_CONST
@@ -241,7 +242,11 @@ export default class HistogramPlotter extends PluginGraphPlotter {
             break;
         }
         newPlotData.ranges.set(axis, [range[0], range[1]]);
-        let overlayMainHist = newPlotData.getBins(this.bins, axis);
+        let overlayMainHist = newPlotData.getBins(
+          this.bins,
+          axis,
+          this.plotData.population
+        );
         let binsArray = [];
         for (let j = 0; j < this.bins; j++) {
           binsArray.push({
