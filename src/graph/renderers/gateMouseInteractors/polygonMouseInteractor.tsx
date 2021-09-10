@@ -31,7 +31,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   protected plugin: ScatterPolygonGatePlotter;
 
   private lastGateUpdate: Date = new Date();
-  private updateParams: Gate | null = null;
 
   private points: Point[] = [];
   xAxis: string;
@@ -181,10 +180,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         true
       );
     }
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate: gateState },
-    });
+    this.gateUpdater(gateState);
   }
 
   private pointMoveToMousePosition(mouse: Point) {
@@ -193,10 +189,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.plotter.transformer.rawAbstractLogicleToLinear(
         this.plotter.transformer.toAbstractPoint(mouse)
       );
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate: gateState },
-    });
+    this.gateUpdater(gateState);
   }
 
   private reset() {
@@ -205,11 +198,27 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.targetPointIndex = null;
   }
 
+  private updateInterval = 20; // miliseconds
   protected gateUpdater(gate: Gate) {
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    console.log("gateUpdater called");
+    if (
+      this.lastGateUpdate.getTime() + this.updateInterval >
+      new Date().getTime()
+    ) {
+      const waitUntilCurrentCycleTimesOut =
+        this.lastGateUpdate.getTime() +
+        this.updateInterval -
+        new Date().getTime() +
+        1;
+      console.log("not executed, wait", waitUntilCurrentCycleTimesOut, "ms");
+      setTimeout(() => this.gateUpdater(gate), waitUntilCurrentCycleTimesOut);
+    } else {
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate },
+      });
+      this.lastGateUpdate = new Date();
+    }
   }
 
   protected instanceGate(): PolygonGate {
