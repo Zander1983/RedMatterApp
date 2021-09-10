@@ -33,7 +33,7 @@ export interface HistogramOverlay {
 }
 
 export interface PopulationGateType {
-  inverseGating: false;
+  inverseGating: boolean;
   gate: GateID;
 }
 

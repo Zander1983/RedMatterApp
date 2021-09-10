@@ -2,6 +2,7 @@ import { File, Gate, Plot, Population, Workspace } from "./types";
 
 export const graphActions = {
   RESET: "workspace.RESET",
+  RESET_EVERYTHING_BUT_FILES: "workspace.RESET_EVERYTHING_BUT_FILES",
   LOAD_WORKSPACE: "workspace.LOAD_WORKSPACE",
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
@@ -30,6 +31,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
   switch (action.type) {
     case graphActions.RESET:
       return initialState;
+
+    case graphActions.RESET_EVERYTHING_BUT_FILES:
+      return {
+        ...initialState,
+        files: state.files,
+      };
 
     case graphActions.LOAD_WORKSPACE:
       const newWorkspace: Workspace = action.payload.workspace;

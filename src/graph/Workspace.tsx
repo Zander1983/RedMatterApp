@@ -334,15 +334,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   // const [downloadingFiles, setDownloadingFiles] = React.useState([]);
 
-  const renameGate = (newName: string) => {
-    let newGate = workspace.gates[workspace.gates.length - 1];
-    newGate.name = newName;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate: newGate },
-    });
-  };
-
   // const getFiles = async (isShared: boolean, fileIds: Array<string>) => {
   //   let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
   //   let headers = isShared
@@ -488,7 +479,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
       {/* == MODALS == */}
       {initPlot ? (
         <div>
-          <GateNamePrompt open={namePromptOpen} sendName={renameGate} />
+          <GateNamePrompt />
 
           <AddFileModal
             open={addFileModalOpen}
@@ -553,7 +544,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
         options={{
           yes: () => {
             store.dispatch({
-              type: "workspace.RESET",
+              type: "workspace.RESET_EVERYTHING_BUT_FILES",
             });
           },
           no: () => {
