@@ -200,7 +200,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   private updateInterval = 20; // miliseconds
   protected gateUpdater(gate: Gate) {
-    console.log("gateUpdater called");
     if (
       this.lastGateUpdate.getTime() + this.updateInterval >
       new Date().getTime()
@@ -210,7 +209,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         this.updateInterval -
         new Date().getTime() +
         1;
-      console.log("not executed, wait", waitUntilCurrentCycleTimesOut, "ms");
       setTimeout(() => this.gateUpdater(gate), waitUntilCurrentCycleTimesOut);
     } else {
       store.dispatch({
