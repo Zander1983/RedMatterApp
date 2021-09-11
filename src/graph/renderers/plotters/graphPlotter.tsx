@@ -109,7 +109,6 @@ export default class GraphPlotter extends Plotter {
 
   public update(noLabels: boolean = false): void {
     super.update();
-    this.ranges = PlotResource.getXandYRanges(this.plot);
     this.getBins();
 
     if (noLabels === false) {
@@ -143,6 +142,7 @@ export default class GraphPlotter extends Plotter {
     this.plot = state.plot;
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
+    this.ranges = { x: state.xRange, y: state.yRange };
     this.xAxisName = state.xAxisName;
     this.yAxisName = state.yAxisName;
     this.width = state.width;

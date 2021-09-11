@@ -4,8 +4,10 @@ import Modal from "@material-ui/core/Modal";
 import React, { useEffect } from "react";
 import { snackbarService } from "uno-material-ui";
 import { Divider } from "antd";
-import { HistogramAxisType, Plot } from "graph/resources/types";
+import { Plot, Range } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
+import { store } from "redux/store";
+import { getPopulation, getWorkspace } from "graph/utils/workspace";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -34,38 +36,65 @@ const useStyles = makeStyles((theme) => ({
 const RangeResizeModal = (props: {
   open: boolean;
   closeCall: { f: Function; ref: Function };
-  inits: {
-    histogramAxis: HistogramAxisType;
-    axisX: string;
-    axisY: string;
-    minX: number;
-    maxX: number;
-    minY: number;
-    maxY: number;
-    plot: Plot;
-  };
-  callback: (
-    minX: number,
-    maxX: number,
-    minY: number,
-    maxY: number,
-    axisX: string,
-    axisY: string
-  ) => void;
+  plot: Plot;
 }) => {
+  const plot = props.plot;
   const classes = useStyles();
   const [minX, setMinX] = React.useState("0");
   const [maxX, setMaxX] = React.useState("0");
   const [minY, setMinY] = React.useState("0");
   const [maxY, setMaxY] = React.useState("0");
 
+  const xAxis = plot.xAxis;
+  const yAxis = plot.yAxis;
+
+  const plotMinX = plot.ranges[xAxis][0];
+  const plotMaxX = plot.ranges[xAxis][1];
+  const plotMinY = plot.ranges[yAxis][0];
+  const plotMaxY = plot.ranges[yAxis][1];
+
   useEffect(() => {
-    setMinX(props.inits.minX.toString());
-    setMaxX(props.inits.maxX.toString());
-    setMinY(props.inits.minY.toString());
-    setMaxY(props.inits.maxY.toString());
+    setMinX(plotMinX.toString());
+    setMaxX(plotMaxX.toString());
+    setMinY(plotMinY.toString());
+    setMaxY(plotMaxY.toString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.inits.minX, props.inits.minY, props.inits.maxX, props.inits.maxY]);
+  }, [props.plot, props.open]);
+
+  const setPlotsAxisRanges = (xRange: Range, yRange: Range) => {
+    const histogramAxis = plot.histogramAxis;
+    const targetPlots: Plot[] = [];
+    const plots = getWorkspace().plots;
+    plots.forEach((tPlot) => {
+      if (
+        tPlot.xAxis === props.plot.xAxis &&
+        tPlot.yAxis === props.plot.yAxis &&
+        tPlot.xPlotType === props.plot.xPlotType &&
+        tPlot.yPlotType === props.plot.yPlotType &&
+        tPlot.histogramAxis === histogramAxis
+      ) {
+        targetPlots.push(tPlot);
+      }
+    });
+
+    targetPlots.forEach((tplot) => {
+      if (histogramAxis !== "horizontal") {
+        tplot.ranges[xAxis] = xRange;
+        store.dispatch({
+          type: "workspace.UPDATE_PLOT",
+          payload: { plot: tplot },
+        });
+      }
+
+      if (histogramAxis !== "vertical") {
+        tplot.ranges[yAxis] = yRange;
+        store.dispatch({
+          type: "workspace.UPDATE_PLOT",
+          payload: { plot: tplot },
+        });
+      }
+    });
+  };
 
   const commitRangeChange = () => {
     try {
@@ -73,15 +102,15 @@ const RangeResizeModal = (props: {
       const iMaxX = parseFloat(maxX);
       const iMinY = parseFloat(minY);
       const iMaxY = parseFloat(maxY);
-      if (isNaN(iMinX + iMinY + iMaxX + iMaxX)) throw Error("Invalid ranges");
-      props.callback(
-        iMinX,
-        iMaxX,
-        iMinY,
-        iMaxY,
-        props.inits.axisX,
-        props.inits.axisY
-      );
+      if (
+        isNaN(iMinX + iMinY + iMaxX + iMaxY) ||
+        iMinX >= iMaxX ||
+        iMinY >= iMaxY
+      )
+        throw Error("Invalid ranges");
+
+      setPlotsAxisRanges([iMinX, iMaxX] as Range, [iMinY, iMaxY] as Range);
+
       setMinX(iMinX.toString());
       setMaxX(iMaxX.toString());
       setMinY(iMinY.toString());
@@ -93,15 +122,16 @@ const RangeResizeModal = (props: {
   };
 
   const setDefaultRanges = (axis: "x" | "y") => {
-    const allData = PlotResource.getXandYData(props.inits.plot);
-    const data = axis === "x" ? allData[0] : allData[1];
-    const ranges = PlotResource.findRangeBoundries(props.inits.plot, data);
+    const population = getPopulation(plot.population);
+    const ranges = population.defaultRanges[axis === "x" ? xAxis : yAxis];
     if (axis === "x") {
       setMinX(ranges[0].toString());
       setMaxX(ranges[1].toString());
+      setPlotsAxisRanges(ranges, [plotMinY, plotMaxY] as Range);
     } else {
       setMinY(ranges[0].toString());
       setMaxY(ranges[1].toString());
+      setPlotsAxisRanges([plotMinX, plotMaxX] as Range, ranges);
     }
   };
 
@@ -122,12 +152,13 @@ const RangeResizeModal = (props: {
           direction="row"
           style={{ padding: "2rem 1rem 1rem 1rem" }}
         >
-          {props.inits.histogramAxis !== "horizontal" ? (
-            <Grid item xs={12} md={props.inits.histogramAxis ? 12 : 6}>
-              <h3>Edit {props.inits.axisX} range</h3>
+          {plot.histogramAxis !== "horizontal" ? (
+            <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
+              <h3>Edit {plot.xAxis} range</h3>
               <TextField
                 label="Range min"
                 value={minX}
+                type={"number"}
                 onChange={(e) => {
                   setMinX(e.target.value);
                 }}
@@ -136,6 +167,7 @@ const RangeResizeModal = (props: {
               <TextField
                 label="Range max"
                 value={maxX}
+                type={"number"}
                 onChange={(e) => {
                   setMaxX(e.target.value);
                 }}
@@ -156,12 +188,13 @@ const RangeResizeModal = (props: {
             </Grid>
           ) : null}
 
-          {props.inits.histogramAxis !== "vertical" ? (
-            <Grid item xs={12} md={props.inits.histogramAxis ? 12 : 6}>
-              <h3>Edit {props.inits.axisY} range</h3>
+          {plot.histogramAxis !== "vertical" ? (
+            <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
+              <h3>Edit {plot.yAxis} range</h3>
               <TextField
                 label="Range min"
                 value={minY}
+                type={"number"}
                 onChange={(e) => {
                   setMinY(e.target.value);
                 }}
@@ -170,6 +203,7 @@ const RangeResizeModal = (props: {
               <TextField
                 label="Range max"
                 value={maxY}
+                type={"number"}
                 onChange={(e) => {
                   setMaxY(e.target.value);
                 }}

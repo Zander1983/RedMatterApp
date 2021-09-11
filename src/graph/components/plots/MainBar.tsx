@@ -10,7 +10,7 @@ import RangeResizeModal from "../modals/rangeResizeModal";
 import normalGatingIcon from "../../../assets/images/normalGatingIcon.png";
 import inverseGatingIcon from "../../../assets/images/inverseGatingIcon.png";
 import gate from "../../../assets/images/gate.png";
-import { Plot } from "graph/resources/types";
+import { Plot, PopulationGateType } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
@@ -58,52 +58,6 @@ export default function MainBar(props: { plot: Plot }) {
 
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
-  const setAxisRange = (
-    minX: number,
-    maxX: number,
-    minY: number,
-    maxY: number,
-    axisX: string,
-    axisY: string
-  ) => {
-    const histogramAxis = plot.histogramAxis;
-    const targetPlots: Plot[] = [];
-    const plots = getWorkspace().plots;
-    plots.forEach((tPlot) => {
-      if (
-        tPlot.xAxis === props.plot.xAxis &&
-        tPlot.yAxis === props.plot.yAxis &&
-        tPlot.xPlotType === props.plot.xPlotType &&
-        tPlot.yPlotType === props.plot.yPlotType
-      ) {
-        targetPlots.push(tPlot);
-      }
-    });
-
-    targetPlots.forEach((tplot) => {
-      if (histogramAxis !== "horizontal")
-        if (minX === 69 && maxX === 420)
-          PlotResource.resetOriginalRanges(tplot);
-        else {
-          tplot.ranges[axisX] = [minX, maxX];
-          store.dispatch({
-            type: "workspace.UPDATE_PLOT",
-            payload: { tplot },
-          });
-        }
-
-      if (histogramAxis !== "vertical")
-        if (minY === 69 && maxY === 420)
-          PlotResource.resetOriginalRanges(tplot);
-        else {
-          tplot.ranges[axisY] = [minY, maxY];
-          store.dispatch({
-            type: "workspace.UPDATE_PLOT",
-            payload: { tplot },
-          });
-        }
-    });
-  };
 
   const deletePlot = () => {
     store.dispatch({
@@ -163,24 +117,14 @@ export default function MainBar(props: { plot: Plot }) {
   // };
 
   return (
-    <Grid container direction="row" xs={12} style={classes.main}>
+    <Grid container direction="row" xs={12} item style={classes.main}>
       <RangeResizeModal
         open={openResize}
         closeCall={{
           f: handleClose,
           ref: setOpenResize,
         }}
-        inits={{
-          histogramAxis: props.plot.histogramAxis,
-          axisX: rangeResizeModalAxisX,
-          axisY: rangeResizeModalAxisY,
-          minX: rangeResizeModalTargetMinX,
-          maxX: rangeResizeModalTargetMaxX,
-          minY: rangeResizeModalTargetMinY,
-          maxY: rangeResizeModalTargetMaxY,
-          plot: props.plot,
-        }}
-        callback={setAxisRange}
+        plot={props.plot}
       ></RangeResizeModal>
       <MessageModal
         open={deleteModalOpen}
@@ -305,7 +249,13 @@ export default function MainBar(props: { plot: Plot }) {
                 setEmptySubpopModalOpen(true);
                 return;
               }
-              PlotResource.createSubpopPlot(plot);
+              const gates: PopulationGateType[] = props.plot.gates.map((e) => {
+                return {
+                  gate: e,
+                  inverseGating: false,
+                };
+              });
+              PlotResource.createSubpopPlot(plot, gates);
             }}
           >
             {/* Subpop */}
@@ -341,7 +291,13 @@ export default function MainBar(props: { plot: Plot }) {
                 setEmptySubpopModalOpen(true);
                 return;
               }
-              PlotResource.createSubpopPlot(plot);
+              const gates: PopulationGateType[] = props.plot.gates.map((e) => {
+                return {
+                  gate: e,
+                  inverseGating: true,
+                };
+              });
+              PlotResource.createSubpopPlot(plot, gates);
             }}
           >
             {/* Inverse Subpop */}

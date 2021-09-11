@@ -18,6 +18,7 @@ import {
   File,
   Population,
   Gate2D,
+  Dataset,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -68,7 +69,7 @@ export const createPlot = ({
     plotScale: 2,
     xPlotType: "lin",
     yPlotType: "lin",
-    histogramAxis: "horizontal",
+    histogramAxis: "",
     label: "",
     dimensions: { w: 10, h: 12 },
     positions: { x: 0, y: 0 },
@@ -377,7 +378,11 @@ export const getXandYRanges = (
   return { x: plot.ranges[targetXAxis], y: plot.ranges[targetYAxis] };
 };
 
-export const getBins = (plot: Plot, binCount?: number, targetAxis?: string) => {
+export const getHistogramBins = (
+  plot: Plot,
+  binCount?: number,
+  targetAxis?: string
+) => {
   binCount = binCount === undefined ? getBinCount(plot) : binCount;
   const axisName =
     targetAxis === undefined
@@ -386,7 +391,7 @@ export const getBins = (plot: Plot, binCount?: number, targetAxis?: string) => {
         : plot.yAxis
       : targetAxis;
   let range = plot.ranges[axisName];
-  let axis = getAxis(plot, axisName);
+  let axis = getPopulationGatesFilteredData(plot)[targetAxis];
   if (
     (plot.xAxis === axisName && plot.xPlotType === "bi") ||
     (plot.yAxis === axisName && plot.yPlotType === "bi")
@@ -427,12 +432,37 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   commitPlotChange(plot);
 };
 
+export const getPopulationGatesFilteredData = (plot: Plot): Dataset => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  return filteredPoints;
+};
+
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
+};
+
+export const getXandYDataAndColors = (
+  plot: Plot
+): { points: [Float32Array, Float32Array]; colors: string[] } => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  const plotGates = plot.gates.map((e) => {
+    return { gate: e, inverseGating: false } as PopulationGateType;
+  });
+  const colors = getDatasetColors(dataset, plotGates);
+  return {
+    points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
+    colors,
+  };
 };
 
 export const findRangeBoundries = (
@@ -470,21 +500,14 @@ export const getPointColors = (plot: Plot) => {
 
 export const createNewPlotFromFile = async (file: File) => {
   const workspace = getWorkspace();
-  const popQuery = workspace.populations.filter(
-    (e) => e.file === file.id && e.gates.length === 0
-  );
   let population: Population;
-  if (popQuery.length > 0 && false) {
-    population = popQuery[0];
-  } else {
-    population = populations.createPopulation({
-      file: file.id,
-    });
-    await store.dispatch({
-      type: "workspace.ADD_POPULATION",
-      payload: { population },
-    });
-  }
+  population = populations.createPopulation({
+    file: file.id,
+  });
+  await store.dispatch({
+    type: "workspace.ADD_POPULATION",
+    payload: { population },
+  });
   const plot = createPlot({ population });
   await store.dispatch({
     type: "workspace.ADD_PLOT",
@@ -496,34 +519,19 @@ export const createNewPlotFromFile = async (file: File) => {
 
 export const createSubpopPlot = async (
   plot: Plot,
-  additionalGates?: Gate[]
+  additionalGates?: PopulationGateType[]
 ) => {
   const newPlotId = await createNewPlotFromFile(
     getFile(getPopulation(plot.population).file)
   );
   let pop = getPopulation(getPlot(newPlotId).population);
-  pop.gates = [
-    ...pop.gates,
-    ...additionalGates.map((e) => {
-      return { gate: e.id, inverseGating: false } as PopulationGateType;
-    }),
-  ];
+  if (additionalGates) {
+    pop.gates = pop.gates.concat(additionalGates);
+  }
   await store.dispatch({
     type: "workspace.UPDATE_POPULATION",
     payload: {
       population: pop,
     },
   });
-};
-
-export const getXandYDataAndColors = (plot: Plot) => {
-  const file = getPlotFile(plot);
-  const dataset = getDataset(file.id);
-  const population = getPopulation(plot.population);
-  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  const plotGates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const colors = getDatasetColors(dataset, plotGates);
-  return { points: filteredPoints, colors };
 };

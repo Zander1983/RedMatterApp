@@ -229,7 +229,7 @@ class PlotController extends React.Component<PlotControllerProps> {
             const fileName = getFile(fileId).name;
             const plots: Plot[] = plotGroups[fileId];
             return (
-              <div>
+              <div key={fileId}>
                 <div
                   style={{
                     backgroundColor: "#6666AA",

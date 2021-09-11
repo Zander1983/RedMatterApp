@@ -1,14 +1,13 @@
 import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
-import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import * as PlotResource from "graph/resources/plots";
-import { getPlot } from "graph/utils/workspace";
+import { getGate, getPopulation } from "graph/utils/workspace";
 
 const leftPadding = 70;
 const rightPadding = 50;
 const topPadding = 50;
-const bottomPadding = 10;
+const bottomPadding = 50;
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
@@ -127,6 +126,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
+    this.update();
     const hideY =
       this.plot.xAxis === this.plot.yAxis &&
       this.plot.histogramAxis === "vertical";
@@ -145,9 +145,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
-    // let mainHist = PlotResource.getBins(this.plot, this.bins, axis);
+    let mainHist = PlotResource.getHistogramBins(this.plot, this.bins, axis);
 
-    // let globlMax = mainHist.max;
+    let globlMax = mainHist.max;
 
     let range = this.plot.ranges[axis];
 
@@ -189,20 +189,23 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     //   const lastMax = newPlotData.getBins(Math.round(this.bins) - 1, axis).max;
     //   if (lastMax > globlMax) globlMax = lastMax;
     // }
-    // this.globalMax = globlMax;
-    // const barOverlays = this.plot.histogramBarOverlays;
-    // let binsArray = [];
-    // let parentBinsArray = [];
-    // let mainPlotColor =
-    //   this.plot.population && this.plot.population.length > 0
-    //     ? this.plot.population[0].gate.color
-    //     : "";
-    // for (let i = 0; i < this.bins; i++) {
-    //   binsArray.push({
-    //     value: mainHist.list[i] / globlMax,
-    //     color: mainPlotColor,
-    //   });
-    // }
+
+    this.globalMax = globlMax;
+    const barOverlays = this.plot.histogramBarOverlays;
+    let binsArray = [];
+    let parentBinsArray: any[] = [];
+    const population = getPopulation(this.plot.population);
+    let mainPlotColor =
+      population.gates.length > 0
+        ? getGate(population.gates[0].gate).color
+        : "";
+
+    for (let i = 0; i < this.bins; i++) {
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: mainPlotColor,
+      });
+    }
 
     // if (barOverlays) {
     //   for (let i = 0; i < barOverlays.length; i++) {
@@ -254,30 +257,32 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     //     binsArray = [];
     //   }
     // }
-    // for (let i = 0; i < this.bins; i++) {
-    //   binsArray.push({
-    //     value: mainHist.list[i] / globlMax,
-    //     color: mainPlotColor,
-    //   });
-    // }
-    // for (let i = 0; i < binsArray.length; i++) {
-    //   let binsAscArray = [];
-    //   binsAscArray.push(binsArray[i]);
-    //   for (let j = 0; j < parentBinsArray.length; j++) {
-    //     binsAscArray.push(parentBinsArray[j][i]);
-    //   }
-    //   binsAscArray.sort((a, b) => {
-    //     return b.value - a.value;
-    //   });
 
-    //   for (let j = 0; j < binsAscArray.length; j++) {
-    //     if (binsAscArray[j]) {
-    //       if (binsAscArray[j].color)
-    //         this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
-    //       else this.drawer.addBin(i, binsAscArray[j].value);
-    //     }
-    //   }
-    // }
+    for (let i = 0; i < this.bins; i++) {
+      binsArray.push({
+        value: mainHist.list[i] / globlMax,
+        color: mainPlotColor,
+      });
+    }
+
+    for (let i = 0; i < binsArray.length; i++) {
+      let binsAscArray = [];
+      binsAscArray.push(binsArray[i]);
+      for (let j = 0; j < parentBinsArray.length; j++) {
+        binsAscArray.push(parentBinsArray[j][i]);
+      }
+      binsAscArray.sort((a, b) => {
+        return b.value - a.value;
+      });
+
+      for (let j = 0; j < binsAscArray.length; j++) {
+        if (binsAscArray[j]) {
+          if (binsAscArray[j].color)
+            this.drawer.addBin(i, binsAscArray[j].value, binsAscArray[j].color);
+          else this.drawer.addBin(i, binsAscArray[j].value);
+        }
+      }
+    }
 
     // for (const overlay of overlays) {
     //   const curve = overlay.list
