@@ -44,6 +44,20 @@ export const commitPlotChange = (plot: Plot) => {
   });
 };
 
+export const commitPlot = (plot: Plot) => {
+  store.dispatch({
+    type: "workspace.ADD_PLOT",
+    payload: { plot },
+  });
+};
+
+export const commitPlots = (plots: Array<Plot>) => {
+  store.dispatch({
+    type: "workspace.ADD_PLOTS",
+    payload: { plots },
+  });
+};
+
 export const createPlot = ({
   clonePlot,
   id,
@@ -53,6 +67,23 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
+  let newPlot = createBlankPlotObj();
+  if (clonePlot) newPlot = clonePlot;
+  if (id) newPlot.id = id;
+  else newPlot.id = createID();
+  if (population) {
+    newPlot.ranges = population?.defaultRanges;
+    newPlot.axisPlotTypes = population?.defaultAxisPlotTypes;
+    newPlot.population =
+      typeof population === "string" ? population : population.id;
+  }
+  if (newPlot.population === "") {
+    throw Error("Plot without population");
+  }
+  return setupPlot(newPlot);
+};
+
+export const createBlankPlotObj = (): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
@@ -76,19 +107,8 @@ export const createPlot = ({
     parentPlotId: "",
     gatingActive: "",
   };
-  if (clonePlot) newPlot = clonePlot;
-  if (id) newPlot.id = id;
-  else newPlot.id = createID();
-  if (population) {
-    newPlot.ranges = population?.defaultRanges;
-    newPlot.axisPlotTypes = population?.defaultAxisPlotTypes;
-    newPlot.population =
-      typeof population === "string" ? population : population.id;
-  }
-  if (newPlot.population === "") {
-    throw Error("Plot without population");
-  }
-  return setupPlot(newPlot);
+
+  return newPlot;
 };
 
 export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {

@@ -68,7 +68,6 @@ export const getPopulation = (populationID: PopulationID): Population => {
 export const getGate = (gateID: GateID): Gate => {
   const workspace = getWorkspace();
   const gates = workspace.gates.filter((gate) => gate.id === gateID);
-  if (gates.length === 0) throw Error("Gate not found");
   if (gates.length > 1) throw Error("Multiple gates with ID = " + gateID);
-  return gates[0];
+  return gates.length > 0 ? gates[0] : null;
 };

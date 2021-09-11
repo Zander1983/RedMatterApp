@@ -11,7 +11,7 @@ export const createGate = ({
   cloneGate?: PolygonGate;
   id?: GateID;
 }): PolygonGate => {
-  const newGate: PolygonGate = {
+  let newGate: PolygonGate = {
     id: "",
     gateType: "polygon",
     name: "",
@@ -26,6 +26,7 @@ export const createGate = ({
     points: [],
     children: [],
   };
+  if (cloneGate) newGate = cloneGate;
   if (id) newGate.id = id;
   else newGate.id = createID();
   if (!newGate.color) newGate.color = generateColor();
@@ -33,9 +34,16 @@ export const createGate = ({
   return newGate;
 };
 
-export const commitGateChange = (gate: Gate) => {
+export const commitGateChange = async (gate: Gate) => {
   store.dispatch({
     type: "workspace.UPDATE_GATE",
+    payload: { gate },
+  });
+};
+
+export const commitGate = async (gate: Gate) => {
+  store.dispatch({
+    type: "workspace.ADD_GATE",
     payload: { gate },
   });
 };

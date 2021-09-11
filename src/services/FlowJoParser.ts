@@ -3,6 +3,7 @@ import { generateColor } from "graph/utils/color";
 import { snackbarService } from "uno-material-ui";
 import {
   File,
+  FileID,
   Plot,
   PlotID,
   PolygonGate,
@@ -11,15 +12,16 @@ import {
 } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import {
-  commitPlotChange,
+  commitPlots,
+  createBlankPlotObj,
   createNewPlotFromFile,
   createPlot,
 } from "graph/resources/plots";
 import {
   createPopulation,
-  commitPopulationChange,
+  commitPopulation,
 } from "graph/resources/populations";
-import { commitGateChange, createGate } from "graph/resources/gates";
+import { commitGate, createGate } from "graph/resources/gates";
 import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
 
 const getFileOrSkipThisSample = (
@@ -65,102 +67,107 @@ const getFileOrSkipThisSample = (
 };
 
 const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
-  // let plots: any = [];
-  // let workspace = flowJoJson["Workspace"];
-  // let filesUsed: any = [];
-  // if (
-  //   workspace &&
-  //   workspace["SampleList"] &&
-  //   workspace["SampleList"]["Sample"]
-  // ) {
-  //   let sample = workspace["SampleList"]["Sample"];
-  //   let samples = [];
-  //   if (sample.length == undefined) samples.push(sample);
-  //   else samples = sample;
-  //   for (let i = 0; i < samples.length; i++) {
-  //     let sampleNode = samples[i]["SampleNode"];
-  //     let plot: Plot;
-  //     let sampleUri = samples[i]["DataSet"]["_attributes"]["uri"];
-  //     let sampleUrlArray = sampleUri.split("/");
-  //     let sampleName = sampleUri[sampleUrlArray.length - 1];
-  //     sampleName = sampleName.replace("%20", "");
-  //     let transformations = samples[i]["Transformations"];
-  //     let channelsInfo: any = [];
-  //     if (transformations) {
-  //       let logTransformations = transformations["transforms:log"];
-  //       if (logTransformations && logTransformations.length == undefined)
-  //         logTransformations = [logTransformations];
-  //       let linearTransformations = transformations["transforms:linear"];
-  //       if (linearTransformations && linearTransformations.length == undefined)
-  //         linearTransformations = [linearTransformations];
-  //       if (logTransformations && logTransformations.length > 0) {
-  //         channelsInfo = channelsInfo.concat(
-  //           parseChannels(logTransformations, "bi")
-  //         );
-  //       }
-  //       if (linearTransformations && linearTransformations.length > 0) {
-  //         channelsInfo = channelsInfo.concat(
-  //           parseChannels(linearTransformations, "lin")
-  //         );
-  //       }
-  //     }
-  //     let fileObj = getFileOrSkipThisSample(
-  //       filesUsed,
-  //       channelsInfo,
-  //       downloadedFiles
-  //     );
-  //     let fileId = fileObj.fileId;
-  //     if (fileId) {
-  //       filesUsed.push(fileId);
-  //       let file = downloadedFiles.find((x: File) => x.id == fileId);
-  //       let mainGraphAxis = sampleNode["Graph"]["Axis"];
-  //       let xAxis = mainGraphAxis.find(
-  //         (x: any) => x["_attributes"].dimension == "x"
-  //       );
-  //       let yAxis = mainGraphAxis.find(
-  //         (x: any) => x["_attributes"].dimension == "y"
-  //       );
-  //       let xAxisName = xAxis["_attributes"].name;
-  //       let yAxisName = yAxis["_attributes"].name;
-  //       let xChannelInfo = channelsInfo.find(
-  //         (x: any) => x.channelName == xAxisName
-  //       );
-  //       let yChannelInfo = channelsInfo.find(
-  //         (x: any) => x.channelName == yAxisName
-  //       );
-  //       debugger;
-  //       let newPlotId: PlotID = await createNewPlotFromFile(file);
-  //       plot = getPlot(newPlotId);
-  //       plot.xAxis = `${xAxisName} - ${xAxisName}`;
-  //       plot.yAxis = `${yAxisName} - ${yAxisName}`;
-  //       plot.xPlotType = xChannelInfo.type;
-  //       plot.yPlotType = yChannelInfo.type;
-  //       //addNewPlot(plots, plot, fileId);
-  //       if (
-  //         sampleNode["Subpopulations"] &&
-  //         Object.keys(sampleNode["Subpopulations"]).length > 0
-  //       ) {
-  //         parseSubpopulation(
-  //           plots,
-  //           plot,
-  //           fileId,
-  //           sampleNode["Subpopulations"],
-  //           channelsInfo
-  //         );
-  //       }
-  //     } else {
-  //       snackbarService.showSnackbar(
-  //         "Clouldn't find matching file for flow jo sample " + sampleName,
-  //         "warning"
-  //       );
-  //     }
-  //   }
-  // }
-  // debugger;
-  // for (let i = 0; i < plots.length; i++) {
-  //   debugger;
-  //   commitPlotChange(plots[i]);
-  // }
+  let plots: Array<Plot> = [];
+  let workspace = flowJoJson["Workspace"];
+  let filesUsed: Array<FileID> = [];
+  if (
+    workspace &&
+    workspace["SampleList"] &&
+    workspace["SampleList"]["Sample"]
+  ) {
+    let sample = workspace["SampleList"]["Sample"];
+    let samples = [];
+    if (sample.length == undefined) samples.push(sample);
+    else samples = sample;
+    for (let i = 0; i < samples.length; i++) {
+      let sampleNode = samples[i]["SampleNode"];
+      let plot: Plot;
+      let sampleUri = samples[i]["DataSet"]["_attributes"]["uri"];
+      let sampleUrlArray = sampleUri.split("/");
+      let sampleName = sampleUri[sampleUrlArray.length - 1];
+      sampleName = sampleName.replace("%20", "");
+      let transformations = samples[i]["Transformations"];
+      let channelsInfo: any = [];
+      if (transformations) {
+        let logTransformations = transformations["transforms:log"];
+        if (logTransformations && logTransformations.length == undefined)
+          logTransformations = [logTransformations];
+        let linearTransformations = transformations["transforms:linear"];
+        if (linearTransformations && linearTransformations.length == undefined)
+          linearTransformations = [linearTransformations];
+        if (logTransformations && logTransformations.length > 0) {
+          channelsInfo = channelsInfo.concat(
+            parseChannels(logTransformations, "bi")
+          );
+        }
+        if (linearTransformations && linearTransformations.length > 0) {
+          channelsInfo = channelsInfo.concat(
+            parseChannels(linearTransformations, "lin")
+          );
+        }
+      }
+      let fileObj = getFileOrSkipThisSample(
+        filesUsed,
+        channelsInfo,
+        downloadedFiles
+      );
+      let fileId = fileObj.fileId;
+      if (fileId) {
+        filesUsed.push(fileId);
+        let file = downloadedFiles.find((x: File) => x.id == fileId);
+        let mainGraphAxis = sampleNode["Graph"]["Axis"];
+        let xAxis = mainGraphAxis.find(
+          (x: any) => x["_attributes"].dimension == "x"
+        );
+        let yAxis = mainGraphAxis.find(
+          (x: any) => x["_attributes"].dimension == "y"
+        );
+        let xAxisName = xAxis["_attributes"].name;
+        let yAxisName = yAxis["_attributes"].name;
+        let xChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == xAxisName
+        );
+        let yChannelInfo = channelsInfo.find(
+          (x: any) => x.channelName == yAxisName
+        );
+
+        plot = createBlankPlotObj();
+        plot.xAxis = `${xAxisName} - ${xAxisName}`;
+        plot.yAxis = `${yAxisName} - ${yAxisName}`;
+        plot.xPlotType = xChannelInfo.type;
+        plot.yPlotType = yChannelInfo.type;
+        plot.ranges[plot.xAxis] = [
+          parseFloat(xChannelInfo.rangeMin),
+          parseFloat(xChannelInfo.rangeMax),
+        ];
+        plot.ranges[plot.yAxis] = [
+          parseFloat(yChannelInfo.rangeMin),
+          parseFloat(yChannelInfo.rangeMax),
+        ];
+        addNewPlot(plots, plot, fileId, true);
+        if (
+          sampleNode["Subpopulations"] &&
+          Object.keys(sampleNode["Subpopulations"]).length > 0
+        ) {
+          parseSubpopulation(
+            plots,
+            plot,
+            fileId,
+            sampleNode["Subpopulations"],
+            channelsInfo
+          );
+        }
+      } else {
+        snackbarService.showSnackbar(
+          "Clouldn't find matching file for flow jo sample " + sampleName,
+          "warning"
+        );
+      }
+    }
+  }
+  if (plots.length > 0) {
+    commitPlots(plots);
+  }
 };
 
 const parseChannels = (transformations: any, type: string) => {
@@ -194,17 +201,23 @@ const parseChannels = (transformations: any, type: string) => {
   return channelArray;
 };
 
-const addNewPlot = (plots: any, plot: Plot, fileID: string) => {
-  let population: Population = createPopulation({ file: fileID });
-  commitPopulationChange(population);
-  plot.population = population.id;
+const addNewPlot = (
+  plots: Array<Plot>,
+  plot: Plot,
+  fileID: string,
+  populationCreate: boolean
+) => {
+  if (populationCreate) {
+    let population: Population = createPopulation({ file: fileID });
+    commitPopulation(population);
+    plot.population = population.id;
+  }
   plot = createPlot({ clonePlot: plot });
-  debugger;
   plots.push(plot);
 };
 
 const parseSubpopulation = async (
-  plots: any,
+  plots: Array<Plot>,
   plot: Plot,
   fileId: string,
   subPopulation: any,
@@ -217,6 +230,7 @@ const parseSubpopulation = async (
     }
 
     for (let i = 0; i < populations.length; i++) {
+      let newPlot: Plot;
       let population = populations[i];
       let graph = population["Graph"];
       let axis = graph["Axis"];
@@ -225,8 +239,8 @@ const parseSubpopulation = async (
       let xAxisName = xAxis["_attributes"].name;
       let yAxisName = yAxis["_attributes"].name;
       let file = getFile(fileId);
-      let newPlotId: PlotID = await createNewPlotFromFile(file);
-      let newPlot: Plot = getPlot(newPlotId);
+
+      newPlot = createBlankPlotObj();
       newPlot.xAxis = `${xAxisName} - ${xAxisName}`;
       newPlot.yAxis = `${yAxisName} - ${yAxisName}`;
       let xChannelInfo = channelsInfo.find(
@@ -237,7 +251,14 @@ const parseSubpopulation = async (
       );
       newPlot.xPlotType = xChannelInfo.type;
       newPlot.yPlotType = yChannelInfo.type;
-
+      newPlot.ranges[newPlot.xAxis] = [
+        parseFloat(xChannelInfo.rangeMin),
+        parseFloat(xChannelInfo.rangeMax),
+      ];
+      newPlot.ranges[newPlot.yAxis] = [
+        parseFloat(yChannelInfo.rangeMin),
+        parseFloat(yChannelInfo.rangeMax),
+      ];
       if (population["Gate"]) {
         let polygonGate: PolygonGate = {
           id: "",
@@ -259,17 +280,18 @@ const parseSubpopulation = async (
         let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
         parseGateType(gateType, gate, polygonGate, xChannelInfo, yChannelInfo);
         plot.gates.push(polygonGate.id);
-        commitGateChange(polygonGate);
+        commitGate(polygonGate);
 
         let populationGate: PopulationGateType = {
           inverseGating: false,
           gate: polygonGate.id,
         };
-        let childPopulation = getPopulation(newPlot.population);
+        let childPopulation = createPopulation({ file: fileId });
         childPopulation.gates.push(populationGate);
-        commitPopulationChange(childPopulation);
+        commitPopulation(childPopulation);
+        newPlot.population = childPopulation.id;
 
-        //addNewPlot(plots, newPlot, fileId);
+        addNewPlot(plots, newPlot, fileId, false);
         if (population["Subpopulations"]) {
           parseSubpopulation(
             plots,

@@ -184,7 +184,7 @@ class PlotController extends React.Component<PlotControllerProps> {
     const population = getPopulation(plot.population);
     const file = getFile(population.file);
     const gates: Gate[] = [
-      ...plot.gates.map((e) => getGate(e)),
+      ...plot.gates.map((e) => getGate(e)).filter((x) => x),
       ...population.gates.map((e) => getGate(e.gate)),
     ];
     const workspaceForPlot: PlotSpecificWorkspaceData = {

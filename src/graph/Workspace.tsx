@@ -430,7 +430,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   };
 
   const importFlowJoFunc = async (e: any) => {
-    debugger;
     e.preventDefault();
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -473,10 +472,10 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   };
 
   const initiateParseFlowJo = async (flowJoJson: any) => {
-    // await ParseFlowJoJson(flowJoJson, workspace.files);
-    // setTimeout(() => {
-    //   setLoading(false);
-    // }, 4000);
+    await ParseFlowJoJson(flowJoJson, workspace.files);
+    setTimeout(() => {
+      setLoading(false);
+    }, 4000);
   };
 
   return (
