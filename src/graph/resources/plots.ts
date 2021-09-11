@@ -36,7 +36,7 @@ import {
   getDatasetFilteredPoints,
 } from "./dataset";
 
-const commitPlotChange = (plot: Plot) => {
+export const commitPlotChange = (plot: Plot) => {
   store.dispatch({
     type: "workspace.UPDATE_PLOT",
     payload: { plot },

@@ -34,7 +34,7 @@ import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
-import { downloadFileMetadata } from "services/FileService";
+import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
 import { getFile } from "./utils/workspace";
 import { FileID, Workspace as WorkspaceType } from "./resources/types";
 import { store } from "redux/store";
@@ -42,7 +42,7 @@ import PlotController from "./components/workspaces/PlotController";
 import { String } from "lodash";
 import XML from "xml-js";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-// import { ParseFlowJoJson } from "services/FlowJoParser";
+import { ParseFlowJoJson } from "services/FlowJoParser";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -96,9 +96,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   const store = useStore();
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
-
-  let flowJoJson = {};
-  let importFlowJo = false;
 
   const remoteWorkspace = true;
   const history = useHistory();
@@ -441,42 +438,54 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   };
 
   const importFlowJoFunc = async (e: any) => {
-    // e.preventDefault();
-    // const reader = new FileReader();
-    // reader.onload = async (e) => {
-    //   let text: any = e.target.result;
-    //   var options = {
-    //     compact: true,
-    //     ignoreComment: true,
-    //     alwaysChildren: true,
-    //   };
-    //   var result = XML.xml2json(text, options);
-    //   result = JSON.parse(result);
-    //   importFlowJo = true;
-    //   setLoading(true);
-    //   setFileUploadInputValue("");
-    //   if (dataManager.files.length == downloadedFiles.length) {
-    //     initiateParseFlowJo(result);
-    //   } else {
-    //     flowJoJson = result;
-    //     let fileIds = dataManager.files.map((x) => x.id);
-    //     handleDownLoadFileEvents(fileIds);
-    //     snackbarService.showSnackbar(
-    //       "File events are getting downloaded then import will happen!!",
-    //       "warning"
-    //     );
-    //   }
-    // };
-    // reader.readAsText(e.target.files[0]);
+    debugger;
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      let text: any = e.target.result;
+      var options = {
+        compact: true,
+        ignoreComment: true,
+        alwaysChildren: true,
+      };
+      var result = XML.xml2json(text, options);
+      result = JSON.parse(result);
+      setLoading(true);
+      setFileUploadInputValue("");
+      let downloadedFiles = workspace.files.filter((x) => x.downloaded);
+      if (workspace.files.length == downloadedFiles.length) {
+        initiateParseFlowJo(result);
+      } else {
+        let filetoBeDownloaded = workspace.files.filter((x) => !x.downloaded);
+        let fileIds = filetoBeDownloaded.map((x) => x.id);
+        handleDownLoadFileEvents(fileIds, result);
+        snackbarService.showSnackbar(
+          "File events are getting downloaded then import will happen!!",
+          "warning"
+        );
+      }
+    };
+    reader.readAsText(e.target.files[0]);
   };
 
-  // const initiateParseFlowJo = async (flowJoJson: any) => {
-  //   await ParseFlowJoJson(flowJoJson);
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //     importFlowJo = false;
-  //   }, 4000);
-  // };
+  const handleDownLoadFileEvents = async (
+    fileIds: Array<string>,
+    flowJoJson: any
+  ) => {
+    for (let i = 0; i < fileIds.length; i++) {
+      await downloadFileEvent(props.shared, fileIds[i], props.experimentId);
+    }
+    let downlodedFiles = workspace.files.filter((x) => x.downloaded);
+    if (workspace.files.length == downlodedFiles.length)
+      initiateParseFlowJo(flowJoJson);
+  };
+
+  const initiateParseFlowJo = async (flowJoJson: any) => {
+    // await ParseFlowJoJson(flowJoJson, workspace.files);
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 4000);
+  };
 
   return (
     <div
