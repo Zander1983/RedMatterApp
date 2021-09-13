@@ -2,6 +2,7 @@ import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { getGate } from "graph/utils/workspace";
 import { Gate, GateID, HistogramGate, OvalGate, PolygonGate } from "./types";
+import { store } from "redux/store";
 
 export const createGate = ({
   cloneGate,
@@ -10,7 +11,7 @@ export const createGate = ({
   cloneGate?: PolygonGate;
   id?: GateID;
 }): PolygonGate => {
-  const newGate: PolygonGate = {
+  let newGate: PolygonGate = {
     id: "",
     gateType: "polygon",
     name: "",
@@ -25,11 +26,26 @@ export const createGate = ({
     points: [],
     children: [],
   };
+  if (cloneGate) newGate = cloneGate;
   if (id) newGate.id = id;
   else newGate.id = createID();
   if (!newGate.color) newGate.color = generateColor();
   newGate.parents = [...cloneGate.parents, cloneGate.id];
   return newGate;
+};
+
+export const commitGateChange = async (gate: Gate) => {
+  store.dispatch({
+    type: "workspace.UPDATE_GATE",
+    payload: { gate },
+  });
+};
+
+export const commitGate = async (gate: Gate) => {
+  store.dispatch({
+    type: "workspace.ADD_GATE",
+    payload: { gate },
+  });
 };
 
 export const isPointInsideGate = (
