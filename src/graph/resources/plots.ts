@@ -64,7 +64,6 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
-  console.log("clonePlot= ", clonePlot);
   let newPlot = createBlankPlotObj();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
@@ -76,18 +75,14 @@ export const createPlot = ({
       typeof population === "string" ? population : population.id;
   }
   if (clonePlot) {
-    console.log("clonePlot", clonePlot);
     newPlot.ranges = { ...clonePlot.ranges };
     newPlot.axisPlotTypes = { ...clonePlot.axisPlotTypes };
-    console.log(clonePlot.xPlotType, clonePlot.yPlotType);
     newPlot.xPlotType = clonePlot.xPlotType;
     newPlot.yPlotType = clonePlot.yPlotType;
-    console.log("newPlot after assignment", newPlot);
   }
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
-  console.log(newPlot);
   return setupPlot(newPlot);
 };
 
@@ -120,7 +115,6 @@ export const createBlankPlotObj = (): Plot => {
 };
 
 export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
-  console.log("plot b4", plot);
   const population = incPopulation
     ? incPopulation
     : getPopulation(plot.population);
@@ -154,7 +148,6 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
         ? "lin"
         : "bi";
   }
-  console.log("plot aft", plot);
   return plot;
 };
 

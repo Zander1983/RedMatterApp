@@ -91,27 +91,9 @@ class PlotController extends React.Component<PlotControllerProps> {
     };
   }
 
-  resizeCanvas(layouts: any) {
-    for (let i = 0; i < layouts.length; i++) {
-      let plotId = layouts[i].i;
-      let id = `canvas-${plotId}`;
-      let displayRef = `display-ref-${plotId}`;
-      let barRef = `bar-ref-${plotId}`;
-
-      let docIdRef = document.getElementById(id);
-      let docDisplayRef: any = document.getElementById(displayRef);
-      let docBarRef: any = document.getElementById(barRef);
-
-      if (docBarRef && docDisplayRef && docIdRef) {
-        let width = docDisplayRef.offsetWidth - 55;
-        let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-        docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
-      }
-    }
-  }
-
-  setPlotsSize() {
+  setPlotsSizeAndResizeCanvas(save: boolean = false) {
     const plots = this.props.workspace.plots;
+    const updateList: Plot[] = [];
     for (let plot of plots) {
       let id = `canvas-${plot.id}`;
       let displayRef = `display-ref-${plot.id}`;
@@ -127,12 +109,14 @@ class PlotController extends React.Component<PlotControllerProps> {
         plot.plotHeight = height;
         plot.plotWidth = width;
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
-        store.dispatch({
-          type: "workspace.UPDATE_PLOT",
-          payload: { plot },
-        });
+        updateList.push(plot);
       }
     }
+    if (save)
+      store.dispatch({
+        type: "workspace.UPDATE_PLOTS",
+        payload: { plots: updateList },
+      });
   }
 
   savePlotPosition(layouts: any) {
@@ -169,7 +153,7 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
-      setTimeout(() => this.setPlotsSize(), 50);
+      setTimeout(() => this.setPlotsSizeAndResizeCanvas(true), 50);
     }
     this.setState(nextProps);
   }

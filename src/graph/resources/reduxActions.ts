@@ -12,6 +12,7 @@ export const graphActions = {
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
   UPDATE_PLOT: "workspace.UPDATE_PLOT",
+  UPDATE_PLOTS: "workspace.UPDATE_PLOTS",
   UPDATE_GATE: "workspace.UPDATE_GATE",
   DELETE_GATE: "workspace.DELETE_GATE",
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
@@ -128,6 +129,25 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         plots: state.plots,
       };
+
+    case graphActions.UPDATE_PLOTS:
+      const updatePlots: Plot[] = action.payload.plots;
+      console.log("update plots callled");
+      for (const plot of updatePlots) {
+        if (!state.plots.find((e) => e.id === plot.id)) {
+          console.error(
+            "[workspace.UPDATE_PLOT] Plot",
+            plot.id,
+            "does not exist"
+          );
+          continue;
+        }
+        state.plots = state.plots.map((e) => {
+          if (e.id === plot.id) return { ...e, ...plot };
+          else return e;
+        });
+      }
+      return state;
 
     case graphActions.UPDATE_GATE:
       const updateGate: Gate = action.payload.gate;
