@@ -26,7 +26,7 @@ export const createGate = ({
     points: [],
     children: [],
   };
-  if (cloneGate) newGate = cloneGate;
+  if (cloneGate) newGate = { ...cloneGate };
   if (id) newGate.id = id;
   else newGate.id = createID();
   if (!newGate.color) newGate.color = generateColor();

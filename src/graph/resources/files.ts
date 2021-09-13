@@ -32,7 +32,7 @@ export const createFile = async ({
     newFile.name = newFile.label = requestData.title;
     await createDataset(requestData.events, newFile);
   } else if (cloneFile) {
-    newFile = cloneFile;
+    newFile = { ...cloneFile };
   } else {
     throw Error("Impossible to construct file from parameters");
   }

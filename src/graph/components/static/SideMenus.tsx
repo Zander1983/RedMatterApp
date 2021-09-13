@@ -16,6 +16,7 @@ import { getWorkspace } from "graph/utils/workspace";
 import { Workspace } from "graph/resources/types";
 
 export default function SideMenus(props: { workspace: Workspace }) {
+  console.log("SideMenus rerendered");
   const ref = React.useRef(null);
   // == General modal logic ==
 

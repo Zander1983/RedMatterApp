@@ -10,14 +10,11 @@ import {
   AxisName,
   Plot,
   PlotID,
-  Gate,
   PlotType,
   PopulationGateType,
-  PopulationID,
   GateID,
   File,
   Population,
-  Gate2D,
   Dataset,
 } from "./types";
 import { createID } from "graph/utils/id";
@@ -68,7 +65,7 @@ export const createPlot = ({
   population?: Population;
 }): Plot => {
   let newPlot = createBlankPlotObj();
-  if (clonePlot) newPlot = clonePlot;
+  if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
   if (population) {

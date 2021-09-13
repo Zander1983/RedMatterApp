@@ -28,6 +28,9 @@ export default function PlotMenu(props: {
   plots: Plot[];
   onStatChange: (params: { x: any; value: any }) => void;
 }) {
+  const plots = props.plots;
+  const populations = props.plots.map((e) => getPopulation(e.population));
+
   const [statsX, setStatsX] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
@@ -44,8 +47,9 @@ export default function PlotMenu(props: {
 
   const setPlotLabel = (plot: Plot, label: string) => {
     plot.label = label;
+    console.log(label);
     store.dispatch({
-      type: "workspace.PLOT_UPDATE",
+      type: "workspace.UPDATE_PLOT",
       payload: { plot },
     });
   };
@@ -73,6 +77,8 @@ export default function PlotMenu(props: {
       clonePlot: plot,
     });
     newPlot.label = plot.label + " clone";
+    console.log("new plot = ", newPlot);
+    console.log("old plot = ", plot);
     store.dispatch({
       type: "workspace.ADD_PLOT",
       payload: { plot: newPlot },
@@ -218,14 +224,12 @@ export default function PlotMenu(props: {
                     }}
                   />
                 </TableCell>
+                <TableCell>{getFile(populations[i].file).name}</TableCell>
                 <TableCell>
-                  {getFile(getPopulation(plot.population).file).name}
-                </TableCell>
-                <TableCell>
-                  {plot.population.length === 0
+                  {populations[i].gates.length === 0
                     ? "All"
-                    : getPopulation(plot.population)
-                        .gates.reverse()
+                    : populations[i].gates
+                        .reverse()
                         .map((e: PopulationGateType) => (
                           <b
                             style={{

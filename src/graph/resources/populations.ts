@@ -50,7 +50,7 @@ export const createPopulation = ({
     gates: [],
   };
 
-  if (clonePopulation) newPopulation = clonePopulation;
+  if (clonePopulation) newPopulation = { ...clonePopulation };
   else if (subpopFrom) {
     newPopulation = subpopFrom.population;
     newPopulation.gates = [...subpopFrom.population.gates, ...subpopFrom.gates];
