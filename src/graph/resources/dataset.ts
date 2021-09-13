@@ -12,7 +12,6 @@ import {
   PopulationGateType,
 } from "./types";
 
-import * as GateResource from "graph/resources/gates";
 import { pointInsidePolygon } from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 
@@ -110,8 +109,7 @@ let axesLookup: { [index: string]: number } = {};
 
 export const isPointInside = (
   gate: { gate: PolygonGate; inverseGating: boolean },
-  point: number[],
-  cond: boolean = false
+  point: number[]
 ): boolean => {
   const p = {
     x: point[axesLookup[gate.gate.xAxis]],
@@ -158,11 +156,32 @@ export const getDatasetColors = (
   axesLookup = {};
   axes.forEach((e, i) => (axesLookup[e] = i));
   const dataLength = dataset[axes[0]].length;
+  const fcsServices = new FCSServices();
   const gates = targets.map((e) => {
-    return {
-      gate: getGate(e.gate) as PolygonGate,
+    let newGate = {
+      gate: { ...getGate(e.gate) } as PolygonGate,
       inverseGating: e.inverseGating,
     };
+    newGate.gate.points = [
+      ...newGate.gate.points.map((e) => {
+        return { ...e };
+      }),
+    ];
+    if (newGate.gate.xAxisType === "bi") {
+      const xRange = newGate.gate.xAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newX = (e.x - xRange[0]) / (xRange[1] - xRange[0]);
+        return { x: newX, y: e.y };
+      });
+    }
+    if (newGate.gate.yAxisType === "bi") {
+      const yRange = newGate.gate.yAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newY = (e.y - yRange[0]) / (yRange[1] - yRange[0]);
+        return { x: e.x, y: newY };
+      });
+    }
+    return newGate;
   });
   for (let i = 0; i < dataLength; i++) {
     let ans = { depth: 0, color: stdColor };
@@ -170,8 +189,24 @@ export const getDatasetColors = (
     for (const key of axes) {
       x.push(dataset[key][i]);
     }
+
     for (const gate of gates) {
-      const cAns = gateDFS(x, gate, 1);
+      let newX = [...x];
+      if (gate.gate.xAxisType === "bi") {
+        newX[axesLookup[gate.gate.xAxis]] = fcsServices.logicleMarkTransformer(
+          [newX[axesLookup[gate.gate.xAxis]]],
+          gate.gate.xAxisOriginalRanges[0],
+          gate.gate.xAxisOriginalRanges[1]
+        )[0];
+      }
+      if (gate.gate.yAxisType === "bi") {
+        newX[axesLookup[gate.gate.yAxis]] = fcsServices.logicleMarkTransformer(
+          [newX[axesLookup[gate.gate.yAxis]]],
+          gate.gate.yAxisOriginalRanges[0],
+          gate.gate.yAxisOriginalRanges[1]
+        )[0];
+      }
+      const cAns = gateDFS(newX, gate, 1);
       if (cAns.color !== null && cAns.depth > ans.depth) {
         ans = cAns;
       }
@@ -185,11 +220,32 @@ export const getDatasetFilteredPoints = (
   dataset: Dataset,
   targets: PopulationGateType[]
 ): Dataset => {
+  const fcsServices = new FCSServices();
   const gates = targets.map((e) => {
-    return {
-      gate: getGate(e.gate) as PolygonGate,
+    let newGate = {
+      gate: { ...getGate(e.gate) } as PolygonGate,
       inverseGating: e.inverseGating,
     };
+    newGate.gate.points = [
+      ...newGate.gate.points.map((e) => {
+        return { ...e };
+      }),
+    ];
+    if (newGate.gate.xAxisType === "bi") {
+      const xRange = newGate.gate.xAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newX = (e.x - xRange[0]) / (xRange[1] - xRange[0]);
+        return { x: newX, y: e.y };
+      });
+    }
+    if (newGate.gate.yAxisType === "bi") {
+      const yRange = newGate.gate.yAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newY = (e.y - yRange[0]) / (yRange[1] - yRange[0]);
+        return { x: e.x, y: newY };
+      });
+    }
+    return newGate;
   });
   const axes = Object.keys(dataset);
   const size = dataset[axes[0]].length;
@@ -207,7 +263,22 @@ export const getDatasetFilteredPoints = (
       x.push(dataset[axis][i]);
     }
     for (const gate of gates) {
-      const inside = isPointInside(gate, x, i < 10);
+      let newX = [...x];
+      if (gate.gate.xAxisType === "bi") {
+        newX[axesLookup[gate.gate.xAxis]] = fcsServices.logicleMarkTransformer(
+          [newX[axesLookup[gate.gate.xAxis]]],
+          gate.gate.xAxisOriginalRanges[0],
+          gate.gate.xAxisOriginalRanges[1]
+        )[0];
+      }
+      if (gate.gate.yAxisType === "bi") {
+        newX[axesLookup[gate.gate.yAxis]] = fcsServices.logicleMarkTransformer(
+          [newX[axesLookup[gate.gate.yAxis]]],
+          gate.gate.yAxisOriginalRanges[0],
+          gate.gate.yAxisOriginalRanges[1]
+        )[0];
+      }
+      const inside = isPointInside(gate, newX);
       if (!inside) {
         dontAdd = true;
         break;
@@ -216,13 +287,14 @@ export const getDatasetFilteredPoints = (
     if (dontAdd) continue;
     addIndexes.push(i);
   }
-  for (const axis of axes) {
+
+  for (const axis of axes)
     transformedDataset[axis] = new Float32Array(addIndexes.length);
-  }
-  for (let i = 0; i < addIndexes.length; i++) {
+
+  for (let i = 0; i < addIndexes.length; i++)
     for (const axis of axes)
       transformedDataset[axis][i] = dataset[axis][addIndexes[i]];
-  }
+
   return transformedDataset;
 };
 

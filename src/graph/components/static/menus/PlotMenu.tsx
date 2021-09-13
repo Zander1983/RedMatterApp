@@ -47,7 +47,6 @@ export default function PlotMenu(props: {
 
   const setPlotLabel = (plot: Plot, label: string) => {
     plot.label = label;
-    console.log(label);
     store.dispatch({
       type: "workspace.UPDATE_PLOT",
       payload: { plot },
@@ -77,8 +76,6 @@ export default function PlotMenu(props: {
       clonePlot: plot,
     });
     newPlot.label = plot.label + " clone";
-    console.log("new plot = ", newPlot);
-    console.log("old plot = ", plot);
     store.dispatch({
       type: "workspace.ADD_PLOT",
       payload: { plot: newPlot },

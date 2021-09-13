@@ -64,6 +64,7 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
+  console.log("clonePlot= ", clonePlot);
   let newPlot = createBlankPlotObj();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
@@ -74,9 +75,19 @@ export const createPlot = ({
     newPlot.population =
       typeof population === "string" ? population : population.id;
   }
+  if (clonePlot) {
+    console.log("clonePlot", clonePlot);
+    newPlot.ranges = { ...clonePlot.ranges };
+    newPlot.axisPlotTypes = { ...clonePlot.axisPlotTypes };
+    console.log(clonePlot.xPlotType, clonePlot.yPlotType);
+    newPlot.xPlotType = clonePlot.xPlotType;
+    newPlot.yPlotType = clonePlot.yPlotType;
+    console.log("newPlot after assignment", newPlot);
+  }
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
+  console.log(newPlot);
   return setupPlot(newPlot);
 };
 
@@ -109,31 +120,41 @@ export const createBlankPlotObj = (): Plot => {
 };
 
 export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
+  console.log("plot b4", plot);
   const population = incPopulation
     ? incPopulation
     : getPopulation(plot.population);
   const file = getFile(population.file);
   const axes = file.axes;
-  try {
-    const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
-    if (plot.xAxis === "" && plot.yAxis === "") {
-      plot.xAxis = fscssc.fsc;
-      plot.yAxis = fscssc.ssc;
-    }
-  } catch {}
-  if (plot.xAxis === "") plot.xAxis = axes[0];
-  if (plot.yAxis === "") plot.yAxis = axes[1];
+  if (plot.xAxis.length === 0 && plot.yAxis.length === 0) {
+    if (plot.axisPlotTypes[plot.xAxis])
+      try {
+        const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
+        if (plot.xAxis === "" && plot.yAxis === "") {
+          plot.xAxis = fscssc.fsc;
+          plot.yAxis = fscssc.ssc;
+        }
+      } catch {}
+    if (plot.xAxis === "") plot.xAxis = axes[0];
+    if (plot.yAxis === "") plot.yAxis = axes[1];
+  }
 
-  plot.xPlotType =
-    plot.xAxis.toLowerCase().includes("fsc") ||
-    plot.xAxis.toLowerCase().includes("ssc")
-      ? "lin"
-      : "bi";
-  plot.yPlotType =
-    plot.yAxis.toLowerCase().includes("fsc") ||
-    plot.yAxis.toLowerCase().includes("ssc")
-      ? "lin"
-      : "bi";
+  if (Object.keys(plot.axisPlotTypes).length > 0) {
+    plot.xPlotType = plot.axisPlotTypes[plot.xAxis];
+    plot.yPlotType = plot.axisPlotTypes[plot.yAxis];
+  } else {
+    plot.xPlotType =
+      plot.xAxis.toLowerCase().includes("fsc") ||
+      plot.xAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
+    plot.yPlotType =
+      plot.yAxis.toLowerCase().includes("fsc") ||
+      plot.yAxis.toLowerCase().includes("ssc")
+        ? "lin"
+        : "bi";
+  }
+  console.log("plot aft", plot);
   return plot;
 };
 
@@ -515,7 +536,7 @@ export const getPointColors = (plot: Plot) => {
   return getDatasetColors(dataset, gates, stdColor);
 };
 
-export const createNewPlotFromFile = async (file: File) => {
+export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
   const workspace = getWorkspace();
   let population: Population;
   population = populations.createPopulation({
@@ -525,7 +546,7 @@ export const createNewPlotFromFile = async (file: File) => {
     type: "workspace.ADD_POPULATION",
     payload: { population },
   });
-  const plot = createPlot({ population });
+  const plot = createPlot({ population, clonePlot });
   await store.dispatch({
     type: "workspace.ADD_PLOT",
     payload: { plot },
@@ -539,9 +560,11 @@ export const createSubpopPlot = async (
   additionalGates?: PopulationGateType[]
 ) => {
   const newPlotId = await createNewPlotFromFile(
-    getFile(getPopulation(plot.population).file)
+    getFile(getPopulation(plot.population).file),
+    plot
   );
-  let pop = getPopulation(getPlot(newPlotId).population);
+  let newPlot = getPlot(newPlotId);
+  let pop = getPopulation(newPlot.population);
   if (additionalGates) {
     pop.gates = pop.gates.concat(additionalGates);
   }

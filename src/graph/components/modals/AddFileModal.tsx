@@ -307,6 +307,7 @@ const AddFileModal = React.memo(
                             fontSize: 13,
                             marginLeft: 20,
                           }}
+                          disabled={isDownloading}
                           onClick={() => downloadFile(fileMetadata.id)}
                         >
                           {isDownloading ? (
@@ -335,7 +336,7 @@ const AddFileModal = React.memo(
                               getFile(fileMetadata.id)
                             );
                           }}
-                          disabled={!isDownloaded}
+                          disabled={isDownloading}
                         >
                           Add to Workspace
                         </Button>

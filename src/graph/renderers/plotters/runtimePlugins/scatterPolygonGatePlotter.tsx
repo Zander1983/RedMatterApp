@@ -28,7 +28,9 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   }
 
   setGatingState(state: PolygonGateState) {
-    this.points = state.points;
+    this.points = state.points.map((e) => {
+      return { ...e };
+    });
     this.lastMousePos = state.lastMousePos;
   }
 
@@ -46,8 +48,8 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     const pointCount = gate.points.length;
     const scale = this.plotter.scale;
     for (let i = 0; i < pointCount; i++) {
-      let p = gate.points[i];
-      let pp = gate.points[(i + 1) % gate.points.length];
+      let p = { ...gate.points[i] };
+      let pp = { ...gate.points[(i + 1) % gate.points.length] };
       p = this.plotter.transformer.toConcretePoint(p, undefined, true);
       pp = this.plotter.transformer.toConcretePoint(pp, undefined, true);
       let color = "#f00";
@@ -74,7 +76,11 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   protected drawGating() {
     if (this.points === undefined) return;
     let lastMousePos = { ...this.lastMousePos };
-    const points = [...this.points];
+    const points = [
+      ...this.points.map((e) => {
+        return { ...e };
+      }),
+    ];
     const pointCount = points.length;
     let lastPoint = null;
     const scale = this.plotter.scale;

@@ -248,6 +248,7 @@ export default class GraphTransformer extends Transformer {
   }
 
   rawAbstractLogicleToLinear(p: Point): Point {
+    const np = { ...p };
     const xBi = this.plot.xPlotType === "bi";
     const yBi = this.plot.yPlotType === "bi";
     let ranges = [
@@ -255,12 +256,12 @@ export default class GraphTransformer extends Transformer {
       this.plot.ranges[this.plot.yAxis],
     ];
     if (xBi) {
-      p.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.x;
+      np.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * np.x;
     }
     if (yBi) {
-      p.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * p.y;
+      np.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * np.y;
     }
-    return p;
+    return np;
   }
 
   rawAbstractLinearToLogicle(p: Point): Point {

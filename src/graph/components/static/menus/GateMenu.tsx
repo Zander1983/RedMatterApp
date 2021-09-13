@@ -26,9 +26,9 @@ const classes = {
 
 export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
-    gate.color = color;
+    gate.color = color.hex;
     store.dispatch({
-      type: "workspace.GATE_UPDATE",
+      type: "workspace.UPDATE_GATE",
       payload: { gate },
     });
   };
@@ -36,7 +36,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
   const setGateName = (gate: Gate, name: any) => {
     gate.name = name;
     store.dispatch({
-      type: "workspace.GATE_UPDATE",
+      type: "workspace.UPDATE_GATE",
       payload: { gate },
     });
   };
@@ -54,8 +54,8 @@ export default function GateMenu(props: { gates: Gate[] }) {
     });
     newGate.name = gate.name + " clone";
     store.dispatch({
-      type: "workspace.CREATE_GATE",
-      payload: { newGate },
+      type: "workspace.ADD_GATE",
+      payload: { gate: newGate },
     });
   };
 

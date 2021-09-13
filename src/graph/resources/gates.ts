@@ -29,8 +29,9 @@ export const createGate = ({
   if (cloneGate) newGate = { ...cloneGate };
   if (id) newGate.id = id;
   else newGate.id = createID();
-  if (!newGate.color) newGate.color = generateColor();
-  newGate.parents = [...cloneGate.parents, cloneGate.id];
+  newGate.color = generateColor();
+  if (cloneGate) newGate.parents = [...cloneGate.parents, cloneGate.id];
+  else newGate.parents = [];
   return newGate;
 };
 

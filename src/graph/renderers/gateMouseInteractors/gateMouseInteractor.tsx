@@ -79,10 +79,14 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
+    //@ts-ignore
+    gate.points = [...gate.points].map((e) => {
+      return { ...e };
+    });
     gate.name = "Unammed gate";
     await store.dispatch({
       type: "workspace.ADD_GATE",
-      payload: { gate },
+      payload: { gate: { ...gate } },
     });
     let plot = this.plotter.plot;
     plot.gates = [...plot.gates, gate.id];
