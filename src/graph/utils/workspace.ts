@@ -150,6 +150,6 @@ const loadSavedWorkspace = async (
   const newWorkspace = { ...workspaceObj, files: getWorkspace().files };
   await store.dispatch({
     type: "workspace.LOAD_WORKSPACE",
-    payload: { workspace: workspaceObj },
+    payload: { workspace: newWorkspace },
   });
 };

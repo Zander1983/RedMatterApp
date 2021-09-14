@@ -20,13 +20,6 @@ export const commitPopulationChange = async (population: Population) => {
   });
 };
 
-export const commitPopulation = async (population: Population) => {
-  store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population },
-  });
-};
-
 export const createPopulation = ({
   clonePopulation,
   id,

@@ -42,13 +42,6 @@ export const commitGateChange = async (gate: Gate) => {
   });
 };
 
-export const commitGate = async (gate: Gate) => {
-  store.dispatch({
-    type: "workspace.ADD_GATE",
-    payload: { gate },
-  });
-};
-
 export const isPointInsideGate = (
   gate: Gate,
   point: { x: number; y: number }

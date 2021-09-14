@@ -41,20 +41,6 @@ export const commitPlotChange = (plot: Plot) => {
   });
 };
 
-export const commitPlot = (plot: Plot) => {
-  store.dispatch({
-    type: "workspace.ADD_PLOT",
-    payload: { plot },
-  });
-};
-
-export const commitPlots = (plots: Array<Plot>) => {
-  store.dispatch({
-    type: "workspace.ADD_PLOTS",
-    payload: { plots },
-  });
-};
-
 export const createPlot = ({
   clonePlot,
   id,

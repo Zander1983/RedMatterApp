@@ -26,7 +26,11 @@ import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
-import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
+import {
+  dowloadAllFileEvents,
+  downloadFileEvent,
+  downloadFileMetadata,
+} from "services/FileService";
 import {
   loadWorkspaceFromRemoteIfExists,
   saveWorkspaceToRemote,
@@ -87,9 +91,6 @@ const WorkspaceComponent = (props: {
 }) => {
   const store = useStore();
   const classes = useStyles();
-  // store.dispatch({
-  //   type: "workspace.RESET",
-  // });
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
@@ -124,11 +125,17 @@ const WorkspaceComponent = (props: {
     });
 
     initializeWorkspace();
+
+    return () => {
+      store.dispatch({
+        type: "workspace.RESET",
+      });
+    };
   }, []);
 
   const initializeWorkspace = async () => {
     await downloadFileMetadata(props.shared, props.experimentId);
-    await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+    // await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
   };
 
   const saveWorkspace = () => {
@@ -205,7 +212,15 @@ const WorkspaceComponent = (props: {
   };
 
   const initiateParseFlowJo = async (flowJoJson: any) => {
-    await ParseFlowJoJson(flowJoJson, workspace.files);
+    await dowloadAllFileEvents(props.shared, props.experimentId);
+    try {
+      await ParseFlowJoJson(flowJoJson, workspace.files);
+    } catch (e) {
+      snackbarService.showSnackbar(
+        "Could not parse FlowJo workspace",
+        "warning"
+      );
+    }
     setTimeout(() => {
       setLoading(false);
     }, 4000);
@@ -423,7 +438,7 @@ const WorkspaceComponent = (props: {
                         importFlowJoFunc(e);
                       }}
                     />
-                    Import Flow Jo
+                    Import FlowJo (experimental)
                   </Button>
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (

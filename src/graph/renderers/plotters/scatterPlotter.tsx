@@ -6,8 +6,6 @@ import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import FCSServices from "services/FCSServices/FCSServices";
 import { OvalGate, PolygonGate } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
-import { getDataset } from "graph/resources/dataset";
-import { getPopulation } from "graph/utils/workspace";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
