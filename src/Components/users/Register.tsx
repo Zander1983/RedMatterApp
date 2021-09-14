@@ -274,7 +274,7 @@ const Register = (props: any) => {
             </div>
           )}
 
-          <Grid
+          {/* <Grid
             container
             justify="center"
             alignItems="center"
@@ -294,7 +294,7 @@ const Register = (props: any) => {
                 });
               }}
             />
-          </Grid>
+          </Grid> */}
 
           <Grid
             justify="center"
