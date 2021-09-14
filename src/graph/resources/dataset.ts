@@ -133,16 +133,17 @@ const gateDFS = (
     return { depth: 0, color: null };
   }
   let ans = { depth: currentDepth, color: gate.gate.color };
-  // for (const child of gate.gate.children) {
-  //   const cAns = gateDFS(
-  //     point,
-  //     { gate: child, inverseGating: false },
-  //     currentDepth + 1
-  //   );
-  //   if (cAns.color !== null && cAns.depth > ans.depth) {
-  //     ans = cAns;
-  //   }
-  // }
+  for (let child of gate.gate.children) {
+    const childGate = getGate(child) as PolygonGate;
+    const cAns = gateDFS(
+      point,
+      { gate: childGate, inverseGating: false },
+      currentDepth + 1
+    );
+    if (cAns.color !== null && cAns.depth > ans.depth) {
+      ans = cAns;
+    }
+  }
   return ans;
 };
 

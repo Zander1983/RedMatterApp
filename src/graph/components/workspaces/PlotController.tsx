@@ -91,7 +91,7 @@ class PlotController extends React.Component<PlotControllerProps> {
     };
   }
 
-  setPlotsSizeAndResizeCanvas(save: boolean = false) {
+  setCanvasSize(save: boolean = false) {
     const plots = this.props.workspace.plots;
     const updateList: Plot[] = [];
     for (let plot of plots) {
@@ -108,11 +108,12 @@ class PlotController extends React.Component<PlotControllerProps> {
         let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
         plot.plotHeight = height;
         plot.plotWidth = width;
+
         docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
         updateList.push(plot);
       }
     }
-    if (save)
+    if (save && plots.length > 0)
       store.dispatch({
         type: "workspace.UPDATE_PLOTS",
         payload: { plots: updateList },
@@ -120,7 +121,7 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 
   savePlotPosition(layouts: any) {
-    let plots = getWorkspace().plots;
+    let plots = this.props.workspace.plots;
     let plotChanges = [];
     for (let i = 0; i < layouts.length; i++) {
       let layout = layouts[i];
@@ -142,7 +143,7 @@ class PlotController extends React.Component<PlotControllerProps> {
           x: layout.x,
           y: layout.y,
         };
-        plotChanges.push(plotId);
+        plotChanges.push(plot);
       }
     }
     store.dispatch({
@@ -153,7 +154,7 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
-      setTimeout(() => this.setPlotsSizeAndResizeCanvas(true), 50);
+      setTimeout(() => this.setCanvasSize(true), 50);
     }
     this.setState(nextProps);
   }
@@ -238,10 +239,10 @@ class PlotController extends React.Component<PlotControllerProps> {
                       this.savePlotPosition(layout);
                     }}
                     onResize={(layout: any) => {
-                      this.resizeCanvas(layout);
+                      this.setCanvasSize(false);
                     }}
                     onResizeStop={(layout: any) => {
-                      this.setPlotsSize();
+                      this.setCanvasSize(true);
                     }}
                   >
                     {

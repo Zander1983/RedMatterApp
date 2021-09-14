@@ -17,6 +17,7 @@ export default function GateNamePrompt() {
 
   useSelector((e: any) => {
     const newGates = e.workspace.gates;
+    if (gates === newGates || newGates === undefined) return;
     if (
       !open &&
       newGates.length > gates.length &&

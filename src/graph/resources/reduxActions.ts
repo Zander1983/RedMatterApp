@@ -1,3 +1,5 @@
+import { getWorkspace } from "graph/utils/workspace";
+import { store } from "redux/store";
 import { File, Gate, Plot, Population, Workspace } from "./types";
 
 export const graphActions = {
@@ -132,7 +134,6 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 
     case graphActions.UPDATE_PLOTS:
       const updatePlots: Plot[] = action.payload.plots;
-      console.log("update plots callled");
       for (const plot of updatePlots) {
         if (!state.plots.find((e) => e.id === plot.id)) {
           console.error(
@@ -147,7 +148,10 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
           else return e;
         });
       }
-      return state;
+      return {
+        ...state,
+        plots: state.plots,
+      };
 
     case graphActions.UPDATE_GATE:
       const updateGate: Gate = action.payload.gate;
@@ -196,3 +200,14 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 };
 
 export default graphReducers;
+
+export const dispatchBatch = async (operations: any[]) => {
+  let workspace = getWorkspace();
+  for (const operation of operations) {
+    workspace = graphReducers(workspace, operation);
+  }
+  await store.dispatch({
+    action: "workspace.LOAD_WORKSPACE",
+    payload: { workspace },
+  });
+};

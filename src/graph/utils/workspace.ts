@@ -1,3 +1,6 @@
+import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
+import axios from "axios";
+import userManager from "Components/users/userManager";
 import {
   File,
   FileID,
@@ -10,33 +13,12 @@ import {
   Workspace,
 } from "graph/resources/types";
 import { store } from "redux/store";
+import { dowloadAllFileEvents } from "services/FileService";
+import { snackbarService } from "uno-material-ui";
 
 export const getWorkspace = (): Workspace => {
-  return new ReduxCache().getWorkspace();
+  return store.getState().workspace;
 };
-
-class ReduxCache {
-  static instance: ReduxCache | null = null;
-  private workspace: Workspace;
-
-  constructor() {
-    if (ReduxCache.instance) {
-      return ReduxCache.instance;
-    }
-    ReduxCache.instance = this;
-    this.workspace = store.getState().workspace as Workspace;
-    store.subscribe((state: any) => {
-      if (!state || !state?.workspace) return;
-      this.workspace = state.workspace as Workspace;
-    });
-  }
-
-  getWorkspace() {
-    // TODO FIX CACHING SYNCHRONICITY BROKEN
-    return store.getState().workspace;
-    // return this.workspace;
-  }
-}
 
 export const getFile = (fileID: FileID): File => {
   const workspace = getWorkspace();
@@ -70,4 +52,104 @@ export const getGate = (gateID: GateID): Gate => {
   const gates = workspace.gates.filter((gate) => gate.id === gateID);
   if (gates.length > 1) throw Error("Multiple gates with ID = " + gateID);
   return gates.length > 0 ? gates[0] : null;
+};
+
+export const saveWorkspaceToRemote = async (
+  workspace: Workspace,
+  shared: boolean,
+  experimentId: string
+): Promise<boolean> => {
+  let stateJson = JSON.stringify(workspace);
+  const updateWorkSpace = WorkspacesApiFetchParamCreator({
+    accessToken: userManager.getToken(),
+  }).upsertWorkSpace(userManager.getToken(), {
+    experimentId: experimentId,
+    state: stateJson,
+    isShared: shared,
+  });
+  try {
+    await axios.post(
+      updateWorkSpace.url,
+      updateWorkSpace.options.body,
+      updateWorkSpace.options
+    );
+    return true;
+  } catch {
+    snackbarService.showSnackbar(
+      "Could not save the workspace, reload the page and try again!",
+      "error"
+    );
+  }
+  return false;
+};
+
+export const loadWorkspaceFromRemoteIfExists = async (
+  shared: boolean,
+  experimentId: string
+): Promise<boolean> => {
+  let workspaceData;
+  try {
+    workspaceData = await axios.post(
+      "/api/getWorkspace",
+      {
+        experimentId,
+      },
+      {
+        headers: {
+          token: userManager.getToken(),
+        },
+      }
+    );
+    const workspace = workspaceData.data.state;
+    if (Object.keys(workspace).length > 0) {
+      snackbarService.showSnackbar("Loading your saved workspace", "info");
+      await loadSavedWorkspace(workspace, shared, experimentId);
+      snackbarService.showSnackbar("Workspace loaded!", "success");
+      return true;
+    }
+  } catch {
+    snackbarService.showSnackbar(
+      "Failed to load workspace, try again!",
+      "error"
+    );
+  }
+  return false;
+};
+
+export const loadIfWorkspaceIsShared = async (
+  workspaceId: string,
+  experimentId: string
+): Promise<boolean> => {
+  let workspaceData;
+  try {
+    workspaceData = await axios.post("/api/verifyWorkspace", {
+      workspaceId: workspaceId,
+      experimentId: experimentId,
+    });
+  } catch (e) {
+    snackbarService.showSnackbar(
+      "You don't have access to this workspace",
+      "error"
+    );
+    return false;
+  }
+  const isShared = workspaceData.data.isShared;
+  const workspace = workspaceData.data.state;
+  if (workspace && isShared)
+    await loadSavedWorkspace(workspace, true, experimentId);
+  return true;
+};
+
+const loadSavedWorkspace = async (
+  workspace: string,
+  shared: boolean,
+  experimentId: string
+) => {
+  await dowloadAllFileEvents(shared, experimentId);
+  const workspaceObj = JSON.parse(workspace);
+  const newWorkspace = { ...workspaceObj, files: getWorkspace().files };
+  await store.dispatch({
+    type: "workspace.LOAD_WORKSPACE",
+    payload: { workspace: workspaceObj },
+  });
 };

@@ -15,7 +15,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/Workspace";
+import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";

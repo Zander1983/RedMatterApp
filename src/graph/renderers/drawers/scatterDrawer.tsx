@@ -27,8 +27,8 @@ export default class ScatterDrawer extends GraphDrawer {
     this.rect({
       x: x * this.scale,
       y: y * this.scale,
-      w: 2,
-      h: 2,
+      w: 3,
+      h: 3,
       fillColor: color,
     });
   };

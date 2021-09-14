@@ -57,11 +57,11 @@ const AddFileModal = React.memo(
     closeCall: { f: Function; ref: Function };
     isShared: boolean;
     experimentId: string;
-    filesMetadata: File[];
+    files: File[];
   }): JSX.Element => {
     const classes = useStyles();
 
-    const filesMetadata = props.filesMetadata;
+    const filesMetadata = props.files;
 
     const [onHover, setOnHover] = React.useState(-1);
 

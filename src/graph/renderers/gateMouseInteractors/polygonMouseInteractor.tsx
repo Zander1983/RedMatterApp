@@ -204,18 +204,28 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   private updateInterval = 20; // miliseconds
-  protected gateUpdater(gate: Gate) {
+  private currentInterval: NodeJS.Timeout = null;
+  private latest: Gate | null = null;
+  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
+    if (fromTimout) this.currentInterval = null;
     if (
       this.lastGateUpdate.getTime() + this.updateInterval >
       new Date().getTime()
     ) {
-      const waitUntilCurrentCycleTimesOut =
-        this.lastGateUpdate.getTime() +
-        this.updateInterval -
-        new Date().getTime() +
-        1;
-      setTimeout(() => this.gateUpdater(gate), waitUntilCurrentCycleTimesOut);
-    } else {
+      if (this.currentInterval === null) {
+        const waitUntilCurrentCycleTimesOut =
+          this.lastGateUpdate.getTime() +
+          this.updateInterval -
+          new Date().getTime() +
+          1;
+        this.currentInterval = setTimeout(
+          () => this.gateUpdater(this.latest, true),
+          waitUntilCurrentCycleTimesOut
+        );
+      } else {
+        this.latest = gate;
+      }
+    } else if (gate !== null) {
       store.dispatch({
         type: "workspace.UPDATE_GATE",
         payload: { gate },

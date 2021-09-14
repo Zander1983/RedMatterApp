@@ -2,7 +2,6 @@ import { useSelector, useStore } from "react-redux";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
-import { useLocation } from "react-router-dom";
 
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
@@ -14,19 +13,12 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
-import { generateColor } from "graph/utils/color";
 
 import userManager from "Components/users/userManager";
-import { API_CALLS } from "assets/constants/apiCalls";
-import { Dbouncer } from "services/Dbouncer";
+import { Debounce } from "services/Dbouncer";
 import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
-import {
-  ExperimentFilesApiFactory,
-  ExperimentFilesApiFetchParamCreator,
-  WorkspacesApiFetchParamCreator,
-} from "api_calls/nodejsback";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
@@ -35,13 +27,13 @@ import LinkShareModal from "./components/modals/linkShareModal";
 import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
 import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
-import { getFile } from "./utils/workspace";
-import { FileID, Workspace as WorkspaceType } from "./resources/types";
-import { store } from "redux/store";
+import {
+  loadWorkspaceFromRemoteIfExists,
+  saveWorkspaceToRemote,
+} from "./utils/workspace";
+import { Workspace as WorkspaceType } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
-import { String } from "lodash";
 import XML from "xml-js";
-import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { ParseFlowJoJson } from "services/FlowJoParser";
 
 const useStyles = makeStyles((theme) => ({
@@ -89,237 +81,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let setWorkspaceAlready = false;
-let workspaceSharedLocal = false;
-
-function Workspace(props: { experimentId: string; shared: boolean }) {
+const WorkspaceComponent = (props: {
+  experimentId: string;
+  shared: boolean;
+}) => {
   const store = useStore();
-  //@ts-ignore
-  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
-  const workspace: WorkspaceType = useSelector((state) => state.workspace);
-
-  const remoteWorkspace = true;
+  const classes = useStyles();
+  // store.dispatch({
+  //   type: "workspace.RESET",
+  // });
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
-  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(true);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-  const location = useLocation();
-  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
-  useEffect(() => {
-    store.dispatch({
-      type: "workspace.RESET",
-    });
-    // dataManager.setExperimentId(props.experimentId);
-
-    // let workspaceId = new URLSearchParams(location.search).get("id");
-    // if (workspaceId) {
-    //   verifyWorkspace(workspaceId);
-    // } else {
-    //   getWorkspace();
-    // }
-
-    // var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
-    //   setDownloadedFiles(dataManager.downloaded);
-    //   if (
-    //     importFlowJo &&
-    //     dataManager.files.length == dataManager.downloaded.length
-    //   ) {
-    //     initiateParseFlowJo(flowJoJson);
-    //     flowJoJson = {};
-    //   }
-    // });
-    downloadFileMetadata(props.shared, props.experimentId);
-  }, []);
-
-  // const verifyWorkspace = async (workspaceId: string) => {
-  //   let workspaceData;
-  //   try {
-  //     workspaceData = await axios.post(
-  //       "/api/verifyWorkspace",
-  //       {
-  //         workspaceId: workspaceId,
-  //         experimentId: props.experimentId,
-  //       },
-  //       {}
-  //     );
-  //     setSharedWorkspace(workspaceData.data["isShared"]);
-  //   } catch (e) {
-  //     snackbarService.showSnackbar(
-  //       "Could not verify the workspace, reload the page and try again!",
-  //       "error"
-  //     );
-  //   }
-  //   workspaceSharedLocal = workspaceData.data["isShared"];
-  //   initPlots(workspaceData.data["isShared"]);
-  //   if (workspaceData && workspaceData.data["isShared"])
-  //     loadWorkspaceStatsToDM(
-  //       workspaceData.data["isShared"],
-  //       JSON.parse(workspaceData.data["state"])
-  //     );
-  // };
-
-  // const getWorkspace = async () => {
-  //   let workspaceData;
-  //   try {
-  //     workspaceData = await axios.post(
-  //       "/api/getWorkspace",
-  //       {
-  //         experimentId: props.experimentId,
-  //       },
-  //       {
-  //         headers: {
-  //           token: userManager.getToken(),
-  //         },
-  //       }
-  //     );
-  //     if (workspaceData.data["state"]) {
-  //     }
-  //     // await loadWorkspaceStatsToDM(
-  //     //   false,
-  //     //   JSON.parse(workspaceData.data["state"])
-  //     // );
-  //   } catch (e) {
-  //     snackbarService.showSnackbar(
-  //       "Could not verify the workspace, reload the page and try again!",
-  //       "error"
-  //     );
-  //   }
-  //   // initPlots();
-  // };
-
-  // useEffect(() => {
-  //   let workspaceId = new URLSearchParams(location.search).get("id");
-  //   if (workspaceId) {
-  //     verifyWorkspace(workspaceId);
-  //   } else {
-  //     getWorkspace();
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // const autoSaveWorkspace = () => {
-  //   if (!workspaceSharedLocal) {
-  //     setSavingWorkspace(true);
-  //     saveWorkspace();
-  //   }
-  // };
-
-  // const initPlots = async (workSpaceShared: boolean = false) => {
-  //   if (props.experimentId !== undefined && !setWorkspaceAlready) {
-  //     setWorkspaceAlready = true;
-  //     dataManager.setWorkspaceID(props.experimentId);
-  //     dataManager.addObserver("setWorkspaceLoading", () => {
-  //       const isLoading = dataManager.isWorkspaceLoading();
-  //       setLoading(isLoading);
-  //       if (!isLoading) {
-  //         setLoadModal(false);
-  //       }
-  //     });
-  //   }
-
-  //   if (
-  //     !workSpaceShared &&
-  //     process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
-  //     !isLoggedIn
-  //   ) {
-  //     history.push("/login");
-  //   }
-
-  //   await downloadFileMetadata(props.shared, props.experimentId);
-
-  //   setInitPlot(true);
-  // };
-  // const autoSaveWorkspace = () => {
-  //   if (!workspaceSharedLocal) {
-  //     setSavingWorkspace(true);
-  //     saveWorkspace();
-  //   }
-  // };
-
-  // const initPlots = async (workSpaceShared: boolean = false) => {
-  //   if (observerAdded === false) {
-  //     setObserverAdded(true);
-  //     dataManager.addObserver(
-  //       "addNewGateToWorkspace",
-  //       (e: any) => {
-  //         if (!importFlowJo) getNameAndOpenModal(e);
-  //       },
-  //       true
-  //     );
-  //   }
-  //   if (props.experimentId !== undefined && !setWorkspaceAlready) {
-  //     setWorkspaceAlready = true;
-  //     dataManager.setWorkspaceID(props.experimentId);
-  //     dataManager.addObserver("setWorkspaceLoading", () => {
-  //       const isLoading = dataManager.isWorkspaceLoading();
-  //       setLoading(isLoading);
-  //       if (!isLoading) {
-  //         setLoadModal(false);
-  //       }
-  //     });
-  //   }
-
-  //   if (
-  //     !workSpaceShared &&
-  //     process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
-  //     !isLoggedIn
-  //   ) {
-  //     history.push("/login");
-  //   }
-
-  //   await dataManager.downloadFileMetadata();
-
-  //   setInitPlot(true);
-  // };
-
-  const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
-
-  const upsertWorkSpace = (isShared: boolean = false) => {
-    setSavingWorkspace(true);
-    let stateJson = workspace;
-    const updateWorkSpace = WorkspacesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).upsertWorkSpace(userManager.getToken(), {
-      experimentId: props.experimentId,
-      state: stateJson,
-      isShared: isShared,
-    });
-    axios
-      .post(
-        updateWorkSpace.url,
-        updateWorkSpace.options.body,
-        updateWorkSpace.options
-      )
-      .then((e) => {
-        setNewWorkspaceId(e.data.workspaceId);
-        setSavingWorkspace(false);
-        // snackbarService.showSnackbar("Workspace saved!", "success");
-      })
-      .catch((e) => {
-        setSavingWorkspace(false);
-        snackbarService.showSnackbar(
-          "Could not save the workspace, reload the page and try again!",
-          "error"
-        );
-      });
-  };
-
-  // == General modal logic ==
-  const handleOpen = (func: Function) => {
-    func(true);
-  };
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-
-  // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
@@ -327,85 +107,38 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
 
-  // const [gateToSend, setGateToSend] = React.useState(null);
-  const [namePromptOpen, setNamePromptOpen] = React.useState(false);
-  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
-  // const [downloadingFiles, setDownloadingFiles] = React.useState([]);
+  const handleOpen = (func: Function) => {
+    func(true);
+  };
+  const handleClose = (func: Function) => {
+    func(false);
+  };
 
-  // const getFiles = async (isShared: boolean, fileIds: Array<string>) => {
-  //   let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
-  //   let headers = isShared
-  //     ? {}
-  //     : {
-  //         token: userManager.getToken(),
-  //       };
+  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
-  //   let response = await axios.post(
-  //     url,
-  //     {
-  //       experimentId: props.experimentId,
-  //       fileIds: fileIds,
-  //     },
-  //     {
-  //       headers: headers,
-  //     }
-  //   );
+  useEffect(() => {
+    store.dispatch({
+      type: "workspace.RESET",
+    });
 
-  // };
+    initializeWorkspace();
+  }, []);
 
-  // var loadWorkspaceStatsToDM = async (
-  //   workspaceShared: boolean,
-  //   workspaceStatearg: any
-  // ) => {
-  //   if (workspaceStatearg) {
-  //     setLoading(true);
-  //     let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
-  //     let stateFileIds = workspaceStateReload.getFileIds();
-  //     if (stateFileIds && stateFileIds.length) {
-  //       setDownloadingFiles(stateFileIds);
-  //       let eventFiles = await getFiles(workspaceShared, stateFileIds);
-  //       dataManager.updateDownloaded(eventFiles);
-  //       if (!dataManager.ready()) {
-  //         dataManager.createWorkspace();
-  //       }
-  //       for (let i = 0; i < eventFiles.length; i++) {
-  //         workspaceStateReload.addFile(eventFiles[i]);
-  //       }
-  //       dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
-  //     }
-  //   }
-  //   setLoading(false);
-  // };
+  const initializeWorkspace = async () => {
+    await downloadFileMetadata(props.shared, props.experimentId);
+    await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+  };
 
-  // const addFile = (index: number) => {
-  //   if (!dataManager.ready()) {
-  //     snackbarService.showSnackbar("Something went wrong, try again!", "error");
-  //     return;
-  //   }
-
-  // const file: any = downloadedFiles[index];
-  //   let newFile: FCSFile;
-
-  //   newFile = new FCSFile({
-  //     name: file.title,
-  //     id: file.id,
-  //     src: "remote",
-  //     axes: file.channels.map((e: any) => e.value),
-  //     data: file.events,
-  //     plotTypes: file.channels.map((e: any) => e.display),
-  //     remoteData: file,
-  //   });
-  //   const fileID = dataManager.addNewFileToWorkspace(newFile);
-  //   const plot = new PlotData();
-  //   plot.file = dataManager.getFile(fileID);
-  //   plot.setupPlot();
-  //   dataManager.addNewPlotToWorkspace(plot);
-  // };
+  const saveWorkspace = () => {
+    saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+  };
 
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
-      upsertWorkSpace(true);
-    } else if (sharedWorkspace) {
+      saveWorkspace();
+    } else if (props.shared) {
       let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {
@@ -478,6 +211,8 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
     }, 4000);
   };
 
+  Debounce(() => saveWorkspace(), 5000);
+
   return (
     <div
       style={{
@@ -493,18 +228,9 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
           <AddFileModal
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-            isShared={sharedWorkspace}
+            isShared={props.shared}
             experimentId={props.experimentId}
-            filesMetadata={workspace.files}
-            // downloaded={downloadedFiles}
-            // downloading={downloadingFiles}
-            // filesMetadata={files}
-            // onDownloadFileEvents={(fileIds) => {
-            //   handleDownLoadFileEvents(fileIds);
-            // }}
-            // addFileToWorkspace={(index) => {
-            //   addFile(index);
-            // }}
+            files={workspace.files}
           />
 
           <GenerateReportModal
@@ -603,7 +329,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                 container
               >
                 <Grid container>
-                  {sharedWorkspace ? null : (
+                  {props.shared ? null : (
                     <Button
                       size="small"
                       variant="contained"
@@ -646,30 +372,21 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {props.shared === false ? (
-                    sharedWorkspace ? null : (
+                  {/* {props.shared === false ? (
+                    props.shared ? null : (
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => upsertWorkSpace()}
+                        onClick={() => saveWorkspace()}
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {/* {savingWorkspace ? (
-                          <div className={classes.savingProgress}>
-                            <AutorenewRoundedIcon />
-                          </div>
-                        ) : (
-                          <div className={classes.saved}>
-                            <CheckCircleRoundedIcon />
-                          </div>
-                        )} */}
                         Save Workspace
                       </Button>
                     )
-                  ) : null}
+                  ) : null} */}
 
                   {props.shared === false ? (
                     <Button
@@ -742,7 +459,7 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
               <Grid>
                 {!loading ? (
                   <PlotController
-                    sharedWorkspace={sharedWorkspace}
+                    sharedWorkspace={props.shared}
                     experimentId={props.experimentId}
                     workspace={workspace}
                   ></PlotController>
@@ -780,6 +497,6 @@ function Workspace(props: { experimentId: string; shared: boolean }) {
       </Grid>
     </div>
   );
-}
+};
 
-export default Workspace;
+export default WorkspaceComponent;

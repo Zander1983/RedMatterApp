@@ -69,8 +69,8 @@ export const createPlot = ({
   if (id) newPlot.id = id;
   else newPlot.id = createID();
   if (population) {
-    newPlot.ranges = population?.defaultRanges;
-    newPlot.axisPlotTypes = population?.defaultAxisPlotTypes;
+    newPlot.ranges = { ...population?.defaultRanges };
+    newPlot.axisPlotTypes = { ...population?.defaultAxisPlotTypes };
     newPlot.population =
       typeof population === "string" ? population : population.id;
   }
@@ -530,7 +530,6 @@ export const getPointColors = (plot: Plot) => {
 };
 
 export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
-  const workspace = getWorkspace();
   let population: Population;
   population = populations.createPopulation({
     file: file.id,
@@ -552,15 +551,14 @@ export const createSubpopPlot = async (
   plot: Plot,
   additionalGates?: PopulationGateType[]
 ) => {
-  const newPlotId = await createNewPlotFromFile(
-    getFile(getPopulation(plot.population).file),
-    plot
-  );
+  const oldPop = getPopulation(plot.population);
+  const newPlotId = await createNewPlotFromFile(getFile(oldPop.file), plot);
   let newPlot = getPlot(newPlotId);
   let pop = getPopulation(newPlot.population);
   if (additionalGates) {
     pop.gates = pop.gates.concat(additionalGates);
   }
+  pop.gates = pop.gates.concat(oldPop.gates);
   await store.dispatch({
     type: "workspace.UPDATE_POPULATION",
     payload: {

@@ -107,3 +107,18 @@ export const downloadFileEvent = async (
   });
   return file.id;
 };
+
+export const dowloadAllFileEvents = async (
+  workspaceIsShared: boolean,
+  experimentId: string
+) => {
+  const workspace = getWorkspace();
+  const files = workspace.files
+    .filter((e) => e.downloaded === false)
+    .map((e) => e.id);
+  const promises: Promise<any>[] = [];
+  for (const file of files) {
+    promises.push(downloadFileEvent(workspaceIsShared, file, experimentId));
+  }
+  await Promise.all(promises);
+};
