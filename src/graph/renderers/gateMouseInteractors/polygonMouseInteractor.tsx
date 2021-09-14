@@ -1,13 +1,17 @@
-import PolygonGate from "../../dataManagement/gate/polygonGate";
-import { euclidianDistance2D } from "../../dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "../../utils/euclidianPlane";
 import GateMouseInteractor, {
-  Point,
   GateState,
   MouseInteractorState,
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import Gate from "graph/dataManagement/gate/gate";
+import { Gate, Point, PolygonGate } from "graph/resources/types";
+import { createGate } from "graph/resources/gates";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { generateColor } from "graph/utils/color";
+import { createID } from "graph/utils/id";
+import { isPointInsideWithLogicle } from "graph/resources/dataset";
+import { store } from "redux/store";
 
 export const selectPointDist = 15;
 
@@ -25,6 +29,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   plotter: ScatterPlotter | null = null;
   protected plugin: ScatterPolygonGatePlotter;
+
+  private lastGateUpdate: Date = new Date();
 
   private points: Point[] = [];
   xAxis: string;
@@ -85,12 +91,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.isDraggingGate = false;
   }
 
-  private validateGateOnSpace(gate: Gate) {
+  private validateGateOnSpace(gate: PolygonGate) {
     return (
-      gate.xAxis === this.plotter.plotData.xAxis &&
-      gate.yAxis === this.plotter.plotData.yAxis &&
-      gate.xAxisType === this.plotter.plotData.xPlotType &&
-      gate.yAxisType === this.plotter.plotData.yPlotType
+      gate.xAxis === this.plotter.plot.xAxis &&
+      gate.yAxis === this.plotter.plot.yAxis &&
+      gate.xAxisType === this.plotter.plot.xPlotType &&
+      gate.yAxisType === this.plotter.plot.yPlotType
     );
   }
 
@@ -100,9 +106,15 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       true
     );
     this.plotter.gates
-      .filter((e) => this.validateGateOnSpace(e))
+      .filter((e) => this.validateGateOnSpace(e as PolygonGate))
       .forEach((gate) => {
-        if ((gate as PolygonGate).isPointInside(abstractMouse, true)) {
+        if (
+          isPointInsideWithLogicle(
+            { gate: gate as PolygonGate, inverseGating: false },
+            abstractMouse,
+            true
+          )
+        ) {
           this.isDraggingGate = true;
           this.gatePivot = abstractMouse;
           this.targetEditGate = gate as PolygonGate;
@@ -113,8 +125,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   private detectPointsClicked(mouse: Point) {
     this.plotter.gates.forEach((gate) => {
-      if (gate instanceof PolygonGate && this.targetEditGate === null)
+      if (gate.gateType === "polygon" && this.targetEditGate === null)
         gate.points.forEach((p, i) => {
+          p = { ...p };
           if (
             this.targetEditGate === null &&
             euclidianDistance2D(
@@ -152,36 +165,36 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       },
       true
     );
-
-    const gateState = this.targetEditGate.getState();
+    const gateState = this.targetEditGate;
     for (let index = 0; index < gateState.points.length; index++) {
+      gateState.points[index] = { ...gateState.points[index] };
       gateState.points[index] = this.plotter.transformer.toConcretePoint(
         gateState.points[index],
         undefined,
         true
       );
-
       gateState.points[index] = {
         x: gateState.points[index].x + offset.x,
         y: gateState.points[index].y + offset.y,
       };
-
       gateState.points[index] = this.plotter.transformer.toAbstractPoint(
         gateState.points[index],
         true
       );
     }
-
-    this.targetEditGate.update(gateState);
+    this.gateUpdater(gateState);
   }
 
   private pointMoveToMousePosition(mouse: Point) {
-    const gateState = this.targetEditGate.getState();
+    const gateState = this.targetEditGate;
+    gateState.points[this.targetPointIndex] = {
+      ...gateState.points[this.targetPointIndex],
+    };
     gateState.points[this.targetPointIndex] =
       this.plotter.transformer.rawAbstractLogicleToLinear(
         this.plotter.transformer.toAbstractPoint(mouse)
       );
-    this.targetEditGate.update(gateState);
+    this.gateUpdater(gateState);
   }
 
   private reset() {
@@ -190,43 +203,81 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.targetPointIndex = null;
   }
 
+  private updateInterval = 20; // miliseconds
+  private currentInterval: NodeJS.Timeout = null;
+  private latest: Gate | null = null;
+  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
+    if (fromTimout) this.currentInterval = null;
+    if (
+      this.lastGateUpdate.getTime() + this.updateInterval >
+      new Date().getTime()
+    ) {
+      if (this.currentInterval === null) {
+        const waitUntilCurrentCycleTimesOut =
+          this.lastGateUpdate.getTime() +
+          this.updateInterval -
+          new Date().getTime() +
+          1;
+        this.currentInterval = setTimeout(
+          () => this.gateUpdater(this.latest, true),
+          waitUntilCurrentCycleTimesOut
+        );
+      } else {
+        this.latest = gate;
+      }
+    } else if (gate !== null) {
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate },
+      });
+      this.lastGateUpdate = new Date();
+    }
+  }
+
   protected instanceGate(): PolygonGate {
     if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
-
-    const checkNotNullOrUndefined = (x: any): void => {
-      if (x === null || x === undefined) {
-        throw Error("Invalid gate params on instancing");
-      }
-    };
-    checkNotNullOrUndefined(points);
-    checkNotNullOrUndefined(xAxis);
-    checkNotNullOrUndefined(yAxis);
-
     let originalRanges = [
-      this.plotter.plotData.ranges.get(this.plotter.plotData.xAxis),
-      this.plotter.plotData.ranges.get(this.plotter.plotData.yAxis),
+      this.plotter.plot.ranges[this.plotter.plot.xAxis],
+      this.plotter.plot.ranges[this.plotter.plot.yAxis],
     ];
-
-    const newGate = new PolygonGate({
-      points: [...points].map((e) => {
-        e = this.plotter.transformer.toAbstractPoint(e);
-        e = this.plotter.transformer.rawAbstractLogicleToLinear(e);
-        return e;
+    const newPoints: Point[] = [];
+    for (let i = 0; i < points.length; i++) {
+      let p = { x: points[i].x, y: points[i].y };
+      const a = this.plotter.transformer.toAbstractPoint(p);
+      const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
+      newPoints.push({ ...b });
+    }
+    const newGate: PolygonGate = {
+      points: [...newPoints].map((e) => {
+        return { ...e };
       }),
       xAxis: xAxis,
-      xAxisType: this.plotter.plotData.xPlotType,
+      xAxisType: this.plotter.plot.xPlotType,
       xAxisOriginalRanges: originalRanges[0],
       yAxis: yAxis,
-      yAxisType: this.plotter.plotData.yPlotType,
+      yAxisType: this.plotter.plot.yPlotType,
       yAxisOriginalRanges: originalRanges[1],
-      parents: this.plotter.plotData.population.map((e) => e.gate),
-    });
-
-    for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
-      gate.children.push(newGate);
+      parents: getPopulation(this.plotter.plot.population).gates.map(
+        (e) => e.gate
+      ),
+      color: generateColor(),
+      gateType: "polygon",
+      id: createID(),
+      name: "New Gate",
+      children: [],
+    };
+    const popGates = getPopulation(this.plotter.plot.population).gates.map(
+      (e) => e.gate
+    );
+    for (let gate of popGates) {
+      let popGate = getGate(gate);
+      popGate.children.push(newGate.id);
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate: popGate },
+      });
     }
-
     return newGate;
   }
 
@@ -272,7 +323,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     if (!this.started) return;
     const isCloseToFirstPoint = this.closeToFirstPoint(point);
     if (type === "mousedown" && !isCloseToFirstPoint) {
-      this.points = [...this.points, point];
+      this.points = [...this.points, { ...point }];
     } else if (type === "mousedown") {
       this.createAndAddGate();
     }

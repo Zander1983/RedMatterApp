@@ -1,13 +1,8 @@
-export class Dbouncer {
-  static debounce = (func: any, timeout = 3000) => {
-    let timer: any;
-    return (...args: any) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        func(args);
-      }, timeout);
-    };
-  };
-}
+let timeoutObj: NodeJS.Timeout;
 
-export default Dbouncer;
+export const Debounce = (func: Function, timeout = 3000) => {
+  if (!timeoutObj) {
+    func();
+    timeoutObj = setTimeout(() => (timeoutObj = null), timeout);
+  }
+};

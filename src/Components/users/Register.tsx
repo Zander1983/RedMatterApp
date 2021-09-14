@@ -93,6 +93,7 @@ const Register = (props: any) => {
     } catch (err) {
       try {
         setLoading(false);
+        //@ts-ignore
         const errMsg = err.response.data.message;
         snackbarService.showSnackbar(errMsg, "error");
       } catch (e) {}

@@ -68,6 +68,7 @@ const Login = (props: any) => {
       }
     } catch (err) {
       setLoading(false);
+      //@ts-ignore
       if (err.response === undefined) {
         snackbarService.showSnackbar(
           "Couldn't connect to Red Matter servers",
@@ -75,6 +76,7 @@ const Login = (props: any) => {
         );
         return;
       }
+      //@ts-ignore
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");
     }

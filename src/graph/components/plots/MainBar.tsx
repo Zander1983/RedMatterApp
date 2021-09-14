@@ -1,23 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
-import useForceUpdate from "hooks/forceUpdate";
 import CancelIcon from "@material-ui/icons/Cancel";
 
-import CreateIcon from "@material-ui/icons/Create";
 import TuneIcon from "@material-ui/icons/Tune";
 import TouchAppIcon from "@material-ui/icons/TouchApp";
-import ExposureIcon from "@material-ui/icons/Exposure";
-import GrainIcon from "@material-ui/icons/Grain";
-import MessageModal from "../../modals/MessageModal";
-import dataManager from "../../../dataManagement/dataManager";
-import RangeResizeModal from "../../modals/rangeResizeModal";
-import PlotData from "graph/dataManagement/plotData";
-import Grain from "@material-ui/icons/Grain";
-import normalGatingIcon from "../../../../assets/images/normalGatingIcon.png";
-import inverseGatingIcon from "../../../../assets/images/inverseGatingIcon.png";
-
-import gate from "../../../img/gate.png";
+import MessageModal from "../modals/MessageModal";
+import RangeResizeModal from "../modals/rangeResizeModal";
+import normalGatingIcon from "../../../assets/images/normalGatingIcon.png";
+import inverseGatingIcon from "../../../assets/images/inverseGatingIcon.png";
+import gate from "../../../assets/images/gate.png";
+import { Plot, PopulationGateType } from "graph/resources/types";
+import { getWorkspace } from "graph/utils/workspace";
+import * as PlotResource from "graph/resources/plots";
+import { store } from "redux/store";
 
 const classes = {
   main: {
@@ -42,7 +38,7 @@ const classes = {
   },
 };
 
-export default function MainBar(props: any) {
+export default function MainBar(props: { plot: Plot }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
@@ -62,50 +58,12 @@ export default function MainBar(props: any) {
 
   const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
-  const setAxisRange = (
-    minX: number,
-    maxX: number,
-    minY: number,
-    maxY: number,
-    axisX: string,
-    axisY: string
-  ) => {
-    const histogramAxis = plot.plotData.xHistogram
-      ? "vertical"
-      : plot.plotData.yHistogram
-      ? "horizontal"
-      : null;
-    const targetPlots: PlotData[] = [];
-    const plots = dataManager.getAllPlots();
-    plots.forEach((res) => {
-      const tPlot = res.plot;
-      if (
-        tPlot.xAxis === plot.plotData.xAxis &&
-        tPlot.yAxis === plot.plotData.yAxis &&
-        tPlot.xPlotType === plot.plotData.xPlotType &&
-        tPlot.yPlotType === plot.plotData.yPlotType
-      ) {
-        targetPlots.push(tPlot);
-      }
-    });
-
-    targetPlots.forEach((e) => {
-      if (histogramAxis !== "horizontal")
-        if (minX === 69 && maxX === 420) e.resetOriginalRanges();
-        else e.ranges.set(axisX, [minX, maxX]);
-
-      if (histogramAxis !== "vertical")
-        if (minY === 69 && maxY === 420) e.resetOriginalRanges();
-        else e.ranges.set(axisY, [minY, maxY]);
-    });
-
-    targetPlots.forEach((e) => dataManager.redrawPlotIds.push(e.id));
-
-    dataManager.updateWorkspace();
-  };
 
   const deletePlot = () => {
-    dataManager.removePlotFromWorkspace(plot.plotData.id);
+    store.dispatch({
+      type: "workspace.DELETE_PLOT",
+      payload: { plot: plot },
+    });
   };
 
   const handleClose = (func: Function) => {
@@ -123,29 +81,31 @@ export default function MainBar(props: any) {
   // };
 
   const polygonGatingSetter = () => {
+    let plot = props.plot;
     if (polygonGating) {
-      plot.setGating("Polygon", false);
+      plot.gatingActive = "";
+      store.dispatch({
+        type: "workspace.UPDATE_PLOT",
+        payload: { plot: plot },
+      });
       setPolygonGating(false);
     } else {
-      plot.setGating("Polygon", true);
+      plot.gatingActive = "polygon";
+      store.dispatch({
+        type: "workspace.UPDATE_PLOT",
+        payload: { plot: plot },
+      });
       setPolygonGating(true);
     }
   };
-
-  useEffect(() => {
-    plot.unsetGating = () => {
-      setPolygonGating(false);
-      // setOvalGating(false);
-    };
-  }, [plot]);
 
   // const downloadCanvasAsImage = () => {
   //   let downloadLink = document.createElement("a");
   //   downloadLink.setAttribute(
   //     "download",
-  //     `workspacename-filename-${plot.plotData.id}.png`
+  //     `workspacename-filename-${props.plot.id}.png`
   //   );
-  //   let canvas = document.getElementById(`canvas-${plot.plotData.id}`);
+  //   let canvas = document.getElementById(`canvas-${props.plot.id}`);
   //   //@ts-ignore
   //   let dataURL = canvas.toDataURL("image/png");
   //   let url = dataURL.replace(
@@ -157,28 +117,14 @@ export default function MainBar(props: any) {
   // };
 
   return (
-    <Grid container direction="row" xs={12} style={classes.main}>
+    <Grid container direction="row" xs={12} item style={classes.main}>
       <RangeResizeModal
         open={openResize}
         closeCall={{
           f: handleClose,
           ref: setOpenResize,
         }}
-        inits={{
-          histogramAxis: plot.plotData.xHistogram
-            ? "vertical"
-            : plot.plotData.yHistogram
-            ? "horizontal"
-            : null,
-          axisX: rangeResizeModalAxisX,
-          axisY: rangeResizeModalAxisY,
-          minX: rangeResizeModalTargetMinX,
-          maxX: rangeResizeModalTargetMaxX,
-          minY: rangeResizeModalTargetMinY,
-          maxY: rangeResizeModalTargetMaxY,
-          plot: plot.plotData as PlotData,
-        }}
-        callback={setAxisRange}
+        plot={props.plot}
       ></RangeResizeModal>
       <MessageModal
         open={deleteModalOpen}
@@ -299,11 +245,17 @@ export default function MainBar(props: any) {
               backgroundColor: "#6666aa",
             }}
             onClick={() => {
-              if (plot.plotData.gates.length === 0) {
+              if (props.plot.gates.length === 0) {
                 setEmptySubpopModalOpen(true);
                 return;
               }
-              dataManager.createSubpopFromGatesInPlot(plot.plotData.id);
+              const gates: PopulationGateType[] = props.plot.gates.map((e) => {
+                return {
+                  gate: e,
+                  inverseGating: false,
+                };
+              });
+              PlotResource.createSubpopPlot(plot, gates);
             }}
           >
             {/* Subpop */}
@@ -335,11 +287,17 @@ export default function MainBar(props: any) {
               backgroundColor: "#6666aa",
             }}
             onClick={() => {
-              if (plot.plotData.gates.length === 0) {
+              if (props.plot.gates.length === 0) {
                 setEmptySubpopModalOpen(true);
                 return;
               }
-              dataManager.createSubpopFromGatesInPlot(plot.plotData.id, true);
+              const gates: PopulationGateType[] = props.plot.gates.map((e) => {
+                return {
+                  gate: e,
+                  inverseGating: true,
+                };
+              });
+              PlotResource.createSubpopPlot(plot, gates);
             }}
           >
             {/* Inverse Subpop */}
@@ -364,14 +322,14 @@ export default function MainBar(props: any) {
             variant="contained"
             size="small"
             onClick={() => {
-              const rangesX = plot.plotData.ranges.get(plot.plotData.xAxis);
+              const rangesX = props.plot.ranges[props.plot.xAxis];
               setRangeResizeModalTargetMinX(rangesX[0]);
               setRangeResizeModalTargetMaxX(rangesX[1]);
-              const rangesY = plot.plotData.ranges.get(plot.plotData.yAxis);
+              const rangesY = props.plot.ranges[props.plot.yAxis];
               setRangeResizeModalTargetMinY(rangesY[0]);
               setRangeResizeModalTargetMaxY(rangesY[1]);
-              setRangeResizeModalAxisX(plot.plotData.xAxis);
-              setRangeResizeModalAxisY(plot.plotData.yAxis);
+              setRangeResizeModalAxisX(props.plot.xAxis);
+              setRangeResizeModalAxisY(props.plot.yAxis);
               setOpenResize(true);
             }}
             style={{

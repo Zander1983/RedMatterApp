@@ -1,38 +1,49 @@
-import dataManager from "../graph/dataManagement/dataManager";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import PolygonGate, {
-  PolygonGateState,
-} from "graph/dataManagement/gate/polygonGate";
 import { generateColor } from "graph/utils/color";
-import PlotData from "graph/dataManagement/plotData";
 import { snackbarService } from "uno-material-ui";
+import {
+  File,
+  FileID,
+  Plot,
+  PolygonGate,
+  Population,
+  PopulationGateType,
+} from "graph/resources/types";
+import { createBlankPlotObj, createPlot } from "graph/resources/plots";
+import { createPopulation } from "graph/resources/populations";
+import { createGate } from "graph/resources/gates";
+import { getFile } from "graph/utils/workspace";
+import { store } from "redux/store";
 
-const getFileOrSkipThisSample = (filesUsed: any, channelsInfo: any) => {
-  let files = dataManager.downloaded;
-  let channels = channelsInfo.map((x: any) => {
-    return `${x.channelName} - ${x.channelName}`;
-  });
+const getFileOrSkipThisSample = (
+  filesUsed: any,
+  channelsInfo: any,
+  files: File[]
+) => {
+  let channels = channelsInfo.map((x: any) => x.channelName);
+
   let fileCanbeUsed = true;
   let fileId = "";
   let repeatFileUse = false;
-  for (let i = 0; i < files.length; i++) {
-    let file = files[i];
-    let axes = file.channels.map((x: any) => {
-      let value = x.value;
-      if (x.display == "bi") {
-        value = value.replace("Comp-", "");
-        return value;
+
+  for (const file of files) {
+    let axes = file.axes.map((e: any) => {
+      if (e.includes("Comp-")) {
+        e = e.replace("Comp-", "");
+        return e;
       }
-      return value;
+      return e;
     });
-    for (let j = 0; j < axes.length; j++) {
-      if (!channels.includes(axes[j])) {
+
+    for (const channel of channels) {
+      if (!axes.includes(channel)) {
         fileCanbeUsed = false;
         break;
       }
     }
+
     if (fileCanbeUsed) {
-      if (filesUsed.includes(file.id)) {
+      if (filesUsed.includes(file.name)) {
         if (!repeatFileUse) {
           repeatFileUse = true;
           fileId = file.id;
@@ -44,13 +55,16 @@ const getFileOrSkipThisSample = (filesUsed: any, channelsInfo: any) => {
     }
   }
 
-  return { fileId: fileId ? fileId : null };
+  return fileId;
 };
 
-const ParseFlowJoJson = async (flowJoJson: any) => {
-  let plots: any = [];
+const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: File[]) => {
+  await store.dispatch({
+    type: "workspace.RESET_EVERYTHING_BUT_FILES",
+  });
   let workspace = flowJoJson["Workspace"];
-  let filesUsed: any = [];
+  let filesUsed: Array<FileID> = [];
+
   if (
     workspace &&
     workspace["SampleList"] &&
@@ -58,15 +72,19 @@ const ParseFlowJoJson = async (flowJoJson: any) => {
   ) {
     let sample = workspace["SampleList"]["Sample"];
     let samples = [];
+
     if (sample.length == undefined) samples.push(sample);
     else samples = sample;
+
     for (let i = 0; i < samples.length; i++) {
       let sampleNode = samples[i]["SampleNode"];
-      let plot = new PlotData();
+      let plot: Plot;
       let sampleUri = samples[i]["DataSet"]["_attributes"]["uri"];
       let sampleUrlArray = sampleUri.split("/");
-      let sampleName = sampleUrlArray[sampleUrlArray.length - 1];
-      sampleName = sampleName.replace("%20", "");
+      let sampleName: string = sampleUrlArray[sampleUrlArray.length - 1];
+      sampleName = sampleName.replaceAll("%20", " ");
+      filesUsed.push(sampleName);
+
       let transformations = samples[i]["Transformations"];
       let channelsInfo: any = [];
       if (transformations) {
@@ -87,37 +105,54 @@ const ParseFlowJoJson = async (flowJoJson: any) => {
           );
         }
       }
-      let fileObj = getFileOrSkipThisSample(filesUsed, channelsInfo);
-      let fileId = fileObj.fileId;
+
+      console.log("calculated channels info = ", channelsInfo);
+
+      let fileId = getFileOrSkipThisSample(
+        filesUsed,
+        channelsInfo,
+        downloadedFiles
+      );
+
       if (fileId) {
         filesUsed.push(fileId);
         let mainGraphAxis = sampleNode["Graph"]["Axis"];
         let xAxis = mainGraphAxis.find(
-          (x: any) => x["_attributes"].dimension == "x"
+          (x: any) => x["_attributes"].dimension === "x"
         );
         let yAxis = mainGraphAxis.find(
-          (x: any) => x["_attributes"].dimension == "y"
+          (x: any) => x["_attributes"].dimension === "y"
         );
         let xAxisName = xAxis["_attributes"].name;
         let yAxisName = yAxis["_attributes"].name;
-        plot.xAxis = `${xAxisName} - ${xAxisName}`;
-        plot.yAxis = `${yAxisName} - ${yAxisName}`;
         let xChannelInfo = channelsInfo.find(
-          (x: any) => x.channelName == xAxisName
+          (x: any) => x.channelName === xAxisName
         );
         let yChannelInfo = channelsInfo.find(
-          (x: any) => x.channelName == yAxisName
+          (x: any) => x.channelName === yAxisName
         );
-        plot.setXAxisPlotType(xChannelInfo.type);
-        plot.setYAxisPlotType(yChannelInfo.type);
-        addNewPlot(plots, plot, fileId);
+
+        plot = createBlankPlotObj();
+        plot.xAxis = `${xAxisName}`;
+        plot.yAxis = `${yAxisName}`;
+        plot.xPlotType = xChannelInfo.type;
+        plot.yPlotType = yChannelInfo.type;
+        plot.ranges[plot.xAxis] = [
+          parseFloat(xChannelInfo.rangeMin),
+          parseFloat(xChannelInfo.rangeMax),
+        ];
+        plot.ranges[plot.yAxis] = [
+          parseFloat(yChannelInfo.rangeMin),
+          parseFloat(yChannelInfo.rangeMax),
+        ];
+
+        addNewPlot(plot, fileId, true);
 
         if (
           sampleNode["Subpopulations"] &&
           Object.keys(sampleNode["Subpopulations"]).length > 0
         ) {
-          parseSubpopulation(
-            plots,
+          await parseSubpopulation(
             plot,
             fileId,
             sampleNode["Subpopulations"],
@@ -126,14 +161,11 @@ const ParseFlowJoJson = async (flowJoJson: any) => {
         }
       } else {
         snackbarService.showSnackbar(
-          "Clouldn't find matching file for flow jo sample " + sampleName,
+          "Couldn't find matching file for flow jo sample " + sampleName,
           "warning"
         );
       }
     }
-  }
-  for (let i = 0; i < plots.length; i++) {
-    dataManager.addNewPlotToWorkspace(plots[i], false);
   }
 };
 
@@ -144,7 +176,8 @@ const parseChannels = (transformations: any, type: string) => {
 
     let rangeMin;
     let rangeMax;
-    if (type == "bi") {
+
+    if (type === "bi") {
       rangeMin = "0";
       rangeMax = Math.pow(
         10,
@@ -154,6 +187,7 @@ const parseChannels = (transformations: any, type: string) => {
       rangeMin = transformationAttributes["transforms:minRange"];
       rangeMax = transformationAttributes["transforms:maxRange"];
     }
+
     let channelName =
       transformations[i]["data-type:parameter"]["_attributes"][
         "data-type:name"
@@ -165,30 +199,44 @@ const parseChannels = (transformations: any, type: string) => {
       type: type,
     });
   }
+
   return channelArray;
 };
 
-const addNewPlot = (plots: any, plot: PlotData, fileID: string) => {
-  plot.file = dataManager.getFile(fileID);
-  plot.setupPlot(false);
-  plots.push(plot);
+const addNewPlot = async (
+  plot: Plot,
+  fileID: string,
+  populationCreate: boolean
+) => {
+  if (populationCreate) {
+    let population: Population = createPopulation({ file: fileID });
+    await store.dispatch({
+      type: "workspace.ADD_POPULATION",
+      payload: { population },
+    });
+    plot.population = population.id;
+  }
+  plot = createPlot({ clonePlot: plot });
+  await store.dispatch({
+    type: "workspace.ADD_PLOT",
+    payload: { plot },
+  });
 };
 
-const parseSubpopulation = (
-  plots: any,
-  plot: PlotData,
+const parseSubpopulation = async (
+  plot: Plot,
   fileId: string,
   subPopulation: any,
   channelsInfo: any
 ) => {
   let populations = subPopulation["Population"];
   if (populations) {
-    if (populations.length == undefined) {
+    if (populations.length === undefined) {
       populations = [populations];
     }
 
     for (let i = 0; i < populations.length; i++) {
-      let newPlot = new PlotData();
+      let newPlot: Plot;
       let population = populations[i];
       let graph = population["Graph"];
       let axis = graph["Axis"];
@@ -196,45 +244,75 @@ const parseSubpopulation = (
       let yAxis = axis.find((x: any) => x["_attributes"].dimension == "y");
       let xAxisName = xAxis["_attributes"].name;
       let yAxisName = yAxis["_attributes"].name;
-      newPlot.xAxis = `${xAxisName} - ${xAxisName}`;
-      newPlot.yAxis = `${yAxisName} - ${yAxisName}`;
+      let file = getFile(fileId);
+
+      newPlot = createBlankPlotObj();
+      newPlot.xAxis = `${xAxisName}`;
+      newPlot.yAxis = `${yAxisName}`;
+      console.log(channelsInfo);
+      console.log(xAxisName);
+      console.log(yAxisName);
       let xChannelInfo = channelsInfo.find(
         (x: any) => x.channelName == xAxisName
       );
       let yChannelInfo = channelsInfo.find(
         (x: any) => x.channelName == yAxisName
       );
-      newPlot.setXAxisPlotType(xChannelInfo.type);
-      newPlot.setYAxisPlotType(yChannelInfo.type);
-
+      console.log(xChannelInfo);
+      console.log(yChannelInfo);
+      newPlot.xPlotType = xChannelInfo.type;
+      newPlot.yPlotType = yChannelInfo.type;
+      newPlot.ranges[newPlot.xAxis] = [
+        parseFloat(xChannelInfo.rangeMin),
+        parseFloat(xChannelInfo.rangeMax),
+      ];
+      newPlot.ranges[newPlot.yAxis] = [
+        parseFloat(yChannelInfo.rangeMin),
+        parseFloat(yChannelInfo.rangeMax),
+      ];
       if (population["Gate"]) {
-        let gateAssign: PolygonGateState = {
+        let polygonGate: PolygonGate = {
+          id: "",
           name: population["_attributes"].name,
-          xAxis: `${xAxisName} - ${xAxisName}`,
-          yAxis: `${yAxisName} - ${yAxisName}`,
+          xAxis: `${xAxisName}`,
+          yAxis: `${yAxisName}`,
           color: generateColor(),
           xAxisType: xChannelInfo.type,
           yAxisType: yChannelInfo.type,
-          parents: [],
           points: [],
+          parents: [],
+          children: [],
           xAxisOriginalRanges: [xChannelInfo.rangeMin, xChannelInfo.rangeMax],
           yAxisOriginalRanges: [yChannelInfo.rangeMin, yChannelInfo.rangeMax],
+          gateType: "polygon",
         };
-        let polygonGate = new PolygonGate(gateAssign);
+        polygonGate = createGate({ cloneGate: polygonGate });
         let gate = population["Gate"];
         let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
         parseGateType(gateType, gate, polygonGate, xChannelInfo, yChannelInfo);
-        newPlot.population.push({ gate: polygonGate, inverseGating: false });
-        plot.gates.push({
-          gate: polygonGate,
-          inverseGating: false,
-          displayOnlyPointsInGate: false,
+        plot.gates.push(polygonGate.id);
+        await store.dispatch({
+          type: "workspace.ADD_GATE",
+          payload: { gate: polygonGate },
         });
-        dataManager.addNewGateToWorkspace(polygonGate);
-        addNewPlot(plots, newPlot, fileId);
+
+        let populationGate: PopulationGateType = {
+          inverseGating: false,
+          gate: polygonGate.id,
+        };
+        let childPopulation = createPopulation({ file: fileId });
+        childPopulation.gates.push(populationGate);
+
+        await store.dispatch({
+          type: "workspace.ADD_POPULATION",
+          payload: { population: childPopulation },
+        });
+
+        newPlot.population = childPopulation.id;
+
+        addNewPlot(newPlot, fileId, false);
         if (population["Subpopulations"]) {
           parseSubpopulation(
-            plots,
             newPlot,
             fileId,
             population["Subpopulations"],

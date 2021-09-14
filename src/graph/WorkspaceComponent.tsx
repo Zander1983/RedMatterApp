@@ -1,8 +1,7 @@
+import { useSelector, useStore } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { useStore } from "react-redux";
 import axios from "axios";
 import { useHistory } from "react-router";
-import { useLocation } from "react-router-dom";
 
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
@@ -14,34 +13,31 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
-import { generateColor } from "graph/utils/color";
 
 import userManager from "Components/users/userManager";
-import Gate from "graph/dataManagement/gate/gate";
-import PlotData from "graph/dataManagement/plotData";
-import { API_CALLS } from "assets/constants/apiCalls";
-import { Dbouncer } from "services/Dbouncer";
+import { Debounce } from "services/Dbouncer";
 import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
-import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import FCSFile from "graph/dataManagement/fcsFile";
-import Plots, { resetPlotSizes } from "./components/workspaces/Plots";
-import dataManager from "graph/dataManagement/dataManager";
-import WorkspaceStateHelper from "graph/dataManagement/workspaceStateReload";
+import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
-import { String } from "lodash";
+import {
+  dowloadAllFileEvents,
+  downloadFileEvent,
+  downloadFileMetadata,
+} from "services/FileService";
+import {
+  loadWorkspaceFromRemoteIfExists,
+  saveWorkspaceToRemote,
+} from "./utils/workspace";
+import { Workspace as WorkspaceType } from "./resources/types";
+import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
-import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { GateState, Point } from "../graph/dataManagement/gate/gate";
-import PolygonGate, {
-  PolygonGateState,
-} from "./dataManagement/gate/polygonGate";
 import { ParseFlowJoJson } from "services/FlowJoParser";
 
 const useStyles = makeStyles((theme) => ({
@@ -89,235 +85,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// ==== Avoid multiple listeners for screen resize ====
-let setWorkspaceAlready = false;
-let workspaceSharedLocal = false;
-const staticFiles = [
-  "transduction_1",
-  "transduction_2",
-  "transduction_3",
-  "erica1",
-  "erica2",
-  "erica3",
-].map((e) => {
-  return {
-    label: e,
-    information: "...",
-    fromStatic: e,
-    fileSize: 0,
-    eventCount: 0,
-    lastModified: "X/X/X",
-  };
-});
-
-let flowJoJson = {};
-let importFlowJo = false;
-
-function Workspace(props: { experimentId: string; poke: Boolean }) {
-  const remoteWorkspace = dataManager.isRemoteWorkspace();
+const WorkspaceComponent = (props: {
+  experimentId: string;
+  shared: boolean;
+}) => {
+  const store = useStore();
+  const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
-  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
-  const [initPlot, setInitPlot] = React.useState(false);
+  const [initPlot, setInitPlot] = React.useState(true);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-  const location = useLocation();
-  const saveWorkspace = Dbouncer.debounce(() => upsertWorkSpace(false));
 
-  const verifyWorkspace = async (workspaceId: string) => {
-    let workspaceData;
-    try {
-      workspaceData = await axios.post(
-        "/api/verifyWorkspace",
-        {
-          workspaceId: workspaceId,
-          experimentId: props.experimentId,
-        },
-        {}
-      );
-      dataManager.setWorkspaceIsShared(workspaceData.data["isShared"]);
-      setSharedWorkspace(workspaceData.data["isShared"]);
-    } catch (e) {
-      snackbarService.showSnackbar(
-        "Could not verify the workspace, reload the page and try again!",
-        "error"
-      );
-    }
-    workspaceSharedLocal = workspaceData.data["isShared"];
-    initPlots(workspaceData.data["isShared"]);
-    if (workspaceData && workspaceData.data["isShared"])
-      loadWorkspaceStatsToDM(
-        workspaceData.data["isShared"],
-        JSON.parse(workspaceData.data["state"])
-      );
-  };
-
-  const getWorkspace = async () => {
-    let workspaceData;
-    try {
-      workspaceData = await axios.post(
-        "/api/getWorkspace",
-        {
-          experimentId: props.experimentId,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      );
-      if (workspaceData.data["state"])
-        await loadWorkspaceStatsToDM(
-          false,
-          JSON.parse(workspaceData.data["state"])
-        );
-    } catch (e) {
-      snackbarService.showSnackbar(
-        "Could not verify the workspace, reload the page and try again!",
-        "error"
-      );
-    }
-    initPlots();
-  };
-
-  useEffect(() => {
-    dataManager.setExperimentId(props.experimentId);
-
-    let workspaceId = new URLSearchParams(location.search).get("id");
-    if (workspaceId) {
-      verifyWorkspace(workspaceId);
-    } else {
-      getWorkspace();
-    }
-
-    var downloadedListner = dataManager.addObserver("updateDownloaded", () => {
-      setDownloadedFiles(dataManager.downloaded);
-      if (
-        importFlowJo &&
-        dataManager.files.length == dataManager.downloaded.length
-      ) {
-        initiateParseFlowJo(flowJoJson);
-        flowJoJson = {};
-      }
-    });
-
-    var downloadingListner = dataManager.addObserver(
-      "updateDownloadingFiles",
-      () => {
-        setDownloadingFiles(dataManager.downloadingFiles);
-      }
-    );
-
-    // let updateWorkspaceListner = dataManager.addObserver(
-    //   "updateWorkspace",
-    //   () => {
-    //     if (dataManager.letUpdateBeCalledForAutoSave) {
-    //       autoSaveWorkspace();
-    //     }
-    //   }
-    // );
-
-    dataManager.letUpdateBeCalledForAutoSave = true;
-    return () => {
-      setWorkspaceAlready = false;
-      dataManager.clearWorkspace();
-      setDownloadedFiles([]);
-      setDownloadingFiles([]);
-      //dataManager.removeObserver("updateWorkspace", updateWorkspaceListner);
-      dataManager.removeObserver("updateDownloadingFiles", downloadingListner);
-      dataManager.removeObserver("updateDownloaded", downloadedListner);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const autoSaveWorkspace = () => {
-    if (!workspaceSharedLocal) {
-      setSavingWorkspace(true);
-      saveWorkspace();
-    }
-  };
-
-  const initPlots = async (workSpaceShared: boolean = false) => {
-    if (observerAdded === false) {
-      setObserverAdded(true);
-      dataManager.addObserver(
-        "addNewGateToWorkspace",
-        (e: any) => {
-          if (!importFlowJo) getNameAndOpenModal(e);
-        },
-        true
-      );
-    }
-    if (props.experimentId !== undefined && !setWorkspaceAlready) {
-      setWorkspaceAlready = true;
-      dataManager.setWorkspaceID(props.experimentId);
-      dataManager.addObserver("setWorkspaceLoading", () => {
-        const isLoading = dataManager.isWorkspaceLoading();
-        setLoading(isLoading);
-        if (!isLoading) {
-          setLoadModal(false);
-        }
-      });
-    }
-
-    if (
-      !workSpaceShared &&
-      process.env.REACT_APP_ENFORCE_LOGIN_TO_ANALYSE === "true" &&
-      !isLoggedIn
-    ) {
-      history.push("/login");
-    }
-
-    await dataManager.downloadFileMetadata();
-
-    setInitPlot(true);
-  };
-
-  const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
-
-  const upsertWorkSpace = (isShared: boolean = false) => {
-    setSavingWorkspace(true);
-    let stateJson = dataManager.getWorkspaceJSON();
-    const updateWorkSpace = WorkspacesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).upsertWorkSpace(userManager.getToken(), {
-      experimentId: props.experimentId,
-      state: stateJson,
-      isShared: isShared,
-    });
-    axios
-      .post(
-        updateWorkSpace.url,
-        updateWorkSpace.options.body,
-        updateWorkSpace.options
-      )
-      .then((e) => {
-        setNewWorkspaceId(e.data.workspaceId);
-        setSavingWorkspace(false);
-        // snackbarService.showSnackbar("Workspace saved!", "success");
-      })
-      .catch((e) => {
-        setSavingWorkspace(false);
-        snackbarService.showSnackbar(
-          "Could not save the workspace, reload the page and try again!",
-          "error"
-        );
-      });
-  };
-
-  // == General modal logic ==
-  const handleOpen = (func: Function) => {
-    func(true);
-  };
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-
-  // == Add file modal logic ==
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
@@ -325,113 +108,45 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
 
-  const [observerAdded, setObserverAdded] = React.useState(false);
-  const [gateToSend, setGateToSend] = React.useState(null);
-  const [namePromptOpen, setNamePromptOpen] = React.useState(false);
-  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
-  const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-
-  const getNameAndOpenModal = (gate: Gate) => {
-    setNamePromptOpen(true);
-    setGateToSend(gate);
+  const handleOpen = (func: Function) => {
+    func(true);
+  };
+  const handleClose = (func: Function) => {
+    func(false);
   };
 
-  const renameGate = (newName: String) => {
-    dataManager.getGate(gateToSend[0].id).update({ name: newName });
-    setNamePromptOpen(false);
-    dataManager.workspaceUpdated();
-    resetPlotSizes();
-    dataManager
-      .getAllPlots()
-      .filter(
-        (e) =>
-          e.plot.gates.filter((g) => g.gate.id === gateToSend[0].id).length > 0
-      )
-      .forEach((e) => dataManager.getPlotRendererForPlot(e.plotID).draw());
-  };
+  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
-  var getFiles = async (isShared: boolean, fileIds: Array<string>) => {
-    let url = isShared ? API_CALLS.sharedFileEvents : API_CALLS.fileEvents;
-    let headers = isShared
-      ? {}
-      : {
-          token: userManager.getToken(),
-        };
-
-    let datas = await axios.post(
-      url,
-      {
-        experimentId: props.experimentId,
-        fileIds: fileIds,
-      },
-      {
-        headers: headers,
-      }
-    );
-
-    return datas.data;
-  };
-
-  var loadWorkspaceStatsToDM = async (
-    workspaceShared: boolean,
-    workspaceStatearg: any
-  ) => {
-    if (workspaceStatearg) {
-      setLoading(true);
-      let workspaceStateReload = new WorkspaceStateHelper(workspaceStatearg);
-      let stateFileIds = workspaceStateReload.getFileIds();
-      if (stateFileIds && stateFileIds.length) {
-        setDownloadingFiles(stateFileIds);
-        let eventFiles = await getFiles(workspaceShared, stateFileIds);
-        dataManager.updateDownloaded(eventFiles);
-        if (!dataManager.ready()) {
-          dataManager.createWorkspace();
-        }
-        for (let i = 0; i < eventFiles.length; i++) {
-          workspaceStateReload.addFile(eventFiles[i]);
-        }
-        dataManager.loadWorkspace(JSON.stringify(workspaceStatearg));
-      }
-    }
-    setLoading(false);
-  };
-
-  const handleDownLoadFileEvents = async (fileIds: any[]) => {
-    dataManager.downloadFileEvents(fileIds);
-  };
-
-  const addFile = (index: number) => {
-    if (!dataManager.ready()) {
-      snackbarService.showSnackbar("Something went wrong, try again!", "error");
-      return;
-    }
-
-    const file: any = remoteWorkspace
-      ? downloadedFiles[index]
-      : staticFiles[index];
-    let newFile: FCSFile;
-
-    newFile = new FCSFile({
-      name: file.title,
-      id: file.id,
-      src: "remote",
-      axes: file.channels.map((e: any) => e.value),
-      data: file.events,
-      plotTypes: file.channels.map((e: any) => e.display),
-      remoteData: file,
+  useEffect(() => {
+    store.dispatch({
+      type: "workspace.RESET",
     });
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    plot.setupPlot();
-    dataManager.addNewPlotToWorkspace(plot);
+
+    initializeWorkspace();
+
+    return () => {
+      store.dispatch({
+        type: "workspace.RESET",
+      });
+    };
+  }, []);
+
+  const initializeWorkspace = async () => {
+    await downloadFileMetadata(props.shared, props.experimentId);
+    // await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+  };
+
+  const saveWorkspace = () => {
+    saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
   };
 
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
-      upsertWorkSpace(true);
-    } else if (sharedWorkspace) {
-      let stateJson = dataManager.getWorkspaceJSON();
+      saveWorkspace();
+    } else if (props.shared) {
+      let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {
         newWorkspaceDB = await axios.post(
@@ -466,15 +181,15 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       };
       var result = XML.xml2json(text, options);
       result = JSON.parse(result);
-      importFlowJo = true;
       setLoading(true);
       setFileUploadInputValue("");
-      if (dataManager.files.length == downloadedFiles.length) {
+      let downloadedFiles = workspace.files.filter((x) => x.downloaded);
+      if (workspace.files.length == downloadedFiles.length) {
         initiateParseFlowJo(result);
       } else {
-        flowJoJson = result;
-        let fileIds = dataManager.files.map((x) => x.id);
-        handleDownLoadFileEvents(fileIds);
+        let filetoBeDownloaded = workspace.files.filter((x) => !x.downloaded);
+        let fileIds = filetoBeDownloaded.map((x) => x.id);
+        handleDownLoadFileEvents(fileIds, result);
         snackbarService.showSnackbar(
           "File events are getting downloaded then import will happen!!",
           "warning"
@@ -484,13 +199,34 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
     reader.readAsText(e.target.files[0]);
   };
 
+  const handleDownLoadFileEvents = async (
+    fileIds: Array<string>,
+    flowJoJson: any
+  ) => {
+    for (let i = 0; i < fileIds.length; i++) {
+      await downloadFileEvent(props.shared, fileIds[i], props.experimentId);
+    }
+    let downlodedFiles = workspace.files.filter((x) => x.downloaded);
+    if (workspace.files.length == downlodedFiles.length)
+      initiateParseFlowJo(flowJoJson);
+  };
+
   const initiateParseFlowJo = async (flowJoJson: any) => {
-    await ParseFlowJoJson(flowJoJson);
+    await dowloadAllFileEvents(props.shared, props.experimentId);
+    try {
+      await ParseFlowJoJson(flowJoJson, workspace.files);
+    } catch (e) {
+      snackbarService.showSnackbar(
+        "Could not parse FlowJo workspace",
+        "warning"
+      );
+    }
     setTimeout(() => {
       setLoading(false);
-      importFlowJo = false;
     }, 4000);
   };
+
+  Debounce(() => saveWorkspace(), 5000);
 
   return (
     <div
@@ -502,21 +238,14 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       {/* == MODALS == */}
       {initPlot ? (
         <div>
-          <GateNamePrompt open={namePromptOpen} sendName={renameGate} />
+          <GateNamePrompt />
 
           <AddFileModal
             open={addFileModalOpen}
             closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-            isShared={sharedWorkspace}
-            downloaded={downloadedFiles}
-            downloading={downloadingFiles}
-            filesMetadata={dataManager.files}
-            onDownloadFileEvents={(fileIds) => {
-              handleDownLoadFileEvents(fileIds);
-            }}
-            addFileToWorkspace={(index) => {
-              addFile(index);
-            }}
+            isShared={props.shared}
+            experimentId={props.experimentId}
+            files={workspace.files}
           />
 
           <GenerateReportModal
@@ -564,7 +293,9 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
         }
         options={{
           yes: () => {
-            dataManager.clearWorkspace(true);
+            store.dispatch({
+              type: "workspace.RESET_EVERYTHING_BUT_FILES",
+            });
           },
           no: () => {
             handleClose(setClearModal);
@@ -573,7 +304,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       />
 
       {/* == STATIC ELEMENTS == */}
-      <SideMenus></SideMenus>
+      <SideMenus workspace={workspace}></SideMenus>
 
       {/* == NOTICES == */}
       <SmallScreenNotice />
@@ -613,7 +344,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                 container
               >
                 <Grid container>
-                  {sharedWorkspace ? null : (
+                  {props.shared ? null : (
                     <Button
                       size="small"
                       variant="contained"
@@ -623,7 +354,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       className={classes.topButton}
                       startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                       onClick={() => {
-                        dataManager.letUpdateBeCalledForAutoSave = false;
                         history.goBack();
                       }}
                     >
@@ -657,32 +387,23 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                   <HowToUseModal />
                   {/* Uncomment below to have a "print state" button */}
 
-                  {props.poke === false ? (
-                    sharedWorkspace ? null : (
+                  {/* {props.shared === false ? (
+                    props.shared ? null : (
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => upsertWorkSpace()}
+                        onClick={() => saveWorkspace()}
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
                         }}
                       >
-                        {/* {savingWorkspace ? (
-                          <div className={classes.savingProgress}>
-                            <AutorenewRoundedIcon />
-                          </div>
-                        ) : (
-                          <div className={classes.saved}>
-                            <CheckCircleRoundedIcon />
-                          </div>
-                        )} */}
                         Save Workspace
                       </Button>
                     )
-                  ) : null}
+                  ) : null} */}
 
-                  {props.poke === false ? (
+                  {props.shared === false ? (
                     <Button
                       variant="contained"
                       size="small"
@@ -717,7 +438,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                         importFlowJoFunc(e);
                       }}
                     />
-                    Import Flow Jo
+                    Import FlowJo (experimental)
                   </Button>
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
@@ -727,7 +448,7 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
                       paddingRight: 20,
                     }}
                   >
-                    {props.poke === true ? (
+                    {props.shared === true ? (
                       <Button
                         variant="contained"
                         size="large"
@@ -752,12 +473,11 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
 
               <Grid>
                 {!loading ? (
-                  <Plots
-                    {...{
-                      sharedWorkspace: sharedWorkspace,
-                      experimentId: props.experimentId,
-                    }}
-                  ></Plots>
+                  <PlotController
+                    sharedWorkspace={props.shared}
+                    experimentId={props.experimentId}
+                    workspace={workspace}
+                  ></PlotController>
                 ) : (
                   <Grid
                     container
@@ -792,6 +512,6 @@ function Workspace(props: { experimentId: string; poke: Boolean }) {
       </Grid>
     </div>
   );
-}
+};
 
-export default Workspace;
+export default WorkspaceComponent;

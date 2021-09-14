@@ -1,5 +1,5 @@
-import PlotData from "graph/dataManagement/plotData";
-import Transformer, { Point } from "graph/renderers/transformers/transformer";
+import Transformer from "graph/renderers/transformers/transformer";
+import { Plot, Point } from "graph/resources/types";
 import { maxHeaderSize } from "http";
 import numeral from "numeral";
 import FCSServices from "services/FCSServices/FCSServices";
@@ -12,11 +12,6 @@ import {
 
 const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
-export interface GraphPoint extends Point {
-  x: number;
-  y: number;
-}
-
 export interface GraphTransformerState {
   x1: number;
   y1: number;
@@ -27,7 +22,7 @@ export interface GraphTransformerState {
   iby: number;
   iey: number;
   scale: number;
-  plotData?: PlotData;
+  plot?: Plot;
 }
 
 export type Label = {
@@ -45,7 +40,7 @@ export default class GraphTransformer extends Transformer {
   private iby: number;
   private iey: number;
   private scale: number;
-  private plotData: PlotData;
+  private plot: Plot;
 
   update() {
     super.update();
@@ -61,7 +56,7 @@ export default class GraphTransformer extends Transformer {
     this.iby = state.iby;
     this.iey = state.iey;
     this.scale = state.scale;
-    if (state.plotData !== undefined) this.plotData = state.plotData;
+    if (state.plot !== undefined) this.plot = state.plot;
   }
 
   getTransformerState(): GraphTransformerState {
@@ -75,14 +70,14 @@ export default class GraphTransformer extends Transformer {
       iby: this.iby,
       iey: this.iey,
       scale: this.scale,
-      plotData: this.plotData,
+      plot: this.plot,
     };
   }
 
-  isOutOfBounds(p: GraphPoint): boolean {
+  isOutOfBounds(p: Point): boolean {
     let { ibx, iby, iex, iey } = this;
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     const rangeX = xBi ? [0.5, 1] : [ibx, iex];
     const rangeY = yBi ? [0.5, 1] : [iby, iey];
     if (p.x < rangeX[0] || p.x > rangeX[1]) {
@@ -95,10 +90,10 @@ export default class GraphTransformer extends Transformer {
   }
 
   toConcretePoint = (
-    p: GraphPoint,
+    p: Point,
     customRanges?: [[number, number], [number, number]],
     withLogicle: boolean = false
-  ): GraphPoint => {
+  ): Point => {
     let { ibx, iby, iex, iey } = this;
     if (customRanges !== undefined) {
       ibx = customRanges[0][0];
@@ -106,8 +101,8 @@ export default class GraphTransformer extends Transformer {
       iby = customRanges[1][0];
       iey = customRanges[1][1];
     }
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     let ret = { x: 0, y: 0 };
     if (withLogicle) {
       p = this.rawAbstractLinearToLogicle(p);
@@ -145,17 +140,17 @@ export default class GraphTransformer extends Transformer {
   private toConcreteLogicle(number: number, axis: "x" | "y"): number {
     let range =
       axis === "x"
-        ? [leftPadding, this.plotData.plotWidth - rightPadding]
-        : [topPadding, this.plotData.plotHeight - bottomPadding];
+        ? [leftPadding, this.plot.plotWidth - rightPadding]
+        : [topPadding, this.plot.plotHeight - bottomPadding];
     const amplitude = range[1] - range[0];
     return axis === "x"
       ? amplitude * number + range[0]
       : amplitude * (1.0 - number) + range[0];
   }
 
-  toAbstractPoint = (p: GraphPoint, forceLin: boolean = false): GraphPoint => {
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+  toAbstractPoint = (p: Point, forceLin: boolean = false): Point => {
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     let ret = { x: 0, y: 0 };
     ret.x =
       xBi && !forceLin
@@ -171,8 +166,8 @@ export default class GraphTransformer extends Transformer {
   private toAbstractLogicle(number: number, axis: "x" | "y"): number {
     let range =
       axis === "x"
-        ? [leftPadding, this.plotData.plotWidth - rightPadding]
-        : [topPadding, this.plotData.plotHeight - bottomPadding];
+        ? [leftPadding, this.plot.plotWidth - rightPadding]
+        : [topPadding, this.plot.plotHeight - bottomPadding];
     const ret =
       axis === "x"
         ? 1 - (range[1] - number) / (range[1] - range[0])
@@ -197,12 +192,12 @@ export default class GraphTransformer extends Transformer {
     x: number;
     y: number;
   } {
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     if (!xBi && !yBi) return p;
     let ranges = [
-      this.plotData.ranges.get(this.plotData.xAxis),
-      this.plotData.ranges.get(this.plotData.yAxis),
+      this.plot.ranges[this.plot.xAxis],
+      this.plot.ranges[this.plot.yAxis],
     ];
     const fcsService = new FCSServices();
     if (xBi) {
@@ -226,12 +221,12 @@ export default class GraphTransformer extends Transformer {
     x: number;
     y: number;
   } {
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     if (!xBi && !yBi) return p;
     let ranges = [
-      this.plotData.ranges.get(this.plotData.xAxis),
-      this.plotData.ranges.get(this.plotData.yAxis),
+      this.plot.ranges[this.plot.xAxis],
+      this.plot.ranges[this.plot.yAxis],
     ];
     const fcsService = new FCSServices();
     let ret = { x: 0, y: 0 };
@@ -252,28 +247,29 @@ export default class GraphTransformer extends Transformer {
     return p;
   }
 
-  rawAbstractLogicleToLinear(p: GraphPoint): GraphPoint {
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+  rawAbstractLogicleToLinear(p: Point): Point {
+    const np = { ...p };
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     let ranges = [
-      this.plotData.ranges.get(this.plotData.xAxis),
-      this.plotData.ranges.get(this.plotData.yAxis),
+      this.plot.ranges[this.plot.xAxis],
+      this.plot.ranges[this.plot.yAxis],
     ];
     if (xBi) {
-      p.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * p.x;
+      np.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * np.x;
     }
     if (yBi) {
-      p.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * p.y;
+      np.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * np.y;
     }
-    return p;
+    return np;
   }
 
-  rawAbstractLinearToLogicle(p: GraphPoint): GraphPoint {
-    const xBi = this.plotData.xPlotType === "bi";
-    const yBi = this.plotData.yPlotType === "bi";
+  rawAbstractLinearToLogicle(p: Point): Point {
+    const xBi = this.plot.xPlotType === "bi";
+    const yBi = this.plot.yPlotType === "bi";
     let ranges = [
-      this.plotData.ranges.get(this.plotData.xAxis),
-      this.plotData.ranges.get(this.plotData.yAxis),
+      this.plot.ranges[this.plot.xAxis],
+      this.plot.ranges[this.plot.yAxis],
     ];
     if (xBi) {
       p.x = (p.x - ranges[0][0]) / (ranges[0][1] - ranges[0][0]);

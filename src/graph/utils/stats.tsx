@@ -1,12 +1,15 @@
-import PlotData from "./plotData";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
 import { sqrt } from "mathjs";
+import { Plot } from "graph/resources/types";
+import * as PlotResource from "graph/resources/plots";
+import * as DatasetResource from "graph/resources/dataset";
+import { getFile, getPopulation } from "./workspace";
 
 export default class PlotStats {
-  plot: PlotData;
+  plot: Plot;
 
-  getPlotStats(plot: PlotData, statsX: number, statsY: number) {
+  getPlotStats(plot: Plot, statsX: number, statsY: number) {
     this.plot = plot;
     const stat = this.getStats(statsX, statsY);
     const pointsOutSideOfRangeObj = this.getPointsOutOfRange();
@@ -22,7 +25,7 @@ export default class PlotStats {
   }
 
   getPointsOutOfRange() {
-    let xyRange = this.plot.getXandYRanges();
+    let xyRange = PlotResource.getXandYRanges(this.plot);
     let xRange = xyRange.x;
     let yRange = xyRange.y;
 
@@ -31,15 +34,15 @@ export default class PlotStats {
     let yMin = yRange[0];
     let yMax = yRange[1];
 
-    let data = this.plot.getXandYData();
+    let data = PlotResource.getXandYData(this.plot);
 
-    let length = Object.keys(data.xAxis).length;
+    let length = Object.keys(data[0]).length;
 
     let count = 0;
 
     for (let i = 0; i < length; i++) {
-      let x = data.xAxis[i];
-      let y = data.yAxis[i];
+      let x = data[0][i];
+      let y = data[1][i];
 
       if (x < xMin || x > xMax || y < yMin || y > yMax) {
         count++;
@@ -52,13 +55,13 @@ export default class PlotStats {
   }
 
   private getStats(statX: number, statY: number) {
-    const data = this.plot.getXandYData();
-    let x = this.getMedianOrMean(statX, data.xAxis);
-    let y = this.getMedianOrMean(statY, data.yAxis);
+    const data = PlotResource.getXandYData(this.plot);
+    let x = this.getMedianOrMean(statX, data[0]);
+    let y = this.getMedianOrMean(statY, data[1]);
     return { x: x, y: y };
   }
 
-  private getMedianOrMean(val: number, axis: Array<number>) {
+  private getMedianOrMean(val: number, axis: Float32Array) {
     switch (val) {
       case COMMON_CONSTANTS.DROPDOWNS.STATS.Mean:
         return this.getMean(axis);
@@ -68,8 +71,9 @@ export default class PlotStats {
   }
 
   private getPopulationStats() {
-    const plotSize = this.plot.getXandYData().xAxis.length;
-    const fileSize = this.plot.file.data.length;
+    const plotSize = PlotResource.getXandYData(this.plot)[0].length;
+    const file = getFile(getPopulation(this.plot.population).file);
+    const fileSize = DatasetResource.getDataset(file.id)[file.axes[0]].length;
     let percentage: number | string = 100 * (plotSize / fileSize);
     if (percentage < 1) {
       percentage = " < 1%";
@@ -83,7 +87,7 @@ export default class PlotStats {
     };
   }
 
-  private getMean(axis: Array<number>) {
+  private getMean(axis: Float32Array) {
     let sum = 0;
     axis.forEach((e) => (sum += e));
     let count = axis.length;
@@ -102,7 +106,7 @@ export default class PlotStats {
     }
   };
 
-  private getMedianValue(axis: Array<number>) {
+  private getMedianValue(axis: Float32Array) {
     let axisSort = axis.sort((a, b) => {
       return a - b;
     });

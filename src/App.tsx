@@ -15,7 +15,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/Workspace";
+import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
@@ -119,13 +119,13 @@ const router = [
   {
     path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} poke={false} />
+      <Plots experimentId={match.params.experimentId} shared={false} />
     ),
   },
   {
-    path: "/experiment/:experimentId/plots/poke",
+    path: "/experiment/:experimentId/plots/public",
     component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} poke={true} />
+      <Plots experimentId={match.params.experimentId} shared={true} />
     ),
   },
   { path: "/experiments", component: Experiments },
@@ -171,7 +171,11 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
-  }, [dispatch]);
+  }, []);
+
+  // dispatch({
+  //   type: "workspace.RESET",
+  // });
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

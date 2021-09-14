@@ -4,18 +4,38 @@ import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import { useSelector } from "react-redux";
+import { Gate } from "graph/resources/types";
+import { store } from "redux/store";
 
-export default function GetNamePrompt(props: {
-  sendName: Function;
-  open: boolean;
-}) {
+export default function GateNamePrompt() {
+  let gates: Gate[] = [];
+  const [open, setOpen] = React.useState<boolean>(false);
   const [name, setName] = React.useState(null);
   const [nameError, setNameError] = React.useState(false);
 
-  const handleClose = () => {
-    // setOpen(false);
+  useSelector((e: any) => {
+    const newGates = e.workspace.gates;
+    if (gates === newGates || newGates === undefined) return;
+    if (
+      !open &&
+      newGates.length > gates.length &&
+      newGates[newGates.length - 1].name === "Unammed gate"
+    ) {
+      setOpen(true);
+    }
+    gates = newGates;
+  });
+
+  const renameGate = (newName: string) => {
+    let gate = gates[gates.length - 1];
+    gate.name = newName;
+    store.dispatch({
+      type: "workspace.UPDATE_GATE",
+      payload: { gate },
+    });
+    setOpen(false);
   };
 
   const escFunction = useCallback((event) => {
@@ -23,8 +43,7 @@ export default function GetNamePrompt(props: {
       if (name === "" || name == null) {
         setNameError(true);
       } else {
-        props.sendName(name);
-        handleClose();
+        renameGate(name);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -41,11 +60,7 @@ export default function GetNamePrompt(props: {
 
   return (
     <div>
-      <Dialog
-        open={props.open}
-        onClose={handleClose}
-        aria-labelledby="form-dialog-title"
-      >
+      <Dialog open={open} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Name Your Gate</DialogTitle>
         <DialogContent>
           <TextField
@@ -67,7 +82,7 @@ export default function GetNamePrompt(props: {
               if (name === "" || name == null) {
                 setNameError(true);
               } else {
-                props.sendName(name);
+                renameGate(name);
               }
             }}
             color="primary"
