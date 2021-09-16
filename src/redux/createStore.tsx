@@ -17,8 +17,10 @@ const persistConfig = {
 };
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-//@ts-ignore
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const composeEnhancers =
+  //@ts-ignore
+  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+// window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: true }) || compose;
 
 const configureStore = () => {
   return createStore(

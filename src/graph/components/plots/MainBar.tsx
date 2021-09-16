@@ -56,7 +56,6 @@ export default function MainBar(props: { plot: Plot }) {
 
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
-  const [polygonGating, setPolygonGating] = React.useState(false);
   const plot = props.plot;
 
   const deletePlot = () => {
@@ -70,33 +69,20 @@ export default function MainBar(props: { plot: Plot }) {
     func(false);
   };
 
-  // const ovalGatingSetter = () => {
-  //   if (ovalGating) {
-  //     plot.setGating("Oval", false);
-  //     setOvalGating(false);
-  //   } else {
-  //     plot.setGating("Oval", true);
-  //     setOvalGating(true);
-  //   }
-  // };
-
-  const polygonGatingSetter = () => {
+  const gatingSetter = () => {
+    console.trace();
     let plot = props.plot;
-    if (polygonGating) {
+    if (plot.gatingActive) {
       plot.gatingActive = "";
-      store.dispatch({
-        type: "workspace.UPDATE_PLOT",
-        payload: { plot: plot },
-      });
-      setPolygonGating(false);
-    } else {
+    } else if (plot.histogramAxis === "") {
       plot.gatingActive = "polygon";
-      store.dispatch({
-        type: "workspace.UPDATE_PLOT",
-        payload: { plot: plot },
-      });
-      setPolygonGating(true);
+    } else {
+      plot.gatingActive = "histogram";
     }
+    store.dispatch({
+      type: "workspace.UPDATE_PLOT",
+      payload: { plot: plot },
+    });
   };
 
   // const downloadCanvasAsImage = () => {
@@ -200,16 +186,16 @@ export default function MainBar(props: { plot: Plot }) {
           <Button
             variant="contained"
             size="small"
-            onClick={() => polygonGatingSetter()}
+            onClick={gatingSetter}
             style={{
               flex: 1,
               color: "white",
               height: "1.7rem",
               fontSize: "12",
-              backgroundColor: polygonGating ? "#6666ee" : "#6666aa",
+              backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
             }}
           >
-            {polygonGating ? (
+            {plot.gatingActive !== "" ? (
               <TouchAppIcon />
             ) : (
               <img

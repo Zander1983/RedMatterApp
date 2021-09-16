@@ -7,6 +7,8 @@ interface Point2D {
 const euclidianDistance2D = (p: Point2D, q: Point2D): number =>
   Math.sqrt(Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2));
 
+const euclidianDistance1D = (p: number, q: number): number => Math.abs(p - q);
+
 // Given three points in 2D plane, the first two points defining a line and the
 // last being the target point, returns minimal distance from target to line
 const distLinePoint2D = (p: Point2D, q: Point2D, r: Point2D): number => {
@@ -164,6 +166,7 @@ const pointInsidePolygon = ({ x, y }: Point2D, polygon: Point2D[]): boolean => {
 
 export {
   euclidianDistance2D,
+  euclidianDistance1D,
   distLinePoint2D,
   getVectorAngle2D,
   rotateVector2D,

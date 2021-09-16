@@ -4,6 +4,7 @@ import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
 import { getPlot } from "graph/utils/workspace";
 import { store } from "redux/store";
+import HistogramPlotter from "../plotters/histogramPlotter";
 
 export interface GateState {
   lastMousePos: Point;
@@ -12,30 +13,27 @@ export interface GateState {
 export interface MouseInteractorState {
   plotID: string;
   rerender: Function;
-  xAxis: string;
-  yAxis: string;
 }
 
 export default abstract class GateMouseInteractor {
   started: boolean = false;
-  protected plugin: GatePlotterPlugin;
+  plugin: GatePlotterPlugin;
   protected lastMousePos: Point;
   private rerenderLastTimestamp: any = 0;
+  abstract gaterType: "1D" | "2D";
 
   plotID: string;
   rerender: Function;
   xAxis: string;
   yAxis: string;
-  plotter: ScatterPlotter | null = null;
+  plotter: ScatterPlotter | HistogramPlotter | null = null;
 
   setMouseInteractorState(state: MouseInteractorState) {
     this.rerender = state.rerender;
     this.plotID = state.plotID;
-    this.xAxis = state.xAxis;
-    this.yAxis = state.yAxis;
   }
 
-  setup(plotter: ScatterPlotter) {
+  setup(plotter: ScatterPlotter | HistogramPlotter) {
     this.plotter = plotter;
     this.plugin.isGating = true;
   }
@@ -50,10 +48,10 @@ export default abstract class GateMouseInteractor {
     this.unsetGating();
   }
 
-  unsetGating() {
+  unsetGating(noDispatch: boolean = false) {
     this.started = false;
     let plot = this.plotter.plot;
-    if (plot.gatingActive !== "") {
+    if (plot.gatingActive !== "" && !noDispatch) {
       plot.gatingActive = "";
       store.dispatch({
         type: "workspace.UPDATE_PLOT",
@@ -79,10 +77,6 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
-    //@ts-ignore
-    gate.points = [...gate.points].map((e) => {
-      return { ...e };
-    });
     gate.name = "Unammed gate";
     await store.dispatch({
       type: "workspace.ADD_GATE",
@@ -104,7 +98,6 @@ export default abstract class GateMouseInteractor {
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
     const p = { x, y };
-    this.lastMousePos = this.plugin.lastMousePos = p;
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }

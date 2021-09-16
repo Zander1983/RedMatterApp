@@ -14,14 +14,14 @@ import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
+import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
 
 const plotterFactory = new PlotterFactory();
 
 const typeToClassType = {
-  // Oval: OvalMouseInteractor,
   oval: Error,
   polygon: PolygonMouseInteractor,
-  histogram: Error,
+  histogram: HistogramGateMouseInteractor,
 };
 
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
@@ -70,10 +70,19 @@ const PlotRenderer = React.memo(
       setPlotterState(selectedPlotter);
       selectedPlotter.draw();
       const gatingType = plot.gatingActive;
-      if (lastGatingType !== gatingType && plot.xAxis !== plot.yAxis) {
-        unsetGating("polygon");
+      if (lastGatingType !== gatingType) {
+        const isHistogram = plot.xAxis === plot.yAxis;
+        if (isHistogram) {
+          unsetGating("polygon");
+        } else {
+          unsetGating("histogram");
+        }
+
         if (gatingType === "polygon") {
           setGating("polygon", true);
+        }
+        if (gatingType === "histogram") {
+          setGating("histogram", true);
         }
         setLastGatingType(gatingType);
       }
@@ -93,7 +102,7 @@ const PlotRenderer = React.memo(
       mouseInteractorInstances[plot.id]
         //@ts-ignore
         .filter((e) => !(e instanceof typeToClassType[type]))
-        .forEach((e) => e.unsetGating());
+        .forEach((e) => e.unsetGating(true));
     };
 
     const setGating = (
@@ -105,14 +114,29 @@ const PlotRenderer = React.memo(
       mouseInteractorInstances[plot.id]
         .filter((e) => e instanceof typeToClassType[type])
         .forEach((e) => {
-          e.setMouseInteractorState({
-            plotID: plot.id,
-            xAxis: plot.xAxis,
-            yAxis: plot.yAxis,
-            rerender: () => {
-              draw();
-            },
-          });
+          if (e.plugin.gaterType === "1D") {
+            (e as HistogramGateMouseInteractor).setMouseInteractorState({
+              plotID: plot.id,
+              axis: plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis,
+              histogramDirection: plot.histogramAxis,
+              axisPlotType:
+                plot.histogramAxis === "vertical"
+                  ? plot.xPlotType
+                  : plot.yPlotType,
+              rerender: () => {
+                draw();
+              },
+            });
+          } else if (e.plugin.gaterType === "2D") {
+            (e as PolygonMouseInteractor).setMouseInteractorState({
+              plotID: plot.id,
+              xAxis: plot.xAxis,
+              yAxis: plot.yAxis,
+              rerender: () => {
+                draw();
+              },
+            });
+          }
           //@ts-ignore
           e.setup(inpPlotter);
           start ? e.start() : e.end();
@@ -168,23 +192,38 @@ const PlotRenderer = React.memo(
 
         //@ts-ignore
         setPlotterState(scatterPlotter);
+        //@ts-ignore
+        setPlotterState(histogramPlotter);
 
         histogramPlotter.setup(canvas.getContext());
         scatterPlotter.setup(canvas.getContext());
 
         scatterPlotter.update();
 
-        mouseInteractorInstances[plot.id] = [new PolygonMouseInteractor()];
+        mouseInteractorInstances[plot.id] = [
+          new PolygonMouseInteractor(),
+          new HistogramGateMouseInteractor(),
+        ];
 
         for (const mouseInteractor of mouseInteractorInstances[plot.id]) {
-          //@ts-ignore
-          mouseInteractor.setup(scatterPlotter);
+          if (mouseInteractor.gaterType === "1D") {
+            //@ts-ignore
+            mouseInteractor.setup(histogramPlotter);
+          } else {
+            //@ts-ignore
+            mouseInteractor.setup(scatterPlotter);
+          }
         }
 
         //@ts-ignore
         setGating("polygon", true, scatterPlotter);
         //@ts-ignore
         setGating("polygon", false, scatterPlotter);
+
+        //@ts-ignore
+        setGating("histogram", true, histogramPlotter);
+        //@ts-ignore
+        setGating("histogram", false, histogramPlotter);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvas]);

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useHistory } from "react-router";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
+import { Button, FormControlLabel } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -39,6 +39,8 @@ import { Workspace as WorkspaceType } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
+import { Typography } from "antd";
+import IOSSwitch from "Components/common/Switch";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -67,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
   },
   topButton: {
-    marginLeft: 20,
+    marginLeft: 10,
     marginTop: 5,
     height: "1.9rem",
   },
@@ -96,6 +98,7 @@ const WorkspaceComponent = (props: {
 
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
+  const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const [initPlot, setInitPlot] = React.useState(true);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
@@ -134,12 +137,17 @@ const WorkspaceComponent = (props: {
   }, []);
 
   const initializeWorkspace = async () => {
-    await downloadFileMetadata(props.shared, props.experimentId);
-    // await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+    try {
+      await downloadFileMetadata(props.shared, props.experimentId);
+      await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+    } catch {}
+    setAutosaveEnabled(true);
   };
 
-  const saveWorkspace = () => {
-    saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+  const saveWorkspace = async () => {
+    setSavingWorkspace(true);
+    await saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+    setSavingWorkspace(false);
   };
 
   var onLinkShareClick = async () => {
@@ -226,7 +234,9 @@ const WorkspaceComponent = (props: {
     }, 4000);
   };
 
-  Debounce(() => saveWorkspace(), 5000);
+  if (autosaveEnabled) {
+    Debounce(() => saveWorkspace(), 5000);
+  }
 
   return (
     <div
@@ -384,24 +394,7 @@ const WorkspaceComponent = (props: {
                   >
                     Generate report
                   </Button>
-                  <HowToUseModal />
-                  {/* Uncomment below to have a "print state" button */}
-
-                  {/* {props.shared === false ? (
-                    props.shared ? null : (
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => saveWorkspace()}
-                        className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
-                      >
-                        Save Workspace
-                      </Button>
-                    )
-                  ) : null} */}
+                  {/* <HowToUseModal /> */}
 
                   {props.shared === false ? (
                     <Button
@@ -440,6 +433,48 @@ const WorkspaceComponent = (props: {
                     />
                     Import FlowJo (experimental)
                   </Button>
+
+                  {props.shared === false ? (
+                    props.shared ? null : (
+                      <div>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => saveWorkspace()}
+                          className={classes.topButton}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            width: 137,
+                          }}
+                        >
+                          {savingWorkspace ? (
+                            <CircularProgress
+                              style={{ width: 20, height: 20 }}
+                            ></CircularProgress>
+                          ) : (
+                            <Typography>Save Workspace</Typography>
+                          )}
+                        </Button>
+                        <FormControlLabel
+                          style={{
+                            marginLeft: 0,
+                            height: 20,
+                            marginTop: 4,
+                            color: "#fff",
+                          }}
+                          label={"Autosave"}
+                          control={
+                            <IOSSwitch
+                              checked={autosaveEnabled}
+                              onChange={() =>
+                                setAutosaveEnabled(!autosaveEnabled)
+                              }
+                            />
+                          }
+                        />
+                      </div>
+                    )
+                  ) : null}
                 </Grid>
                 {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <Grid

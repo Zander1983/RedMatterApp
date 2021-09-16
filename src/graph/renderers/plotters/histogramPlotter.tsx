@@ -1,13 +1,15 @@
-import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
+import {
+  GraphPlotterState,
+  leftPadding,
+  topPadding,
+  bottomPadding,
+  rightPadding,
+} from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import * as PlotResource from "graph/resources/plots";
 import { getGate, getPopulation } from "graph/utils/workspace";
-
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
@@ -23,8 +25,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   rangeMin: number = 0;
   rangeMax: number = 0;
 
+  histogramGatePlugin: HistogramGatePlotter | null = null;
+
   setup(canvasContext: any) {
     super.setup(canvasContext);
+    this.histogramGatePlugin = new HistogramGatePlotter();
+    this.addPlugin(this.histogramGatePlugin);
   }
 
   protected setDrawerState(): void {
@@ -88,6 +94,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
   public update() {
     super.update(true);
+
+    this.histogramGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e.gateType === "histogram")
+    );
+
     const ranges = {
       x: this.plot.ranges[this.xAxisName],
       y: this.plot.ranges[this.xAxisName],

@@ -15,6 +15,7 @@ interface PolygonGateState {
 
 export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   plotter: ScatterPlotter | null = null;
+  gaterType = "2D" as "1D" | "2D";
 
   points: Point[] = [];
   polygonGates: PolygonGate[] = [];
@@ -32,10 +33,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       return { ...e };
     });
     this.lastMousePos = state.lastMousePos;
-  }
-
-  setState(state: PolygonGateState) {
-    this.gatingState = state;
   }
 
   protected drawGate(gate: PolygonGate) {
@@ -111,45 +108,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       }
       lastPoint = p;
     }
-  }
-
-  protected pointsToBi(pts: Point[]): {
-    points: Point[];
-    newRanges: [[number, number], [number, number]];
-  } {
-    let ranges = PlotResource.getXandYRanges(this.plotter.plot);
-    const xBi = this.plotter.plot.xPlotType === "bi";
-    const yBi = this.plotter.plot.yPlotType === "bi";
-    if (xBi || yBi) {
-      const fcsServices = new FCSServices();
-      pts = pts.map((e) => {
-        const logiclizedx = fcsServices.logicleMarkTransformer(
-          [e.x],
-          ranges.x[0],
-          ranges.x[1]
-        )[0];
-        const logiclizedy = fcsServices.logicleMarkTransformer(
-          [e.y],
-          ranges.y[0],
-          ranges.y[1]
-        )[0];
-        return {
-          x: xBi ? logiclizedx : e.x,
-          y: yBi ? logiclizedy : e.y,
-        };
-      });
-      ranges = {
-        x: xBi ? ([0.5, 1] as Range) : ranges.x,
-        y: yBi ? ([0.5, 1] as Range) : ranges.y,
-      };
-    }
-    //  else {
-    //   ranges = [ranges.x, ranges.y];
-    // }
-    return {
-      points: pts,
-      newRanges: [ranges.x, ranges.y],
-    };
   }
 
   closeToFirstPoint(

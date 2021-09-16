@@ -280,4 +280,31 @@ export default class GraphDrawer extends Drawer {
       labels: params.xLabels,
     });
   }
+
+  addPoint = (x: number, y: number, r: number, color: string = "#000") => {
+    this.rect({
+      x: x * this.scale,
+      y: y * this.scale,
+      w: r,
+      h: r,
+      fillColor: color,
+    });
+  };
+
+  addCirclePoint = (
+    x: number,
+    y: number,
+    r: number,
+    color: string = "#000"
+  ) => {
+    this.oval({
+      x: x * this.scale,
+      y: y * this.scale,
+      d1: r,
+      d2: r,
+      fill: true,
+      ang: 0,
+      fillColor: color,
+    });
+  };
 }
