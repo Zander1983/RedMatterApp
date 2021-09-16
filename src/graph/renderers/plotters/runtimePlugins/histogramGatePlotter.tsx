@@ -91,10 +91,10 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
       } else {
         const width = this.plotter.plot.plotWidth;
         this.plotter.drawer.segment({
-          x1: leftPadding,
-          y1: this.lastMousePos[axis],
-          x2: width - rightPadding,
-          y2: this.lastMousePos[axis],
+          x1: leftPadding * scale,
+          y1: this.lastMousePos[axis] * scale,
+          x2: width - rightPadding * scale,
+          y2: this.lastMousePos[axis] * scale,
           lineWidth: 3,
           strokeColor: color,
         });
@@ -116,7 +116,7 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
     p1: number,
     p2: number,
     color: Color,
-    drawHeight: number = 0.5
+    drawPos: number = 0.5
   ) {
     const thickness = 2;
     const scale = this.plotter.scale;
@@ -131,8 +131,7 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
         strokeColor: color,
       });
       const middleLineHeight =
-        (1 - drawHeight) * (height - topPadding - bottomPadding) +
-        bottomPadding;
+        (1 - drawPos) * (height - topPadding - bottomPadding) + bottomPadding;
       this.plotter.drawer.segment({
         x1: p1 * scale,
         y1: middleLineHeight * scale,
@@ -150,14 +149,33 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
         strokeColor: color,
       });
     } else {
-      // this.plotter.drawer.rect({
-      //   x: leftPadding * scale,
-      //   y: p1 * scale,
-      //   w: rectThickness * scale,
-      //   h: (p2 - p1) * scale,
-      //   fill: true,
-      //   fillColor: color,
-      // });
+      const width = this.plotter.plot.plotWidth;
+      this.plotter.drawer.segment({
+        x1: leftPadding * scale,
+        y1: p1 * scale,
+        x2: (width - rightPadding) * scale,
+        y2: p1 * scale,
+        lineWidth: 3,
+        strokeColor: color,
+      });
+      const middleLineWidth =
+        (1 - drawPos) * (width - leftPadding - rightPadding) + bottomPadding;
+      this.plotter.drawer.segment({
+        x1: middleLineWidth * scale,
+        y1: p1 * scale,
+        x2: middleLineWidth * scale,
+        y2: p2 * scale,
+        lineWidth: thickness,
+        strokeColor: color,
+      });
+      this.plotter.drawer.segment({
+        x1: leftPadding * scale,
+        y1: p2 * scale,
+        x2: (width - rightPadding) * scale,
+        y2: p2 * scale,
+        lineWidth: 3,
+        strokeColor: color,
+      });
     }
   }
 }

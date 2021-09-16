@@ -187,8 +187,12 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     const gateState = this.targetEditGate;
     const axis = this.histogramDirection === "vertical" ? "x" : "y";
     const range = this.plotter.ranges[axis];
+    const scale = this.plotter.scale;
     const abstractOffset =
-      (offset[axis] * (range[1] - range[0])) / this.plotter.width;
+      ((axis === "y" ? -1 * scale * 2 : 1) *
+        offset[axis] *
+        (range[1] - range[0])) /
+      this.plotter.width;
     for (let index = 0; index < gateState.points.length; index++) {
       const newPos = gateState.points[index] + abstractOffset;
       if (newPos >= this.plotter.rangeMax || newPos <= this.plotter.rangeMin) {
