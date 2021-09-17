@@ -27,7 +27,7 @@ const typeToClassType = {
 
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 
-const PlotRenderer = (props: {
+const PlotRenderer = React.memo((props: {
   plot: Plot;
   plotGates: Gate[];
   population: Population;
@@ -260,6 +260,6 @@ const PlotRenderer = (props: {
       setMouseEvent={(type, x, y) => setMouseEvent(type, x, y)}
     />
   );
-};
+});
 
 export default PlotRenderer;

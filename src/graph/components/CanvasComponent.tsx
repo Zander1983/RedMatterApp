@@ -102,52 +102,54 @@ export class CanvasManager {
   }
 }
 
-const CanvasComponent = (props: {
-  plotID: PlotID;
-  width: number;
-  height: number;
-  setCanvas: (canvas: CanvasManager) => void;
-  setMouseEvent: (type: string, x: number, y: number) => void;
-}) => {
-  const [canvas, setCanvas] = useState<CanvasManager | null>(null);
-  let canvasRef = useRef(null);
+const CanvasComponent = React.memo(
+  (props: {
+    plotID: PlotID;
+    width: number;
+    height: number;
+    setCanvas: (canvas: CanvasManager) => void;
+    setMouseEvent: (type: string, x: number, y: number) => void;
+  }) => {
+    const [canvas, setCanvas] = useState<CanvasManager | null>(null);
+    let canvasRef = useRef(null);
 
-  useEffect(() => {
-    if (!canvas && canvasRef.current) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      const newCanvas = new CanvasManager(props.setMouseEvent, canvasRef);
-      setCanvas(newCanvas);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      newCanvas.setUseCanvasUsed(true);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      props.setCanvas(newCanvas);
-    }
-    return () => {
-      if (canvas) {
-        canvas.setUseCanvasUsed(false);
+    useEffect(() => {
+      if (!canvas && canvasRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const newCanvas = new CanvasManager(props.setMouseEvent, canvasRef);
+        setCanvas(newCanvas);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        newCanvas.setUseCanvasUsed(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        props.setCanvas(newCanvas);
       }
-    };
-  }, [canvasRef.current]);
+      return () => {
+        if (canvas) {
+          canvas.setUseCanvasUsed(false);
+        }
+      };
+    }, [canvasRef.current]);
 
-  const id = `canvas-${props.plotID}`;
+    const id = `canvas-${props.plotID}`;
 
-  return (
-    <canvas
-      onMouseDown={(e) => {
-        e.stopPropagation();
-      }}
-      style={{
-        backgroundColor: "#fff",
-        textAlign: "center",
-        width: props.width,
-        height: props.height,
-        borderRadius: 5,
-        boxShadow: "1px 3px 4px #bbd",
-        flexGrow: 1,
-      }}
-      ref={canvasRef}
-      id={id}
-    />
-  );
-};
+    return (
+      <canvas
+        onMouseDown={(e) => {
+          e.stopPropagation();
+        }}
+        style={{
+          backgroundColor: "#fff",
+          textAlign: "center",
+          width: props.width,
+          height: props.height,
+          borderRadius: 5,
+          boxShadow: "1px 3px 4px #bbd",
+          flexGrow: 1,
+        }}
+        ref={canvasRef}
+        id={id}
+      />
+    );
+  }
+);
 export default CanvasComponent;

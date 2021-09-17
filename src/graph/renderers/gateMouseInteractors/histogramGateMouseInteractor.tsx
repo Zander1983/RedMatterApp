@@ -37,7 +37,7 @@ export interface HistogramGateMouseInteractorState
   histogramDirection: HistogramAxisType;
 }
 
-export const histogramGateEditThreshold = 0.1;
+export const histogramGateEditThreshold = 7;
 
 export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   static targetGate: HistogramGate;
@@ -150,10 +150,12 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   }
 
   private detectPointsClicked(mouse: Point) {
-    const mouseP = mouse[this.histogramDirection === "vertical" ? "x" : "y"];
+    const axis = this.histogramDirection === "vertical" ? "x" : "y";
+    const mouseP = mouse[axis];
     this.plotter.gates.forEach((gate: Gate) => {
       if (gate.gateType === "histogram" && this.targetEditGate === null)
         (gate as HistogramGate).points.forEach((p, i) => {
+          p = this.plotter.transformer.toConcretePoint({ x: p, y: p })[axis];
           if (
             this.targetEditGate === null &&
             euclidianDistance1D(p, mouseP) <= histogramGateEditThreshold
@@ -211,6 +213,10 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       this.plotter.transformer.rawAbstractLogicleToLinear(
         this.plotter.transformer.toAbstractPoint(mouse)
       )[axis];
+    if (gateState.points[0] > gateState.points[1]) {
+      gateState.points = gateState.points.reverse() as [number, number];
+      this.targetPointIndex = this.targetPointIndex === 0 ? 1 : 0;
+    }
     this.gateUpdater(gateState);
   }
 

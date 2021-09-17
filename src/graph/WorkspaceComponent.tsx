@@ -41,6 +41,7 @@ import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
+import { memResetDatasetCache } from "./resources/dataset";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -133,6 +134,7 @@ const WorkspaceInnerComponent = (props: {
       store.dispatch({
         type: "workspace.RESET",
       });
+      memResetDatasetCache();
     };
   }, []);
 
