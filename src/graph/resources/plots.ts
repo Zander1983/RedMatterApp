@@ -360,7 +360,7 @@ export const getHistogramBins = (
         : plot.yAxis
       : targetAxis;
   let range = plot.ranges[axisName];
-  let axis = getPopulationGatesFilteredData(plot)[targetAxis];
+  let axis = getHistogramAxisData(plot);
   if (
     (plot.xAxis === axisName && plot.xPlotType === "bi") ||
     (plot.yAxis === axisName && plot.yPlotType === "bi")
@@ -370,7 +370,7 @@ export const getHistogramBins = (
     axis = new Float32Array(
       fcsServices.logicleMarkTransformer(axis, linearRange[0], linearRange[1])
     );
-    range = [0.5, 1];
+    range = [0, 1];
   }
   const binCounts = Array(binCount).fill(0);
   const step = (range[1] - range[0]) / binCount;
@@ -401,20 +401,22 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   commitPlotChange(plot);
 };
 
-export const getPopulationGatesFilteredData = (plot: Plot): Dataset => {
-  const file = getPlotFile(plot);
-  const dataset = getDataset(file.id);
-  const population = getPopulation(plot.population);
-  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  return filteredPoints;
-};
-
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
+};
+
+export const getHistogramAxisData = (plot: Plot): Float32Array => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  return filteredPoints[
+    plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis
+  ];
 };
 
 export const getXandYDataAndColors = (

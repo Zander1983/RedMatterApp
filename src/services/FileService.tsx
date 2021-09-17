@@ -92,9 +92,9 @@ export const downloadFileEvent = async (
   }
   const file = response.data[0];
   //TODO remove
-  if (file.events.length > 2000)
-    //@ts-ignore
-    file.events = file.events.slice(0, 2000);
+  // if (file.events.length > 2000)
+  //   //@ts-ignore
+  //   file.events = file.events.slice(0, 2000);
   let newFile = await createFile({
     requestData: file,
     id: fileId,

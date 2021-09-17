@@ -70,7 +70,6 @@ export default function MainBar(props: { plot: Plot }) {
   };
 
   const gatingSetter = () => {
-    console.trace();
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";

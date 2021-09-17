@@ -107,6 +107,7 @@ class DatasetStorage {
     Transformations
 */
 
+const fcsServices = new FCSServices();
 let axesLookup: { [index: string]: number } = {};
 
 export const isPointInside = (
@@ -164,46 +165,8 @@ export const getDatasetColors = (
   axesLookup = {};
   axes.forEach((e, i) => (axesLookup[e] = i));
   const dataLength = dataset[axes[0]].length;
-  const fcsServices = new FCSServices();
+  const gates = targets.map((e) => gate2BiConverter(e));
 
-  const gates = targets.map((e) => {
-    const gate = getGate(e.gate);
-    if (gate.gateType === "polygon") {
-      const newGate = {
-        //@ts-ignore
-        gate: { ...(gate as PolygonGate) },
-        inverseGating: e.inverseGating,
-      };
-      newGate.gate.points = [
-        ...newGate.gate.points.map((e) => {
-          return { ...e };
-        }),
-      ];
-      if (newGate.gate.xAxisType === "bi") {
-        const xRange = newGate.gate.xAxisOriginalRanges;
-        newGate.gate.points = newGate.gate.points.map((e, i) => {
-          const newX = (e.x - xRange[0]) / (xRange[1] - xRange[0]);
-          return { x: newX, y: e.y };
-        });
-      }
-      if (newGate.gate.yAxisType === "bi") {
-        const yRange = newGate.gate.yAxisOriginalRanges;
-        newGate.gate.points = newGate.gate.points.map((e, i) => {
-          const newY = (e.y - yRange[0]) / (yRange[1] - yRange[0]);
-          return { x: e.x, y: newY };
-        });
-      }
-      return newGate;
-    }
-    if (gate.gateType === "histogram") {
-      let newGate = {
-        gate: { ...(gate as HistogramGate) },
-        inverseGating: e.inverseGating,
-      };
-      return newGate;
-    }
-    throw new Error("Gate type not found");
-  });
   for (let i = 0; i < dataLength; i++) {
     let ans = { depth: 0, color: stdColor };
     const x: number[] = [];
@@ -212,27 +175,7 @@ export const getDatasetColors = (
     }
 
     for (const gate of gates) {
-      let newX = [...x];
-      if (gate.gate.gateType === "polygon") {
-        if (gate.gate.xAxisType === "bi") {
-          newX[axesLookup[gate.gate.xAxis]] =
-            fcsServices.logicleMarkTransformer(
-              [newX[axesLookup[gate.gate.xAxis]]],
-              gate.gate.xAxisOriginalRanges[0],
-              gate.gate.xAxisOriginalRanges[1]
-            )[0];
-        }
-        if (gate.gate.yAxisType === "bi") {
-          newX[axesLookup[gate.gate.yAxis]] =
-            fcsServices.logicleMarkTransformer(
-              [newX[axesLookup[gate.gate.yAxis]]],
-              gate.gate.yAxisOriginalRanges[0],
-              gate.gate.yAxisOriginalRanges[1]
-            )[0];
-        }
-      }
-      if (gate.gate.gateType === "histogram") {
-      }
+      let newX = point2BiConverter(x, gate);
       const cAns = gateDFS(newX, gate, 1);
       if (cAns.color !== null && cAns.depth > ans.depth) {
         ans = cAns;
@@ -247,45 +190,7 @@ export const getDatasetFilteredPoints = (
   dataset: Dataset,
   targets: PopulationGateType[]
 ): Dataset => {
-  const fcsServices = new FCSServices();
-  const gates = targets.map((e) => {
-    const gate = getGate(e.gate);
-    if (gate.gateType === "polygon") {
-      const newGate = {
-        //@ts-ignore
-        gate: { ...(gate as PolygonGate) },
-        inverseGating: e.inverseGating,
-      };
-      newGate.gate.points = [
-        ...newGate.gate.points.map((e) => {
-          return { ...e };
-        }),
-      ];
-      if (newGate.gate.xAxisType === "bi") {
-        const xRange = newGate.gate.xAxisOriginalRanges;
-        newGate.gate.points = newGate.gate.points.map((e, i) => {
-          const newX = (e.x - xRange[0]) / (xRange[1] - xRange[0]);
-          return { x: newX, y: e.y };
-        });
-      }
-      if (newGate.gate.yAxisType === "bi") {
-        const yRange = newGate.gate.yAxisOriginalRanges;
-        newGate.gate.points = newGate.gate.points.map((e, i) => {
-          const newY = (e.y - yRange[0]) / (yRange[1] - yRange[0]);
-          return { x: e.x, y: newY };
-        });
-      }
-      return newGate;
-    }
-    if (gate.gateType === "histogram") {
-      let newGate = {
-        gate: { ...(gate as HistogramGate) },
-        inverseGating: e.inverseGating,
-      };
-      return newGate;
-    }
-    throw new Error("Gate type not found");
-  });
+  const gates = targets.map((e) => gate2BiConverter(e));
   const axes = Object.keys(dataset);
   axesLookup = {};
   axes.forEach((e, i) => (axesLookup[e] = i));
@@ -304,27 +209,7 @@ export const getDatasetFilteredPoints = (
       x.push(dataset[axis][i]);
     }
     for (const gate of gates) {
-      let newX = [...x];
-      if (gate.gate.gateType === "polygon") {
-        if (gate.gate.xAxisType === "bi") {
-          newX[axesLookup[gate.gate.xAxis]] =
-            fcsServices.logicleMarkTransformer(
-              [newX[axesLookup[gate.gate.xAxis]]],
-              gate.gate.xAxisOriginalRanges[0],
-              gate.gate.xAxisOriginalRanges[1]
-            )[0];
-        }
-        if (gate.gate.yAxisType === "bi") {
-          newX[axesLookup[gate.gate.yAxis]] =
-            fcsServices.logicleMarkTransformer(
-              [newX[axesLookup[gate.gate.yAxis]]],
-              gate.gate.yAxisOriginalRanges[0],
-              gate.gate.yAxisOriginalRanges[1]
-            )[0];
-        }
-      }
-      if (gate.gate.gateType === "histogram") {
-      }
+      let newX = point2BiConverter(x, gate);
       const inside = isPointInside(gate, newX);
       if (!inside) {
         dontAdd = true;
@@ -357,7 +242,6 @@ export const isPointInsideWithLogicle = (
     return pointInsidePolygon(point, points);
   }
   const ranges = [gate.gate.xAxisOriginalRanges, gate.gate.yAxisOriginalRanges];
-  const fcsServices = new FCSServices();
   const convert = (e: { x: number; y: number }) => {
     if (gate.gate.xAxisType === "bi")
       e.x = fcsServices.logicleMarkTransformer(
@@ -400,7 +284,6 @@ export const isPointInsideInterval = (
     );
   }
   const range = gate.gate.axisOriginalRanges;
-  const fcsServices = new FCSServices();
   const convert = (e: number) => {
     if (gate.gate.axisType === "bi")
       e = fcsServices.logicleMarkTransformer([e], range[0], range[1])[0];
@@ -416,4 +299,87 @@ export const isPointInsideInterval = (
     targetPoint <= Math.max(points[0], points[1]) &&
     targetPoint >= Math.min(points[0], points[1])
   );
+};
+
+const gate2BiConverter = (e: PopulationGateType) => {
+  const gate = getGate(e.gate);
+  if (gate.gateType === "polygon") {
+    const newGate = {
+      //@ts-ignore
+      gate: { ...(gate as PolygonGate) },
+      inverseGating: e.inverseGating,
+    };
+    newGate.gate.points = [
+      ...newGate.gate.points.map((e) => {
+        return { ...e };
+      }),
+    ];
+    if (newGate.gate.xAxisType === "bi") {
+      const xRange = newGate.gate.xAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newX = (e.x - xRange[0]) / (xRange[1] - xRange[0]);
+        return { x: newX, y: e.y };
+      });
+    }
+    if (newGate.gate.yAxisType === "bi") {
+      const yRange = newGate.gate.yAxisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        const newY = (e.y - yRange[0]) / (yRange[1] - yRange[0]);
+        return { x: e.x, y: newY };
+      });
+    }
+    return newGate;
+  }
+  if (gate.gateType === "histogram") {
+    let newGate = {
+      gate: { ...(gate as HistogramGate) },
+      inverseGating: e.inverseGating,
+    };
+    newGate.gate.points = [...newGate.gate.points];
+    if (newGate.gate.axisType === "bi") {
+      const range = newGate.gate.axisOriginalRanges;
+      newGate.gate.points = newGate.gate.points.map((e, i) => {
+        return (e - range[0]) / (range[1] - range[0]);
+      }) as [number, number];
+    }
+    return newGate;
+  }
+  throw new Error("Gate type not found");
+};
+
+const point2BiConverter = (
+  x: number[],
+  gate: { gate: Gate; inverseGating: boolean }
+) => {
+  const newX = [...x];
+  if (gate.gate.gateType === "polygon") {
+    const cGate = gate.gate as PolygonGate;
+    if (cGate.xAxisType === "bi") {
+      newX[axesLookup[cGate.xAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.xAxis]]],
+        cGate.xAxisOriginalRanges[0],
+        cGate.xAxisOriginalRanges[1]
+      )[0];
+    }
+    if (cGate.yAxisType === "bi") {
+      newX[axesLookup[cGate.yAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.yAxis]]],
+        cGate.yAxisOriginalRanges[0],
+        cGate.yAxisOriginalRanges[1]
+      )[0];
+    }
+    return newX;
+  }
+  if (gate.gate.gateType === "histogram") {
+    const cGate = gate.gate as HistogramGate;
+    if (cGate.axisType === "bi") {
+      newX[axesLookup[cGate.axis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.axis]]],
+        cGate.axisOriginalRanges[0],
+        cGate.axisOriginalRanges[1]
+      )[0];
+    }
+    return newX;
+  }
+  throw new Error("Gate type not found");
 };

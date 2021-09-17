@@ -187,11 +187,10 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     const gateState = this.targetEditGate;
     const axis = this.histogramDirection === "vertical" ? "x" : "y";
     const range = this.plotter.ranges[axis];
-    const scale = this.plotter.scale;
+    // The 1.5 below is a factor to correct for a weird problem on
+    // offset calculation which I have no clue why happens
     const abstractOffset =
-      ((axis === "y" ? -1 * scale * 2 : 1) *
-        offset[axis] *
-        (range[1] - range[0])) /
+      ((axis === "y" ? -2 : 1) * 1.5 * offset[axis] * (range[1] - range[0])) /
       this.plotter.width;
     for (let index = 0; index < gateState.points.length; index++) {
       const newPos = gateState.points[index] + abstractOffset;

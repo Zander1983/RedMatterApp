@@ -56,7 +56,7 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
     const p1 = this.getPointConcretePos(gate.points[0], axis);
     const p2 = this.getPointConcretePos(gate.points[1], axis);
     const gates = this.gates.filter((e) => e.gateType === "histogram");
-    const gateCount = gates.length / 2;
+    const gateCount = gates.length;
     if (gateCount === 1) {
       this.drawH(axis, p1, p2, color);
     } else {

@@ -87,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const WorkspaceComponent = (props: {
+const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
@@ -547,6 +547,13 @@ const WorkspaceComponent = (props: {
       </Grid>
     </div>
   );
+};
+
+const WorkspaceComponent = (props: {
+  experimentId: string;
+  shared: boolean;
+}) => {
+  return <WorkspaceInnerComponent {...props} />;
 };
 
 export default WorkspaceComponent;
