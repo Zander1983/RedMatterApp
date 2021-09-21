@@ -1,13 +1,15 @@
-import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
+import {
+  GraphPlotterState,
+  leftPadding,
+  topPadding,
+  bottomPadding,
+  rightPadding,
+} from "graph/renderers/plotters/graphPlotter";
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import * as PlotResource from "graph/resources/plots";
 import { getGate, getPopulation } from "graph/utils/workspace";
-
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
@@ -23,8 +25,14 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   rangeMin: number = 0;
   rangeMax: number = 0;
 
+  private mainBins: any;
+
+  histogramGatePlugin: HistogramGatePlotter | null = null;
+
   setup(canvasContext: any) {
     super.setup(canvasContext);
+    this.histogramGatePlugin = new HistogramGatePlotter();
+    this.addPlugin(this.histogramGatePlugin);
   }
 
   protected setDrawerState(): void {
@@ -43,9 +51,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
       ibx: this.direction === "vertical" ? this.rangeMin : 0,
-      iex: this.direction === "vertical" ? this.rangeMax : this.globalMax,
+      iex: this.direction === "vertical" ? this.rangeMax : this.rangeMax,
       iby: this.direction === "vertical" ? 0 : this.rangeMin,
-      iey: this.direction === "vertical" ? this.globalMax : this.rangeMax,
+      iey: this.direction === "vertical" ? this.rangeMax : this.rangeMax,
       scale: this.scale,
       xpts: hBins,
       ypts: vBins,
@@ -70,16 +78,30 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.bins = state.bins !== undefined ? state.bins : 0;
   }
 
-  protected getBins() {
-    this.binSize = 1;
+  protected setBins() {
+    this.binSize = 30;
     this.horizontalBinCount =
       this.width === undefined
         ? 2
-        : Math.max(2, Math.round(this.width / (this.binSize * this.scale)));
+        : Math.max(
+            2,
+            Math.round(
+              this.width /
+                ((this.direction === "vertical" ? 1 : this.binSize) *
+                  this.scale)
+            )
+          );
     this.verticalBinCount =
       this.height === undefined
         ? 2
-        : Math.max(2, Math.round(this.height / (this.binSize * this.scale)));
+        : Math.max(
+            2,
+            Math.round(
+              this.height /
+                ((this.direction === "vertical" ? this.binSize : 1) *
+                  this.scale)
+            )
+          );
     this.bins =
       this.direction === "vertical"
         ? this.horizontalBinCount
@@ -88,33 +110,33 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
   public update() {
     super.update(true);
-    const ranges = {
-      x: this.plot.ranges[this.xAxisName],
-      y: this.plot.ranges[this.xAxisName],
-    };
-    const axesData = PlotResource.getXandYData(this.plot);
-    if (this.plot.histogramAxis === "vertical") {
-      const hbins = (this.width - rightPadding) / 50;
-      const xRange =
-        this.plot.xPlotType === "lin"
-          ? ranges.x
-          : PlotResource.findRangeBoundries(this.plot, axesData[0]);
-      this.xLabels = this.transformer.getAxisLabels(
-        this.plot.xPlotType,
-        xRange,
-        this.plot.xPlotType === "bi" ? Math.round(hbins / 2) : hbins
+
+    this.histogramGatePlugin.setGates(
+      //@ts-ignore
+      this.gates.filter((e) => e.gateType === "histogram")
+    );
+
+    this.setBins();
+
+    const axis = this.plot.histogramAxis === "vertical" ? "x" : "y";
+    const axisName = axis === "x" ? this.xAxisName : this.yAxisName;
+    this.mainBins = PlotResource.getHistogramBins(
+      this.plot,
+      this.bins,
+      axisName
+    );
+
+    if (axis === "x") {
+      this.yLabels = this.transformer.getAxisLabels(
+        "lin",
+        [0, this.mainBins.max],
+        this.verticalBinCount
       );
     } else {
-      const vbins = (this.height - bottomPadding) / 50;
-      const yRange =
-        this.plot.yPlotType === "lin"
-          ? ranges.y
-          : PlotResource.findRangeBoundries(this.plot, axesData[1]);
-
-      this.yLabels = this.transformer.getAxisLabels(
-        this.plot.yPlotType,
-        yRange,
-        this.plot.yPlotType === "bi" ? Math.round(vbins / 2) : vbins
+      this.xLabels = this.transformer.getAxisLabels(
+        "lin",
+        [0, this.mainBins.max],
+        this.horizontalBinCount
       );
     }
   }
@@ -135,19 +157,26 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.plot.xAxis === this.plot.yAxis &&
       this.plot.histogramAxis === "horizontal";
 
-    super.draw({
-      lines: false,
-      vbins: (this.height - bottomPadding) / 50,
-      hbins: (this.width - rightPadding) / 50,
-      xAxisLabel: !hideX ? this.plot.xAxis : "",
-      yAxisLabel: !hideY ? this.plot.yAxis : "",
-    });
+    if (this.direction === "vertical") {
+      super.draw({
+        lines: false,
+        vbins: (this.height - bottomPadding) / 50,
+        hbins: (this.width - rightPadding) / 50,
+        yCustomLabelRange: [0, this.mainBins.max],
+      });
+    } else {
+      super.draw({
+        lines: false,
+        vbins: (this.height - bottomPadding) / 50,
+        hbins: (this.width - rightPadding) / 50,
+        xCustomLabelRange: [0, this.mainBins.max],
+      });
+    }
+
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
-    let mainHist = PlotResource.getHistogramBins(this.plot, this.bins, axis);
-
-    let globlMax = mainHist.max;
+    let globlMax = this.mainBins.max;
 
     let range = this.plot.ranges[axis];
 
@@ -202,7 +231,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
-        value: mainHist.list[i] / globlMax,
+        value: this.mainBins.list[i] / globlMax,
         color: mainPlotColor,
       });
     }
@@ -260,7 +289,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
-        value: mainHist.list[i] / globlMax,
+        value: this.mainBins.list[i] / globlMax,
         color: mainPlotColor,
       });
     }

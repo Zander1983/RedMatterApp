@@ -129,8 +129,8 @@ export default class GraphDrawer extends Drawer {
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
 
     if (params.labels !== undefined) {
-      let min = orientation === "h" ? this.ibx : this.iby;
-      let max = orientation === "h" ? this.iex : this.iey;
+      let min = orientation === "h" ? params.ib : params.ib;
+      let max = orientation === "h" ? params.ie : params.ie;
 
       if (orientation === "v") {
         for (const label of params.labels) {
@@ -249,16 +249,16 @@ export default class GraphDrawer extends Drawer {
     lines?: boolean;
     vbins?: number;
     hbins?: number;
-    xAxisLabel?: string;
-    yAxisLabel?: string;
+    xCustomLabelRange?: [number, number];
+    yCustomLabelRange?: [number, number];
   }): void {
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
       x2: this.x1,
       y2: this.y2,
-      ib: this.iby,
-      ie: this.iey,
+      ib: params.yCustomLabelRange ? params.yCustomLabelRange[0] : this.iby,
+      ie: params.yCustomLabelRange ? params.yCustomLabelRange[1] : this.iey,
       bins:
         params === undefined || params.vbins !== undefined
           ? undefined
@@ -271,8 +271,8 @@ export default class GraphDrawer extends Drawer {
       y1: this.y2,
       x2: this.x2,
       y2: this.y2,
-      ib: this.ibx,
-      ie: this.iex,
+      ib: params.xCustomLabelRange ? params.xCustomLabelRange[0] : this.ibx,
+      ie: params.xCustomLabelRange ? params.xCustomLabelRange[1] : this.iex,
       bins:
         params === undefined || params.hbins !== undefined
           ? undefined
@@ -280,4 +280,31 @@ export default class GraphDrawer extends Drawer {
       labels: params.xLabels,
     });
   }
+
+  addPoint = (x: number, y: number, r: number, color: string = "#000") => {
+    this.rect({
+      x: x * this.scale,
+      y: y * this.scale,
+      w: r,
+      h: r,
+      fillColor: color,
+    });
+  };
+
+  addCirclePoint = (
+    x: number,
+    y: number,
+    r: number,
+    color: string = "#000"
+  ) => {
+    this.oval({
+      x: x * this.scale,
+      y: y * this.scale,
+      d1: r,
+      d2: r,
+      fill: true,
+      ang: 0,
+      fillColor: color,
+    });
+  };
 }

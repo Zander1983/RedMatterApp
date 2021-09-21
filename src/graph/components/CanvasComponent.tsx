@@ -152,5 +152,4 @@ const CanvasComponent = React.memo(
     );
   }
 );
-
 export default CanvasComponent;

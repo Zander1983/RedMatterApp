@@ -1,9 +1,3 @@
-/*
-  plot is supposed to store all data related to a single plot, including
-  rendering params, so that it can be constructed, reconstructed and changed 
-  easily.
-*/
-
 import { generateColor } from "graph/utils/color";
 import FCSServices from "services/FCSServices/FCSServices";
 import {
@@ -33,6 +27,8 @@ import {
   getDatasetColors,
   getDatasetFilteredPoints,
 } from "./dataset";
+import { includes } from "lodash";
+import { MINH, MINW } from "graph/components/workspaces/PlotController";
 
 export const commitPlotChange = (plot: Plot) => {
   store.dispatch({
@@ -91,7 +87,7 @@ export const createBlankPlotObj = (): Plot => {
     yPlotType: "lin",
     histogramAxis: "",
     label: "",
-    dimensions: { w: 10, h: 12 },
+    dimensions: { w: MINW, h: MINH },
     positions: { x: 0, y: 0 },
     parentPlotId: "",
     gatingActive: "",
@@ -281,95 +277,52 @@ export const setWidthAndHeight = (plot: Plot, w: number, h: number) => {
 };
 
 export const setXAxisPlotType = (plot: Plot, plotType: PlotType) => {
+  plot.gatingActive = "";
   plot.xPlotType = plotType;
   plot.axisPlotTypes[plot.xAxis] = plotType;
   commitPlotChange(plot);
 };
 
 export const setYAxisPlotType = (plot: Plot, plotType: PlotType) => {
+  plot.gatingActive = "";
   plot.yPlotType = plotType;
   plot.axisPlotTypes[plot.yAxis] = plotType;
   commitPlotChange(plot);
 };
 
 export const xAxisToHistogram = (plot: Plot) => {
+  plot.gatingActive = "";
   plot.yAxis = plot.xAxis;
   plot.histogramAxis = "vertical";
   commitPlotChange(plot);
 };
 
 export const yAxisToHistogram = (plot: Plot) => {
+  plot.gatingActive = "";
   plot.xAxis = plot.yAxis;
   plot.histogramAxis = "horizontal";
   commitPlotChange(plot);
 };
 
 export const setXAxis = (plot: Plot, xAxis: string) => {
+  plot.gatingActive = "";
   plot.xAxis = xAxis;
   plot.xPlotType = plot.axisPlotTypes[xAxis];
   commitPlotChange(plot);
 };
 
 export const setYAxis = (plot: Plot, yAxis: string) => {
+  plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
   commitPlotChange(plot);
 };
 
 export const disableHistogram = (plot: Plot) => {
+  plot.gatingActive = "";
   plot.histogramAxis = "";
   commitPlotChange(plot);
 };
-
-// export const getPointColors = (plot: Plot,) =>  {
-//   const allData = plot.getAxesData(false);
-//   const colors: string[] = [];
-//   const isPointInside = (gate: any, point: number[]): boolean => {
-//     const p = {
-//       x: point[gate.gate.xAxis],
-//       y: point[gate.gate.yAxis],
-//     };
-//     return gate.gate.isPointInside(p)
-//       ? !gate.inverseGating
-//       : gate.inverseGating;
-//   };
-//   const gateDFS = (
-//     point: number[],
-//     gate: any,
-//     currentDepth: number
-//   ): { depth: number; color: string | null } => {
-//     if (!isPointInside(gate, point)) {
-//       return { depth: 0, color: null };
-//     }
-//     let ans = { depth: currentDepth, color: gate.gate.color };
-//     for (const child of gate.gate.children) {
-//       const cAns = gateDFS(
-//         point,
-//         { gate: child, inverseGating: false },
-//         currentDepth + 1
-//       );
-//       if (cAns.color !== null && cAns.depth > ans.depth) {
-//         ans = cAns;
-//       }
-//     }
-//     return ans;
-//   };
-//   const default_color =
-//     plot.population.length === 0
-//       ? DEFAULT_COLOR
-//       : plot.population[0].gate.color;
-//   for (let i = 0; i < allData.length; i++) {
-//     let ans = { depth: 0, color: default_color };
-//     for (const gate of plot.gates) {
-//       const cAns = gateDFS(allData[i], gate, 1);
-//       if (cAns.color !== null && cAns.depth > ans.depth) {
-//         ans = cAns;
-//       }
-//     }
-//     colors.push(ans.color);
-//   }
-//   return colors;
-// }
 
 export const getXAxisName = (plot: Plot) => {
   return plot.xAxis;
@@ -408,7 +361,7 @@ export const getHistogramBins = (
         : plot.yAxis
       : targetAxis;
   let range = plot.ranges[axisName];
-  let axis = getPopulationGatesFilteredData(plot)[targetAxis];
+  let axis = getHistogramAxisData(plot);
   if (
     (plot.xAxis === axisName && plot.xPlotType === "bi") ||
     (plot.yAxis === axisName && plot.yPlotType === "bi")
@@ -418,7 +371,7 @@ export const getHistogramBins = (
     axis = new Float32Array(
       fcsServices.logicleMarkTransformer(axis, linearRange[0], linearRange[1])
     );
-    range = [0.5, 1];
+    range = [0, 1];
   }
   const binCounts = Array(binCount).fill(0);
   const step = (range[1] - range[0]) / binCount;
@@ -449,20 +402,22 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   commitPlotChange(plot);
 };
 
-export const getPopulationGatesFilteredData = (plot: Plot): Dataset => {
-  const file = getPlotFile(plot);
-  const dataset = getDataset(file.id);
-  const population = getPopulation(plot.population);
-  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  return filteredPoints;
-};
-
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
+};
+
+export const getHistogramAxisData = (plot: Plot): Float32Array => {
+  const file = getPlotFile(plot);
+  const dataset = getDataset(file.id);
+  const population = getPopulation(plot.population);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  return filteredPoints[
+    plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis
+  ];
 };
 
 export const getXandYDataAndColors = (
@@ -545,10 +500,28 @@ export const createSubpopPlot = async (
     pop.gates = pop.gates.concat(additionalGates);
   }
   pop.gates = pop.gates.concat(oldPop.gates);
-  await store.dispatch({
-    type: "workspace.UPDATE_POPULATION",
-    payload: {
-      population: pop,
-    },
-  });
+  const promises: Promise<any>[] = [];
+  promises.push(
+    store.dispatch({
+      type: "workspace.UPDATE_POPULATION",
+      payload: {
+        population: pop,
+      },
+    })
+  );
+  const popGates = pop.gates.map((e) => e.gate);
+  for (const gate of newPlot.gates) {
+    if (popGates.includes(gate)) {
+      newPlot.gates.filter((e) => e != gate);
+    }
+  }
+  promises.push(
+    store.dispatch({
+      type: "workspace.UPDATE_POPULATION",
+      payload: {
+        population: pop,
+      },
+    })
+  );
+  await Promise.all(promises);
 };

@@ -23,16 +23,6 @@ export default class ScatterDrawer extends GraphDrawer {
     };
   }
 
-  addPoint = (x: number, y: number, r: number, color: string = "#000") => {
-    this.rect({
-      x: x * this.scale,
-      y: y * this.scale,
-      w: 3,
-      h: 3,
-      fillColor: color,
-    });
-  };
-
   addPolygon = (
     polygon: { x: number; y: number }[],
     color: string = "#000"

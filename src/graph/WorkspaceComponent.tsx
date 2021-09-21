@@ -4,7 +4,7 @@ import axios from "axios";
 import { useHistory } from "react-router";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
+import { Button, FormControlLabel } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -39,6 +39,9 @@ import { Workspace as WorkspaceType } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
+import { Typography } from "antd";
+import IOSSwitch from "Components/common/Switch";
+import { memResetDatasetCache } from "./resources/dataset";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -67,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
   },
   topButton: {
-    marginLeft: 20,
+    marginLeft: 10,
     marginTop: 5,
     height: "1.9rem",
   },
@@ -85,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const WorkspaceComponent = (props: {
+const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
@@ -96,7 +99,7 @@ const WorkspaceComponent = (props: {
 
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
-  const [initPlot, setInitPlot] = React.useState(true);
+  const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
 
@@ -130,16 +133,22 @@ const WorkspaceComponent = (props: {
       store.dispatch({
         type: "workspace.RESET",
       });
+      memResetDatasetCache();
     };
   }, []);
 
   const initializeWorkspace = async () => {
-    await downloadFileMetadata(props.shared, props.experimentId);
-    // await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+    try {
+      await downloadFileMetadata(props.shared, props.experimentId);
+      await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+    } catch {}
+    setAutosaveEnabled(true);
   };
 
-  const saveWorkspace = () => {
-    saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+  const saveWorkspace = async () => {
+    setSavingWorkspace(true);
+    await saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+    setSavingWorkspace(false);
   };
 
   var onLinkShareClick = async () => {
@@ -226,7 +235,9 @@ const WorkspaceComponent = (props: {
     }, 4000);
   };
 
-  Debounce(() => saveWorkspace(), 5000);
+  if (autosaveEnabled) {
+    Debounce(() => saveWorkspace(), 5000);
+  }
 
   return (
     <div
@@ -236,30 +247,28 @@ const WorkspaceComponent = (props: {
       }}
     >
       {/* == MODALS == */}
-      {initPlot ? (
-        <div>
-          <GateNamePrompt />
+      <div>
+        <GateNamePrompt />
 
-          <AddFileModal
-            open={addFileModalOpen}
-            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-            isShared={props.shared}
-            experimentId={props.experimentId}
-            files={workspace.files}
-          />
+        <AddFileModal
+          open={addFileModalOpen}
+          closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+          isShared={props.shared}
+          experimentId={props.experimentId}
+          files={workspace.files}
+        />
 
-          <GenerateReportModal
-            open={generateReportModalOpen}
-            closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
-          />
+        <GenerateReportModal
+          open={generateReportModalOpen}
+          closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+        />
 
-          <LinkShareModal
-            open={linkShareModalOpen}
-            workspaceId={newWorkspaceId}
-            closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-          />
-        </div>
-      ) : null}
+        <LinkShareModal
+          open={linkShareModalOpen}
+          workspaceId={newWorkspaceId}
+          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+        />
+      </div>
 
       <MessageModal
         open={loadModal}
@@ -306,14 +315,10 @@ const WorkspaceComponent = (props: {
       {/* == STATIC ELEMENTS == */}
       <SideMenus workspace={workspace}></SideMenus>
 
-      {/* == NOTICES == */}
-      <SmallScreenNotice />
-      <PrototypeNotice experimentId={props.experimentId} />
-
       {/* == MAIN PANEL == */}
       <Grid
         style={{
-          marginTop: 10,
+          marginTop: 0,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",
@@ -324,71 +329,109 @@ const WorkspaceComponent = (props: {
         <Grid
           style={{
             backgroundColor: "#fafafa",
-            borderRadius: 10,
-            marginLeft: 40,
-            marginRight: 40,
+            marginLeft: 0,
+            marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
           }}
         >
-          {initPlot ? (
-            <div>
-              <Grid
-                style={{
-                  backgroundColor: "#66a",
-                  paddingTop: 2,
-                  paddingBottom: 6,
-                  borderRadius: 10,
-                  WebkitBorderBottomLeftRadius: 0,
-                  WebkitBorderBottomRightRadius: 0,
-                }}
-                container
-              >
-                <Grid container>
-                  {props.shared ? null : (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                      className={classes.topButton}
-                      startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                      onClick={() => {
-                        history.goBack();
-                      }}
-                    >
-                      Back
-                    </Button>
-                  )}
+          <div>
+            <Grid
+              style={{
+                position: "fixed",
+                zIndex: 100,
+                top: 64,
+                backgroundColor: "#66a",
+                paddingTop: 2,
+                paddingBottom: 6,
+                WebkitBorderBottomLeftRadius: 0,
+                WebkitBorderBottomRightRadius: 0,
+              }}
+              container
+            >
+              <Grid container>
+                {props.shared ? null : (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                    className={classes.topButton}
+                    startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
+                    onClick={() => {
+                      history.goBack();
+                    }}
+                  >
+                    Back
+                  </Button>
+                )}
 
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setAddFileModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  Plot sample
+                </Button>
+
+                {/* <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setGenerateReportModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  Generate report
+                </Button> */}
+                {/* <HowToUseModal /> */}
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                  onClick={() => {
+                    inputFile.current.click();
+                  }}
+                >
+                  <input
+                    type="file"
+                    id="file"
+                    ref={inputFile}
+                    value={fileUploadInputValue}
+                    accept=".wsp"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      importFlowJoFunc(e);
+                    }}
+                  />
+                  Import FlowJo (experimental)
+                </Button>
+
+                {props.shared === false ? (
                   <Button
                     variant="contained"
                     size="small"
-                    onClick={() => handleOpen(setAddFileModalOpen)}
+                    onClick={() => handleOpen(setClearModal)}
                     className={classes.topButton}
                     style={{
                       backgroundColor: "#fafafa",
                     }}
                   >
-                    + Add new file
+                    Clear
                   </Button>
-
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setGenerateReportModalOpen)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Generate report
-                  </Button>
-                  <HowToUseModal />
-                  {/* Uncomment below to have a "print state" button */}
-
-                  {/* {props.shared === false ? (
-                    props.shared ? null : (
+                ) : null}
+                {props.shared === false ? (
+                  props.shared ? null : (
+                    <div>
                       <Button
                         variant="contained"
                         size="small"
@@ -396,122 +439,122 @@ const WorkspaceComponent = (props: {
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
+                          width: 137,
                         }}
                       >
-                        Save Workspace
+                        {savingWorkspace ? (
+                          <CircularProgress
+                            style={{ width: 20, height: 20 }}
+                          ></CircularProgress>
+                        ) : (
+                          <Typography>Save Workspace</Typography>
+                        )}
                       </Button>
-                    )
-                  ) : null} */}
-
-                  {props.shared === false ? (
+                      <FormControlLabel
+                        style={{
+                          marginLeft: 0,
+                          height: 20,
+                          marginTop: 4,
+                          color: "#fff",
+                        }}
+                        label={"Autosave"}
+                        control={
+                          <IOSSwitch
+                            checked={autosaveEnabled}
+                            onChange={() =>
+                              setAutosaveEnabled(!autosaveEnabled)
+                            }
+                          />
+                        }
+                      />
+                    </div>
+                  )
+                ) : null}
+                {/* <Grid style={{ textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleOpen(setClearModal)}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    Themme
+                  </Button>
+                </Grid> */}
+              </Grid>
+              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <Grid
+                  style={{
+                    textAlign: "right",
+                    paddingRight: 20,
+                  }}
+                >
+                  {props.shared === true ? (
                     <Button
                       variant="contained"
-                      size="small"
-                      onClick={() => handleOpen(setClearModal)}
+                      size="large"
+                      onClick={() => onLinkShareClick()}
                       className={classes.topButton}
                       style={{
                         backgroundColor: "#fafafa",
                       }}
                     >
-                      Clear
+                      <ShareIcon
+                        fontSize="small"
+                        style={{
+                          marginRight: 10,
+                        }}
+                      ></ShareIcon>
+                      Share Workspace
                     </Button>
                   ) : null}
-                  <Button
-                    variant="contained"
-                    size="small"
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                    onClick={() => {
-                      inputFile.current.click();
-                    }}
-                  >
-                    <input
-                      type="file"
-                      id="file"
-                      ref={inputFile}
-                      value={fileUploadInputValue}
-                      accept=".wsp"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        importFlowJoFunc(e);
-                      }}
-                    />
-                    Import FlowJo (experimental)
-                  </Button>
                 </Grid>
-                {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                  <Grid
-                    style={{
-                      textAlign: "right",
-                      paddingRight: 20,
-                    }}
-                  >
-                    {props.shared === true ? (
-                      <Button
-                        variant="contained"
-                        size="large"
-                        onClick={() => onLinkShareClick()}
-                        className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
-                      >
-                        <ShareIcon
-                          fontSize="small"
-                          style={{
-                            marginRight: 10,
-                          }}
-                        ></ShareIcon>
-                        Share Workspace
-                      </Button>
-                    ) : null}
-                  </Grid>
-                )}
-              </Grid>
+              )}
+            </Grid>
 
-              <Grid>
-                {!loading ? (
-                  <PlotController
-                    sharedWorkspace={props.shared}
-                    experimentId={props.experimentId}
-                    workspace={workspace}
-                  ></PlotController>
-                ) : (
-                  <Grid
-                    container
-                    style={{
-                      height: 400,
-                      backgroundColor: "#fff",
-                      borderBottomLeftRadius: 10,
-                      borderBottomRightRadius: 10,
-                      textAlign: "center",
-                    }}
-                    justify="center"
-                    alignItems="center"
-                    alignContent="center"
-                  >
-                    <CircularProgress></CircularProgress>
-                  </Grid>
-                )}
-              </Grid>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: "100px",
-              }}
-            >
-              <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-            </div>
-          )}
+            <Grid style={{ marginTop: 43 }}>
+              {/* == NOTICES == */}
+              <SmallScreenNotice />
+              <PrototypeNotice experimentId={props.experimentId} />
+
+              {!loading ? (
+                <PlotController
+                  sharedWorkspace={props.shared}
+                  experimentId={props.experimentId}
+                  workspace={workspace}
+                ></PlotController>
+              ) : (
+                <Grid
+                  container
+                  style={{
+                    height: 400,
+                    backgroundColor: "#fff",
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                    textAlign: "center",
+                  }}
+                  justify="center"
+                  alignItems="center"
+                  alignContent="center"
+                >
+                  <CircularProgress></CircularProgress>
+                </Grid>
+              )}
+            </Grid>
+          </div>
         </Grid>
       </Grid>
     </div>
   );
+};
+
+const WorkspaceComponent = (props: {
+  experimentId: string;
+  shared: boolean;
+}) => {
+  return <WorkspaceInnerComponent {...props} />;
 };
 
 export default WorkspaceComponent;

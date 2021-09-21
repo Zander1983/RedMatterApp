@@ -106,8 +106,6 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: File[]) => {
         }
       }
 
-      console.log("calculated channels info = ", channelsInfo);
-
       let fileId = getFileOrSkipThisSample(
         filesUsed,
         channelsInfo,
@@ -249,17 +247,12 @@ const parseSubpopulation = async (
       newPlot = createBlankPlotObj();
       newPlot.xAxis = `${xAxisName}`;
       newPlot.yAxis = `${yAxisName}`;
-      console.log(channelsInfo);
-      console.log(xAxisName);
-      console.log(yAxisName);
       let xChannelInfo = channelsInfo.find(
         (x: any) => x.channelName == xAxisName
       );
       let yChannelInfo = channelsInfo.find(
         (x: any) => x.channelName == yAxisName
       );
-      console.log(xChannelInfo);
-      console.log(yChannelInfo);
       newPlot.xPlotType = xChannelInfo.type;
       newPlot.yPlotType = yChannelInfo.type;
       newPlot.ranges[newPlot.xAxis] = [

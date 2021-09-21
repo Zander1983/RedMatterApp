@@ -50,11 +50,12 @@ export interface Gate1D extends Gate {
   axis: AxisName;
   axisType: PlotType;
   axisOriginalRanges: Range;
+  histogramDirection: HistogramAxisType;
 }
 
 export interface HistogramGate extends Gate1D {
   gateType: "histogram";
-  // not defined yet
+  points: [number, number];
 }
 
 export interface Gate2D extends Gate {

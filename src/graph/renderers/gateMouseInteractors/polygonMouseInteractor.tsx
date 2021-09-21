@@ -5,7 +5,7 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { Gate, Point, PolygonGate } from "graph/resources/types";
+import { AxisName, Gate, Point, PolygonGate } from "graph/resources/types";
 import { createGate } from "graph/resources/gates";
 import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
@@ -17,18 +17,22 @@ export const selectPointDist = 15;
 
 export interface PolygonGateState extends GateState {
   points: Point[];
-  xAxis: string;
-  yAxis: string;
+  xAxis: AxisName;
+  yAxis: AxisName;
 }
 
-export interface PolygonMouseInteractorState extends MouseInteractorState {}
+export interface PolygonMouseInteractorState extends MouseInteractorState {
+  xAxis: AxisName;
+  yAxis: AxisName;
+}
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
   static targetGate: PolygonGate;
   static targetPlugin: ScatterPolygonGatePlotter;
+  gaterType: "1D" | "2D" = "2D";
 
   plotter: ScatterPlotter | null = null;
-  protected plugin: ScatterPolygonGatePlotter;
+  plugin: ScatterPolygonGatePlotter;
 
   private lastGateUpdate: Date = new Date();
 
@@ -42,6 +46,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
 
+  setMouseInteractorState(state: PolygonMouseInteractorState) {
+    super.setMouseInteractorState(state);
+    this.xAxis = state.xAxis;
+    this.yAxis = state.yAxis;
+  }
+
   setPluginState() {
     let state = { ...this.getGatingState() };
     this.plugin.setGatingState(state);
@@ -49,6 +59,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   editGateEvent(type: string, mouse: Point) {
     if (this.started) return;
+    this.lastMousePos = this.plugin.lastMousePos = mouse;
     if (
       this.targetEditGate === null &&
       type === "mousedown" &&
@@ -278,6 +289,9 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         payload: { gate: popGate },
       });
     }
+    newGate.points = [...newGate.points].map((e) => {
+      return { ...e };
+    });
     return newGate;
   }
 
@@ -321,6 +335,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   gateEvent(type: string, point: Point) {
     if (!this.started) return;
+    this.lastMousePos = this.plugin.lastMousePos = point;
     const isCloseToFirstPoint = this.closeToFirstPoint(point);
     if (type === "mousedown" && !isCloseToFirstPoint) {
       this.points = [...this.points, { ...point }];

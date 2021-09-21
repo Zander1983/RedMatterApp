@@ -190,7 +190,11 @@ const GateBar = React.memo(
                   style={{ marginRight: 8, textAlign: "left", padding: 0 }}
                   checked={selected || gateInPopulation(option.id)}
                 />
-                {option.name} - ({option.xAxis}, {option.yAxis})
+                {option.name} -{" "}
+                {option.gateType === "histogram"
+                  ? //@ts-ignore
+                    "(" + option.axis + ")"
+                  : `(${option.xAxis}, ${option.yAxis})`}
               </Button>
             )}
             style={{ flex: 1, height: "100%" }}
@@ -242,7 +246,9 @@ const GateBar = React.memo(
           <Autocomplete
             multiple
             options={allGates.filter((e) => !gateInPopulation(e.id))}
-            value={allGates.filter((e) => gateInPlotGates(e.id))}
+            value={allGates.filter(
+              (e) => gateInPlotGates(e.id) && !gateInPopulation(e.id)
+            )}
             disableCloseOnSelect
             getOptionLabel={(option) => option.name}
             onChange={(e, o) => {
@@ -254,7 +260,7 @@ const GateBar = React.memo(
                 }
               }
             }}
-            onReset={() => console.log("emptied")}
+            onReset={() => {}}
             renderOption={(option, { selected }) => (
               <Button
                 onClick={() => {
@@ -278,7 +284,11 @@ const GateBar = React.memo(
                     gateInPopulation(option.id)
                   }
                 />
-                {option.name} - ({option.xAxis}, {option.yAxis})
+                {option.name} -{" "}
+                {option.gateType === "histogram"
+                  ? //@ts-ignore
+                    "(" + option.axis + ")"
+                  : `(${option.xAxis}, ${option.yAxis})`}
               </Button>
             )}
             style={{ flex: 1 }}

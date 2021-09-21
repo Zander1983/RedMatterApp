@@ -27,6 +27,7 @@ export {};
 // export default class ScatterOvalGatePlotter extends GatePlotterPlugin {
 //   // static TargetPlotter = ScatterPlotter;
 //   plotter: ScatterPlotter | null = null;
+// gaterType = "2D" as "1D" | "2D";
 
 //   ovalGateState: OvalGateState | null = null;
 
