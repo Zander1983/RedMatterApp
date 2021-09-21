@@ -119,17 +119,13 @@ export default class GraphPlotter extends Plotter {
       const xLabels = this.transformer.getAxisLabels(
         this.plot.xPlotType,
         xRange,
-        this.plot.xPlotType === "bi"
-          ? Math.round(this.horizontalBinCount / 2)
-          : this.horizontalBinCount
+        this.horizontalBinCount
       );
 
       const yLabels = this.transformer.getAxisLabels(
         this.plot.yPlotType,
         yRange,
-        this.plot.yPlotType === "bi"
-          ? Math.round(this.verticalBinCount / 2)
-          : this.verticalBinCount
+        this.verticalBinCount
       );
 
       this.xLabels = xLabels;
