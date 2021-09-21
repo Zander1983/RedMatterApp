@@ -37,8 +37,8 @@ const classes = {
   },
 };
 
-const MINW = 10;
-const MINH = 12;
+export const MINW = 9;
+export const MINH = 10;
 
 export const resetPlotSizes = (id?: string) => {
   let tPlots = getWorkspace().plots.map((e) => e.id);
@@ -231,7 +231,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                   <ResponsiveGridLayout
                     className="layout"
                     breakpoints={{ lg: 1200 }}
-                    cols={{ lg: 30 }}
+                    cols={{ lg: 36 }}
                     rows={{ lg: 30 }}
                     rowHeight={30}
                     isDraggable={true}

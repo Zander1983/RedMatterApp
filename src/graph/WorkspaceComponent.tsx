@@ -100,7 +100,6 @@ const WorkspaceInnerComponent = (props: {
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
-  const [initPlot, setInitPlot] = React.useState(true);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
 
@@ -248,30 +247,28 @@ const WorkspaceInnerComponent = (props: {
       }}
     >
       {/* == MODALS == */}
-      {initPlot ? (
-        <div>
-          <GateNamePrompt />
+      <div>
+        <GateNamePrompt />
 
-          <AddFileModal
-            open={addFileModalOpen}
-            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-            isShared={props.shared}
-            experimentId={props.experimentId}
-            files={workspace.files}
-          />
+        <AddFileModal
+          open={addFileModalOpen}
+          closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+          isShared={props.shared}
+          experimentId={props.experimentId}
+          files={workspace.files}
+        />
 
-          <GenerateReportModal
-            open={generateReportModalOpen}
-            closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
-          />
+        <GenerateReportModal
+          open={generateReportModalOpen}
+          closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+        />
 
-          <LinkShareModal
-            open={linkShareModalOpen}
-            workspaceId={newWorkspaceId}
-            closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-          />
-        </div>
-      ) : null}
+        <LinkShareModal
+          open={linkShareModalOpen}
+          workspaceId={newWorkspaceId}
+          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+        />
+      </div>
 
       <MessageModal
         open={loadModal}
@@ -318,14 +315,10 @@ const WorkspaceInnerComponent = (props: {
       {/* == STATIC ELEMENTS == */}
       <SideMenus workspace={workspace}></SideMenus>
 
-      {/* == NOTICES == */}
-      <SmallScreenNotice />
-      <PrototypeNotice experimentId={props.experimentId} />
-
       {/* == MAIN PANEL == */}
       <Grid
         style={{
-          marginTop: 10,
+          marginTop: 0,
           marginLeft: 0,
           marginRight: 0,
           justifyContent: "center",
@@ -336,215 +329,221 @@ const WorkspaceInnerComponent = (props: {
         <Grid
           style={{
             backgroundColor: "#fafafa",
-            borderRadius: 10,
-            marginLeft: 40,
-            marginRight: 40,
+            marginLeft: 0,
+            marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
           }}
         >
-          {initPlot ? (
-            <div>
-              <Grid
-                style={{
-                  backgroundColor: "#66a",
-                  paddingTop: 2,
-                  paddingBottom: 6,
-                  borderRadius: 10,
-                  WebkitBorderBottomLeftRadius: 0,
-                  WebkitBorderBottomRightRadius: 0,
-                }}
-                container
-              >
-                <Grid container>
-                  {props.shared ? null : (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                      className={classes.topButton}
-                      startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                      onClick={() => {
-                        history.goBack();
-                      }}
-                    >
-                      Back
-                    </Button>
-                  )}
-
+          <div>
+            <Grid
+              style={{
+                position: "fixed",
+                zIndex: 100,
+                top: 64,
+                backgroundColor: "#66a",
+                paddingTop: 2,
+                paddingBottom: 6,
+                WebkitBorderBottomLeftRadius: 0,
+                WebkitBorderBottomRightRadius: 0,
+              }}
+              container
+            >
+              <Grid container>
+                {props.shared ? null : (
                   <Button
-                    variant="contained"
                     size="small"
-                    onClick={() => handleOpen(setAddFileModalOpen)}
-                    className={classes.topButton}
+                    variant="contained"
                     style={{
                       backgroundColor: "#fafafa",
                     }}
-                  >
-                    + Add new file
-                  </Button>
-
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setGenerateReportModalOpen)}
                     className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Generate report
-                  </Button>
-                  {/* <HowToUseModal /> */}
-
-                  {props.shared === false ? (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleOpen(setClearModal)}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  ) : null}
-                  <Button
-                    variant="contained"
-                    size="small"
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
+                    startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                     onClick={() => {
-                      inputFile.current.click();
+                      history.goBack();
                     }}
                   >
-                    <input
-                      type="file"
-                      id="file"
-                      ref={inputFile}
-                      value={fileUploadInputValue}
-                      accept=".wsp"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        importFlowJoFunc(e);
-                      }}
-                    />
-                    Import FlowJo (experimental)
+                    Back
                   </Button>
+                )}
 
-                  {props.shared === false ? (
-                    props.shared ? null : (
-                      <div>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          onClick={() => saveWorkspace()}
-                          className={classes.topButton}
-                          style={{
-                            backgroundColor: "#fafafa",
-                            width: 137,
-                          }}
-                        >
-                          {savingWorkspace ? (
-                            <CircularProgress
-                              style={{ width: 20, height: 20 }}
-                            ></CircularProgress>
-                          ) : (
-                            <Typography>Save Workspace</Typography>
-                          )}
-                        </Button>
-                        <FormControlLabel
-                          style={{
-                            marginLeft: 0,
-                            height: 20,
-                            marginTop: 4,
-                            color: "#fff",
-                          }}
-                          label={"Autosave"}
-                          control={
-                            <IOSSwitch
-                              checked={autosaveEnabled}
-                              onChange={() =>
-                                setAutosaveEnabled(!autosaveEnabled)
-                              }
-                            />
-                          }
-                        />
-                      </div>
-                    )
-                  ) : null}
-                </Grid>
-                {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                  <Grid
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setAddFileModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  Plot sample
+                </Button>
+
+                {/* <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setGenerateReportModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  Generate report
+                </Button> */}
+                {/* <HowToUseModal /> */}
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                  onClick={() => {
+                    inputFile.current.click();
+                  }}
+                >
+                  <input
+                    type="file"
+                    id="file"
+                    ref={inputFile}
+                    value={fileUploadInputValue}
+                    accept=".wsp"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      importFlowJoFunc(e);
+                    }}
+                  />
+                  Import FlowJo (experimental)
+                </Button>
+
+                {props.shared === false ? (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleOpen(setClearModal)}
+                    className={classes.topButton}
                     style={{
-                      textAlign: "right",
-                      paddingRight: 20,
+                      backgroundColor: "#fafafa",
                     }}
                   >
-                    {props.shared === true ? (
+                    Clear
+                  </Button>
+                ) : null}
+                {props.shared === false ? (
+                  props.shared ? null : (
+                    <div>
                       <Button
                         variant="contained"
-                        size="large"
-                        onClick={() => onLinkShareClick()}
+                        size="small"
+                        onClick={() => saveWorkspace()}
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
+                          width: 137,
                         }}
                       >
-                        <ShareIcon
-                          fontSize="small"
-                          style={{
-                            marginRight: 10,
-                          }}
-                        ></ShareIcon>
-                        Share Workspace
+                        {savingWorkspace ? (
+                          <CircularProgress
+                            style={{ width: 20, height: 20 }}
+                          ></CircularProgress>
+                        ) : (
+                          <Typography>Save Workspace</Typography>
+                        )}
                       </Button>
-                    ) : null}
-                  </Grid>
-                )}
-              </Grid>
-
-              <Grid>
-                {!loading ? (
-                  <PlotController
-                    sharedWorkspace={props.shared}
-                    experimentId={props.experimentId}
-                    workspace={workspace}
-                  ></PlotController>
-                ) : (
-                  <Grid
-                    container
+                      <FormControlLabel
+                        style={{
+                          marginLeft: 0,
+                          height: 20,
+                          marginTop: 4,
+                          color: "#fff",
+                        }}
+                        label={"Autosave"}
+                        control={
+                          <IOSSwitch
+                            checked={autosaveEnabled}
+                            onChange={() =>
+                              setAutosaveEnabled(!autosaveEnabled)
+                            }
+                          />
+                        }
+                      />
+                    </div>
+                  )
+                ) : null}
+                <Grid style={{ textAlign: "right" }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleOpen(setClearModal)}
+                    className={classes.topButton}
                     style={{
-                      height: 400,
-                      backgroundColor: "#fff",
-                      borderBottomLeftRadius: 10,
-                      borderBottomRightRadius: 10,
-                      textAlign: "center",
+                      backgroundColor: "#fafafa",
                     }}
-                    justify="center"
-                    alignItems="center"
-                    alignContent="center"
                   >
-                    <CircularProgress></CircularProgress>
-                  </Grid>
-                )}
+                    Themme
+                  </Button>
+                </Grid>
               </Grid>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: "100px",
-              }}
-            >
-              <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-            </div>
-          )}
+              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                <Grid
+                  style={{
+                    textAlign: "right",
+                    paddingRight: 20,
+                  }}
+                >
+                  {props.shared === true ? (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => onLinkShareClick()}
+                      className={classes.topButton}
+                      style={{
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
+                      <ShareIcon
+                        fontSize="small"
+                        style={{
+                          marginRight: 10,
+                        }}
+                      ></ShareIcon>
+                      Share Workspace
+                    </Button>
+                  ) : null}
+                </Grid>
+              )}
+            </Grid>
+
+            <Grid style={{ marginTop: 43 }}>
+              {/* == NOTICES == */}
+              <SmallScreenNotice />
+              <PrototypeNotice experimentId={props.experimentId} />
+
+              {!loading ? (
+                <PlotController
+                  sharedWorkspace={props.shared}
+                  experimentId={props.experimentId}
+                  workspace={workspace}
+                ></PlotController>
+              ) : (
+                <Grid
+                  container
+                  style={{
+                    height: 400,
+                    backgroundColor: "#fff",
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                    textAlign: "center",
+                  }}
+                  justify="center"
+                  alignItems="center"
+                  alignContent="center"
+                >
+                  <CircularProgress></CircularProgress>
+                </Grid>
+              )}
+            </Grid>
+          </div>
         </Grid>
       </Grid>
     </div>

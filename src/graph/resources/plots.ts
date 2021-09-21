@@ -28,6 +28,7 @@ import {
   getDatasetFilteredPoints,
 } from "./dataset";
 import { includes } from "lodash";
+import { MINH, MINW } from "graph/components/workspaces/PlotController";
 
 export const commitPlotChange = (plot: Plot) => {
   store.dispatch({
@@ -86,7 +87,7 @@ export const createBlankPlotObj = (): Plot => {
     yPlotType: "lin",
     histogramAxis: "",
     label: "",
-    dimensions: { w: 10, h: 12 },
+    dimensions: { w: MINW, h: MINH },
     positions: { x: 0, y: 0 },
     parentPlotId: "",
     gatingActive: "",

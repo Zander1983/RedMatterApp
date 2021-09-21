@@ -95,7 +95,7 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2>Open file</h2>
+          <h2>Plot a sample</h2>
 
           <p
             style={{

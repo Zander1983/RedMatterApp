@@ -8,7 +8,7 @@ import {
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
 
-import AppHeader from "./Components/common/header";
+import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
 import Experiment from "./Components/workspaces/Experiment";
