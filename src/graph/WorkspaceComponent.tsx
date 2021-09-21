@@ -470,7 +470,7 @@ const WorkspaceInnerComponent = (props: {
                     </div>
                   )
                 ) : null}
-                <Grid style={{ textAlign: "right" }}>
+                {/* <Grid style={{ textAlign: "right" }}>
                   <Button
                     variant="contained"
                     size="small"
@@ -482,7 +482,7 @@ const WorkspaceInnerComponent = (props: {
                   >
                     Themme
                   </Button>
-                </Grid>
+                </Grid> */}
               </Grid>
               {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <Grid
