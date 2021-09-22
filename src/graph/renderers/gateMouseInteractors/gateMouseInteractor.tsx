@@ -89,7 +89,9 @@ export default abstract class GateMouseInteractor {
       type: "workspace.UPDATE_PLOT",
       payload: { plot },
     });
-    PlotResource.createSubpopPlot(this.plotter.plot, [
+    let basedOffPlot = { ...this.plotter.plot };
+    basedOffPlot.gates = [];
+    PlotResource.createSubpopPlot(basedOffPlot, [
       { gate: gate.id, inverseGating: false },
     ]);
     this.end();

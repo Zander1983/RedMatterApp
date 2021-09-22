@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import Checkbox from "@material-ui/core/Checkbox";
 import Button from "@material-ui/core/Button";
@@ -22,6 +22,7 @@ import {
 } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { store } from "redux/store";
+import { resetPlotSizes, setCanvasSize } from "../workspaces/PlotController";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -29,7 +30,7 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 const classes = {
   bar: {
     marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   root: {
     borderRadius: 0,
@@ -152,8 +153,6 @@ const GateBar = React.memo(
         style={{
           ...classes.bar,
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridGap: 10,
         }}
       >
         <Grid item>
@@ -204,7 +203,7 @@ const GateBar = React.memo(
                 size="small"
                 variant="outlined"
                 label={
-                  allGates.length > 0
+                  populationGates.length > 0
                     ? `Population (${populationGates.length})`
                     : "Population: All"
                 }
@@ -213,6 +212,15 @@ const GateBar = React.memo(
             renderTags={(tagValue, _) => {
               return tagValue.map((option) => (
                 <Chip
+                  onClick={() => {
+                    onGateChipClick(option);
+                  }}
+                  onMouseEnter={() => {
+                    setGateChipHover(true);
+                  }}
+                  onMouseLeave={() => {
+                    setGateChipHover(false);
+                  }}
                   label={option.name}
                   avatar={
                     <div
@@ -243,7 +251,7 @@ const GateBar = React.memo(
           />
         </Grid>
         <Grid item>
-          <Autocomplete
+          {/* <Autocomplete
             multiple
             options={allGates.filter((e) => !gateInPopulation(e.id))}
             value={allGates.filter(
@@ -344,7 +352,7 @@ const GateBar = React.memo(
                 />
               ));
             }}
-          />
+          /> */}
         </Grid>
       </Grid>
     );

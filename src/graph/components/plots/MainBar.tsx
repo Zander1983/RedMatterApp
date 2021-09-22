@@ -140,15 +140,14 @@ export default function MainBar(props: { plot: Plot }) {
           </h2>
         }
       />
+
       <Grid
         container
         style={{
           width: "100%",
-          // border: "1px solid black",
-          // display: "table",
           display: "flex",
           justifyContent: "space-between",
-          gap: 5,
+          gap: 3,
         }}
         direction="row"
       >

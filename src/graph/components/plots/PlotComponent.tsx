@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Divider } from "@material-ui/core";
+import { Divider, Grid } from "@material-ui/core";
 
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
@@ -58,9 +58,6 @@ const PlotComponent = React.memo(
       >
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
           <MainBar plot={plot}></MainBar>
-
-          <Divider></Divider>
-
           <GateBar
             plotId={plot.id}
             plotGates={plot.gates.map((e) => getGate(e))}
@@ -72,7 +69,7 @@ const PlotComponent = React.memo(
             })}
           ></GateBar>
 
-          <Divider style={{ marginBottom: 10 }}></Divider>
+          <Divider style={{ marginBottom: 5 }}></Divider>
         </div>
 
         <SideSelector
