@@ -22,6 +22,15 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
     }
 
     for (let gate of this.gates) {
+      console.log("received gate", gate.id);
+      console.log("plot gates", this.plotter.plot.gates);
+      console.log(
+        "gate not in plot gates?",
+        this.plotter.plot.gates.find((e) => e === gate.id)
+      );
+      if (!this.plotter.plot.gates.find((e) => e === gate.id)) {
+        continue;
+      }
       const isGate1D = Object.keys(gate).includes("axis");
       const isGate2D = ["xAxis", "yAxis"]
         .map((e) => Object.keys(gate).includes(e))

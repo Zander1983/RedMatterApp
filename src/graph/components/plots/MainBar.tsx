@@ -209,7 +209,7 @@ export default function MainBar(props: { plot: Plot }) {
             )}
           </Button>
         </Tooltip>
-        <Tooltip
+        {/* <Tooltip
           title={
             <React.Fragment>
               <h3 style={{ color: "white" }}>
@@ -242,7 +242,6 @@ export default function MainBar(props: { plot: Plot }) {
               PlotResource.createSubpopPlot(plot, gates);
             }}
           >
-            {/* Subpop */}
             <img
               src={normalGatingIcon}
               alt={"Suppopulation"}
@@ -284,14 +283,13 @@ export default function MainBar(props: { plot: Plot }) {
               PlotResource.createSubpopPlot(plot, gates);
             }}
           >
-            {/* Inverse Subpop */}
             <img
               src={inverseGatingIcon}
               alt={"Suppopulation"}
               style={{ width: 20, height: 20 }}
             />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip
           title={
             <React.Fragment>
