@@ -35,9 +35,16 @@ export const createGate = ({
   return newGate;
 };
 
-export const commitGateChange = async (gate: Gate) => {
+export const commitGateChange = (gate: Gate) => {
   store.dispatch({
     type: "workspace.UPDATE_GATE",
+    payload: { gate },
+  });
+};
+
+export const commitGate = (gate: Gate) => {
+  store.dispatch({
+    type: "workspace.ADD_GATE",
     payload: { gate },
   });
 };

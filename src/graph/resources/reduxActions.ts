@@ -9,7 +9,7 @@ export const graphActions = {
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
-  ADD_PLOTS: "workspace.ADD_PLOTS",
+  ADD_MULTIPLE_PLOTS: "workspace.ADD_MULTIPLE_PLOTS",
   ADD_GATE: "workspace.ADD_GATE",
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
@@ -82,7 +82,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         plots: [...state.plots, newPlot],
       };
-    case graphActions.ADD_PLOTS:
+    case graphActions.ADD_MULTIPLE_PLOTS:
       const newPlots: Array<Plot> = action.payload.plots;
       return {
         ...state,

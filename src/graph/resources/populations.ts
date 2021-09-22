@@ -13,9 +13,16 @@ import {
 } from "./types";
 import * as DatasetResource from "graph/resources/dataset";
 
-export const commitPopulationChange = async (population: Population) => {
+export const commitPopulationChange = (population: Population) => {
   store.dispatch({
     type: "workspace.UPDATE_POPULATION",
+    payload: { population },
+  });
+};
+
+export const commitPopulation = (population: Population) => {
+  store.dispatch({
+    type: "workspace.ADD_POPULATION",
     payload: { population },
   });
 };

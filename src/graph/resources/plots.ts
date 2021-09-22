@@ -37,6 +37,13 @@ export const commitPlotChange = (plot: Plot) => {
   });
 };
 
+export const commitMultiplePlots = (plots: Array<Plot>) => {
+  store.dispatch({
+    type: "workspace.ADD_MULTIPLE_PLOTS",
+    payload: { plots },
+  });
+};
+
 export const createPlot = ({
   clonePlot,
   id,
@@ -114,23 +121,21 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
     if (plot.xAxis === "") plot.xAxis = axes[0];
     if (plot.yAxis === "") plot.yAxis = axes[1];
   }
+  if (!plot.xPlotType) plot.xPlotType = getPlotType(plot, plot.xAxis);
+  if (!plot.yPlotType) plot.yPlotType = getPlotType(plot, plot.yAxis);
 
-  if (Object.keys(plot.axisPlotTypes).length > 0) {
-    plot.xPlotType = plot.axisPlotTypes[plot.xAxis];
-    plot.yPlotType = plot.axisPlotTypes[plot.yAxis];
-  } else {
-    plot.xPlotType =
-      plot.xAxis.toLowerCase().includes("fsc") ||
-      plot.xAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-    plot.yPlotType =
-      plot.yAxis.toLowerCase().includes("fsc") ||
-      plot.yAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-  }
   return plot;
+};
+
+const getPlotType = (plot: Plot, plotAxis: string) => {
+  if (Object.keys(plot.axisPlotTypes).length > 0) {
+    return plot.axisPlotTypes[plotAxis];
+  } else {
+    return plotAxis.toLowerCase().includes("fsc") ||
+      plotAxis.toLowerCase().includes("ssc")
+      ? "lin"
+      : "bi";
+  }
 };
 
 export const getPlotOverlays = (plot: Plot) => {
