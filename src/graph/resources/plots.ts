@@ -109,15 +109,15 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
     : getPopulation(plot.population);
   const file = getFile(population.file);
   const axes = file.axes;
+
   if (plot.xAxis.length === 0 && plot.yAxis.length === 0) {
-    if (plot.axisPlotTypes[plot.xAxis])
-      try {
-        const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
-        if (plot.xAxis === "" && plot.yAxis === "") {
-          plot.xAxis = fscssc.fsc;
-          plot.yAxis = fscssc.ssc;
-        }
-      } catch {}
+    if (Object.keys(plot.axisPlotTypes).length > 0) {
+      const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
+      if (plot.xAxis === "" && plot.yAxis === "") {
+        plot.xAxis = fscssc.fsc;
+        plot.yAxis = fscssc.ssc;
+      }
+    }
     if (plot.xAxis === "") plot.xAxis = axes[0];
     if (plot.yAxis === "") plot.yAxis = axes[1];
   }
