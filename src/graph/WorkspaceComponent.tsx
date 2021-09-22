@@ -2,20 +2,25 @@ import { useSelector, useStore } from "react-redux";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
+import XML from "xml-js";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button, FormControlLabel, withStyles } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
-import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
-import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import ToggleButton from "@material-ui/lab/ToggleButton";
+import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
+import IOSSwitch from "Components/common/Switch";
+import { Typography } from "antd";
 
-import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
+
+import WorkspaceOnRailsController from "./components/workspaces/WorkspaceOnRailsController";
+import WorkspaceCanvasController from "./components/workspaces/WorkspaceCanvasController";
 import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
@@ -24,8 +29,9 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
+
+import userManager from "Components/users/userManager";
 import {
   dowloadAllFileEvents,
   downloadFileEvent,
@@ -36,11 +42,7 @@ import {
   saveWorkspaceToRemote,
 } from "./utils/workspace";
 import { Workspace as WorkspaceType } from "./resources/types";
-import PlotController from "./components/workspaces/PlotController";
-import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
-import { Typography } from "antd";
-import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 
 const useStyles = makeStyles((theme) => ({
@@ -86,7 +88,24 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "3px",
     color: green[500],
   },
+  divider: {
+    margin: theme.spacing(1, 0.5),
+  },
 }));
+
+const StyledToggleButtonGroup = withStyles((theme) => ({
+  grouped: {
+    margin: theme.spacing(0.5),
+    border: "none",
+    height: 10,
+    "&:not(:first-child)": {
+      borderRadius: theme.shape.borderRadius,
+    },
+    "&:first-child": {
+      borderRadius: theme.shape.borderRadius,
+    },
+  },
+}))(ToggleButtonGroup);
 
 const WorkspaceInnerComponent = (props: {
   experimentId: string;
@@ -97,19 +116,19 @@ const WorkspaceInnerComponent = (props: {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
 
-  const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
-  const [savingWorkspace, setSavingWorkspace] = React.useState(false);
-  const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
+  const [newWorkspaceId, setNewWorkspaceId] = useState("");
+  const [savingWorkspace, setSavingWorkspace] = useState(false);
+  const [autosaveEnabled, setAutosaveEnabled] = useState(false);
   const inputFile = React.useRef(null);
-  const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
+  const [fileUploadInputValue, setFileUploadInputValue] = useState("");
+  const [workspaceMode, setWorkspaceMode] = useState("canvas");
 
-  const [loading, setLoading] = React.useState(false);
-  const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
-  const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] =
-    React.useState(false);
-  const [loadModal, setLoadModal] = React.useState(false);
-  const [clearModal, setClearModal] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const [linkShareModalOpen, setLinkShareModalOpen] = useState(false);
+  const [addFileModalOpen, setAddFileModalOpen] = useState(false);
+  const [generateReportModalOpen, setGenerateReportModalOpen] = useState(false);
+  const [loadModal, setLoadModal] = useState(false);
+  const [clearModal, setClearModal] = useState(false);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -378,19 +397,6 @@ const WorkspaceInnerComponent = (props: {
                   Plot sample
                 </Button>
 
-                {/* <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpen(setGenerateReportModalOpen)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  Generate report
-                </Button> */}
-                {/* <HowToUseModal /> */}
-
                 <Button
                   variant="contained"
                   size="small"
@@ -470,19 +476,39 @@ const WorkspaceInnerComponent = (props: {
                     </div>
                   )
                 ) : null}
-                {/* <Grid style={{ textAlign: "right" }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
+                <Grid style={{ flexGrow: 1 }}></Grid>
+                <Grid
+                  style={{
+                    paddingRight: 10,
+                    justifyContent: "right",
+                    alignItems: "right",
+                    alignContent: "right",
+                  }}
+                >
+                  <div
                     style={{
-                      backgroundColor: "#fafafa",
+                      marginTop: 5,
+                      padding: 2,
+                      backgroundColor: "#fff",
+                      borderRadius: 5,
                     }}
                   >
-                    Themme
-                  </Button>
-                </Grid> */}
+                    <StyledToggleButtonGroup
+                      value={workspaceMode}
+                      exclusive
+                      onChange={(e, newWorkspaceMode) =>
+                        setWorkspaceMode(newWorkspaceMode)
+                      }
+                    >
+                      <ToggleButton value="canvas" style={{ color: "#66d" }}>
+                        Canvas
+                      </ToggleButton>
+                      <ToggleButton value="onrails" style={{ color: "#66d" }}>
+                        On Rails
+                      </ToggleButton>
+                    </StyledToggleButtonGroup>
+                  </div>
+                </Grid>
               </Grid>
               {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <Grid
@@ -514,17 +540,21 @@ const WorkspaceInnerComponent = (props: {
               )}
             </Grid>
 
-            <Grid style={{ marginTop: 43 }}>
+            <Grid style={{ marginTop: 47 }}>
               {/* == NOTICES == */}
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
 
               {!loading ? (
-                <PlotController
-                  sharedWorkspace={props.shared}
-                  experimentId={props.experimentId}
-                  workspace={workspace}
-                ></PlotController>
+                workspaceMode === "canvas" ? (
+                  <WorkspaceCanvasController
+                    sharedWorkspace={props.shared}
+                    experimentId={props.experimentId}
+                    workspace={workspace}
+                  />
+                ) : (
+                  <WorkspaceOnRailsController />
+                )
               ) : (
                 <Grid
                   container

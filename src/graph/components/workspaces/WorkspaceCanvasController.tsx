@@ -73,17 +73,17 @@ const standardGridPlotItem = (index: number, plotData: any) => {
   };
 };
 
-interface PlotControllerProps {
+interface WorkspaceCanvasControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
   workspace: Workspace;
   plotMoving?: boolean;
 }
 
-class PlotController extends React.Component<PlotControllerProps> {
+class WorkspaceCanvasController extends React.Component<WorkspaceCanvasControllerProps> {
   private static renderCalls = 0;
 
-  constructor(props: PlotControllerProps) {
+  constructor(props: WorkspaceCanvasControllerProps) {
     super(props);
     this.state = {
       plots: props.workspace.plots,
@@ -183,7 +183,7 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   render() {
     console.log(
-      `Workspace rendered for the ${++PlotController.renderCalls} time`
+      `Workspace rendered for the ${++WorkspaceCanvasController.renderCalls} time`
     );
     let plotGroups: any = {};
     for (const plot of this.props.workspace.plots) {
@@ -201,7 +201,7 @@ class PlotController extends React.Component<PlotControllerProps> {
         }
       } catch {
         console.error(
-          "[PlotController] Plot has not been rendered due to population not found"
+          "[WorkspaceCanvasController] Plot has not been rendered due to population not found"
         );
       }
     }
@@ -295,4 +295,4 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 }
 
-export default PlotController;
+export default WorkspaceCanvasController;

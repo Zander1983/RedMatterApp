@@ -152,8 +152,6 @@ const GateBar = React.memo(
         style={{
           ...classes.bar,
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridGap: 10,
         }}
       >
         <Grid item>
@@ -243,7 +241,7 @@ const GateBar = React.memo(
           />
         </Grid>
         <Grid item>
-          <Autocomplete
+          {/* <Autocomplete
             multiple
             options={allGates.filter((e) => !gateInPopulation(e.id))}
             value={allGates.filter(
@@ -344,7 +342,7 @@ const GateBar = React.memo(
                 />
               ));
             }}
-          />
+          /> */}
         </Grid>
       </Grid>
     );

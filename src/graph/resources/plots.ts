@@ -28,7 +28,10 @@ import {
   getDatasetFilteredPoints,
 } from "./dataset";
 import { includes } from "lodash";
-import { MINH, MINW } from "graph/components/workspaces/PlotController";
+import {
+  MINH,
+  MINW,
+} from "graph/components/workspaces/WorkspaceCanvasController";
 
 export const commitPlotChange = (plot: Plot) => {
   store.dispatch({
