@@ -340,21 +340,20 @@ const Experiment = (props: any) => {
   useEffect(() => {}, [experimentData]);
 
   const updateExperimentFileName = (id: string, label: string) => {
-    //TODO
-    // const updatFileName = ExperimentFilesApiFetchParamCreator({
-    //   apiKey: userManager.getToken(),
-    // }).editFiles(props.id, id, label, userManager.getToken());
-    // axios
-    //   .put(updatFileName.url, { label }, updatFileName.options)
-    //   .then((e) => {
-    //     fetchExperimentData();
-    //   })
-    //   .catch((e) =>
-    //     snackbarService.showSnackbar(
-    //       "Could not edit file name, try again",
-    //       "error"
-    //     )
-    //   );
+    const updatFileName = ExperimentFilesApiFetchParamCreator({
+      apiKey: userManager.getToken(),
+    }).editFiles(props.id, id, label, userManager.getToken());
+    axios
+      .put(updatFileName.url, { label }, updatFileName.options)
+      .then((e) => {
+        fetchExperimentData();
+      })
+      .catch((e) =>
+        snackbarService.showSnackbar(
+          "Could not edit file name, try again",
+          "error"
+        )
+      );
   };
 
   return (

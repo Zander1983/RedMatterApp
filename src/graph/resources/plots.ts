@@ -492,7 +492,10 @@ export const createSubpopPlot = async (
   additionalGates?: PopulationGateType[]
 ) => {
   const oldPop = getPopulation(plot.population);
-  const newPlotId = await createNewPlotFromFile(getFile(oldPop.file), plot);
+  const newPlotId = await createNewPlotFromFile(getFile(oldPop.file), {
+    ...plot,
+    gates: [],
+  });
   let newPlot = getPlot(newPlotId);
   let pop = getPopulation(newPlot.population);
   if (additionalGates) {
