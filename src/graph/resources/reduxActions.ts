@@ -20,6 +20,7 @@ export const graphActions = {
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
+  SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
 };
 
 const initialState: Workspace = {
@@ -29,6 +30,7 @@ const initialState: Workspace = {
   plots: [],
   populations: [],
   previousStates: [],
+  sharedWorkspace: false,
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -169,8 +171,25 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       };
 
     case graphActions.DELETE_GATE:
+      const deleteGate: Gate = action.payload.gate;
+      if (!state.gates.find((e) => e.id === deleteGate.id)) {
+        console.error("[workspace.DELETE_GATE] Gate does not exist");
+        return state;
+      }
+      state.gates = state.gates.filter((e) => e.id !== deleteGate.id);
+      state.plots = state.plots.map((e) => {
+        e.gates = e.gates.filter((e) => e !== deleteGate.id);
+        return e;
+      });
+      state.populations = state.populations.map((e) => {
+        e.gates = e.gates.filter((e) => e.gate !== deleteGate.id);
+        return e;
+      });
       return {
         ...state,
+        gates: state.gates,
+        populations: state.populations,
+        plots: state.plots,
       };
 
     case graphActions.DELETE_POPULATION:
@@ -192,6 +211,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.DELETE_FILE:
       return {
         ...state,
+      };
+
+    case graphActions.SET_WORKSPACE_SHARED:
+      return {
+        ...state,
+        sharedWorkspace: action.payload.sharedWorkspace,
       };
 
     default:

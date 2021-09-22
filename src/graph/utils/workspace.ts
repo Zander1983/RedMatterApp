@@ -109,8 +109,8 @@ export const loadWorkspaceFromRemoteIfExists = async (
     }
   } catch {
     snackbarService.showSnackbar(
-      "Failed to load workspace, try again!",
-      "error"
+      "Your workspace is loading, please wait and reload the page!",
+      "info"
     );
   }
   return false;

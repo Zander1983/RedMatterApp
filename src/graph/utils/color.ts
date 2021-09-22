@@ -23,3 +23,34 @@ export const colorNumber2String = function (color: number) {
     r = (color & 0xff0000) >>> 16;
   return "#" + r.toString(16) + g.toString(16) + b.toString(16);
 };
+
+/*
+  Instead of storing a list of strings for colors, this stores a list of
+  indexes for static strings of colors. Makes app more efficient.
+*/
+export class ColorSchema {
+  colors: string[];
+  indexes: Int32Array;
+
+  constructor(colors: string[]) {
+    if (colors.length === 1) {
+      this.colors = colors;
+      return;
+    }
+    const newColors = Array.from(new Set(colors).values());
+    this.colors = newColors;
+    if (newColors.length === 1) {
+      return;
+    }
+    let colorMap: { [index: string]: number } = {};
+    this.colors.forEach((e, i) => (colorMap[e] = i));
+    this.indexes = new Int32Array(colors.map((e) => colorMap[e]));
+  }
+
+  getI(i: number): string {
+    if (this.colors.length === 1) {
+      return this.colors[0];
+    }
+    return this.colors[this.indexes[i]];
+  }
+}

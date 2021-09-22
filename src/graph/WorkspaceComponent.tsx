@@ -93,6 +93,7 @@ const WorkspaceInnerComponent = (props: {
   shared: boolean;
 }) => {
   const store = useStore();
+
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -126,6 +127,13 @@ const WorkspaceInnerComponent = (props: {
     store.dispatch({
       type: "workspace.RESET",
     });
+
+    if (store.getState().workspace.shared !== props.shared) {
+      store.dispatch({
+        type: "workspace.SET_WORKSPACE_SHARED",
+        payload: { sharedWorkspace: props.shared },
+      });
+    }
 
     initializeWorkspace();
 

@@ -7,6 +7,7 @@ import {
   FileID,
   Gate,
   Gate2D,
+  GateID,
   HistogramGate,
   Point,
   PolygonGate,
@@ -15,6 +16,7 @@ import {
 
 import { pointInsidePolygon } from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
+import { ColorSchema } from "graph/utils/color";
 
 /*
     Public
@@ -162,15 +164,25 @@ const gateDFS = (
 
 export const getDatasetColors = (
   dataset: Dataset,
-  targets: PopulationGateType[],
+  populationGates: PopulationGateType[],
+  plotGates: GateID[],
   stdColor: Color = "#000"
-): string[] => {
+): ColorSchema => {
+  if (populationGates.length === 0 && plotGates.length === 0) {
+    return new ColorSchema([stdColor]);
+  }
+  if (populationGates.length === 1 && plotGates.length === 0) {
+    return new ColorSchema([getGate(populationGates[0].gate).color]);
+  }
+  const nPlotGates = plotGates.map((e) => {
+    return { gate: e, inverseGating: false } as PopulationGateType;
+  });
   const colors: string[] = [];
   const axes = Object.keys(dataset);
   axesLookup = {};
   axes.forEach((e, i) => (axesLookup[e] = i));
   const dataLength = dataset[axes[0]].length;
-  const gates = targets;
+  const gates = [...populationGates, ...nPlotGates];
 
   for (let i = 0; i < dataLength; i++) {
     let ans = { depth: 0, color: stdColor };
@@ -188,7 +200,8 @@ export const getDatasetColors = (
     }
     colors.push(ans.color);
   }
-  return colors;
+  const colorSchema = new ColorSchema(colors);
+  return colorSchema;
 };
 
 const getDatasetFilteredPointsCache = new Map<

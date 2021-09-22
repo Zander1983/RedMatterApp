@@ -1,4 +1,4 @@
-import { generateColor } from "graph/utils/color";
+import { ColorSchema, generateColor } from "graph/utils/color";
 import FCSServices from "services/FCSServices/FCSServices";
 import {
   AxisName,
@@ -422,15 +422,17 @@ export const getHistogramAxisData = (plot: Plot): Float32Array => {
 
 export const getXandYDataAndColors = (
   plot: Plot
-): { points: [Float32Array, Float32Array]; colors: string[] } => {
+): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  const plotGates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const colors = getDatasetColors(dataset, plotGates);
+  const colors = getDatasetColors(
+    filteredPoints,
+    population.gates,
+    plot.gates,
+    "#000"
+  );
   return {
     points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
     colors,
@@ -457,17 +459,9 @@ export const getPlotFile = (plot: Plot): File => {
 
 export const getPointColors = (plot: Plot) => {
   const dataset = getDataset(getPlotFile(plot).id);
-  const gates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const populationGates = getPopulation(plot.population).gates.map((e) =>
-    getGate(e.gate)
-  );
-  const stdColor =
-    populationGates.length > 0
-      ? populationGates[populationGates.length - 1].color
-      : "#000";
-  return getDatasetColors(dataset, gates, stdColor);
+  const plotGates = plot.gates;
+  const populationGates = getPopulation(plot.population).gates;
+  return getDatasetColors(dataset, populationGates, plotGates, "#000");
 };
 
 export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
