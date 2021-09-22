@@ -84,7 +84,7 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
       let plot: Plot;
       let sampleUri = samples[i]["DataSet"]["_attributes"]["uri"];
       let sampleUrlArray = sampleUri.split("/");
-      let sampleName = sampleUri[sampleUrlArray.length - 1];
+      let sampleName = sampleUrlArray[sampleUrlArray.length - 1];
       sampleName = sampleName.replace("%20", "");
       let transformations = samples[i]["Transformations"];
       let channelsInfo: any = [];
