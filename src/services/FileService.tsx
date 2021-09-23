@@ -4,7 +4,7 @@ import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getFile, getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
-import { createFile } from "graph/resources/files";
+import { commitFileChange, createFile } from "graph/resources/files";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
@@ -68,6 +68,10 @@ export const downloadFileEvent = async (
   if (fileQuery.length > 0 && fileQuery[0].downloaded) {
     throw Error("File already downloaded");
   }
+  let donwloadingFile: File = getFile(fileId);
+  donwloadingFile.downloading = true;
+  debugger;
+  await commitFileChange(donwloadingFile);
   let response;
   if (workspaceIsShared) {
     response = await axios.post(
@@ -97,6 +101,7 @@ export const downloadFileEvent = async (
   });
   newFile = { ...newFile, ...getFile(fileId) };
   newFile.downloaded = true;
+  newFile.downloading = false;
   store.dispatch({
     type: "workspace.UPDATE_FILE",
     payload: { file: newFile },

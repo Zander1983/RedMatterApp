@@ -9,7 +9,7 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
-import { getFile, getWorkspace } from "graph/utils/workspace";
+import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
 import { store } from "redux/store";
 
 const useStyles = makeStyles((theme) => ({
@@ -62,22 +62,31 @@ const AddFileModal = React.memo(
     const classes = useStyles();
 
     const filesMetadata = props.files;
-
+    const files = getAllFiles();
     const [onHover, setOnHover] = React.useState(-1);
 
     const [downloading, setDowloading] = useState<FileID[]>([]);
 
     const downloadFile = async (fileId: string) => {
-      setDowloading(downloading.concat(fileId));
+      // setDowloading(downloading.concat(fileId));
       const file = await downloadFileEvent(
         props.isShared,
         fileId,
         props.experimentId
       );
-      setDowloading(downloading.filter((e) => e !== fileId));
       await PlotResource.createNewPlotFromFile(getFile(file));
       props.closeCall.f(props.closeCall.ref);
     };
+
+    useEffect(() => {
+      debugger;
+      let downloadingFiles: File[] = files.filter((x) => x.downloading);
+      let downloadingFileIds: string[] = [];
+      if (downloadingFiles && downloadingFiles.length > 0) {
+        downloadingFileIds = downloadingFiles.map((x) => x.id);
+      }
+      setDowloading(downloadingFileIds);
+    }, [props.files]);
 
     const downloadAll = () => {
       let files = filesMetadata.map((e) => e.id);

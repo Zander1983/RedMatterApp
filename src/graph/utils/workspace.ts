@@ -28,6 +28,11 @@ export const getFile = (fileID: FileID): File => {
   return files[0];
 };
 
+export const getAllFiles = (): Array<File> => {
+  const workspace = getWorkspace();
+  return workspace.files;
+};
+
 export const getPlot = (plotID: PlotID): Plot => {
   const workspace = getWorkspace();
   const plots = workspace.plots.filter((plot) => plot.id === plotID);

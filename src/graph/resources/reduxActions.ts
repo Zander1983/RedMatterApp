@@ -109,6 +109,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         if (e.id === updateFile.id) return { ...e, ...updateFile };
         else return e;
       });
+      debugger;
       return {
         ...state,
         files: state.files,

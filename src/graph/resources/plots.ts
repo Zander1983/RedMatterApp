@@ -82,7 +82,6 @@ export const createBlankPlotObj = (): Plot => {
     axisPlotTypes: {},
     gates: [],
     histogramOverlays: [],
-    histogramBarOverlays: [],
     population: "",
     xAxis: "",
     yAxis: "",
@@ -149,56 +148,31 @@ export const getPlotOverlays = (plot: Plot) => {
 
 export const addOverlay = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  color: string,
+  plotId: string,
+  plotSource: string,
+  plotType: string,
+  fileId: string = ""
 ) => {
   if (!color) color = generateColor();
   plot.histogramOverlays.push({
     color: color,
     plotId: plotId,
     plotSource: plotSource,
+    plotType: plotType,
+    fileId: fileId,
   });
   commitPlotChange(plot);
 };
 
-export const addBarOverlay = (
+export const removeOverlay = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  targetPlotId: String,
+  type: string
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramBarOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
-  commitPlotChange(plot);
-};
-
-export const removeBarOverlay = (plot: Plot, overlayPlot: PlotID) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== overlayPlot
-  );
-  commitPlotChange(plot);
-};
-
-export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== targetPopulation
-  );
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (x) => x.plotId !== targetPopulation
+    (e) => e.plotId !== targetPlotId && e.plotType !== type
   );
-  commitPlotChange(plot);
-};
-
-export const removeOverlay = (plot: Plot, targetPlot: string) => {
-  plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlot
-  );
-
   commitPlotChange(plot);
 };
 
