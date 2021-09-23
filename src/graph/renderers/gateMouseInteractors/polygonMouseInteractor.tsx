@@ -34,8 +34,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   plotter: ScatterPlotter | null = null;
   plugin: ScatterPolygonGatePlotter;
 
-  private lastGateUpdate: Date = new Date();
-
   private points: Point[] = [];
   xAxis: string;
   yAxis: string;
@@ -57,51 +55,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plugin.setGatingState(state);
   }
 
-  editGateEvent(type: string, mouse: Point) {
-    if (this.started) return;
-    this.lastMousePos = this.plugin.lastMousePos = mouse;
-    if (
-      this.targetEditGate === null &&
-      type === "mousedown" &&
-      !this.started &&
-      !this.isDraggingGate
-    ) {
-      this.detectPointsClicked(mouse);
-    } else if (this.targetEditGate !== null && type === "mouseup") {
-      // Reset gates and points on mouseup
-      this.reset();
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingVertex &&
-      !this.isDraggingGate
-    ) {
-      // Detect point selected and moved
-      this.pointMoveToMousePosition(mouse);
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingGate &&
-      !this.isDraggingVertex
-    ) {
-      // Detect gate selected and moved
-      this.gateMoveToMousePosition(mouse);
-    }
-
-    if (
-      type === "mousedown" &&
-      this.plotter.gates.length > 0 &&
-      !this.isDraggingVertex
-    ) {
-      this.detectGatesClicked(mouse);
-    }
-
-    if (type === "mouseup" && this.isDraggingVertex)
-      this.isDraggingVertex = false;
-    else if (type === "mouseup" && this.isDraggingGate)
-      this.isDraggingGate = false;
-  }
-
   private validateGateOnSpace(gate: PolygonGate) {
     return (
       gate.xAxis === this.plotter.plot.xAxis &&
@@ -111,7 +64,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     );
   }
 
-  private detectGatesClicked(mouse: Point) {
+  protected detectGatesClicked(mouse: Point) {
     const abstractMouse = this.plotter.transformer.toAbstractPoint(
       { ...mouse },
       true
@@ -134,7 +87,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       });
   }
 
-  private detectPointsClicked(mouse: Point) {
+  protected detectPointsClicked(mouse: Point) {
     this.plotter.gates.forEach((gate) => {
       if (gate.gateType === "polygon" && this.targetEditGate === null)
         gate.points.forEach((p, i) => {
@@ -158,7 +111,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     });
   }
 
-  private gateMoveToMousePosition(mouse: Point) {
+  protected gateMoveToMousePosition(mouse: Point) {
     const gatePivot = this.plotter.transformer.toConcretePoint(
       {
         ...this.gatePivot,
@@ -196,7 +149,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.gateUpdater(gateState);
   }
 
-  private pointMoveToMousePosition(mouse: Point) {
+  protected pointMoveToMousePosition(mouse: Point) {
     const gateState = this.targetEditGate;
     gateState.points[this.targetPointIndex] = {
       ...gateState.points[this.targetPointIndex],
@@ -206,43 +159,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         this.plotter.transformer.toAbstractPoint(mouse)
       );
     this.gateUpdater(gateState);
-  }
-
-  private reset() {
-    this.isDraggingVertex = false;
-    this.targetEditGate = null;
-    this.targetPointIndex = null;
-  }
-
-  private updateInterval = 20; // miliseconds
-  private currentInterval: NodeJS.Timeout = null;
-  private latest: Gate | null = null;
-  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate },
-      });
-      this.lastGateUpdate = new Date();
-    }
   }
 
   protected instanceGate(): PolygonGate {

@@ -2,7 +2,6 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import { Gate, Point } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { getPlot } from "graph/utils/workspace";
 import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 
@@ -27,6 +26,18 @@ export default abstract class GateMouseInteractor {
   xAxis: string;
   yAxis: string;
   plotter: ScatterPlotter | HistogramPlotter | null = null;
+  isDraggingVertex: boolean = false;
+  isDraggingGate: boolean = false;
+  gatePivot: Point;
+
+  targetEditGate: Gate | null = null;
+  targetPointIndex: number | null = null;
+
+  private lastGateUpdate: Date = new Date();
+
+  private updateInterval = 20; // miliseconds
+  private currentInterval: NodeJS.Timeout = null;
+  private latest: Gate | null = null;
 
   setMouseInteractorState(state: MouseInteractorState) {
     this.rerender = state.rerender;
@@ -73,7 +84,10 @@ export default abstract class GateMouseInteractor {
   protected abstract instanceGate(): Gate;
   protected abstract clearGateState(): void;
   protected abstract gateEvent(type: string, point: Point): void;
-  protected abstract editGateEvent(type: string, point: Point): void;
+  protected abstract detectPointsClicked(mouse: Point): void;
+  protected abstract pointMoveToMousePosition(mouse: Point): void;
+  protected abstract gateMoveToMousePosition(mouse: Point): void;
+  protected abstract detectGatesClicked(mouse: Point): void;
 
   async createAndAddGate() {
     const gate = this.instanceGate();
@@ -112,6 +126,82 @@ export default abstract class GateMouseInteractor {
         this.rerenderLastTimestamp = now;
         this.rerender();
       }
+    }
+  }
+
+  editGateEvent(type: string, mouse: Point) {
+    if (this.started) return;
+    this.lastMousePos = this.plugin.lastMousePos = mouse;
+
+    if (
+      this.targetEditGate === null &&
+      type === "mousedown" &&
+      !this.started &&
+      !this.isDraggingGate
+    ) {
+      this.detectPointsClicked(mouse);
+    } else if (this.targetEditGate !== null && type === "mouseup") {
+      this.reset();
+    } else if (
+      this.targetEditGate !== null &&
+      type === "mousemove" &&
+      this.isDraggingVertex &&
+      !this.isDraggingGate
+    ) {
+      this.pointMoveToMousePosition(mouse);
+    } else if (
+      this.targetEditGate !== null &&
+      type === "mousemove" &&
+      this.isDraggingGate &&
+      !this.isDraggingVertex
+    ) {
+      this.gateMoveToMousePosition(mouse);
+    }
+    if (
+      type === "mousedown" &&
+      this.plotter.gates.length > 0 &&
+      !this.isDraggingVertex
+    ) {
+      this.detectGatesClicked(mouse);
+    }
+
+    if (type === "mouseup" && this.isDraggingVertex)
+      this.isDraggingVertex = false;
+    else if (type === "mouseup" && this.isDraggingGate)
+      this.isDraggingGate = false;
+  }
+
+  private reset() {
+    this.isDraggingVertex = false;
+    this.targetEditGate = null;
+    this.targetPointIndex = null;
+  }
+
+  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
+    if (fromTimout) this.currentInterval = null;
+    if (
+      this.lastGateUpdate.getTime() + this.updateInterval >
+      new Date().getTime()
+    ) {
+      if (this.currentInterval === null) {
+        const waitUntilCurrentCycleTimesOut =
+          this.lastGateUpdate.getTime() +
+          this.updateInterval -
+          new Date().getTime() +
+          1;
+        this.currentInterval = setTimeout(
+          () => this.gateUpdater(this.latest, true),
+          waitUntilCurrentCycleTimesOut
+        );
+      } else {
+        this.latest = gate;
+      }
+    } else if (gate !== null) {
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate },
+      });
+      this.lastGateUpdate = new Date();
     }
   }
 }
