@@ -181,9 +181,6 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 
   render() {
-    console.log(
-      `Workspace rendered for the ${++PlotController.renderCalls} time`
-    );
     let plotGroups: any = {};
     for (const plot of this.props.workspace.plots) {
       try {

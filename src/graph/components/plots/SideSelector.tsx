@@ -124,7 +124,6 @@ function PlotComponent(props: {
   };
 
   const setHistogram = (axis: "x" | "y", value: boolean) => {
-    console.log(axis, value);
     if (value) {
       axis === "x"
         ? setOldAxis({ ...oldAxis, y: yAxis })
@@ -151,16 +150,12 @@ function PlotComponent(props: {
     stopHist: boolean = false
   ) => {
     const otherAxisValue = axis === "x" ? yAxis : xAxis;
-    console.log("set axis", axis, value, stopHist);
     if (value === otherAxisValue && !isPlotHistogram()) {
-      console.log('setHistogram(axis === "x" ? "y" : "x", true)');
       setHistogram(axis === "x" ? "y" : "x", true);
     } else if (isPlotHistogram() && !stopHist) {
-      console.log("set x and y same axis");
       PlotResource.setXAxis(plot, value);
       PlotResource.setYAxis(plot, value);
     } else {
-      console.log("set only", axis);
       axis === "x"
         ? PlotResource.setXAxis(plot, value)
         : PlotResource.setYAxis(plot, value);
@@ -179,9 +174,9 @@ function PlotComponent(props: {
       setLastSelectEvent(new Date().getTime());
     }
 
-    if (plot.histogramAxis === "horizontal") {
+    if (plot.histogramAxis === "vertical") {
       setHistogram("x", true);
-    } else if (plot.histogramAxis === "vertical") {
+    } else if (plot.histogramAxis === "horizontal") {
       setHistogram("y", true);
     }
   };
@@ -661,7 +656,7 @@ function PlotComponent(props: {
               setAxis("y", e.target.value);
             });
           }}
-          disabled={plot.histogramAxis === "vertical"}
+          disabled={isAxisDisabled("y")}
           value={yAxis}
         >
           {axes.map((e: any) => (
@@ -721,11 +716,11 @@ function PlotComponent(props: {
                   handleHist("x");
                   return;
                 }
-                handleSelectEvent(e, "x", (e: any) =>
-                  setAxis("x", e.target.value)
-                );
+                handleSelectEvent(e, "x", (e: any) => {
+                  setAxis("x", e.target.value);
+                });
               }}
-              disabled={plot.histogramAxis === "horizontal"}
+              disabled={isAxisDisabled("x")}
               value={xAxis}
             >
               {Object.keys(getPopulation(plot.population).defaultRanges).map(
