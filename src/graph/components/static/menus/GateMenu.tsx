@@ -62,7 +62,6 @@ export default function GateMenu(props: { gates: Gate[] }) {
   };
 
   const applyGateToAllFiles = async (gate: Gate) => {
-    let downloadSnackbar = false;
     await dowloadAllFileEvents();
     let files = getWorkspace().files;
     const plots = getWorkspace().plots;
@@ -80,13 +79,17 @@ export default function GateMenu(props: { gates: Gate[] }) {
 
     for (const file of files) {
       const population = createPopulation({ file: file.id });
-      const plot = createPlot({ population });
       population.gates = [
         {
           inverseGating: false,
           gate: gate.id,
         },
       ];
+      await store.dispatch({
+        type: "workspace.ADD_POPULATION",
+        payload: { population },
+      });
+      const plot = createPlot({ population });
       if (gate.gateType === "polygon") {
         plot.xAxis = (gate as PolygonGate).xAxis;
         plot.yAxis = (gate as PolygonGate).yAxis;
@@ -100,10 +103,6 @@ export default function GateMenu(props: { gates: Gate[] }) {
         plot.yPlotType = (gate as HistogramGate).axisType;
         plot.histogramAxis = "vertical";
       }
-      await store.dispatch({
-        type: "workspace.ADD_POPULATION",
-        payload: { population },
-      });
       await store.dispatch({
         type: "workspace.ADD_PLOT",
         payload: { plot },
