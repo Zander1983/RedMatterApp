@@ -4,6 +4,8 @@ import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
+import { createPopulation } from "graph/resources/populations";
+import { getPopulation } from "graph/utils/workspace";
 
 export interface GateState {
   lastMousePos: Point;
@@ -33,7 +35,10 @@ export default abstract class GateMouseInteractor {
   targetEditGate: Gate | null = null;
   targetPointIndex: number | null = null;
 
+  private lastMouseAction: string = "";
   private lastGateUpdate: Date = new Date();
+  private lastGateMouseClick: Date = new Date();
+  private doubleClickTimeBounds = 500; //ms
 
   private updateInterval = 20; // miliseconds
   private currentInterval: NodeJS.Timeout = null;
@@ -111,6 +116,30 @@ export default abstract class GateMouseInteractor {
     this.end();
   }
 
+  async clonePlotWithSelectedGate(gate: Gate) {
+    const originPlot = this.plotter.plot;
+    let newPopulation = createPopulation({
+      clonePopulation: getPopulation(originPlot.population),
+    });
+    newPopulation.gates = [
+      ...newPopulation.gates,
+      { gate: gate.id, inverseGating: false },
+    ];
+    await store.dispatch({
+      type: "workspace.ADD_POPULATION",
+      payload: { population: newPopulation },
+    });
+    let newPlot = PlotResource.createPlot({
+      clonePlot: originPlot,
+      population: newPopulation,
+    });
+    newPlot.gates = [];
+    store.dispatch({
+      type: "workspace.ADD_PLOT",
+      payload: { plot: newPlot },
+    });
+  }
+
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
     const p = { x, y };
@@ -131,29 +160,38 @@ export default abstract class GateMouseInteractor {
 
   editGateEvent(type: string, mouse: Point) {
     if (this.started) return;
-    this.lastMousePos = this.plugin.lastMousePos = mouse;
 
-    if (
-      this.targetEditGate === null &&
+    const withinDoubleClickBounds =
+      new Date().getTime() - this.lastGateMouseClick.getTime() <
+      this.doubleClickTimeBounds;
+
+    const foundTarget = this.targetEditGate !== null;
+    this.lastMousePos = this.plugin.lastMousePos = mouse;
+    if (type === "mousedown" && foundTarget && withinDoubleClickBounds) {
+      this.clonePlotWithSelectedGate(this.targetEditGate);
+    } else if (
+      !foundTarget &&
       type === "mousedown" &&
       !this.started &&
       !this.isDraggingGate
     ) {
       this.detectPointsClicked(mouse);
-    } else if (this.targetEditGate !== null && type === "mouseup") {
-      this.reset();
+    } else if (foundTarget && type === "mouseup") {
+      setTimeout(() => this.reset(), this.doubleClickTimeBounds);
     } else if (
-      this.targetEditGate !== null &&
+      foundTarget &&
       type === "mousemove" &&
       this.isDraggingVertex &&
-      !this.isDraggingGate
+      !this.isDraggingGate &&
+      this.lastMouseAction !== "mouseup"
     ) {
       this.pointMoveToMousePosition(mouse);
     } else if (
-      this.targetEditGate !== null &&
+      foundTarget &&
       type === "mousemove" &&
       this.isDraggingGate &&
-      !this.isDraggingVertex
+      !this.isDraggingVertex &&
+      this.lastMouseAction !== "mouseup"
     ) {
       this.gateMoveToMousePosition(mouse);
     }
@@ -163,12 +201,15 @@ export default abstract class GateMouseInteractor {
       !this.isDraggingVertex
     ) {
       this.detectGatesClicked(mouse);
+      if (this.targetEditGate !== null) this.lastGateMouseClick = new Date();
     }
 
     if (type === "mouseup" && this.isDraggingVertex)
       this.isDraggingVertex = false;
     else if (type === "mouseup" && this.isDraggingGate)
       this.isDraggingGate = false;
+
+    if (type !== "mousemove") this.lastMouseAction = type;
   }
 
   private reset() {
