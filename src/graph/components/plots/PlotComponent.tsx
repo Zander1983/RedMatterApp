@@ -57,20 +57,29 @@ const PlotComponent = React.memo(
         ref={displayRef}
       >
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
-          <MainBar plot={plot}></MainBar>
-          <GateBar
-            plotId={plot.id}
-            plotGates={plot.gates.map((e) => getGate(e))}
-            populationGates={population.gates.map((e) => {
-              return {
-                gate: getGate(e.gate),
-                inverseGating: e.inverseGating,
-              };
-            })}
-          ></GateBar>
-
-          <Divider style={{ marginBottom: 5 }}></Divider>
+          <Grid
+            container
+            direction="row"
+            style={{
+              gap: 5,
+            }}
+          >
+            <MainBar plot={plot}></MainBar>
+            <GateBar
+              plotId={plot.id}
+              plotGates={plot.gates.map((e) => getGate(e))}
+              populationGates={population.gates.map((e) => {
+                return {
+                  gate: getGate(e.gate),
+                  inverseGating: e.inverseGating,
+                };
+              })}
+            ></GateBar>
+          </Grid>
         </div>
+        <Divider
+          style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
+        ></Divider>
 
         <SideSelector
           {...props}

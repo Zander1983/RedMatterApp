@@ -124,6 +124,7 @@ function PlotComponent(props: {
   };
 
   const setHistogram = (axis: "x" | "y", value: boolean) => {
+    console.log(axis, value);
     if (value) {
       axis === "x"
         ? setOldAxis({ ...oldAxis, y: yAxis })
@@ -150,17 +151,19 @@ function PlotComponent(props: {
     stopHist: boolean = false
   ) => {
     const otherAxisValue = axis === "x" ? yAxis : xAxis;
+    console.log("set axis", axis, value, stopHist);
     if (value === otherAxisValue && !isPlotHistogram()) {
+      console.log('setHistogram(axis === "x" ? "y" : "x", true)');
       setHistogram(axis === "x" ? "y" : "x", true);
+    } else if (isPlotHistogram() && !stopHist) {
+      console.log("set x and y same axis");
+      PlotResource.setXAxis(plot, value);
+      PlotResource.setYAxis(plot, value);
     } else {
-      if (isPlotHistogram() && !stopHist) {
-        PlotResource.setXAxis(plot, value);
-        PlotResource.setYAxis(plot, value);
-      } else {
-        axis === "x"
-          ? PlotResource.setXAxis(plot, value)
-          : PlotResource.setYAxis(plot, value);
-      }
+      console.log("set only", axis);
+      axis === "x"
+        ? PlotResource.setXAxis(plot, value)
+        : PlotResource.setYAxis(plot, value);
     }
   };
 

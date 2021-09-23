@@ -159,7 +159,7 @@ const PlotRenderer = React.memo(
         height: plot.plotHeight,
         scale: plot.plotScale,
         direction: plot.histogramAxis,
-        gates: props.plotGates,
+        gates: props.plot.gates.map((e) => getGate(e)),
         xRange: ranges.x,
         yRange: ranges.y,
       };

@@ -102,7 +102,7 @@ export default function MainBar(props: { plot: Plot }) {
   // };
 
   return (
-    <Grid container direction="row" xs={12} item style={classes.main}>
+    <Grid direction="row" style={classes.main}>
       <RangeResizeModal
         open={openResize}
         closeCall={{
@@ -158,7 +158,7 @@ export default function MainBar(props: { plot: Plot }) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            height: "1.7rem",
+            height: "2rem",
           }}
         >
           <CancelIcon
@@ -188,7 +188,7 @@ export default function MainBar(props: { plot: Plot }) {
             style={{
               flex: 1,
               color: "white",
-              height: "1.7rem",
+              height: "2rem",
               fontSize: "12",
               backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
             }}
@@ -223,7 +223,7 @@ export default function MainBar(props: { plot: Plot }) {
             size="small"
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",
@@ -264,7 +264,7 @@ export default function MainBar(props: { plot: Plot }) {
             size="small"
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",
@@ -316,7 +316,7 @@ export default function MainBar(props: { plot: Plot }) {
             }}
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",
