@@ -118,16 +118,25 @@ export const downloadFileEvent = async (
 
 export const dowloadAllFileEvents = async (
   workspaceIsShared?: boolean,
-  experimentId?: string
+  experimentId?: string,
+  batch?: string[]
 ) => {
   const notification = new Notification("Dowloading files");
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
-  const workspace = getWorkspace();
-  const files = workspace.files
-    .filter((e) => e.downloaded === false)
-    .map((e) => e.id);
+  let files: string[] = [];
+  if (batch) {
+    const workspace = getWorkspace();
+    files = workspace.files
+      .filter((e) => e.downloaded === false && batch.includes(e.id))
+      .map((e) => e.id);
+  } else {
+    const workspace = getWorkspace();
+    files = workspace.files
+      .filter((e) => e.downloaded === false)
+      .map((e) => e.id);
+  }
   const promises: Promise<any>[] = [];
   for (const file of files) {
     promises.push(

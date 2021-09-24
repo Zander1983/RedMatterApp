@@ -146,8 +146,11 @@ const loadSavedWorkspace = async (
   experimentId: string
 ) => {
   const notification = new Notification("Loading workspace");
-  await dowloadAllFileEvents(shared, experimentId);
   const workspaceObj = JSON.parse(workspace);
+  const files = workspaceObj?.files
+    ? workspaceObj.files.map((e: any) => e.id)
+    : [];
+  await dowloadAllFileEvents(shared, experimentId, files);
   const newWorkspace = {
     ...workspaceObj,
     files: getWorkspace().files,
