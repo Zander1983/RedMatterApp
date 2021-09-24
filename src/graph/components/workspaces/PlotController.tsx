@@ -84,15 +84,40 @@ export const setCanvasSize = (save: boolean = false) => {
     });
 };
 
-const standardGridPlotItem = (index: number, plotData: any) => {
+const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
+  let widthUsed = 0;
+  let maxWidth = MINW * 4;
+  for (let i = 0; i <= index; i++) {
+    let plot = plots[i];
+    if (index != i) widthUsed += plot.dimensions.w;
+    let factor = maxWidth * ((i + 1) / 4) - widthUsed;
+    if ((i + 1) % 4 == 0 && factor > 0) {
+      widthUsed = widthUsed + factor;
+    }
+  }
+
   let x = plotData.positions.x;
   let y = plotData.positions.y;
   let w = plotData.dimensions.w;
   let h = plotData.dimensions.h;
+  let newy = y;
+  let newX = x;
+
+  if (index > 0) {
+    if (x == 0) {
+      newy = widthUsed / maxWidth;
+      if (newy >= 1) {
+        newX = widthUsed - maxWidth * newy;
+      } else newX = widthUsed;
+    }
+    if (y == 0) {
+      newy = widthUsed / maxWidth;
+    }
+  }
 
   return {
-    x: x < 0 ? (index * 10) % 30 : x,
-    y: y < 0 ? 100 : y,
+    x: newX,
+    y: newy,
     w: w,
     h: h,
     minW: MINW,
@@ -249,7 +274,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                           <div
                             key={plot.id}
                             style={classes.itemOuterDiv}
-                            data-grid={standardGridPlotItem(i, plot)}
+                            data-grid={standardGridPlotItem(i, plot, plots)}
                             id={`workspace-outter-${plot.id}`}
                           >
                             <div id="inner" style={classes.itemInnerDiv}>

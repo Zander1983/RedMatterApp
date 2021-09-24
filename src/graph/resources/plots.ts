@@ -218,8 +218,8 @@ export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
     y: -1,
   };
   newPlot.dimensions = {
-    w: 10,
-    h: 12,
+    w: MINW,
+    h: MINH,
   };
   store.dispatch({
     type: "workspace.ADD_PLOT",
