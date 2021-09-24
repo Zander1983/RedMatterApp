@@ -65,7 +65,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
         x2: pp.x * scale,
         y2: pp.y * scale,
         lineWidth: 2,
-        strokeColor: "#f00",
+        strokeColor: gate.color,
       });
     }
   }

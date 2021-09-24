@@ -247,6 +247,8 @@ const WorkspaceInnerComponent = (props: {
     Debounce(() => saveWorkspace(), 5000);
   }
 
+  console.log("Workspace rerendered");
+
   return (
     <div
       style={{

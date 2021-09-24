@@ -171,6 +171,7 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // dispatch({

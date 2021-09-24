@@ -156,4 +156,5 @@ export interface PlotSpecificWorkspaceData {
   file: File;
   plot: Plot;
   population: Population;
+  key: string; // react won't shut up about each prop list item having a key
 }

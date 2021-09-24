@@ -69,7 +69,9 @@ const PlotRenderer = React.memo(
       }
 
       setPlotterState(selectedPlotter);
-      selectedPlotter.draw();
+      (() => {
+        selectedPlotter.draw();
+      })();
       const gatingType = plot.gatingActive;
       if (lastGatingType !== gatingType) {
         const isHistogram = plot.xAxis === plot.yAxis;

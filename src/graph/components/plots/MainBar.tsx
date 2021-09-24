@@ -102,7 +102,7 @@ export default function MainBar(props: { plot: Plot }) {
   // };
 
   return (
-    <Grid direction="row" style={classes.main}>
+    <Grid direction="row" style={classes.main} container>
       <RangeResizeModal
         open={openResize}
         closeCall={{

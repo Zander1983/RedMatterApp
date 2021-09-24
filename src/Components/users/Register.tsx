@@ -1,5 +1,3 @@
-//@ts-ignore
-import ReCAPTCHA from "react-google-recaptcha";
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Link, useHistory } from "react-router-dom";
@@ -72,12 +70,6 @@ const Register = (props: any) => {
 
   useEffect(() => {}, [isLocationSelected]);
 
-  function onChangeCaptcha(value: any) {
-    setFormData((prevData: any) => {
-      return { ...prevData, g_recaptcha_response: value };
-    });
-  }
-
   const handleSubmit = async () => {
     setLoading(true);
     if (formData.location === "") {
@@ -136,7 +128,7 @@ const Register = (props: any) => {
             handleSubmit();
           }}
         >
-          {joiningOrg == false ? (
+          {joiningOrg === false ? (
             <TextValidator
               style={{ marginTop: 30, backgroundColor: "white" }}
               className={classes.textFieldWidth}
@@ -219,7 +211,7 @@ const Register = (props: any) => {
           />
 
           {joiningOrg === false ? (
-            <a
+            <button
               onClick={() => {
                 setJoiningOrg(true);
                 setFormData({
@@ -234,7 +226,7 @@ const Register = (props: any) => {
               style={{ textAlign: "left", color: "#008" }}
             >
               I'm here to join my organisation
-            </a>
+            </button>
           ) : null}
 
           {joiningOrg === false ? null : (
@@ -255,7 +247,7 @@ const Register = (props: any) => {
                 errorMessages={["Organisation is required"]}
               />
 
-              <a
+              <button
                 onClick={() => {
                   setJoiningOrg(false);
                   setFormData({
@@ -267,10 +259,10 @@ const Register = (props: any) => {
                     g_recaptcha_response: formData.g_recaptcha_response,
                   });
                 }}
-                style={{ textAlign: "left", color: "#008" }}
+                style={{ color: "#008" }}
               >
                 I do not have an organisation to join.
-              </a>
+              </button>
             </div>
           )}
 
@@ -307,7 +299,6 @@ const Register = (props: any) => {
               type="submit"
               style={{
                 height: 50,
-                marginRight: 20,
                 width: 170,
                 backgroundColor: "#66a",
                 color: "white",
@@ -330,7 +321,7 @@ const Register = (props: any) => {
         </ValidatorForm>
         <div>
           <Link to="/login">
-            <h3 style={{ marginLeft: -21, marginTop: 10, color: "#008" }}>
+            <h3 style={{ marginTop: 10, color: "#008" }}>
               Already registred? Sign In
             </h3>
           </Link>

@@ -136,7 +136,11 @@ const PopulationSelectorGateBar = React.memo(
             {allGates
               .filter((e) => !gateInPlotGates(e.id))
               .map((e) => {
-                return <MenuItem value={e.id}>{e.name}</MenuItem>;
+                return (
+                  <MenuItem value={e.id} key={e.id}>
+                    {e.name}
+                  </MenuItem>
+                );
               })}
           </Select>
         </Tooltip>

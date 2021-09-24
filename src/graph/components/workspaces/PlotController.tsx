@@ -176,6 +176,7 @@ class PlotController extends React.Component<PlotControllerProps> {
       gates,
       plot,
       population,
+      key: plot.id,
     };
     return workspaceForPlot;
   }

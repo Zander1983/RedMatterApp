@@ -53,6 +53,7 @@ const PlotComponent = React.memo(
     return (
       <div
         id={`display-ref-${plotId}`}
+        key={`display-ref-${plotId}`}
         style={classes.mainContainer}
         ref={displayRef}
       >
