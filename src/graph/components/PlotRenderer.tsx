@@ -15,7 +15,7 @@ import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygon
 import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
-import { getGate, getPlot } from "graph/utils/workspace";
+import { getGate, getPlot, getWorkspace } from "graph/utils/workspace";
 
 const plotterFactory = new PlotterFactory();
 
@@ -69,9 +69,7 @@ const PlotRenderer = React.memo(
       }
 
       setPlotterState(selectedPlotter);
-      (() => {
-        selectedPlotter.draw();
-      })();
+      selectedPlotter.draw();
       const gatingType = plot.gatingActive;
       if (lastGatingType !== gatingType) {
         const isHistogram = plot.xAxis === plot.yAxis;

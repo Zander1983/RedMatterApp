@@ -43,7 +43,7 @@ const PlotComponent = React.memo(
     sharedWorkspace: boolean;
     experimentId: string;
   }) => {
-    const { plot, file, gates, population } = props.plotRelevantResources;
+    const { plot, gates, population } = props.plotRelevantResources;
 
     const plotId = plot.id;
 

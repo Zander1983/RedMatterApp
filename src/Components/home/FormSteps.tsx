@@ -310,7 +310,7 @@ function FormFluorophores() {
         onChange={(e, list, reason, detail) => {
           let previous = store.getState().user.experiment.fluorophoresCategory;
           const option = detail.option.value;
-          if (reason === "remove-option") {
+          if (reason === "remove-option" && previous !== undefined) {
             previous = previous.split(",").filter((e: string) => e !== option);
             previous = previous.join(",");
             dispatch({

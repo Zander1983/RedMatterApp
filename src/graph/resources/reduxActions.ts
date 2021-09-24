@@ -1,6 +1,6 @@
 import { getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
-import { File, Gate, Plot, Population, Workspace } from "./types";
+import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
 
 export const graphActions = {
   RESET: "workspace.RESET",
@@ -21,10 +21,13 @@ export const graphActions = {
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
   SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
+  ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
+  DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
 };
 
 const initialState: Workspace = {
   id: "",
+  notifications: [],
   gates: [],
   files: [],
   plots: [],
@@ -177,6 +180,11 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         return state;
       }
       state.gates = state.gates.filter((e) => e.id !== deleteGate.id);
+      state.gates = state.gates.map((e) => {
+        e.children = e.children.filter((e) => e !== deleteGate.id);
+        e.parents = e.parents.filter((e) => e !== deleteGate.id);
+        return e;
+      });
       state.plots = state.plots.map((e) => {
         e.gates = e.gates.filter((e) => e !== deleteGate.id);
         return e;
@@ -217,6 +225,32 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...state,
         sharedWorkspace: action.payload.sharedWorkspace,
+      };
+
+    case graphActions.ADD_NOTIFICATION:
+      const newNotification: Notification = action.payload.notification;
+      if (state.notifications.find((e) => e.id === newNotification.id)) {
+        console.error(
+          "[workspace.ADD_NOTIFICATION] Notification already exists"
+        );
+      }
+      return {
+        ...state,
+        notifications: [...state.notifications, newNotification],
+      };
+
+    case graphActions.DELETE_NOTIFICATION:
+      const deleteNotification: Notification = action.payload.notification;
+      if (!state.notifications.find((e) => e.id === deleteNotification.id)) {
+        console.error(
+          "[workspace.DELETE_NOTIFICATION] Notification doesn't exist"
+        );
+      }
+      return {
+        ...state,
+        notifications: state.notifications.filter(
+          (e) => e.id !== deleteNotification.id
+        ),
       };
 
     default:

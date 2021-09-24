@@ -35,6 +35,8 @@ export default abstract class GateMouseInteractor {
   targetEditGate: Gate | null = null;
   targetPointIndex: number | null = null;
 
+  intervalSet: any = null;
+
   private lastMouseAction: string = "";
   private lastGateUpdate: Date = new Date();
   private lastGateMouseClick: Date = new Date();
@@ -161,6 +163,11 @@ export default abstract class GateMouseInteractor {
   editGateEvent(type: string, mouse: Point) {
     if (this.started) return;
 
+    if (type === "mousedown" && this.intervalSet !== null) {
+      clearTimeout(this.intervalSet);
+      this.intervalSet = null;
+    }
+
     const withinDoubleClickBounds =
       new Date().getTime() - this.lastGateMouseClick.getTime() <
       this.doubleClickTimeBounds;
@@ -177,7 +184,10 @@ export default abstract class GateMouseInteractor {
     ) {
       this.detectPointsClicked(mouse);
     } else if (foundTarget && type === "mouseup") {
-      setTimeout(() => this.reset(), this.doubleClickTimeBounds);
+      this.intervalSet = setTimeout(
+        () => this.reset(),
+        this.doubleClickTimeBounds
+      );
     } else if (
       foundTarget &&
       type === "mousemove" &&
@@ -195,6 +205,7 @@ export default abstract class GateMouseInteractor {
     ) {
       this.gateMoveToMousePosition(mouse);
     }
+
     if (
       type === "mousedown" &&
       this.plotter.gates.length > 0 &&

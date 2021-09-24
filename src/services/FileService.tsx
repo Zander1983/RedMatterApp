@@ -5,6 +5,7 @@ import { getFile, getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
+import { Notification } from "services/NotificationService";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
@@ -58,8 +59,13 @@ export const downloadFileMetadata = async (
 export const downloadFileEvent = async (
   workspaceIsShared: boolean,
   fileId: string,
-  experimentId: string
+  experimentId: string,
+  showNotifications: boolean = true
 ): Promise<FileID> => {
+  let notification: Notification;
+  if (showNotifications) {
+    notification = new Notification("Dowloading file");
+  }
   const workspace = getWorkspace();
   const fileQuery = workspace.files.filter((e) => e.id === fileId);
   if (fileQuery.length > 1) {
@@ -90,6 +96,9 @@ export const downloadFileEvent = async (
       }
     );
   }
+  if (response.data[0].events.length > 5000) {
+    response.data[0].events = response.data[0].events.slice(0, 5000);
+  }
   const file = response.data[0];
   let newFile = await createFile({
     requestData: file,
@@ -101,6 +110,9 @@ export const downloadFileEvent = async (
     type: "workspace.UPDATE_FILE",
     payload: { file: newFile },
   });
+  if (showNotifications) {
+    notification.killNotification();
+  }
   return file.id;
 };
 
@@ -108,6 +120,7 @@ export const dowloadAllFileEvents = async (
   workspaceIsShared?: boolean,
   experimentId?: string
 ) => {
+  const notification = new Notification("Dowloading files");
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
@@ -117,7 +130,10 @@ export const dowloadAllFileEvents = async (
     .map((e) => e.id);
   const promises: Promise<any>[] = [];
   for (const file of files) {
-    promises.push(downloadFileEvent(workspaceIsShared, file, experimentId));
+    promises.push(
+      downloadFileEvent(workspaceIsShared, file, experimentId, false)
+    );
   }
-  await Promise.all(promises);
+  if (promises.length > 0) await Promise.all(promises);
+  notification.killNotification();
 };

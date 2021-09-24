@@ -42,6 +42,7 @@ import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
+import NotificationsOverlay from "../services/NotificationService";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -88,7 +89,36 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const WorkspaceInnerComponent = (props: {
+class ErrorBoundary extends React.Component {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    snackbarService.showSnackbar(error, errorInfo);
+  }
+
+  render() {
+    //@ts-ignore
+    if (this.state.hasError) {
+      return (
+        <Grid>
+          Something went wrong. These are your options: - Reload page - Delete
+          workspace
+        </Grid>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const WorkspaceComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
@@ -324,6 +354,7 @@ const WorkspaceInnerComponent = (props: {
 
       {/* == STATIC ELEMENTS == */}
       <SideMenus workspace={workspace}></SideMenus>
+      <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}
       <Grid
@@ -558,13 +589,6 @@ const WorkspaceInnerComponent = (props: {
       </Grid>
     </div>
   );
-};
-
-const WorkspaceComponent = (props: {
-  experimentId: string;
-  shared: boolean;
-}) => {
-  return <WorkspaceInnerComponent {...props} />;
 };
 
 export default WorkspaceComponent;
