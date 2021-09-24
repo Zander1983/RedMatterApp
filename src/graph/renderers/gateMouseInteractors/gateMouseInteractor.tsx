@@ -145,7 +145,11 @@ export default abstract class GateMouseInteractor {
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
     const p = { x, y };
-    if (this.plotter != null && this.plotter.gates.length > 0) {
+    if (
+      this.plotter != null &&
+      this.plotter.gates.length > 0 &&
+      !this.started
+    ) {
       this.editGateEvent(type, p);
     }
 
