@@ -8,8 +8,10 @@ import {
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { getFile, getGate, getPopulation } from "graph/utils/workspace";
 import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { createBlankPlotObj, createPlot } from "graph/resources/plots";
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
@@ -220,7 +222,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     // }
 
     this.globalMax = globlMax;
-    const barOverlays = this.plot.histogramBarOverlays;
+    const barOverlays = this.plot.histogramOverlays.filter(
+      (x) => x.plotType == COMMON_CONSTANTS.Bar
+    );
     let binsArray = [];
     let parentBinsArray: any[] = [];
     const population = getPopulation(this.plot.population);
@@ -229,23 +233,29 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         ? getGate(population.gates[0].gate).color
         : "";
 
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: this.mainBins.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
-
     // if (barOverlays) {
     //   for (let i = 0; i < barOverlays.length; i++) {
     //     if (!barOverlays[i]) continue;
-    //     let newPlotData;
+    //     let newPlotData = createBlankPlotObj();
     //     switch (barOverlays[i].plotSource) {
-    //       case COMMON_CONSTANTS.PLOT:
-    //         newPlotData = dataManager.getPlot(barOverlays[i].plotId);
-    //         break;
+    //       // case COMMON_CONSTANTS.PLOT:
+    //       //   newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+    //       //   break;
     //       case COMMON_CONSTANTS.FILE:
-    //         newPlotData = barOverlays[i].plot;
+    //         newPlotData.population = this.plot.population;
+    //         newPlotData.xAxis = this.plot.xAxis;
+    //         newPlotData.yAxis = this.plot.yAxis;
+    //         newPlotData.xPlotType = this.plot.xPlotType;
+    //         newPlotData.yPlotType = this.plot.yPlotType;
+    //         //     newPlotData.ranges[plot.xAxis] = [
+    //         //   parseFloat(xChannelInfo.rangeMin),
+    //         //   parseFloat(xChannelInfo.rangeMax),
+    //         // ];
+    //         // plot.ranges[plot.yAxis] = [
+    //         //   parseFloat(yChannelInfo.rangeMin),
+    //         //   parseFloat(yChannelInfo.rangeMax),
+    //         // ];
+    //         newPlotData = createPlot({ clonePlot: newPlotData });
     //         break;
     //     }
     //     const lastMax = newPlotData.getBins(

@@ -10,6 +10,7 @@ import {
   File,
   Population,
   Dataset,
+  HistogramOverlay,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -165,13 +166,30 @@ export const addOverlay = (
   commitPlotChange(plot);
 };
 
+export const changeOverlayType = (
+  plot: Plot,
+  targetPlotId: String,
+  fileId: String,
+  newType: string,
+  oldType: string
+) => {
+  let overlay: HistogramOverlay = plot.histogramOverlays.find(
+    (e) =>
+      (e.plotId == targetPlotId || e.fileId == fileId) && e.plotType == oldType
+  );
+  overlay.plotType = newType;
+  commitPlotChange(plot);
+};
+
 export const removeOverlay = (
   plot: Plot,
   targetPlotId: String,
+  fileId: String,
   type: string
 ) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlotId && e.plotType !== type
+    (e) =>
+      (e.plotId !== targetPlotId || e.fileId !== fileId) && e.plotType !== type
   );
   commitPlotChange(plot);
 };
@@ -192,8 +210,8 @@ export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
     y: -1,
   };
   newPlot.dimensions = {
-    w: 10,
-    h: 12,
+    w: MINW,
+    h: MINH,
   };
   store.dispatch({
     type: "workspace.ADD_PLOT",
