@@ -52,6 +52,17 @@ export const getPopulation = (populationID: PopulationID): Population => {
   return populations[0];
 };
 
+export const getPopulationFromFileId = (fileId: FileID): Population => {
+  const workspace = getWorkspace();
+  const populations = workspace.populations.filter(
+    (population) => population.file === fileId
+  );
+  if (populations.length === 0) throw Error("Population not found");
+  if (populations.length > 1)
+    throw Error("Multiple populations with ID = " + fileId);
+  return populations[0];
+};
+
 export const getGate = (gateID: GateID): Gate => {
   const workspace = getWorkspace();
   const gates = workspace.gates.filter((gate) => gate.id === gateID);

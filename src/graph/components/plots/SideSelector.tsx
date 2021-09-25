@@ -267,7 +267,7 @@ function PlotComponent(props: {
             );
           PlotResource.addOverlay(
             plot,
-            plotObj.color,
+            "",
             "",
             plotSource,
             plotType,
