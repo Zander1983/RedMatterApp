@@ -25,7 +25,7 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
 };
 
-const initialState: Workspace = {
+export const initialState: Workspace = {
   id: "",
   notifications: [],
   gates: [],

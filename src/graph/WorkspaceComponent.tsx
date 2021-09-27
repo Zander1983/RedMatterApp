@@ -43,6 +43,7 @@ import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay from "../services/NotificationService";
+import { initialState } from "./resources/reduxActions";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -590,5 +591,115 @@ const WorkspaceComponent = (props: {
     </div>
   );
 };
+
+type WorkspaceProps = {
+  experimentId: string;
+  shared: boolean;
+};
+
+class ErrorBoundary extends React.Component<WorkspaceProps> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.log("componentDidCatch");
+    console.log(error, errorInfo);
+    this.setState({
+      hasError: true,
+    });
+  }
+
+  render() {
+    //@ts-ignore
+    if (this.state.hasError) {
+      return (
+        <Grid
+          justify="center"
+          alignItems="center"
+          alignContent="center"
+          style={{
+            textAlign: "center",
+            width: "100%",
+            marginTop: 20,
+            justifyContent: "center",
+            justifyItems: "center",
+          }}
+        >
+          <h2>Sorry, there was an error on our end!</h2>
+          <br />
+          Here's what you can do to recover:
+          <br />
+          <br />
+          <Button
+            style={{ backgroundColor: "#66d", color: "white", width: 400 }}
+            onClick={() => window.location.reload()}
+          >
+            1. Reload the page
+          </Button>
+          <br />
+          <Button
+            style={{
+              backgroundColor: "#66d",
+              color: "white",
+              width: 400,
+              marginTop: 20,
+            }}
+            onClick={async () => {
+              snackbarService.showSnackbar("Clearing workspace...", "info");
+              await saveWorkspaceToRemote(
+                initialState,
+                this.props.shared,
+                this.props.experimentId
+              );
+              snackbarService.showSnackbar("Workspace cleared", "success");
+              window.location.reload();
+            }}
+          >
+            2. Clear the current workspace
+          </Button>
+          <br />
+          <Button
+            style={{
+              backgroundColor: "#66d",
+              color: "white",
+              width: 400,
+              marginTop: 20,
+            }}
+            onClick={() => {
+              document.location.href =
+                document.location.href.split("experiment")[0] + "experiments";
+            }}
+          >
+            3. Create a new workspace
+          </Button>
+        </Grid>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+class WorkspaceComponent extends React.Component<WorkspaceProps> {
+  render() {
+    return (
+      <ErrorBoundary
+        experimentId={this.props.experimentId}
+        shared={this.props.shared}
+      >
+        <WorkspaceInnerComponent
+          experimentId={this.props.experimentId}
+          shared={this.props.shared}
+        />
+      </ErrorBoundary>
+    );
+  }
+}
 
 export default WorkspaceComponent;
