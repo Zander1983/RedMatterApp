@@ -189,7 +189,7 @@ export const removeOverlay = (
   fileId: String
 ) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlotId && e.fileId !== fileId
+    (e) => e.fileId !== fileId
   );
   commitPlotChange(plot);
 };
