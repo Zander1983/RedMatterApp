@@ -148,7 +148,7 @@ const WorkspaceInnerComponent = (props: {
   const initializeWorkspace = async () => {
     try {
       await downloadFileMetadata(props.shared, props.experimentId);
-      //await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
+      await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
     } catch {}
     setAutosaveEnabled(true);
   };
