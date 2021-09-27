@@ -153,7 +153,8 @@ export const addOverlay = (
   plotId: string,
   plotSource: string,
   plotType: string,
-  fileId: string = ""
+  fileId: string = "",
+  populationId: string = ""
 ) => {
   if (!color) color = generateColor();
   plot.histogramOverlays.push({
@@ -162,6 +163,7 @@ export const addOverlay = (
     plotSource: plotSource,
     plotType: plotType,
     fileId: fileId,
+    populationId: populationId,
   });
   commitPlotChange(plot);
 };
@@ -184,12 +186,10 @@ export const changeOverlayType = (
 export const removeOverlay = (
   plot: Plot,
   targetPlotId: String,
-  fileId: String,
-  type: string
+  fileId: String
 ) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) =>
-      (e.plotId !== targetPlotId || e.fileId !== fileId) && e.plotType !== type
+    (e) => e.plotId !== targetPlotId && e.fileId !== fileId
   );
   commitPlotChange(plot);
 };

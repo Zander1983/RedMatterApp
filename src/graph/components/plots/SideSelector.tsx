@@ -17,11 +17,16 @@ import {
   PlotID,
   PlotSpecificWorkspaceData,
   PlotType,
+  Population,
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
+import {
+  commitPopulation,
+  createPopulation,
+} from "graph/resources/populations";
 
 const classes = {
   itemOuterDiv: {
@@ -64,7 +69,6 @@ function PlotComponent(props: {
   const yAxis = plot.yAxis;
   const axes = getFile(getPopulation(plot.population).file).axes;
   const files = getAllFiles();
-
   const displayRef = React.useRef();
   const barRef = React.useRef();
 
@@ -83,7 +87,7 @@ function PlotComponent(props: {
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
   const [filePlotIdDict, setFilePlotIdDict] = React.useState({});
-
+  const [filesMetadata, setFilesMetadata] = React.useState([]);
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
 
@@ -200,7 +204,8 @@ function PlotComponent(props: {
   }, [files]);
 
   useEffect(() => {
-    debugger;
+    let filteredFiles = files.filter((x) => x.id != file.id);
+    setFilesMetadata(filteredFiles);
     window.addEventListener("click", (e) => {
       let event: any = e.target;
       if (event && event.id !== "hist_overlay") {
@@ -217,7 +222,7 @@ function PlotComponent(props: {
 
   const isHistogramSelected = (plotId: string = "", fileId: string = "") => {
     let overlayPlot = plot.histogramOverlays.find(
-      (x) => x.plotId === plotId || x.fileId === fileId
+      (x) => x.plotId === plotId && x.fileId === fileId
     );
 
     return overlayPlot ? overlayPlot : null;
@@ -240,15 +245,10 @@ function PlotComponent(props: {
     let plotObj: HistogramOverlay;
     switch (plotSource) {
       case COMMON_CONSTANTS.FILE:
-        plotObj = isHistogramSelected("", pltFlObj.id);
+        plotObj = isHistogramSelected(plot.id, pltFlObj.id);
         if (plotObj) {
           if (plotObj.plotType === plotType) {
-            PlotResource.removeOverlay(
-              plot,
-              plotObj.plotId,
-              pltFlObj.id,
-              plotType
-            );
+            PlotResource.removeOverlay(plot, plotObj.plotId, pltFlObj.id);
           } else {
             PlotResource.changeOverlayType(
               plot,
@@ -265,13 +265,21 @@ function PlotComponent(props: {
               pltFlObj.id,
               props.experimentId
             );
+
+          let population: Population = createPopulation({
+            file: pltFlObj.id,
+          });
+          let plotPopulation = getPopulation(plot.population);
+          population.gates = population.gates.concat(plotPopulation.gates);
+          commitPopulation(population);
           PlotResource.addOverlay(
             plot,
             "",
-            "",
+            plot.id,
             plotSource,
             plotType,
-            pltFlObj.id
+            pltFlObj.id,
+            population.id
           );
         }
         break;
@@ -555,7 +563,7 @@ function PlotComponent(props: {
                   }}
                   value={"0"}
                 >
-                  <MenuItem value={"0"}>Histogram overlays</MenuItem>
+                  <MenuItem value={"0"}>Overlays</MenuItem>
                   {/* {plots.map((e: any) => (
                       <MenuItem
                         id="hist_overlay"
@@ -642,12 +650,15 @@ function PlotComponent(props: {
                         </div>
                       </MenuItem>
                     ))} */}
-                  {files.map((e: any) => (
+                  {filesMetadata.map((e: any) => (
                     <MenuItem
                       id="hist_overlay"
                       value={e}
                       style={{
-                        backgroundColor: getHistogramSelectedColor("", e.id),
+                        backgroundColor: getHistogramSelectedColor(
+                          plot.id,
+                          e.id
+                        ),
                       }}
                     >
                       <div
@@ -669,7 +680,17 @@ function PlotComponent(props: {
                             padding: 16,
                             width: "100%",
                           }}
-                          onClick={() => {}}
+                          onClick={() => {
+                            let plotObj = isHistogramSelected(plot.id, e.id);
+                            if (plotObj) {
+                              PlotResource.removeOverlay(
+                                plot,
+                                plotObj.plotId,
+                                e.id
+                              );
+                              setHistogramOverlayOpen(false);
+                            }
+                          }}
                         >
                           {e.label}
                         </span>
@@ -677,7 +698,7 @@ function PlotComponent(props: {
                           id={`${plot.id}_${e.id}_bar_file`}
                           style={{
                             backgroundColor: isOptionSelected(
-                              "",
+                              plot.id,
                               e.id,
                               COMMON_CONSTANTS.Bar
                             ),
@@ -718,7 +739,7 @@ function PlotComponent(props: {
                           id={`${plot.id}_${e.id}_line_file`}
                           style={{
                             backgroundColor: isOptionSelected(
-                              "",
+                              plot.id,
                               e.id,
                               COMMON_CONSTANTS.Line
                             ),

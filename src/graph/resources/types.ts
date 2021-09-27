@@ -32,6 +32,7 @@ export interface HistogramOverlay {
   plotSource: string;
   plotType: string;
   fileId: FileID;
+  populationId: PopulationID;
 }
 
 export interface PopulationGateType {

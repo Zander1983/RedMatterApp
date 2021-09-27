@@ -58,8 +58,7 @@ export const getPopulationFromFileId = (fileId: FileID): Population => {
     (population) => population.file === fileId
   );
   if (populations.length === 0) throw Error("Population not found");
-  if (populations.length > 1)
-    throw Error("Multiple populations with ID = " + fileId);
+
   return populations[0];
 };
 

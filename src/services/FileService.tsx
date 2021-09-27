@@ -70,7 +70,6 @@ export const downloadFileEvent = async (
   }
   let donwloadingFile: File = getFile(fileId);
   donwloadingFile.downloading = true;
-  debugger;
   await commitFileChange(donwloadingFile);
   let response;
   if (workspaceIsShared) {

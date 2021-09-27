@@ -19,6 +19,7 @@ import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { createBlankPlotObj, createPlot } from "graph/resources/plots";
 import {
   commitPopulation,
+  commitPopulationChange,
   createPopulation,
 } from "graph/resources/populations";
 import { Population } from "graph/resources/types";
@@ -215,9 +216,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
           newPlotData.yPlotType = this.plot.yPlotType;
           newPlotData.ranges = this.plot.ranges;
           newPlotData.gates = this.plot.gates;
-          let population: Population = getPopulationFromFileId(overlay.fileId);
-          newPlotData.population = population.id;
-
+          newPlotData.population = overlay.populationId;
           newPlotData = createPlot({ clonePlot: newPlotData });
           break;
       }
@@ -265,10 +264,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
             newPlotData.xPlotType = this.plot.xPlotType;
             newPlotData.yPlotType = this.plot.yPlotType;
             newPlotData.ranges = this.plot.ranges;
-            let population: Population = getPopulationFromFileId(
-              barOverlays[i].fileId
-            );
-            newPlotData.population = population.id;
+            newPlotData.population = barOverlays[i].populationId;
             newPlotData = createPlot({ clonePlot: newPlotData });
             break;
         }

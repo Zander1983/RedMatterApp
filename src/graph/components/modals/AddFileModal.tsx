@@ -79,7 +79,6 @@ const AddFileModal = React.memo(
     };
 
     useEffect(() => {
-      debugger;
       let downloadingFiles: File[] = files.filter((x) => x.downloading);
       let downloadingFileIds: string[] = [];
       if (downloadingFiles && downloadingFiles.length > 0) {
