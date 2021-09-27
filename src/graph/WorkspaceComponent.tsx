@@ -90,36 +90,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-class ErrorBoundary extends React.Component {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: any) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: any, errorInfo: any) {
-    snackbarService.showSnackbar(error, errorInfo);
-  }
-
-  render() {
-    //@ts-ignore
-    if (this.state.hasError) {
-      return (
-        <Grid>
-          Something went wrong. These are your options: - Reload page - Delete
-          workspace
-        </Grid>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-const WorkspaceComponent = (props: {
+const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
