@@ -186,6 +186,7 @@ class PlotController extends React.Component<PlotControllerProps> {
   componentDidMount() {
     window.addEventListener("resize", () => {
       resetPlotSizes();
+      setCanvasSize(true);
     });
   }
 

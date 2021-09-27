@@ -106,7 +106,7 @@ export default abstract class GateMouseInteractor {
     let plot = this.plotter.plot;
     plot.gates = [...plot.gates, gate.id];
     plot.gatingActive = "";
-    store.dispatch({
+    await store.dispatch({
       type: "workspace.UPDATE_PLOT",
       payload: { plot },
     });
