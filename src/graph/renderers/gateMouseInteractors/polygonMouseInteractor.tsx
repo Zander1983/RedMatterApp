@@ -194,17 +194,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       name: "New Gate",
       children: [],
     };
-    const popGates = getPopulation(this.plotter.plot.population).gates.map(
-      (e) => e.gate
-    );
-    for (let gate of popGates) {
-      let popGate = getGate(gate);
-      popGate.children.push(newGate.id);
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate: popGate },
-      });
-    }
     newGate.points = [...newGate.points].map((e) => {
       return { ...e };
     });

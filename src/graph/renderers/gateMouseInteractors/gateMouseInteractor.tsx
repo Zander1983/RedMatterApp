@@ -5,7 +5,7 @@ import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
-import { getPopulation } from "graph/utils/workspace";
+import { getGate, getPopulation } from "graph/utils/workspace";
 
 export interface GateState {
   lastMousePos: Point;
@@ -115,6 +115,17 @@ export default abstract class GateMouseInteractor {
     PlotResource.createSubpopPlot(basedOffPlot, [
       { gate: gate.id, inverseGating: false },
     ]);
+    const popGates = getPopulation(this.plotter.plot.population).gates.map(
+      (e) => e.gate
+    );
+    for (let popGate of popGates) {
+      let popIGate = getGate(popGate);
+      popIGate.children.push(gate.id);
+      store.dispatch({
+        type: "workspace.UPDATE_GATE",
+        payload: { gate: popIGate },
+      });
+    }
     this.end();
   }
 
