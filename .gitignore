@@ -5,9 +5,10 @@ npm-debug.log
 .vscode/
 
 # Remove all json files that are not package.json
-!package.json
-!reduxModel.json
 *.json
+!package.json
+!babel.config.json
+!reduxModel.json
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
