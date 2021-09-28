@@ -92,6 +92,9 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
         let linearTransformations = transformations["transforms:linear"];
         if (linearTransformations && linearTransformations.length == undefined)
           linearTransformations = [linearTransformations];
+        let biexTransformations = transformations["transforms:biex"];
+        if (biexTransformations && biexTransformations.length == undefined)
+          biexTransformations = [biexTransformations];
         if (logTransformations && logTransformations.length > 0) {
           channelsInfo = channelsInfo.concat(
             parseChannels(logTransformations, "bi")
@@ -100,6 +103,11 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
         if (linearTransformations && linearTransformations.length > 0) {
           channelsInfo = channelsInfo.concat(
             parseChannels(linearTransformations, "lin")
+          );
+        }
+        if (biexTransformations && biexTransformations.length > 0) {
+          channelsInfo = channelsInfo.concat(
+            parseChannels(biexTransformations, "biex")
           );
         }
       }
@@ -174,7 +182,13 @@ const parseChannels = (transformations: any, type: string) => {
 
     let rangeMin;
     let rangeMax;
-    if (type == "bi") {
+    if (type == "biex") {
+      rangeMin = "0";
+      rangeMax = Math.pow(
+        10,
+        parseFloat(transformationAttributes["transforms:maxRange"])
+      ).toString();
+    } else if (type == "bi") {
       rangeMin = "0";
       rangeMax = Math.pow(
         10,

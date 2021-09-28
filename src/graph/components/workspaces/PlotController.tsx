@@ -182,6 +182,8 @@ class PlotController extends React.Component<PlotControllerProps> {
       resetPlotSizes();
       setCanvasSize(true);
     });
+    resetPlotSizes();
+    setCanvasSize(true);
   }
 
   getPlotRelevantResources(plot: Plot) {
