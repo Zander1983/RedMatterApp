@@ -9,6 +9,8 @@ import {
   GateID,
   File,
   Population,
+  Dataset,
+  HistogramOverlay,
 } from "./types";
 import { createID } from "graph/utils/id";
 import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
@@ -61,7 +63,6 @@ export const createBlankPlotObj = (): Plot => {
     axisPlotTypes: {},
     gates: [],
     histogramOverlays: [],
-    histogramBarOverlays: [],
     population: "",
     xAxis: "",
     yAxis: "",
@@ -128,54 +129,47 @@ export const getPlotOverlays = (plot: Plot) => {
 
 export const addOverlay = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  color: string,
+  plotId: string,
+  plotSource: string,
+  plotType: string,
+  fileId: string = "",
+  populationId: string = ""
 ) => {
   if (!color) color = generateColor();
   plot.histogramOverlays.push({
     color: color,
     plotId: plotId,
     plotSource: plotSource,
+    plotType: plotType,
+    fileId: fileId,
+    populationId: populationId,
   });
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const addBarOverlay = (
+export const changeOverlayType = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  targetPlotId: String,
+  fileId: String,
+  newType: string,
+  oldType: string
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramBarOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
+  let overlay: HistogramOverlay = plot.histogramOverlays.find(
+    (e) =>
+      e.plotId == targetPlotId && e.fileId == fileId && e.plotType == oldType
+  );
+  overlay.plotType = newType;
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const removeBarOverlay = (plot: Plot, overlayPlot: PlotID) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== overlayPlot
-  );
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
-export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== targetPopulation
-  );
+export const removeOverlay = (
+  plot: Plot,
+  targetPlotId: String,
+  fileId: String
+) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (x) => x.plotId !== targetPopulation
-  );
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
-export const removeOverlay = (plot: Plot, targetPlot: string) => {
-  plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlot
+    (e) => e.fileId !== fileId
   );
 
   WorkspaceDispatch.UpdatePlot(plot);

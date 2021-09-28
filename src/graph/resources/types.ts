@@ -30,6 +30,9 @@ export interface HistogramOverlay {
   color: Color;
   plotId: PlotID;
   plotSource: string;
+  plotType: string;
+  fileId: FileID;
+  populationId: PopulationID;
 }
 
 export interface PopulationGateType {
@@ -89,6 +92,7 @@ export interface File {
   label: string;
   plotTypes?: PlotType[];
   downloaded: boolean;
+  downloading: boolean;
 }
 
 export interface EventsRequestResponse {
@@ -110,7 +114,6 @@ export interface Plot {
   };
   gates: GateID[];
   histogramOverlays: HistogramOverlay[];
-  histogramBarOverlays: HistogramOverlay[];
   population: PopulationID;
   xAxis: AxisName;
   yAxis: AxisName;

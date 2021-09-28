@@ -8,8 +8,15 @@ import {
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import {
+  getFile,
+  getGate,
+  getPopulation,
+  getPopulationFromFileId,
+} from "graph/utils/workspace";
 import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
+import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
+import { createBlankPlotObj, createPlot } from "graph/resources/plots";
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";
@@ -180,47 +187,54 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     let range = this.plot.ranges[axis];
 
-    // const overlaysObj = this.plot.histogramOverlays;
-    // const overlays = [];
+    const overlaysObj = this.plot.histogramOverlays.filter(
+      (x) => x.plotType == COMMON_CONSTANTS.Line
+    );
+    const overlays = [];
 
     this.rangeMin = range[0];
     this.rangeMax = range[1];
 
-    // for (const overlay of overlaysObj) {
-    //   if (!overlay) continue;
-    //   let newPlotData;
+    for (const overlay of overlaysObj) {
+      if (!overlay) continue;
+      let newPlotData = createBlankPlotObj();
 
-    //   switch (overlay.plotSource) {
-    //     case "plot":
-    //       newPlotData = getPlot(overlay.plotId);
-    //       break;
-    //     case "file":
-    //       newPlotData = new PlotData();
-    //       newPlotData.file = overlay.plot.file;
-    //       newPlotData.population = overlay.plot.population;
-    //       newPlotData.setupPlot();
-    //       newPlotData.getXandYRanges();
-    //       break;
-    //   }
-    //   newPlotData.ranges.set(axis, [range[0], range[1]]);
-    //   const overlayRes = newPlotData.getBins(
-    //     Math.round(this.bins / this.DRAW_DIVISION_CONST) - 1,
-    //     axis,
-    //     this.plot.population
-    //   );
-    //   overlayRes.list = overlayRes.list.map(
-    //     (e: any) => e / this.DRAW_DIVISION_CONST
-    //   );
-    //   overlays.push({
-    //     ...overlayRes,
-    //     color: overlay.color,
-    //   });
-    //   const lastMax = newPlotData.getBins(Math.round(this.bins) - 1, axis).max;
-    //   if (lastMax > globlMax) globlMax = lastMax;
-    // }
+      switch (overlay.plotSource) {
+        // case "plot":
+        //   newPlotData = getPlot(overlay.plotId);
+        //   break;
+        case COMMON_CONSTANTS.FILE:
+          newPlotData.xAxis = this.plot.xAxis;
+          newPlotData.yAxis = this.plot.yAxis;
+          newPlotData.xPlotType = this.plot.xPlotType;
+          newPlotData.yPlotType = this.plot.yPlotType;
+          newPlotData.ranges = this.plot.ranges;
+          newPlotData.gates = this.plot.gates;
+          newPlotData.population = overlay.populationId;
+          newPlotData = createPlot({ clonePlot: newPlotData });
+          break;
+      }
+
+      const overlayRes = PlotResource.getHistogramBins(
+        newPlotData,
+        this.bins,
+        axis
+      );
+      overlayRes.list = overlayRes.list.map(
+        (e: any) => e / this.DRAW_DIVISION_CONST
+      );
+      overlays.push({
+        ...overlayRes,
+        color: overlay.color,
+      });
+      const lastMax = overlayRes.max;
+      if (lastMax > globlMax) globlMax = lastMax;
+    }
 
     this.globalMax = globlMax;
-    const barOverlays = this.plot.histogramBarOverlays;
+    const barOverlays = this.plot.histogramOverlays.filter(
+      (x) => x.plotType == COMMON_CONSTANTS.Bar
+    );
     let binsArray = [];
     let parentBinsArray: any[] = [];
     const population = getPopulation(this.plot.population);
@@ -229,63 +243,50 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         ? getGate(population.gates[0].gate).color
         : "";
 
-    for (let i = 0; i < this.bins; i++) {
-      binsArray.push({
-        value: this.mainBins.list[i] / globlMax,
-        color: mainPlotColor,
-      });
-    }
+    if (barOverlays) {
+      for (let i = 0; i < barOverlays.length; i++) {
+        if (!barOverlays[i]) continue;
+        let newPlotData = createBlankPlotObj();
+        switch (barOverlays[i].plotSource) {
+          // case COMMON_CONSTANTS.PLOT:
+          //   newPlotData = dataManager.getPlot(barOverlays[i].plotId);
+          //   break;
+          case COMMON_CONSTANTS.FILE:
+            newPlotData.xAxis = this.plot.xAxis;
+            newPlotData.gates = this.plot.gates;
+            newPlotData.yAxis = this.plot.yAxis;
+            newPlotData.xPlotType = this.plot.xPlotType;
+            newPlotData.yPlotType = this.plot.yPlotType;
+            newPlotData.ranges = this.plot.ranges;
+            newPlotData.population = barOverlays[i].populationId;
+            newPlotData = createPlot({ clonePlot: newPlotData });
+            break;
+        }
 
-    // if (barOverlays) {
-    //   for (let i = 0; i < barOverlays.length; i++) {
-    //     if (!barOverlays[i]) continue;
-    //     let newPlotData;
-    //     switch (barOverlays[i].plotSource) {
-    //       case COMMON_CONSTANTS.PLOT:
-    //         newPlotData = dataManager.getPlot(barOverlays[i].plotId);
-    //         break;
-    //       case COMMON_CONSTANTS.FILE:
-    //         newPlotData = barOverlays[i].plot;
-    //         break;
-    //     }
-    //     const lastMax = newPlotData.getBins(
-    //       Math.round(this.bins) - 1,
-    //       axis
-    //     ).max;
-    //     if (lastMax > globlMax) globlMax = lastMax;
-    //   }
-    //   this.globalMax = globlMax;
-    //   for (let i = 0; i < barOverlays.length; i++) {
-    //     let newPlotData;
-    //     switch (barOverlays[i].plotSource) {
-    //       case COMMON_CONSTANTS.PLOT:
-    //         newPlotData = dataManager.getPlot(barOverlays[i].plotId);
-    //         break;
-    //       case COMMON_CONSTANTS.FILE:
-    //         newPlotData = new PlotData();
-    //         newPlotData.file = barOverlays[i].plot.file;
-    //         newPlotData.population = barOverlays[i].plot.population;
-    //         newPlotData.getXandYRanges();
-    //         newPlotData.setupPlot();
-    //         break;
-    //     }
-    //     newPlotData.ranges.set(axis, [range[0], range[1]]);
-    //     let overlayMainHist = newPlotData.getBins(
-    //       this.bins,
-    //       axis,
-    //       this.plot.population
-    //     );
-    //     let binsArray = [];
-    //     for (let j = 0; j < this.bins; j++) {
-    //       binsArray.push({
-    //         value: overlayMainHist.list[j] / globlMax,
-    //         color: barOverlays[i].color,
-    //       });
-    //     }
-    //     parentBinsArray.push(binsArray);
-    //     binsArray = [];
-    //   }
-    // }
+        let newBins = PlotResource.getHistogramBins(
+          newPlotData,
+          this.bins,
+          axis
+        );
+
+        const lastMax = newBins.max;
+
+        let overlayMainHist = newBins;
+        let newBinsArray = [];
+
+        for (let j = 0; j < this.bins; j++) {
+          newBinsArray.push({
+            value: overlayMainHist.list[j] / globlMax,
+            color: barOverlays[i].color,
+          });
+        }
+        parentBinsArray.push(newBinsArray);
+        newBinsArray = [];
+
+        if (lastMax > globlMax) globlMax = lastMax;
+      }
+      this.globalMax = globlMax;
+    }
 
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
@@ -313,23 +314,23 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       }
     }
 
-    // for (const overlay of overlays) {
-    //   const curve = overlay.list
-    //     .map((e: any, i: number) => {
-    //       return this.drawer.getBinPos(
-    //         i,
-    //         e / globlMax,
-    //         Math.floor(this.bins / this.DRAW_DIVISION_CONST)
-    //       );
-    //     })
-    //     .sort((a: any, b: any) => {
-    //       return a.x - b.x;
-    //     });
-    //   this.drawer.curve({
-    //     points: curve,
-    //     strokeColor: overlay.color,
-    //     lineWidth: 6,
-    //   });
-    // }
+    for (const overlay of overlays) {
+      const curve = overlay.list
+        .map((e: any, i: number) => {
+          return this.drawer.getBinPos(
+            i,
+            e / globlMax,
+            Math.floor(this.bins / this.DRAW_DIVISION_CONST)
+          );
+        })
+        .sort((a: any, b: any) => {
+          return a.x - b.x;
+        });
+      this.drawer.curve({
+        points: curve,
+        strokeColor: overlay.color,
+        lineWidth: 6,
+      });
+    }
   }
 }
