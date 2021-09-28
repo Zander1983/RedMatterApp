@@ -8,6 +8,7 @@ import { Plot, Range } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import { getPopulation, getWorkspace } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -80,18 +81,12 @@ const RangeResizeModal = (props: {
     targetPlots.forEach((tplot) => {
       if (histogramAxis !== "horizontal") {
         tplot.ranges[xAxis] = xRange;
-        store.dispatch({
-          type: "workspace.UPDATE_PLOT",
-          payload: { plot: tplot },
-        });
+        WorkspaceDispatch.UpdatePlot(tplot);
       }
 
       if (histogramAxis !== "vertical") {
         tplot.ranges[yAxis] = yRange;
-        store.dispatch({
-          type: "workspace.UPDATE_PLOT",
-          payload: { plot: tplot },
-        });
+        WorkspaceDispatch.UpdatePlot(tplot);
       }
     });
   };

@@ -193,6 +193,7 @@ export const getDatasetColors = (
 
     for (const gate of gates) {
       let newX = point2BiConverter(x, gate2BiConverter(gate));
+      if (!getGate(gate.gate)) continue;
       const cAns = gateDFS(newX, gate, 1);
       if (cAns.color !== null && cAns.depth > ans.depth) {
         ans = cAns;
@@ -342,7 +343,10 @@ export const isPointInsideInterval = (
 };
 
 const gate2BiConverterCache = new Map<
-  PopulationGateType,
+  {
+    gate: Gate;
+    inverseGating: boolean;
+  },
   {
     gate: Gate;
     inverseGating: boolean;
@@ -351,8 +355,16 @@ const gate2BiConverterCache = new Map<
 const resetGate2BiConverterCache = () => gate2BiConverterCache.clear();
 
 const gate2BiConverter = (e: PopulationGateType) => {
-  if (gate2BiConverterCache.has(e)) {
-    return gate2BiConverterCache.get(e);
+  if (
+    gate2BiConverterCache.has({
+      gate: getGate(e.gate),
+      inverseGating: e.inverseGating,
+    })
+  ) {
+    return gate2BiConverterCache.get({
+      gate: getGate(e.gate),
+      inverseGating: e.inverseGating,
+    });
   }
   const gate = getGate(e.gate);
   if (gate.gateType === "polygon") {
@@ -380,7 +392,13 @@ const gate2BiConverter = (e: PopulationGateType) => {
         return { x: e.x, y: newY };
       });
     }
-    gate2BiConverterCache.set(e, newGate);
+    gate2BiConverterCache.set(
+      {
+        gate: getGate(e.gate),
+        inverseGating: e.inverseGating,
+      },
+      newGate
+    );
     return newGate;
   }
   if (gate.gateType === "histogram") {
@@ -395,7 +413,13 @@ const gate2BiConverter = (e: PopulationGateType) => {
         return (e - range[0]) / (range[1] - range[0]);
       }) as [number, number];
     }
-    gate2BiConverterCache.set(e, newGate);
+    gate2BiConverterCache.set(
+      {
+        gate: getGate(e.gate),
+        inverseGating: e.inverseGating,
+      },
+      newGate
+    );
     return newGate;
   }
   throw new Error("Gate type not found");

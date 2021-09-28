@@ -146,6 +146,7 @@ export interface Population {
 
 export interface Workspace {
   id: WorkspaceID;
+  notifications: Notification[];
   gates: Gate[];
   files: File[];
   plots: Plot[];
@@ -159,4 +160,10 @@ export interface PlotSpecificWorkspaceData {
   file: File;
   plot: Plot;
   population: Population;
+  key: string; // react won't shut up about each prop list item having a key
+}
+
+export interface Notification {
+  id: string;
+  message: string;
 }

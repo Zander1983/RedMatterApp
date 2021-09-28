@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -288,6 +288,7 @@ function FormFluorophores() {
         },
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -309,7 +310,7 @@ function FormFluorophores() {
         onChange={(e, list, reason, detail) => {
           let previous = store.getState().user.experiment.fluorophoresCategory;
           const option = detail.option.value;
-          if (reason === "remove-option") {
+          if (reason === "remove-option" && previous !== undefined) {
             previous = previous.split(",").filter((e: string) => e !== option);
             previous = previous.join(",");
             dispatch({

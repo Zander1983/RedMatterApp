@@ -12,17 +12,14 @@ import {
 } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import {
-  commitMultiplePlots,
   createBlankPlotObj,
   createNewPlotFromFile,
   createPlot,
 } from "graph/resources/plots";
-import {
-  createPopulation,
-  commitPopulation,
-} from "graph/resources/populations";
-import { commitGate, createGate } from "graph/resources/gates";
-import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
+import { createPopulation } from "graph/resources/populations";
+import { createGate } from "graph/resources/gates";
+import { getFile } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const getFileOrSkipThisSample = (
   filesUsed: any,
@@ -166,7 +163,7 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
     }
   }
   if (plots.length > 0) {
-    commitMultiplePlots(plots);
+    WorkspaceDispatch.AddPlots(plots);
   }
 };
 
@@ -209,7 +206,7 @@ const addNewPlot = (
 ) => {
   if (populationCreate) {
     let population: Population = createPopulation({ file: fileID });
-    commitPopulation(population);
+    WorkspaceDispatch.AddPopulation(population);
     plot.population = population.id;
   }
   plot = createPlot({ clonePlot: plot });
@@ -280,7 +277,7 @@ const parseSubpopulation = async (
         let gateType = Object.keys(gate).filter((x) => x != "_attributes")[0];
         parseGateType(gateType, gate, polygonGate, xChannelInfo, yChannelInfo);
         plot.gates.push(polygonGate.id);
-        commitGate(polygonGate);
+        WorkspaceDispatch.AddGate(polygonGate);
 
         let populationGate: PopulationGateType = {
           inverseGating: false,
@@ -288,7 +285,7 @@ const parseSubpopulation = async (
         };
         let childPopulation = createPopulation({ file: fileId });
         childPopulation.gates.push(populationGate);
-        commitPopulation(childPopulation);
+        WorkspaceDispatch.AddPopulation(childPopulation);
         newPlot.population = childPopulation.id;
 
         addNewPlot(plots, newPlot, fileId, false);

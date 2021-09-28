@@ -16,6 +16,7 @@ import * as PopulationResource from "graph/resources/populations";
 import { getPlot, getPopulation } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { store } from "redux/store";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -127,12 +128,7 @@ const PopAndGatesGateBar = React.memo(
       cPlot.xPlotType = gate.xAxisType;
       cPlot.yAxis = gate.yAxis;
       cPlot.yPlotType = gate.yAxisType;
-      store.dispatch({
-        type: "workspace.UPDATE_PLOT",
-        payload: {
-          plot: cPlot,
-        },
-      });
+      WorkspaceDispatch.DeletePlot(cPlot);
     };
 
     return (

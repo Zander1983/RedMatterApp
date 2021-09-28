@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Grid, Button } from "@material-ui/core";
@@ -84,6 +85,7 @@ export default function Plans(props: any) {
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [subscriptionSend, setSubscriptionSend] = useState(null);
   const getUserObj = useCallback(() => {
     if (product == null) {
@@ -324,7 +326,7 @@ export default function Plans(props: any) {
               </h3>
               {userObj == null ? null : userObj.userDetails
                   .isOrganisationAdmin ? (
-                product == null ? null : product.name ==
+                product == null ? null : product.name ===
                   "You are not currently Subscribed" ? null : (
                   <div>
                     <h3>
@@ -388,7 +390,7 @@ export default function Plans(props: any) {
             <Grid item lg={10} md={6} sm={6}>
               {userObj == null ? null : userObj.userDetails
                   .isOrganisationAdmin ? (
-                product == null ? null : product.name ==
+                product == null ? null : product.name ===
                   "You are not currently Subscribed" ? (
                   <h4>
                     Go to
@@ -413,7 +415,7 @@ export default function Plans(props: any) {
             <Grid item lg={2} md={6} sm={6}>
               {userObj == null ? null : userObj.userDetails
                   .isOrganisationAdmin ? (
-                product == null ? null : product.name ==
+                product == null ? null : product.name ===
                   "Enterprise Subscription" ? (
                   <div>
                     <Button

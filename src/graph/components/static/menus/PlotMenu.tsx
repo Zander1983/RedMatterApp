@@ -21,6 +21,8 @@ import { store } from "redux/store";
 import { createPlot } from "graph/resources/plots";
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
+import { createGate } from "graph/resources/gates";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const statsProvider = new PlotStats();
 
@@ -47,28 +49,11 @@ export default function PlotMenu(props: {
 
   const setPlotLabel = (plot: Plot, label: string) => {
     plot.label = label;
-    store.dispatch({
-      type: "workspace.UPDATE_PLOT",
-      payload: { plot },
-    });
+    WorkspaceDispatch.UpdatePlot(plot);
   };
 
-  // const cloneGate = (gate: Plot) => {
-  //   let newGate = createGate({
-  //     cloneGate: gate,
-  //   });
-  //   newGate.name = gate.name + " clone";
-  //   store.dispatch({
-  //     type: "workspace.CREATE_GATE",
-  //     payload: { newGate },
-  //   });
-  // };
-
   const deletePlot = (plot: Plot) => {
-    store.dispatch({
-      type: "workspace.DELETE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
   const clonePlot = (plot: Plot) => {
@@ -76,10 +61,7 @@ export default function PlotMenu(props: {
       clonePlot: plot,
     });
     newPlot.label = plot.label + " clone";
-    store.dispatch({
-      type: "workspace.ADD_PLOT",
-      payload: { plot: newPlot },
-    });
+    WorkspaceDispatch.AddPlot(newPlot);
   };
 
   let percentages: any[] = [];

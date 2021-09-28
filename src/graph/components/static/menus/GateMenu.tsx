@@ -21,6 +21,7 @@ import { createGate } from "graph/resources/gates";
 import { dowloadAllFileEvents } from "services/FileService";
 import { createPlot } from "graph/resources/plots";
 import { createPopulation } from "graph/resources/populations";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const classes = {
   table: {},
@@ -29,25 +30,16 @@ const classes = {
 export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
     gate.color = color.hex;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    WorkspaceDispatch.UpdateGate(gate);
   };
 
   const setGateName = (gate: Gate, name: any) => {
     gate.name = name;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    WorkspaceDispatch.UpdateGate(gate);
   };
 
   const deleteGate = (gate: Gate) => {
-    store.dispatch({
-      type: "workspace.DELETE_GATE",
-      payload: { gate: gate },
-    });
+    WorkspaceDispatch.DeleteGate(gate);
   };
 
   const cloneGate = (gate: PolygonGate) => {
@@ -55,14 +47,10 @@ export default function GateMenu(props: { gates: Gate[] }) {
       cloneGate: gate,
     });
     newGate.name = gate.name + " clone";
-    store.dispatch({
-      type: "workspace.ADD_GATE",
-      payload: { gate: newGate },
-    });
+    WorkspaceDispatch.AddGate(newGate);
   };
 
   const applyGateToAllFiles = async (gate: Gate) => {
-    let downloadSnackbar = false;
     await dowloadAllFileEvents();
     let files = getWorkspace().files;
     const plots = getWorkspace().plots;
@@ -80,13 +68,14 @@ export default function GateMenu(props: { gates: Gate[] }) {
 
     for (const file of files) {
       const population = createPopulation({ file: file.id });
-      const plot = createPlot({ population });
       population.gates = [
         {
           inverseGating: false,
           gate: gate.id,
         },
       ];
+      await WorkspaceDispatch.AddPopulation(population);
+      const plot = createPlot({ population });
       if (gate.gateType === "polygon") {
         plot.xAxis = (gate as PolygonGate).xAxis;
         plot.yAxis = (gate as PolygonGate).yAxis;
@@ -100,14 +89,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
         plot.yPlotType = (gate as HistogramGate).axisType;
         plot.histogramAxis = "vertical";
       }
-      await store.dispatch({
-        type: "workspace.ADD_POPULATION",
-        payload: { population },
-      });
-      await store.dispatch({
-        type: "workspace.ADD_PLOT",
-        payload: { plot },
-      });
+      await WorkspaceDispatch.AddPlot(plot);
     }
   };
   const workspace = getWorkspace();

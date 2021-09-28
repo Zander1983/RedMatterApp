@@ -18,6 +18,7 @@ import {
   PlotSpecificWorkspaceData,
   Workspace,
 } from "graph/resources/types";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -77,21 +78,20 @@ export const setCanvasSize = (save: boolean = false) => {
       updateList.push(plot);
     }
   }
-  if (save && plots.length > 0)
-    store.dispatch({
-      type: "workspace.UPDATE_PLOTS",
-      payload: { plots: updateList },
-    });
+  if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   let widthUsed = 0;
-  for (let i = 0; i < index; i++) {
-    let plot = plots[i];
-    widthUsed += plot.dimensions.w;
-  }
-
   let maxWidth = MINW * 4;
+  for (let i = 0; i <= index; i++) {
+    let plot = plots[i];
+    if (index != i) widthUsed += plot.dimensions.w;
+    let factor = maxWidth * ((i + 1) / 4) - widthUsed;
+    if ((i + 1) % 4 == 0 && factor > 0) {
+      widthUsed = widthUsed + factor;
+    }
+  }
 
   let x = plotData.positions.x;
   let y = plotData.positions.y;
@@ -167,10 +167,7 @@ class PlotController extends React.Component<PlotControllerProps> {
         plotChanges.push(plot);
       }
     }
-    store.dispatch({
-      type: "workspace.UPDATE_PLOTS",
-      payload: { plots: plotChanges },
-    });
+    WorkspaceDispatch.UpdatePlots(plotChanges);
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -183,6 +180,7 @@ class PlotController extends React.Component<PlotControllerProps> {
   componentDidMount() {
     window.addEventListener("resize", () => {
       resetPlotSizes();
+      setCanvasSize(true);
     });
   }
 
@@ -198,14 +196,12 @@ class PlotController extends React.Component<PlotControllerProps> {
       gates,
       plot,
       population,
+      key: plot.id,
     };
     return workspaceForPlot;
   }
 
   render() {
-    console.log(
-      `Workspace rendered for the ${++PlotController.renderCalls} time`
-    );
     let plotGroups: any = {};
     for (const plot of this.props.workspace.plots) {
       try {

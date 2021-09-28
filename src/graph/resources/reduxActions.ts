@@ -1,6 +1,7 @@
 import { getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
-import { File, Gate, Plot, Population, Workspace } from "./types";
+import WorkspaceDispatch from "./dispatchers";
+import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
 
 export const graphActions = {
   RESET: "workspace.RESET",
@@ -9,7 +10,7 @@ export const graphActions = {
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
-  ADD_MULTIPLE_PLOTS: "workspace.ADD_MULTIPLE_PLOTS",
+  ADD_PLOTS: "workspace.ADD_PLOTS",
   ADD_GATE: "workspace.ADD_GATE",
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
@@ -21,10 +22,13 @@ export const graphActions = {
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
   SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
+  ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
+  DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
 };
 
-const initialState: Workspace = {
+export const initialState: Workspace = {
   id: "",
+  notifications: [],
   gates: [],
   files: [],
   plots: [],
@@ -82,12 +86,22 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         plots: [...state.plots, newPlot],
       };
-    case graphActions.ADD_MULTIPLE_PLOTS:
+
+    case graphActions.ADD_PLOTS:
       const newPlots: Array<Plot> = action.payload.plots;
+      let failed = false;
+      newPlots.forEach((newPlot) => {
+        if (state.plots.find((e) => e.id === newPlot.id)) {
+          failed = true;
+          console.error("[workspace.ADD_PLOTS] Plot already in workspace");
+        }
+      });
+      if (failed) return state;
       return {
         ...state,
         plots: state.plots.concat(newPlots),
       };
+
     case graphActions.ADD_GATE:
       const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
@@ -177,6 +191,11 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         return state;
       }
       state.gates = state.gates.filter((e) => e.id !== deleteGate.id);
+      state.gates = state.gates.map((e) => {
+        e.children = e.children.filter((e) => e !== deleteGate.id);
+        e.parents = e.parents.filter((e) => e !== deleteGate.id);
+        return e;
+      });
       state.plots = state.plots.map((e) => {
         e.gates = e.gates.filter((e) => e !== deleteGate.id);
         return e;
@@ -219,6 +238,32 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         sharedWorkspace: action.payload.sharedWorkspace,
       };
 
+    case graphActions.ADD_NOTIFICATION:
+      const newNotification: Notification = action.payload.notification;
+      if (state.notifications.find((e) => e.id === newNotification.id)) {
+        console.error(
+          "[workspace.ADD_NOTIFICATION] Notification already exists"
+        );
+      }
+      return {
+        ...state,
+        notifications: [...state.notifications, newNotification],
+      };
+
+    case graphActions.DELETE_NOTIFICATION:
+      const deleteNotification: Notification = action.payload.notification;
+      if (!state.notifications.find((e) => e.id === deleteNotification.id)) {
+        console.error(
+          "[workspace.DELETE_NOTIFICATION] Notification doesn't exist"
+        );
+      }
+      return {
+        ...state,
+        notifications: state.notifications.filter(
+          (e) => e.id !== deleteNotification.id
+        ),
+      };
+
     default:
       return state;
   }
@@ -231,8 +276,5 @@ export const dispatchBatch = async (operations: any[]) => {
   for (const operation of operations) {
     workspace = graphReducers(workspace, operation);
   }
-  await store.dispatch({
-    action: "workspace.LOAD_WORKSPACE",
-    payload: { workspace },
-  });
+  await WorkspaceDispatch.LoadWorkspace(workspace);
 };

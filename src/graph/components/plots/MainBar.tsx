@@ -14,6 +14,7 @@ import { Plot, PopulationGateType } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const classes = {
   main: {
@@ -59,10 +60,7 @@ export default function MainBar(props: { plot: Plot }) {
   const plot = props.plot;
 
   const deletePlot = () => {
-    store.dispatch({
-      type: "workspace.DELETE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
   const handleClose = (func: Function) => {
@@ -78,10 +76,7 @@ export default function MainBar(props: { plot: Plot }) {
     } else {
       plot.gatingActive = "histogram";
     }
-    store.dispatch({
-      type: "workspace.UPDATE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.UpdatePlot(plot);
   };
 
   // const downloadCanvasAsImage = () => {
@@ -102,7 +97,7 @@ export default function MainBar(props: { plot: Plot }) {
   // };
 
   return (
-    <Grid container direction="row" xs={12} item style={classes.main}>
+    <Grid direction="row" style={classes.main} container>
       <RangeResizeModal
         open={openResize}
         closeCall={{
@@ -158,7 +153,7 @@ export default function MainBar(props: { plot: Plot }) {
           style={{
             backgroundColor: "#c45",
             fontSize: 12,
-            height: "1.7rem",
+            height: "2rem",
           }}
         >
           <CancelIcon
@@ -188,7 +183,7 @@ export default function MainBar(props: { plot: Plot }) {
             style={{
               flex: 1,
               color: "white",
-              height: "1.7rem",
+              height: "2rem",
               fontSize: "12",
               backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
             }}
@@ -223,7 +218,7 @@ export default function MainBar(props: { plot: Plot }) {
             size="small"
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",
@@ -264,7 +259,7 @@ export default function MainBar(props: { plot: Plot }) {
             size="small"
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",
@@ -316,7 +311,7 @@ export default function MainBar(props: { plot: Plot }) {
             }}
             style={{
               flex: 1,
-              height: "1.7rem",
+              height: "2rem",
               fontSize: 12,
               color: "white",
               backgroundColor: "#6666aa",

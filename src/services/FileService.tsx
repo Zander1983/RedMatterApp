@@ -4,7 +4,9 @@ import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
 import { getFile, getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
-import { commitFileChange, createFile } from "graph/resources/files";
+import { createFile } from "graph/resources/files";
+import { Notification } from "graph/resources/notifications";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
@@ -38,17 +40,11 @@ export const downloadFileMetadata = async (
     file.eventCount = newFile.eventCount;
     if (newFile.id in workspace.files.map((e: File) => e.id)) {
       file = { ...getFile(newFile.id), ...file };
-      store.dispatch({
-        type: "workspace.UPDATE_FILE",
-        payload: { file },
-      });
+      WorkspaceDispatch.UpdateFile(file);
     } else {
       file.downloaded = false;
       file.id = newFile.id;
-      store.dispatch({
-        type: "workspace.ADD_FILE",
-        payload: { file },
-      });
+      WorkspaceDispatch.AddFile(file);
     }
     newFilesIds.push(file.id);
   }
@@ -58,8 +54,13 @@ export const downloadFileMetadata = async (
 export const downloadFileEvent = async (
   workspaceIsShared: boolean,
   fileId: string,
-  experimentId: string
+  experimentId: string,
+  showNotifications: boolean = true
 ): Promise<FileID> => {
+  let notification: Notification;
+  if (showNotifications) {
+    notification = new Notification("Dowloading file");
+  }
   const workspace = getWorkspace();
   const fileQuery = workspace.files.filter((e) => e.id === fileId);
   if (fileQuery.length > 1) {
@@ -70,7 +71,7 @@ export const downloadFileEvent = async (
   }
   let donwloadingFile: File = getFile(fileId);
   donwloadingFile.downloading = true;
-  await commitFileChange(donwloadingFile);
+  WorkspaceDispatch.UpdateFile(donwloadingFile);
   let response;
   if (workspaceIsShared) {
     response = await axios.post(
@@ -93,6 +94,9 @@ export const downloadFileEvent = async (
       }
     );
   }
+  if (response.data[0].events.length > 5000) {
+    response.data[0].events = response.data[0].events.slice(0, 5000);
+  }
   const file = response.data[0];
   let newFile = await createFile({
     requestData: file,
@@ -101,27 +105,40 @@ export const downloadFileEvent = async (
   newFile = { ...newFile, ...getFile(fileId) };
   newFile.downloaded = true;
   newFile.downloading = false;
-  store.dispatch({
-    type: "workspace.UPDATE_FILE",
-    payload: { file: newFile },
-  });
+  WorkspaceDispatch.UpdateFile(newFile);
+  if (showNotifications) {
+    notification.killNotification();
+  }
   return file.id;
 };
 
 export const dowloadAllFileEvents = async (
   workspaceIsShared?: boolean,
-  experimentId?: string
+  experimentId?: string,
+  batch?: string[]
 ) => {
+  const notification = new Notification("Dowloading files");
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
-  const workspace = getWorkspace();
-  const files = workspace.files
-    .filter((e) => e.downloaded === false)
-    .map((e) => e.id);
+  let files: string[] = [];
+  if (batch) {
+    const workspace = getWorkspace();
+    files = workspace.files
+      .filter((e) => e.downloaded === false && batch.includes(e.id))
+      .map((e) => e.id);
+  } else {
+    const workspace = getWorkspace();
+    files = workspace.files
+      .filter((e) => e.downloaded === false)
+      .map((e) => e.id);
+  }
   const promises: Promise<any>[] = [];
   for (const file of files) {
-    promises.push(downloadFileEvent(workspaceIsShared, file, experimentId));
+    promises.push(
+      downloadFileEvent(workspaceIsShared, file, experimentId, false)
+    );
   }
-  await Promise.all(promises);
+  if (promises.length > 0) await Promise.all(promises);
+  notification.killNotification();
 };

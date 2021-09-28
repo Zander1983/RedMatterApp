@@ -48,8 +48,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   plotter: HistogramPlotter | null = null;
   plugin: HistogramGatePlotter;
 
-  private lastGateUpdate: Date = new Date();
-
   private points: number[] = [];
   axis: AxisName;
   axisPlotType: PlotType;
@@ -73,48 +71,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.histogramDirection = state.histogramDirection;
   }
 
-  editGateEvent(type: string, mouse: Point) {
-    if (this.started) return;
-    this.lastMousePos = this.plugin.lastMousePos = mouse;
-
-    if (
-      this.targetEditGate === null &&
-      type === "mousedown" &&
-      !this.started &&
-      !this.isDraggingGate
-    ) {
-      this.detectPointsClicked(mouse);
-    } else if (this.targetEditGate !== null && type === "mouseup") {
-      this.reset();
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingVertex &&
-      !this.isDraggingGate
-    ) {
-      this.pointMoveToMousePosition(mouse);
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingGate &&
-      !this.isDraggingVertex
-    ) {
-      this.gateMoveToMousePosition(mouse);
-    }
-    if (
-      type === "mousedown" &&
-      this.plotter.gates.length > 0 &&
-      !this.isDraggingVertex
-    ) {
-      this.detectGatesClicked(mouse);
-    }
-
-    if (type === "mouseup" && this.isDraggingVertex)
-      this.isDraggingVertex = false;
-    else if (type === "mouseup" && this.isDraggingGate)
-      this.isDraggingGate = false;
-  }
-
   private validateGateOnSpace(gate: HistogramGate) {
     return (
       (gate.axis === this.plotter.plot.xAxis &&
@@ -126,7 +82,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     );
   }
 
-  private detectGatesClicked(mouse: Point) {
+  protected detectGatesClicked(mouse: Point) {
     const abstractMouse = this.plotter.transformer.toAbstractPoint(
       { ...mouse },
       true
@@ -149,7 +105,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       });
   }
 
-  private detectPointsClicked(mouse: Point) {
+  protected detectPointsClicked(mouse: Point) {
     const axis = this.histogramDirection === "vertical" ? "x" : "y";
     const mouseP = mouse[axis];
     this.plotter.gates.forEach((gate: Gate) => {
@@ -168,7 +124,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     });
   }
 
-  private gateMoveToMousePosition(mouse: Point) {
+  protected gateMoveToMousePosition(mouse: Point) {
     const gatePivot = this.plotter.transformer.toConcretePoint(
       {
         ...this.gatePivot,
@@ -206,7 +162,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.gateUpdater(gateState);
   }
 
-  private pointMoveToMousePosition(mouse: Point) {
+  protected pointMoveToMousePosition(mouse: Point) {
     const gateState = this.targetEditGate;
     const axis = this.histogramDirection === "vertical" ? "x" : "y";
     const newPoint = this.plotter.transformer.rawAbstractLogicleToLinear(
@@ -224,43 +180,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       this.targetPointIndex = this.targetPointIndex === 0 ? 1 : 0;
     }
     this.gateUpdater(gateState);
-  }
-
-  private reset() {
-    this.isDraggingVertex = false;
-    this.targetEditGate = null;
-    this.targetPointIndex = null;
-  }
-
-  private updateInterval = 20; // miliseconds
-  private currentInterval: NodeJS.Timeout = null;
-  private latest: Gate | null = null;
-  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate },
-      });
-      this.lastGateUpdate = new Date();
-    }
   }
 
   protected instanceGate(): HistogramGate {
@@ -297,17 +216,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       name: "New Gate",
       children: [],
     };
-    const popGates = getPopulation(this.plotter.plot.population).gates.map(
-      (e) => e.gate
-    );
-    for (let gate of popGates) {
-      let popGate = getGate(gate);
-      popGate.children.push(newGate.id);
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate: popGate },
-      });
-    }
     return newGate;
   }
 

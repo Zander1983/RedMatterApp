@@ -43,7 +43,7 @@ const PlotComponent = React.memo(
     sharedWorkspace: boolean;
     experimentId: string;
   }) => {
-    const { plot, file, gates, population } = props.plotRelevantResources;
+    const { plot, gates, population } = props.plotRelevantResources;
 
     const plotId = plot.id;
 
@@ -53,24 +53,34 @@ const PlotComponent = React.memo(
     return (
       <div
         id={`display-ref-${plotId}`}
+        key={`display-ref-${plotId}`}
         style={classes.mainContainer}
         ref={displayRef}
       >
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
-          <MainBar plot={plot}></MainBar>
-          <GateBar
-            plotId={plot.id}
-            plotGates={plot.gates.map((e) => getGate(e))}
-            populationGates={population.gates.map((e) => {
-              return {
-                gate: getGate(e.gate),
-                inverseGating: e.inverseGating,
-              };
-            })}
-          ></GateBar>
-
-          <Divider style={{ marginBottom: 5 }}></Divider>
+          <Grid
+            container
+            direction="row"
+            style={{
+              gap: 5,
+            }}
+          >
+            <MainBar plot={plot}></MainBar>
+            <GateBar
+              plotId={plot.id}
+              plotGates={plot.gates.map((e) => getGate(e))}
+              populationGates={population.gates.map((e) => {
+                return {
+                  gate: getGate(e.gate),
+                  inverseGating: e.inverseGating,
+                };
+              })}
+            ></GateBar>
+          </Grid>
         </div>
+        <Divider
+          style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
+        ></Divider>
 
         <SideSelector
           {...props}

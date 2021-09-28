@@ -1,6 +1,7 @@
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import userManager from "Components/users/userManager";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 import {
   File,
   FileID,
@@ -14,6 +15,7 @@ import {
 } from "graph/resources/types";
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
+import { Notification } from "graph/resources/notifications";
 import { snackbarService } from "uno-material-ui";
 
 export const getWorkspace = (): Workspace => {
@@ -117,14 +119,13 @@ export const loadWorkspaceFromRemoteIfExists = async (
     );
     const workspace = workspaceData.data.state;
     if (Object.keys(workspace).length > 0) {
-      snackbarService.showSnackbar("Loading your saved workspace", "info");
       await loadSavedWorkspace(workspace, shared, experimentId);
       snackbarService.showSnackbar("Workspace loaded!", "success");
       return true;
     }
   } catch {
     snackbarService.showSnackbar(
-      "Your workspace is loading, please wait and reload the page!",
+      "Your workspace is being processed, please wait and reload the page!",
       "info"
     );
   }
@@ -160,11 +161,17 @@ const loadSavedWorkspace = async (
   shared: boolean,
   experimentId: string
 ) => {
-  await dowloadAllFileEvents(shared, experimentId);
+  const notification = new Notification("Loading workspace");
   const workspaceObj = JSON.parse(workspace);
-  const newWorkspace = { ...workspaceObj, files: getWorkspace().files };
-  await store.dispatch({
-    type: "workspace.LOAD_WORKSPACE",
-    payload: { workspace: newWorkspace },
-  });
+  const files = workspaceObj?.files
+    ? workspaceObj.files.map((e: any) => e.id)
+    : [];
+  await dowloadAllFileEvents(shared, experimentId, files);
+  const newWorkspace = {
+    ...workspaceObj,
+    files: getWorkspace().files,
+    notifications: [],
+  };
+  await WorkspaceDispatch.LoadWorkspace(newWorkspace);
+  notification.killNotification();
 };

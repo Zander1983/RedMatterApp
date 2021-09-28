@@ -13,9 +13,10 @@ import { snackbarService } from "uno-material-ui";
 import { Plot, Gate, GateID, Gate2D, PlotID } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
-import { getPlot, getPopulation } from "graph/utils/workspace";
+import { getGate, getPlot, getPopulation } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { store } from "redux/store";
+import { MenuItem, Select, Tooltip } from "@material-ui/core";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -49,21 +50,6 @@ const PopulationSelectorGateBar = React.memo(
     const populationGates = props.populationGates;
     const plotGates = props.plotGates;
 
-    const changeGatePlotState = (gateId: GateID, selected: boolean) => {
-      try {
-        if (selected) {
-          PlotResource.removeGate(plot, gateId);
-        } else {
-          PlotResource.addGate(plot, gateId);
-        }
-      } catch {
-        snackbarService.showSnackbar(
-          "There was an error updating gates, please try again.",
-          "error"
-        );
-      }
-    };
-
     const gateInPopulation = (gateId: GateID) => {
       return !!populationGates.find((e) => e.gate.id === gateId);
     };
@@ -73,7 +59,6 @@ const PopulationSelectorGateBar = React.memo(
     };
 
     const addGateToPopulation = (gateId: string) => {
-      if (gateInPopulation(gateId)) throw Error("Gate already in population");
       PopulationResource.addGate(population, gateId);
     };
 
@@ -107,134 +92,59 @@ const PopulationSelectorGateBar = React.memo(
       }
     };
 
-    const plotGatesSelect = (id: string) => {
-      const pop = gateInPopulation(id);
-      const plotGates = gateInPlotGates(id);
-      if (pop && plotGates)
-        throw Error("This gate is both population and plot gates");
-      else if (plotGates) {
-        removeGateFromPlotGates(id);
-      } else if (pop) {
-        throw Error("This gate is already population");
-      } else {
-        addGateToPlotGates(id);
+    const setPopulation = (gateId: GateID | null) => {
+      for (const pop of props.populationGates) {
+        removeGateFromPopulation(pop.gate.id);
+      }
+      if (gateId !== null) {
+        addGateToPopulation(gateId);
       }
     };
 
-    const onGateChipClick = (gate: Gate2D) => {
-      let cPlot: Plot = plot;
-      cPlot.xAxis = gate.xAxis;
-      cPlot.xPlotType = gate.xAxisType;
-      cPlot.yAxis = gate.yAxis;
-      cPlot.yPlotType = gate.yAxisType;
-      store.dispatch({
-        type: "workspace.UPDATE_PLOT",
-        payload: {
-          plot: cPlot,
-        },
-      });
-    };
-
     return (
-      <Grid
-        xs={12}
-        item
-        container
-        direction="column"
+      <span
         style={{
-          ...classes.bar,
-          display: "grid",
+          flex: 1,
+          flexGrow: 1,
         }}
       >
-        <Autocomplete
-          options={allGates}
-          value={allGates.filter((e: any) => gateInPopulation(e.id))[0]}
-          noOptionsText={"All"}
-          onChange={(e, o) => {
-            if (o) {
-              for (const gate of allGates.filter((e) =>
-                gateInPopulation(e.id)
-              )) {
-                removeGateFromPopulation(gate.id);
-              }
-              console.log(e, o);
-              addGateToPopulation((o as Gate2D).id);
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>Population selector</h3>
+            </React.Fragment>
+          }
+        >
+          <Select
+            style={{
+              width: "100%",
+            }}
+            value={
+              populationGates.length > 0 ? populationGates[0].gate.id : null
             }
-          }}
-          disableCloseOnSelect
-          getOptionLabel={(option) => option.name}
-          renderOption={(option, { selected }) => (
-            <Button
-              onClick={() => {
-                populationSelect(option.id);
-              }}
-              style={{
-                flex: 1,
-                justifyContent: "left",
-                textTransform: "none",
-              }}
-            >
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                style={{ marginRight: 8, textAlign: "left", padding: 0 }}
-                checked={selected || gateInPopulation(option.id)}
-              />
-              {option.name} -{" "}
-              {option.gateType === "histogram"
-                ? //@ts-ignore
-                  "(" + option.axis + ")"
-                : `(${option.xAxis}, ${option.yAxis})`}
-            </Button>
-          )}
-          style={{ flex: 1, height: "100%" }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              variant="outlined"
-              label={
-                populationGates.length > 0
-                  ? `Population (${populationGates.length})`
-                  : "Population: All"
-              }
-            />
-          )}
-          renderTags={(tagValue, _) => {
-            return tagValue.map((option) => (
-              <Chip
-                onClick={() => {
-                  onGateChipClick(option);
-                }}
-                label={option.name}
-                avatar={
-                  <div
-                    style={{
-                      borderRadius: "50%",
-                      width: 12,
-                      height: 12,
-                      marginLeft: 7,
-                      border: "solid 2px #999",
-                      backgroundColor: option.color,
-                    }}
-                  ></div>
-                }
-                {...props}
-                style={{
-                  marginLeft: 5,
-                  marginTop: 5,
-                  height: 27,
-                }}
-                onDelete={() => {
-                  if (gateInPopulation(option.id)) {
-                    removeGateFromPopulation(option.id);
-                  }
-                }}
-              />
-            ));
-          }}
-        />
-      </Grid>
+            displayEmpty={true}
+            renderValue={(value: unknown) => {
+              //@ts-ignore
+              return value === null ? "All" : getGate(value).name;
+            }}
+            onChange={(e) => {
+              //@ts-ignore
+              setPopulation(e.target.value);
+            }}
+          >
+            <MenuItem value={null}>All</MenuItem>
+            {allGates
+              .filter((e) => !gateInPlotGates(e.id))
+              .map((e) => {
+                return (
+                  <MenuItem value={e.id} key={e.id}>
+                    {e.name}
+                  </MenuItem>
+                );
+              })}
+          </Select>
+        </Tooltip>
+      </span>
     );
   }
 );

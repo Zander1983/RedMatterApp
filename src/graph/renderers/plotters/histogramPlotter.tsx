@@ -17,12 +17,6 @@ import {
 import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import { createBlankPlotObj, createPlot } from "graph/resources/plots";
-import {
-  commitPopulation,
-  commitPopulationChange,
-  createPopulation,
-} from "graph/resources/populations";
-import { Population } from "graph/resources/types";
 
 interface HistogramPlotterState extends GraphPlotterState {
   direction: "vertical" | "horizontal";

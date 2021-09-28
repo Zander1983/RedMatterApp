@@ -23,10 +23,8 @@ import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
-import {
-  commitPopulation,
-  createPopulation,
-} from "graph/resources/populations";
+import { createPopulation } from "graph/resources/populations";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const classes = {
   itemOuterDiv: {
@@ -153,15 +151,13 @@ function PlotComponent(props: {
     const otherAxisValue = axis === "x" ? yAxis : xAxis;
     if (value === otherAxisValue && !isPlotHistogram()) {
       setHistogram(axis === "x" ? "y" : "x", true);
+    } else if (isPlotHistogram() && !stopHist) {
+      PlotResource.setXAxis(plot, value);
+      PlotResource.setYAxis(plot, value);
     } else {
-      if (isPlotHistogram() && !stopHist) {
-        PlotResource.setXAxis(plot, value);
-        PlotResource.setYAxis(plot, value);
-      } else {
-        axis === "x"
-          ? PlotResource.setXAxis(plot, value)
-          : PlotResource.setYAxis(plot, value);
-      }
+      axis === "x"
+        ? PlotResource.setXAxis(plot, value)
+        : PlotResource.setYAxis(plot, value);
     }
   };
 
@@ -177,9 +173,9 @@ function PlotComponent(props: {
       setLastSelectEvent(new Date().getTime());
     }
 
-    if (plot.histogramAxis === "horizontal") {
+    if (plot.histogramAxis === "vertical") {
       setHistogram("x", true);
-    } else if (plot.histogramAxis === "vertical") {
+    } else if (plot.histogramAxis === "horizontal") {
       setHistogram("y", true);
     }
   };
@@ -271,7 +267,7 @@ function PlotComponent(props: {
           });
           let plotPopulation = getPopulation(plot.population);
           population.gates = population.gates.concat(plotPopulation.gates);
-          commitPopulation(population);
+          WorkspaceDispatch.AddPopulation(population);
           PlotResource.addOverlay(
             plot,
             "",
@@ -450,7 +446,7 @@ function PlotComponent(props: {
               setAxis("y", e.target.value);
             });
           }}
-          disabled={plot.histogramAxis === "vertical"}
+          disabled={isAxisDisabled("y")}
           value={yAxis}
         >
           {axes.map((e: any) => (
@@ -510,11 +506,11 @@ function PlotComponent(props: {
                   handleHist("x");
                   return;
                 }
-                handleSelectEvent(e, "x", (e: any) =>
-                  setAxis("x", e.target.value)
-                );
+                handleSelectEvent(e, "x", (e: any) => {
+                  setAxis("x", e.target.value);
+                });
               }}
-              disabled={plot.histogramAxis === "horizontal"}
+              disabled={isAxisDisabled("x")}
               value={xAxis}
             >
               {Object.keys(getPopulation(plot.population).defaultRanges).map(

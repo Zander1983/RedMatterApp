@@ -15,7 +15,7 @@ import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygon
 import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
-import { getGate, getPlot } from "graph/utils/workspace";
+import { getGate, getPlot, getWorkspace } from "graph/utils/workspace";
 
 const plotterFactory = new PlotterFactory();
 
@@ -69,7 +69,9 @@ const PlotRenderer = React.memo(
       }
 
       setPlotterState(selectedPlotter);
-      selectedPlotter.draw();
+      try {
+        selectedPlotter.draw();
+      } catch {}
       const gatingType = plot.gatingActive;
       if (lastGatingType !== gatingType) {
         const isHistogram = plot.xAxis === plot.yAxis;
@@ -159,7 +161,7 @@ const PlotRenderer = React.memo(
         height: plot.plotHeight,
         scale: plot.plotScale,
         direction: plot.histogramAxis,
-        gates: props.plotGates,
+        gates: props.plot.gates.map((e) => getGate(e)),
         xRange: ranges.x,
         yRange: ranges.y,
       };
@@ -181,6 +183,7 @@ const PlotRenderer = React.memo(
                 "[PlotRender:setMouseEvent] Failed to send mouse event to",
                 e
               );
+              throw Error("Failure");
             }
           }
         });

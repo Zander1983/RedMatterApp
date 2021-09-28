@@ -5,9 +5,6 @@ import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
-import CardActions from "@material-ui/core/CardActions";
-import CardHeader from "@material-ui/core/CardHeader";
-import StarIcon from "@material-ui/icons/StarBorder";
 import Divider from "@material-ui/core/Divider";
 
 import loop_analytics from "../../assets/videos/loop_analytics.mp4";
@@ -95,35 +92,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "1.8em",
   },
 }));
-
-const serviceTiers = [
-  {
-    title: "Free",
-    price: "0",
-    description: ["10 experiments/month", "Public experiments"],
-    buttonText: "Sign up for free",
-    buttonVariant: "outlined",
-  },
-  {
-    title: "Premium",
-    subheader: "Most popular",
-    price: "30",
-    description: ["Unlimited experiments/month", "Private experiments"],
-    buttonText: "Get started",
-    buttonVariant: "contained",
-  },
-  {
-    title: "Enterprise",
-    price: "500",
-    description: [
-      "Unlimited experiments/month",
-      "Private experiments",
-      "Custom support",
-    ],
-    buttonText: "Contact us",
-    buttonVariant: "outlined",
-  },
-];
 
 const featureList = [
   {
