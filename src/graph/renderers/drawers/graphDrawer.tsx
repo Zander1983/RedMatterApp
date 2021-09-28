@@ -19,7 +19,7 @@ export interface GraphDrawerState extends DrawerState {
 }
 
 const binSize = 100;
-const minLabelPadding = 0.05;
+const minLabelPadding = 30;
 
 export default class GraphDrawer extends Drawer {
   x1: number;
@@ -137,7 +137,7 @@ export default class GraphDrawer extends Drawer {
         for (const label of params.labels) {
           let pos = (label.pos - min) / (max - min);
           const y = Math.abs(p1 - p2) * (1 - pos) + Math.min(p1, p2);
-          if (lastLabelPos !== null && lastLabelPos - minLabelPadding < y) {
+          if (lastLabelPos !== null && lastLabelPos < y) {
             continue;
           }
           this.segment({
@@ -154,13 +154,13 @@ export default class GraphDrawer extends Drawer {
             font: "20px Arial",
             fillColor: "black",
           });
-          lastLabelPos = y + 30;
+          lastLabelPos = y - minLabelPadding;
         }
       } else {
         for (const label of params.labels) {
           let pos = (label.pos - min) / (max - min);
           const x = Math.abs(p1 - p2) * pos + Math.min(p1, p2);
-          if (lastLabelPos !== null && lastLabelPos + minLabelPadding > x) {
+          if (lastLabelPos !== null && lastLabelPos > x) {
             continue;
           }
           this.segment({
@@ -177,7 +177,7 @@ export default class GraphDrawer extends Drawer {
             x: x - 24,
             y: op2 + 40,
           });
-          lastLabelPos = x + 30;
+          lastLabelPos = x + minLabelPadding;
         }
       }
       return;
