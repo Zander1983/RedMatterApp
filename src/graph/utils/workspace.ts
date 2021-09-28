@@ -158,5 +158,6 @@ const loadSavedWorkspace = async (
     notifications: [],
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
+  await WorkspaceDispatch.SetPreviousWorkspaces([]);
   notification.killNotification();
 };

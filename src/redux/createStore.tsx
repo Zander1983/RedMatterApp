@@ -5,10 +5,12 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 
 import reducers from "./reducers";
 import graphReducers from "graph/resources/reduxActions";
+import tempGraphReducers from "graph/resources/tempReduxActions";
 
 const rootReducer = combineReducers({
   user: reducers,
   workspace: graphReducers,
+  tempWorkspace: tempGraphReducers,
 });
 
 const persistConfig = {

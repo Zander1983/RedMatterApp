@@ -114,6 +114,7 @@
     "@types/react-material-ui-form-validator": "^2.1.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-scroll": "^1.8.2",
+    "@types/underscore": "^1.11.3",
     "envify": "^4.1.0",
     "jqueryui": "^1.11.1",
     "terser": "^5.7.0",

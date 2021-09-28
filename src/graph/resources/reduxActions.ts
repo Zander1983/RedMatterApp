@@ -1,7 +1,8 @@
 import { getWorkspace } from "graph/utils/workspace";
-import { store } from "redux/store";
 import WorkspaceDispatch from "./dispatchers";
 import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
+
+const maxPreviousWorkspaces = 100;
 
 export const graphActions = {
   RESET: "workspace.RESET",
@@ -24,6 +25,7 @@ export const graphActions = {
   SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
+  SET_PREVIOUS_WORKSPACES: "workspace.SET_PREVIOUS_WORKSPACES",
 };
 
 export const initialState: Workspace = {
@@ -33,7 +35,6 @@ export const initialState: Workspace = {
   files: [],
   plots: [],
   populations: [],
-  previousStates: [],
   sharedWorkspace: false,
 };
 
@@ -277,4 +278,10 @@ export const dispatchBatch = async (operations: any[]) => {
     workspace = graphReducers(workspace, operation);
   }
   await WorkspaceDispatch.LoadWorkspace(workspace);
+};
+
+export const workspaceValidator = (workspace: Workspace): boolean => {
+  const gates = workspace.gates.map((e) => e.id);
+  const gateIds = [];
+  return true;
 };

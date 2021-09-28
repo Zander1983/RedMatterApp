@@ -76,6 +76,7 @@ export default function MainBar(props: { plot: Plot }) {
     } else {
       plot.gatingActive = "histogram";
     }
+    console.log(props.plot.gatingActive, plot.gatingActive);
     WorkspaceDispatch.UpdatePlot(plot);
   };
 

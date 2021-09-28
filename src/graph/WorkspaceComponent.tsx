@@ -11,8 +11,6 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
-import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
-import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
@@ -24,7 +22,6 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
 import {
   dowloadAllFileEvents,
@@ -45,6 +42,7 @@ import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay from "./resources/notifications";
 import { initialState } from "./resources/reduxActions";
 import WorkspaceDispatch from "./resources/dispatchers";
+import { store } from "redux/store";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -91,6 +89,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const setPreviousWorkspace = (workspace: WorkspaceType) => {
+  const prevWorkspaces = store.getState().tempWorkspace.previousStates;
+  if (prevWorkspaces === undefined) {
+    WorkspaceDispatch.SetPreviousWorkspaces([workspace]);
+  } else {
+    WorkspaceDispatch.SetPreviousWorkspaces([
+      ...store.getState().tempWorkspace.previousStates,
+      workspace,
+    ]);
+  }
+};
+
 const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
@@ -123,8 +133,12 @@ const WorkspaceInnerComponent = (props: {
   };
 
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
-  //@ts-ignore
-  const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  const workspace: WorkspaceType = useSelector(
+    //@ts-ignore
+    (state) => state.workspace,
+    (a: any, b: any) => a === b
+  );
+  setPreviousWorkspace(workspace);
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
@@ -134,6 +148,8 @@ const WorkspaceInnerComponent = (props: {
     }
 
     initializeWorkspace();
+
+    setupKeyListeners();
 
     return () => {
       WorkspaceDispatch.ResetWorkspace();
@@ -153,6 +169,22 @@ const WorkspaceInnerComponent = (props: {
     setSavingWorkspace(true);
     await saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
     setSavingWorkspace(false);
+  };
+
+  const setupKeyListeners = () => {
+    document.onkeydown = (ev: KeyboardEvent) => {
+      if (ev.ctrlKey && ev.key === "z") {
+        const prevStates = store.getState().tempWorkspace.previousStates;
+        if (prevStates.length > 0) {
+          const last = prevStates[prevStates.length - 1];
+          WorkspaceDispatch.LoadWorkspace(last);
+          WorkspaceDispatch.SetPreviousWorkspaces(
+            prevStates.slice(0, prevStates.length - 1)
+          );
+          console.log("reverted");
+        }
+      }
+    };
   };
 
   var onLinkShareClick = async () => {
@@ -248,13 +280,8 @@ const WorkspaceInnerComponent = (props: {
       style={{
         height: "100%",
         padding: 0,
+        backgroundColor: "#f00",
       }}
-      // onKeyDown={(e: any) => {
-      //   try {
-      //     if (e.key === "Enter") {
-      //     }
-      //   } catch {}
-      // }}
     >
       {/* == MODALS == */}
       <div>

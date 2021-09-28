@@ -148,7 +148,6 @@ export interface Workspace {
   files: File[];
   plots: Plot[];
   populations: Population[];
-  previousStates: Workspace[];
   sharedWorkspace: boolean;
 }
 

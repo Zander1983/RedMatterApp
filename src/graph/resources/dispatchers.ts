@@ -1,5 +1,6 @@
 import { store } from "redux/store";
 import { graphActions } from "./reduxActions";
+import { tempGraphActions } from "./tempReduxActions";
 import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
 
 const WorkspaceDispatch = {
@@ -119,6 +120,12 @@ const WorkspaceDispatch = {
     return store.dispatch({
       type: graphActions.DELETE_NOTIFICATION,
       payload: { notification },
+    });
+  },
+  SetPreviousWorkspaces: (previousStates: Workspace[]) => {
+    return store.dispatch({
+      type: tempGraphActions.SET_PREVIOUS_WORKSPACES,
+      payload: { previousStates },
     });
   },
 };
