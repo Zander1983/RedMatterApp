@@ -183,7 +183,6 @@ const PlotRenderer = React.memo(
                 "[PlotRender:setMouseEvent] Failed to send mouse event to",
                 e
               );
-              throw Error("Failure");
             }
           }
         });

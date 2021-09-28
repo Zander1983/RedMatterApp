@@ -11,7 +11,12 @@ import {
   Population,
 } from "./types";
 import { createID } from "graph/utils/id";
-import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
+import {
+  getFile,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
 import { store } from "redux/store";
 import * as populations from "./populations";

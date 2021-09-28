@@ -104,7 +104,7 @@ export default abstract class GateMouseInteractor {
     await WorkspaceDispatch.UpdatePlot(plot);
     let basedOffPlot = { ...this.plotter.plot };
     basedOffPlot.gates = [];
-    PlotResource.createSubpopPlot(basedOffPlot, [
+    await PlotResource.createSubpopPlot(basedOffPlot, [
       { gate: gate.id, inverseGating: false },
     ]);
     const popGates = getPopulation(this.plotter.plot.population).gates.map(
