@@ -44,6 +44,7 @@ import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay from "../services/NotificationService";
 import { initialState } from "./resources/reduxActions";
+import WorkspaceDispatch from "./resources/dispatchers";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -126,23 +127,16 @@ const WorkspaceInnerComponent = (props: {
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   useEffect(() => {
-    store.dispatch({
-      type: "workspace.RESET",
-    });
+    WorkspaceDispatch.ResetWorkspace();
 
     if (store.getState().workspace.shared !== props.shared) {
-      store.dispatch({
-        type: "workspace.SET_WORKSPACE_SHARED",
-        payload: { sharedWorkspace: props.shared },
-      });
+      WorkspaceDispatch.SetWorkspaceShared(props.shared);
     }
 
     initializeWorkspace();
 
     return () => {
-      store.dispatch({
-        type: "workspace.RESET",
-      });
+      WorkspaceDispatch.ResetWorkspace();
       memResetDatasetCache();
     };
   }, []);
@@ -249,8 +243,6 @@ const WorkspaceInnerComponent = (props: {
     Debounce(() => saveWorkspace(), 5000);
   }
 
-  console.log("Workspace rerendered");
-
   return (
     <div
       style={{
@@ -320,9 +312,7 @@ const WorkspaceInnerComponent = (props: {
         }
         options={{
           yes: () => {
-            store.dispatch({
-              type: "workspace.RESET_EVERYTHING_BUT_FILES",
-            });
+            WorkspaceDispatch.ResetWorkspaceExceptFiles();
           },
           no: () => {
             handleClose(setClearModal);

@@ -18,6 +18,7 @@ import {
   PlotSpecificWorkspaceData,
   Workspace,
 } from "graph/resources/types";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -77,11 +78,7 @@ export const setCanvasSize = (save: boolean = false) => {
       updateList.push(plot);
     }
   }
-  if (save && plots.length > 0)
-    store.dispatch({
-      type: "workspace.UPDATE_PLOTS",
-      payload: { plots: updateList },
-    });
+  if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
@@ -170,10 +167,7 @@ class PlotController extends React.Component<PlotControllerProps> {
         plotChanges.push(plot);
       }
     }
-    store.dispatch({
-      type: "workspace.UPDATE_PLOTS",
-      payload: { plots: plotChanges },
-    });
+    WorkspaceDispatch.UpdatePlots(plotChanges);
   }
 
   componentWillReceiveProps(nextProps: any) {

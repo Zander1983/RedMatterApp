@@ -12,20 +12,7 @@ import {
   PopulationID,
 } from "./types";
 import * as DatasetResource from "graph/resources/dataset";
-
-export const commitPopulationChange = (population: Population) => {
-  store.dispatch({
-    type: "workspace.UPDATE_POPULATION",
-    payload: { population },
-  });
-};
-
-export const commitPopulation = (population: Population) => {
-  store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population },
-  });
-};
+import WorkspaceDispatch from "./dispatchers";
 
 export const createPopulation = ({
   clonePopulation,
@@ -117,12 +104,12 @@ export const addGate = (pop: Population, gate: GateID) => {
     gate: gate,
     inverseGating: false,
   });
-  commitPopulationChange(pop);
+  WorkspaceDispatch.UpdatePopulation(pop);
 };
 
 export const removeGate = (pop: Population, gate: GateID) => {
   pop.gates = pop.gates.filter((e) => e.gate !== gate);
-  commitPopulationChange(pop);
+  WorkspaceDispatch.UpdatePopulation(pop);
 };
 
 export const findRangeBoundries = (

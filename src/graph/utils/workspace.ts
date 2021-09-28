@@ -1,6 +1,7 @@
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import userManager from "Components/users/userManager";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 import {
   File,
   FileID,
@@ -156,9 +157,6 @@ const loadSavedWorkspace = async (
     files: getWorkspace().files,
     notifications: [],
   };
-  await store.dispatch({
-    type: "workspace.LOAD_WORKSPACE",
-    payload: { workspace: newWorkspace },
-  });
+  await WorkspaceDispatch.LoadWorkspace(newWorkspace);
   notification.killNotification();
 };

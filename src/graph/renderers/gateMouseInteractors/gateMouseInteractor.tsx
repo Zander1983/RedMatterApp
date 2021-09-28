@@ -6,6 +6,7 @@ import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
 import { getGate, getPopulation } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 export interface GateState {
   lastMousePos: Point;
@@ -71,10 +72,7 @@ export default abstract class GateMouseInteractor {
     let plot = this.plotter.plot;
     if (plot.gatingActive !== "" && !noDispatch) {
       plot.gatingActive = "";
-      store.dispatch({
-        type: "workspace.UPDATE_PLOT",
-        payload: { plot },
-      });
+      WorkspaceDispatch.UpdatePlot(plot);
     }
   }
 
@@ -99,17 +97,11 @@ export default abstract class GateMouseInteractor {
   async createAndAddGate() {
     const gate = this.instanceGate();
     gate.name = "Unammed gate";
-    await store.dispatch({
-      type: "workspace.ADD_GATE",
-      payload: { gate: { ...gate } },
-    });
+    await WorkspaceDispatch.AddGate({ ...gate });
     let plot = this.plotter.plot;
     plot.gates = [...plot.gates, gate.id];
     plot.gatingActive = "";
-    await store.dispatch({
-      type: "workspace.UPDATE_PLOT",
-      payload: { plot },
-    });
+    await WorkspaceDispatch.UpdatePlot(plot);
     let basedOffPlot = { ...this.plotter.plot };
     basedOffPlot.gates = [];
     PlotResource.createSubpopPlot(basedOffPlot, [
@@ -121,10 +113,7 @@ export default abstract class GateMouseInteractor {
     for (let popGate of popGates) {
       let popIGate = getGate(popGate);
       popIGate.children.push(gate.id);
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate: popIGate },
-      });
+      WorkspaceDispatch.UpdateGate(popIGate);
     }
     this.end();
   }
@@ -138,19 +127,13 @@ export default abstract class GateMouseInteractor {
       ...newPopulation.gates,
       { gate: gate.id, inverseGating: false },
     ];
-    await store.dispatch({
-      type: "workspace.ADD_POPULATION",
-      payload: { population: newPopulation },
-    });
+    await WorkspaceDispatch.AddPopulation(newPopulation);
     let newPlot = PlotResource.createPlot({
       clonePlot: originPlot,
       population: newPopulation,
     });
     newPlot.gates = [];
-    store.dispatch({
-      type: "workspace.ADD_PLOT",
-      payload: { plot: newPlot },
-    });
+    WorkspaceDispatch.AddPlot(newPlot);
   }
 
   registerMouseEvent(type: string, x: number, y: number) {
@@ -264,10 +247,7 @@ export default abstract class GateMouseInteractor {
         this.latest = gate;
       }
     } else if (gate !== null) {
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate },
-      });
+      WorkspaceDispatch.UpdateGate(gate);
       this.lastGateUpdate = new Date();
     }
   }

@@ -4,6 +4,7 @@ import { Notification as NotificationType } from "graph/resources/types";
 import { Button, CircularProgress, Grid } from "@material-ui/core";
 import { useSelector } from "react-redux";
 import Clear from "@material-ui/icons/Clear";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const NotificationsOverlay = () => {
   const allNotifications: NotificationType[] | undefined = useSelector(
@@ -11,12 +12,7 @@ const NotificationsOverlay = () => {
   );
 
   const deleteNotification = (e: NotificationType) => {
-    store.dispatch({
-      type: "workspace.DELETE_NOTIFICATION",
-      payload: {
-        notification: e,
-      },
-    });
+    WorkspaceDispatch.DeleteNotification(e);
   };
 
   return (
@@ -65,14 +61,9 @@ export class Notification {
 
   constructor(message: string, timeout?: number) {
     const id = createID();
-    store.dispatch({
-      type: "workspace.ADD_NOTIFICATION",
-      payload: {
-        notification: {
-          id,
-          message,
-        },
-      },
+    WorkspaceDispatch.AddNotification({
+      id,
+      message,
     });
     this.id = id;
     this.message = message;
@@ -82,14 +73,9 @@ export class Notification {
   }
 
   killNotification() {
-    store.dispatch({
-      type: "workspace.DELETE_NOTIFICATION",
-      payload: {
-        notification: {
-          id: this.id,
-          message: this.message,
-        },
-      },
+    WorkspaceDispatch.DeleteNotification({
+      id: this.id,
+      message: this.message,
     });
   }
 }

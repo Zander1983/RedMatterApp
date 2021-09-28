@@ -1,5 +1,6 @@
 import { getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
+import WorkspaceDispatch from "./dispatchers";
 import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
 
 export const graphActions = {
@@ -9,7 +10,7 @@ export const graphActions = {
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
-  ADD_MULTIPLE_PLOTS: "workspace.ADD_MULTIPLE_PLOTS",
+  ADD_PLOTS: "workspace.ADD_PLOTS",
   ADD_GATE: "workspace.ADD_GATE",
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
@@ -85,12 +86,22 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         plots: [...state.plots, newPlot],
       };
-    case graphActions.ADD_MULTIPLE_PLOTS:
+
+    case graphActions.ADD_PLOTS:
       const newPlots: Array<Plot> = action.payload.plots;
+      let failed = false;
+      newPlots.forEach((newPlot) => {
+        if (state.plots.find((e) => e.id === newPlot.id)) {
+          failed = true;
+          console.error("[workspace.ADD_PLOTS] Plot already in workspace");
+        }
+      });
+      if (failed) return state;
       return {
         ...state,
         plots: state.plots.concat(newPlots),
       };
+
     case graphActions.ADD_GATE:
       const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
@@ -265,8 +276,5 @@ export const dispatchBatch = async (operations: any[]) => {
   for (const operation of operations) {
     workspace = graphReducers(workspace, operation);
   }
-  await store.dispatch({
-    action: "workspace.LOAD_WORKSPACE",
-    payload: { workspace },
-  });
+  await WorkspaceDispatch.LoadWorkspace(workspace);
 };

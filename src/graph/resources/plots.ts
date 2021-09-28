@@ -9,16 +9,9 @@ import {
   GateID,
   File,
   Population,
-  Dataset,
 } from "./types";
 import { createID } from "graph/utils/id";
-import {
-  getFile,
-  getGate,
-  getPlot,
-  getPopulation,
-  getWorkspace,
-} from "graph/utils/workspace";
+import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
 import { store } from "redux/store";
 import * as populations from "./populations";
@@ -27,22 +20,8 @@ import {
   getDatasetColors,
   getDatasetFilteredPoints,
 } from "./dataset";
-import { includes } from "lodash";
 import { MINH, MINW } from "graph/components/workspaces/PlotController";
-
-export const commitPlotChange = (plot: Plot) => {
-  store.dispatch({
-    type: "workspace.UPDATE_PLOT",
-    payload: { plot },
-  });
-};
-
-export const commitMultiplePlots = (plots: Array<Plot>) => {
-  store.dispatch({
-    type: "workspace.ADD_MULTIPLE_PLOTS",
-    payload: { plots },
-  });
-};
+import WorkspaceDispatch from "./dispatchers";
 
 export const createPlot = ({
   clonePlot,
@@ -159,7 +138,7 @@ export const addOverlay = (
     plotId: plotId,
     plotSource: plotSource,
   });
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const addBarOverlay = (
@@ -174,14 +153,14 @@ export const addBarOverlay = (
     plotId: plotId,
     plotSource: plotSource,
   });
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const removeBarOverlay = (plot: Plot, overlayPlot: PlotID) => {
   plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
     (x) => x.plotId !== overlayPlot
   );
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
@@ -191,7 +170,7 @@ export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
     (x) => x.plotId !== targetPopulation
   );
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const removeOverlay = (plot: Plot, targetPlot: string) => {
@@ -199,18 +178,18 @@ export const removeOverlay = (plot: Plot, targetPlot: string) => {
     (e) => e.plotId !== targetPlot
   );
 
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
+export const createNewPlotFromPlot = async (
+  plot: Plot,
+  inverse: boolean = false
+) => {
   let newPlot = createPlot({ clonePlot: plot });
   let newPopulation = populations.createPopulation({
     clonePopulation: getPopulation(plot.population),
   });
-  store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population: newPopulation },
-  });
+  await WorkspaceDispatch.AddPopulation(newPopulation);
   newPlot.population = newPopulation.id;
   newPlot.parentPlotId = plot.id;
   newPlot.positions = {
@@ -221,17 +200,12 @@ export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
     w: MINW,
     h: MINH,
   };
-  store.dispatch({
-    type: "workspace.ADD_PLOT",
-    payload: {
-      plot: newPlot,
-    },
-  });
+  await WorkspaceDispatch.AddPlot(newPlot);
 };
 
 export const addGate = (plot: Plot, gate: GateID) => {
   plot.gates.push(gate);
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const removeGate = (plot: Plot, gate: GateID) => {
@@ -244,7 +218,7 @@ export const removeGate = (plot: Plot, gate: GateID) => {
     }
   }
   plot.gates = plot.gates.filter((g) => g !== gate);
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const addPopulation = (
@@ -278,55 +252,55 @@ export const removePopulation = (plot: Plot, gate: GateID) => {
 export const setWidthAndHeight = (plot: Plot, w: number, h: number) => {
   plot.plotWidth = w - 40;
   plot.plotHeight = h - 30;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setXAxisPlotType = (plot: Plot, plotType: PlotType) => {
   plot.gatingActive = "";
   plot.xPlotType = plotType;
   plot.axisPlotTypes[plot.xAxis] = plotType;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setYAxisPlotType = (plot: Plot, plotType: PlotType) => {
   plot.gatingActive = "";
   plot.yPlotType = plotType;
   plot.axisPlotTypes[plot.yAxis] = plotType;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const xAxisToHistogram = (plot: Plot) => {
   plot.gatingActive = "";
   plot.yAxis = plot.xAxis;
   plot.histogramAxis = "vertical";
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const yAxisToHistogram = (plot: Plot) => {
   plot.gatingActive = "";
   plot.xAxis = plot.yAxis;
   plot.histogramAxis = "horizontal";
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setXAxis = (plot: Plot, xAxis: string) => {
   plot.gatingActive = "";
   plot.xAxis = xAxis;
   plot.xPlotType = plot.axisPlotTypes[xAxis];
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setYAxis = (plot: Plot, yAxis: string) => {
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const disableHistogram = (plot: Plot) => {
   plot.gatingActive = "";
   plot.histogramAxis = "";
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const getXAxisName = (plot: Plot) => {
@@ -404,7 +378,7 @@ export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
   } else {
     plot.ranges = population.defaultRanges;
   }
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
@@ -474,15 +448,9 @@ export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
   population = populations.createPopulation({
     file: file.id,
   });
-  await store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population },
-  });
+  await WorkspaceDispatch.AddPopulation(population);
   const plot = createPlot({ population, clonePlot });
-  await store.dispatch({
-    type: "workspace.ADD_PLOT",
-    payload: { plot },
-  });
+  await WorkspaceDispatch.AddPlot(plot);
   await setupPlot(plot, population);
   return plot.id;
 };
@@ -503,27 +471,13 @@ export const createSubpopPlot = async (
   }
   pop.gates = pop.gates.concat(oldPop.gates);
   const promises: Promise<any>[] = [];
-  promises.push(
-    store.dispatch({
-      type: "workspace.UPDATE_POPULATION",
-      payload: {
-        population: pop,
-      },
-    })
-  );
+  promises.push(WorkspaceDispatch.UpdatePopulation(pop));
   const popGates = pop.gates.map((e) => e.gate);
   for (const gate of newPlot.gates) {
     if (popGates.includes(gate)) {
-      newPlot.gates.filter((e) => e != gate);
+      newPlot.gates.filter((e) => e !== gate);
     }
   }
-  promises.push(
-    store.dispatch({
-      type: "workspace.UPDATE_POPULATION",
-      payload: {
-        population: pop,
-      },
-    })
-  );
+  promises.push(WorkspaceDispatch.UpdatePopulation(pop));
   await Promise.all(promises);
 };

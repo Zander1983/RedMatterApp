@@ -8,6 +8,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { useSelector } from "react-redux";
 import { Gate } from "graph/resources/types";
 import { store } from "redux/store";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 export default function GateNamePrompt() {
   let gates: Gate[] = [];
@@ -31,10 +32,7 @@ export default function GateNamePrompt() {
   const renameGate = (newName: string) => {
     let gate = gates[gates.length - 1];
     gate.name = newName;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    WorkspaceDispatch.UpdateGate(gate);
     setOpen(false);
   };
 

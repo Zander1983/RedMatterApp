@@ -6,6 +6,7 @@ import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 import { Notification } from "services/NotificationService";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
@@ -39,17 +40,11 @@ export const downloadFileMetadata = async (
     file.eventCount = newFile.eventCount;
     if (newFile.id in workspace.files.map((e: File) => e.id)) {
       file = { ...getFile(newFile.id), ...file };
-      store.dispatch({
-        type: "workspace.UPDATE_FILE",
-        payload: { file },
-      });
+      WorkspaceDispatch.UpdateFile(file);
     } else {
       file.downloaded = false;
       file.id = newFile.id;
-      store.dispatch({
-        type: "workspace.ADD_FILE",
-        payload: { file },
-      });
+      WorkspaceDispatch.AddFile(file);
     }
     newFilesIds.push(file.id);
   }
@@ -106,10 +101,7 @@ export const downloadFileEvent = async (
   });
   newFile = { ...newFile, ...getFile(fileId) };
   newFile.downloaded = true;
-  store.dispatch({
-    type: "workspace.UPDATE_FILE",
-    payload: { file: newFile },
-  });
+  WorkspaceDispatch.UpdateFile(newFile);
   if (showNotifications) {
     notification.killNotification();
   }

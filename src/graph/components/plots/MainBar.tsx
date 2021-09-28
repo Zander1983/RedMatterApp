@@ -14,6 +14,7 @@ import { Plot, PopulationGateType } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
+import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const classes = {
   main: {
@@ -59,10 +60,7 @@ export default function MainBar(props: { plot: Plot }) {
   const plot = props.plot;
 
   const deletePlot = () => {
-    store.dispatch({
-      type: "workspace.DELETE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
   const handleClose = (func: Function) => {
@@ -78,10 +76,7 @@ export default function MainBar(props: { plot: Plot }) {
     } else {
       plot.gatingActive = "histogram";
     }
-    store.dispatch({
-      type: "workspace.UPDATE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.UpdatePlot(plot);
   };
 
   // const downloadCanvasAsImage = () => {

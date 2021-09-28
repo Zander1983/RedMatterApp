@@ -3,6 +3,7 @@ import { createID } from "graph/utils/id";
 import { getGate } from "graph/utils/workspace";
 import { Gate, GateID, HistogramGate, OvalGate, PolygonGate } from "./types";
 import { store } from "redux/store";
+import WorkspaceDispatch from "./dispatchers";
 
 export const createGate = ({
   cloneGate,
@@ -33,20 +34,6 @@ export const createGate = ({
   if (cloneGate) newGate.parents = [...cloneGate.parents, cloneGate.id];
   else newGate.parents = [];
   return newGate;
-};
-
-export const commitGateChange = (gate: Gate) => {
-  store.dispatch({
-    type: "workspace.UPDATE_GATE",
-    payload: { gate },
-  });
-};
-
-export const commitGate = (gate: Gate) => {
-  store.dispatch({
-    type: "workspace.ADD_GATE",
-    payload: { gate },
-  });
 };
 
 export const isPointInsideGate = (
