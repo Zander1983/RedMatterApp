@@ -137,7 +137,7 @@ export default class GraphDrawer extends Drawer {
         for (const label of params.labels) {
           let pos = (label.pos - min) / (max - min);
           const y = Math.abs(p1 - p2) * (1 - pos) + Math.min(p1, p2);
-          if (lastLabelPos !== null && lastLabelPos + minLabelPadding > y) {
+          if (lastLabelPos !== null && lastLabelPos - minLabelPadding < y) {
             continue;
           }
           this.segment({
