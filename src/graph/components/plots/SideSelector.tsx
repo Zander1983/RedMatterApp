@@ -18,6 +18,7 @@ import {
   PlotSpecificWorkspaceData,
   PlotType,
   Population,
+  Range,
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
@@ -268,6 +269,15 @@ function PlotComponent(props: {
           let plotPopulation = getPopulation(plot.population);
           population.gates = population.gates.concat(plotPopulation.gates);
           WorkspaceDispatch.AddPopulation(population);
+          // debugger;
+          // let xRanges = population.defaultRanges[plot.xAxis];
+          // xRanges = utilGetNewMinMax(xRanges, plot.ranges[plot.xAxis]);
+          // plot.ranges[plot.xAxis] = xRanges;
+          // let yRanges = population.defaultRanges[plot.yAxis];
+          // yRanges = utilGetNewMinMax(yRanges, plot.ranges[plot.yAxis]);
+          // plot.ranges[plot.yAxis] = yRanges;
+          // debugger;
+          // WorkspaceDispatch.UpdatePlot(plot);
           PlotResource.addOverlay(
             plot,
             "",
@@ -305,6 +315,15 @@ function PlotComponent(props: {
       //   }
       //   break;
     }
+  };
+
+  const utilGetNewMinMax = (
+    newRanges: [Number, Number],
+    oldRanges: [Number, Number]
+  ): any => {
+    let min = newRanges[0] > oldRanges[0] ? oldRanges[0] : newRanges[0];
+    let max = newRanges[1] > oldRanges[1] ? newRanges[1] : oldRanges[1];
+    return [min, max];
   };
 
   // const addHistogramOverlay = (
