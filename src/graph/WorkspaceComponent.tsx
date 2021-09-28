@@ -571,12 +571,11 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
   }
 
   static getDerivedStateFromError(error: any) {
+    WorkspaceDispatch.ResetWorkspace();
     return { hasError: true };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    console.log("componentDidCatch");
-    console.log(error, errorInfo);
     this.setState({
       hasError: true,
     });
