@@ -257,6 +257,12 @@ const WorkspaceInnerComponent = (props: {
         height: "100%",
         padding: 0,
       }}
+      // onKeyDown={(e: any) => {
+      //   try {
+      //     if (e.key === "Enter") {
+      //     }
+      //   } catch {}
+      // }}
     >
       {/* == MODALS == */}
       <div>

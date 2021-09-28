@@ -7,10 +7,10 @@ import { Gate, Plot } from "graph/resources/types";
 import { getFile, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 
-export const leftPadding = 70;
-export const rightPadding = 50;
-export const topPadding = 50;
-export const bottomPadding = 50;
+export const leftPadding = 55;
+export const rightPadding = 20;
+export const topPadding = 40;
+export const bottomPadding = 35;
 
 export interface GraphPlotterState extends PlotterState {
   plot: Plot;
@@ -92,7 +92,7 @@ export default class GraphPlotter extends Plotter {
     }
     this.drawer.text({
       x: leftPadding * this.scale,
-      y: 30 * this.scale,
+      y: ((topPadding * 2) / 3) * this.scale,
       text,
       font: "500 30px Quicksand",
     });
