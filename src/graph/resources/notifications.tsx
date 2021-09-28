@@ -1,5 +1,5 @@
 import { store } from "redux/store";
-import { createID } from "../graph/utils/id";
+import { createID } from "../utils/id";
 import { Notification as NotificationType } from "graph/resources/types";
 import { Button, CircularProgress, Grid } from "@material-ui/core";
 import { useSelector } from "react-redux";
@@ -29,25 +29,25 @@ const NotificationsOverlay = () => {
           <Grid
             key={e.id}
             container
-            justify="center"
             style={{
               backgroundColor: "#EEF",
               border: "solid 1px #ddd",
-              boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;",
+              boxShadow: "rgba(100, 100, 111, 0.2) 0px 3px 3px 0px",
               padding: 3,
               paddingTop: 5,
               borderRadius: 5,
-              marginTop: 3,
+              marginTop: 5,
+              textAlign: "left",
             }}
           >
-            <CircularProgress size={17} />
-            <b style={{ marginLeft: 10, marginTop: -3 }}>{e.message}</b>
-            <Button
+            <button
               onClick={() => deleteNotification(e)}
-              style={{ height: 20 }}
+              style={{ height: 20, border: 0 }}
             >
               <Clear fontSize="small" style={{ marginTop: -2 }} />
-            </Button>
+            </button>
+            <CircularProgress size={17} />
+            <b style={{ marginLeft: 10, marginTop: -3 }}>{e.message}</b>
           </Grid>
         );
       })}

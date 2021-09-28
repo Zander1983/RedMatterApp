@@ -42,7 +42,7 @@ import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
-import NotificationsOverlay from "../services/NotificationService";
+import NotificationsOverlay from "./resources/notifications";
 import { initialState } from "./resources/reduxActions";
 import WorkspaceDispatch from "./resources/dispatchers";
 

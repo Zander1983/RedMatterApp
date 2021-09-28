@@ -5,7 +5,7 @@ import { getFile, getWorkspace } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
-import { Notification } from "services/NotificationService";
+import { Notification } from "graph/resources/notifications";
 import WorkspaceDispatch from "graph/resources/dispatchers";
 
 export const downloadFileMetadata = async (

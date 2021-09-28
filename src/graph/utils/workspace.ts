@@ -15,7 +15,7 @@ import {
 } from "graph/resources/types";
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
-import { Notification } from "services/NotificationService";
+import { Notification } from "graph/resources/notifications";
 import { snackbarService } from "uno-material-ui";
 
 export const getWorkspace = (): Workspace => {
