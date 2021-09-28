@@ -279,9 +279,3 @@ export const dispatchBatch = async (operations: any[]) => {
   }
   await WorkspaceDispatch.LoadWorkspace(workspace);
 };
-
-export const workspaceValidator = (workspace: Workspace): boolean => {
-  const gates = workspace.gates.map((e) => e.id);
-  const gateIds = [];
-  return true;
-};

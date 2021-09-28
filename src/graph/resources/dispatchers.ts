@@ -5,14 +5,22 @@ import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
 
 const WorkspaceDispatch = {
   ResetWorkspace: () => {
-    return store.dispatch({
+    const w = store.dispatch({
       type: graphActions.RESET,
     });
+    const tempW = store.dispatch({
+      type: tempGraphActions.RESET,
+    });
+    return Promise.all([tempW, w]);
   },
   ResetWorkspaceExceptFiles: () => {
-    return store.dispatch({
+    const w = store.dispatch({
       type: graphActions.RESET_EVERYTHING_BUT_FILES,
     });
+    const tempW = store.dispatch({
+      type: tempGraphActions.RESET,
+    });
+    return Promise.all([tempW, w]);
   },
   LoadWorkspace: (workspace: Workspace) => {
     return store.dispatch({
