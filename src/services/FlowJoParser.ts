@@ -32,13 +32,7 @@ const getFileOrSkipThisSample = (
   let repeatFileUse = false;
   for (let i = 0; i < files.length; i++) {
     let file = files[i];
-    let axes = file.axes.map((x: any) => {
-      if (x.includes("Comp-")) {
-        x = x.replace("Comp-", "");
-        return x;
-      }
-      return x;
-    });
+    let axes = file.axes;
     for (let j = 0; j < axes.length; j++) {
       let channelCheck = channels.filter((x: string) => axes[j].includes(x));
       if (channelCheck.length == 0) {
@@ -136,8 +130,14 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
         );
 
         plot = createBlankPlotObj();
-        plot.xAxis = `${xAxisName} - ${xAxisName}`;
-        plot.yAxis = `${yAxisName} - ${yAxisName}`;
+        let fileXAxis = file.axes.filter((x: string) =>
+          x.includes(xAxisName)
+        )[0];
+        let fileYAxis = file.axes.filter((x: string) =>
+          x.includes(yAxisName)
+        )[0];
+        plot.xAxis = fileXAxis;
+        plot.yAxis = fileYAxis;
         plot.xPlotType = xChannelInfo.type;
         plot.yPlotType = yChannelInfo.type;
         plot.ranges[plot.xAxis] = [
@@ -249,10 +249,11 @@ const parseSubpopulation = async (
       let xAxisName = xAxis["_attributes"].name;
       let yAxisName = yAxis["_attributes"].name;
       let file = getFile(fileId);
-
+      let fileXAxis = file.axes.filter((x: string) => x.includes(xAxisName))[0];
+      let fileYAxis = file.axes.filter((x: string) => x.includes(yAxisName))[0];
       newPlot = createBlankPlotObj();
-      newPlot.xAxis = `${xAxisName} - ${xAxisName}`;
-      newPlot.yAxis = `${yAxisName} - ${yAxisName}`;
+      newPlot.xAxis = fileXAxis;
+      newPlot.yAxis = fileYAxis;
       let xChannelInfo = channelsInfo.find(
         (x: any) => x.channelName == xAxisName
       );
@@ -273,8 +274,8 @@ const parseSubpopulation = async (
         let polygonGate: PolygonGate = {
           id: "",
           name: population["_attributes"].name,
-          xAxis: `${xAxisName} - ${xAxisName}`,
-          yAxis: `${yAxisName} - ${yAxisName}`,
+          xAxis: fileXAxis, //`${xAxisName} - ${xAxisName}`,
+          yAxis: fileYAxis, //`${yAxisName} - ${yAxisName}`,
           color: generateColor(),
           xAxisType: xChannelInfo.type,
           yAxisType: yChannelInfo.type,
