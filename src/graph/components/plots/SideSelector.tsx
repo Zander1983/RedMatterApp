@@ -269,15 +269,13 @@ function PlotComponent(props: {
           let plotPopulation = getPopulation(plot.population);
           population.gates = population.gates.concat(plotPopulation.gates);
           WorkspaceDispatch.AddPopulation(population);
-          // debugger;
-          // let xRanges = population.defaultRanges[plot.xAxis];
-          // xRanges = utilGetNewMinMax(xRanges, plot.ranges[plot.xAxis]);
-          // plot.ranges[plot.xAxis] = xRanges;
-          // let yRanges = population.defaultRanges[plot.yAxis];
-          // yRanges = utilGetNewMinMax(yRanges, plot.ranges[plot.yAxis]);
-          // plot.ranges[plot.yAxis] = yRanges;
-          // debugger;
-          // WorkspaceDispatch.UpdatePlot(plot);
+          let xRanges = population.defaultRanges[plot.xAxis];
+          xRanges = utilGetNewMinMax(xRanges, plot.ranges[plot.xAxis]);
+          plot.ranges[plot.xAxis] = xRanges;
+          let yRanges = population.defaultRanges[plot.yAxis];
+          yRanges = utilGetNewMinMax(yRanges, plot.ranges[plot.yAxis]);
+          plot.ranges[plot.yAxis] = yRanges;
+          WorkspaceDispatch.UpdatePlot(plot);
           PlotResource.addOverlay(
             plot,
             "",

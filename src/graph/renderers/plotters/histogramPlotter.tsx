@@ -184,7 +184,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
 
     let globlMax = this.mainBins.max;
-    this.globalMax = globlMax;
+    //this.globalMax = globlMax;
     let range = this.plot.ranges[axis];
 
     const overlaysObj = this.plot.histogramOverlays.filter(
@@ -230,7 +230,6 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       const lastMax = overlayRes.max;
       if (lastMax > globlMax) globlMax = lastMax;
     }
-    debugger;
 
     const barOverlays = this.plot.histogramOverlays.filter(
       (x) => x.plotType == COMMON_CONSTANTS.Bar
@@ -244,6 +243,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         : "";
 
     if (barOverlays) {
+      let allBins: any = [];
       for (let i = 0; i < barOverlays.length; i++) {
         if (!barOverlays[i]) continue;
         let newPlotData = createBlankPlotObj();
@@ -268,28 +268,27 @@ export default class HistogramPlotter extends PluginGraphPlotter {
           this.bins,
           axis
         );
-
         const lastMax = newBins.max;
-
-        let overlayMainHist = newBins;
+        if (lastMax > globlMax) globlMax = lastMax;
+        allBins.push(newBins);
+      }
+      for (let i = 0; i < allBins.length; i++) {
         let newBinsArray = [];
-
-        for (let j = 0; j < this.bins; j++) {
+        let newBins = allBins[i];
+        for (let j = 0; j < newBins.list.length; j++) {
           newBinsArray.push({
-            value: overlayMainHist.list[j] / this.globalMax,
+            value: newBins.list[j] / globlMax,
             color: barOverlays[i].color,
           });
         }
         parentBinsArray.push(newBinsArray);
         newBinsArray = [];
-
-        if (lastMax > globlMax) globlMax = lastMax;
       }
     }
 
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
-        value: this.mainBins.list[i] / this.globalMax,
+        value: this.mainBins.list[i] / globlMax,
         color: mainPlotColor,
       });
     }
@@ -318,7 +317,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         .map((e: any, i: number) => {
           return this.drawer.getBinPos(
             i,
-            e / this.globalMax,
+            e / globlMax,
             Math.floor(this.bins / this.DRAW_DIVISION_CONST)
           );
         })
@@ -333,20 +332,5 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     }
     this.globalMax = globlMax;
     this.update();
-    if (this.direction === "vertical") {
-      super.draw({
-        lines: false,
-        vbins: (this.height - bottomPadding) / 50,
-        hbins: (this.width - rightPadding) / 50,
-        yCustomLabelRange: [0, this.globalMax],
-      });
-    } else {
-      super.draw({
-        lines: false,
-        vbins: (this.height - bottomPadding) / 50,
-        hbins: (this.width - rightPadding) / 50,
-        xCustomLabelRange: [0, this.globalMax],
-      });
-    }
   }
 }

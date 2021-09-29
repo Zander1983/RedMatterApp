@@ -26,9 +26,7 @@ const getFileOrSkipThisSample = (
   channelsInfo: any,
   files: any
 ) => {
-  let channels = channelsInfo.map((x: any) => {
-    return `${x.channelName} - ${x.channelName}`;
-  });
+  let channels = channelsInfo.map((x: any) => x.channelName);
   let fileCanbeUsed = true;
   let fileId = "";
   let repeatFileUse = false;
@@ -42,7 +40,8 @@ const getFileOrSkipThisSample = (
       return x;
     });
     for (let j = 0; j < axes.length; j++) {
-      if (!channels.includes(axes[j])) {
+      let channelCheck = channels.filter((x: string) => axes[j].includes(x));
+      if (channelCheck.length == 0) {
         fileCanbeUsed = false;
         break;
       }
