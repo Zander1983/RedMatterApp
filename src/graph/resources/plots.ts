@@ -9,6 +9,7 @@ import {
   GateID,
   File,
   Population,
+  HistogramAxisType,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -299,6 +300,14 @@ export const setYAxis = (plot: Plot, yAxis: string) => {
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
+  WorkspaceDispatch.UpdatePlot(plot);
+};
+
+export const setHistogramAxis = (
+  plot: Plot,
+  histogramAxis: HistogramAxisType
+) => {
+  plot.histogramAxis = histogramAxis;
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
