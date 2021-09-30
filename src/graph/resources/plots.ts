@@ -41,7 +41,7 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
-  let newPlot = createBlankPlotObj();
+  let newPlot = createEmptyPlot();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
@@ -63,7 +63,7 @@ export const createPlot = ({
   return setupPlot(newPlot);
 };
 
-export const createBlankPlotObj = (): Plot => {
+export const createEmptyPlot = (): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
@@ -154,11 +154,12 @@ export const addOverlay = async (
     population.gates = population.gates.concat(plotPopulation.gates);
     await WorkspaceDispatch.AddPopulation(population);
     const newHistogramOverlay: HistogramOverlay = {
+      id: createID(),
       color: generateColor(),
-      plotSource: "file",
-      plotType: plot.xPlotType,
-      fileId: fromFile,
-      populationId: population.id,
+      dataSource: "file",
+      overlayType: "line",
+      file: fromFile,
+      population: population.id,
     };
     plot.histogramOverlays.push(newHistogramOverlay);
   } else {
@@ -167,30 +168,28 @@ export const addOverlay = async (
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const changeOverlayType = (
-  plot: Plot,
-  targetPlotId: String,
-  fileId: String,
-  newType: PlotType,
-  oldType: PlotType
-) => {
-  let overlay: HistogramOverlay = plot.histogramOverlays.find(
-    (e) =>
-      e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
-  );
-  overlay.plotType = newType;
-  WorkspaceDispatch.UpdatePlot(plot);
-};
+// export const changeOverlayType = (
+//   plot: Plot,
+//   targetPlotId: String,
+//   fileId: String,
+//   newType: PlotType,
+//   oldType: PlotType
+// ) => {
+//   let overlay: HistogramOverlay = plot.histogramOverlays.find(
+//     (e) =>
+//       e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
+//   );
+//   overlay.plotType = newType;
+//   WorkspaceDispatch.UpdatePlot(plot);
+// };
 
 export const removeOverlay = (
   plot: Plot,
-  targetPlotId: String,
-  fileId: String
+  histogramOverlay: HistogramOverlay
 ) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.fileId !== fileId
+    (e) => e.id !== histogramOverlay.id
   );
-
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
@@ -353,7 +352,7 @@ export const getHistogramBins = (
   binCount?: number,
   targetAxis?: string
 ) => {
-  binCount = binCount === undefined ? getBinCount(plot) : binCount;
+  binCount = Math.round(binCount);
   const axisName =
     targetAxis === undefined
       ? plot.histogramAxis === "vertical"

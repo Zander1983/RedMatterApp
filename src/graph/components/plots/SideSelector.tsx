@@ -5,7 +5,6 @@ import {
   Select,
   CircularProgress,
   FormControl,
-  Grid,
 } from "@material-ui/core";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import {
@@ -123,9 +122,8 @@ function PlotComponent(props: {
     fileId: string = ""
   ): HistogramOverlay | null => {
     let overlayPlot = plot.histogramOverlays.find(
-      (x) => x.plotId === plotId && x.fileId === fileId
+      (x) => x.plot === plotId || x.file === fileId
     );
-
     return overlayPlot ? overlayPlot : null;
   };
 
@@ -142,31 +140,14 @@ function PlotComponent(props: {
     addFile?: File,
     addPlot?: Plot
   ) => {
-    console.log(dataSource, addFile, addPlot);
     setHistogramOverlayOpen(false);
     let histogramOverlay: HistogramOverlay;
     if (dataSource === "file") {
       if (!addFile) throw Error("File overlay of undefined file");
       histogramOverlay = isHistogramSelected(plot.id, addFile.id);
-
       if (histogramOverlay) {
-        console.log("Histogram overlay found");
-        if (histogramOverlay.plotType === plot.xPlotType) {
-          console.log("Removing overlay");
-
-          PlotResource.removeOverlay(plot, histogramOverlay.plotId, addFile.id);
-        } else {
-          console.log("Change plottype overlay");
-          PlotResource.changeOverlayType(
-            plot,
-            histogramOverlay.plotId,
-            addFile.id,
-            plot.xPlotType,
-            histogramOverlay.plotType
-          );
-        }
+        PlotResource.removeOverlay(plot, histogramOverlay);
       } else {
-        console.log("Adding new overlay");
         if (!isDownloaded(addFile.id))
           await downloadFileEvent(
             props.sharedWorkspace,
@@ -181,18 +162,6 @@ function PlotComponent(props: {
     } else {
       throw Error("Plot overlays not implemented");
     }
-  };
-
-  const isOptionSelected = (
-    plotId: string,
-    fileId: string,
-    type: string = ""
-  ) => {
-    let plot = isHistogramSelected(plotId, fileId);
-    if (plot && type === plot.plotType) {
-      return "#6666aa";
-    }
-    return "#66d";
   };
 
   const getHistogramSelectedColor = (
@@ -328,8 +297,10 @@ function PlotComponent(props: {
             );
           })}
         </div> */}
-        {/* //TODO */}
+
+        {/* TODO: Add range sliders back */}
         {/* <RangeSliders plot={plot} /> */}
+
         {props.canvasComponent}
         <div
           style={{

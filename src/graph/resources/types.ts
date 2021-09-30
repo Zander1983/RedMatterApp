@@ -16,6 +16,7 @@ export type HistogramAxisType = "" | "horizontal" | "vertical";
 export type Range = [number, number];
 export type Dataset = { [index: string]: Float32Array };
 export type OverlaySource = "file" | "plot";
+export type OverlayType = "line" | "bar";
 
 export interface Dimension {
   w: number;
@@ -28,12 +29,13 @@ export interface Point2D {
 }
 
 export interface HistogramOverlay {
+  id: string;
+  overlayType: OverlayType;
+  population: PopulationID;
   color: Color;
-  plotId?: PlotID;
-  plotSource: OverlaySource;
-  plotType: PlotType;
-  fileId?: FileID;
-  populationId: PopulationID;
+  dataSource: OverlaySource;
+  file?: FileID;
+  plot?: PlotID;
 }
 
 export interface PopulationGateType {
