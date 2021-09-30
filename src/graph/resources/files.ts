@@ -1,6 +1,14 @@
 import { createID } from "graph/utils/id";
 import { createDataset } from "./dataset";
 import { EventsRequestResponse, File, FileID } from "./types";
+import { store } from "redux/store";
+
+export const commitFileChange = async (file: File) => {
+  store.dispatch({
+    type: "workspace.UPDATE_FILE",
+    payload: { file: file },
+  });
+};
 
 export const createFile = async ({
   cloneFile,
@@ -23,6 +31,7 @@ export const createFile = async ({
     fileSize: 0,
     experimentId: "",
     createdOn: new Date(),
+    downloading: false,
   };
   const createdID = createID();
   if (requestData) {
