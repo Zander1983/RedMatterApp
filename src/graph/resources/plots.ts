@@ -9,6 +9,8 @@ import {
   GateID,
   File,
   Population,
+  HistogramOverlay,
+  FileID,
   HistogramAxisType,
 } from "./types";
 import { createID } from "graph/utils/id";
@@ -38,7 +40,7 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
-  let newPlot = createBlankPlotObj();
+  let newPlot = createEmptyPlot();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
@@ -60,14 +62,13 @@ export const createPlot = ({
   return setupPlot(newPlot);
 };
 
-export const createBlankPlotObj = (): Plot => {
+export const createEmptyPlot = (): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
     axisPlotTypes: {},
     gates: [],
     histogramOverlays: [],
-    histogramBarOverlays: [],
     population: "",
     xAxis: "",
     yAxis: "",
@@ -132,58 +133,62 @@ export const getPlotOverlays = (plot: Plot) => {
   });
 };
 
-export const addOverlay = (
+export const addOverlay = async (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  {
+    fromFile,
+    fromPlot,
+  }: {
+    fromFile?: FileID;
+    fromPlot?: PlotID;
+  }
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
+  if (fromPlot) {
+    throw Error("Plot overlays not implemented");
+  } else if (fromFile) {
+    let population: Population = populations.createPopulation({
+      file: fromFile,
+    });
+    let plotPopulation = getPopulation(plot.population);
+    population.gates = population.gates.concat(plotPopulation.gates);
+    await WorkspaceDispatch.AddPopulation(population);
+    const newHistogramOverlay: HistogramOverlay = {
+      id: createID(),
+      color: generateColor(),
+      dataSource: "file",
+      overlayType: "line",
+      file: fromFile,
+      population: population.id,
+    };
+    plot.histogramOverlays.push(newHistogramOverlay);
+  } else {
+    throw Error("No overlay source found");
+  }
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const addBarOverlay = (
+// export const changeOverlayType = (
+//   plot: Plot,
+//   targetPlotId: String,
+//   fileId: String,
+//   newType: PlotType,
+//   oldType: PlotType
+// ) => {
+//   let overlay: HistogramOverlay = plot.histogramOverlays.find(
+//     (e) =>
+//       e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
+//   );
+//   overlay.plotType = newType;
+//   WorkspaceDispatch.UpdatePlot(plot);
+// };
+
+export const removeOverlay = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  histogramOverlay: HistogramOverlay
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramBarOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
-export const removeBarOverlay = (plot: Plot, overlayPlot: PlotID) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== overlayPlot
-  );
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
-export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== targetPopulation
-  );
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (x) => x.plotId !== targetPopulation
+    (e) => e.id !== histogramOverlay.id
   );
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
-export const removeOverlay = (plot: Plot, targetPlot: string) => {
-  plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlot
-  );
-
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
@@ -346,7 +351,7 @@ export const getHistogramBins = (
   binCount?: number,
   targetAxis?: string
 ) => {
-  binCount = binCount === undefined ? getBinCount(plot) : binCount;
+  binCount = Math.round(binCount);
   const axisName =
     targetAxis === undefined
       ? plot.histogramAxis === "vertical"
