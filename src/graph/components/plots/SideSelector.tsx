@@ -66,7 +66,6 @@ function PlotComponent(props: {
       setOldAxis({ ...oldAxis, y: yAxis });
       PlotResource.xAxisToHistogram(plot);
     } else {
-      PlotResource.setXAxis(plot, oldAxis.y);
       PlotResource.setYAxis(plot, oldAxis.x);
       PlotResource.disableHistogram(plot);
     }
@@ -88,13 +87,6 @@ function PlotComponent(props: {
       axis === "x"
         ? PlotResource.setXAxis(plot, value)
         : PlotResource.setYAxis(plot, value);
-    }
-  };
-
-  const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
-    if (lastSelectEvent + 500 < new Date().getTime()) {
-      func(e);
-      setLastSelectEvent(new Date().getTime());
     }
   };
 
@@ -205,10 +197,9 @@ function PlotComponent(props: {
             if (e.target.value === "hist") {
               setHistogram(!isPlotHistogram());
             } else {
-              handleSelectEvent(e, "y", (e: any) => {
-                if (isPlotHistogram()) setHistogram(false);
-                setAxis("y", e.target.value);
-              });
+              if (isPlotHistogram()) setHistogram(false);
+              //@ts-ignore
+              setAxis("y", e.target.value);
             }
           }}
           value={isPlotHistogram() ? "hist" : yAxis}
@@ -315,9 +306,8 @@ function PlotComponent(props: {
             <Select
               style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
               onChange={(e) => {
-                handleSelectEvent(e, "x", (e: any) => {
-                  setAxis("x", e.target.value);
-                });
+                //@ts-ignore
+                setAxis("x", e.target.value);
               }}
               value={xAxis}
             >

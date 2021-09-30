@@ -73,12 +73,9 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
 
   private validateGateOnSpace(gate: HistogramGate) {
     return (
-      (gate.axis === this.plotter.plot.xAxis &&
-        gate.axisType === this.plotter.plot.xPlotType &&
-        gate.histogramDirection === "vertical") ||
-      (gate.axis === this.plotter.plot.yAxis &&
-        gate.axisType === this.plotter.plot.yPlotType &&
-        gate.histogramDirection === "horizontal")
+      gate.axis === this.plotter.plot.xAxis &&
+      gate.axisType === this.plotter.plot.xPlotType &&
+      gate.histogramDirection === "vertical"
     );
   }
 

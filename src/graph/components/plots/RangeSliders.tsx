@@ -10,6 +10,8 @@ import RangeResizeModal from "../modals/rangeResizeModal";
 
 const SLIDE_POWER = 5e-3;
 
+// TODO: Renable range slider
+
 function RangeSliders(props: { plot: Plot }) {
   // const plot = props.plot;
 
