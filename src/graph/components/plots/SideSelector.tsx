@@ -54,6 +54,7 @@ function PlotComponent(props: {
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
+  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     axis === "x"

@@ -9,10 +9,9 @@ import {
   GateID,
   File,
   Population,
-  Dataset,
   HistogramOverlay,
-  HistogramAxisType,
   FileID,
+  HistogramAxisType,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
