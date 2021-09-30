@@ -84,33 +84,45 @@ export const setCanvasSize = (save: boolean = false) => {
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   let widthUsed = 0;
   let maxWidth = MINW * 4;
-  for (let i = 0; i <= index; i++) {
-    let plot = plots[i];
-    if (index != i) widthUsed += plot.dimensions.w;
-    let factor = maxWidth * ((i + 1) / 4) - widthUsed;
-    if ((i + 1) % 4 == 0 && factor > 0) {
-      widthUsed = widthUsed + factor;
-    }
-  }
-
+  let maxHeight = 0;
   let x = plotData.positions.x;
   let y = plotData.positions.y;
   let w = plotData.dimensions.w;
   let h = plotData.dimensions.h;
   let newy = y;
   let newX = x;
-
-  if (index > 0) {
-    if (x == 0) {
-      newy = widthUsed / maxWidth;
-      if (newy >= 1) {
-        newX = widthUsed - maxWidth * newy;
-      } else newX = widthUsed;
+  let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
+  nPlots.sort(function (a: Plot, b: Plot) {
+    var x = a.positions.x - b.positions.x;
+    return x == 0 ? a.positions.y - b.positions.x : x;
+  });
+  for (let i = 0; i < index; i++) {
+    let plot = nPlots[i];
+    if (i != 0 && plot.positions.x >= 0 && plot.positions.x <= newX) {
+      if (maxWidth - newX > plotData.dimensions.w) {
+        break;
+      }
     }
-    if (y == 0) {
-      newy = widthUsed / maxWidth;
+    newX = plot.dimensions.w + plot.positions.x;
+    if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
+    if (newX + MINW > maxWidth) {
+      newX = 0;
+      newy = maxHeight;
+      maxHeight = 0;
     }
   }
+
+  // if (index > 0) {
+  //   if (x == 0) {
+  //     newy = widthUsed / maxWidth;
+  //     if (newy >= 1) {
+  //       newX = widthUsed - maxWidth * newy;
+  //     } else newX = widthUsed;
+  //   }
+  //   if (y == 0) {
+  //     newy = widthUsed / maxWidth;
+  //   }
+  // }
 
   return {
     x: newX,
