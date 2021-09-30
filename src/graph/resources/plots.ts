@@ -287,13 +287,6 @@ export const xAxisToHistogram = (plot: Plot) => {
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const yAxisToHistogram = (plot: Plot) => {
-  plot.gatingActive = "";
-  plot.xAxis = plot.yAxis;
-  plot.histogramAxis = "horizontal";
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
 export const setXAxis = (plot: Plot, xAxis: string) => {
   plot.gatingActive = "";
   plot.xAxis = xAxis;

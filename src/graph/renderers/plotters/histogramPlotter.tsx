@@ -13,12 +13,10 @@ import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
 import { createEmptyPlot, createPlot } from "graph/resources/plots";
 
 interface HistogramPlotterState extends GraphPlotterState {
-  direction: "vertical" | "horizontal";
   bins: number;
 }
 
 export default class HistogramPlotter extends PluginGraphPlotter {
-  direction: "vertical" | "horizontal" = "vertical";
   bins: number = 1;
   drawer: HistogramDrawer;
 
@@ -60,7 +58,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       xpts: hBins,
       ypts: vBins,
       bins: this.bins,
-      axis: this.direction,
+      axis: "vertical",
     };
 
     this.drawer.setDrawerState(drawerState);
@@ -69,14 +67,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   public getPlotterState() {
     return {
       ...super.getPlotterState(),
-      direction: this.direction,
       bins: this.bins,
     };
   }
 
   public setPlotterState(state: HistogramPlotterState) {
     super.setPlotterState(state);
-    this.direction = state.direction;
     this.bins = state.bins !== undefined ? state.bins : 0;
   }
   public createDrawer(): void {
@@ -88,29 +84,12 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     this.horizontalBinCount =
       this.width === undefined
         ? 2
-        : Math.max(
-            2,
-            Math.round(
-              this.width /
-                ((this.direction === "vertical" ? 1 : this.binSize) *
-                  this.scale)
-            )
-          );
+        : Math.max(2, Math.round(this.width / this.scale));
     this.verticalBinCount =
       this.height === undefined
         ? 2
-        : Math.max(
-            2,
-            Math.round(
-              this.height /
-                ((this.direction === "vertical" ? this.binSize : 1) *
-                  this.scale)
-            )
-          );
-    this.bins =
-      this.direction === "vertical"
-        ? this.horizontalBinCount
-        : this.verticalBinCount;
+        : Math.max(2, Math.round(this.height / this.scale));
+    this.bins = this.horizontalBinCount;
   }
 
   public update() {

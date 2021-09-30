@@ -6,7 +6,6 @@ import { Label } from "../transformers/graphTransformer";
 const binPadding = 0;
 
 interface HistogramDrawerState extends GraphDrawerState {
-  axis: "vertical" | "horizontal";
   bins: number;
 }
 
@@ -14,7 +13,6 @@ interface HistogramDrawerState extends GraphDrawerState {
 export default class HistogramDrawer extends GraphDrawer {
   private binSize: number;
   private bins: number;
-  public axis: "vertical" | "horizontal" = "vertical";
 
   update() {
     super.update();
@@ -22,7 +20,6 @@ export default class HistogramDrawer extends GraphDrawer {
 
   setDrawerState(state: HistogramDrawerState) {
     super.setDrawerState(state);
-    this.axis = state.axis;
     this.bins = state.bins;
   }
 
@@ -30,7 +27,6 @@ export default class HistogramDrawer extends GraphDrawer {
     return {
       ...super.getDrawerState(),
       bins: this.bins,
-      axis: this.axis,
     };
   }
 
