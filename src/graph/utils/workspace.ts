@@ -48,9 +48,10 @@ export const getPopulation = (populationID: PopulationID): Population => {
   const populations = workspace.populations.filter(
     (population) => population.id === populationID
   );
-  if (populations.length === 0) throw Error("Population not found");
+  if (populations.length === 0)
+    throw Error("Population " + populationID + " not found");
   if (populations.length > 1)
-    throw Error("Multiple populations with ID = " + populationID);
+    throw Error("Multiple populations with ID " + populationID);
   return populations[0];
 };
 
