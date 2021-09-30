@@ -50,10 +50,10 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: this.direction === "vertical" ? this.rangeMin : 0,
-      iex: this.direction === "vertical" ? this.rangeMax : this.rangeMax,
-      iby: this.direction === "vertical" ? 0 : this.rangeMin,
-      iey: this.direction === "vertical" ? this.rangeMax : this.rangeMax,
+      ibx: this.ranges.x[0],
+      iex: this.ranges.x[1],
+      iby: this.rangeMin,
+      iey: this.rangeMax,
       scale: this.scale,
       xpts: hBins,
       ypts: vBins,
@@ -76,6 +76,9 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     super.setPlotterState(state);
     this.direction = state.direction;
     this.bins = state.bins !== undefined ? state.bins : 0;
+  }
+  public createDrawer(): void {
+    this.drawer = new HistogramDrawer();
   }
 
   protected setBins() {
@@ -109,46 +112,41 @@ export default class HistogramPlotter extends PluginGraphPlotter {
   }
 
   public update() {
-    super.update(true);
+    super.update();
+    this.setBins();
 
     this.histogramGatePlugin.setGates(
       //@ts-ignore
       this.gates.filter((e) => e.gateType === "histogram")
     );
 
-    this.setBins();
-
     const axis = this.plot.histogramAxis === "vertical" ? "x" : "y";
+
     const axisName = axis === "x" ? this.xAxisName : this.yAxisName;
+    console.log("bins = ", this.bins);
     this.mainBins = PlotResource.getHistogramBins(
       this.plot,
       this.bins,
       axisName
     );
 
-    if (axis === "x") {
-      this.yLabels = this.transformer.getAxisLabels(
-        "lin",
-        [0, this.mainBins.max],
-        this.verticalBinCount
-      );
-    } else {
-      this.xLabels = this.transformer.getAxisLabels(
-        "lin",
-        [0, this.mainBins.max],
-        this.horizontalBinCount
-      );
-    }
-  }
-
-  public createDrawer(): void {
-    this.drawer = new HistogramDrawer();
+    this.yLabels = this.transformer.getAxisLabels(
+      "lin",
+      [0, this.mainBins.max],
+      this.verticalBinCount
+    );
+    this.xLabels = this.transformer.getAxisLabels(
+      "lin",
+      this.ranges.x,
+      this.horizontalBinCount / this.binSize
+    );
   }
 
   private DRAW_DIVISION_CONST = 3;
   @applyPlugin()
   public draw() {
     this.update();
+
     const hideY =
       this.plot.xAxis === this.plot.yAxis &&
       this.plot.histogramAxis === "vertical";
@@ -157,34 +155,23 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       this.plot.xAxis === this.plot.yAxis &&
       this.plot.histogramAxis === "horizontal";
 
-    if (this.direction === "vertical") {
-      super.draw({
-        lines: false,
-        vbins: (this.height - bottomPadding) / 50,
-        hbins: (this.width - rightPadding) / 50,
-        yCustomLabelRange: [0, this.mainBins.max],
-      });
-    } else {
-      super.draw({
-        lines: false,
-        vbins: (this.height - bottomPadding) / 50,
-        hbins: (this.width - rightPadding) / 50,
-        xCustomLabelRange: [0, this.mainBins.max],
-      });
-    }
+    super.draw({
+      lines: false,
+      vbins: (this.height - bottomPadding) / 50,
+      hbins: (this.width - rightPadding) / 50,
+      yCustomLabelRange: [0, this.mainBins.max],
+    });
 
     const axis =
       this.direction === "vertical" ? this.xAxisName : this.yAxisName;
-
     let globlMax = this.mainBins.max;
-
     let range = this.plot.ranges[axis];
-
-    // const overlaysObj = this.plot.histogramOverlays;
-    // const overlays = [];
 
     this.rangeMin = range[0];
     this.rangeMax = range[1];
+
+    // const overlaysObj = this.plot.histogramOverlays;
+    // const overlays = [];
 
     // for (const overlay of overlaysObj) {
     //   if (!overlay) continue;

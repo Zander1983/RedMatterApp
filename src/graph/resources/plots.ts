@@ -343,22 +343,13 @@ export const getXandYRanges = (
 
 export const getHistogramBins = (
   plot: Plot,
-  binCount?: number,
-  targetAxis?: string
+  binCount: number,
+  targetAxis: string
 ) => {
-  binCount = binCount === undefined ? getBinCount(plot) : binCount;
-  const axisName =
-    targetAxis === undefined
-      ? plot.histogramAxis === "vertical"
-        ? plot.xAxis
-        : plot.yAxis
-      : targetAxis;
+  const axisName = targetAxis;
   let range = plot.ranges[axisName];
   let axis = getHistogramAxisData(plot);
-  if (
-    (plot.xAxis === axisName && plot.xPlotType === "bi") ||
-    (plot.yAxis === axisName && plot.yPlotType === "bi")
-  ) {
+  if (plot.xAxis === axisName && plot.xPlotType === "bi") {
     const fcsServices = new FCSServices();
     const linearRange = plot.ranges[axisName];
     axis = new Float32Array(
@@ -375,13 +366,6 @@ export const getHistogramBins = (
     if (binCounts[index] > mx) mx = binCounts[index];
   }
   return { list: binCounts, max: mx };
-};
-
-const STD_BIN_SIZE = 50;
-export const getBinCount = (plot: Plot) => {
-  return plot.histogramAxis === "horizontal"
-    ? plot.plotWidth / STD_BIN_SIZE
-    : plot.plotHeight / STD_BIN_SIZE;
 };
 
 export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
