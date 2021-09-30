@@ -4,17 +4,14 @@ import {
   MenuItem,
   Select,
   CircularProgress,
-  Button,
+  FormControl,
+  Grid,
 } from "@material-ui/core";
-import { snackbarService } from "uno-material-ui";
 import GetAppIcon from "@material-ui/icons/GetApp";
-import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import useForceUpdate from "hooks/forceUpdate";
 import {
   FileID,
   HistogramOverlay,
   Plot,
-  PlotID,
   PlotSpecificWorkspaceData,
   PlotType,
   Population,
@@ -25,34 +22,9 @@ import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import { createPopulation } from "graph/resources/populations";
 import WorkspaceDispatch from "graph/resources/dispatchers";
-
-const classes = {
-  itemOuterDiv: {
-    flex: 1,
-    backgroundColor: "#eef",
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: 5,
-  },
-  itemInnerDiv: {
-    width: "100%",
-    height: "100%",
-  },
-  mainContainer: {
-    width: "100%",
-    height: "100%",
-    padding: "8px 10px 10px 10px",
-  },
-  utilityBar: {
-    width: "100%",
-  },
-  canvasDisplay: {
-    borderRadius: 5,
-    boxShadow: "1px 3px 4px #bbd",
-    backgroundColor: "#dfd",
-    flexGrow: 1,
-  },
-};
+import { Typography } from "antd";
+import { useSelector } from "react-redux";
+import { slice } from "lodash";
 
 function PlotComponent(props: {
   plotRelevantResources: PlotSpecificWorkspaceData;
@@ -60,23 +32,20 @@ function PlotComponent(props: {
   experimentId: string;
   canvasComponent: ReactNode;
 }) {
-  const { plot, file, gates, population } = props.plotRelevantResources;
+  const { plot, file } = props.plotRelevantResources;
+  const workspaceFiles: File[] = useSelector((e) => {
+    //@ts-ignore
+    return e.workspace.files.filter((e) => e.id !== file.id);
+  });
 
-  const rerender = useForceUpdate();
   const xAxis = plot.xAxis;
   const yAxis = plot.yAxis;
   const axes = getFile(getPopulation(plot.population).file).axes;
   const files = getAllFiles();
-  const displayRef = React.useRef();
-  const barRef = React.useRef();
 
   const yPlotType = plot.yPlotType;
   const xPlotType = plot.xPlotType;
 
-  let oldXAxisValue: string | null = null;
-  let oldYAxisValue: string | null = null;
-
-  const [plotSetup, setPlotSetup] = React.useState(false);
   const [oldAxis, setOldAxis] = React.useState({
     x: null,
     y: null,
@@ -84,14 +53,8 @@ function PlotComponent(props: {
 
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-  const [filePlotIdDict, setFilePlotIdDict] = React.useState({});
-  const [filesMetadata, setFilesMetadata] = React.useState([]);
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
-
-  const [plotMoving, setPlotMoving] = React.useState(true);
-
-  const [lastUpdate, setLastUpdate] = React.useState(null);
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     axis === "x"
@@ -99,48 +62,19 @@ function PlotComponent(props: {
       : PlotResource.setYAxisPlotType(plot, value);
   };
 
-  const updatePlotSize = () => {
-    if (displayRef === null || displayRef.current === null) return;
-    //@ts-ignore
-    const br = displayRef.current.getBoundingClientRect();
-    //@ts-ignore
-    const bar = barRef.current.getBoundingClientRect();
-    return { w: br.width - 20, h: br.height - bar.height - 40 };
-  };
-
-  const plotUpdater = () => {
-    if (plot) {
-      const plotDimensions = updatePlotSize();
-      if (
-        plotDimensions !== undefined &&
-        plot !== undefined &&
-        plot !== undefined
-      ) {
-        const { w, h } = plotDimensions;
-        PlotResource.setWidthAndHeight(plot, w, h);
-      }
-    }
-  };
-
-  const setHistogram = (axis: "x" | "y", value: boolean) => {
+  const setHistogram = (value: boolean) => {
     if (value) {
-      axis === "x"
-        ? setOldAxis({ ...oldAxis, y: yAxis })
-        : setOldAxis({ ...oldAxis, x: xAxis });
-      axis === "x"
-        ? PlotResource.xAxisToHistogram(plot)
-        : PlotResource.yAxisToHistogram(plot);
+      setOldAxis({ ...oldAxis, y: yAxis });
+      PlotResource.xAxisToHistogram(plot);
     } else {
-      axis === "x"
-        ? PlotResource.setXAxis(plot, oldAxis.y)
-        : PlotResource.setYAxis(plot, oldAxis.x);
-
+      PlotResource.setXAxis(plot, oldAxis.y);
+      PlotResource.setYAxis(plot, oldAxis.x);
       PlotResource.disableHistogram(plot);
     }
   };
 
   const isPlotHistogram = () => {
-    return xAxis === yAxis;
+    return plot.histogramAxis !== "";
   };
 
   const setAxis = (
@@ -148,10 +82,7 @@ function PlotComponent(props: {
     value: string,
     stopHist: boolean = false
   ) => {
-    const otherAxisValue = axis === "x" ? yAxis : xAxis;
-    if (value === otherAxisValue && !isPlotHistogram()) {
-      setHistogram(axis === "x" ? "y" : "x", true);
-    } else if (isPlotHistogram() && !stopHist) {
+    if (isPlotHistogram() && !stopHist) {
       PlotResource.setXAxis(plot, value);
       PlotResource.setYAxis(plot, value);
     } else {
@@ -161,22 +92,10 @@ function PlotComponent(props: {
     }
   };
 
-  const isAxisDisabled = (axis: "x" | "y") => {
-    return axis === "x"
-      ? plot.histogramAxis === "horizontal"
-      : plot.histogramAxis === "vertical";
-  };
-
   const handleSelectEvent = (e: any, axis: "x" | "y", func: Function) => {
     if (lastSelectEvent + 500 < new Date().getTime()) {
       func(e);
       setLastSelectEvent(new Date().getTime());
-    }
-
-    if (plot.histogramAxis === "vertical") {
-      setHistogram("x", true);
-    } else if (plot.histogramAxis === "horizontal") {
-      setHistogram("y", true);
     }
   };
 
@@ -199,24 +118,10 @@ function PlotComponent(props: {
     setDownloadingFiles(downloadingFileIds);
   }, [files]);
 
-  useEffect(() => {
-    let filteredFiles = files.filter((x) => x.id != file.id);
-    setFilesMetadata(filteredFiles);
-    window.addEventListener("click", (e) => {
-      let event: any = e.target;
-      if (event && event.id !== "hist_overlay") {
-        setHistogramOverlayOpen(false);
-      }
-    });
-  }, []);
-
-  const getMinMax = (ranges: [number, number], newRanges: [number, number]) => {
-    let min = ranges[0] > newRanges[0] ? newRanges[0] : ranges[0];
-    let max = ranges[1] > newRanges[1] ? ranges[1] : newRanges[1];
-    return { min: min, max: max };
-  };
-
-  const isHistogramSelected = (plotId: string = "", fileId: string = "") => {
+  const isHistogramSelected = (
+    plotId: string = "",
+    fileId: string = ""
+  ): HistogramOverlay | null => {
     let overlayPlot = plot.histogramOverlays.find(
       (x) => x.plotId === plotId && x.fileId === fileId
     );
@@ -233,118 +138,50 @@ function PlotComponent(props: {
   };
 
   const handleMultiPlotHistogram = async (
-    plotSource: string,
-    plotType: string,
-    pltFlObj: File
+    dataSource: "file" | "plot",
+    addFile?: File,
+    addPlot?: Plot
   ) => {
+    console.log(dataSource, addFile, addPlot);
     setHistogramOverlayOpen(false);
-    let plotObj: HistogramOverlay;
-    switch (plotSource) {
-      case COMMON_CONSTANTS.FILE:
-        plotObj = isHistogramSelected(plot.id, pltFlObj.id);
-        if (plotObj) {
-          if (plotObj.plotType === plotType) {
-            PlotResource.removeOverlay(plot, plotObj.plotId, pltFlObj.id);
-          } else {
-            PlotResource.changeOverlayType(
-              plot,
-              plotObj.plotId,
-              pltFlObj.id,
-              plotType,
-              plotObj.plotType
-            );
-          }
-        } else {
-          if (!isDownloaded(pltFlObj.id))
-            await downloadFileEvent(
-              props.sharedWorkspace,
-              pltFlObj.id,
-              props.experimentId
-            );
+    let histogramOverlay: HistogramOverlay;
+    if (dataSource === "file") {
+      if (!addFile) throw Error("File overlay of undefined file");
+      histogramOverlay = isHistogramSelected(plot.id, addFile.id);
 
-          let population: Population = createPopulation({
-            file: pltFlObj.id,
-          });
-          let plotPopulation = getPopulation(plot.population);
-          population.gates = population.gates.concat(plotPopulation.gates);
-          WorkspaceDispatch.AddPopulation(population);
-          PlotResource.addOverlay(
+      if (histogramOverlay) {
+        console.log("Histogram overlay found");
+        if (histogramOverlay.plotType === plot.xPlotType) {
+          console.log("Removing overlay");
+
+          PlotResource.removeOverlay(plot, histogramOverlay.plotId, addFile.id);
+        } else {
+          console.log("Change plottype overlay");
+          PlotResource.changeOverlayType(
             plot,
-            "",
-            plot.id,
-            plotSource,
-            plotType,
-            pltFlObj.id,
-            population.id
+            histogramOverlay.plotId,
+            addFile.id,
+            plot.xPlotType,
+            histogramOverlay.plotType
           );
         }
-        break;
-      // case COMMON_CONSTANTS.PLOT:
-      //   let plotData = pltFlObj.plotData;
-      //   plotObj = isHistogramSelected(plotData.id);
-      //   if (plotObj) {
-      //     if (plotObj.type === plotType) {
-      //       removeOverlayAsPerType(plotType, plotData.id);
-      //     } else {
-      //       addOverlayAsPerType(
-      //         plotType,
-      //         pltFlObj.plotData,
-      //         plotObj.plot.color,
-      //         COMMON_CONSTANTS.PLOT
-      //       );
-      //     }
-      //   } else {
-      //     addHistogramOverlay(
-      //       plotData.id,
-      //       plotData.file,
-      //       false,
-      //       pltFlObj.plotData,
-      //       plotType,
-      //       COMMON_CONSTANTS.PLOT
-      //     );
-      //   }
-      //   break;
+      } else {
+        console.log("Adding new overlay");
+        if (!isDownloaded(addFile.id))
+          await downloadFileEvent(
+            props.sharedWorkspace,
+            addFile.id,
+            props.experimentId
+          );
+
+        PlotResource.addOverlay(plot, {
+          fromFile: addFile.id,
+        });
+      }
+    } else {
+      throw Error("Plot overlays not implemented");
     }
   };
-
-  // const addHistogramOverlay = (
-  //   id: string,
-  //   file: any,
-  //   addNewPlot: boolean,
-  //   plotData: any = {},
-  //   plotType: string,
-  //   plotSource: string
-  // ) => {
-  //   let newPlotData: any = {};
-  //   if (addNewPlot) {
-  //     newPlotData = new PlotData();
-  //     newPlotData.file = file;
-  //     newPlotData.setupPlot();
-  //     newPlotData.getXandYRanges();
-  //   } else {
-  //     newPlotData = plotData;
-  //   }
-
-  //   let plotRanges = props.plot.ranges.get(props.plot.xAxis);
-  //   let newPlotRanges = newPlotData.ranges.get(props.plot.xAxis);
-
-  //   let obj = getMinMax(plotRanges, newPlotRanges);
-  //   setAxisRange(obj.min, obj.max, props.plot.xAxis);
-
-  //   addOverlayAsPerType(plotType, newPlotData, "", plotSource);
-
-  //   if (addNewPlot) {
-  //     if (!filePlotIdDict[props.plot.id])
-  //       filePlotIdDict[props.plot.id] = {};
-  //     if (!filePlotIdDict[props.plot.id][id])
-  //       filePlotIdDict[props.plot.id][id] = {};
-
-  //     filePlotIdDict[props.plot.id][id] = {
-  //       id: newPlotData.id,
-  //       type: plotType,
-  //     };
-  //   }
-  // };
 
   const isOptionSelected = (
     plotId: string,
@@ -368,48 +205,6 @@ function PlotComponent(props: {
     }
     return "#fff";
   };
-
-  const handleHist = (targetAxis: "x" | "y") => {
-    if (isPlotHistogram()) {
-      plot.histogramAxis = "";
-      if (targetAxis === "x") {
-        const axis =
-          oldYAxisValue && oldYAxisValue !== xAxis
-            ? oldYAxisValue
-            : axes.filter((e) => e !== xAxis)[0];
-        setAxis("y", axis, true);
-      } else {
-        const axis =
-          oldXAxisValue && oldXAxisValue !== yAxis
-            ? oldXAxisValue
-            : axes.filter((e) => e !== yAxis)[0];
-        setAxis("x", axis, true);
-      }
-      rerender();
-    } else {
-      plot.histogramOverlays = [];
-      if (targetAxis === "x") {
-        oldYAxisValue = yAxis;
-        setAxis("y", xAxis);
-      } else {
-        oldXAxisValue = xAxis;
-        setAxis("x", yAxis);
-      }
-    }
-  };
-
-  // const setAxisRange = (min: number, max: number, axis: string) => {
-  //   if (min === 69 && max === 420) props.plot.resetOriginalRanges();
-  //   else props.plot.ranges.set(axis, [min, max]);
-  //   if (lastUpdate + 100 < new Date().getTime()) {
-  //     dataManager.redrawPlotIds.push(props.plot.id);
-  //     if (props.plot.parentPlotId) {
-  //       dataManager.redrawPlotIds.push(props.plot.parentPlotId);
-  //     }
-  //     dataManager.updateWorkspace();
-  //     setLastUpdate(new Date().getTime());
-  //   }
-  // };
 
   return (
     <div
@@ -439,15 +234,15 @@ function PlotComponent(props: {
           }}
           onChange={(e) => {
             if (e.target.value === "hist") {
-              handleHist("y");
-              return;
+              setHistogram(!isPlotHistogram());
+            } else {
+              handleSelectEvent(e, "y", (e: any) => {
+                if (isPlotHistogram()) setHistogram(false);
+                setAxis("y", e.target.value);
+              });
             }
-            handleSelectEvent(e, "y", (e: any) => {
-              setAxis("y", e.target.value);
-            });
           }}
-          disabled={isAxisDisabled("y")}
-          value={yAxis}
+          value={isPlotHistogram() ? "hist" : yAxis}
         >
           {axes.map((e: any) => (
             <MenuItem value={e}>{e}</MenuItem>
@@ -469,7 +264,6 @@ function PlotComponent(props: {
             flex: "1 1 auto",
           }}
           value={yPlotType}
-          disabled={isAxisDisabled("y")}
           //@ts-ignore
           onChange={(e) => setPlotType("y", e.target.value)}
         >
@@ -487,6 +281,53 @@ function PlotComponent(props: {
           paddingRight: 0,
         }}
       >
+        {/* TODO: Fix overlay indicator, this guy cuts space from header filename*/}
+        {/* <div
+          style={{
+            position: "absolute",
+            top: 100,
+            right: 20,
+            textAlign: "right",
+          }}
+        >
+          {plot.histogramOverlays.map((e: HistogramOverlay) => {
+            const intro =
+              e.plotSource === "file" ? "File overlay" : "Plot overlay";
+            let name: string;
+            if (e.plotSource === "file") {
+              const file = getFile(e.fileId);
+              name = file?.name ? file.name : file.label;
+            } else {
+            }
+            const color = e.color;
+            return (
+              <div>
+                {e.plotSource === "file" ? (
+                  //@ts-ignore
+                  <Grid
+                    direction="row"
+                    container
+                    justify="space-between"
+                    style={{ float: "right" }}
+                  >
+                    {name}{" "}
+                    <div
+                      style={{
+                        marginTop: 7,
+                        marginLeft: 5,
+                        border: "1px solid #ddd",
+                        borderRadius: 2,
+                        width: 10,
+                        height: 10,
+                        backgroundColor: color,
+                      }}
+                    ></div>
+                  </Grid>
+                ) : null}
+              </div>
+            );
+          })}
+        </div> */}
         {/* //TODO */}
         {/* <RangeSliders plot={plot} /> */}
         {props.canvasComponent}
@@ -497,20 +338,16 @@ function PlotComponent(props: {
             justifyContent: "space-between",
           }}
         >
-          <div></div>
+          <div>{/* Space between so that selectors are centralized */}</div>
+
           <div>
             <Select
               style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
               onChange={(e) => {
-                if (e.target.value === "hist") {
-                  handleHist("x");
-                  return;
-                }
                 handleSelectEvent(e, "x", (e: any) => {
                   setAxis("x", e.target.value);
                 });
               }}
-              disabled={isAxisDisabled("x")}
               value={xAxis}
             >
               {Object.keys(getPopulation(plot.population).defaultRanges).map(
@@ -518,16 +355,8 @@ function PlotComponent(props: {
                   <MenuItem value={e}>{e}</MenuItem>
                 )
               )}
-              <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
-              <MenuItem
-                value={"hist"}
-                style={{
-                  backgroundColor: isPlotHistogram() ? "#ddf" : "#fff",
-                }}
-              >
-                Histogram
-              </MenuItem>
             </Select>
+
             <Select
               style={{
                 width: 100,
@@ -536,7 +365,6 @@ function PlotComponent(props: {
                 flex: "1 1 auto",
               }}
               value={xPlotType}
-              disabled={isAxisDisabled("x")}
               //@ts-ignore
               onChange={(e) => setPlotType("x", e.target.value)}
             >
@@ -544,240 +372,71 @@ function PlotComponent(props: {
               <MenuItem value={"bi"}>Logicle</MenuItem>
             </Select>
           </div>
-          <div>
+
+          <div style={{ paddingRight: 6, marginTop: -5 }}>
             {isPlotHistogram() ? (
-              <div>
+              <FormControl fullWidth style={{}}>
+                <div style={{ marginTop: 20 }}>
+                  <Typography style={{ fontSize: 15, fontFamily: "roboto" }}>
+                    Overlays
+                  </Typography>
+                </div>
                 <Select
-                  id="hist_overlay"
-                  open={histogramOverlayOpen}
-                  onClick={() => {
-                    if (!histogramOverlayOpen) setHistogramOverlayOpen(true);
-                  }}
                   style={{
-                    marginTop: "10px",
-                    marginLeft: "10px",
+                    width: 80,
+                    height: 30,
+                    marginTop: -26,
                   }}
-                  value={"0"}
+                  value={null}
                 >
-                  <MenuItem value={"0"}>Overlays</MenuItem>
-                  {/* {plots.map((e: any) => (
-                      <MenuItem
-                        id="hist_overlay"
-                        value={e}
-                        style={{
-                          backgroundColor: getHistogramSelectedColor(
-                            e.plotData.id
-                          ),
-                        }}
-                      >
-                        <div
-                          id="hist_overlay"
-                          style={{
-                            margin: -16,
-                            paddingTop: 5,
-                            paddingBottom: 5,
-                            paddingRight: 10,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            width: "100%",
-                          }}
-                        >
-                          <span
-                            id="hist_overlay"
-                            style={{
-                              padding: 16,
-                              width: "100%",
-                            }}
-                            onClick={() => {
-                              let plotObj = isHistogramSelected(e.plotData.id);
-                              if (plotObj && Object.keys(plotObj).length > 0) {
-                                removeOverlayAsPerType(
-                                  plotObj.type,
-                                  plotObj.plot.plotId
-                                );
-                                setHistogramOverlayOpen(false);
-                              }
-                            }}
-                          >
-                            {e.plotData.label}
-                          </span>
-                          <span>
-                            <Button
-                              style={{
-                                backgroundColor: isOptionSelected(
-                                  e.plotData.id,
-                                  COMMON_CONSTANTS.Bar
-                                ),
-                                color: "#fff",
-                                fontSize: 13,
-                              }}
-                              onClick={() => {
-                                handleMultiPlotHistogram(
-                                  COMMON_CONSTANTS.PLOT,
-                                  COMMON_CONSTANTS.Bar,
-                                  e
-                                );
-                              }}
-                            >
-                              Bar
-                            </Button>
-                            <Button
-                              style={{
-                                backgroundColor: isOptionSelected(
-                                  e.plotData.id,
-                                  COMMON_CONSTANTS.Line
-                                ),
-                                color: "#fff",
-                                fontSize: 13,
-                                marginLeft: 20,
-                              }}
-                              onClick={() => {
-                                handleMultiPlotHistogram(
-                                  COMMON_CONSTANTS.PLOT,
-                                  COMMON_CONSTANTS.Line,
-                                  e
-                                );
-                              }}
-                            >
-                              line
-                            </Button>
-                          </span>
-                        </div>
-                      </MenuItem>
-                    ))} */}
-                  {filesMetadata.map((e: any) => (
+                  <div style={{ textAlign: "center", width: "100%" }}>
+                    File overlays
+                  </div>
+                  <Divider style={{ marginBottom: 5 }} />
+                  {workspaceFiles.map((e: File) => (
                     <MenuItem
-                      id="hist_overlay"
-                      value={e}
+                      value={e.id}
                       style={{
                         backgroundColor: getHistogramSelectedColor(
                           plot.id,
                           e.id
                         ),
+                        padding: 0,
                       }}
                     >
                       <div
-                        id="hist_overlay"
                         style={{
-                          margin: -16,
-                          paddingTop: 5,
-                          paddingBottom: 5,
-                          paddingRight: 10,
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
                           width: "100%",
+                          backgroundColor: "rgba(250,250,250,0.5)",
+                          padding: 5,
+                        }}
+                        onClick={() => {
+                          handleMultiPlotHistogram("file", e);
                         }}
                       >
-                        <span
-                          id="hist_overlay"
-                          style={{
-                            padding: 16,
-                            width: "100%",
-                          }}
-                          onClick={() => {
-                            let plotObj = isHistogramSelected(plot.id, e.id);
-                            if (plotObj) {
-                              PlotResource.removeOverlay(
-                                plot,
-                                plotObj.plotId,
-                                e.id
-                              );
-                              setHistogramOverlayOpen(false);
-                            }
-                          }}
-                        >
+                        <span>
                           {e.label}
+                          {isDownloaded(e.id) ? null : isDownloading(e.id) ? (
+                            <CircularProgress
+                              style={{
+                                color: "white",
+                                width: 23,
+                                height: 23,
+                                marginLeft: 5,
+                              }}
+                            />
+                          ) : (
+                            <GetAppIcon fontSize="small"></GetAppIcon>
+                          )}
                         </span>
-                        <Button
-                          id={`${plot.id}_${e.id}_bar_file`}
-                          style={{
-                            backgroundColor: isOptionSelected(
-                              plot.id,
-                              e.id,
-                              COMMON_CONSTANTS.Bar
-                            ),
-                            color: "#fff",
-                            fontSize: 13,
-                          }}
-                          onClick={() => {
-                            handleMultiPlotHistogram(
-                              COMMON_CONSTANTS.FILE,
-                              COMMON_CONSTANTS.Bar,
-                              e
-                            );
-                          }}
-                        >
-                          Bar
-                          {isDownloaded(e.id) ? null : (
-                            <div
-                              style={{
-                                display: "flex",
-                              }}
-                            >
-                              {isDownloading(e.id) ? (
-                                <CircularProgress
-                                  style={{
-                                    color: "white",
-                                    width: 23,
-                                    height: 23,
-                                    marginLeft: 5,
-                                  }}
-                                />
-                              ) : (
-                                <GetAppIcon fontSize="small"></GetAppIcon>
-                              )}
-                            </div>
-                          )}
-                        </Button>
-                        <Button
-                          id={`${plot.id}_${e.id}_line_file`}
-                          style={{
-                            backgroundColor: isOptionSelected(
-                              plot.id,
-                              e.id,
-                              COMMON_CONSTANTS.Line
-                            ),
-                            color: "#fff",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            handleMultiPlotHistogram(
-                              COMMON_CONSTANTS.FILE,
-                              COMMON_CONSTANTS.Line,
-                              e
-                            );
-                          }}
-                        >
-                          line
-                          {isDownloaded(e.id) ? null : (
-                            <div
-                              style={{
-                                display: "flex",
-                              }}
-                            >
-                              {isDownloading(e.id) ? (
-                                <CircularProgress
-                                  style={{
-                                    color: "white",
-                                    width: 23,
-                                    height: 23,
-                                    marginLeft: 5,
-                                  }}
-                                />
-                              ) : (
-                                <GetAppIcon fontSize="small"></GetAppIcon>
-                              )}
-                            </div>
-                          )}
-                        </Button>
                       </div>
                     </MenuItem>
                   ))}
                 </Select>
-              </div>
+              </FormControl>
             ) : null}
           </div>
         </div>

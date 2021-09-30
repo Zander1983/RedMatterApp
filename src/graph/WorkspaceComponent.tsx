@@ -571,12 +571,13 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
   }
 
   static getDerivedStateFromError(error: any) {
+    console.error("[Critical] Render failed");
+    console.error(error);
+    WorkspaceDispatch.ResetWorkspace();
     return { hasError: true };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    console.log("componentDidCatch");
-    console.log(error, errorInfo);
     this.setState({
       hasError: true,
     });

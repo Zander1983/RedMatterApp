@@ -11,9 +11,21 @@ export const getFSCandSSCAxisOnAxesList = (
     i++
   ) {
     const axis = axes[i];
-    if (axis.toUpperCase().indexOf("FSC") !== -1) {
+    if (axis.toUpperCase().indexOf("FSC-A") !== -1) {
       fscIndex = i;
-    } else if (axis.toUpperCase().indexOf("SSC") !== -1) {
+    } else if (axis.toUpperCase().indexOf("SSC-A") !== -1) {
+      sscIndex = i;
+    }
+  }
+  for (
+    let i = 0;
+    i < axes.length && (fscIndex === null || sscIndex === null);
+    i++
+  ) {
+    const axis = axes[i];
+    if (fscIndex === null && axis.toUpperCase().indexOf("FSC") !== -1) {
+      fscIndex = i;
+    } else if (sscIndex === null && axis.toUpperCase().indexOf("SSC") !== -1) {
       sscIndex = i;
     }
   }

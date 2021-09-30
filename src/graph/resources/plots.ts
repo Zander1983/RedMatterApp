@@ -11,9 +11,16 @@ import {
   Population,
   Dataset,
   HistogramOverlay,
+  HistogramAxisType,
+  FileID,
 } from "./types";
 import { createID } from "graph/utils/id";
-import { getFile, getPlot, getPopulation } from "graph/utils/workspace";
+import {
+  getFile,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
 import { store } from "redux/store";
 import * as populations from "./populations";
@@ -127,24 +134,36 @@ export const getPlotOverlays = (plot: Plot) => {
   });
 };
 
-export const addOverlay = (
+export const addOverlay = async (
   plot: Plot,
-  color: string,
-  plotId: string,
-  plotSource: string,
-  plotType: string,
-  fileId: string = "",
-  populationId: string = ""
+  {
+    fromFile,
+    fromPlot,
+  }: {
+    fromFile?: FileID;
+    fromPlot?: PlotID;
+  }
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-    plotType: plotType,
-    fileId: fileId,
-    populationId: populationId,
-  });
+  if (fromPlot) {
+    throw Error("Plot overlays not implemented");
+  } else if (fromFile) {
+    let population: Population = populations.createPopulation({
+      file: fromFile,
+    });
+    let plotPopulation = getPopulation(plot.population);
+    population.gates = population.gates.concat(plotPopulation.gates);
+    await WorkspaceDispatch.AddPopulation(population);
+    const newHistogramOverlay: HistogramOverlay = {
+      color: generateColor(),
+      plotSource: "file",
+      plotType: plot.xPlotType,
+      fileId: fromFile,
+      populationId: population.id,
+    };
+    plot.histogramOverlays.push(newHistogramOverlay);
+  } else {
+    throw Error("No overlay source found");
+  }
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
@@ -152,12 +171,12 @@ export const changeOverlayType = (
   plot: Plot,
   targetPlotId: String,
   fileId: String,
-  newType: string,
-  oldType: string
+  newType: PlotType,
+  oldType: PlotType
 ) => {
   let overlay: HistogramOverlay = plot.histogramOverlays.find(
     (e) =>
-      e.plotId == targetPlotId && e.fileId == fileId && e.plotType == oldType
+      e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
   );
   overlay.plotType = newType;
   WorkspaceDispatch.UpdatePlot(plot);
@@ -288,6 +307,14 @@ export const setYAxis = (plot: Plot, yAxis: string) => {
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
+  WorkspaceDispatch.UpdatePlot(plot);
+};
+
+export const setHistogramAxis = (
+  plot: Plot,
+  histogramAxis: HistogramAxisType
+) => {
+  plot.histogramAxis = histogramAxis;
   WorkspaceDispatch.UpdatePlot(plot);
 };
 

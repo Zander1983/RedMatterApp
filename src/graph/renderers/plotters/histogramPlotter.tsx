@@ -203,7 +203,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         // case "plot":
         //   newPlotData = getPlot(overlay.plotId);
         //   break;
-        case COMMON_CONSTANTS.FILE:
+        case "file":
           newPlotData.xAxis = this.plot.xAxis;
           newPlotData.yAxis = this.plot.yAxis;
           newPlotData.xPlotType = this.plot.xPlotType;

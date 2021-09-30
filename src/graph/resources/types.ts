@@ -15,6 +15,7 @@ export type PointObj = { x: number; y: number };
 export type HistogramAxisType = "" | "horizontal" | "vertical";
 export type Range = [number, number];
 export type Dataset = { [index: string]: Float32Array };
+export type OverlaySource = "file" | "plot";
 
 export interface Dimension {
   w: number;
@@ -28,10 +29,10 @@ export interface Point2D {
 
 export interface HistogramOverlay {
   color: Color;
-  plotId: PlotID;
-  plotSource: string;
-  plotType: string;
-  fileId: FileID;
+  plotId?: PlotID;
+  plotSource: OverlaySource;
+  plotType: PlotType;
+  fileId?: FileID;
   populationId: PopulationID;
 }
 

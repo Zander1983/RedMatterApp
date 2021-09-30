@@ -60,7 +60,7 @@ const PlotRenderer = React.memo(
       canvas.render();
 
       let selectedPlotter = plotter;
-      if (plot.xAxis === plot.yAxis) {
+      if (plot.histogramAxis !== "") {
         setPlotter(histogramPlotter);
         selectedPlotter = histogramPlotter;
       } else {
@@ -183,7 +183,6 @@ const PlotRenderer = React.memo(
                 "[PlotRender:setMouseEvent] Failed to send mouse event to",
                 e
               );
-              throw Error("Failure");
             }
           }
         });
