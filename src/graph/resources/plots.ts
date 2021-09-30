@@ -149,8 +149,6 @@ export const addOverlay = async (
     let population: Population = populations.createPopulation({
       file: fromFile,
     });
-    let plotPopulation = getPopulation(plot.population);
-    population.gates = population.gates.concat(plotPopulation.gates);
     await WorkspaceDispatch.AddPopulation(population);
     const newHistogramOverlay: HistogramOverlay = {
       id: createID(),

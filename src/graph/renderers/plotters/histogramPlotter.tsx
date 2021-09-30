@@ -110,16 +110,16 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       axisName
     );
 
+    const binCount =
+      this.height === undefined
+        ? 2
+        : Math.round(this.height / (this.binSize * this.scale));
+
     this.yLabels = this.transformer.getAxisLabels(
       "lin",
       [0, this.mainBins.max],
-      this.verticalBinCount
+      binCount
     );
-    // this.xLabels = this.transformer.getAxisLabels(
-    //   "lin",
-    //   this.ranges.x,
-    //   this.horizontalBinCount / this.binSize
-    // );
   }
 
   @applyPlugin()
