@@ -82,7 +82,6 @@ export const setCanvasSize = (save: boolean = false) => {
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
-  let widthUsed = 0;
   let maxWidth = MINW * 4;
   let maxHeight = 0;
   let x = plotData.positions.x;
@@ -129,17 +128,6 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
     }
   }
 
-  // if (index > 0) {
-  //   if (x == 0) {
-  //     newy = widthUsed / maxWidth;
-  //     if (newy >= 1) {
-  //       newX = widthUsed - maxWidth * newy;
-  //     } else newX = widthUsed;
-  //   }
-  //   if (y == 0) {
-  //     newy = widthUsed / maxWidth;
-  //   }
-  // }
   return {
     x: newX,
     y: newy,
