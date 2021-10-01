@@ -4,7 +4,7 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
 
-import { Divider } from "@material-ui/core";
+import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
   getFile,
   getGate,
@@ -71,7 +71,35 @@ const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       });
       break;
     case "gate":
-      throw Error("not implemented");
+      const plotByPopGateMap: { [index: string]: Plot[] } = {
+        "No gates": [],
+      };
+      for (const plot of plots) {
+        try {
+          const pop = getPopulation(plot.population);
+          if (pop.gates.length === 0) {
+            plotByPopGateMap["No gates"].push(plot);
+          } else if (pop.gates[0].gate in plotByPopGateMap) {
+            plotByPopGateMap[pop.gates[0].gate].push(plot);
+          } else {
+            plotByPopGateMap[pop.gates[0].gate] = [plot];
+          }
+        } catch {
+          console.error(
+            "[PlotController] Plot has not been rendered due to population gate error"
+          );
+        }
+      }
+      if (plotByPopGateMap["No gates"].length === 0) {
+        delete plotByPopGateMap["No gates"];
+      }
+      plotGroups = Object.keys(plotByPopGateMap).map((e) => {
+        return {
+          name: e === "No gates" ? e : getGate(e).name,
+          plots: plotByPopGateMap[e],
+        } as PlotGroup;
+      });
+      break;
     case "all":
       plotGroups = [{ name: "", plots: plots }];
       break;
@@ -260,22 +288,52 @@ class PlotController extends React.Component<PlotControllerProps> {
     if (this.props.workspace.plots.length > 0) {
       return (
         <div>
+          <div
+            style={{
+              position: "fixed",
+              right: 0,
+              backgroundColor: "#fff",
+              borderLeft: "solid 1px #ddd",
+              borderBottom: "solid 1px #ddd",
+              borderBottomLeftRadius: 5,
+              padding: 3,
+              zIndex: 1000,
+            }}
+          >
+            Sort by:
+            <Select
+              style={{ marginLeft: 10 }}
+              value={method}
+              onChange={(e) => {
+                //@ts-ignore
+                method = e.target.value;
+                this.forceUpdate();
+              }}
+            >
+              <MenuItem value={"all"}>No sorting</MenuItem>
+              <MenuItem value={"file"}>File</MenuItem>
+              <MenuItem value={"gate"}>Gate</MenuItem>
+            </Select>
+          </div>
+
           <Divider></Divider>
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
             return (
               <div key={name}>
-                <div
-                  style={{
-                    backgroundColor: "#6666AA",
-                    paddingLeft: 20,
-                    paddingBottom: 3,
-                    paddingTop: 3,
-                  }}
-                >
-                  <h3 style={{ color: "white", marginBottom: 0 }}>{name}</h3>
-                </div>
+                {name.length > 0 ? (
+                  <div
+                    style={{
+                      backgroundColor: "#6666AA",
+                      paddingLeft: 20,
+                      paddingBottom: 3,
+                      paddingTop: 3,
+                    }}
+                  >
+                    <h3 style={{ color: "white", marginBottom: 0 }}>{name}</h3>
+                  </div>
+                ) : null}
                 <div style={{ marginTop: 3, marginBottom: 10 }}>
                   <ResponsiveGridLayout
                     className="layout"
