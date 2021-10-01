@@ -57,6 +57,10 @@ export const createPlot = ({
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
+
+  newPlot.dimensions = { w: MINW, h: MINH };
+  newPlot.positions = { x: -1, y: -1 };
+
   return setupPlot(newPlot);
 };
 
@@ -80,7 +84,7 @@ export const createBlankPlotObj = (): Plot => {
     histogramAxis: "",
     label: "",
     dimensions: { w: MINW, h: MINH },
-    positions: { x: 0, y: 0 },
+    positions: { x: -1, y: -1 },
     parentPlotId: "",
     gatingActive: "",
   };

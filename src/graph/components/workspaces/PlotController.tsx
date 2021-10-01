@@ -91,24 +91,41 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   let h = plotData.dimensions.h;
   let newy = y;
   let newX = x;
-  let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
-  nPlots.sort(function (a: Plot, b: Plot) {
-    var x = a.positions.x - b.positions.x;
-    return x == 0 ? a.positions.y - b.positions.x : x;
-  });
-  for (let i = 0; i < index; i++) {
-    let plot = nPlots[i];
-    if (i != 0 && plot.positions.x >= 0 && plot.positions.x <= newX) {
-      if (maxWidth - newX > plotData.dimensions.w) {
+
+  if (newy == -1 || newX == -1) {
+    if (newX == -1) newX = 0;
+    if (newy == -1) newy = 0;
+    let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
+    nPlots.sort(function (a: Plot, b: Plot) {
+      return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
+    });
+    let prevLineWidth = 0;
+    for (let i = 0; i < index; i++) {
+      let plot = nPlots[i];
+      if (prevLineWidth) {
+        if (maxWidth - prevLineWidth >= MINW) {
+          newX = prevLineWidth;
+          break;
+        }
+        prevLineWidth = 0;
+      }
+      if (
+        i != 0 &&
+        plot.positions.x -
+          (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
+          MINW
+      ) {
+        newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
         break;
       }
-    }
-    newX = plot.dimensions.w + plot.positions.x;
-    if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
-    if (newX + MINW > maxWidth) {
-      newX = 0;
-      newy = maxHeight;
-      maxHeight = 0;
+      newX = plot.dimensions.w + plot.positions.x;
+      if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
+      if (newX + MINW > maxWidth) {
+        prevLineWidth = newX;
+        newX = 0;
+        newy = newy + maxHeight;
+        maxHeight = 0;
+      }
     }
   }
 
@@ -123,7 +140,6 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   //     newy = widthUsed / maxWidth;
   //   }
   // }
-
   return {
     x: newX,
     y: newy,
