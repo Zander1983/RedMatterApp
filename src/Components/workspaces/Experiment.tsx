@@ -307,6 +307,10 @@ const Experiment = (props: any) => {
   };
 
   const deleteFile = (file: any) => {
+    alert(
+      "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
+    );
+    return;
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).deleteFile(props.id, file.id, userManager.getToken());
