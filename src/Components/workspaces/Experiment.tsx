@@ -656,7 +656,7 @@ const Experiment = (props: any) => {
                             >
                               .{e.label?.substr(-3).toLowerCase()} file
                             </b> */}
-                            <div style={{ display: "inline", width: 10 }}>
+                            {/* <div style={{ display: "inline", width: 10 }}>
                               <Button
                                 onClick={() => {
                                   deleteFile(e);
@@ -667,7 +667,7 @@ const Experiment = (props: any) => {
                                   style={{ color: "#6666aa" }}
                                 ></DeleteFilled>
                               </Button>
-                            </div>
+                            </div> */}
                             {editingFileName === e.id ? (
                               <TextField
                                 style={{
