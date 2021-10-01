@@ -11,7 +11,6 @@ import {
   getPopulation,
   getWorkspace,
 } from "graph/utils/workspace";
-import { store } from "redux/store";
 import {
   FileID,
   Gate,
@@ -53,7 +52,7 @@ const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       for (const plot of plots) {
         try {
           const file = getPlotFile(plot);
-          if (file.id in plotGroups) {
+          if (file.id in plotByFileMap) {
             plotByFileMap[file.id].push(plot);
           } else {
             plotByFileMap[file.id] = [plot];
@@ -258,7 +257,6 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   render() {
     const plotGroups = getPlotGroups(this.props.workspace.plots);
-    console.log(getTargetLayoutPlots("d150a170-2216-11ec-add5-47f9bfa70d28"));
     if (this.props.workspace.plots.length > 0) {
       return (
         <div>

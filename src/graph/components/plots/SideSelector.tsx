@@ -335,7 +335,7 @@ function PlotComponent(props: {
           </div>
 
           <div style={{ paddingRight: 6, marginTop: -5 }}>
-            {isPlotHistogram() ? (
+            {isPlotHistogram() && workspaceFiles.length > 1 ? (
               <FormControl fullWidth style={{}}>
                 <div style={{ marginTop: 20 }}>
                   <Typography style={{ fontSize: 15, fontFamily: "roboto" }}>
