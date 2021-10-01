@@ -13,12 +13,14 @@ import {
 } from "graph/utils/workspace";
 import { store } from "redux/store";
 import {
+  FileID,
   Gate,
   Plot,
   PlotSpecificWorkspaceData,
   Workspace,
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/resources/dispatchers";
+import { getPlotFile } from "graph/resources/plots";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -35,6 +37,59 @@ const classes = {
     width: "100%",
     height: "100%",
   },
+};
+
+let method = "file"; // TODO: sorry for this will be fixed later
+
+interface PlotGroup {
+  name: string;
+  plots: Plot[];
+}
+const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
+  let plotGroups: PlotGroup[] = [];
+  switch (method) {
+    case "file":
+      const plotByFileMap: { [index: string]: Plot[] } = {};
+      for (const plot of plots) {
+        try {
+          const file = getPlotFile(plot);
+          if (file.id in plotGroups) {
+            plotByFileMap[file.id].push(plot);
+          } else {
+            plotByFileMap[file.id] = [plot];
+          }
+        } catch {
+          console.error(
+            "[PlotController] Plot has not been rendered due to population not found"
+          );
+        }
+      }
+      plotGroups = Object.keys(plotByFileMap).map((e) => {
+        return {
+          name: getFile(e).name,
+          plots: plotByFileMap[e],
+        } as PlotGroup;
+      });
+      break;
+    case "gate":
+      throw Error("not implemented");
+    case "all":
+      plotGroups = [{ name: "", plots: plots }];
+      break;
+    default:
+      throw Error("wtf?");
+  }
+  return plotGroups;
+};
+
+// I know this function is terrible, will be fixed too, leave as is
+const getTargetLayoutPlots = (plotFileId: FileID): Plot[] => {
+  const plots = getWorkspace().plots;
+  if (method === "file") {
+    return plots.filter((e) => getPlotFile(e).id === plotFileId);
+  } else {
+    throw Error("wtf?");
+  }
 };
 
 export const MINW = 9;
@@ -202,36 +257,17 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 
   render() {
-    let plotGroups: any = {};
-    for (const plot of this.props.workspace.plots) {
-      try {
-        const population = this.props.workspace.populations.find(
-          (e) => e.id === plot.population
-        );
-        const file = this.props.workspace.files.find(
-          (e) => e.id === population.file
-        );
-        if (file.id in plotGroups) {
-          plotGroups[file.id].push(plot);
-        } else {
-          plotGroups[file.id] = [plot];
-        }
-      } catch {
-        console.error(
-          "[PlotController] Plot has not been rendered due to population not found"
-        );
-      }
-    }
-    const fileIdKeys = Object.keys(plotGroups);
+    const plotGroups = getPlotGroups(this.props.workspace.plots);
+    console.log(getTargetLayoutPlots("d150a170-2216-11ec-add5-47f9bfa70d28"));
     if (this.props.workspace.plots.length > 0) {
       return (
         <div>
           <Divider></Divider>
-          {fileIdKeys.map((fileId: string) => {
-            const fileName = getFile(fileId).name;
-            const plots: Plot[] = plotGroups[fileId];
+          {plotGroups.map((plotGroup: PlotGroup) => {
+            const name = plotGroup.name;
+            const plots = plotGroup.plots;
             return (
-              <div key={fileId}>
+              <div key={name}>
                 <div
                   style={{
                     backgroundColor: "#6666AA",
@@ -240,9 +276,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                     paddingTop: 3,
                   }}
                 >
-                  <h3 style={{ color: "white", marginBottom: 0 }}>
-                    {fileName}
-                  </h3>
+                  <h3 style={{ color: "white", marginBottom: 0 }}>{name}</h3>
                 </div>
                 <div style={{ marginTop: 3, marginBottom: 10 }}>
                   <ResponsiveGridLayout
@@ -300,11 +334,10 @@ class PlotController extends React.Component<PlotControllerProps> {
           }}
         >
           <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-            Click on "Add new file" to visualize
+            Click on "Plot sample" to visualize
           </h3>
-          <h4 style={{ marginBottom: 90, color: "#777" }}>
-            Here you may move around, gate, duplicate, delete or resize your
-            plots as you see fit
+          <h4 style={{ marginBottom: 70, color: "#777" }}>
+            Create a plot from one of your samples to start your analysis
           </h4>
         </div>
       );
