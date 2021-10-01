@@ -12,7 +12,7 @@ import {
 } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import {
-  createBlankPlotObj,
+  createEmptyPlot,
   createNewPlotFromFile,
   createPlot,
 } from "graph/resources/plots";
@@ -128,7 +128,7 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
           (x: any) => x.channelName == yAxisName
         );
 
-        plot = createBlankPlotObj();
+        plot = createEmptyPlot();
         plot.xAxis = `${xAxisName} - ${xAxisName}`;
         plot.yAxis = `${yAxisName} - ${yAxisName}`;
         plot.xPlotType = xChannelInfo.type;
@@ -237,7 +237,7 @@ const parseSubpopulation = async (
       let yAxisName = yAxis["_attributes"].name;
       let file = getFile(fileId);
 
-      newPlot = createBlankPlotObj();
+      newPlot = createEmptyPlot();
       newPlot.xAxis = `${xAxisName} - ${xAxisName}`;
       newPlot.yAxis = `${yAxisName} - ${yAxisName}`;
       let xChannelInfo = channelsInfo.find(

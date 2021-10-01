@@ -8,6 +8,8 @@ import { createFile } from "graph/resources/files";
 import { Notification } from "graph/resources/notifications";
 import WorkspaceDispatch from "graph/resources/dispatchers";
 
+const EVENTS_LIMIT = 4000;
+
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
   experimentId: string
@@ -69,6 +71,9 @@ export const downloadFileEvent = async (
   if (fileQuery.length > 0 && fileQuery[0].downloaded) {
     throw Error("File already downloaded");
   }
+  let donwloadingFile: File = getFile(fileId);
+  donwloadingFile.downloading = true;
+  WorkspaceDispatch.UpdateFile(donwloadingFile);
   let response;
   if (workspaceIsShared) {
     response = await axios.post(
@@ -91,8 +96,8 @@ export const downloadFileEvent = async (
       }
     );
   }
-  if (response.data[0].events.length > 5000) {
-    response.data[0].events = response.data[0].events.slice(0, 5000);
+  if (response.data[0].events.length > EVENTS_LIMIT) {
+    response.data[0].events = response.data[0].events.slice(0, EVENTS_LIMIT);
   }
   const file = response.data[0];
   let newFile = await createFile({
@@ -101,6 +106,7 @@ export const downloadFileEvent = async (
   });
   newFile = { ...newFile, ...getFile(fileId) };
   newFile.downloaded = true;
+  newFile.downloading = false;
   WorkspaceDispatch.UpdateFile(newFile);
   if (showNotifications) {
     notification.killNotification();

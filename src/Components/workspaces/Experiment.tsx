@@ -307,6 +307,10 @@ const Experiment = (props: any) => {
   };
 
   const deleteFile = (file: any) => {
+    alert(
+      "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
+    );
+    return;
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).deleteFile(props.id, file.id, userManager.getToken());
@@ -652,7 +656,7 @@ const Experiment = (props: any) => {
                             >
                               .{e.label?.substr(-3).toLowerCase()} file
                             </b> */}
-                            <div style={{ display: "inline", width: 10 }}>
+                            {/* <div style={{ display: "inline", width: 10 }}>
                               <Button
                                 onClick={() => {
                                   deleteFile(e);
@@ -663,7 +667,7 @@ const Experiment = (props: any) => {
                                   style={{ color: "#6666aa" }}
                                 ></DeleteFilled>
                               </Button>
-                            </div>
+                            </div> */}
                             {editingFileName === e.id ? (
                               <TextField
                                 style={{

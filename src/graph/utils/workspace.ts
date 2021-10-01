@@ -30,6 +30,11 @@ export const getFile = (fileID: FileID): File => {
   return files[0];
 };
 
+export const getAllFiles = (): Array<File> => {
+  const workspace = getWorkspace();
+  return workspace.files;
+};
+
 export const getPlot = (plotID: PlotID): Plot => {
   const workspace = getWorkspace();
   const plots = workspace.plots.filter((plot) => plot.id === plotID);
@@ -47,6 +52,16 @@ export const getPopulation = (populationID: PopulationID): Population => {
     throw Error("Population " + populationID + " not found");
   if (populations.length > 1)
     throw Error("Multiple populations with ID " + populationID);
+  return populations[0];
+};
+
+export const getPopulationFromFileId = (fileId: FileID): Population => {
+  const workspace = getWorkspace();
+  const populations = workspace.populations.filter(
+    (population) => population.file === fileId
+  );
+  if (populations.length === 0) throw Error("Population not found");
+
   return populations[0];
 };
 
@@ -150,7 +165,7 @@ const loadSavedWorkspace = async (
   const notification = new Notification("Loading workspace");
   const workspaceObj = JSON.parse(workspace);
   const files = workspaceObj?.files
-    ? workspaceObj.files.map((e: any) => e.id)
+    ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
     : [];
   await dowloadAllFileEvents(shared, experimentId, files);
   const newWorkspace = {
