@@ -109,13 +109,26 @@ const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   return plotGroups;
 };
 
-// I know this function is terrible, will be fixed too, leave as is
-const getTargetLayoutPlots = (plotFileId: FileID): Plot[] => {
-  const plots = getWorkspace().plots;
-  if (method === "file") {
-    return plots.filter((e) => getPlotFile(e).id === plotFileId);
-  } else {
-    throw Error("wtf?");
+export const getTargetLayoutPlots = (protoPlot: any): Plot[] => {
+  let plotGroups: PlotGroup[] = getPlotGroups(getWorkspace().plots);
+  try {
+    const pop = getPopulation(protoPlot.population);
+    switch (method) {
+      case "file":
+        const file = getFile(pop.file);
+        return plotGroups.find((e) => e.name === file.id).plots;
+      case "gate":
+        let group = "No gates";
+        //@ts-ignore
+        if (pop.gates.length > 0) group = pop.gates[0].id;
+        return plotGroups.find((e) => e.name === group).plots;
+      case "all":
+        return plotGroups[0].plots;
+      default:
+        throw Error("wtf?");
+    }
+  } catch {
+    return [];
   }
 };
 
