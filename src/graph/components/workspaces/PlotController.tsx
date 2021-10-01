@@ -41,11 +41,11 @@ const classes = {
 
 let method = "file"; // TODO: sorry for this will be fixed later
 
-interface PlotGroup {
+export interface PlotGroup {
   name: string;
   plots: Plot[];
 }
-const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
+export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
   switch (method) {
     case "file":

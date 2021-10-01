@@ -19,6 +19,7 @@ import {
   getPlot,
   getPopulation,
   getWorkspace,
+  getAllPlots,
 } from "graph/utils/workspace";
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
 import { store } from "redux/store";
@@ -28,7 +29,12 @@ import {
   getDatasetColors,
   getDatasetFilteredPoints,
 } from "./dataset";
-import { MINH, MINW } from "graph/components/workspaces/PlotController";
+import {
+  MINH,
+  MINW,
+  getPlotGroups,
+  PlotGroup,
+} from "graph/components/workspaces/PlotController";
 import WorkspaceDispatch from "./dispatchers";
 
 export const createPlot = ({
@@ -61,7 +67,11 @@ export const createPlot = ({
   }
 
   newPlot.dimensions = { w: MINW, h: MINH };
-  newPlot.positions = { x: -1, y: -1 };
+  debugger;
+  let allPlots = getAllPlots();
+  let obj: PlotGroup[] = getPlotGroups(allPlots);
+  let plots = obj.find((x: PlotGroup) => x.name == "file").plots;
+  newPlot.positions = standardGridPlotItem(allPlots.length, newPlot, plots);
 
   return setupPlot(newPlot);
 };
@@ -205,15 +215,64 @@ export const createNewPlotFromPlot = async (
   await WorkspaceDispatch.AddPopulation(newPopulation);
   newPlot.population = newPopulation.id;
   newPlot.parentPlotId = plot.id;
-  newPlot.positions = {
-    x: -1,
-    y: -1,
-  };
+  newPlot.positions = { x: -1, y: -1 };
   newPlot.dimensions = {
     w: MINW,
     h: MINH,
   };
+
   await WorkspaceDispatch.AddPlot(newPlot);
+};
+
+const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
+  let maxWidth = MINW * 4;
+  let maxHeight = 0;
+  let x = plotData.positions.x;
+  let y = plotData.positions.y;
+  let newy = y;
+  let newX = x;
+
+  if (newy == -1 || newX == -1) {
+    if (newX == -1) newX = 0;
+    if (newy == -1) newy = 0;
+    let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
+    nPlots.sort(function (a: Plot, b: Plot) {
+      return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
+    });
+    let prevLineWidth = 0;
+    for (let i = 0; i < index; i++) {
+      let plot = nPlots[i];
+      if (prevLineWidth) {
+        if (maxWidth - prevLineWidth >= MINW) {
+          newX = prevLineWidth;
+          break;
+        }
+        prevLineWidth = 0;
+      }
+      if (
+        i != 0 &&
+        plot.positions.x -
+          (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
+          MINW
+      ) {
+        newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
+        break;
+      }
+      newX = plot.dimensions.w + plot.positions.x;
+      if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
+      if (newX + MINW > maxWidth) {
+        prevLineWidth = newX;
+        newX = 0;
+        newy = newy + maxHeight;
+        maxHeight = 0;
+      }
+    }
+  }
+
+  return {
+    x: newX,
+    y: newy,
+  };
 };
 
 export const addGate = (plot: Plot, gate: GateID) => {
