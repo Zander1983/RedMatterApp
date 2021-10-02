@@ -91,7 +91,14 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
     let prevLineWidth = 0;
     for (let i = 0; i < index; i++) {
       let plot = nPlots[i];
-      if (i != 0 && plot.positions.y != nPlots[i - 1].positions.y) {
+      if (
+        i != 0 &&
+        !(
+          plot.positions.y >= nPlots[i - 1].positions.y &&
+          plot.positions.y <
+            nPlots[i - 1].positions.y + nPlots[i - 1].dimensions.h
+        )
+      ) {
         prevLineWidth = newX;
       }
       if (prevLineWidth) {
