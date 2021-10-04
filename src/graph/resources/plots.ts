@@ -15,6 +15,7 @@ import {
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
+  getAllPlots,
   getFile,
   getPlot,
   getPopulation,
@@ -32,6 +33,7 @@ import {
   MINH,
   MINW,
   getTargetLayoutPlots,
+  getPlotGroups,
 } from "graph/components/workspaces/PlotController";
 import WorkspaceDispatch from "./dispatchers";
 
@@ -66,12 +68,29 @@ export const createPlot = ({
 
   newPlot.dimensions = { w: MINW, h: MINH };
   let plots = getTargetLayoutPlots(newPlot);
-  newPlot.positions = { x: -1, y: -1 };
   if (plots.length > 0) {
     newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
   }
 
   return setupPlot(newPlot);
+};
+
+export const updatePositions = () => {
+  let plots = getAllPlots();
+  let plotGroups = getPlotGroups(plots);
+  let keys = Object.keys(plotGroups);
+  let updatePlots: Plot[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    let key: number = parseInt(keys[i]);
+    let plots = plotGroups[key].plots;
+    for (let j = 0; j < plots.length; j++) {
+      let newPosition = standardGridPlotItem(j, plots[j], plots);
+      plots[j].positions.x = newPosition.x;
+      plots[j].positions.y = newPosition.y;
+    }
+    updatePlots = updatePlots.concat(plots);
+  }
+  WorkspaceDispatch.UpdatePlots(updatePlots);
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
@@ -81,51 +100,53 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   let y = plotData.positions.y;
   let newy = y;
   let newX = x;
-  if (newy == -1 || newX == -1) {
-    if (newX == -1) newX = 0;
-    if (newy == -1) newy = 0;
-    let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
-    nPlots.sort(function (a: Plot, b: Plot) {
-      return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
-    });
-    let prevLineWidth = 0;
-    for (let i = 0; i < index; i++) {
-      let plot = nPlots[i];
-      if (
-        i != 0 &&
-        !(
-          plot.positions.y >= nPlots[i - 1].positions.y &&
-          plot.positions.y <
-            nPlots[i - 1].positions.y + nPlots[i - 1].dimensions.h
-        )
-      ) {
-        prevLineWidth = newX;
-      }
-      if (prevLineWidth) {
-        if (maxWidth - prevLineWidth >= MINW) {
-          newX = prevLineWidth;
-          break;
-        }
-        prevLineWidth = 0;
-      }
-      if (
-        i != 0 &&
-        plot.positions.x -
-          (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
-          MINW
-      ) {
-        newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
+
+  let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
+  nPlots.sort(function (a: Plot, b: Plot) {
+    return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
+  });
+  let prevLineWidth = 0;
+  for (let i = 0; i < index; i++) {
+    let plot = nPlots[i];
+    if (
+      i != 0 &&
+      !(
+        plot.positions.y >= nPlots[i - 1].positions.y &&
+        plot.positions.y <
+          nPlots[i - 1].positions.y + nPlots[i - 1].dimensions.h
+      )
+    ) {
+      prevLineWidth = newX;
+    }
+    if (prevLineWidth) {
+      if (maxWidth - prevLineWidth > MINW) {
+        newX = prevLineWidth;
         break;
       }
-      newX = plot.dimensions.w + plot.positions.x;
-      if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
-      if (newX + MINW > maxWidth) {
-        prevLineWidth = newX;
-        newX = 0;
-        newy = newy + maxHeight;
-        maxHeight = 0;
-      }
+      prevLineWidth = 0;
     }
+    if (
+      i != 0 &&
+      plot.positions.x -
+        (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
+        MINW
+    ) {
+      newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
+      break;
+    }
+    newX = plot.dimensions.w + plot.positions.x;
+    if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
+    if (newX + MINW > maxWidth) {
+      prevLineWidth = newX;
+      newX = 0;
+      newy = newy + maxHeight;
+      maxHeight = 0;
+    }
+  }
+
+  if (index == 0) {
+    newX = 0;
+    newy = 0;
   }
 
   return {
@@ -153,7 +174,7 @@ export const createEmptyPlot = (): Plot => {
     histogramAxis: "",
     label: "",
     dimensions: { w: MINW, h: MINH },
-    positions: { x: -1, y: -1 },
+    positions: { x: 0, y: 0 },
     parentPlotId: "",
     gatingActive: "",
   };

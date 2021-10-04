@@ -20,6 +20,7 @@ import {
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/resources/dispatchers";
 import { getPlotFile } from "graph/resources/plots";
+import * as PlotResource from "graph/resources/plots";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -177,57 +178,11 @@ export const setCanvasSize = (save: boolean = false) => {
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
-  let maxWidth = MINW * 4;
-  let maxHeight = 0;
-  let x = plotData.positions.x;
-  let y = plotData.positions.y;
-  let w = plotData.dimensions.w;
-  let h = plotData.dimensions.h;
-  let newy = y == -1 ? 0 : y;
-  let newX = x == -1 ? 0 : x;
-
-  // if (newy == -1 || newX == -1) {
-  //   if (newX == -1) newX = 0;
-  //   if (newy == -1) newy = 0;
-  //   let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
-  //   nPlots.sort(function (a: Plot, b: Plot) {
-  //     return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
-  //   });
-  //   let prevLineWidth = 0;
-  //   for (let i = 0; i < index; i++) {
-  //     let plot = nPlots[i];
-  //     if (prevLineWidth) {
-  //       if (maxWidth - prevLineWidth >= MINW) {
-  //         newX = prevLineWidth;
-  //         break;
-  //       }
-  //       prevLineWidth = 0;
-  //     }
-  //     if (
-  //       i != 0 &&
-  //       plot.positions.x -
-  //         (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
-  //         MINW
-  //     ) {
-  //       newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
-  //       break;
-  //     }
-  //     newX = plot.dimensions.w + plot.positions.x;
-  //     if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
-  //     if (newX + MINW > maxWidth) {
-  //       prevLineWidth = newX;
-  //       newX = 0;
-  //       newy = newy + maxHeight;
-  //       maxHeight = 0;
-  //     }
-  //   }
-  // }
-
   return {
-    x: newX,
-    y: newy,
-    w: w,
-    h: h,
+    x: plotData.positions.x,
+    y: plotData.positions.y,
+    w: plotData.dimensions.w,
+    h: plotData.dimensions.h,
     minW: MINW,
     minH: MINH,
     static: false,
@@ -336,7 +291,7 @@ class PlotController extends React.Component<PlotControllerProps> {
               onChange={(e) => {
                 //@ts-ignore
                 method = e.target.value;
-                this.forceUpdate();
+                PlotResource.updatePositions();
               }}
             >
               <MenuItem value={"all"}>No sorting</MenuItem>
