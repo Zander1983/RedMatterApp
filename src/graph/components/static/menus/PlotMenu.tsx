@@ -1,5 +1,4 @@
-import numeral from "numeral";
-import React, { useEffect } from "react";
+import React from "react";
 
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
@@ -16,12 +15,10 @@ import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { Gate, Plot, PopulationGateType } from "graph/resources/types";
-import { store } from "redux/store";
+import { Plot, PopulationGateType } from "graph/resources/types";
 import { createPlot } from "graph/resources/plots";
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
-import { createGate } from "graph/resources/gates";
 import WorkspaceDispatch from "graph/resources/dispatchers";
 
 const statsProvider = new PlotStats();
@@ -30,7 +27,6 @@ export default function PlotMenu(props: {
   plots: Plot[];
   onStatChange: (params: { x: any; value: any }) => void;
 }) {
-  const plots = props.plots;
   const populations = props.plots.map((e) => getPopulation(e.population));
 
   const [statsX, setStatsX] = React.useState(
@@ -208,7 +204,6 @@ export default function PlotMenu(props: {
                   {populations[i].gates.length === 0
                     ? "All"
                     : populations[i].gates
-                        .reverse()
                         .map((e: PopulationGateType) => (
                           <b
                             style={{
