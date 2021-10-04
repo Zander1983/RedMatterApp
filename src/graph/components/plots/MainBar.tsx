@@ -11,10 +11,11 @@ import normalGatingIcon from "../../../assets/images/normalGatingIcon.png";
 import inverseGatingIcon from "../../../assets/images/inverseGatingIcon.png";
 import gate from "../../../assets/images/gate.png";
 import { Plot, PopulationGateType } from "graph/resources/types";
-import { getWorkspace } from "graph/utils/workspace";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import WorkspaceDispatch from "graph/resources/dispatchers";
+import { CameraFilled } from "@ant-design/icons";
 
 const classes = {
   main: {
@@ -29,7 +30,6 @@ const classes = {
   },
   iconButtonIcon: {
     color: "#fff",
-    width: 20,
   },
   mainButton: {
     backgroundColor: "#66a",
@@ -79,22 +79,34 @@ export default function MainBar(props: { plot: Plot }) {
     WorkspaceDispatch.UpdatePlot(plot);
   };
 
-  // const downloadCanvasAsImage = () => {
-  //   let downloadLink = document.createElement("a");
-  //   downloadLink.setAttribute(
-  //     "download",
-  //     `workspacename-filename-${props.plot.id}.png`
-  //   );
-  //   let canvas = document.getElementById(`canvas-${props.plot.id}`);
-  //   //@ts-ignore
-  //   let dataURL = canvas.toDataURL("image/png");
-  //   let url = dataURL.replace(
-  //     /^data:image\/png/,
-  //     "data:application/octet-stream"
-  //   );
-  //   downloadLink.setAttribute("href", url);
-  //   downloadLink.click();
-  // };
+  const downloadCanvasAsImage = () => {
+    let downloadLink = document.createElement("a");
+    const file = PlotResource.getPlotFile(props.plot);
+    const fileLabel = file.label.includes(".fcs")
+      ? file.label.split(".fcs")[0]
+      : file.label;
+    const population = getPopulation(props.plot.population);
+    const gateName =
+      population.gates.length > 0
+        ? getGate(population.gates[0].gate).name
+        : null;
+    const plotName = props.plot.label;
+    downloadLink.setAttribute(
+      "download",
+      `${
+        gateName ? gateName + "-" : plotName ? plotName + "-" : ""
+      }${fileLabel}.png`
+    );
+    let canvas = document.getElementById(`canvas-${props.plot.id}`);
+    //@ts-ignore
+    let dataURL = canvas.toDataURL("image/png");
+    let url = dataURL.replace(
+      /^data:image\/png/,
+      "data:application/octet-stream"
+    );
+    downloadLink.setAttribute("href", url);
+    downloadLink.click();
+  };
 
   return (
     <Grid direction="row" style={classes.main} container>
@@ -320,6 +332,30 @@ export default function MainBar(props: { plot: Plot }) {
             <TuneIcon />
           </Button>
         </Tooltip>
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button downloads the plot as a png picture
+              </h3>
+            </React.Fragment>
+          }
+        >
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => downloadCanvasAsImage()}
+            style={{
+              flex: 1,
+              height: "2rem",
+              fontSize: 12,
+              color: "white",
+              backgroundColor: "#6666aa",
+            }}
+          >
+            <CameraFilled style={classes.iconButtonIcon}></CameraFilled>
+          </Button>
+        </Tooltip>
       </Grid>
       {/* <Button style={{ display: "inline-block"}}
         variant="contained"
@@ -340,15 +376,6 @@ export default function MainBar(props: { plot: Plot }) {
             >
               Quadrant
             </Button> */}
-      {/* <Button style={{ display: "inline-block"}}
-        onClick={() => downloadCanvasAsImage()}
-        style={{ ...classes.iconButton, marginLeft: 5 }}
-      >
-        <CameraAltIcon
-          fontSize="small"
-          style={classes.iconButtonIcon}
-        ></CameraAltIcon>
-      </Button> */}
     </Grid>
   );
 }
