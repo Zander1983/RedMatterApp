@@ -98,17 +98,24 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
 
   if (plot.xAxis.length === 0 && plot.yAxis.length === 0) {
     if (Object.keys(plot.axisPlotTypes).length > 0) {
-      const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
-      if (plot.xAxis === "" && plot.yAxis === "") {
-        plot.xAxis = fscssc.fsc;
-        plot.yAxis = fscssc.ssc;
+      try {
+        const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
+        if (plot.xAxis === "" && plot.yAxis === "") {
+          plot.xAxis = fscssc.fsc;
+          plot.yAxis = fscssc.ssc;
+        }
+      } catch {
+        if (plot.xAxis === "") plot.xAxis = axes[0];
+        if (plot.yAxis === "") plot.yAxis = axes[1];
       }
     }
-    if (plot.xAxis === "") plot.xAxis = axes[0];
-    if (plot.yAxis === "") plot.yAxis = axes[1];
   }
+  if (plot.xAxis === "") plot.xAxis = axes[0];
+  if (plot.yAxis === "") plot.yAxis = axes[1];
   if (!plot.xPlotType) plot.xPlotType = getPlotType(plot, plot.xAxis);
   if (!plot.yPlotType) plot.yPlotType = getPlotType(plot, plot.yAxis);
+
+  console.log();
 
   return plot;
 };
