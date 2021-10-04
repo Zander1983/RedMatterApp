@@ -69,7 +69,8 @@ const AddFileModal = React.memo(
 
     const filesMetadata = props.files;
     const files = getAllFiles();
-    const [onHover, setOnHover] = useState(-1);
+    const [onHover, setOnHover] = React.useState(-1);
+
     const [downloading, setDowloading] = useState<FileID[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
 
@@ -103,7 +104,10 @@ const AddFileModal = React.memo(
       .every((e) => e);
 
     const shownFilesMetadata = filesMetadata.filter(
-      (e) => e.name.includes(fileSearchTerm) || e.label.includes(fileSearchTerm)
+      (e) =>
+        fileSearchTerm.length === 0 ||
+        (fileSearchTerm.length > 0 && e.name.includes(fileSearchTerm)) ||
+        e.label.includes(fileSearchTerm)
     );
 
     return (

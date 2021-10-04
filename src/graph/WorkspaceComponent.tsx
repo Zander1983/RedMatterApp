@@ -43,7 +43,7 @@ import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
-import NotificationsOverlay from "./resources/notifications";
+import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./resources/reduxActions";
 import WorkspaceDispatch from "./resources/dispatchers";
 
@@ -134,7 +134,7 @@ const WorkspaceInnerComponent = (props: {
       WorkspaceDispatch.SetWorkspaceShared(props.shared);
     }
 
-    initializeWorkspace();
+    initializeWorkspace(props.shared, props.experimentId);
 
     return () => {
       WorkspaceDispatch.ResetWorkspace();
@@ -142,12 +142,36 @@ const WorkspaceInnerComponent = (props: {
     };
   }, []);
 
-  const initializeWorkspace = async () => {
-    try {
-      await downloadFileMetadata(props.shared, props.experimentId);
-      await loadWorkspaceFromRemoteIfExists(props.shared, props.experimentId);
-    } catch {}
+  const initializeWorkspace = async (shared: boolean, experimentId: string) => {
+    const notification = new Notification("Loading workspace");
+    await new Promise((resolve, reject) => {
+      const loadWorkspace = (tries: number = 3) => {
+        if (tries === 0) {
+          snackbarService.showSnackbar(
+            "Workspace processing complete",
+            "success"
+          );
+          resolve(null);
+          return;
+        }
+        loadWorkspaceFromRemoteIfExists(shared, experimentId).then(
+          (loadStatus) => {
+            if (!loadStatus.requestSuccess) {
+              if (tries === 3)
+                snackbarService.showSnackbar("Creating workspace...", "info");
+              setTimeout(() => loadWorkspace(tries - 1), 2000);
+            } else {
+              snackbarService.showSnackbar("Workspace loaded!", "success");
+              resolve(null);
+            }
+          }
+        );
+      };
+
+      downloadFileMetadata(shared, experimentId).then(() => loadWorkspace());
+    });
     setAutosaveEnabled(true);
+    notification.killNotification();
   };
 
   const saveWorkspace = async () => {

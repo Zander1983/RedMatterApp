@@ -243,15 +243,9 @@ export default function PlotMenu(props: {
                     ? "(Outlier)"
                     : null}
                 </TableCell>
+                <TableCell>{stats.statX}</TableCell>
                 <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "horizontal"
-                    ? "~"
-                    : stats.statX}
-                </TableCell>
-                <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "vertical"
-                    ? "~"
-                    : stats.statY}
+                  {type === "histogram" ? "~" : stats.statY}
                 </TableCell>
                 <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
                 <TableCell>

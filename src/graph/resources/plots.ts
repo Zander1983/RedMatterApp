@@ -9,8 +9,8 @@ import {
   GateID,
   File,
   Population,
-  Dataset,
   HistogramOverlay,
+  FileID,
   HistogramAxisType,
 } from "./types";
 import { createID } from "graph/utils/id";
@@ -40,7 +40,7 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
-  let newPlot = createBlankPlotObj();
+  let newPlot = createEmptyPlot();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
@@ -62,7 +62,7 @@ export const createPlot = ({
   return setupPlot(newPlot);
 };
 
-export const createBlankPlotObj = (): Plot => {
+export const createEmptyPlot = (): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
@@ -133,51 +133,63 @@ export const getPlotOverlays = (plot: Plot) => {
   });
 };
 
-export const addOverlay = (
+export const addOverlay = async (
   plot: Plot,
-  color: string,
-  plotId: string,
-  plotSource: string,
-  plotType: string,
-  fileId: string = "",
-  populationId: string = ""
+  {
+    fromFile,
+    fromPlot,
+  }: {
+    fromFile?: FileID;
+    fromPlot?: PlotID;
+  }
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-    plotType: plotType,
-    fileId: fileId,
-    populationId: populationId,
-  });
+  if (fromPlot) {
+    throw Error("Plot overlays not implemented");
+  } else if (fromFile) {
+    let population: Population = populations.createPopulation({
+      file: fromFile,
+    });
+    population.gates = population.gates.concat(
+      getPopulation(plot.population).gates
+    );
+    await WorkspaceDispatch.AddPopulation(population);
+    const newHistogramOverlay: HistogramOverlay = {
+      id: createID(),
+      color: generateColor(),
+      dataSource: "file",
+      overlayType: "line",
+      file: fromFile,
+      population: population.id,
+    };
+    plot.histogramOverlays.push(newHistogramOverlay);
+  } else {
+    throw Error("No overlay source found");
+  }
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const changeOverlayType = (
-  plot: Plot,
-  targetPlotId: String,
-  fileId: String,
-  newType: string,
-  oldType: string
-) => {
-  let overlay: HistogramOverlay = plot.histogramOverlays.find(
-    (e) =>
-      e.plotId == targetPlotId && e.fileId == fileId && e.plotType == oldType
-  );
-  overlay.plotType = newType;
-  WorkspaceDispatch.UpdatePlot(plot);
-};
+// export const changeOverlayType = (
+//   plot: Plot,
+//   targetPlotId: String,
+//   fileId: String,
+//   newType: PlotType,
+//   oldType: PlotType
+// ) => {
+//   let overlay: HistogramOverlay = plot.histogramOverlays.find(
+//     (e) =>
+//       e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
+//   );
+//   overlay.plotType = newType;
+//   WorkspaceDispatch.UpdatePlot(plot);
+// };
 
 export const removeOverlay = (
   plot: Plot,
-  targetPlotId: String,
-  fileId: String
+  histogramOverlay: HistogramOverlay
 ) => {
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.fileId !== fileId
+    (e) => e.id !== histogramOverlay.id
   );
-
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
@@ -276,13 +288,6 @@ export const xAxisToHistogram = (plot: Plot) => {
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const yAxisToHistogram = (plot: Plot) => {
-  plot.gatingActive = "";
-  plot.xAxis = plot.yAxis;
-  plot.histogramAxis = "horizontal";
-  WorkspaceDispatch.UpdatePlot(plot);
-};
-
 export const setXAxis = (plot: Plot, xAxis: string) => {
   plot.gatingActive = "";
   plot.xAxis = xAxis;
@@ -337,10 +342,10 @@ export const getXandYRanges = (
 
 export const getHistogramBins = (
   plot: Plot,
-  binCount?: number,
-  targetAxis?: string
+  binCount: number,
+  targetAxis: string
 ) => {
-  binCount = binCount === undefined ? getBinCount(plot) : binCount;
+  binCount = Math.round(binCount);
   const axisName =
     targetAxis === undefined
       ? plot.histogramAxis === "vertical"
@@ -349,10 +354,7 @@ export const getHistogramBins = (
       : targetAxis;
   let range = plot.ranges[axisName];
   let axis = getHistogramAxisData(plot);
-  if (
-    (plot.xAxis === axisName && plot.xPlotType === "bi") ||
-    (plot.yAxis === axisName && plot.yPlotType === "bi")
-  ) {
+  if (plot.xAxis === axisName && plot.xPlotType === "bi") {
     const fcsServices = new FCSServices();
     const linearRange = plot.ranges[axisName];
     axis = new Float32Array(
@@ -369,13 +371,6 @@ export const getHistogramBins = (
     if (binCounts[index] > mx) mx = binCounts[index];
   }
   return { list: binCounts, max: mx };
-};
-
-const STD_BIN_SIZE = 50;
-export const getBinCount = (plot: Plot) => {
-  return plot.histogramAxis === "horizontal"
-    ? plot.plotWidth / STD_BIN_SIZE
-    : plot.plotHeight / STD_BIN_SIZE;
 };
 
 export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {

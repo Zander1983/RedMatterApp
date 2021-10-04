@@ -104,7 +104,10 @@ export const saveWorkspaceToRemote = async (
 export const loadWorkspaceFromRemoteIfExists = async (
   shared: boolean,
   experimentId: string
-): Promise<boolean> => {
+): Promise<{
+  loaded: boolean;
+  requestSuccess: boolean;
+}> => {
   let workspaceData;
   try {
     workspaceData = await axios.post(
@@ -121,16 +124,12 @@ export const loadWorkspaceFromRemoteIfExists = async (
     const workspace = workspaceData.data.state;
     if (Object.keys(workspace).length > 0) {
       await loadSavedWorkspace(workspace, shared, experimentId);
-      snackbarService.showSnackbar("Workspace loaded!", "success");
-      return true;
+      return { loaded: true, requestSuccess: true };
     }
   } catch {
-    snackbarService.showSnackbar(
-      "Your workspace is being processed, please wait and reload the page!",
-      "info"
-    );
+    return { loaded: false, requestSuccess: false };
   }
-  return false;
+  return { loaded: false, requestSuccess: true };
 };
 
 export const loadIfWorkspaceIsShared = async (
@@ -162,10 +161,9 @@ const loadSavedWorkspace = async (
   shared: boolean,
   experimentId: string
 ) => {
-  const notification = new Notification("Loading workspace");
   const workspaceObj = JSON.parse(workspace);
   const files = workspaceObj?.files
-    ? workspaceObj.files.map((e: any) => e.id)
+    ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
     : [];
   await dowloadAllFileEvents(shared, experimentId, files);
   const newWorkspace = {
@@ -174,5 +172,4 @@ const loadSavedWorkspace = async (
     notifications: [],
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
-  notification.killNotification();
 };

@@ -108,29 +108,24 @@ export default class GraphPlotter extends Plotter {
     this.drawHeader();
   }
 
-  public update(noLabels: boolean = false): void {
+  public update(): void {
     super.update();
     this.getBins();
 
-    if (noLabels === false) {
-      const xRange = this.ranges.x;
-      const yRange = this.ranges.y;
+    const xRange = this.ranges.x;
+    const yRange = this.ranges.y;
 
-      const xLabels = this.transformer.getAxisLabels(
-        this.plot.xPlotType,
-        xRange,
-        this.horizontalBinCount
-      );
+    this.xLabels = this.transformer.getAxisLabels(
+      this.plot.xPlotType,
+      xRange,
+      this.horizontalBinCount
+    );
 
-      const yLabels = this.transformer.getAxisLabels(
-        this.plot.yPlotType,
-        yRange,
-        this.verticalBinCount
-      );
-
-      this.xLabels = xLabels;
-      this.yLabels = yLabels;
-    }
+    this.yLabels = this.transformer.getAxisLabels(
+      this.plot.yPlotType,
+      yRange,
+      this.verticalBinCount
+    );
   }
 
   public setPlotterState(state: GraphPlotterState): void {
