@@ -1,15 +1,22 @@
-import React, { useEffect } from "react";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import React, { useState, useEffect } from "react";
+import Autocomplete, {
+  createFilterOptions,
+} from "@material-ui/lab/Autocomplete";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { FormControlLabel } from "@material-ui/core";
-
+import { filterArrayAsPerInput } from "utils/searchFunction";
 import { fluorophoresData, deviceData } from "./quesData";
 import { useDispatch, useStore } from "react-redux";
 
 import ClearIcon from "@material-ui/icons/Clear";
 
+const filterOptions = (options: any, { inputValue }: any) =>
+  filterArrayAsPerInput(options, inputValue);
+
 function FormDeviceType() {
+  const [deviceArray, setDeviceArray] = useState(deviceData);
+
   const store = useStore();
   try {
     let defaultValue = store.getState().user.experiment.device;
@@ -34,12 +41,13 @@ function FormDeviceType() {
       <Autocomplete
         id="combo-box-demo"
         options={deviceData}
-        onChange={(e) => {
+        filterOptions={filterOptions}
+        onChange={(e: any) => {
+          let value = e.target.value;
           dispatch({
             type: "EXPERIMENT_FORM_DATA",
             payload: {
-              //@ts-ignore
-              formitem: { key: "device", value: e.target.outerText },
+              formitem: { key: "device", value: value },
             },
           });
         }}
