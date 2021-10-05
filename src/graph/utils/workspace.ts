@@ -43,6 +43,11 @@ export const getPlot = (plotID: PlotID): Plot => {
   return plots[0];
 };
 
+export const getAllPlots = (): Array<Plot> => {
+  const workspace = getWorkspace();
+  return workspace.plots;
+};
+
 export const getPopulation = (populationID: PopulationID): Population => {
   const workspace = getWorkspace();
   const populations = workspace.populations.filter(

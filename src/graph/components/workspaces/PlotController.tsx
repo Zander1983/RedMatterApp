@@ -20,6 +20,7 @@ import {
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/resources/dispatchers";
 import { getPlotFile } from "graph/resources/plots";
+import * as PlotResource from "graph/resources/plots";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -40,11 +41,11 @@ const classes = {
 
 let method = "file"; // TODO: sorry for this will be fixed later
 
-interface PlotGroup {
+export interface PlotGroup {
   name: string;
   plots: Plot[];
 }
-const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
+export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
   switch (method) {
     case "file":
@@ -116,7 +117,7 @@ export const getTargetLayoutPlots = (protoPlot: any): Plot[] => {
     switch (method) {
       case "file":
         const file = getFile(pop.file);
-        return plotGroups.find((e) => e.name === file.id).plots;
+        return plotGroups.find((e) => e.name === file.name).plots;
       case "gate":
         let group = "No gates";
         //@ts-ignore
@@ -177,41 +178,11 @@ export const setCanvasSize = (save: boolean = false) => {
 };
 
 const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
-  let widthUsed = 0;
-  let maxWidth = MINW * 4;
-  for (let i = 0; i <= index; i++) {
-    let plot = plots[i];
-    if (index != i) widthUsed += plot.dimensions.w;
-    let factor = maxWidth * ((i + 1) / 4) - widthUsed;
-    if ((i + 1) % 4 == 0 && factor > 0) {
-      widthUsed = widthUsed + factor;
-    }
-  }
-
-  let x = plotData.positions.x;
-  let y = plotData.positions.y;
-  let w = plotData.dimensions.w;
-  let h = plotData.dimensions.h;
-  let newy = y;
-  let newX = x;
-
-  if (index > 0) {
-    if (x == 0) {
-      newy = widthUsed / maxWidth;
-      if (newy >= 1) {
-        newX = widthUsed - maxWidth * newy;
-      } else newX = widthUsed;
-    }
-    if (y == 0) {
-      newy = widthUsed / maxWidth;
-    }
-  }
-
   return {
-    x: newX,
-    y: newy,
-    w: w,
-    h: h,
+    x: plotData.positions.x,
+    y: plotData.positions.y,
+    w: plotData.dimensions.w,
+    h: plotData.dimensions.h,
     minW: MINW,
     minH: MINH,
     static: false,
@@ -320,7 +291,7 @@ class PlotController extends React.Component<PlotControllerProps> {
               onChange={(e) => {
                 //@ts-ignore
                 method = e.target.value;
-                this.forceUpdate();
+                PlotResource.updatePositions();
               }}
             >
               <MenuItem value={"all"}>No sorting</MenuItem>
