@@ -50,11 +50,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.yAxis = state.yAxis;
   }
 
-  setPluginState() {
-    let state = { ...this.getGatingState() };
-    this.plugin.setGatingState(state);
-  }
-
   private validateGateOnSpace(gate: PolygonGate) {
     return (
       gate.xAxis === this.plotter.plot.xAxis &&
@@ -204,11 +199,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plotter = plotter;
     this.plugin = plotter.polygonGatePlugin;
     this.plugin.isGating = true;
-  }
-
-  end() {
-    this.plugin.isGating = false;
-    super.end();
   }
 
   protected clearGateState() {
