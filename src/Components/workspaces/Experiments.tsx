@@ -1,10 +1,10 @@
-import React from "react";
+import React, {useState} from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
-import CreateExperimentModal from "./modals/CreateExperimentModal";
+import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
 
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
@@ -26,6 +26,8 @@ interface RemoteExperiment {
   source: string;
 }
 
+
+
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -36,31 +38,32 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     history.replace("/");
   }
 
+
+
   const gettingOrganizationId = () => {
     try {
-      let orgID = userManager.getOrganiztionID();
-      return orgID;
+      return userManager.getOrganiztionID();
     } catch (error) {
-      let orgID = null;
       history.replace("/login");
-      return orgID;
+      return null;
     }
   };
-
-  const [organizationExperiments, setExperiments] = React.useState([]);
-  const [privateExperiments, setPrivateExperiments] = React.useState([]);
+  const [organizationExperiments, setExperiments] = useState([]);
+  const [privateExperiments, setPrivateExperiments] = useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    React.useState(false);
+    useState<boolean>(false);
   const [createExperimentModal, setCreateExperimentModal] =
-    React.useState(false);
+    useState<boolean>(false);
 
   const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    React.useState(true);
+    useState<boolean>(true);
   const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
-    React.useState(false);
+    useState<boolean>(false);
 
-  const [displayExperiments, setDisplayExperiments] = React.useState([]);
+  const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
+
+
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;

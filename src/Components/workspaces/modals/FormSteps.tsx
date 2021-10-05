@@ -4,7 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { FormControlLabel } from "@material-ui/core";
 
-import { fluorophoresData, deviceData } from "./quesData";
+import { fluorophoresData, deviceData } from "../../../assets/staticData/quesData";
 import { useDispatch, useStore } from "react-redux";
 
 import ClearIcon from "@material-ui/icons/Clear";
@@ -80,7 +80,7 @@ function FormDeviceType() {
           />
         }
         label={
-          <span style={{ fontSize: "13px", marginTop: "-10px" }}>
+          <span style={{ fontSize: "13px", marginTop: "-10px", color: '#777' }}>
             Could not find my device
           </span>
         }
@@ -496,34 +496,34 @@ function FormDescription() {
   );
 }
 
-const formSteps = {
-  formDeviceType: {
+export const FormSteps = [
+  {
     component: <FormDeviceType />,
     optional: false,
     title: "To optimize your analysis, what device are you using?",
   },
-  formCellType: {
+  {
     component: <FormCellType />,
     optional: false,
     title:
       "What is the cell type you are measuring? (Helps us automate gates later)",
   },
-  formParticleSize: {
+  {
     component: <FormParticleSize />,
     optional: false,
     title: "How big are your cells/particles?",
   },
-  formFlurophores: {
+  {
     component: <FormFluorophores />,
     optional: false,
     title: "What are the fluorophores? (Helps us select the FL-channels)",
   },
-  formDescription: {
+  {
     component: <FormDescription />,
     optional: true,
     title:
       "Enter a brief description of your experiment. You can skip if you like!",
   },
-};
+]
 
-export default formSteps;
+
