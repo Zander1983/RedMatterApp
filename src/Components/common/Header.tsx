@@ -12,9 +12,6 @@ import userManager from "Components/users/userManager";
 import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
   menuButton: {
     marginRight: theme.spacing(2),
   },
@@ -94,11 +91,7 @@ const AppHeader = (props: any) => {
               </b>
             </NavLink>
           </Typography>
-          {/*{process.env.REACT_APP_NO_WORKSPACES !== "true" ? (
-            <NavLink className={classes.topBarLink} to="/test-red-matter">
-              Test Red Matter
-            </NavLink>
-          ) : null}*/}
+
           {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
             <NavLink className={classes.topBarLink} to="/analyse">
               Start Analysing

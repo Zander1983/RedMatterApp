@@ -110,7 +110,7 @@ export default function Plans(props: any) {
 
       <Grid container spacing={5}>
         {plans.map((plan) => (
-          <Grid item xl={4} xs={12} className={classes.planContainer}>
+          <Grid item md={4} xs={12} className={classes.planContainer}>
             <Grid className={classes.plan}>
               <Grid style={{ flex: 1 }}>
                 <Grid className={classes.nameHighlight}>

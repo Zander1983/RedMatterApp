@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
   },
   footer: {
+    overflow: "hidden",
     borderTop: `1px solid ${theme.palette.divider}`,
     marginTop: theme.spacing(8),
     paddingTop: theme.spacing(3),
@@ -85,14 +86,7 @@ export default function Footer(props: any) {
   const [footers, setFooters] = React.useState(footerData);
 
   return (
-    <Grid
-      item
-      xs={12}
-      md={9}
-      lg={6}
-      component="footer"
-      className={classes.footer}
-    >
+    <Grid item xs={12} md={8} component="footer" className={classes.footer}>
       <Grid container spacing={4} justify="space-evenly">
         {footers.map((footer, i) => (
           <Grid
