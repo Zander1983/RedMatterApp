@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import userManager from "Components/users/userManager";
@@ -7,10 +6,6 @@ import { Grid, Button } from "@material-ui/core";
 import { NavLink } from "react-router-dom";
 
 import { loadStripe } from "@stripe/stripe-js/pure";
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
-
-let stripePromise: any = {};
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -40,12 +35,10 @@ const useStyles = makeStyles((theme) => ({
   white: {
     color: "white",
   },
-
   price: {
     marginTop: 18,
     marginBottom: 18,
   },
-
   get: {
     backgroundColor: "#6666A9",
     border: "0px solid",
@@ -61,22 +54,13 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 20,
     paddingBottom: "30px",
   },
+  mainContainer: {},
 }));
 
 export default function Plans(props: any) {
-  const isLoggedIn =
-    Object.keys(
-      useSelector((state: any) => {
-        if (Object.keys(state).includes("user")) {
-          if (Object.keys(state.user).includes("profile")) {
-            return state.user.profile;
-          }
-        }
-        return {};
-      })
-    ).length !== 0;
-
+  const isLoggedIn = userManager.isLoggedIn();
   const classes = useStyles();
+  const [stripe, setStripe] = useState(null);
 
   const createCheckoutSession = async (priceId: string, subType: string) => {
     return axios
@@ -99,20 +83,13 @@ export default function Plans(props: any) {
   };
 
   const handleClick = async (price: string, subType: string) => {
-    // Get Stripe.js instance
-    const stripe = await stripePromise;
-
-    // Call your backend to create the Checkout Session
-    // const response = await fetch('/create-checkout-session', { method: 'POST' });
-    createCheckoutSession(price, subType).then(function (data) {
-      // Call Stripe.js method to redirect to the new Checkout page
-      stripe.redirectToCheckout({ sessionId: data.sessionId }).then(() => {});
-    });
+    const data = await createCheckoutSession(price, subType);
+    stripe.redirectToCheckout({ sessionId: data.sessionId });
   };
 
   useEffect(() => {
-    stripePromise = loadStripe(
-      "pk_test_51J7UfrFYFs5GcbAXBxHANlj0XASMfZV5TfxzkaKSDTTOeJTmlaIa60Uk5WlizFQ2JTSqZuhn9nJauzNGKmC1dR3700t0UTXOdy"
+    loadStripe(process.env.REACT_APP_STRIPE_KEY).then((stripe) =>
+      setStripe(stripe)
     );
   }, []);
 
@@ -121,12 +98,7 @@ export default function Plans(props: any) {
       container
       alignContent="center"
       justify="center"
-      style={{
-        paddingTop: 30,
-        paddingBottom: 50,
-        paddingLeft: "4em",
-        paddingRight: "4em",
-      }}
+      className={classes.mainContainer}
     >
       <Grid
         container
@@ -179,7 +151,7 @@ export default function Plans(props: any) {
                   variant="contained"
                   className={classes.get}
                   onClick={() =>
-                    handleClick("price_1JCargFYFs5GcbAXZowQSPpK", "Free")
+                    handleClick(process.env.REACT_APP_FREE_PRICE, "Free")
                   }
                 >
                   Start Free!
@@ -223,7 +195,10 @@ export default function Plans(props: any) {
                   variant="contained"
                   className={classes.get}
                   onClick={() =>
-                    handleClick("price_1J7UmZFYFs5GcbAXvPronXSX", "Premium")
+                    handleClick(
+                      process.env.REACT_APP_STRIPE_PREMIUM_PRICE,
+                      "Premium"
+                    )
                   }
                 >
                   Get Started!
@@ -268,7 +243,10 @@ export default function Plans(props: any) {
                   variant="contained"
                   className={classes.get}
                   onClick={() =>
-                    handleClick("price_1JCapGFYFs5GcbAXGlbz4pJV", "Enterprise")
+                    handleClick(
+                      process.env.REACT_APP_STRIPE_ENTERPRISE_PRICE,
+                      "Enterprise"
+                    )
                   }
                 >
                   Get Enterprise!

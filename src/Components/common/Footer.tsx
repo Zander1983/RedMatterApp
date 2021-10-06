@@ -184,10 +184,10 @@ export default function Footer(props: any) {
       <Grid container spacing={4} justify="space-evenly">
         {footers.map((footer, i) => (
           <Grid
-            item={true}
-            xs={4}
-            md={4}
             key={footer.title}
+            item
+            xs={12}
+            md={4}
             style={{ textAlign: "left" }}
           >
             <Typography variant="h6" color="textPrimary" gutterBottom>

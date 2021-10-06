@@ -20,7 +20,7 @@ import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
-import Plans from "./Components/plans/Plans";
+import Plans from "./Components/home/landingPageComponents/Plans";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
