@@ -7,19 +7,15 @@ import Checkbox from "@material-ui/core/Checkbox";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { deviceData } from "assets/staticData/quesData";
-// import ClearIcon from "@material-ui/icons/Clear";
+import { deviceData } from "assets/staticData/CreateExperimentModalData";
 
 import userManager from "Components/users/userManager";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
-import { useDispatch, useStore } from "react-redux";
-// import CreateExperimentDialog from "../CreateExperimentDialog";
+import { useStore } from "react-redux";
 import useForceUpdate from "hooks/forceUpdate";
-// import { FormSteps } from "../FormSteps";
-import { fluorophoresData } from "./../../../../assets/staticData/quesData";
-// import { ManOutlined } from "@ant-design/icons";
+import { fluorophoresData } from "../../../../assets/staticData/CreateExperimentModalData";
 
 interface CreateExperimentType {
   open: boolean;
@@ -37,7 +33,6 @@ function CreateExperimentModal({
   organizationId,
 }: CreateExperimentType): JSX.Element {
   const store = useStore();
-  const dispatch = useDispatch();
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
 
@@ -89,7 +84,7 @@ function CreateExperimentModal({
       subscriptionType === "Free" || subscriptionType === null ? false : true
     );
     //eslint-disable-next-line
-  }, [dispatch, open]);
+  }, [open]);
 
   // if there's a form with valid data
   // then it calls the createExperiment function
@@ -153,10 +148,6 @@ function CreateExperimentModal({
       !uniqueNameError
     );
   };
-
-  store.subscribe(() => {
-    forceUpdate();
-  });
 
   return (
     <div>

@@ -12,7 +12,6 @@ import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
 import Experiment from "./Components/workspaces/Experiment";
-import PrototypeForm from "./Components/workspaces/modals/PrototypeForm/PrototypeForm";
 import About from "./Components/home/About";
 
 import Plots from "./graph/WorkspaceComponent";
@@ -54,13 +53,13 @@ const router = [
     path: "/",
     component: AppLandingPage,
   },
-  {
-    path: "/questions/:workspaceID",
-    component: ({ match }: any) => {
-      //@ts-ignore
-      return <PrototypeForm workspaceID={match.params.workspaceID} />;
-    },
-  },
+  // {
+  //   path: "/questions/:workspaceID",
+  //   component: ({ match }: any) => {
+  //     //@ts-ignore
+  //     return <PrototypeForm workspaceID={match.params.workspaceID} />;
+  //   },
+  // },
   {
     path: "/authentication/:tabId",
     component: SignInOutContainer,

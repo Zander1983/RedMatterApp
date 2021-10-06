@@ -37,7 +37,7 @@ export const useStyles = makeStyles((theme) => ({
     paddingTop: 10,
     borderBottomStyle: "solid",
     borderBottomWidth: "0.01px",
-    borderBottomColor: "#999999",
+    borderBottomColor: "#ddd",
     paddingBottom: 10,
   },
   inputlabel: {
