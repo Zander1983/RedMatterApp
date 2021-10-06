@@ -6,15 +6,20 @@ import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import { deviceData } from "assets/staticData/quesData";
+// import ClearIcon from "@material-ui/icons/Clear";
 
 import userManager from "Components/users/userManager";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
-import { useDispatch, useStore, useSelector } from "react-redux";
-import CreateExperimentDialog from "../CreateExperimentDialog";
+import { useDispatch, useStore } from "react-redux";
+// import CreateExperimentDialog from "../CreateExperimentDialog";
 import useForceUpdate from "hooks/forceUpdate";
-import { FormSteps } from "../FormSteps";
+// import { FormSteps } from "../FormSteps";
+import { fluorophoresData } from "./../../../../assets/staticData/quesData";
+// import { ManOutlined } from "@ant-design/icons";
 
 interface CreateExperimentType {
   open: boolean;
@@ -36,46 +41,69 @@ function CreateExperimentModal({
   const classes = useStyles();
   const forceUpdate = useForceUpdate();
 
-  const [name, setName] = useState("");
-  const [privateExperiment, setPrivateExperiment] = useState(false);
   const [formData, setFormData] = useState(null);
-  const [createExperimentDialog, setCreateExperimentDialog] = useState(false);
-  const [nameError, setNameError] = useState(false);
-  const [enablePrivateExperiment, setEnablePrivateExperiment] = useState(false);
   const subscriptionType = store.getState().user.profile.subscriptionType;
-  console.log(subscriptionType);
-  const experimentNameHandler = (userInput: string) => {
+
+  // Name
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState(false);
+  const [uniqueNameError, setUniqueNameError] = useState(false);
+
+  // Private Experiment
+  const [privateExperiment, setPrivateExperiment] = useState(false);
+  const [enablePrivateExperiment, setEnablePrivateExperiment] = useState(false);
+
+  // Device Type
+  const [deciveType, setDeviceType] = useState("");
+  const [deviceNotFound, setDeviceNotFound] = useState(false);
+
+  // Cell Type
+  const [cellType, setCellType] = useState<string>("");
+  const [cellError, setCellError] = useState(false);
+
+  // Particle size
+  const [particleSize, setParticleSize] = useState("");
+  const [particleSizeError, setParticleSizeError] = useState(false);
+
+  // Fluorophores Type
+  const [fluorophoresType, setFluorophoresType] = useState("");
+  const [fluorophoresTypeError, setFluorophoresTypeError] = useState(false);
+  const [fluorophoresTypeNotFound, setFluorophoresTypeNotFound] =
+    useState(false);
+
+  // Description
+  const [description, setDescription] = useState("");
+
+  // Name Validation
+  const onChangeValidator = (userInput: string) => {
     setName(userInput);
     userInput && setNameError(false);
   };
 
-  const experimentNameErrorHandler = (userInput: string) => {
+  const onBlurValidator = (userInput: string) => {
     !userInput && setNameError(true);
   };
 
   useEffect(() => {
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA_CLEAR",
-    });
-    for (const item of [
-      "device",
-      "cellType",
-      "particleSize",
-      "fluorophoresCategory",
-      "description",
-    ]) {
-      dispatch({
-        type: "EXPERIMENT_FORM_DATA",
-        payload: {
-          formitem: { key: item, value: null },
-        },
-      });
-    }
-
     setEnablePrivateExperiment(
       subscriptionType === "Free" || subscriptionType === null ? false : true
     );
+    //eslint-disable-next-line
   }, [dispatch, open]);
+
+  // if there's a form with valid data
+  // then it calls the createExperiment function
+  useEffect(() => {
+    formData && createExperiment();
+    //eslint-disable-next-line
+  }, [formData]);
+
+  // it handles the unique name error
+  useEffect(() => {
+    setUniqueNameError(experiments.includes(name));
+    setNameError(experiments.includes(name));
+    //eslint-disable-next-line
+  }, [name]);
 
   const createExperiment = () => {
     const req = ExperimentApiFetchParamCreator({
@@ -102,61 +130,27 @@ function CreateExperimentModal({
           "error"
         );
       });
-    dispatch({
-      type: "EXPERIMENT_FORM_DATA_CLEAR",
-    });
   };
 
   //THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG
   const handleSubmit = () => {
-    if (name === "" || name === undefined || name === null) {
-      snackbarService.showSnackbar(
-        "Experiment name cannot not be empty",
-        "warning"
-      );
-      return;
-    }
-
-    if (experiments.includes(name)) {
-      snackbarService.showSnackbar(
-        "An experiment with this name already exists",
-        "warning"
-      );
-      return;
-    }
-
-    const valuesToCheck = {
-      1: store.getState().user.experiment.cellType,
-      2: store.getState().user.experiment.particleSize,
-      3: store.getState().user.experiment.fluorophoresCategory,
-    };
-
-    //THIS IS A VERY HANDY ES7 WAY TO CHECK ALL ITEMS FROM AN OBJECT
-    if (
-      Object.values(valuesToCheck).every((item) => item != null) &&
-      name != null
-    ) {
-      setCreateExperimentDialog(true);
-    } else {
-      snackbarService.showSnackbar(
-        "There are still some required fields empty",
-        "error"
-      );
-      return;
-    }
     //SET THE FROM DATA STATE SO WE CAN CREATE THE EXPERIMENT FROM THE CREATEWORKSPACE FUNCTION
-    setFormData(store.getState().user.experiment);
+    setFormData({
+      device: deciveType,
+      cellType,
+      particleSize,
+      fluorophoresCategory: fluorophoresType,
+      description,
+    });
   };
 
   const confirmEnabled = () => {
-    const valuesToCheck = {
-      1: store.getState().user.experiment.cellType,
-      2: store.getState().user.experiment.particleSize,
-      3: store.getState().user.experiment.fluorophoresCategory,
-      4: name,
-    };
-    return Object.values(valuesToCheck).every(
-      (item) => item != null && item !== ""
+    return (
+      name.trim() &&
+      cellType &&
+      particleSize &&
+      fluorophoresType &&
+      !uniqueNameError
     );
   };
 
@@ -164,27 +158,8 @@ function CreateExperimentModal({
     forceUpdate();
   });
 
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-  const createExperimentFromSummary = (func: Function) => {
-    func();
-  };
   return (
     <div>
-      <CreateExperimentDialog
-        open={createExperimentDialog}
-        closeCall={{
-          f: handleClose,
-          ref: setCreateExperimentDialog,
-        }}
-        name={name}
-        sendFunction={{
-          f: createExperimentFromSummary,
-          ref: createExperiment,
-        }}
-      />
-
       <Modal
         open={open}
         disableScrollLock={true}
@@ -211,10 +186,14 @@ function CreateExperimentModal({
                     error={nameError}
                     size="small"
                     variant="outlined"
-                    helperText="This Field is Required"
+                    helperText={
+                      uniqueNameError
+                        ? "This name is not Unique"
+                        : "This Field is Required"
+                    }
                     label="Experiment Name"
-                    onBlur={(e) => experimentNameErrorHandler(e.target.value)}
-                    onChange={(e) => experimentNameHandler(e.target.value)}
+                    onChange={(e) => onChangeValidator(e.target.value)}
+                    onBlur={(e) => onBlurValidator(e.target.value)}
                     value={name}
                     className={classes.inputWidth}
                   ></TextField>
@@ -262,19 +241,271 @@ function CreateExperimentModal({
                 </Grid>
               )}
 
-              {/* Others */}
-              {FormSteps.map((item, index) => (
-                <Grid container className={classes.innerGrid} key={index}>
-                  <Grid item xs={5}>
-                    <Typography className={classes.inputlabel}>
-                      {item.title}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={7}>
-                    {item.component}
-                  </Grid>
+              {/* Device Type */}
+              <Grid container className={classes.innerGrid}>
+                <Grid item xs={5}>
+                  <Typography className={classes.inputlabel}>
+                    {"To optimize your analysis, what device are you using?"}
+                  </Typography>
                 </Grid>
-              ))}
+
+                <Grid item xs={7}>
+                  <div className={classes.componentContainer}>
+                    <Autocomplete
+                      id="combo-box-demo"
+                      options={deviceData}
+                      onChange={(e: React.ChangeEvent<{}>, value) => {
+                        setDeviceType(value);
+                      }}
+                      getOptionLabel={(option) => option}
+                      style={{ width: 400 }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Device Type"
+                          placeholder="Placeholder"
+                          helperText="This Field is Optional"
+                          variant="outlined"
+                        />
+                      )}
+                    />
+                    <FormControlLabel
+                      className={classes.formControlLabel}
+                      control={
+                        <Checkbox
+                          style={{
+                            transform: "scale(0.6)",
+                          }}
+                          color="primary"
+                          inputProps={{ "aria-label": "secondary checkbox" }}
+                          checked={deviceNotFound}
+                          onChange={(e) => {
+                            setDeviceNotFound(!deviceNotFound);
+                          }}
+                        />
+                      }
+                      label={
+                        <span className={classes.notFoundLabel}>
+                          Could not find my device
+                        </span>
+                      }
+                    />
+                    {deviceNotFound && (
+                      <div className={classes.notFoundContainer}>
+                        Send us an email at{" "}
+                        <a href="mailto:redmatterapp@gmail.com">
+                          <b>redmatterapp@gmail.com</b>
+                        </a>
+                        <p style={{ fontSize: 10, marginBottom: 30 }}>
+                          Provide the name of your device and we will add it to
+                          our database!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Grid>
+              </Grid>
+
+              {/* Cell Type */}
+              <Grid container className={classes.innerGrid}>
+                <Grid item xs={5}>
+                  <Typography className={classes.inputlabel}>
+                    {
+                      "What is the cell type you are measuring? (Helps us automate gates later)"
+                    }
+                  </Typography>
+                </Grid>
+                <Grid item xs={7}>
+                  <div className={classes.componentContainer}>
+                    <Autocomplete
+                      id="cell"
+                      onChange={(e: React.ChangeEvent<{}>, value) => {
+                        setCellType(value);
+                        value && setCellError(false);
+                      }}
+                      onBlur={(e) => {
+                        !cellType && setCellError(true);
+                      }}
+                      options={[
+                        "Single cells",
+                        "Heterogenous population",
+                        "Lymphocytes",
+                        "Other",
+                      ]}
+                      getOptionLabel={(option) => option}
+                      style={{ width: 400 }}
+                      renderInput={(params) => (
+                        <TextField
+                          required
+                          {...params}
+                          error={cellError}
+                          label="Cell type"
+                          size="small"
+                          placeholder="Placeholder"
+                          helperText="This Field is Required"
+                          variant="outlined"
+                        />
+                      )}
+                    />
+                  </div>
+                  {/* {item.component} */}
+                </Grid>
+              </Grid>
+
+              {/* Particle Size */}
+              <Grid container className={classes.innerGrid}>
+                <Grid item xs={5}>
+                  <Typography className={classes.inputlabel}>
+                    {"How big are your cells/particles?"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={7}>
+                  <div className={classes.componentContainer}>
+                    <Autocomplete
+                      id="particle"
+                      //value={particleSize}
+                      onChange={(e: React.ChangeEvent<{}>, value) => {
+                        setParticleSize(value);
+                        value && setParticleSizeError(false);
+                      }}
+                      onBlur={(e) =>
+                        !particleSize && setParticleSizeError(true)
+                      }
+                      options={["Below 1µm", "1-3 µm", "2µm+"]}
+                      getOptionLabel={(option) => option}
+                      style={{ width: 400 }}
+                      renderInput={(params) => (
+                        <TextField
+                          required
+                          {...params}
+                          error={particleSizeError}
+                          size="small"
+                          label="Particle Size"
+                          placeholder="Placeholder"
+                          helperText="This Field is Required"
+                          variant="outlined"
+                        />
+                      )}
+                    />
+                  </div>
+                </Grid>
+              </Grid>
+
+              {/* Fluorophores */}
+              <Grid container className={classes.innerGrid}>
+                <Grid item xs={5}>
+                  <Typography className={classes.inputlabel}>
+                    {
+                      "What are the fluorophores? (Helps us select the FL-channels)"
+                    }
+                  </Typography>
+                </Grid>
+                <Grid item xs={7}>
+                  <div className={classes.componentContainer}>
+                    <Autocomplete
+                      multiple
+                      disableClearable={true}
+                      id="fluorosphores"
+                      disableCloseOnSelect
+                      onChange={(e: React.ChangeEvent<{}>, reason) => {
+                        setFluorophoresType(reason.join());
+                        setFluorophoresTypeError(reason.length ? false : true);
+                      }}
+                      onBlur={(e) => {
+                        !fluorophoresType.length &&
+                          setFluorophoresTypeError(true);
+                      }}
+                      options={fluorophoresData}
+                      getOptionLabel={(option) => option}
+                      style={{ width: 400 }}
+                      renderInput={(params) => (
+                        <TextField
+                          required
+                          {...params}
+                          error={fluorophoresTypeError}
+                          size="small"
+                          label="Fluorophores"
+                          placeholder="Placeholder"
+                          helperText="This Field is Required"
+                          variant="outlined"
+                        />
+                      )}
+                    />
+
+                    <FormControlLabel
+                      className={classes.formControlLabel}
+                      style={{
+                        marginLeft: "-45%",
+                      }}
+                      control={
+                        <Checkbox
+                          color="primary"
+                          style={{
+                            transform: "scale(0.6)",
+                          }}
+                          inputProps={{ "aria-label": "secondary checkbox" }}
+                          checked={fluorophoresTypeNotFound}
+                          onChange={(e) => {
+                            setFluorophoresTypeNotFound(
+                              !fluorophoresTypeNotFound
+                            );
+                          }}
+                        />
+                      }
+                      label={
+                        <span style={{ fontSize: "13px" }}>
+                          Could not find the fluorophores
+                        </span>
+                      }
+                    />
+                    {fluorophoresTypeNotFound && (
+                      <div
+                        className={classes.notFoundContainer}
+                        style={{
+                          marginLeft: "-15%",
+                        }}
+                      >
+                        Send us an email at{" "}
+                        <a href="mailto:redmatterapp@gmail.com">
+                          <b>redmatterapp@gmail.com</b>
+                        </a>
+                        <p style={{ fontSize: 10, marginBottom: 30 }}>
+                          Provide the name of your fluorophores and we will add
+                          it to our database!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Grid>
+              </Grid>
+
+              {/* Description */}
+              <Grid container className={classes.innerGrid}>
+                <Grid item xs={5}>
+                  <Typography className={classes.inputlabel}>
+                    {
+                      "Enter a brief description of your experiment. You can skip if you like!"
+                    }
+                  </Typography>
+                </Grid>
+                <Grid item xs={7}>
+                  <TextField
+                    helperText="This Field is Optional"
+                    value={description}
+                    id="outlined-multiline-static"
+                    label="Description"
+                    multiline
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                    }}
+                    size="small"
+                    placeholder="..."
+                    variant="outlined"
+                    className={classes.description}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
 
             {/* Buttons */}
@@ -282,7 +513,11 @@ function CreateExperimentModal({
               <Button
                 variant="contained"
                 className={classes.cancelButton}
-                onClick={() => closeCall.f(closeCall.ref)}
+                onClick={() => {
+                  setFluorophoresTypeError(false);
+                  closeCall.f(closeCall.ref);
+                  setName("");
+                }}
               >
                 Cancel
               </Button>

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, Button, CircularProgress } from "@material-ui/core";
@@ -26,8 +26,6 @@ interface RemoteExperiment {
   source: string;
 }
 
-
-
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -37,8 +35,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   if (process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/");
   }
-
-
 
   const gettingOrganizationId = () => {
     try {
@@ -62,8 +58,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
-
-
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
