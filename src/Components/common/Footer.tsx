@@ -10,6 +10,7 @@ import { useHistory } from "react-router";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import useForceUpdate from "hooks/forceUpdate";
+import { useLocation } from "react-router-dom";
 
 function Copyright() {
   return (
@@ -79,98 +80,9 @@ export default function Footer(props: any) {
   const forceUpdate = useForceUpdate();
   const classes = useStyles();
   const history = useHistory();
+  const location = useLocation();
 
-  const [footers, setFooters] = React.useState([
-    {
-      title: "About us",
-      description: [
-        {
-          name: "Team",
-          open: false,
-          description: (
-            <ul>
-              <li>
-                <b>Mark Kelly</b>
-                <br /> Chief Executive Officer
-                <br />
-                <br />
-              </li>
-              <li>
-                <b>Dr. Tomaz Einfalt</b>
-                <br /> Chief Product Officer
-                <br />
-                <br />
-              </li>
-              <li>
-                <b>Renato Britto Araujo</b>
-                <br /> Chief Technology Officer
-                <br />
-                <br />
-              </li>
-              <li>
-                <b>Dr. Alfonso Blanco</b>
-                <br /> Science Advisor
-                <br />
-                <br />
-              </li>
-            </ul>
-          ),
-        },
-        {
-          name: "History",
-          open: false,
-          description: (
-            <div>
-              Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly.
-              It was built in conjunction with a local hospital who wanted to be
-              able to access FCS tools remotely and from mobile devices. Red
-              Matter is now used by users in over 2,000 institutes and in over
-              100 countries.
-            </div>
-          ),
-        },
-      ],
-    },
-    {
-      title: "Legal",
-      description: [
-        {
-          name: "Terms of use",
-          open: false,
-          description: (
-            <div>
-              Any FCS data uploaded to Red Matter may be used by Red Matter in
-              an anonymised form. Red Matter defines anonymised FCS data as data
-              that excludes any file metadata, labels, or any other infromation
-              that would identify the FCS file or its source.
-            </div>
-          ),
-        },
-        {
-          name: "Credits",
-          path: "/credits",
-        },
-      ],
-    },
-    {
-      title: "Contact",
-      description: [
-        {
-          name: "Contact us",
-          open: false,
-          description: (
-            <div>
-              Send us an email at <b>admin@redmatterapp.com</b>
-            </div>
-          ),
-        },
-        {
-          name: "Join our team",
-          path: "/jobs",
-        },
-      ],
-    },
-  ]);
+  const [footers, setFooters] = React.useState(footerData);
 
   return (
     <Grid
@@ -184,10 +96,10 @@ export default function Footer(props: any) {
       <Grid container spacing={4} justify="space-evenly">
         {footers.map((footer, i) => (
           <Grid
-            item={true}
-            xs={4}
-            md={4}
             key={footer.title}
+            item
+            xs={12}
+            md={4}
             style={{ textAlign: "left" }}
           >
             <Typography variant="h6" color="textPrimary" gutterBottom>
@@ -232,3 +144,95 @@ export default function Footer(props: any) {
     </Grid>
   );
 }
+
+const footerData = [
+  {
+    title: "About us",
+    description: [
+      {
+        name: "Team",
+        open: false,
+        description: (
+          <ul>
+            <li>
+              <b>Mark Kelly</b>
+              <br /> Chief Executive Officer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Dr. Tomaz Einfalt</b>
+              <br /> Chief Product Officer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Renato Britto Araujo</b>
+              <br /> Chief Technology Officer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Dr. Alfonso Blanco</b>
+              <br /> Science Advisor
+              <br />
+              <br />
+            </li>
+          </ul>
+        ),
+      },
+      {
+        name: "History",
+        open: false,
+        description: (
+          <div>
+            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It
+            was built in conjunction with a local hospital who wanted to be able
+            to access FCS tools remotely and from mobile devices. Red Matter is
+            now used by users in over 2,000 institutes and in over 100
+            countries.
+          </div>
+        ),
+      },
+    ],
+  },
+  {
+    title: "Legal",
+    description: [
+      {
+        name: "Terms of use",
+        open: false,
+        description: (
+          <div>
+            Any FCS data uploaded to Red Matter may be used by Red Matter in an
+            anonymised form. Red Matter defines anonymised FCS data as data that
+            excludes any file metadata, labels, or any other infromation that
+            would identify the FCS file or its source.
+          </div>
+        ),
+      },
+      {
+        name: "Credits",
+        path: "/credits",
+      },
+    ],
+  },
+  {
+    title: "Contact",
+    description: [
+      {
+        name: "Contact us",
+        open: false,
+        description: (
+          <div>
+            Send us an email at <b>admin@redmatterapp.com</b>
+          </div>
+        ),
+      },
+      {
+        name: "Join our team",
+        path: "/jobs",
+      },
+    ],
+  },
+];
