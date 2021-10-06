@@ -11,8 +11,11 @@ const useStyles = makeStyles((theme) => ({
   featuresContainer: {},
   featureContainer: {
     flexDirection: "row",
-    marginBottom: 7,
     padding: 10,
+    border: "solid 1px #ddd",
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    margin: 5,
   },
   featuresHeader: {
     textAlign: "center",
@@ -24,13 +27,13 @@ const useStyles = makeStyles((theme) => ({
   featureIconContainer: {
     padding: 20,
     borderRadius: "50%",
-    border: "solid 1px #ddd",
     width: 77,
     height: 77,
-    backgroundColor: "white",
-    boxShadow: "1px 1px 2px 1px #ddd",
+    // border: "solid 1px #ddd",
+    // backgroundColor: "white",
+    // boxShadow: "1px 1px 2px 1px #ddd",
   },
-  typography: { color: "#333" },
+  typography: { color: "#333", marginTop: -5 },
   textContainer: {
     flex: 1,
     marginLeft: 10,

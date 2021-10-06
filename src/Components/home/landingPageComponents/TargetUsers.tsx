@@ -6,6 +6,9 @@ import researcher from "assets/images/researcher.png";
 import uni from "assets/images/uni3.png";
 
 const useStyles = makeStyles((theme) => ({
+  mainContainer: {
+    paddingTop: 20,
+  },
   institutionTitle: {
     fontWeight: 700,
     fontSize: "1.8em",
@@ -33,7 +36,7 @@ const TargetUsers = () => {
   const classes = useStyles();
 
   return (
-    <Grid container>
+    <Grid container className={classes.mainContainer}>
       {targetUserList.map((targetUser) => (
         <Grid item container xs={12} md={4} className={classes.cardContainer}>
           <Grid className={classes.imageContainer}>

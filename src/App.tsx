@@ -20,7 +20,6 @@ import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
-import Plans from "./Components/home/landingPageComponents/Plans";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
@@ -29,8 +28,9 @@ import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import PlansPage from "Components/home/PlansPage";
 
 const { Content } = Layout;
 
@@ -42,6 +42,8 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
   },
   mainLayout: {
+    overflow: "hidden",
+    width: "100%",
     padding: 0,
     height: "auto",
     lineHeight: 1.6,
@@ -78,7 +80,7 @@ const router = [
   },
   {
     path: "/plans",
-    component: Plans,
+    component: PlansPage,
   },
   {
     path: "/verify",
@@ -172,10 +174,6 @@ const App = () => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // dispatch({
-  //   type: "workspace.RESET",
-  // });
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

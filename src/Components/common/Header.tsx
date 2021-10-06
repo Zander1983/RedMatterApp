@@ -79,7 +79,7 @@ const AppHeader = (props: any) => {
                   fontSize: 25,
                 }}
               >
-                RED MATTER
+                {window.outerWidth > 500 ? "RED MATTER" : "RM"}
               </b>
               <b
                 style={{
@@ -105,9 +105,6 @@ const AppHeader = (props: any) => {
             </NavLink>
           ) : null}
 
-          <NavLink className={classes.topBarLink} to="/plans">
-            Plans
-          </NavLink>
           {isLoggedIn ? (
             <>
               {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
@@ -116,7 +113,7 @@ const AppHeader = (props: any) => {
                 </NavLink>
               )}
               <NavLink className={classes.topBarLink} to="/user-profile">
-                My Profile
+                Profile
               </NavLink>
               <NavLink className={classes.topBarLink} to="/browse-experiments">
                 Browse
