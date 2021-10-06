@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
   },
   mainContainer: {
     background:
-      "linear-gradient(180deg, #6666F91A 0%, #DD33991A 80%, #F0F2F5 100%)",
+      "linear-gradient(180deg, #6666F90F 0%, #DD33990F 80%, #F0F2F5 100%)",
     overflow: "hidden",
   },
   triangleTopLeft: {
