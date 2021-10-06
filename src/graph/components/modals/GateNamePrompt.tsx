@@ -6,11 +6,15 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { useSelector } from "react-redux";
-import { Gate } from "graph/resources/types";
-import { store } from "redux/store";
+import { Gate, Plot } from "graph/resources/types";
 import WorkspaceDispatch from "graph/resources/dispatchers";
-import { getWorkspace } from "graph/utils/workspace";
-import { nextFrame } from "@amcharts/amcharts4/core";
+import {
+  getGate,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
+import { createSubpopPlot } from "graph/resources/plots";
 
 let name = "";
 
@@ -21,39 +25,54 @@ export default function GateNamePrompt() {
 
   useSelector((e: any) => {
     const newGates = e.workspace.gates;
-    if (gates === newGates || newGates === undefined) return;
+    if (gates === newGates || newGates === undefined || newGates.length === 0)
+      return;
+    const newGateName: string = newGates[newGates.length - 1].name;
     if (
       !open &&
       newGates.length > gates.length &&
-      newGates[newGates.length - 1].name === "Unammed gate"
+      newGateName.includes("Unammed gate from plot")
     ) {
       setOpen(true);
     }
     gates = newGates;
   });
 
-  const renameGate = (newName: string) => {
+  const renameGate = async (newName: string) => {
     setOpen(false);
     name = "";
     const gates = getWorkspace().gates;
     let gate = gates[gates.length - 1];
+    const plotID = gate.name.split(" ")[4];
     gate.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
+    instancePlot(getPlot(plotID), gate);
   };
 
-  const escFunction = useCallback(
-    (event: any) => {
-      if (event.key === "Enter") {
-        if (name === "") {
-          setNameError(true);
-        } else {
-          renameGate(name);
-        }
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name, gates]
-  );
+  const quit = () => {
+    setOpen(false);
+    name = "";
+    const gates = getWorkspace().gates;
+    let gate = gates[gates.length - 1];
+    WorkspaceDispatch.DeleteGate(gate);
+  };
+
+  const instancePlot = async (plot: Plot, gate: Gate) => {
+    plot.gates = [...plot.gates, gate.id];
+    plot.gatingActive = "";
+    await WorkspaceDispatch.UpdatePlot(plot);
+    let basedOffPlot = { ...plot };
+    basedOffPlot.gates = [];
+    await createSubpopPlot(basedOffPlot, [
+      { gate: gate.id, inverseGating: false },
+    ]);
+    const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
+    for (let popGate of popGates) {
+      let popIGate = getGate(popGate);
+      popIGate.children.push(gate.id);
+      WorkspaceDispatch.UpdateGate(popIGate);
+    }
+  };
 
   useEffect(() => {
     if (open === true) {
@@ -96,6 +115,9 @@ export default function GateNamePrompt() {
           />
         </DialogContent>
         <DialogActions>
+          <Button onClick={quit} color="primary">
+            Cancel
+          </Button>
           <Button
             onClick={() => {
               if (name === "" || name == null) {
