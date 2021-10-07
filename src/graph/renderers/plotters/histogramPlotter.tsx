@@ -236,7 +236,5 @@ export default class HistogramPlotter extends PluginGraphPlotter {
         lineWidth: 6,
       });
     }
-    this.globalMax = globlMax;
-    this.update();
   }
 }
