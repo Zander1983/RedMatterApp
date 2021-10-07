@@ -29,6 +29,7 @@ import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
+import ChatBox from "./Components/common/ChatBox/ChatBox";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
@@ -193,6 +194,7 @@ const App = () => {
             ))}
           </Switch>
         </Content>
+        <ChatBox />
         <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>
