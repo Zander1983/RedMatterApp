@@ -16,14 +16,26 @@ const useStyles = makeStyles((theme) => ({
   },
   mainContainer: {
     background:
-      "linear-gradient(180deg, #6666F90F 0%, #DD33990F 80%, #F0F2F5 100%)",
+      "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
     overflow: "hidden",
   },
   triangleTopLeft: {
     width: 0,
     height: 0,
-    borderTop: "100px solid #333",
+    borderTop: "50px solid #333",
     borderRight: "100vw solid transparent",
+  },
+  triangleTopRight: {
+    width: 0,
+    height: 0,
+    borderBottom: "50px solid #333",
+    borderLeft: "100vw solid transparent",
+  },
+  topRightTriangleContainer: {
+    marginTop: -50,
+    position: "absolute",
+    overflow: "hidden",
+    width: "100%",
   },
   footerTextContainer: {
     height: 200,
@@ -50,7 +62,9 @@ const AppLandingPage = () => {
   return (
     <Grid className={classes.mainContainer}>
       <LandingHeader />
-      <div className={classes.rectTop}></div>
+      <div className={classes.topRightTriangleContainer}>
+        <div className={classes.triangleTopRight}></div>
+      </div>
       <div className={classes.triangleTopLeft}></div>
       <Grid
         className={classes.contentContainer}

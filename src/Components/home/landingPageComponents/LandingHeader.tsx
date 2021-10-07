@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -400,
+    marginTop: -365,
     fontFamily: "Quicksand",
   },
   card: {
@@ -45,6 +45,14 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "#66b",
     },
   },
+  video: {
+    minHeight: 500,
+    minWidth: "100%",
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
 }));
 
 const LandingHeader = () => {
@@ -54,19 +62,7 @@ const LandingHeader = () => {
   return (
     <div className={classes.topDialogBar}>
       <div className={classes.topDialogVisualContentBar}>
-        <video
-          autoPlay
-          muted
-          loop
-          style={{
-            minHeight: 500,
-            minWidth: "100%",
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
+        <video autoPlay muted loop className={classes.video}>
           <source src={loop_analytics} type="video/mp4" />
         </video>
       </div>
