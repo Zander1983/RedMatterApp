@@ -6,10 +6,9 @@ import universities from "assets/text/universitiesUsingRedMatter";
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
     textAlign: "center",
+    padding: 5,
   },
-  universitiesContainer: {
-    padding: 10,
-  },
+  universitiesContainer: {},
   back: {
     backgroundColor: "#fff",
     borderRadius: 5,
@@ -21,13 +20,7 @@ const Universities = () => {
 
   return (
     <Grid>
-      <Grid
-        item={true}
-        className={classes.mainContainer}
-        style={{
-          padding: 10,
-        }}
-      >
+      <Grid item={true} className={classes.mainContainer}>
         <h1>
           Users all over the world trust{" "}
           <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry

@@ -3,13 +3,13 @@ import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import userManager from "Components/users/userManager";
 import { Grid, Button } from "@material-ui/core";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import { loadStripe } from "@stripe/stripe-js/pure";
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
-    padding: 10,
+    padding: 5,
   },
   nameHighlight: {
     backgroundColor: "#6666A9",
