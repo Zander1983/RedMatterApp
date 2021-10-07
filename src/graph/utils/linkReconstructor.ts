@@ -8,8 +8,7 @@ export default class LinkReconstructor {
     if (currentHost.includes("?")) {
       currentHost = currentHost.split("?")[0];
     }
-    currentHost += "?id=";
-    return currentHost + newWorkSpaceId;
+    return `${currentHost}/public`;
   }
 
   retrieve(callback: (workspaceJSON: string) => void) {
