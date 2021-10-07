@@ -1,23 +1,27 @@
-import { useStyles } from "./style";
+import { useState, useRef } from "react";
+import emailjs from "emailjs-com";
+import { snackbarService } from "uno-material-ui";
+
 import {
   UpCircleOutlined,
   DownCircleOutlined,
   LeftOutlined,
   SendOutlined,
 } from "@ant-design/icons";
-import { useState, useRef } from "react";
-import emailjs from "emailjs-com";
-import { snackbarService } from "uno-material-ui";
+
+import { useStyles } from "./style";
+
 const ChatBox = () => {
   const classes = useStyles();
-  const [showChatBox, setShowChatBox] = useState(false);
   const form = useRef(null);
   const message = useRef(null);
 
+  const [showChatBox, setShowChatBox] = useState(false);
+
   // EmailJS Credentials
-  const SERVICE_ID = "service_xyqlqni";
-  const TEMPLATE_ID = "template_hn4j6wk";
-  const USER_ID = "user_zALoLS3eVkg7yKN6e5kSL";
+  const SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID;
+  const TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
+  const USER_ID = process.env.REACT_APP_EMAILJS_USER_ID;
 
   const sendEmail = (e: any) => {
     e.preventDefault();
@@ -104,4 +108,5 @@ const ChatBox = () => {
     </div>
   );
 };
+
 export default ChatBox;
