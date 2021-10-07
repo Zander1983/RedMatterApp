@@ -134,7 +134,7 @@ export default function Plans(props: any) {
                     backgroundColor: plan.available ? "#6666A9" : "#8888BA",
                     flex: 1,
                   }}
-                  disabled={plan.available}
+                  disabled={!plan.available}
                   onClick={() => {
                     handleClick(plan.name);
                   }}
