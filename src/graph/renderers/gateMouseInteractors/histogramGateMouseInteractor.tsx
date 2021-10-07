@@ -59,11 +59,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   targetEditGate: HistogramGate | null = null;
   targetPointIndex: number | null = null;
 
-  setPluginState() {
-    let state = { ...this.getGatingState() };
-    this.plugin.setGatingState(state);
-  }
-
   setMouseInteractorState(state: HistogramGateMouseInteractorState) {
     super.setMouseInteractorState(state);
     this.axis = state.axis;
@@ -220,11 +215,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.plotter = plotter;
     this.plugin = plotter.histogramGatePlugin;
     this.plugin.isGating = true;
-  }
-
-  end() {
-    this.plugin.isGating = false;
-    super.end();
   }
 
   protected clearGateState() {

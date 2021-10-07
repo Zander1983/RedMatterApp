@@ -62,6 +62,7 @@ export default abstract class GateMouseInteractor {
   }
 
   end() {
+    this.plugin.isGating = false;
     this.clearGateState();
     this.setPluginState();
     this.unsetGating();
@@ -77,7 +78,8 @@ export default abstract class GateMouseInteractor {
   }
 
   setPluginState() {
-    this.plugin.setGatingState(this.getGatingState());
+    let state = { ...this.getGatingState() };
+    this.plugin.setGatingState(state);
   }
 
   getGatingState(): GateState {
@@ -96,25 +98,9 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
-    gate.name = "Unammed gate";
+    gate.name = "Unammed gate from plot " + this.plotter.plot.id;
+    this.plugin.provisoryGateID = gate.id;
     await WorkspaceDispatch.AddGate({ ...gate });
-    let plot = this.plotter.plot;
-    plot.gates = [...plot.gates, gate.id];
-    plot.gatingActive = "";
-    await WorkspaceDispatch.UpdatePlot(plot);
-    let basedOffPlot = { ...this.plotter.plot };
-    basedOffPlot.gates = [];
-    await PlotResource.createSubpopPlot(basedOffPlot, [
-      { gate: gate.id, inverseGating: false },
-    ]);
-    const popGates = getPopulation(this.plotter.plot.population).gates.map(
-      (e) => e.gate
-    );
-    for (let popGate of popGates) {
-      let popIGate = getGate(popGate);
-      popIGate.children.push(gate.id);
-      WorkspaceDispatch.UpdateGate(popIGate);
-    }
     this.end();
   }
 
@@ -138,12 +124,15 @@ export default abstract class GateMouseInteractor {
 
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
-    const p = { x, y };
     if (
-      this.plotter != null &&
-      this.plotter.gates.length > 0 &&
-      !this.started
+      type === "mousedown" &&
+      this.plugin.provisoryGateID &&
+      !this.plugin.isGating
     ) {
+      this.plugin.provisoryGateID = null;
+    }
+    const p = { x, y };
+    if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }
 
