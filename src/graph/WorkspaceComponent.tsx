@@ -11,8 +11,6 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
-import AutorenewRoundedIcon from "@material-ui/icons/AutorenewRounded";
-import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
@@ -24,7 +22,6 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import Plots, { resetPlotSizes } from "./components/workspaces/PlotController";
 import SideMenus from "./components/static/SideMenus";
 import {
   dowloadAllFileEvents,
@@ -144,32 +141,16 @@ const WorkspaceInnerComponent = (props: {
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
-    await new Promise((resolve, reject) => {
-      const loadWorkspace = (tries: number = 3) => {
-        if (tries === 0) {
-          snackbarService.showSnackbar(
-            "Workspace processing complete",
-            "success"
-          );
-          resolve(null);
-          return;
-        }
-        loadWorkspaceFromRemoteIfExists(shared, experimentId).then(
-          (loadStatus) => {
-            if (!loadStatus.requestSuccess) {
-              if (tries === 3)
-                snackbarService.showSnackbar("Creating workspace...", "info");
-              setTimeout(() => loadWorkspace(tries - 1), 2000);
-            } else {
-              snackbarService.showSnackbar("Workspace loaded!", "success");
-              resolve(null);
-            }
-          }
-        );
-      };
-
-      downloadFileMetadata(shared, experimentId).then(() => loadWorkspace());
-    });
+    await downloadFileMetadata(shared, experimentId);
+    const loadStatus = await loadWorkspaceFromRemoteIfExists(
+      shared,
+      experimentId
+    );
+    if (!loadStatus.requestSuccess) {
+      snackbarService.showSnackbar("Workspace created", "success");
+    } else {
+      snackbarService.showSnackbar("Workspace loaded", "success");
+    }
     setAutosaveEnabled(true);
     notification.killNotification();
   };

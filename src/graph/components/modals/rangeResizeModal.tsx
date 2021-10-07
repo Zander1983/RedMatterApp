@@ -80,6 +80,7 @@ const RangeResizeModal = (props: {
 
     targetPlots.forEach((tplot) => {
       tplot.ranges[xAxis] = xRange;
+      tplot.ranges[yAxis] = yRange;
       WorkspaceDispatch.UpdatePlot(tplot);
     });
   };
@@ -173,6 +174,42 @@ const RangeResizeModal = (props: {
               Set Default
             </Button>
           </Grid>
+
+          {plot.histogramAxis ? null : (
+            <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
+              <h3>Edit {plot.yAxis} range</h3>
+              <TextField
+                label="Range min"
+                value={minY}
+                type={"number"}
+                onChange={(e) => {
+                  setMinY(e.target.value);
+                }}
+              />
+              <br />
+              <TextField
+                label="Range max"
+                value={maxY}
+                type={"number"}
+                onChange={(e) => {
+                  setMaxY(e.target.value);
+                }}
+              />
+              <br />
+              <Button
+                variant="contained"
+                style={{
+                  marginTop: 15,
+                  backgroundColor: "#6666aa",
+                  color: "white",
+                  marginLeft: 20,
+                }}
+                onClick={() => setDefaultRanges("y")}
+              >
+                Set Default
+              </Button>
+            </Grid>
+          )}
 
           <Divider></Divider>
           <br />

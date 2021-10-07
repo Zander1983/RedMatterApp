@@ -75,13 +75,16 @@ const AddFileModal = React.memo(
     const [fileSearchTerm, setFileSearchTerm] = useState("");
 
     const downloadFile = async (fileId: string) => {
-      // setDowloading(downloading.concat(fileId));
-      const file = await downloadFileEvent(
-        props.isShared,
-        fileId,
-        props.experimentId
-      );
-      await PlotResource.createNewPlotFromFile(getFile(file));
+      let file: File = getFile(fileId);
+      if (!file.downloaded) {
+        const newId = await downloadFileEvent(
+          props.isShared,
+          fileId,
+          props.experimentId
+        );
+        file = getFile(newId);
+      }
+      await PlotResource.createNewPlotFromFile(file);
       props.closeCall.f(props.closeCall.ref);
     };
 
@@ -94,10 +97,7 @@ const AddFileModal = React.memo(
       setDowloading(downloadingFileIds);
     }, [props.files]);
 
-    const downloadAll = () =>
-      filesMetadata
-        .filter((e) => !e.downloaded)
-        .forEach((e) => downloadFile(e.id));
+    const downloadAll = () => filesMetadata.forEach((e) => downloadFile(e.id));
 
     const everythingDownloaded = filesMetadata
       .map((e) => e.downloaded)
@@ -136,19 +136,23 @@ const AddFileModal = React.memo(
                 size="large"
                 variant="contained"
                 style={{
-                  backgroundColor: everythingDownloaded ? "#88f" : "#66d",
+                  backgroundColor: "#66d",
                   color: "white",
                   width: "100%",
                   height: 30,
                   marginBottom: 15,
                 }}
                 startIcon={
-                  <DownloadOutlined style={{ fontSize: 15, color: "white" }} />
+                  everythingDownloaded ? null : (
+                    <DownloadOutlined
+                      style={{ fontSize: 15, color: "white" }}
+                    />
+                  )
                 }
                 onClick={downloadAll}
-                disabled={everythingDownloaded}
+                // disabled={everythingDownloaded}
               >
-                Load all files
+                Plot all samples
               </Button>
             </Grid>
             <Grid item xs={8}>
@@ -368,7 +372,7 @@ const AddFileModal = React.memo(
                                 }}
                               />
                             ) : (
-                              "Download"
+                              "Plot"
                             )}
                           </Button>
                         ) : null}
