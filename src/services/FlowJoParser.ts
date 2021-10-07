@@ -152,7 +152,7 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
             parseFloat(yChannelInfo.rangeMin),
             parseFloat(yChannelInfo.rangeMax),
           ];
-          addNewPlot(plots, plot, fileId, true);
+          plot = addNewPlot(plots, plot, fileId, true);
           if (
             sampleNode["Subpopulations"] &&
             Object.keys(sampleNode["Subpopulations"]).length > 0
@@ -231,6 +231,7 @@ const addNewPlot = (
   }
   plot = createPlot({ clonePlot: plot });
   plots.push(plot);
+  return plot;
 };
 
 const parseSubpopulation = async (
@@ -242,6 +243,7 @@ const parseSubpopulation = async (
 ) => {
   try {
     let populations = subPopulation["Population"];
+    let newPlotId: PlotID = "";
     if (populations) {
       if (populations.length == undefined) {
         populations = [populations];
@@ -321,7 +323,7 @@ const parseSubpopulation = async (
           WorkspaceDispatch.AddPopulation(childPopulation);
           newPlot.population = childPopulation.id;
 
-          addNewPlot(plots, newPlot, fileId, false);
+          newPlot = addNewPlot(plots, newPlot, fileId, false);
           if (population["Subpopulations"]) {
             parseSubpopulation(
               plots,
@@ -335,6 +337,8 @@ const parseSubpopulation = async (
       }
     }
   } catch (e) {
+    let index = plots.findIndex((x) => x.id == plot.id);
+    plots.splice(index, 1);
     snackbarService.showSnackbar("Could not parse FlowJo workspace", "warning");
   }
 };
