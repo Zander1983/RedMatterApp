@@ -1,15 +1,34 @@
 export const filterArrayAsPerInput = (arr: any[], inputText: String) => {
-  let allSubStringArr: String[] = createAllSubString(inputText.toLowerCase());
-  let joinedNeedles = allSubStringArr.join("[A-Z|a-z|0-9]*|[A-Z|a-z|0-9]*");
-  joinedNeedles = `[A-Z|a-z|0-9]*${joinedNeedles}[A-Z|a-z|0-9]*`;
-  let regex = new RegExp(joinedNeedles, "g");
   let finalArr: any[] = [];
-  for (let i = 0; i < Object.keys(arr).length; i++) {
-    let matches = doRegexMatching(arr[i].value.toLowerCase(), regex);
-    if (matches.length > 0) {
-      finalArr.push(arr[i]);
+  if (inputText) {
+    inputText = inputText.toLowerCase();
+    let allSubStringArr: String[] = inputText.split(" ");
+    allSubStringArr = allSubStringArr.filter((x) => x);
+    let joinedNeedles = allSubStringArr.join("[A-Z|a-z|0-9]*|[A-Z|a-z|0-9]*");
+    joinedNeedles = `[A-Z|a-z|0-9]*${joinedNeedles}[A-Z|a-z|0-9]*`;
+    let regex = new RegExp(joinedNeedles, "g");
+
+    let matchesObj: any = [];
+    for (let i = 0; i < Object.keys(arr).length; i++) {
+      let matches = doRegexMatching(arr[i].value.toLowerCase().trim(), regex);
+      if (matches.length > 0) {
+        let characterLength = 0;
+        for (let j = 0; j < matches.length; j++) {
+          characterLength = characterLength + matches[j][0].length;
+        }
+        if (characterLength > 0)
+          matchesObj.push({ item: arr[i], charLength: characterLength });
+      }
     }
-  }
+
+    if (matchesObj.length > 0) {
+      matchesObj.sort((a: any, b: any) => {
+        return b.charLength - a.charLength;
+      });
+      finalArr = matchesObj.map((x: any) => x.item);
+    }
+  } else finalArr = arr;
+
   return finalArr;
 };
 
