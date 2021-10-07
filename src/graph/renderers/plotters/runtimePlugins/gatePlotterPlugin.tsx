@@ -27,45 +27,65 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
     const drawGates = [...this.gates];
 
     const provisoryGate = getGate(this.provisoryGateID);
-    if (this.provisoryGateID && provisoryGate) {
+    if (
+      this.provisoryGateID &&
+      provisoryGate &&
+      provisoryGate.name.includes("Unammed gate from plot")
+    ) {
       drawGates.push(provisoryGate);
     }
-
-    for (let gate of drawGates) {
-      if (
-        !this.plotter.plot.gates.find((e) => e === gate.id) &&
-        gate.id !== this.provisoryGateID
-      ) {
-        continue;
-      }
-      const isGate1D = Object.keys(gate).includes("axis");
-      const isGate2D = ["xAxis", "yAxis"]
-        .map((e) => Object.keys(gate).includes(e))
-        .every((e) => e);
-      if (this.gaterType === "1D" && isGate1D) {
-        const gate1d = gate as Gate1D;
-        const axisPlotType =
-          gate1d.histogramDirection === "vertical"
-            ? this.plotter.plot.xPlotType
-            : this.plotter.plot.yPlotType;
+    if (this.provisoryGateID) {
+      console.log("provisory gate id = ", this.provisoryGateID);
+      console.log("provisory gate = ", provisoryGate);
+      console.log("drawGates = ", drawGates);
+    }
+    try {
+      for (let gate of drawGates) {
+        console.log("drawing gate", gate);
         if (
-          this.plotter[
-            gate1d.histogramDirection === "vertical" ? "xAxisName" : "yAxisName"
-          ] === gate1d.axis &&
-          gate1d.axisType === axisPlotType
+          !this.plotter.plot.gates.find((e) => e === gate.id) &&
+          gate.id !== this.provisoryGateID
         ) {
-          this.drawGate(gate);
+          console.log("error", gate);
+          continue;
+        }
+        const isGate1D = Object.keys(gate).includes("axis");
+        const isGate2D = ["xAxis", "yAxis"]
+          .map((e) => Object.keys(gate).includes(e))
+          .every((e) => e);
+        if (this.gaterType === "1D" && isGate1D) {
+          const gate1d = gate as Gate1D;
+          const axisPlotType = this.plotter.plot.xPlotType;
+          console.log(
+            this.plotter.xAxisName,
+            gate1d.axis,
+            this.plotter.xAxisName === gate1d.axis
+          );
+          console.log(
+            gate1d.axisType,
+            axisPlotType,
+            axisPlotType === gate1d.axisType
+          );
+          if (
+            this.plotter.xAxisName === gate1d.axis &&
+            gate1d.axisType === axisPlotType
+          ) {
+            console.log("draw gate was called");
+            this.drawGate(gate);
+          }
+        }
+        if (this.gaterType === "2D" && isGate2D) {
+          const gate2d = gate as Gate2D;
+          if (
+            this.plotter.xAxisName === gate2d.xAxis &&
+            this.plotter.yAxisName === gate2d.yAxis
+          ) {
+            this.drawGate(gate);
+          }
         }
       }
-      if (this.gaterType === "2D" && isGate2D) {
-        const gate2d = gate as Gate2D;
-        if (
-          this.plotter.xAxisName === gate2d.xAxis &&
-          this.plotter.yAxisName === gate2d.yAxis
-        ) {
-          this.drawGate(gate);
-        }
-      }
+    } catch (err) {
+      console.log(err);
     }
   }
 
