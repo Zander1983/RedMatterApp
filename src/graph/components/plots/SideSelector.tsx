@@ -14,6 +14,7 @@ import {
   PlotSpecificWorkspaceData,
   PlotType,
   Population,
+  Range,
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";

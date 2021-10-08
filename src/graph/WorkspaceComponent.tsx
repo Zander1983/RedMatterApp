@@ -29,6 +29,7 @@ import {
   downloadFileMetadata,
 } from "services/FileService";
 import {
+  getAllFiles,
   loadWorkspaceFromRemoteIfExists,
   saveWorkspaceToRemote,
 } from "./utils/workspace";
@@ -203,7 +204,7 @@ const WorkspaceInnerComponent = (props: {
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
-        initiateParseFlowJo(result);
+        initiateParseFlowJo(result, downloadedFiles);
       } else {
         let filetoBeDownloaded = workspace.files.filter((x) => !x.downloaded);
         let fileIds = filetoBeDownloaded.map((x) => x.id);
@@ -224,15 +225,23 @@ const WorkspaceInnerComponent = (props: {
     for (let i = 0; i < fileIds.length; i++) {
       await downloadFileEvent(props.shared, fileIds[i], props.experimentId);
     }
-    let downlodedFiles = workspace.files.filter((x) => x.downloaded);
+    let downlodedFiles = getAllFiles().filter((x) => x.downloaded);
     if (workspace.files.length == downlodedFiles.length)
-      initiateParseFlowJo(flowJoJson);
+      initiateParseFlowJo(flowJoJson, downlodedFiles);
+    else {
+      snackbarService.showSnackbar(
+        "Could not parse FlowJo workspace",
+        "warning"
+      );
+      setTimeout(() => {
+        setLoading(false);
+      }, 4000);
+    }
   };
 
-  const initiateParseFlowJo = async (flowJoJson: any) => {
-    await dowloadAllFileEvents(props.shared, props.experimentId);
+  const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
     try {
-      await ParseFlowJoJson(flowJoJson, workspace.files);
+      await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(
         "Could not parse FlowJo workspace",
