@@ -46,7 +46,9 @@ export default function GateNamePrompt() {
     const plotID = gate.name.split(" ")[4];
     gate.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
-    instancePlot(getPlot(plotID), gate);
+    try {
+      instancePlot(getPlot(plotID), gate);
+    } catch {}
   };
 
   const quit = () => {
