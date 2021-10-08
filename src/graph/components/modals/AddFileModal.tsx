@@ -17,6 +17,7 @@ import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
 import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
 import { store } from "redux/store";
+import { filterArrayAsPerInput } from "utils/searchFunction";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -103,11 +104,10 @@ const AddFileModal = React.memo(
       .map((e) => e.downloaded)
       .every((e) => e);
 
-    const shownFilesMetadata = filesMetadata.filter(
-      (e) =>
-        fileSearchTerm.length === 0 ||
-        (fileSearchTerm.length > 0 && e.name.includes(fileSearchTerm)) ||
-        e.label.includes(fileSearchTerm)
+    const shownFilesMetadata = filterArrayAsPerInput(
+      filesMetadata,
+      fileSearchTerm,
+      "name"
     );
 
     return (

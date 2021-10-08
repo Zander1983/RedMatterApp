@@ -1,16 +1,28 @@
-export const filterArrayAsPerInput = (arr: any[], inputText: String) => {
+export const filterArrayAsPerInput = (
+  arr: any[],
+  inputText: String,
+  valueProperty: String = ""
+) => {
   let finalArr: any[] = [];
   if (inputText) {
     inputText = inputText.toLowerCase();
     let allSubStringArr: String[] = inputText.split(" ");
     allSubStringArr = allSubStringArr.filter((x) => x);
+
     let joinedNeedles = allSubStringArr.join("[A-Z|a-z|0-9]*|[A-Z|a-z|0-9]*");
     joinedNeedles = `[A-Z|a-z|0-9]*${joinedNeedles}[A-Z|a-z|0-9]*`;
     let regex = new RegExp(joinedNeedles, "g");
 
     let matchesObj: any = [];
     for (let i = 0; i < Object.keys(arr).length; i++) {
-      let matches = doRegexMatching(arr[i].value.toLowerCase().trim(), regex);
+      let item = arr[i];
+      let value = "";
+      if (valueProperty) {
+        debugger;
+        value = item[`${valueProperty}`];
+      } else value = item;
+      value = value.toLowerCase().trim();
+      let matches = doRegexMatching(value, regex);
       if (matches.length > 0) {
         let characterLength = 0;
         for (let j = 0; j < matches.length; j++) {

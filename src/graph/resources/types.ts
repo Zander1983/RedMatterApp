@@ -156,6 +156,7 @@ export interface Workspace {
   populations: Population[];
   previousStates: Workspace[];
   sharedWorkspace: boolean;
+  editWorkspace: boolean;
 }
 
 export interface PlotSpecificWorkspaceData {

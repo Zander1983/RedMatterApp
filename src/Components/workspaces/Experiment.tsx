@@ -20,7 +20,6 @@ import {
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
-  DeleteFilled,
   EditOutlined,
 } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
@@ -110,6 +109,7 @@ const Experiment = (props: any) => {
       let files = uploadingFiles.filter((x) => !keys.includes(x.id));
       setUploadingFiles(files);
     }
+    //eslint-disable-next-line
   }, [experimentData]);
 
   const fetchExperimentData = (snack = true, key: string = "") => {
@@ -250,8 +250,8 @@ const Experiment = (props: any) => {
           return e;
         });
       });
-      if (channelSet.size == 0) {
-        if (getExperimentChannels().length == 0) {
+      if (channelSet.size === 0) {
+        if (getExperimentChannels().length === 0) {
           channelSet = new Set(fcsFile.channels);
         } else {
           channelSet = new Set(getExperimentChannels());
@@ -268,7 +268,7 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        filesUpload = filesUpload.filter((x) => x.id != file.tempId);
+        filesUpload = filesUpload.filter((x) => x.id !== file.tempId);
       } else {
         finalFileList.push(file);
       }
@@ -306,34 +306,35 @@ const Experiment = (props: any) => {
     return experimentData.files[0].channels;
   };
 
-  const deleteFile = (file: any) => {
-    alert(
-      "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
-    );
-    return;
-    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).deleteFile(props.id, file.id, userManager.getToken());
+  // const deleteFile = (file: any) => {
+  //   alert(
+  //     "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
+  //   );
+  //   return;
+  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
+  //     accessToken: userManager.getToken(),
+  //   }).deleteFile(props.id, file.id, userManager.getToken());
 
-    axios
-      .delete(fetchExperiments.url, fetchExperiments.options)
-      .then((e) => {
-        snackbarService.showSnackbar("File deleted!", "success");
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to delete file, try again.",
-          "error"
-        );
-      })
-      .finally(() => {
-        fetchExperimentData();
-      });
-  };
+  //   axios
+  //     .delete(fetchExperiments.url, fetchExperiments.options)
+  //     .then((e) => {
+  //       snackbarService.showSnackbar("File deleted!", "success");
+  //     })
+  //     .catch((e) => {
+  //       snackbarService.showSnackbar(
+  //         "Failed to delete file, try again.",
+  //         "error"
+  //       );
+  //     })
+  //     .finally(() => {
+  //       fetchExperimentData();
+  //     });
+  // };
 
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
+    //eslint-disable-next-line
   }, []);
 
   const handleClose = (func: Function) => {
@@ -419,7 +420,7 @@ const Experiment = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  if (props.poke == false) {
+                  if (props.poke === false) {
                     history.push("/experiments");
                   } else {
                     history.push("/browse-experiments");
