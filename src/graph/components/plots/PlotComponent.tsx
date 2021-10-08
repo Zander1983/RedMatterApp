@@ -42,6 +42,7 @@ const PlotComponent = React.memo(
     plotRelevantResources: PlotSpecificWorkspaceData;
     sharedWorkspace: boolean;
     experimentId: string;
+    editWorkspace: boolean;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
 
@@ -65,7 +66,7 @@ const PlotComponent = React.memo(
               gap: 5,
             }}
           >
-            <MainBar plot={plot}></MainBar>
+            <MainBar plot={plot} editWorkspace={props.editWorkspace}></MainBar>
             <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}
@@ -75,6 +76,7 @@ const PlotComponent = React.memo(
                   inverseGating: e.inverseGating,
                 };
               })}
+              editWorkspace={props.editWorkspace}
             ></GateBar>
           </Grid>
         </div>

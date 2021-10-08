@@ -177,7 +177,12 @@ export const setCanvasSize = (save: boolean = false) => {
   if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
-const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
+const standardGridPlotItem = (
+  index: number,
+  plotData: any,
+  plots: Plot[],
+  editWorkspace: boolean
+) => {
   return {
     x: plotData.positions.x,
     y: plotData.positions.y,
@@ -185,7 +190,7 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
     h: plotData.dimensions.h,
     minW: MINW,
     minH: MINH,
-    static: false,
+    static: !editWorkspace,
   };
 };
 
@@ -274,33 +279,35 @@ class PlotController extends React.Component<PlotControllerProps> {
     if (this.props.workspace.plots.length > 0) {
       return (
         <div>
-          <div
-            style={{
-              position: "fixed",
-              right: 0,
-              backgroundColor: "#fff",
-              borderLeft: "solid 1px #ddd",
-              borderBottom: "solid 1px #ddd",
-              borderBottomLeftRadius: 5,
-              padding: 3,
-              zIndex: 1000,
-            }}
-          >
-            Sort by:
-            <Select
-              style={{ marginLeft: 10 }}
-              value={method}
-              onChange={(e) => {
-                //@ts-ignore
-                method = e.target.value;
-                PlotResource.updatePositions();
+          {this.props.workspace.editWorkspace ? (
+            <div
+              style={{
+                position: "fixed",
+                right: 0,
+                backgroundColor: "#fff",
+                borderLeft: "solid 1px #ddd",
+                borderBottom: "solid 1px #ddd",
+                borderBottomLeftRadius: 5,
+                padding: 3,
+                zIndex: 1000,
               }}
             >
-              <MenuItem value={"all"}>No sorting</MenuItem>
-              <MenuItem value={"file"}>File</MenuItem>
-              <MenuItem value={"gate"}>Gate</MenuItem>
-            </Select>
-          </div>
+              Sort by:
+              <Select
+                style={{ marginLeft: 10 }}
+                value={method}
+                onChange={(e) => {
+                  //@ts-ignore
+                  method = e.target.value;
+                  PlotResource.updatePositions();
+                }}
+              >
+                <MenuItem value={"all"}>No sorting</MenuItem>
+                <MenuItem value={"file"}>File</MenuItem>
+                <MenuItem value={"gate"}>Gate</MenuItem>
+              </Select>
+            </div>
+          ) : null}
 
           <Divider></Divider>
           {plotGroups.map((plotGroup: PlotGroup) => {
@@ -327,7 +334,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                     cols={{ lg: 36 }}
                     rows={{ lg: 30 }}
                     rowHeight={30}
-                    isDraggable={true}
+                    isDraggable={this.props.workspace.editWorkspace}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
@@ -345,7 +352,12 @@ class PlotController extends React.Component<PlotControllerProps> {
                           <div
                             key={plot.id}
                             style={classes.itemOuterDiv}
-                            data-grid={standardGridPlotItem(i, plot, plots)}
+                            data-grid={standardGridPlotItem(
+                              i,
+                              plot,
+                              plots,
+                              this.props.workspace.editWorkspace
+                            )}
                             id={`workspace-outter-${plot.id}`}
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
@@ -354,6 +366,9 @@ class PlotController extends React.Component<PlotControllerProps> {
                                   plot
                                 )}
                                 sharedWorkspace={this.props.sharedWorkspace}
+                                editWorkspace={
+                                  this.props.workspace.editWorkspace
+                                }
                                 experimentId={this.props.experimentId}
                               />
                             </div>
@@ -375,12 +390,23 @@ class PlotController extends React.Component<PlotControllerProps> {
             textAlign: "center",
           }}
         >
-          <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-            Click on "Plot sample" to visualize
-          </h3>
-          <h4 style={{ marginBottom: 70, color: "#777" }}>
-            Create a plot from one of your samples to start your analysis
-          </h4>
+          {this.props.sharedWorkspace ? (
+            <span>
+              <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
+                If nothing is loaded, either this experiment is not shared or it
+                doesn't exist.
+              </h4>
+            </span>
+          ) : (
+            <span>
+              <h3 style={{ marginTop: 100, marginBottom: 10 }}>
+                Click on "Plot sample" to visualize
+              </h3>
+              <h4 style={{ marginBottom: 70, color: "#777" }}>
+                Create a plot from one of your samples to start your analysis
+              </h4>
+            </span>
+          )}
         </div>
       );
     }

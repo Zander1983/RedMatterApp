@@ -115,17 +115,23 @@ export const loadWorkspaceFromRemoteIfExists = async (
 }> => {
   let workspaceData;
   try {
-    workspaceData = await axios.post(
-      "/api/getWorkspace",
-      {
-        experimentId,
-      },
-      {
-        headers: {
-          token: userManager.getToken(),
+    if (shared) {
+      workspaceData = await axios.post("/api/verifyWorkspace", {
+        experimentId: experimentId,
+      });
+    } else {
+      workspaceData = await axios.post(
+        "/api/getWorkspace",
+        {
+          experimentId,
         },
-      }
-    );
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+    }
     const workspace = workspaceData.data.state;
     if (Object.keys(workspace).length > 0) {
       await loadSavedWorkspace(workspace, shared, experimentId);
@@ -171,10 +177,12 @@ const loadSavedWorkspace = async (
     ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
     : [];
   await dowloadAllFileEvents(shared, experimentId, files);
-  const newWorkspace = {
+  const newWorkspace: Workspace = {
     ...workspaceObj,
     files: getWorkspace().files,
     notifications: [],
+    sharedWorkspace: shared,
+    editWorkspace: !shared,
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
 };

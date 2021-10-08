@@ -87,6 +87,14 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "3px",
     color: green[500],
   },
+  sharedHeaderText: {
+    width: "100%",
+    textAlign: "center",
+    paddingTop: "5px",
+    fontSize: "19px",
+    fontWeight: 500,
+    color: "white",
+  },
 }));
 
 const WorkspaceInnerComponent = (props: {
@@ -98,7 +106,9 @@ const WorkspaceInnerComponent = (props: {
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-
+  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
@@ -112,7 +122,10 @@ const WorkspaceInnerComponent = (props: {
     React.useState(false);
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-
+  const [editWorkspace, setEditWorkspace] = React.useState(
+    workspace.editWorkspace
+  );
+  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -120,17 +133,18 @@ const WorkspaceInnerComponent = (props: {
     func(false);
   };
 
-  // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
-  //@ts-ignore
-  const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  useEffect(() => {
+    if (workspace.editWorkspace != editWorkspace) {
+      setEditWorkspace(workspace.editWorkspace);
+    }
+  }, [workspace.editWorkspace]);
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
 
-    if (store.getState().workspace.shared !== props.shared) {
-      WorkspaceDispatch.SetWorkspaceShared(props.shared);
-    }
-
+    if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+    WorkspaceDispatch.SetWorkspaceShared(props.shared);
+    setSharedWorkspace(props.shared);
     initializeWorkspace(props.shared, props.experimentId);
 
     return () => {
@@ -151,20 +165,24 @@ const WorkspaceInnerComponent = (props: {
     } else {
       snackbarService.showSnackbar("Workspace loaded", "success");
     }
-    setAutosaveEnabled(true);
+
+    if (!loadStatus.loaded && shared) {
+    }
+
+    setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
   };
 
-  const saveWorkspace = async () => {
+  const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
-    await saveWorkspaceToRemote(workspace, props.shared, props.experimentId);
+    await saveWorkspaceToRemote(workspace, shared, props.experimentId);
     setSavingWorkspace(false);
   };
 
   var onLinkShareClick = async () => {
     if (isLoggedIn) {
-      saveWorkspace();
-    } else if (props.shared) {
+      saveWorkspace(true);
+    } else if (sharedWorkspace) {
       let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {
@@ -223,7 +241,7 @@ const WorkspaceInnerComponent = (props: {
     flowJoJson: any
   ) => {
     for (let i = 0; i < fileIds.length; i++) {
-      await downloadFileEvent(props.shared, fileIds[i], props.experimentId);
+      await downloadFileEvent(sharedWorkspace, fileIds[i], props.experimentId);
     }
     let downlodedFiles = getAllFiles().filter((x) => x.downloaded);
     if (workspace.files.length == downlodedFiles.length)
@@ -277,7 +295,7 @@ const WorkspaceInnerComponent = (props: {
         <AddFileModal
           open={addFileModalOpen}
           closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-          isShared={props.shared}
+          isShared={sharedWorkspace}
           experimentId={props.experimentId}
           files={workspace.files}
         />
@@ -368,183 +386,156 @@ const WorkspaceInnerComponent = (props: {
                 paddingBottom: 6,
                 WebkitBorderBottomLeftRadius: 0,
                 WebkitBorderBottomRightRadius: 0,
+                minHeight: "43px",
               }}
               container
             >
               <Grid container>
-                {props.shared ? null : (
-                  <Button
-                    size="small"
-                    variant="contained"
+                {editWorkspace ? (
+                  <span
                     style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                    className={classes.topButton}
-                    startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                    onClick={() => {
-                      history.goBack();
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
                     }}
                   >
-                    Back
-                  </Button>
-                )}
+                    <div>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                        className={classes.topButton}
+                        startIcon={
+                          <ArrowLeftOutlined style={{ fontSize: 15 }} />
+                        }
+                        onClick={() => {
+                          history.goBack();
+                        }}
+                      >
+                        Back
+                      </Button>
 
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpen(setAddFileModalOpen)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  Plot sample
-                </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleOpen(setAddFileModalOpen)}
+                        className={classes.topButton}
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        Plot sample
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        className={classes.topButton}
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                        onClick={() => {
+                          inputFile.current.click();
+                        }}
+                      >
+                        <input
+                          type="file"
+                          id="file"
+                          ref={inputFile}
+                          value={fileUploadInputValue}
+                          accept=".wsp"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            importFlowJoFunc(e);
+                          }}
+                        />
+                        Import FlowJo (experimental)
+                      </Button>
 
-                {/* <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpen(setGenerateReportModalOpen)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  Generate report
-                </Button> */}
-                {/* <HowToUseModal /> */}
-
-                <Button
-                  variant="contained"
-                  size="small"
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                  onClick={() => {
-                    inputFile.current.click();
-                  }}
-                >
-                  <input
-                    type="file"
-                    id="file"
-                    ref={inputFile}
-                    value={fileUploadInputValue}
-                    accept=".wsp"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      importFlowJoFunc(e);
-                    }}
-                  />
-                  Import FlowJo (experimental)
-                </Button>
-
-                {props.shared === false ? (
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Clear
-                  </Button>
-                ) : null}
-                {props.shared === false ? (
-                  props.shared ? null : (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleOpen(setClearModal)}
+                        className={classes.topButton}
+                        style={{
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <span>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => saveWorkspace()}
+                          className={classes.topButton}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            width: 137,
+                          }}
+                        >
+                          {savingWorkspace ? (
+                            <CircularProgress
+                              style={{ width: 20, height: 20 }}
+                            ></CircularProgress>
+                          ) : (
+                            <Typography>Save Workspace</Typography>
+                          )}
+                        </Button>
+                        <FormControlLabel
+                          style={{
+                            marginLeft: 0,
+                            height: 20,
+                            marginTop: 4,
+                            color: "#fff",
+                          }}
+                          label={"Autosave"}
+                          control={
+                            <IOSSwitch
+                              checked={autosaveEnabled}
+                              onChange={() =>
+                                setAutosaveEnabled(!autosaveEnabled)
+                              }
+                            />
+                          }
+                        />
+                      </span>
+                    </div>
                     <div>
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => saveWorkspace()}
+                        onClick={() => onLinkShareClick()}
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
-                          width: 137,
-                        }}
-                      >
-                        {savingWorkspace ? (
-                          <CircularProgress
-                            style={{ width: 20, height: 20 }}
-                          ></CircularProgress>
-                        ) : (
-                          <Typography>Save Workspace</Typography>
-                        )}
-                      </Button>
-                      <FormControlLabel
-                        style={{
-                          marginLeft: 0,
-                          height: 20,
-                          marginTop: 4,
-                          color: "#fff",
-                        }}
-                        label={"Autosave"}
-                        control={
-                          <IOSSwitch
-                            checked={autosaveEnabled}
-                            onChange={() =>
-                              setAutosaveEnabled(!autosaveEnabled)
-                            }
-                          />
-                        }
-                      />
-                    </div>
-                  )
-                ) : null}
-                {/* <Grid style={{ textAlign: "right" }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    Themme
-                  </Button>
-                </Grid> */}
-              </Grid>
-              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <Grid
-                  style={{
-                    textAlign: "right",
-                    paddingRight: 20,
-                  }}
-                >
-                  {props.shared === true ? (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => onLinkShareClick()}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                      }}
-                    >
-                      <ShareIcon
-                        fontSize="small"
-                        style={{
                           marginRight: 10,
                         }}
-                      ></ShareIcon>
-                      Share Workspace
-                    </Button>
-                  ) : null}
-                </Grid>
-              )}
+                      >
+                        <ShareIcon
+                          fontSize="small"
+                          style={{ marginRight: 10 }}
+                        ></ShareIcon>
+                        Share Workspace
+                      </Button>
+                    </div>
+                  </span>
+                ) : (
+                  <span className={classes.sharedHeaderText}>
+                    Shared Workspace
+                  </span>
+                )}
+              </Grid>
             </Grid>
 
             <Grid style={{ marginTop: 43 }}>
-              {/* == NOTICES == */}
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
 
               {!loading ? (
                 <PlotController
-                  sharedWorkspace={props.shared}
+                  sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
                 ></PlotController>

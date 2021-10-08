@@ -24,6 +24,7 @@ export const graphActions = {
   SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
+  SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
 };
 
 export const initialState: Workspace = {
@@ -35,6 +36,7 @@ export const initialState: Workspace = {
   populations: [],
   previousStates: [],
   sharedWorkspace: false,
+  editWorkspace: true,
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -237,7 +239,11 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         sharedWorkspace: action.payload.sharedWorkspace,
       };
-
+    case graphActions.SET_EDIT_WORKSPACE:
+      return {
+        ...state,
+        editWorkspace: action.payload.editWorkspace,
+      };
     case graphActions.ADD_NOTIFICATION:
       const newNotification: Notification = action.payload.notification;
       if (state.notifications.find((e) => e.id === newNotification.id)) {
