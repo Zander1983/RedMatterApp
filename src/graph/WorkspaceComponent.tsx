@@ -137,7 +137,7 @@ const WorkspaceInnerComponent = (props: {
     if (workspace.editWorkspace != editWorkspace) {
       setEditWorkspace(workspace.editWorkspace);
     }
-  }, [workspace]);
+  }, [workspace.editWorkspace]);
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
