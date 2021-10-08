@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     paddingTop: "5px",
     fontSize: "19px",
-    fontWeight: 700,
+    fontWeight: 500,
     color: "white",
   },
 }));
@@ -505,18 +505,17 @@ const WorkspaceInnerComponent = (props: {
                     <div>
                       <Button
                         variant="contained"
-                        size="large"
+                        size="small"
                         onClick={() => onLinkShareClick()}
                         className={classes.topButton}
                         style={{
                           backgroundColor: "#fafafa",
+                          marginRight: 10,
                         }}
                       >
                         <ShareIcon
                           fontSize="small"
-                          style={{
-                            marginRight: 10,
-                          }}
+                          style={{ marginRight: 10 }}
                         ></ShareIcon>
                         Share Workspace
                       </Button>
@@ -524,7 +523,7 @@ const WorkspaceInnerComponent = (props: {
                   </span>
                 ) : (
                   <span className={classes.sharedHeaderText}>
-                    Shared Mode. Sorry, You can't change anything.
+                    Shared Workspace
                   </span>
                 )}
               </Grid>

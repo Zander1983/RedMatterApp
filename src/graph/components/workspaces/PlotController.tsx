@@ -392,11 +392,9 @@ class PlotController extends React.Component<PlotControllerProps> {
         >
           {this.props.sharedWorkspace ? (
             <span>
-              <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                "If nothing loads..."
-              </h3>
-              <h4 style={{ marginBottom: 70, color: "#777" }}>
-                This Experiment is not shared or the experiment doesn't exists.
+              <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
+                If nothing is loaded, either this experiment is not shared or it
+                doesn't exist.
               </h4>
             </span>
           ) : (
