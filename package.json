@@ -23,6 +23,7 @@
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "chart.js": "^2.9.4",
+    "emailjs-com": "^3.2.0",
     "env-cmd": "^10.1.0",
     "fcs": "0.0.5",
     "formik": "^2.2.6",

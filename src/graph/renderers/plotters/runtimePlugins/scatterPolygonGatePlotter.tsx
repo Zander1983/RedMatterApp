@@ -35,7 +35,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     this.lastMousePos = state.lastMousePos;
   }
 
-  protected drawGate(gate: PolygonGate) {
+  protected drawGate(gate: PolygonGate, drawGates?: PolygonGate[]) {
     if (
       gate.xAxisType !== this.plotter.plot.xPlotType ||
       gate.yAxisType !== this.plotter.plot.yPlotType
