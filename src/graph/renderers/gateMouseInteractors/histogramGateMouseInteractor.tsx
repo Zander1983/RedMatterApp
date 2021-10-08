@@ -188,7 +188,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
 
     const newGate: HistogramGate = {
       points: [...newPoints],
-      axis: "x",
+      axis: this.plotter.plot.xAxis,
       axisType: plotType,
       axisOriginalRanges: originalRange,
       histogramDirection,

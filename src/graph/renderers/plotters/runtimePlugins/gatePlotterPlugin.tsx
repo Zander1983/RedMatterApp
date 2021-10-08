@@ -34,19 +34,13 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
     ) {
       drawGates.push(provisoryGate);
     }
-    if (this.provisoryGateID) {
-      console.log("provisory gate id = ", this.provisoryGateID);
-      console.log("provisory gate = ", provisoryGate);
-      console.log("drawGates = ", drawGates);
-    }
+
     try {
       for (let gate of drawGates) {
-        console.log("drawing gate", gate);
         if (
           !this.plotter.plot.gates.find((e) => e === gate.id) &&
           gate.id !== this.provisoryGateID
         ) {
-          console.log("error", gate);
           continue;
         }
         const isGate1D = Object.keys(gate).includes("axis");
@@ -56,22 +50,12 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
         if (this.gaterType === "1D" && isGate1D) {
           const gate1d = gate as Gate1D;
           const axisPlotType = this.plotter.plot.xPlotType;
-          console.log(
-            this.plotter.xAxisName,
-            gate1d.axis,
-            this.plotter.xAxisName === gate1d.axis
-          );
-          console.log(
-            gate1d.axisType,
-            axisPlotType,
-            axisPlotType === gate1d.axisType
-          );
+
           if (
             this.plotter.xAxisName === gate1d.axis &&
             gate1d.axisType === axisPlotType
           ) {
-            console.log("draw gate was called");
-            this.drawGate(gate);
+            this.drawGate(gate, drawGates);
           }
         }
         if (this.gaterType === "2D" && isGate2D) {
@@ -80,15 +64,13 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
             this.plotter.xAxisName === gate2d.xAxis &&
             this.plotter.yAxisName === gate2d.yAxis
           ) {
-            this.drawGate(gate);
+            this.drawGate(gate, drawGates);
           }
         }
       }
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }
 
-  protected abstract drawGate(gate: Gate): void;
+  protected abstract drawGate(gate: Gate, drawGates?: Gate[]): void;
   protected abstract drawGating(): void;
 }

@@ -88,7 +88,6 @@ export default function Plans(props: any) {
   }, []);
 
   const handleClick = async (subType: string) => {
-    console.log(subType);
     if (subType === "Free") {
       history.push(isLoggedIn ? "/experiments" : "/register");
       return;
