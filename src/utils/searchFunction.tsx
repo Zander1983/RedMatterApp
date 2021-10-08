@@ -18,7 +18,6 @@ export const filterArrayAsPerInput = (
       let item = arr[i];
       let value = "";
       if (valueProperty) {
-        debugger;
         value = item[`${valueProperty}`];
       } else value = item;
       value = value.toLowerCase().trim();
