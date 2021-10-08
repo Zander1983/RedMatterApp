@@ -36,7 +36,7 @@ const ChatBox = () => {
         },
         (error) => {
           snackbarService.showSnackbar(
-            "Could not feedback due to some technical issues, reload the page and try again!",
+            "Something went wrong! Please email us directly at mark.kelly@redmatterapp.com",
             "error"
           );
         }
@@ -87,7 +87,7 @@ const ChatBox = () => {
         >
           <input
             type="text"
-            placeholder="user@mail.com"
+            placeholder="your@email.com"
             className={classes.mailInput}
             name="gmail"
           />
