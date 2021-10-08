@@ -105,6 +105,9 @@ const AppHeader = (props: any) => {
                   Experiments
                 </NavLink>
               )}
+              <NavLink className={classes.topBarLink} to="/plans">
+                Plans
+              </NavLink>
               <NavLink className={classes.topBarLink} to="/user-profile">
                 Profile
               </NavLink>
