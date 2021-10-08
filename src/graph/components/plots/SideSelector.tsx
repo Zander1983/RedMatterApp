@@ -31,6 +31,7 @@ function PlotComponent(props: {
   sharedWorkspace: boolean;
   experimentId: string;
   canvasComponent: ReactNode;
+  editWorkspace: boolean;
 }) {
   const { plot, file } = props.plotRelevantResources;
   const workspaceFiles: File[] = useSelector((e) => {
@@ -189,6 +190,7 @@ function PlotComponent(props: {
         }}
       >
         <Select
+          disabled={!props.editWorkspace}
           style={{
             width: 100,
             marginRight: 15,
@@ -219,6 +221,7 @@ function PlotComponent(props: {
           </MenuItem>
         </Select>
         <Select
+          disabled={!props.editWorkspace}
           style={{
             width: 100,
             marginRight: 15,
@@ -305,6 +308,7 @@ function PlotComponent(props: {
 
           <div>
             <Select
+              disabled={!props.editWorkspace}
               style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
               onChange={(e) => {
                 //@ts-ignore
@@ -320,6 +324,7 @@ function PlotComponent(props: {
             </Select>
 
             <Select
+              disabled={!props.editWorkspace}
               style={{
                 width: 100,
                 marginTop: "10px",
@@ -344,6 +349,7 @@ function PlotComponent(props: {
                   </Typography>
                 </div>
                 <Select
+                  disabled={!props.editWorkspace}
                   style={{
                     width: 80,
                     height: 30,

@@ -44,6 +44,7 @@ const GateBar = React.memo(
     plotId: PlotID;
     populationGates: { gate: Gate; inverseGating: boolean }[];
     plotGates: Gate[];
+    editWorkspace: boolean;
   }) => {
     return <PopulationSelectorGateBar {...props} />;
     // return <PopAndGatesGateBar {...props} />;

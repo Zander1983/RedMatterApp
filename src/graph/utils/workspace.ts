@@ -177,10 +177,12 @@ const loadSavedWorkspace = async (
     ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
     : [];
   await dowloadAllFileEvents(shared, experimentId, files);
-  const newWorkspace = {
+  const newWorkspace: Workspace = {
     ...workspaceObj,
     files: getWorkspace().files,
     notifications: [],
+    sharedWorkspace: shared,
+    editWorkspace: !shared,
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
 };

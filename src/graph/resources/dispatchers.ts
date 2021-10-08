@@ -121,6 +121,12 @@ const WorkspaceDispatch = {
       payload: { notification },
     });
   },
+  SetEditWorkspace: (editWorkspace: boolean) => {
+    return store.dispatch({
+      type: graphActions.SET_EDIT_WORKSPACE,
+      payload: { editWorkspace },
+    });
+  },
 };
 
 export default WorkspaceDispatch;

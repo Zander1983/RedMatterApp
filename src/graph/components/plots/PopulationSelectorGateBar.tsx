@@ -43,6 +43,7 @@ const PopulationSelectorGateBar = React.memo(
     plotId: PlotID;
     populationGates: { gate: Gate; inverseGating: boolean }[];
     plotGates: Gate[];
+    editWorkspace: boolean;
   }) => {
     const allGates: Gate2D[] = useSelector((e: any) => e.workspace.gates);
     const plot = getPlot(props.plotId);
@@ -116,6 +117,7 @@ const PopulationSelectorGateBar = React.memo(
           }
         >
           <Select
+            disabled={!props.editWorkspace}
             style={{
               width: "100%",
             }}

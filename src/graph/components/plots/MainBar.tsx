@@ -39,7 +39,7 @@ const classes = {
   },
 };
 
-export default function MainBar(props: { plot: Plot }) {
+export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
@@ -167,6 +167,7 @@ export default function MainBar(props: { plot: Plot }) {
             fontSize: 12,
             height: "2rem",
           }}
+          disabled={!props.editWorkspace}
         >
           <CancelIcon
             fontSize="small"
@@ -199,6 +200,7 @@ export default function MainBar(props: { plot: Plot }) {
               fontSize: "12",
               backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
             }}
+            disabled={!props.editWorkspace}
           >
             {plot.gatingActive !== "" ? (
               <TouchAppIcon />
@@ -328,6 +330,7 @@ export default function MainBar(props: { plot: Plot }) {
               color: "white",
               backgroundColor: "#6666aa",
             }}
+            disabled={!props.editWorkspace}
           >
             <TuneIcon />
           </Button>
@@ -352,6 +355,7 @@ export default function MainBar(props: { plot: Plot }) {
               color: "white",
               backgroundColor: "#6666aa",
             }}
+            disabled={!props.editWorkspace}
           >
             <CameraFilled style={classes.iconButtonIcon}></CameraFilled>
           </Button>
