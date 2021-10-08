@@ -78,8 +78,8 @@ const AppLandingPage = () => {
         <Features />
         <Divider></Divider>
         <Universities />
-        <Divider></Divider>
-        <Plans />
+        {/* <Divider></Divider>
+        <Plans /> */}
       </Grid>
     </Grid>
   );
