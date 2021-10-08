@@ -25,7 +25,6 @@ const ChatBox = () => {
 
   const sendEmail = (e: any) => {
     e.preventDefault();
-
     if (message.current.value.trim().length) {
       emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form.current, USER_ID).then(
         (result) => {
@@ -99,6 +98,13 @@ const ChatBox = () => {
             className={classes.messageInput}
             ref={message}
           ></textarea>
+          <input
+            type="text"
+            name="pageLink"
+            value={window.location.href}
+            readOnly
+            style={{ display: "none" }}
+          />
 
           <button type="submit" className={classes.sendButton}>
             <SendOutlined className={classes.sendIcon} />
