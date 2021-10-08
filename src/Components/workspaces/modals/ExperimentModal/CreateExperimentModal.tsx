@@ -16,6 +16,7 @@ import { snackbarService } from "uno-material-ui";
 import { useStore } from "react-redux";
 import useForceUpdate from "hooks/forceUpdate";
 import { fluorophoresData } from "../../../../assets/staticData/CreateExperimentModalData";
+import { filterArrayAsPerInput } from "utils/searchFunction";
 
 interface CreateExperimentType {
   open: boolean;
@@ -24,6 +25,9 @@ interface CreateExperimentType {
   experiments: string[];
   organizationId: any;
 }
+
+const filterOptions = (options: any, { inputValue }: any) =>
+  filterArrayAsPerInput(options, inputValue);
 
 function CreateExperimentModal({
   closeCall,
@@ -248,6 +252,7 @@ function CreateExperimentModal({
                       onChange={(e: React.ChangeEvent<{}>, value) => {
                         setDeviceType(value);
                       }}
+                      filterOptions={filterOptions}
                       getOptionLabel={(option) => option}
                       style={{ width: 400 }}
                       renderInput={(params) => (
@@ -318,6 +323,7 @@ function CreateExperimentModal({
                       onBlur={(e) => {
                         !cellType && setCellError(true);
                       }}
+                      filterOptions={filterOptions}
                       options={[
                         "Single cells",
                         "Heterogenous population",
@@ -360,6 +366,7 @@ function CreateExperimentModal({
                         setParticleSize(value);
                         value && setParticleSizeError(false);
                       }}
+                      filterOptions={filterOptions}
                       onBlur={(e) =>
                         !particleSize && setParticleSizeError(true)
                       }
@@ -403,6 +410,7 @@ function CreateExperimentModal({
                         setFluorophoresType(reason.join());
                         setFluorophoresTypeError(reason.length ? false : true);
                       }}
+                      filterOptions={filterOptions}
                       onBlur={(e) => {
                         !fluorophoresType.length &&
                           setFluorophoresTypeError(true);
