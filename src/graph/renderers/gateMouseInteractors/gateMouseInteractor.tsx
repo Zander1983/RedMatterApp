@@ -98,7 +98,7 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
-    gate.name = "Unammed gate from plot " + this.plotter.plot.id;
+    gate.name = `${this.plotter.plot.xAxis} ${this.plotter.plot.yAxis}`;
     this.plugin.provisoryGateID = gate.id;
     await WorkspaceDispatch.AddGate({ ...gate });
     this.end();
