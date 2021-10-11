@@ -23,8 +23,11 @@ export default function GateNamePrompt() {
 
   useSelector((e: any) => {
     const newGates = e.workspace.gates;
-    if (gates === newGates || newGates === undefined || newGates.length === 0)
+    if (gates === newGates || newGates.length === 0) {
+      gates = newGates;
       return;
+    }
+
     const newGateName: string = newGates[newGates.length - 1].name;
     if (!open && newGates.length > gates.length) {
       setOpen(true);
