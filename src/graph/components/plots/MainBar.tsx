@@ -313,10 +313,11 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             variant="contained"
             size="small"
             onClick={() => {
-              const rangesX = props.plot.ranges[props.plot.xAxis];
+              const axes = PlotResource.getXandYRanges(plot);
+              const rangesX = axes.x;
               setRangeResizeModalTargetMinX(rangesX[0]);
               setRangeResizeModalTargetMaxX(rangesX[1]);
-              const rangesY = props.plot.ranges[props.plot.yAxis];
+              const rangesY = axes.y;
               setRangeResizeModalTargetMinY(rangesY[0]);
               setRangeResizeModalTargetMaxY(rangesY[1]);
               setRangeResizeModalAxisX(props.plot.xAxis);

@@ -17,6 +17,7 @@ import { createID } from "graph/utils/id";
 import { isPointInsideInterval } from "graph/resources/dataset";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import HistogramGatePlotter from "../plotters/runtimePlugins/histogramGatePlotter";
+import { getXandYRanges } from "graph/resources/plots";
 
 export interface HistogramGateState extends GateState {
   axis: AxisName;
@@ -168,7 +169,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   protected instanceGate(): HistogramGate {
     if (!this.started) return;
     const { points, histogramDirection, plotType } = this.getGatingState();
-    let originalRange = this.plotter.plot.ranges.x;
+    let originalRange = getXandYRanges(this.plotter.plot).x;
 
     const newPoints: [number, number] = [...points] as [number, number];
 

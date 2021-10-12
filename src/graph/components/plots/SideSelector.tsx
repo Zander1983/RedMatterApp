@@ -316,11 +316,9 @@ function PlotComponent(props: {
               }}
               value={xAxis}
             >
-              {Object.keys(getPopulation(plot.population).defaultRanges).map(
-                (e: any) => (
-                  <MenuItem value={e}>{e}</MenuItem>
-                )
-              )}
+              {axes.map((e: any) => (
+                <MenuItem value={e}>{e}</MenuItem>
+              ))}
             </Select>
 
             <Select

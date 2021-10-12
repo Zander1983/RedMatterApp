@@ -55,63 +55,103 @@ export const downloadFileMetadata = async (
 
 export const downloadFileEvent = async (
   workspaceIsShared: boolean,
-  fileId: string,
+  targetFiles: string | string[],
   experimentId: string,
   showNotifications: boolean = true
-): Promise<FileID> => {
+): Promise<FileID | FileID[]> => {
   let notification: Notification;
   if (showNotifications) {
-    notification = new Notification("Dowloading file");
-  }
-  const workspace = getWorkspace();
-  const fileQuery = workspace.files.filter((e) => e.id === fileId);
-  if (fileQuery.length > 1) {
-    throw Error("Multiple files with the same ID present in workspace");
-  }
-  if (fileQuery.length > 0 && fileQuery[0].downloaded) {
-    throw Error("File already downloaded");
-  }
-  let donwloadingFile: File = getFile(fileId);
-  donwloadingFile.downloading = true;
-  WorkspaceDispatch.UpdateFile(donwloadingFile);
-  let response;
-  if (workspaceIsShared) {
-    response = await axios.post(
-      "/api/sharedEvents",
-      { experimentId: experimentId, fileIds: [fileId] },
-      {}
+    notification = new Notification(
+      "Dowloading file" + (typeof targetFiles === "string" ? "" : "s")
     );
+  }
+
+  let files: FileID[] = [];
+  if (typeof targetFiles === "string") {
+    files = [targetFiles];
   } else {
-    response = await axios.post(
-      "/api/event",
-      {
-        experimentId: experimentId,
-        fileId: fileId,
-        organisationId: userManager.getOrganiztionID(),
-      },
-      {
-        headers: {
-          token: userManager.getToken(),
-        },
-      }
-    );
+    files = targetFiles;
   }
-  if (response.data[0].events.length > EVENTS_LIMIT) {
-    response.data[0].events = response.data[0].events.slice(0, EVENTS_LIMIT);
+
+  const workspace = getWorkspace();
+
+  for (const fileId of files) {
+    const fileQuery = workspace.files.filter((e) => e.id === fileId);
+    if (fileQuery.length > 1) {
+      throw Error("Multiple files with the same ID present in workspace");
+    }
+    if (fileQuery.length > 0 && fileQuery[0].downloaded) {
+      throw Error("File already downloaded");
+    }
   }
-  const file = response.data[0];
-  let newFile = await createFile({
-    requestData: file,
-    id: fileId,
+
+  let downloadingFiles: File[] = files.map((e) => getFile(e));
+  downloadingFiles.forEach((e) => {
+    e.downloading = true;
+    WorkspaceDispatch.UpdateFile(e);
   });
-  newFile = { ...newFile, ...getFile(fileId) };
-  newFile.downloaded = true;
-  newFile.downloading = false;
-  WorkspaceDispatch.UpdateFile(newFile);
+
+  let response;
+  let payload: {
+    experimentId: string;
+    fileIds: string[];
+    isShared?: boolean;
+    organisationId?: string;
+  } = {
+    experimentId: experimentId,
+    fileIds: files,
+  };
+
+  if (workspaceIsShared) {
+    payload = { ...payload, isShared: true };
+  } else {
+    payload = {
+      ...payload,
+      organisationId: userManager.getOrganiztionID(),
+    };
+  }
+
+  let token = null;
+  try {
+    token = userManager.getToken();
+  } catch {}
+
+  let headers = {};
+  if (token) headers = { token };
+
+  response = await axios.post("/api/events", payload, {
+    headers,
+  });
+
+  response.data = response.data.map((e: any) => {
+    if (e.events.length > EVENTS_LIMIT) {
+      e.events = e.events.slice(0, EVENTS_LIMIT);
+    }
+    return e;
+  });
+
+  for (const file of response.data) {
+    let newFile = await createFile({
+      //@ts-ignore
+      requestData: file,
+      //@ts-ignore
+      id: file.id,
+    });
+    //@ts-ignore
+    newFile = { ...newFile, ...getFile(file.id) };
+    newFile.downloaded = true;
+    newFile.downloading = false;
+    WorkspaceDispatch.UpdateFile(newFile);
+  }
   if (showNotifications) {
     notification.killNotification();
   }
-  return file.id;
+
+  if (typeof targetFiles === "string") {
+    return targetFiles;
+  } else {
+    return files;
+  }
 };
 
 export const dowloadAllFileEvents = async (
@@ -119,7 +159,6 @@ export const dowloadAllFileEvents = async (
   experimentId?: string,
   batch?: string[]
 ) => {
-  const notification = new Notification("Dowloading files");
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
@@ -135,12 +174,5 @@ export const dowloadAllFileEvents = async (
       .filter((e) => e.downloaded === false)
       .map((e) => e.id);
   }
-  const promises: Promise<any>[] = [];
-  for (const file of files) {
-    promises.push(
-      downloadFileEvent(workspaceIsShared, file, experimentId, false)
-    );
-  }
-  if (promises.length > 0) await Promise.all(promises);
-  notification.killNotification();
+  await downloadFileEvent(workspaceIsShared, files, experimentId, false);
 };

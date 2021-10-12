@@ -12,6 +12,7 @@ import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { isPointInsideWithLogicle } from "graph/resources/dataset";
 import { store } from "redux/store";
+import { getXandYRanges } from "graph/resources/plots";
 
 export const selectPointDist = 15;
 
@@ -159,10 +160,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   protected instanceGate(): PolygonGate {
     if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
-    let originalRanges = [
-      this.plotter.plot.ranges[this.plotter.plot.xAxis],
-      this.plotter.plot.ranges[this.plotter.plot.yAxis],
-    ];
+    let originalRanges = getXandYRanges(this.plotter.plot);
     const newPoints: Point[] = [];
     for (let i = 0; i < points.length; i++) {
       let p = { x: points[i].x, y: points[i].y };
@@ -176,10 +174,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       }),
       xAxis: xAxis,
       xAxisType: this.plotter.plot.xPlotType,
-      xAxisOriginalRanges: originalRanges[0],
+      xAxisOriginalRanges: originalRanges.x,
       yAxis: yAxis,
       yAxisType: this.plotter.plot.yPlotType,
-      yAxisOriginalRanges: originalRanges[1],
+      yAxisOriginalRanges: originalRanges.y,
       parents: getPopulation(this.plotter.plot.population).gates.map(
         (e) => e.gate
       ),
