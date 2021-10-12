@@ -98,7 +98,11 @@ export default abstract class GateMouseInteractor {
 
   async createAndAddGate() {
     const gate = this.instanceGate();
-    gate.name = `${this.plotter.plot.xAxis} ${this.plotter.plot.yAxis}`;
+    if (gate.gateType === "polygon") {
+      gate.name = `${this.plotter.plot.xAxis}, ${this.plotter.plot.yAxis} Subset`;
+    } else if (gate.gateType === "histogram") {
+      gate.name = `${this.plotter.plot.xAxis} Subset`;
+    }
     this.plugin.provisoryGateID = gate.id;
     await WorkspaceDispatch.AddGate({ ...gate });
     this.end();
