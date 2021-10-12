@@ -5,10 +5,12 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 
 import reducers from "./reducers";
 import graphReducers from "graph/workspaceRedux/graphReduxActions";
+import eventQueueReducers from "graph/workspaceRedux/eventQueueReduxActions";
 
 const rootReducer = combineReducers({
   user: reducers,
   workspace: graphReducers,
+  workspaceEventQueue: eventQueueReducers,
 });
 
 const persistConfig = {

@@ -177,3 +177,18 @@ export interface Notification {
   id: string;
   message: string;
 }
+
+export interface WorkspaceEvent {
+  id: string;
+  type: string;
+}
+
+export interface WorkspaceEventGateNaming extends WorkspaceEvent {
+  type: "gateNaming";
+  plotID: PlotID;
+  gateID: GateID;
+}
+
+export interface WorkspaceEventQueue {
+  queue: WorkspaceEvent[];
+}
