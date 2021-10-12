@@ -67,8 +67,11 @@ const Register = (props: any) => {
       });
     }
   };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  useEffect(() => {}, [isLocationSelected]);
+  // useEffect(() => {}, [isLocationSelected]);
 
   const handleSubmit = async () => {
     setLoading(true);

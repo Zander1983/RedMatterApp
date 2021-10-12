@@ -51,6 +51,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
   };
 
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
+  const rules = userManager.getRules();
 
   const handleClose = (
     event: React.SyntheticEvent | React.MouseEvent,
@@ -154,16 +155,26 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
             </CardContent>
           </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            <Tooltip title="Delete experiment">
-              <Button
-                size="small"
-                color="secondary"
-                startIcon={<DeleteIcon />}
-                variant="outlined"
-                onClick={() => setDeleteConfirmModal(true)}
-              >
-                Delete
-              </Button>
+            {/* Delete Button */}
+            <Tooltip
+              title={
+                rules?.experiment?.delete
+                  ? "Delete experiment"
+                  : "The Delete Button is disabled, upgrade your plan to enable it"
+              }
+            >
+              <span>
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  variant="outlined"
+                  onClick={() => setDeleteConfirmModal(true)}
+                  disabled={!rules?.experiment?.delete}
+                >
+                  Delete
+                </Button>
+              </span>
             </Tooltip>
           </CardActions>
         </Card>

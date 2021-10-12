@@ -14,7 +14,6 @@ import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
 import { useStore } from "react-redux";
-import useForceUpdate from "hooks/forceUpdate";
 import { fluorophoresData } from "../../../../assets/staticData/CreateExperimentModalData";
 
 interface CreateExperimentType {
@@ -34,10 +33,10 @@ function CreateExperimentModal({
 }: CreateExperimentType): JSX.Element {
   const store = useStore();
   const classes = useStyles();
-  const forceUpdate = useForceUpdate();
 
   const [formData, setFormData] = useState(null);
-  const subscriptionType = store.getState().user.profile.subscriptionType;
+  const rules = userManager.getRules();
+  const subscriptionType = userManager.getSubscriptionType();
 
   // Name
   const [name, setName] = useState("");
@@ -80,9 +79,16 @@ function CreateExperimentModal({
   };
 
   useEffect(() => {
-    setEnablePrivateExperiment(
-      subscriptionType === "Free" || subscriptionType === null ? false : true
-    );
+    setEnablePrivateExperiment(rules?.experiment?.unlimitedPrivate);
+
+    // Clearing out the values then the form is closed
+    if (!open) {
+      setName("");
+      setDeviceType("");
+      setCellType("");
+      setParticleSize("");
+      setFluorophoresType("");
+    }
     //eslint-disable-next-line
   }, [open]);
 
@@ -107,8 +113,8 @@ function CreateExperimentModal({
       {
         details: formData,
         name: name,
-        privateExp: privateExperiment,
         organisationId: organizationId,
+        experimentLength: experiments.length,
       },
       userManager.getToken()
     );
@@ -117,9 +123,11 @@ function CreateExperimentModal({
       .then((e) => {
         closeCall.f(closeCall.ref);
         created(e.data.id);
+        // Clearing Data Can also be done here too...
         setName("");
       })
       .catch((e) => {
+        console.log(e);
         snackbarService.showSnackbar(
           "Could not create experiment, reload the page and try again!",
           "error"
@@ -136,6 +144,7 @@ function CreateExperimentModal({
       particleSize,
       fluorophoresCategory: fluorophoresType,
       description,
+      privateExp: privateExperiment,
     });
   };
 

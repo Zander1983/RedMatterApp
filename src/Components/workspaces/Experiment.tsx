@@ -237,7 +237,6 @@ const Experiment = (props: any) => {
         return { name: e.file.name, id: e.tempId };
       })
     );
-
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
