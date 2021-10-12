@@ -15,45 +15,44 @@ import {
   getWorkspace,
 } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
-
-let name = "";
-
+let gates: Gate[] = [];
 export default function GateNamePrompt() {
-  let gates: Gate[] = [];
   const [open, setOpen] = React.useState<boolean>(false);
   const [nameError, setNameError] = React.useState(false);
+  const [name, setName] = React.useState("");
 
   useSelector((e: any) => {
     const newGates = e.workspace.gates;
-    if (gates === newGates || newGates === undefined || newGates.length === 0)
+    if (gates === newGates || newGates.length === 0) {
+      gates = newGates;
       return;
-    const newGateName: string = newGates[newGates.length - 1].name;
-    if (
-      !open &&
-      newGates.length > gates.length &&
-      newGateName.includes("Unammed gate from plot")
-    ) {
-      setOpen(true);
     }
-    gates = newGates;
+
+    const newGateName: string = newGates[newGates.length - 1].name;
+    if (!open && newGates.length > gates.length) {
+      setOpen(true);
+      gates = newGates;
+      let gateName = gates[gates.length - 1].name;
+      setName(gateName);
+    }
   });
 
   const renameGate = async (newName: string) => {
-    setOpen(false);
-    name = "";
     const gates = getWorkspace().gates;
     let gate = gates[gates.length - 1];
-    const plotID = gate.name.split(" ")[4];
+
     gate.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
+    setOpen(false);
     try {
-      instancePlot(getPlot(plotID), gate);
+      const plots = getWorkspace().plots;
+      let plot = plots[plots.length - 1];
+      instancePlot(plot, gate);
     } catch {}
   };
 
   const quit = () => {
     setOpen(false);
-    name = "";
     const gates = getWorkspace().gates;
     let gate = gates[gates.length - 1];
     WorkspaceDispatch.DeleteGate(gate);
@@ -105,6 +104,7 @@ export default function GateNamePrompt() {
         <DialogContent>
           <TextField
             error={nameError}
+            value={name}
             helperText="This Field Is Required"
             autoFocus
             margin="dense"
@@ -112,7 +112,7 @@ export default function GateNamePrompt() {
             label="Gate Name"
             type="email"
             onChange={(e: any) => {
-              name = e.target.value;
+              setName(e.target.value);
             }}
           />
         </DialogContent>
