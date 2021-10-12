@@ -21,7 +21,7 @@ import { createGate } from "graph/resources/gates";
 import { dowloadAllFileEvents } from "services/FileService";
 import { createPlot } from "graph/resources/plots";
 import { createPopulation } from "graph/resources/populations";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const classes = {
   table: {},

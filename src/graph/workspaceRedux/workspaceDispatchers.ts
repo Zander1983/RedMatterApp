@@ -1,6 +1,13 @@
 import { store } from "redux/store";
-import { graphActions } from "./reduxActions";
-import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
+import { graphActions } from "./graphReduxActions";
+import {
+  File,
+  Gate,
+  Notification,
+  Plot,
+  Population,
+  Workspace,
+} from "graph/resources/types";
 
 const WorkspaceDispatch = {
   ResetWorkspace: () => {

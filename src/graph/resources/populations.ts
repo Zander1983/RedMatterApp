@@ -1,18 +1,12 @@
 import { createID } from "graph/utils/id";
-import { getFile } from "graph/utils/workspace";
-import { store } from "redux/store";
-import { getDataset } from "./dataset";
 import {
   FileID,
-  Gate,
-  File,
   GateID,
   Population,
   PopulationGateType,
   PopulationID,
 } from "./types";
-import * as DatasetResource from "graph/resources/dataset";
-import WorkspaceDispatch from "./dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export const createPopulation = ({
   clonePopulation,

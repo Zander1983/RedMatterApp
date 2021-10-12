@@ -18,7 +18,7 @@ import {
   PlotSpecificWorkspaceData,
   Workspace,
 } from "graph/resources/types";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
 

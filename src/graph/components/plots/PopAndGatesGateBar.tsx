@@ -16,7 +16,7 @@ import * as PopulationResource from "graph/resources/populations";
 import { getPlot, getPopulation } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { store } from "redux/store";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;

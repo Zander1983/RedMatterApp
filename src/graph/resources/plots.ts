@@ -35,7 +35,7 @@ import {
   getTargetLayoutPlots,
   getPlotGroups,
 } from "graph/components/workspaces/PlotController";
-import WorkspaceDispatch from "./dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export const createPlot = ({
   clonePlot,

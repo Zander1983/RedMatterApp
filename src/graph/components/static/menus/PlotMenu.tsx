@@ -19,7 +19,7 @@ import { Plot, PopulationGateType } from "graph/resources/types";
 import { createPlot } from "graph/resources/plots";
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const statsProvider = new PlotStats();
 

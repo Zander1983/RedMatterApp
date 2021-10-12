@@ -2,6 +2,7 @@ import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
 import { Gate, Gate1D, Gate2D, GateID, Point } from "graph/resources/types";
 import { getGate } from "graph/utils/workspace";
+import { checkIfGateNamingQueue } from "graph/utils/workspaceEventQueue";
 
 export default abstract class GatePlotterPlugin extends PlotterPlugin {
   static TargetPlotter = GraphPlotter;
@@ -27,11 +28,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
     const drawGates = [...this.gates];
 
     const provisoryGate = getGate(this.provisoryGateID);
-    if (
-      this.provisoryGateID &&
-      provisoryGate &&
-      provisoryGate.name.includes("Unammed gate from plot")
-    ) {
+    if (checkIfGateNamingQueue(this.provisoryGateID)) {
       drawGates.push(provisoryGate);
     }
 
