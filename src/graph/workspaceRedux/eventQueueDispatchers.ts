@@ -9,7 +9,7 @@ const EventQueueDispatch = {
       type: eventQueueActions.RESET,
     });
   },
-  ResetWorkspaceExceptFiles: (newEvent: WorkspaceEvent) => {
+  AddQueueItem: (newEvent: WorkspaceEvent) => {
     const id = createID();
     newEvent.id = id;
     return store.dispatch({
@@ -17,10 +17,16 @@ const EventQueueDispatch = {
       payload: { event: newEvent },
     });
   },
-  LoadWorkspace: (deleteEvent: WorkspaceEvent) => {
+  DeleteQueueItem: (id: any) => {
     return store.dispatch({
-      type: eventQueueActions.ADD_QUEUE_ITEM,
-      payload: { event: deleteEvent },
+      type: eventQueueActions.DELETE_QUEUE_ITEM,
+      payload: { id: id },
+    });
+  },
+  UpdateUsed: (id: any) => {
+    return store.dispatch({
+      type: eventQueueActions.UPDATE_USED,
+      payload: { id: id },
     });
   },
 };

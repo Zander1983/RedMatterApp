@@ -181,6 +181,7 @@ export interface Notification {
 export interface WorkspaceEvent {
   id: string;
   type: string;
+  used: boolean;
 }
 
 export interface WorkspaceEventGateNaming extends WorkspaceEvent {

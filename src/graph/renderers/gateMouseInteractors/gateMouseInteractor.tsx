@@ -1,5 +1,5 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import { Gate, Point } from "graph/resources/types";
+import { Gate, Point, WorkspaceEventGateNaming } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
@@ -7,7 +7,7 @@ import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
 import { getGate, getPopulation } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 export interface GateState {
   lastMousePos: Point;
 }
@@ -103,8 +103,17 @@ export default abstract class GateMouseInteractor {
     } else if (gate.gateType === "histogram") {
       gate.name = `${this.plotter.plot.xAxis} Subset`;
     }
+
     this.plugin.provisoryGateID = gate.id;
     await WorkspaceDispatch.AddGate({ ...gate });
+    let eventGateName: WorkspaceEventGateNaming = {
+      id: "",
+      plotID: this.plotter.plot.id,
+      gateID: gate.id,
+      type: "gateNaming",
+      used: false,
+    };
+    await EventQueueDispatch.AddQueueItem(eventGateName);
     this.end();
   }
 

@@ -6,51 +6,60 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { useSelector } from "react-redux";
-import { Gate, Plot } from "graph/resources/types";
+import {
+  Gate,
+  Plot,
+  WorkspaceEvent,
+  WorkspaceEventGateNaming,
+} from "graph/resources/types";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import {
+  getGate,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 let gates: Gate[] = [];
 export default function GateNamePrompt() {
   const [open, setOpen] = React.useState<boolean>(false);
   const [nameError, setNameError] = React.useState(false);
   const [name, setName] = React.useState("");
-
+  const [gate, setGate] = React.useState<Gate>();
+  const [plot, setPlot] = React.useState<Plot>();
+  const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
   useSelector((e: any) => {
-    const newGates = e.workspace.gates;
-    if (gates === newGates || newGates.length === 0) {
-      gates = newGates;
-      return;
-    }
-
-    const newGateName: string = newGates[newGates.length - 1].name;
-    if (!open && newGates.length > gates.length) {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventGateNamingArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used == false
+    );
+    if (eventGateNamingArray.length > 0) {
+      let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      let gate = getGate(event.gateID);
+      setName(gate.name);
+      setGate(gate);
+      setPlot(getPlot(event.plotID));
       setOpen(true);
-      gates = newGates;
-      let gateName = gates[gates.length - 1].name;
-      setName(gateName);
+      setEvent(event);
+      EventQueueDispatch.UpdateUsed(event.id);
     }
   });
 
   const renameGate = async (newName: string) => {
-    const gates = getWorkspace().gates;
-    let gate = gates[gates.length - 1];
-
     gate.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
     setOpen(false);
     try {
-      const plots = getWorkspace().plots;
-      let plot = plots[plots.length - 1];
       instancePlot(plot, gate);
     } catch {}
+    EventQueueDispatch.DeleteQueueItem(event.id);
   };
 
   const quit = () => {
     setOpen(false);
-    const gates = getWorkspace().gates;
-    let gate = gates[gates.length - 1];
     WorkspaceDispatch.DeleteGate(gate);
+    EventQueueDispatch.DeleteQueueItem(event.id);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
