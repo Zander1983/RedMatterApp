@@ -93,14 +93,26 @@ export interface File {
   src?: SrcType;
   axes: AxisName[];
   label: string;
-  plotTypes?: PlotType[];
+  defaultRanges: {
+    [index: string]: Range;
+  };
+  defaultAxisPlotTypes: {
+    [index: string]: PlotType;
+  };
   downloaded: boolean;
   downloading: boolean;
 }
 
 export interface EventsRequestResponse {
   events: number[][];
-  channels: { key: number; value: AxisName; display: PlotType }[];
+  channels: {
+    value: AxisName;
+    display: PlotType;
+    linearMinimum: number;
+    linearMaximum: number;
+    biexponentialMinimum: number;
+    biexponentialMaximum: number;
+  }[];
   $locals: {};
   $op: null;
   title: string;
@@ -138,12 +150,6 @@ export interface Population {
   id: PopulationID;
   label: string;
   file: FileID;
-  defaultRanges: {
-    [index: string]: Range;
-  };
-  defaultAxisPlotTypes: {
-    [index: string]: PlotType;
-  };
   gates: PopulationGateType[];
 }
 

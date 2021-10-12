@@ -25,7 +25,8 @@ export const createFile = async ({
     src: "remote",
     axes: [],
     label: "",
-    plotTypes: [],
+    defaultAxisPlotTypes: {},
+    defaultRanges: {},
     downloaded: false,
     eventCount: 0,
     fileSize: 0,
@@ -35,8 +36,18 @@ export const createFile = async ({
   };
   const createdID = createID();
   if (requestData) {
-    newFile.axes = requestData.channels.map((e) => e.value);
-    newFile.plotTypes = requestData.channels.map((e) => e.display);
+    requestData.channels.forEach((e) => {
+      newFile.axes.push(e.value);
+      newFile.defaultRanges[e.value + "-lin"] = [
+        e.linearMinimum,
+        e.linearMaximum,
+      ];
+      newFile.defaultRanges[e.value + "-bi"] = [
+        e.biexponentialMinimum,
+        e.biexponentialMaximum,
+      ];
+      newFile.defaultAxisPlotTypes[e.value] = e.display;
+    });
     newFile.id = requestData.id;
     newFile.name = newFile.label = requestData.title;
     await createDataset(requestData.events, newFile);

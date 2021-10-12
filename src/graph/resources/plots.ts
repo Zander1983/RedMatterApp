@@ -51,8 +51,9 @@ export const createPlot = ({
   if (id) newPlot.id = id;
   else newPlot.id = createID();
   if (population) {
-    newPlot.ranges = { ...population?.defaultRanges };
-    newPlot.axisPlotTypes = { ...population?.defaultAxisPlotTypes };
+    const file = getFile(population.file);
+    newPlot.ranges = { ...file.defaultRanges };
+    newPlot.axisPlotTypes = { ...file.defaultAxisPlotTypes };
     newPlot.population =
       typeof population === "string" ? population : population.id;
   }
@@ -435,7 +436,10 @@ export const getXandYRanges = (
 ): { x: [number, number]; y: [number, number] } => {
   if (!targetXAxis) targetXAxis = plot.xAxis;
   if (!targetYAxis) targetYAxis = plot.yAxis;
-  return { x: plot.ranges[targetXAxis], y: plot.ranges[targetYAxis] };
+  return {
+    x: plot.ranges[getPlotAxisRangeString(plot, "x")],
+    y: plot.ranges[getPlotAxisRangeString(plot, "y")],
+  };
 };
 
 export const getHistogramBins = (
@@ -444,19 +448,12 @@ export const getHistogramBins = (
   targetAxis: string
 ) => {
   binCount = Math.round(binCount);
-  const axisName =
-    targetAxis === undefined
-      ? plot.histogramAxis === "vertical"
-        ? plot.xAxis
-        : plot.yAxis
-      : targetAxis;
-  let range = plot.ranges[axisName];
+  let range = plot.ranges[getPlotAxisRangeString(plot, "x")];
   let axis = getHistogramAxisData(plot);
-  if (plot.xAxis === axisName && plot.xPlotType === "bi") {
+  if (plot.xPlotType === "bi") {
     const fcsServices = new FCSServices();
-    const linearRange = plot.ranges[axisName];
     axis = new Float32Array(
-      fcsServices.logicleMarkTransformer(axis, linearRange[0], linearRange[1])
+      fcsServices.logicleMarkTransformer(axis, range[0], range[1])
     );
     range = [0, 1];
   }
@@ -472,12 +469,15 @@ export const getHistogramBins = (
 };
 
 export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
-  const population = getPopulation(plot.population);
+  const file = getPlotFile(plot);
   if (axis) {
-    const axisName = axis === "x" ? plot.xAxis : plot.yAxis;
-    plot.ranges[axisName] = population.defaultRanges[axisName];
+    const rangeString = getPlotAxisRangeString(
+      plot,
+      axis === "x" ? plot.xAxis : plot.yAxis
+    );
+    plot.ranges[rangeString] = file.defaultRanges[rangeString];
   } else {
-    plot.ranges = population.defaultRanges;
+    plot.ranges = file.defaultRanges;
   }
   WorkspaceDispatch.UpdatePlot(plot);
 };
@@ -495,9 +495,7 @@ export const getHistogramAxisData = (plot: Plot): Float32Array => {
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  return filteredPoints[
-    plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis
-  ];
+  return filteredPoints[plot.xAxis];
 };
 
 export const getXandYDataAndColors = (
@@ -581,4 +579,13 @@ export const createSubpopPlot = async (
   }
   promises.push(WorkspaceDispatch.UpdatePopulation(pop));
   await Promise.all(promises);
+};
+
+export const getPlotAxisRangeString = (
+  plot: Plot,
+  axis: AxisName | "x" | "y"
+) => {
+  if (axis === "x") axis = plot.xAxis;
+  if (axis === "y") axis = plot.yAxis;
+  return axis + "-" + plot.axisPlotTypes[axis];
 };

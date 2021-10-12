@@ -23,11 +23,7 @@ import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
 import SideMenus from "./components/static/SideMenus";
-import {
-  dowloadAllFileEvents,
-  downloadFileEvent,
-  downloadFileMetadata,
-} from "services/FileService";
+import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
 import {
   getAllFiles,
   loadWorkspaceFromRemoteIfExists,
@@ -148,6 +144,7 @@ const WorkspaceInnerComponent = (props: {
     initializeWorkspace(props.shared, props.experimentId);
 
     return () => {
+      saveWorkspace();
       WorkspaceDispatch.ResetWorkspace();
       memResetDatasetCache();
     };

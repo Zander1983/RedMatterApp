@@ -83,6 +83,9 @@ const AddFileModal = React.memo(
           fileId,
           props.experimentId
         );
+        if (typeof newId !== "string") {
+          throw Error("wtf?");
+        }
         file = getFile(newId);
       }
       await PlotResource.createNewPlotFromFile(file);

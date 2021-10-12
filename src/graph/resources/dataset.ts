@@ -316,8 +316,7 @@ export const isPointInsideInterval = (
   forceRaw: boolean = false
 ): boolean => {
   let points = [...gate.gate.points];
-  const targetAxis = gate.gate.histogramDirection === "vertical" ? "x" : "y";
-  let targetPoint = point[targetAxis];
+  let targetPoint = point.x;
   if (forceRaw) {
     return (
       targetPoint <= Math.max(gate.gate.points[0], gate.gate.points[1]) &&
@@ -436,47 +435,29 @@ const point2BiConverter = (
   if (gate.gate.gateType === "polygon") {
     const cGate = gate.gate as PolygonGate;
     if (cGate.xAxisType === "bi") {
-      const p = newX[axesLookup[cGate.xAxis]];
-      if (point2BiConverterCache.has(p)) {
-        newX[axesLookup[cGate.xAxis]] = point2BiConverterCache.get(p);
-      } else {
-        newX[axesLookup[cGate.xAxis]] = fcsServices.logicleMarkTransformer(
-          [newX[axesLookup[cGate.xAxis]]],
-          cGate.xAxisOriginalRanges[0],
-          cGate.xAxisOriginalRanges[1]
-        )[0];
-        point2BiConverterCache.set(p, newX[axesLookup[cGate.xAxis]]);
-      }
+      newX[axesLookup[cGate.xAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.xAxis]]],
+        cGate.xAxisOriginalRanges[0],
+        cGate.xAxisOriginalRanges[1]
+      )[0];
     }
     if (cGate.yAxisType === "bi") {
-      const p = newX[axesLookup[cGate.yAxis]];
-      if (point2BiConverterCache.has(p)) {
-        newX[axesLookup[cGate.yAxis]] = point2BiConverterCache.get(p);
-      } else {
-        newX[axesLookup[cGate.yAxis]] = fcsServices.logicleMarkTransformer(
-          [newX[axesLookup[cGate.yAxis]]],
-          cGate.yAxisOriginalRanges[0],
-          cGate.yAxisOriginalRanges[1]
-        )[0];
-        point2BiConverterCache.set(p, newX[axesLookup[cGate.yAxis]]);
-      }
+      newX[axesLookup[cGate.yAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.yAxis]]],
+        cGate.yAxisOriginalRanges[0],
+        cGate.yAxisOriginalRanges[1]
+      )[0];
     }
     return newX;
   }
   if (gate.gate.gateType === "histogram") {
     const cGate = gate.gate as HistogramGate;
-    const p = newX[axesLookup[cGate.axis]];
-    if (point2BiConverterCache.has(p)) {
-      newX[axesLookup[cGate.axis]] = point2BiConverterCache.get(p);
-    } else {
-      if (cGate.axisType === "bi") {
-        newX[axesLookup[cGate.axis]] = fcsServices.logicleMarkTransformer(
-          [newX[axesLookup[cGate.axis]]],
-          cGate.axisOriginalRanges[0],
-          cGate.axisOriginalRanges[1]
-        )[0];
-      }
-      point2BiConverterCache.set(p, newX[axesLookup[cGate.axis]]);
+    if (cGate.axisType === "bi") {
+      newX[axesLookup[cGate.axis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[cGate.axis]]],
+        cGate.axisOriginalRanges[0],
+        cGate.axisOriginalRanges[1]
+      )[0];
     }
     return newX;
   }
