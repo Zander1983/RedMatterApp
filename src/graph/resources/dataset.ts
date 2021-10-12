@@ -132,7 +132,6 @@ export const isPointInside = (
   } else if (gate.gate.gateType === "histogram") {
     const cGate = gate.gate as HistogramGate;
     const p = point[axesLookup[cGate.axis]];
-    // console.log(p, cGate.points);
     pointInside = p >= cGate.points[0] && p <= cGate.points[1];
   } else {
     throw Error("gate type not supported");
