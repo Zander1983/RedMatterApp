@@ -144,11 +144,11 @@ const ParseFlowJoJson = async (flowJoJson: any, downloadedFiles: any) => {
           plot.yAxis = fileYAxis;
           plot.xPlotType = xChannelInfo.type;
           plot.yPlotType = yChannelInfo.type;
-          plot.ranges[plot.xAxis] = [
+          plot.ranges[PlotResource.getPlotAxisRangeString(plot, "x")] = [
             parseFloat(xChannelInfo.rangeMin),
             parseFloat(xChannelInfo.rangeMax),
           ];
-          plot.ranges[plot.yAxis] = [
+          plot.ranges[PlotResource.getPlotAxisRangeString(plot, "y")] = [
             parseFloat(yChannelInfo.rangeMin),
             parseFloat(yChannelInfo.rangeMax),
           ];
@@ -277,11 +277,11 @@ const parseSubpopulation = async (
         newPlot.xPlotType = xChannelInfo.type;
 
         newPlot.yPlotType = yChannelInfo.type;
-        newPlot.ranges[newPlot.xAxis] = [
+        newPlot.ranges[PlotResource.getPlotAxisRangeString(plot, "x")] = [
           parseFloat(xChannelInfo.rangeMin),
           parseFloat(xChannelInfo.rangeMax),
         ];
-        newPlot.ranges[newPlot.yAxis] = [
+        newPlot.ranges[PlotResource.getPlotAxisRangeString(plot, "y")] = [
           parseFloat(yChannelInfo.rangeMin),
           parseFloat(yChannelInfo.rangeMax),
         ];

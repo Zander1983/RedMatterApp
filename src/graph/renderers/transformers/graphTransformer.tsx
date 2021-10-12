@@ -1,4 +1,5 @@
 import Transformer from "graph/renderers/transformers/transformer";
+import { getPlotAxisRangeString, getXandYRanges } from "graph/resources/plots";
 import { Plot, Point } from "graph/resources/types";
 import { maxHeaderSize } from "http";
 import numeral from "numeral";
@@ -195,23 +196,20 @@ export default class GraphTransformer extends Transformer {
     const xBi = this.plot.xPlotType === "bi";
     const yBi = this.plot.yPlotType === "bi";
     if (!xBi && !yBi) return p;
-    let ranges = [
-      this.plot.ranges[this.plot.xAxis],
-      this.plot.ranges[this.plot.yAxis],
-    ];
+    let ranges = getXandYRanges(this.plot);
     const fcsService = new FCSServices();
     if (xBi) {
       p.x = fcsService.logicleMarkTransformer(
         [p.x],
-        ranges[0][0],
-        ranges[0][1]
+        ranges.x[0],
+        ranges.x[1]
       )[0];
     }
     if (yBi) {
       p.y = fcsService.logicleMarkTransformer(
         [p.y],
-        ranges[0][0],
-        ranges[0][1]
+        ranges.y[0],
+        ranges.y[1]
       )[0];
     }
     return p;
@@ -224,24 +222,21 @@ export default class GraphTransformer extends Transformer {
     const xBi = this.plot.xPlotType === "bi";
     const yBi = this.plot.yPlotType === "bi";
     if (!xBi && !yBi) return p;
-    let ranges = [
-      this.plot.ranges[this.plot.xAxis],
-      this.plot.ranges[this.plot.yAxis],
-    ];
+    let ranges = getXandYRanges(this.plot);
     const fcsService = new FCSServices();
     let ret = { x: 0, y: 0 };
     if (xBi) {
       p.x = fcsService.logicleInverseMarkTransformer(
         [p.x],
-        ranges[0][0],
-        ranges[0][1]
+        ranges.x[0],
+        ranges.x[1]
       )[0];
     } else ret.x = p.x;
     if (yBi) {
       p.y = fcsService.logicleInverseMarkTransformer(
         [p.y],
-        ranges[0][0],
-        ranges[0][1]
+        ranges.y[0],
+        ranges.y[1]
       )[0];
     } else ret.y = p.y;
     return p;
@@ -251,15 +246,12 @@ export default class GraphTransformer extends Transformer {
     const np = { ...p };
     const xBi = this.plot.xPlotType === "bi";
     const yBi = this.plot.yPlotType === "bi";
-    let ranges = [
-      this.plot.ranges[this.plot.xAxis],
-      this.plot.ranges[this.plot.yAxis],
-    ];
+    let ranges = getXandYRanges(this.plot);
     if (xBi) {
-      np.x = ranges[0][0] + (ranges[0][1] - ranges[0][0]) * np.x;
+      np.x = ranges.x[0] + (ranges.x[1] - ranges.x[0]) * np.x;
     }
     if (yBi) {
-      np.y = ranges[1][0] + (ranges[1][1] - ranges[1][0]) * np.y;
+      np.y = ranges.y[0] + (ranges.y[1] - ranges.y[0]) * np.y;
     }
     return np;
   }
@@ -267,15 +259,12 @@ export default class GraphTransformer extends Transformer {
   rawAbstractLinearToLogicle(p: Point): Point {
     const xBi = this.plot.xPlotType === "bi";
     const yBi = this.plot.yPlotType === "bi";
-    let ranges = [
-      this.plot.ranges[this.plot.xAxis],
-      this.plot.ranges[this.plot.yAxis],
-    ];
+    let ranges = getXandYRanges(this.plot);
     if (xBi) {
-      p.x = (p.x - ranges[0][0]) / (ranges[0][1] - ranges[0][0]);
+      p.x = (p.x - ranges.x[0]) / (ranges.x[1] - ranges.x[0]);
     }
     if (yBi) {
-      p.y = (p.y - ranges[1][0]) / (ranges[1][1] - ranges[1][0]);
+      p.y = (p.y - ranges.y[0]) / (ranges.y[1] - ranges.y[0]);
     }
     return p;
   }

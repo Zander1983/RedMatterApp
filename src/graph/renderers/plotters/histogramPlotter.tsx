@@ -135,7 +135,8 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     const axis = this.xAxisName;
     let globlMax = this.mainBins.max;
-    let range = this.plot.ranges[axis];
+    let range =
+      this.plot.ranges[PlotResource.getPlotAxisRangeString(this.plot, "x")];
 
     const overlaysObj = this.plot.histogramOverlays;
     const overlays = [];

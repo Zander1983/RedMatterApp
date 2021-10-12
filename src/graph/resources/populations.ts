@@ -32,8 +32,6 @@ export const createPopulation = ({
     id: "",
     label: "",
     file: "",
-    defaultRanges: {},
-    defaultAxisPlotTypes: {},
     gates: [],
   };
 
@@ -50,34 +48,7 @@ export const createPopulation = ({
     throw Error("Population without file");
   }
 
-  return setupPopulation(newPopulation);
-};
-
-export const setupPopulation = (
-  pop: Population,
-  inpFile?: File
-): Population => {
-  //@ts-ignore
-  const file: File = inpFile ? inpFile : getFile(pop.file);
-  const axes = file.axes;
-  if (
-    axes
-      .map((e: string) => e in Object.keys(pop.defaultRanges))
-      .every((e: boolean) => e)
-  )
-    return;
-  const axesData = DatasetResource.getDataset(pop.file);
-
-  //@ts-ignore
-  axes.forEach((axis: string, i: number) => {
-    const axisType = file.plotTypes[i];
-
-    pop.defaultAxisPlotTypes[axis] = axisType;
-    const boundaries = findRangeBoundries(axesData[axis]);
-    pop.defaultRanges[axis] = boundaries;
-  });
-
-  return pop;
+  return newPopulation;
 };
 
 export const createSubpop = (

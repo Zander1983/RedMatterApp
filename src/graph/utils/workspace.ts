@@ -15,7 +15,6 @@ import {
 } from "graph/resources/types";
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
-import { Notification } from "graph/resources/notifications";
 import { snackbarService } from "uno-material-ui";
 
 export const getWorkspace = (): Workspace => {
@@ -24,7 +23,9 @@ export const getWorkspace = (): Workspace => {
 
 export const getFile = (fileID: FileID): File => {
   const workspace = getWorkspace();
-  const files = workspace.files.filter((file) => file.id === fileID);
+  const files = workspace.files.filter((file) => {
+    return file.id === fileID;
+  });
   if (files.length === 0) throw Error("File not found");
   if (files.length > 1) throw Error("Multiple files with ID = " + fileID);
   return files[0];

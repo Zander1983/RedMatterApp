@@ -46,13 +46,11 @@ const RangeResizeModal = (props: {
   const [minY, setMinY] = React.useState("0");
   const [maxY, setMaxY] = React.useState("0");
 
-  const xAxis = plot.xAxis;
-  const yAxis = plot.yAxis;
-
-  const plotMinX = plot.ranges[xAxis][0];
-  const plotMaxX = plot.ranges[xAxis][1];
-  const plotMinY = plot.ranges[yAxis][0];
-  const plotMaxY = plot.ranges[yAxis][1];
+  const ranges = PlotResource.getXandYRanges(plot);
+  const plotMinX = ranges.x[0];
+  const plotMaxX = ranges.x[1];
+  const plotMinY = ranges.y[0];
+  const plotMaxY = ranges.y[1];
 
   useEffect(() => {
     setMinX(plotMinX.toString());
@@ -79,8 +77,8 @@ const RangeResizeModal = (props: {
     });
 
     targetPlots.forEach((tplot) => {
-      tplot.ranges[xAxis] = xRange;
-      tplot.ranges[yAxis] = yRange;
+      tplot.ranges[PlotResource.getPlotAxisRangeString(plot, "x")] = xRange;
+      tplot.ranges[PlotResource.getPlotAxisRangeString(plot, "y")] = yRange;
       WorkspaceDispatch.UpdatePlot(tplot);
     });
   };
@@ -111,8 +109,9 @@ const RangeResizeModal = (props: {
   };
 
   const setDefaultRanges = (axis: "x" | "y") => {
-    const population = getPopulation(plot.population);
-    const ranges = population.defaultRanges[axis === "x" ? xAxis : yAxis];
+    const file = PlotResource.getPlotFile(plot);
+    const ranges =
+      file.defaultRanges[PlotResource.getPlotAxisRangeString(plot, axis)];
     if (axis === "x") {
       setMinX(ranges[0].toString());
       setMaxX(ranges[1].toString());
