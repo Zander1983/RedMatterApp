@@ -4,7 +4,7 @@ import { Notification as NotificationType } from "graph/resources/types";
 import { Button, CircularProgress, Grid } from "@material-ui/core";
 import { useSelector } from "react-redux";
 import Clear from "@material-ui/icons/Clear";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const NotificationsOverlay = () => {
   const allNotifications: NotificationType[] | undefined = useSelector(

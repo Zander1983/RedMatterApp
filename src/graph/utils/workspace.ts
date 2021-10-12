@@ -1,7 +1,7 @@
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import userManager from "Components/users/userManager";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import {
   File,
   FileID,

@@ -21,7 +21,7 @@ import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import { createPopulation } from "graph/resources/populations";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { Typography } from "antd";
 import { useSelector } from "react-redux";
 import { slice } from "lodash";

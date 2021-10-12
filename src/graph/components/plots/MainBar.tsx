@@ -14,7 +14,7 @@ import { Plot, PopulationGateType } from "graph/resources/types";
 import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { CameraFilled } from "@ant-design/icons";
 
 const classes = {

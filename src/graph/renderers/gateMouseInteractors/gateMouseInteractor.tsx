@@ -6,7 +6,7 @@ import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
 import { getGate, getPopulation } from "graph/utils/workspace";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export interface GateState {
   lastMousePos: Point;

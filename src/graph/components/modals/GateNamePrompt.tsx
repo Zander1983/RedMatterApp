@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Dialog from "@material-ui/core/Dialog";
@@ -7,13 +7,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { useSelector } from "react-redux";
 import { Gate, Plot } from "graph/resources/types";
-import WorkspaceDispatch from "graph/resources/dispatchers";
-import {
-  getGate,
-  getPlot,
-  getPopulation,
-  getWorkspace,
-} from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
 let gates: Gate[] = [];
 export default function GateNamePrompt() {

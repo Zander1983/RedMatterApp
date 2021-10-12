@@ -19,7 +19,7 @@ import {
 import { createPopulation } from "graph/resources/populations";
 import { createGate } from "graph/resources/gates";
 import { getFile } from "graph/utils/workspace";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const getFileOrSkipThisSample = (
   filesUsed: any,

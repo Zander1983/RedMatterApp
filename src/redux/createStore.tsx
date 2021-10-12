@@ -4,7 +4,7 @@ import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 
 import reducers from "./reducers";
-import graphReducers from "graph/resources/reduxActions";
+import graphReducers from "graph/workspaceRedux/graphReduxActions";
 
 const rootReducer = combineReducers({
   user: reducers,

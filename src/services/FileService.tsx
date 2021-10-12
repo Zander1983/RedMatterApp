@@ -6,7 +6,7 @@ import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 import { Notification } from "graph/resources/notifications";
-import WorkspaceDispatch from "graph/resources/dispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const EVENTS_LIMIT = 4000;
 

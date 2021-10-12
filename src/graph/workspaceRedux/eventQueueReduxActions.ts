@@ -1,7 +1,11 @@
-import { getWorkspace } from "graph/utils/workspace";
-import { store } from "redux/store";
-import WorkspaceDispatch from "./dispatchers";
-import { File, Gate, Notification, Plot, Population, Workspace } from "./types";
+import {
+  File,
+  Gate,
+  Notification,
+  Plot,
+  Population,
+  Workspace,
+} from "graph/resources/types";
 
 export const graphActions = {
   RESET: "workspace.RESET",
@@ -39,7 +43,7 @@ export const initialState: Workspace = {
   editWorkspace: true,
 };
 
-const graphReducers = (state: Workspace = initialState, action: any) => {
+const eventQueueReducer = (state: Workspace = initialState, action: any) => {
   switch (action.type) {
     case graphActions.RESET:
       return initialState;
@@ -275,12 +279,4 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
   }
 };
 
-export default graphReducers;
-
-export const dispatchBatch = async (operations: any[]) => {
-  let workspace = getWorkspace();
-  for (const operation of operations) {
-    workspace = graphReducers(workspace, operation);
-  }
-  await WorkspaceDispatch.LoadWorkspace(workspace);
-};
+export default eventQueueReducer;

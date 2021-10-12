@@ -37,8 +37,8 @@ import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
-import { initialState } from "./resources/reduxActions";
-import WorkspaceDispatch from "./resources/dispatchers";
+import { initialState } from "./workspaceRedux/graphReduxActions";
+import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   header: {
