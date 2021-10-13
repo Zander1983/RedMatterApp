@@ -88,6 +88,7 @@ function CreateExperimentModal({
       setCellType("");
       setParticleSize("");
       setFluorophoresType("");
+      setPrivateExperiment(false);
     }
     //eslint-disable-next-line
   }, [open]);
@@ -115,6 +116,7 @@ function CreateExperimentModal({
         name: name,
         organisationId: organizationId,
         experimentLength: experiments.length,
+        privateExp: privateExperiment,
       },
       userManager.getToken()
     );
