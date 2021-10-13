@@ -27,6 +27,7 @@ type User = {
 
 class UserManager {
   state: User;
+
   isLoggedIn(): boolean {
     this.state = store.getState();
     const ret = Object.keys(this.state.user.profile).length !== 0;
