@@ -16,6 +16,7 @@ import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
 import { getGate, getPlot, getWorkspace } from "graph/utils/workspace";
+import { snackbarService } from "uno-material-ui";
 
 const plotterFactory = new PlotterFactory();
 
@@ -69,9 +70,23 @@ const PlotRenderer = React.memo(
       }
 
       setPlotterState(selectedPlotter);
-      try {
-        selectedPlotter.draw();
-      } catch {}
+
+      switch (process.env.REACT_APP_ENV) {
+        case "production":
+        case "staging":
+          try {
+            selectedPlotter.draw();
+          } catch {
+            snackbarService.showSnackbar(
+              "There was an error rendering a plot.",
+              "error"
+            );
+          }
+          break;
+        case "development":
+        default:
+          selectedPlotter.draw();
+      }
       const gatingType = plot.gatingActive;
       if (lastGatingType !== gatingType) {
         const isHistogram = plot.xAxis === plot.yAxis;
