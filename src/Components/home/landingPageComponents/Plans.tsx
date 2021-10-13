@@ -60,7 +60,6 @@ export default function Plans(props: any) {
   const classes = useStyles();
   const [stripe, setStripe] = useState(null);
   const history = useHistory();
-
   const createCheckoutSession = async (priceId: string, subType: string) => {
     return axios
       .post(
@@ -88,8 +87,8 @@ export default function Plans(props: any) {
   }, []);
 
   const handleClick = async (subType: string) => {
-    if (subType === "Free") {
-      history.push(isLoggedIn ? "/experiments" : "/register");
+    if (!isLoggedIn) {
+      history.push("/register");
       return;
     }
     const price =
@@ -109,15 +108,21 @@ export default function Plans(props: any) {
       </Grid>
 
       <Grid container spacing={5}>
-        {plans.map((plan) => (
-          <Grid item md={4} xs={12} className={classes.planContainer}>
+        {plans.map((plan, index) => (
+          <Grid
+            item
+            md={4}
+            xs={12}
+            className={classes.planContainer}
+            key={index}
+          >
             <Grid className={classes.plan}>
               <Grid style={{ flex: 1 }}>
                 <Grid className={classes.nameHighlight}>
                   <h2 className={classes.white}>{plan.name}</h2>
                 </Grid>
                 <h1>
-                  {plan.price}$<span>/month</span>
+                  {plan.price}$<span>{plan.price !== 0 && "/month"}</span>
                 </h1>
 
                 {plan.features.map((feature) => (
