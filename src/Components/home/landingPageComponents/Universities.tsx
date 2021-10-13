@@ -1,5 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
+import LogosSlider from "Components/common/LogosSlider";
 
 import universities from "assets/text/universitiesUsingRedMatter";
 
@@ -27,7 +28,8 @@ const Universities = () => {
         </h1>
         <Grid container className={classes.universitiesContainer}>
           <Grid container className={classes.back}>
-            {universities.map((item, i) => (
+            <LogosSlider content={universities} />
+            {/* {universities.map((item, i) => (
               <Grid item key={i} xs={6} md={4} lg={3} xl={2}>
                 <Grid
                   style={{
@@ -42,7 +44,7 @@ const Universities = () => {
                   />
                 </Grid>
               </Grid>
-            ))}
+            ))} */}
           </Grid>
         </Grid>
       </Grid>
