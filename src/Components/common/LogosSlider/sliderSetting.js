@@ -4,8 +4,8 @@ const sliderSettings = (rtl) => {
     slidesToShow: 5,
     slidesToScroll: 1,
     autoplay: true,
-    speed: 1000,
-    autoplaySpeed: 1500,
+    speed: 3000,
+    autoplaySpeed: 3000,
     cssEase: "linear",
     rtl: rtl ? true : false,
     responsive: [

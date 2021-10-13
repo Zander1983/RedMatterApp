@@ -11,7 +11,6 @@ const useStyles = makeStyles((theme) => ({
   },
   universitiesContainer: {},
   back: {
-    backgroundColor: "#fff",
     borderRadius: 5,
   },
 }));
@@ -29,22 +28,7 @@ const Universities = () => {
         <Grid container className={classes.universitiesContainer}>
           <Grid container className={classes.back}>
             <LogosSlider content={universities} />
-            {/* {universities.map((item, i) => (
-              <Grid item key={i} xs={6} md={4} lg={3} xl={2}>
-                <Grid
-                  style={{
-                    height: 55,
-                  }}
-                >
-                  <img
-                    alt={item.name}
-                    src={"/universityLogos/" + item.name}
-                    height={50}
-                    style={{ maxWidth: 140 }}
-                  />
-                </Grid>
-              </Grid>
-            ))} */}
+            <LogosSlider content={universities.reverse()} rtl={true} />
           </Grid>
         </Grid>
       </Grid>
