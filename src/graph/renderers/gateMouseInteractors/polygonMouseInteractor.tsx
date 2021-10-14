@@ -1,31 +1,39 @@
-import PolygonGate from "../../dataManagement/gate/polygonGate";
-import { euclidianDistance2D } from "../../dataManagement/math/euclidianPlane";
+import { euclidianDistance2D } from "../../utils/euclidianPlane";
 import GateMouseInteractor, {
-  Point,
   GateState,
   MouseInteractorState,
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
-import OvalGate from "graph/dataManagement/gate/ovalGate";
+import { AxisName, Gate, Point, PolygonGate } from "graph/resources/types";
+import { createGate } from "graph/resources/gates";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { generateColor } from "graph/utils/color";
+import { createID } from "graph/utils/id";
+import { isPointInsideWithLogicle } from "graph/resources/dataset";
+import { store } from "redux/store";
+import { getXandYRanges } from "graph/resources/plots";
 
-const maxPolygonDist = 10;
+export const selectPointDist = 15;
 
 export interface PolygonGateState extends GateState {
   points: Point[];
-  xAxis: string;
-  yAxis: string;
+  xAxis: AxisName;
+  yAxis: AxisName;
 }
 
-export interface PolygonMouseInteractorState extends MouseInteractorState { }
+export interface PolygonMouseInteractorState extends MouseInteractorState {
+  xAxis: AxisName;
+  yAxis: AxisName;
+}
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
   static targetGate: PolygonGate;
   static targetPlugin: ScatterPolygonGatePlotter;
+  gaterType: "1D" | "2D" = "2D";
 
   plotter: ScatterPlotter | null = null;
-  protected plugin: ScatterPolygonGatePlotter;
+  plugin: ScatterPolygonGatePlotter;
 
   private points: Point[] = [];
   xAxis: string;
@@ -37,115 +45,151 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   targetEditGate: PolygonGate | null = null;
   targetPointIndex: number | null = null;
 
-  canMove(points: Point[], offset: Point) {
-    let canMove = true;
-    const bounds = this.plotter.plotData.getXandYRanges();
-    for (let i = 0; i < points.length; i++) {
-      let x = points[i].x + offset.x;
-      let y = points[i].y + offset.y;
-      if ((x < bounds.x[0]) || (y < bounds.y[0]) || (x > bounds.x[1]) || (y > bounds.y[1]))
-        canMove = false;
-    }
-    return canMove;
+  setMouseInteractorState(state: PolygonMouseInteractorState) {
+    super.setMouseInteractorState(state);
+    this.xAxis = state.xAxis;
+    this.yAxis = state.yAxis;
   }
 
-  editGateEvent(type: string, mouse: Point) {
+  private validateGateOnSpace(gate: PolygonGate) {
+    return (
+      gate.xAxis === this.plotter.plot.xAxis &&
+      gate.yAxis === this.plotter.plot.yAxis &&
+      gate.xAxisType === this.plotter.plot.xPlotType &&
+      gate.yAxisType === this.plotter.plot.yPlotType
+    );
+  }
 
-    if (type === "mousedown" && this.plotter.gates.length > 0 && !this.isDraggingVertex) {      
-      this.plotter.gates.forEach((gate) => {
-        if (gate.isPointInside(this.plotter.transformer.toAbstractPoint(mouse))) {
+  protected detectGatesClicked(mouse: Point) {
+    const abstractMouse = this.plotter.transformer.toAbstractPoint(
+      { ...mouse },
+      true
+    );
+    this.plotter.gates
+      .filter((e) => this.validateGateOnSpace(e as PolygonGate))
+      .forEach((gate) => {
+        if (
+          isPointInsideWithLogicle(
+            { gate: gate as PolygonGate, inverseGating: false },
+            abstractMouse,
+            true
+          )
+        ) {
           this.isDraggingGate = true;
-          this.gatePivot = this.plotter.transformer.toAbstractPoint(mouse);
+          this.gatePivot = abstractMouse;
           this.targetEditGate = gate as PolygonGate;
           return;
         }
       });
+  }
+
+  protected detectPointsClicked(mouse: Point) {
+    this.plotter.gates.forEach((gate) => {
+      if (gate.gateType === "polygon" && this.targetEditGate === null)
+        gate.points.forEach((p, i) => {
+          p = { ...p };
+          if (
+            this.targetEditGate === null &&
+            euclidianDistance2D(
+              mouse,
+              this.plotter.transformer.toConcretePoint(
+                { ...p },
+                undefined,
+                true
+              )
+            ) <= selectPointDist
+          ) {
+            this.targetEditGate = gate;
+            this.targetPointIndex = i;
+            this.isDraggingVertex = true;
+          }
+        });
+    });
+  }
+
+  protected gateMoveToMousePosition(mouse: Point) {
+    const gatePivot = this.plotter.transformer.toConcretePoint(
+      {
+        ...this.gatePivot,
+      },
+      undefined,
+      true
+    );
+    let offset = {
+      x: mouse.x - gatePivot.x,
+      y: mouse.y - gatePivot.y,
+    };
+    this.gatePivot = this.plotter.transformer.toAbstractPoint(
+      {
+        ...mouse,
+      },
+      true
+    );
+    const gateState = this.targetEditGate;
+    for (let index = 0; index < gateState.points.length; index++) {
+      gateState.points[index] = { ...gateState.points[index] };
+      gateState.points[index] = this.plotter.transformer.toConcretePoint(
+        gateState.points[index],
+        undefined,
+        true
+      );
+      gateState.points[index] = {
+        x: gateState.points[index].x + offset.x,
+        y: gateState.points[index].y + offset.y,
+      };
+      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+        gateState.points[index],
+        true
+      );
     }
+    this.gateUpdater(gateState);
+  }
 
-    if (this.targetEditGate === null && type === "mousedown" && !this.started && !this.isDraggingGate) {      
-      this.plotter.gates.forEach((gate) => {
-        if (gate instanceof PolygonGate && this.targetEditGate === null)
-          gate.points.forEach((p, i) => {
-            if (
-              this.targetEditGate === null &&
-              euclidianDistance2D(
-                mouse,
-                this.plotter.transformer.toConcretePoint(p)
-              ) <= maxPolygonDist
-            ) {
-              this.targetEditGate = gate;
-              this.targetPointIndex = i;
-              this.isDraggingVertex = true;
-            }
-          });
-      });
-    } else if (this.targetEditGate !== null && type === "mouseup") {
-      this.isDraggingVertex = false;
-      this.targetEditGate = null;
-      this.targetPointIndex = null;
-    }
-
-    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingGate && !this.isDraggingVertex) {
-      const absPoint = this.plotter.transformer.toAbstractPoint(mouse);
-      const gateState = this.targetEditGate.getState();      
-
-      let offsetX = ((absPoint.x - this.gatePivot.x) / 8.5);
-      let offsetY = ((absPoint.y - this.gatePivot.y) / 8.5);
-
-      if (!this.canMove(gateState.points, { x: offsetX, y: offsetY })) {         
-        this.isDraggingGate = false;
-        return;
-      } else{
-        for (let index = 0; index < gateState.points.length; index++) {        
-          let newX = gateState.points[index].x + offsetX;
-          let newY = gateState.points[index].y + offsetY;
-          
-          gateState.points[index] = { x: newX, y: newY }          
-        }
-      }
-      
-      this.targetEditGate.update(gateState);
-    }
-
-
-    if (this.targetEditGate !== null && type === "mousemove" && this.isDraggingVertex && !this.isDraggingGate) {
-      const gateState = this.targetEditGate.getState();
-      gateState.points[
-        this.targetPointIndex
-      ] = this.plotter.transformer.toAbstractPoint(mouse);
-      this.targetEditGate.update(gateState);
-    }    
-
-    if (type === "mouseup" && this.isDraggingVertex)
-      this.isDraggingVertex = false;
-    else if (type === "mouseup" && this.isDraggingGate)
-      this.isDraggingGate = false;
+  protected pointMoveToMousePosition(mouse: Point) {
+    const gateState = this.targetEditGate;
+    gateState.points[this.targetPointIndex] = {
+      ...gateState.points[this.targetPointIndex],
+    };
+    gateState.points[this.targetPointIndex] =
+      this.plotter.transformer.rawAbstractLogicleToLinear(
+        this.plotter.transformer.toAbstractPoint(mouse)
+      );
+    this.gateUpdater(gateState);
   }
 
   protected instanceGate(): PolygonGate {
     if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
-
-    const checkNotNullOrUndefined = (x: any): void => {
-      if (x === null || x === undefined) {
-        throw Error("Invalid gate params on instancing");
-      }
-    };
-    checkNotNullOrUndefined(points);
-    checkNotNullOrUndefined(xAxis);
-    checkNotNullOrUndefined(yAxis);
-
-    const newGate = new PolygonGate({
-      points: points,
-      xAxis: xAxis,
-      yAxis: yAxis,
-      parents: this.plotter.plotData.population.map((e) => e.gate),
-    });
-
-    for (const gate of this.plotter.plotData.population.map((e) => e.gate)) {
-      gate.children.push(newGate);
+    let originalRanges = getXandYRanges(this.plotter.plot);
+    const newPoints: Point[] = [];
+    for (let i = 0; i < points.length; i++) {
+      let p = { x: points[i].x, y: points[i].y };
+      const a = this.plotter.transformer.toAbstractPoint(p);
+      const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
+      newPoints.push({ ...b });
     }
-
+    const newGate: PolygonGate = {
+      points: [...newPoints].map((e) => {
+        return { ...e };
+      }),
+      xAxis: xAxis,
+      xAxisType: this.plotter.plot.xPlotType,
+      xAxisOriginalRanges: originalRanges.x,
+      yAxis: yAxis,
+      yAxisType: this.plotter.plot.yPlotType,
+      yAxisOriginalRanges: originalRanges.y,
+      parents: getPopulation(this.plotter.plot.population).gates.map(
+        (e) => e.gate
+      ),
+      color: generateColor(),
+      gateType: "polygon",
+      id: createID(),
+      name: "New Gate",
+      children: [],
+    };
+    newGate.points = [...newGate.points].map((e) => {
+      return { ...e };
+    });
     return newGate;
   }
 
@@ -153,11 +197,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plotter = plotter;
     this.plugin = plotter.polygonGatePlugin;
     this.plugin.isGating = true;
-  }
-
-  end() {
-    this.plugin.isGating = false;
-    super.end();
   }
 
   protected clearGateState() {
@@ -187,11 +226,12 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     };
   }
 
-  gateEvent(type: string, { x, y }: Point) {
+  gateEvent(type: string, point: Point) {
     if (!this.started) return;
-    const isCloseToFirstPoint = this.closeToFirstPoint({ x, y });
+    this.lastMousePos = this.plugin.lastMousePos = point;
+    const isCloseToFirstPoint = this.closeToFirstPoint(point);
     if (type === "mousedown" && !isCloseToFirstPoint) {
-      this.points = [...this.points, { x, y }];
+      this.points = [...this.points, { ...point }];
     } else if (type === "mousedown") {
       this.createAndAddGate();
     }
@@ -202,9 +242,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     if (this.points.length < 2) {
       return false;
     }
-    const p1 = this.plotter.transformer.toConcretePoint(this.points[0]);
-    const p2 = this.plotter.transformer.toConcretePoint(p);
-    if (euclidianDistance2D(p1, p2) <= maxPolygonDist) {
+    if (euclidianDistance2D(this.points[0], p) <= selectPointDist) {
       return true;
     }
     return false;

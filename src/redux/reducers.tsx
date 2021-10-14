@@ -46,7 +46,7 @@ const reducer = (state = initialState, action: any) => {
       try {
         if (
           state !== undefined &&
-          state.profile != undefined &&
+          state.profile !== undefined &&
           state.experiment !== undefined &&
           state.experiment.device !== undefined
         )
@@ -55,6 +55,15 @@ const reducer = (state = initialState, action: any) => {
       } catch {
         return initialState;
       }
+    case actionTypes.CHANGE_SUBSCRIPTION_TYPE:
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          subscriptionType: action.payload.subscriptionType,
+          rules: action.payload.rules,
+        },
+      };
     default:
       return state;
   }

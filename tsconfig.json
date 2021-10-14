@@ -33,6 +33,7 @@
     "src"
   ],
   "exclude": [
-    "src/api_calls"
+    "src/api_calls",
+    "src/graph/z_trash",
   ]
 }

@@ -4,8 +4,6 @@ import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-import firebase from "utils/firebase";
-
 const sentEmails: string[] = [];
 
 function App() {
@@ -29,28 +27,28 @@ function App() {
       setLoading(false);
       return;
     }
-    firebase.retrieveFromCloud(
-      "email-list",
-      "email",
-      email,
-      (collection: any) => {
-        if (collection === null) {
-          firebase.saveToCloud("email-list", {
-            email: email,
-            timestamp: new Date().toISOString(),
-          });
-          setSuccess(true);
-          setShow(true);
-          setLoading(false);
-          sentEmails.push(email);
-          return;
-        } else {
-          setError("This email has already been registred!");
-          setLoading(false);
-          setShow(true);
-        }
-      }
-    );
+    // firebase.retrieveFromCloud(
+    //   "email-list",
+    //   "email",
+    //   email,
+    //   (collection: any) => {
+    //     if (collection === null) {
+    //       firebase.saveToCloud("email-list", {
+    //         email: email,
+    //         timestamp: new Date().toISOString(),
+    //       });
+    //       setSuccess(true);
+    //       setShow(true);
+    //       setLoading(false);
+    //       sentEmails.push(email);
+    //       return;
+    //     } else {
+    //       setError("This email has already been registred!");
+    //       setLoading(false);
+    //       setShow(true);
+    //     }
+    //   }
+    // );
   };
 
   function validateEmail(email: string): boolean {
@@ -129,6 +127,7 @@ function App() {
           </div>
         ) : null}
         <Grid
+          item={true}
           justify="center"
           container
           style={{

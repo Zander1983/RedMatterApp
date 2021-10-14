@@ -1,16 +1,19 @@
 import Plotter, { PlotterState } from "graph/renderers/plotters/plotter";
-import Gate from "graph/dataManagement/gate/gate";
 import GraphDrawer from "graph/renderers/drawers/graphDrawer";
-import GraphTransformer from "graph/renderers/transformers/graphTransformer";
-import PlotData from "graph/dataManagement/plotData";
+import GraphTransformer, {
+  Label,
+} from "graph/renderers/transformers/graphTransformer";
+import { Gate, Plot } from "graph/resources/types";
+import { getFile, getPopulation } from "graph/utils/workspace";
+import * as PlotResource from "graph/resources/plots";
 
-const leftPadding = 70;
-const rightPadding = 50;
-const topPadding = 50;
-const bottomPadding = 50;
+export const leftPadding = 55;
+export const rightPadding = 20;
+export const topPadding = 40;
+export const bottomPadding = 35;
 
 export interface GraphPlotterState extends PlotterState {
-  plotData: PlotData;
+  plot: Plot;
 
   width: number;
   height: number;
@@ -18,8 +21,8 @@ export interface GraphPlotterState extends PlotterState {
 
   gates?: Gate[];
 
-  xAxis: Array<number>;
-  yAxis: Array<number>;
+  xAxis: Float32Array;
+  yAxis: Float32Array;
 
   xAxisName?: string;
   yAxisName?: string;
@@ -48,18 +51,22 @@ export interface GraphPlotterState extends PlotterState {
 export default class GraphPlotter extends Plotter {
   /* === DATA === */
 
-  plotData: PlotData;
+  plot: Plot;
 
   width: number = 0;
   height: number = 0;
   scale: number = 2;
-  xAxis: number[] = [];
-  yAxis: number[] = [];
+  xAxis: Float32Array;
+  yAxis: Float32Array;
   xAxisName: string;
   yAxisName: string;
-  xLabels: string[] = [];
-  yLabels: string[] = [];
+  xLabels: Label[] = [];
+  yLabels: Label[] = [];
   gates: Gate[];
+  ranges: { x: [number, number]; y: [number, number] } = {
+    x: [0, 0],
+    y: [0, 0],
+  };
 
   canvasContext: any = null;
   drawer: GraphDrawer | null = null;
@@ -73,9 +80,10 @@ export default class GraphPlotter extends Plotter {
 
   /* === METHODS === */
   private drawHeader() {
-    const label = this.plotData.label;
-    const filename = this.plotData.file.name;
+    const label = this.plot.label;
+    const filename = getFile(getPopulation(this.plot.population).file).name;
     let text = label + " | " + filename;
+    if (label.length === 0) text = filename;
     const maxLength = Math.round(
       (this.width - leftPadding / 2 - rightPadding / 2 + 10) / 10
     );
@@ -84,40 +92,73 @@ export default class GraphPlotter extends Plotter {
     }
     this.drawer.text({
       x: leftPadding * this.scale,
-      y: 30 * this.scale,
+      y: ((topPadding * 2) / 3) * this.scale,
       text,
       font: "500 30px Quicksand",
     });
   }
 
   public draw(drawPlotGraphParams?: any): void {
-    this.drawer.drawPlotGraph(drawPlotGraphParams);
+    this.update();
+    this.drawer.drawPlotGraph({
+      ...drawPlotGraphParams,
+      xLabels: this.xLabels,
+      yLabels: this.yLabels,
+    });
     this.drawHeader();
   }
 
   public update(): void {
+    super.update();
     this.getBins();
 
-    this.xLabels = this.createRangeArray("x");
-    this.yLabels = this.createRangeArray("y");
+    const xRange = this.ranges.x;
+    const yRange = this.ranges.y;
 
-    super.update();
+    this.xLabels = this.transformer.getAxisLabels(
+      this.plot.xPlotType,
+      xRange,
+      this.horizontalBinCount
+    );
+
+    this.yLabels = this.transformer.getAxisLabels(
+      this.plot.yPlotType,
+      yRange,
+      this.verticalBinCount
+    );
   }
 
   public setPlotterState(state: GraphPlotterState): void {
     super.setPlotterState(state);
 
-    this.plotData = state.plotData;
+    this.plot = state.plot;
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
+    this.ranges = { x: state.xRange, y: state.yRange };
     this.xAxisName = state.xAxisName;
     this.yAxisName = state.yAxisName;
     this.width = state.width;
     this.height = state.height;
     this.scale = state.scale;
     this.gates = state.gates;
-    this.xLabels = state.xLabels;
-    this.yLabels = state.yLabels;
+    this.xLabels =
+      state.xLabels === undefined
+        ? undefined
+        : state.xLabels.map((e) => {
+            return {
+              name: e,
+              pos: parseFloat(e),
+            };
+          });
+    this.yLabels =
+      state.yLabels === undefined
+        ? undefined
+        : state.yLabels.map((e) => {
+            return {
+              name: e,
+              pos: parseFloat(e),
+            };
+          });
   }
 
   protected getBins() {
@@ -140,29 +181,28 @@ export default class GraphPlotter extends Plotter {
 
   public getPlotterState(): GraphPlotterState {
     return {
-      plotData: this.plotData,
+      plot: this.plot,
       width: this.width,
       height: this.height,
       scale: this.scale,
       xAxis: this.xAxis,
       yAxis: this.yAxis,
-      xLabels: this.xLabels,
-      yLabels: this.yLabels,
+      xLabels: this.xLabels.map((e) => e.name),
+      yLabels: this.yLabels.map((e) => e.name),
       gates: this.gates,
     };
   }
 
   protected setDrawerState(): void {
-    const ranges = this.plotData.getXandYRanges();
     this.drawer.setDrawerState({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
       x2: (this.width - rightPadding) * this.scale,
       y2: (this.height - bottomPadding) * this.scale,
-      ibx: ranges.x[0],
-      iex: ranges.x[1],
-      iby: ranges.y[0],
-      iey: ranges.y[1],
+      ibx: this.ranges.x[0],
+      iex: this.ranges.x[1],
+      iby: this.ranges.y[0],
+      iey: this.ranges.y[1],
       scale: this.scale,
       xpts: this.horizontalBinCount,
       ypts: this.verticalBinCount,
@@ -178,7 +218,7 @@ export default class GraphPlotter extends Plotter {
   }
 
   protected setTransformerState(): void {
-    const ranges = this.plotData.getXandYRanges();
+    const ranges = PlotResource.getXandYRanges(this.plot);
     this.transformer.setTransformerState({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
@@ -189,6 +229,7 @@ export default class GraphPlotter extends Plotter {
       iby: ranges.y[0],
       iey: ranges.y[1],
       scale: this.scale,
+      plot: this.plot,
     });
   }
 
@@ -200,15 +241,16 @@ export default class GraphPlotter extends Plotter {
     this.transformer.update();
   }
 
-  private createRangeArray(axis: "x" | "y"): Array<string> {
-    const plotSize =
-      axis === "x" ? this.plotData.plotWidth : this.plotData.plotHeight;
-    const ranges = this.plotData.getXandYRanges();
+  createRangeArray(axis: "x" | "y"): Array<string> {
+    const plotSize = axis === "x" ? this.plot.plotWidth : this.plot.plotHeight;
     const rangeSize =
-      axis === "x" ? ranges.x[1] - ranges.x[0] : ranges.y[1] - ranges.y[0];
-    const rangeMin = axis === "x" ? ranges.x[0] : ranges.y[0];
+      axis === "x"
+        ? this.ranges.x[1] - this.ranges.x[0]
+        : this.ranges.y[1] - this.ranges.y[0];
+    const rangeMin = axis === "x" ? this.ranges.x[0] : this.ranges.y[0];
     const lineCount = Math.round(
-      plotSize / (axis == "x" ? this.horizontalBinCount : this.verticalBinCount)
+      plotSize /
+        (axis === "x" ? this.horizontalBinCount : this.verticalBinCount)
     );
     return Array(lineCount).map((e, i) =>
       ((rangeSize * i) / lineCount + rangeMin).toString()

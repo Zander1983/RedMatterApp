@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
 import {
@@ -6,21 +7,17 @@ import {
   CircularProgress,
   Divider,
   Grid,
-  Tooltip,
+  TextField,
 } from "@material-ui/core";
-
-import dataManager from "graph/dataManagement/dataManager";
-import FCSFile from "graph/dataManagement/fcsFile";
-
-import axios from "axios";
-
-import PlotData from "graph/dataManagement/plotData";
-import staticFileReader from "./staticFCSFiles/staticFileReader";
 import { snackbarService } from "uno-material-ui";
-import { DownloadOutlined } from "@ant-design/icons";
-import userManager from "Components/users/userManager";
-import { ExperimentFilesApiFetchParamCreator } from "api_calls/nodejsback";
+import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
+import { File, FileID } from "graph/resources/types";
+import { downloadFileEvent } from "services/FileService";
+import * as PlotResource from "graph/resources/plots";
+import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
+import { store } from "redux/store";
+import { filterArrayAsPerInput } from "utils/searchFunction";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -61,417 +58,304 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const staticFiles = [
-  "transduction_1",
-  "transduction_2",
-  "transduction_3",
-  "erica1",
-  "erica2",
-  "erica3",
-].map((e) => {
-  return {
-    label: e,
-    information: "...",
-    fromStatic: e,
-    fileSize: 0,
-    eventCount: 0,
-    lastModified: "X/X/X",
-  };
-});
+const AddFileModal = React.memo(
+  (props: {
+    open: boolean;
+    closeCall: { f: Function; ref: Function };
+    isShared: boolean;
+    experimentId: string;
+    files: File[];
+  }): JSX.Element => {
+    const classes = useStyles();
 
-function useForceUpdate() {
-  const [value, setValue] = React.useState(0); // integer state
-  return () => setValue((value) => value + 1); // update the state to force render
-}
+    const filesMetadata = props.files;
+    const files = getAllFiles();
+    const [onHover, setOnHover] = React.useState(-1);
 
-const getRemoteFiles = (workspaceId: string): Promise<any[]> => {
-  return axios.get("/api/events/" + workspaceId, {
-    params: {
-      experimentId: workspaceId,
-      token: userManager.getToken(),
-      organisationId: userManager.getOrganiztionID(),
-    },
-  });
-};
+    const [downloading, setDowloading] = useState<FileID[]>([]);
+    const [fileSearchTerm, setFileSearchTerm] = useState("");
 
-const getRemoteFile = (
-  experimentId: string,
-  fileId: string,
-  isShared: boolean
-): any => {
-  if (isShared) {
-    return axios.post(
-      "/api/sharedEvents",
-      { experimentId: experimentId, fileIds: [fileId] },
-      {}
-    );
-  } else {
-    return axios.get("/api/events/" + experimentId + "/" + fileId, {
-      params: {
-        experimentId: experimentId,
-        organisationId: userManager.getOrganiztionID(),
-        fileId: fileId,
-      },
-      headers: {
-        token: userManager.getToken(),
-      },
-    });
-  }
-};
-
-const getRemoteFileMetadata = (
-  experimentId: string,
-  isShared: boolean
-): Promise<any> => {
-  var params;
-  if (isShared) {
-    params = ExperimentFilesApiFetchParamCreator(
-      {}
-    ).experimentFilesWithoutToken(experimentId);
-  } else {
-    params = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      experimentId,
-      userManager.getToken()
-    );
-  }
-  return axios.get(params.url, params.options);
-};
-
-let downloading: any[] = [];
-let downloaded: any[] = [];
-
-function AddFileModal(props: {
-  open: boolean;
-  closeCall: { f: Function; ref: Function };
-  isShared: boolean;
-  downloaded: any[];
-}): JSX.Element {
-  const forceUpdate = useForceUpdate();
-  const remoteWorkspace = dataManager.isRemoteWorkspace();
-  const classes = useStyles();
-  const [filesMetadata, setFilesMetadata] = React.useState(
-    remoteWorkspace ? [] : staticFiles
-  );
-  const isLoggedIn = userManager.isLoggedIn();
-  useEffect(() => {
-    downloaded = props.downloaded ? props.downloaded : [];
-    downloading = [];
-    if (remoteWorkspace) {
-      getRemoteFileMetadata(dataManager.getRemoteWorkspaceID(), props.isShared)
-        .then((e) => {
-          setFilesMetadata(e.data.files);
-        })
-        .catch((e) => console.log("[ERROR] ", e, e.response));
-      dataManager.addObserver("clearWorkspace", () => {
-        downloaded = remoteWorkspace ? [] : staticFiles;
-        dataManager.setWorkspaceLoading(false);
-      });
-    }
-    return () => {
-      downloading = [];
-      downloaded = [];
-    };
-  }, []);
-
-  const [onHover, setOnHover] = React.useState(-1);
-  const [downloadCopied, setDownloadCopied] = React.useState(false); // integer state
-  const addFile = (index: number) => {
-    if (!dataManager.ready()) {
-      snackbarService.showSnackbar("Something went wrong, try again!", "error");
-      return;
-    }
-    const file: any = remoteWorkspace ? downloaded[index] : staticFiles[index];
-    let newFile: FCSFile;
-    if (file?.fromStatic) {
-      newFile = staticFileReader(file.fromStatic);
-    } else {
-      newFile = new FCSFile({
-        name: file.title,
-        id: file.id,
-        src: "remote",
-        axes: file.channels.map((e: any) => e.value),
-        data: file.events,
-        plotTypes: file.channels.map((e: any) => e.display),
-        remoteData: file,
-      });
-    }
-    const fileID = dataManager.addNewFileToWorkspace(newFile);
-    const plot = new PlotData();
-    plot.file = dataManager.getFile(fileID);
-    dataManager.addNewPlotToWorkspace(plot);
-  };
-
-  const downloadFile = (fileId: string) => {
-    //@ts-ignore
-    if (downloaded.filter((e) => e.id === fileId).length > 0) {
-      snackbarService.showSnackbar("File already downloaded", "warning");
-      return;
-    }
-    downloading = downloading.concat(fileId);
-    getRemoteFile(dataManager.getRemoteWorkspaceID(), fileId, props.isShared)
-      .then((e: any) => (downloaded = downloaded.concat(e.data)))
-      .catch((e: any) => {
-        snackbarService.showSnackbar(
-          "File download failed, try again",
-          "error"
+    const downloadFile = async (fileId: string) => {
+      let file: File = getFile(fileId);
+      if (!file.downloaded) {
+        const newId = await downloadFileEvent(
+          props.isShared,
+          fileId,
+          props.experimentId
         );
-      })
-      .finally(() => {
-        downloading = downloading.filter((e) => e !== fileId);
-        forceUpdate();
-      });
-  };
-
-  const downloadAll = () => {
-    //@ts-ignore
-    downloading = filesMetadata.map((e) => e.id);
-    getRemoteFiles(dataManager.getRemoteWorkspaceID())
-      .then((e: any[]) => {
-        //@ts-ignore
-        downloaded = e.data;
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to dowload files, try again!",
-          "error"
-        );
-      })
-      .finally(() => {
-        downloading = [];
-        forceUpdate();
-      });
-  };
-
-  return (
-    <Modal
-      open={props.open}
-      onClose={() => {
-        props.closeCall.f(props.closeCall.ref);
-      }}
-      onRendered={() => {
-        if (!downloadCopied) {
-          downloaded = downloaded.concat(props.downloaded);
-          setDownloadCopied(true);
+        if (typeof newId !== "string") {
+          throw Error("wtf?");
         }
-      }}
-    >
-      <div className={classes.fileSelectModal}>
-        <h2>Open file</h2>
+        file = getFile(newId);
+      }
+      await PlotResource.createNewPlotFromFile(file);
+      props.closeCall.f(props.closeCall.ref);
+    };
 
-        <p
-          style={{
-            color: "#777",
-            fontSize: 15,
-            textAlign: "center",
-          }}
-        >
-          Download and use your Flow Analysis files.
-        </p>
+    useEffect(() => {
+      let downloadingFiles: File[] = files.filter((x) => x.downloading);
+      let downloadingFileIds: string[] = [];
+      if (downloadingFiles && downloadingFiles.length > 0) {
+        downloadingFileIds = downloadingFiles.map((x) => x.id);
+      }
+      setDowloading(downloadingFileIds);
+    }, [props.files]);
 
-        <div>
-          <Button
-            size="large"
-            variant="contained"
+    const downloadAll = () => filesMetadata.forEach((e) => downloadFile(e.id));
+
+    const everythingDownloaded = filesMetadata
+      .map((e) => e.downloaded)
+      .every((e) => e);
+
+    const shownFilesMetadata = filterArrayAsPerInput(
+      filesMetadata,
+      fileSearchTerm,
+      "name"
+    );
+
+    return (
+      <Modal
+        open={props.open}
+        onClose={() => {
+          props.closeCall.f(props.closeCall.ref);
+        }}
+      >
+        <div className={classes.fileSelectModal}>
+          <h2>Plot a sample</h2>
+
+          <p
             style={{
-              backgroundColor: "#66d",
-              color: "white",
-              marginBottom: 15,
-            }}
-            startIcon={
-              <DownloadOutlined style={{ fontSize: 15, color: "white" }} />
-            }
-            onClick={() => {
-              downloadAll();
+              color: "#777",
+              fontSize: 15,
+              textAlign: "center",
             }}
           >
-            Download all files
-          </Button>
-        </div>
+            Load and use your Flow Analysis files.
+          </p>
 
-        {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
-          <div
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 20,
-            }}
-          >
-            <Button
+          <Grid container direction="row">
+            <Grid item xs={4} style={{ paddingRight: 20 }}>
+              <Button
+                size="large"
+                variant="contained"
+                style={{
+                  backgroundColor: "#66d",
+                  color: "white",
+                  width: "100%",
+                  height: 30,
+                  marginBottom: 15,
+                }}
+                startIcon={
+                  everythingDownloaded ? null : (
+                    <DownloadOutlined
+                      style={{ fontSize: 15, color: "white" }}
+                    />
+                  )
+                }
+                onClick={downloadAll}
+                // disabled={everythingDownloaded}
+              >
+                Plot all samples
+              </Button>
+            </Grid>
+            <Grid item xs={8}>
+              <TextField
+                style={{ width: "100%" }}
+                InputProps={{
+                  startAdornment: (
+                    <SearchOutlined style={{ marginRight: 10 }} />
+                  ),
+                }}
+                variant="standard"
+                onChange={(v) => {
+                  if (v.type === "change") {
+                    setFileSearchTerm(v.currentTarget.value);
+                  }
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
+            <div
               style={{
-                backgroundColor: "#66d",
-                color: "white",
-                fontSize: 13,
-                marginLeft: 20,
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 20,
               }}
             >
-              Upload file (Anonymous)
-            </Button>
-          </div>
-        ) : null}
+              <Button
+                style={{
+                  backgroundColor: "#66d",
+                  color: "white",
+                  fontSize: 13,
+                  marginLeft: 20,
+                }}
+              >
+                Upload file (Anonymous)
+              </Button>
+            </div>
+          ) : null}
 
-        <div
-          style={{
-            backgroundColor: "#fff",
-            padding: 15,
-            textAlign: "left",
-            maxHeight: 500,
-            overflowY: "scroll",
-            border: "solid #ddd",
-            borderRadius: 5,
-            borderWidth: 0.3,
-          }}
-        >
-          {downloadCopied ? (
-            filesMetadata.map((fileMetadata: any, i: number) => {
-              const divider =
-                i == filesMetadata.length - 1 ? null : (
-                  <Divider className={classes.fileSelectDivider} />
-                );
-              let isDownloaded =
-                //@ts-ignore
-                downloaded.filter((e) => e.id === fileMetadata.id).length > 0;
-              const isDownloading =
-                downloading.filter((e) => e === fileMetadata.id).length > 0;
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: 15,
+              textAlign: "left",
+              maxHeight: 500,
+              overflowY: "scroll",
+              border: "solid #ddd",
+              borderRadius: 5,
+              borderWidth: 0.3,
+            }}
+          >
+            {shownFilesMetadata.length === 0 ? (
+              <Grid style={{ textAlign: "center" }}>
+                No files found with search term '{fileSearchTerm}'
+              </Grid>
+            ) : (
+              shownFilesMetadata.map((fileMetadata: File, i: number) => {
+                const divider =
+                  i === filesMetadata.length - 1 ? null : (
+                    <Divider className={classes.fileSelectDivider} />
+                  );
 
-              return (
-                <div key={i.toString() + fileMetadata.title}>
+                const isDownloading =
+                  downloading.filter((e) => e === fileMetadata.id).length > 0;
+
+                let isDownloaded = fileMetadata.downloaded;
+
+                return (
                   <div
-                    onMouseEnter={() => setOnHover(i)}
-                    onMouseLeave={() => setOnHover(-1)}
-                    className={
-                      onHover === i
-                        ? classes.fileSelectFileContainerHover
-                        : classes.fileSelectFileContainer
+                    key={
+                      i.toString() + (fileMetadata.name || fileMetadata.label)
                     }
                   >
-                    <Grid container xs={12} direction="row">
-                      <Grid direction="row">
-                        <p>
-                          <b>Title:</b>{" "}
-                          <a
-                            style={{
-                              color: "#777",
-                              fontSize: 14,
-                            }}
-                          >
-                            {fileMetadata.label}
-                          </a>
-                        </p>
-                        <div style={{ display: "inline-block" }}>
-                          <p
-                            style={{
-                              marginTop: -6,
-                              display: "inline-block",
-                            }}
-                          >
-                            <b>Date:</b>{" "}
+                    <div
+                      onMouseEnter={() => setOnHover(i)}
+                      onMouseLeave={() => setOnHover(-1)}
+                      className={
+                        onHover === i
+                          ? classes.fileSelectFileContainerHover
+                          : classes.fileSelectFileContainer
+                      }
+                    >
+                      <Grid container direction="row">
+                        <Grid container direction="row">
+                          <p style={{ width: "100%" }}>
+                            <b>Title:</b>{" "}
                             <a
                               style={{
                                 color: "#777",
                                 fontSize: 14,
                               }}
                             >
-                              {getHumanReadableTimeDifference(
-                                new Date(fileMetadata.createdOn),
-                                new Date()
-                              )}
+                              {fileMetadata.label}
                             </a>
                           </p>
-                          <p
-                            style={{
-                              marginTop: -6,
-                              display: "inline-block",
-                              marginLeft: 10,
-                            }}
-                          >
-                            <b>Size:</b>{" "}
-                            <a
+                          <div style={{ display: "inline-block" }}>
+                            <p
                               style={{
-                                color: "#777",
-                                fontSize: 14,
+                                marginTop: -6,
+                                display: "inline-block",
                               }}
                             >
-                              {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                            </a>
-                          </p>
-                          <p
-                            style={{
-                              marginTop: -6,
-                              display: "inline-block",
-                              marginLeft: 10,
-                            }}
-                          >
-                            <b>Events:</b>{" "}
-                            <a
+                              <b>Date:</b>{" "}
+                              <a
+                                style={{
+                                  color: "#777",
+                                  fontSize: 14,
+                                }}
+                              >
+                                {getHumanReadableTimeDifference(
+                                  new Date(fileMetadata.createdOn),
+                                  new Date()
+                                )}
+                              </a>
+                            </p>
+                            <p
                               style={{
-                                color: "#777",
-                                fontSize: 14,
+                                marginTop: -6,
+                                display: "inline-block",
+                                marginLeft: 10,
                               }}
                             >
-                              {fileMetadata.eventCount}
-                            </a>
-                          </p>
-                        </div>
+                              <b>Size:</b>{" "}
+                              <a
+                                style={{
+                                  color: "#777",
+                                  fontSize: 14,
+                                }}
+                              >
+                                {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
+                              </a>
+                            </p>
+                            <p
+                              style={{
+                                marginTop: -6,
+                                display: "inline-block",
+                                marginLeft: 10,
+                              }}
+                            >
+                              <b>Events:</b>{" "}
+                              <a
+                                style={{
+                                  color: "#777",
+                                  fontSize: 14,
+                                }}
+                              >
+                                {fileMetadata.eventCount}
+                              </a>
+                            </p>
+                          </div>
+                        </Grid>
                       </Grid>
-                      {/* <Grid
-                      direction="row"
-                      style={{
-                        flexGrow: 1,
-                      }}
-                    ></Grid> */}
-                      <Grid
+                      <div
                         style={{
-                          float: "right",
+                          marginBottom: 10,
+                          marginLeft: -20,
                           textAlign: "right",
-                          flex: 1,
-                          flexDirection: "row",
-                          display: "inline-block",
                         }}
                       >
-                        <Grid style={{ display: "inline-block" }}>
-                          {remoteWorkspace
-                            ? isDownloaded
-                              ? "Downloaded"
-                              : isDownloading
-                              ? "Dowloading..."
-                              : "Remote"
-                            : "Local"}
-                        </Grid>
                         <Grid
                           style={{
+                            textAlign: "right",
+                            flex: 1,
+                            flexDirection: "row",
                             display: "inline-block",
                           }}
                         >
+                          <Grid style={{ display: "inline-block" }}>
+                            {isDownloaded
+                              ? "Loaded"
+                              : isDownloading
+                              ? "Loading..."
+                              : "Remote"}
+                          </Grid>
                           <Grid
                             style={{
-                              borderRadius: "100%",
-                              width: 13,
-                              height: 13,
-                              marginLeft: 10,
-                              backgroundColor:
-                                isDownloaded || !remoteWorkspace
+                              display: "inline-block",
+                            }}
+                          >
+                            <Grid
+                              style={{
+                                borderRadius: "100%",
+                                width: 13,
+                                height: 13,
+                                position: "relative",
+                                top: 2,
+                                marginLeft: 10,
+                                backgroundColor: isDownloaded
                                   ? "green"
                                   : isDownloading
                                   ? "#66d"
                                   : "#d66",
-                            }}
-                          ></Grid>
+                              }}
+                            ></Grid>
+                          </Grid>
                         </Grid>
-                      </Grid>
-                    </Grid>
-                    <div
-                      style={{
-                        marginBottom: 10,
-                        marginLeft: -20,
-                        textAlign: "right",
-                      }}
-                    >
-                      {remoteWorkspace ? (
-                        !isDownloaded ? (
+                        {isDownloaded === false ? (
                           <Button
                             style={{
                               backgroundColor: "#66d",
@@ -479,6 +363,7 @@ function AddFileModal(props: {
                               fontSize: 13,
                               marginLeft: 20,
                             }}
+                            disabled={isDownloading}
                             onClick={() => downloadFile(fileMetadata.id)}
                           >
                             {isDownloading ? (
@@ -490,96 +375,40 @@ function AddFileModal(props: {
                                 }}
                               />
                             ) : (
-                              "Download"
+                              "Plot"
                             )}
                           </Button>
-                        ) : // <Button
-                        //   style={{
-                        //     backgroundColor: "#d66",
-                        //     color: "white",
-                        //     fontSize: 13,
-                        //     marginLeft: 20,
-                        //   }}
-                        //   onClick={() => {
-                        //     downloaded =
-                        //       //@ts-ignore
-                        //       downloaded.filter(
-                        //         (e) => e.id !== fileMetadata.id
-                        //       );
-                        //     dataManager.removeFileFromWorkspace(
-                        //       fileMetadata.id
-                        //     );
-                        //     forceUpdate();
-                        //   }}
-                        // >
-                        //   Remove
-                        // </Button>
-                        null
-                      ) : null}
-                      {isDownloaded || !remoteWorkspace ? (
-                        <Button
-                          style={{
-                            backgroundColor:
-                              isDownloaded || !remoteWorkspace
-                                ? "#66d"
-                                : "#99d",
-                            color: "white",
-                            fontSize: 13,
-                            marginLeft: 20,
-                          }}
-                          onClick={() => {
-                            let index: number;
-                            for (
-                              let i = 0;
-                              i <
-                              (remoteWorkspace
-                                ? downloaded.length
-                                : staticFiles.length);
-                              i++
-                            ) {
-                              if (
-                                remoteWorkspace &&
-                                downloaded[i].id === fileMetadata.id
-                              ) {
-                                index = i;
-                                break;
-                              }
-                              if (
-                                !remoteWorkspace &&
-                                fileMetadata.label === staticFiles[i].label
-                              ) {
-                                index = i;
-                                break;
-                              }
-                            }
-                            if (index === undefined && remoteWorkspace) {
-                              snackbarService.showSnackbar(
-                                "File is not dowloaded",
-                                "error"
+                        ) : null}
+                        {isDownloaded ? (
+                          <Button
+                            style={{
+                              backgroundColor: isDownloaded ? "#66d" : "#99d",
+                              color: "white",
+                              fontSize: 13,
+                              marginLeft: 20,
+                            }}
+                            onClick={() => {
+                              PlotResource.createNewPlotFromFile(
+                                getFile(fileMetadata.id)
                               );
-                              return;
-                            }
-                            addFile(index);
-                            props.closeCall.f(props.closeCall.ref);
-                          }}
-                          disabled={!isDownloaded && remoteWorkspace}
-                        >
-                          Add to Workspace
-                        </Button>
-                      ) : null}
+                            }}
+                            disabled={isDownloading}
+                          >
+                            Add to Workspace
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
+                    {divider}
                   </div>
-                  {divider}
-                </div>
-              );
-            })
-          ) : (
-            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
-      </div>
-    </Modal>
-  );
-}
+      </Modal>
+    );
+  }
+);
 
 export default AddFileModal;

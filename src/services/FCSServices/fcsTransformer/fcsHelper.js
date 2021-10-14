@@ -1,3 +1,4 @@
+/* eslint-disable*/
 import percentileHelper from "./percentileHelper";
 import generalHelper from "./generalHelper";
 import Logicle from "./logicle";
@@ -55,8 +56,6 @@ export const getTMWA = (params) => {
   var paramIndex = params.paramIndex;
   var scale = params.scale;
   var minMax = params.minMax;
-
-  console.log("2. fcs.get$PnX is ", fcs.get$PnX("R"));
 
   if (!minMax) {
     minMax = scale.getMinMax({

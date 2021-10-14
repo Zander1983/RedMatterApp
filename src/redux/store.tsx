@@ -1,5 +1,5 @@
 import configureStore from "./createStore";
-import { persistStore, persistReducer } from "redux-persist";
+import { persistStore } from "redux-persist";
 
 export let store: any;
 

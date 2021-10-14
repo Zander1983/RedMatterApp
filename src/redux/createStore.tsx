@@ -4,9 +4,13 @@ import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 
 import reducers from "./reducers";
+import graphReducers from "graph/workspaceRedux/graphReduxActions";
+import eventQueueReducers from "graph/workspaceRedux/eventQueueReduxActions";
 
 const rootReducer = combineReducers({
   user: reducers,
+  workspace: graphReducers,
+  workspaceEventQueue: eventQueueReducers,
 });
 
 const persistConfig = {
@@ -15,8 +19,10 @@ const persistConfig = {
 };
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-//@ts-ignore
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const composeEnhancers =
+  //@ts-ignore
+  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+// window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: true }) || compose;
 
 const configureStore = () => {
   return createStore(

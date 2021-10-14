@@ -1,29 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
-import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
+import { Grid, Button, CircularProgress, Tooltip } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
-import CreateExperimentModal from "./modals/CreateExperimentModal";
+import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
 
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
-import { withStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { purple } from "@material-ui/core/colors";
-import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch, { SwitchClassKey, SwitchProps } from "@material-ui/core/Switch";
-import Typography from "@material-ui/core/Typography";
 import { snackbarService } from "uno-material-ui";
-
-interface Styles extends Partial<Record<SwitchClassKey, string>> {
-  focusVisible?: string;
-}
-
-interface Props extends SwitchProps {
-  classes: Styles;
-}
+import IOSSwitch from "Components/common/Switch";
+import { createButtonDisable } from "./UserAuthorizationRules";
 
 interface RemoteExperiment {
   id: string;
@@ -39,61 +27,6 @@ interface RemoteExperiment {
   source: string;
 }
 
-const IOSSwitch = withStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: 42,
-      height: 26,
-      padding: 0,
-      margin: theme.spacing(1),
-    },
-    switchBase: {
-      padding: 1,
-      "&$checked": {
-        transform: "translateX(16px)",
-        color: theme.palette.common.white,
-        "& + $track": {
-          backgroundColor: "#bbd",
-          opacity: 1,
-          border: "none",
-        },
-      },
-      "&$focusVisible $thumb": {
-        color: "#ddd",
-        border: "6px solid #fafafa",
-      },
-    },
-    thumb: {
-      width: 24,
-      height: 24,
-    },
-    track: {
-      borderRadius: 26 / 2,
-      border: `1px solid ${theme.palette.grey[400]}`,
-      backgroundColor: "#ddd",
-      opacity: 1,
-      transition: theme.transitions.create(["background-color", "border"]),
-    },
-    checked: {},
-    focusVisible: {},
-  })
-)(({ classes, ...props }: Props) => {
-  return (
-    <Switch
-      focusVisibleClassName={classes.focusVisible}
-      disableRipple
-      classes={{
-        root: classes.root,
-        switchBase: classes.switchBase,
-        thumb: classes.thumb,
-        track: classes.track,
-        checked: classes.checked,
-      }}
-      {...props}
-    />
-  );
-});
-
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -106,30 +39,26 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   const gettingOrganizationId = () => {
     try {
-      let orgID = userManager.getOrganiztionID();
-      return orgID;
+      return userManager.getOrganiztionID();
     } catch (error) {
-      let orgID = null;
       history.replace("/login");
-      return orgID;
+      return null;
     }
-    
-  }
-
-  const [organizationExperiments, setExperiments] = React.useState([]);
-  const [privateExperiments, setPrivateExperiments] = React.useState([]);
+  };
+  const [organizationExperiments, setExperiments] = useState([]);
+  const [privateExperiments, setPrivateExperiments] = useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    React.useState(false);
+    useState<boolean>(false);
   const [createExperimentModal, setCreateExperimentModal] =
-    React.useState(false);
-
+    useState<boolean>(false);
   const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    React.useState(true);
+    useState<boolean>(true);
   const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
-    React.useState(false);
-
-  const [displayExperiments, setDisplayExperiments] = React.useState([]);
+    useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
+  const rules = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -139,14 +68,23 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       userManager.getOrganiztionID(),
       userManager.getToken()
     );
+    // rules?.experiment &&
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
         setExperiments(response.data.organisationExperiments);
         setPrivateExperiments(response.data.userExperiments);
         setFetchExperimentsComplete(true);
+        setDisabled(
+          createButtonDisable(
+            response.data.userExperiments.length,
+            rules.experiment.unLimitedPublic,
+            rules.experiment.number
+          )
+        );
       })
       .catch((e) => {
+        console.log(e);
         setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
           "Failed to find experiment information or Session Expired",
@@ -166,10 +104,12 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
     setExperimentsToBeDisplayed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     privateExperimentsSwitch,
     organizationExperimentsSwitch,
@@ -182,7 +122,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (privateExperimentsSwitch) {
       toDisplay = toDisplay.concat(
         privateExperiments.map((e) => {
-          return { ...e, source: "private" };
+          return { ...e, source: "personal" };
         })
       );
     }
@@ -221,11 +161,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           marginTop: 30,
           marginLeft: "auto",
           marginRight: "auto",
+          padding: "20px 4em",
         }}
         container
-        xs={12}
-        md={10}
-        lg={8}
       >
         <Grid
           style={{
@@ -234,14 +172,13 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
-          xs={12}
+          // xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              lg={12}
-              sm={12}
               style={{
                 backgroundColor: "#66a",
                 borderTopLeftRadius: 10,
@@ -263,33 +200,55 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     />
                   }
                 />{" "}
-                <FormControlLabel
-                  label={
-                    "Organization Experiments (" +
-                    organizationExperiments.length +
-                    ")"
-                  }
-                  control={
-                    <IOSSwitch
-                      onChange={() =>
-                        setOrganizationExperimentsSwitch(
-                          !organizationExperimentsSwitch
-                        )
-                      }
-                    />
-                  }
-                />{" "}
+                {/* Here */}
+                {rules.createOrganizations && (
+                  <FormControlLabel
+                    label={
+                      "Organization Experiments (" +
+                      organizationExperiments.length +
+                      ")"
+                    }
+                    control={
+                      <IOSSwitch
+                        onChange={() =>
+                          setOrganizationExperimentsSwitch(
+                            !organizationExperimentsSwitch
+                          )
+                        }
+                      />
+                    }
+                  />
+                )}
               </div>
-              <Button
-                variant="contained"
-                style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 40,
-                }}
-                onClick={() => setCreateExperimentModal(true)}
+
+              {/* Create Button */}
+              <Tooltip
+                disableFocusListener={!disabled}
+                disableHoverListener={!disabled}
+                disableTouchListener={!disabled}
+                title={
+                  <React.Fragment>
+                    <h3 style={{ color: "white" }}>
+                      The Create Button is disabled, upgrade your plan to enable
+                      it
+                    </h3>
+                  </React.Fragment>
+                }
               >
-                Create
-              </Button>
+                <span>
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: "#fafafa",
+                      maxHeight: 40,
+                    }}
+                    disabled={disabled}
+                    onClick={() => setCreateExperimentModal(true)}
+                  >
+                    Create
+                  </Button>
+                </span>
+              </Tooltip>
             </Grid>
 
             <Grid
@@ -299,7 +258,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 margin: "auto",
                 width: "100%",
               }}
-              xs={12}
             >
               {displayExperiments.length > 0 ? (
                 displayExperiments.map((data: any, index: number) => {
@@ -330,4 +288,3 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   );
 };
 export default Experiments;
-

@@ -1,3 +1,4 @@
+/* eslint-disable*/
 var generalHelper = require("./generalHelper");
 var fcsHelper = require("./fcsHelper");
 var memoize = require("memoizee");
@@ -69,7 +70,6 @@ class Scale {
     var scaleType = params.scaleType;
     var value = params.value;
     var param = params.param;
-    var g = params.g;
     var r = params.r;
     var f1 = params.f1;
     var f2 = params.f2;
@@ -528,8 +528,6 @@ class Scale {
       maxLabel = minMax.max;
     }
 
-    console.log("3. fcs.get$PnX is ", fcs.get$PnX("R"));
-
     // 3. if it stil hasn't been set, get from file
     if (!max) {
       max = fcsHelper.getMaxForParam({
@@ -543,8 +541,6 @@ class Scale {
         maxLabel = this.getNearestPower(max);
       }
     }
-
-    console.log("fcsHelper f is ", fcsHelper);
 
     if (!min) {
       min = fcsHelper.getMinForParam({

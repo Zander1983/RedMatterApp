@@ -13,87 +13,86 @@ import Button from "@material-ui/core/Button";
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
-import dataManager from "graph/dataManagement/dataManager";
-import Gate from "graph/dataManagement/gate/gate";
+import { snackbarService } from "uno-material-ui";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { Gate, HistogramGate, PolygonGate } from "graph/resources/types";
+import { store } from "redux/store";
+import { createGate } from "graph/resources/gates";
+import { dowloadAllFileEvents } from "services/FileService";
+import { createPlot } from "graph/resources/plots";
+import { createPopulation } from "graph/resources/populations";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const classes = {
   table: {},
 };
 
-export default function GateMenu() {
-  const [gates, setGates] = React.useState(dataManager.getAllGates());
-  const [observersSetup, setObserversSetup] = React.useState(false);
-  const [observerIds, setObserverIds] = React.useState([]);
-
-  const resetAll = () => {
-    setGates(dataManager.getAllGates());
-  };
-
-  const resetGates = (gateID: string) => {
-    const subGate = {
-      gate: dataManager.getGate(gateID),
-      gateID: gateID,
-    };
-    const newGates = gates.map((g) => {
-      if (g.gateID === gateID) {
-        return subGate;
-      } else {
-        return g;
-      }
-    });
-    setGates(newGates);
-  };
-
+export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
-    gate.update({
-      color: `rgb(${color.rgb.r},${color.rgb.g},` + `${color.rgb.b})`,
-    });
-    resetGates(gate.id);
+    gate.color = color.hex;
+    WorkspaceDispatch.UpdateGate(gate);
+  };
+
+  const setGateName = (gate: Gate, name: any) => {
+    gate.name = name;
+    WorkspaceDispatch.UpdateGate(gate);
   };
 
   const deleteGate = (gate: Gate) => {
-    dataManager.removeGateFromWorkspace(gate.id);
+    WorkspaceDispatch.DeleteGate(gate);
   };
 
-  const cloneGate = (gate: Gate) => {
-    const { constructor } = gate;
-    const gateState = JSON.parse(JSON.stringify(gate.getState()));
-    gateState.name = gateState.name + " clone";
-    //@ts-ignore
-    const newGate = new constructor(gateState);
-    dataManager.addNewGateToWorkspace(newGate);
+  const cloneGate = (gate: PolygonGate) => {
+    let newGate = createGate({
+      cloneGate: gate,
+    });
+    newGate.name = gate.name + " clone";
+    WorkspaceDispatch.AddGate(newGate);
   };
 
-  useEffect(() => {
-    if (!observersSetup) {
-      setObserversSetup(true);
-      setObserverIds([
+  const applyGateToAllFiles = async (gate: Gate) => {
+    await dowloadAllFileEvents();
+    let files = getWorkspace().files;
+    const plots = getWorkspace().plots;
+
+    // Check gates that already
+    plots.forEach((plot) => {
+      const pop = getPopulation(plot.population);
+      if (
+        pop.gates.length === 1 &&
+        pop.gates.filter((e) => e.gate === gate.id).length > 0
+      ) {
+        files = files.filter((file) => file.id !== pop.file);
+      }
+    });
+
+    for (const file of files) {
+      const population = createPopulation({ file: file.id });
+      population.gates = [
         {
-          target: "addNewGateToWorkspace",
-          value: dataManager.addObserver("addNewGateToWorkspace", () => {
-            resetAll();
-          }),
+          inverseGating: false,
+          gate: gate.id,
         },
-        {
-          target: "removeGateFromWorkspace",
-          value: dataManager.addObserver("removeGateFromWorkspace", () => {
-            resetAll();
-          }),
-        },
-        {
-          target: "clearWorkspace",
-          value: dataManager.addObserver("clearWorkspace", () => {
-            resetAll();
-          }),
-        },
-      ]);
+      ];
+      await WorkspaceDispatch.AddPopulation(population);
+      const plot = createPlot({ population });
+      if (gate.gateType === "polygon") {
+        plot.xAxis = (gate as PolygonGate).xAxis;
+        plot.yAxis = (gate as PolygonGate).yAxis;
+        plot.xPlotType = (gate as PolygonGate).xAxisType;
+        plot.yPlotType = (gate as PolygonGate).yAxisType;
+      }
+      if (gate.gateType === "histogram") {
+        plot.xAxis = (gate as HistogramGate).axis;
+        plot.yAxis = (gate as HistogramGate).axis;
+        plot.xPlotType = (gate as HistogramGate).axisType;
+        plot.yPlotType = (gate as HistogramGate).axisType;
+        plot.histogramAxis = "vertical";
+      }
+      await WorkspaceDispatch.AddPlot(plot);
     }
-    return () => {
-      observerIds.forEach((e) => {
-        dataManager.removeObserver(e.terget, e.value);
-      });
-    };
-  }, []);
+  };
+  const workspace = getWorkspace();
 
   return (
     <TableContainer component={Paper}>
@@ -102,6 +101,7 @@ export default function GateMenu() {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
+            {workspace.files.length > 1 ? <TableCell></TableCell> : null}
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
             <TableCell>Type</TableCell>
@@ -110,8 +110,8 @@ export default function GateMenu() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {gates.map((gate) => (
-            <TableRow key={gate.gateID}>
+          {props.gates.map((gate) => (
+            <TableRow key={gate.id}>
               <TableCell>
                 <Button
                   style={{
@@ -119,7 +119,7 @@ export default function GateMenu() {
                     padding: 0,
                     minWidth: 0,
                   }}
-                  onClick={() => deleteGate(gate.gate)}
+                  onClick={() => deleteGate(gate)}
                 >
                   <Delete></Delete>
                 </Button>
@@ -131,40 +131,53 @@ export default function GateMenu() {
                     padding: 0,
                     minWidth: 0,
                   }}
-                  onClick={() => cloneGate(gate.gate)}
+                  onClick={() => cloneGate(gate as PolygonGate)}
                 >
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell>
+              {workspace.files.length > 1 ? (
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                    }}
+                    onClick={() => applyGateToAllFiles(gate)}
+                  >
+                    Apply to all files
+                  </Button>
+                </TableCell>
+              ) : null}
               <TableCell>
                 <TextField
-                  value={gate.gate.name}
+                  value={gate.name}
                   inputProps={{ "aria-label": "naked" }}
                   style={{
                     fontSize: 14,
                   }}
                   onChange={(e) => {
                     const newName = e.target.value;
-                    gate.gate.update({ name: newName });
-                    resetGates(gate.gateID);
+                    setGateName(gate, newName);
                   }}
                 />
               </TableCell>
               <TableCell>
                 <HuePicker
-                  color={gate.gate.color}
+                  color={gate.color}
                   width="150px"
                   onChange={(color, _) => {
-                    gate.gate.color =
+                    gate.color =
                       `rgba(${color.rgb.r},${color.rgb.g},` +
                       `${color.rgb.b},${color.rgb.a})`;
-                    setGateColor(gate.gate, color);
+                    setGateColor(gate, color);
                   }}
                 />
               </TableCell>
-              <TableCell>{gate.gate.getGateType()}</TableCell>
-              <TableCell>{gate.gate.xAxis}</TableCell>
-              <TableCell>{gate.gate.yAxis}</TableCell>
+              <TableCell>{gate.gateType}</TableCell>
+              <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
+              <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
             </TableRow>
           ))}
         </TableBody>

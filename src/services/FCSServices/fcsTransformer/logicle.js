@@ -1,3 +1,5 @@
+/* eslint-disable import/no-anonymous-default-export */
+/* eslint-disable*/
 class Logicle {
   EPSILON = Math.pow(2, -52);
   MAX_VALUE = (2 - this.EPSILON) * Math.pow(2, 1023);

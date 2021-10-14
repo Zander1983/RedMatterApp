@@ -1,3 +1,5 @@
+/* eslint-disable no-throw-literal */
+/* eslint-disable  */
 import FCS from "fcs";
 import FS from "fs";
 import Q from "q";
@@ -8,7 +10,6 @@ import Scale from "./scale";
 
 class CustomFCS extends FCS {
   _prepareReadParameters(databuf) {
-    "use strict";
     var isBE;
     if ("4,3,2,1" === this.text.$BYTEORD) isBE = true;
     else if ("1,2,3,4" === this.text.$BYTEORD) isBE = false;
@@ -85,8 +86,6 @@ class CustomFCS extends FCS {
   }
 
   _readDataGroupByEvent(databuf, readParameters) {
-    "use strict";
-
     // determine if these are ints, floats, etc...
     readParameters = readParameters || this._prepareReadParameters(databuf);
 
@@ -169,7 +168,6 @@ class CustomFCS extends FCS {
     ) {
       return value;
     } else {
-      // console.log('returning false for value ', value);
       return "false";
     }
   }
@@ -488,298 +486,11 @@ var isFcsFile = function (req, res, path, index) {
     });
 };
 
-var updateWorkspaceLogicleParams = function (res, req) {};
-
-// var calculateLogicleParams = function(req, res){
-
-//     return fileModel.getUserFilesWithoutAnalysisAsync(req, res)
-//     .then(function(filesRecords){
-
-//         var readFiles = filesRecords.map(readFileAync);
-
-//         return Promise.all(readFiles).then(function(files){
-
-//             var fcsFilesMapped = files.map(getFCSAsync);
-
-//             return Promise.all(fcsFilesMapped).then(function(fcsFiles){
-
-//                 var fcsPercentiles = {};
-//                 var paramNegatives = {};
-//                 fcsFiles.forEach(function(fcs, index){
-
-//                         var id = filesRecords[index]['_id'];
-//                         fcsPercentiles[id] = [];
-
-//                         var params = generalHelper.removeNulls(fcs.get$PnX('N'));
-
-//                         var scale = new Scale(fcs);
-
-//                         for (var p = 0; p < params.length; p++) {
-
-//                             var negatives = [];
-//                             var max = 0;
-//                             // scaled and compensated
-//                             var scaledMaxLin = 0;
-//                             var scaledMaxBi = 0;
-//                             var scaledMinLin = 0;
-//                             var scaledMinBi = 0;
-//                             var scaledLin;
-//                             var scaledBi;
-//                             var paramName =  params[p];
-//                             var paramMax = fcsHelper.getParamMax(fcs, p);
-
-//                             // this is the gain i.e from $PnG
-//                             var g = scale.g[p];
-//                             var r = scale.r[p];
-//                             var f1 = scale.getEF1({
-//                                 param: p
-//                             });
-//                             var f2 = scale.getEF2({
-//                                 param: p
-//                             });
-
-//                             // var hasSpilloverForParam = scale.hasSpilloverForParam({
-//                             //     paramName: paramName,
-//                             //     paramIndex: p
-//                             // });
-
-//                             // var indexOfSpilloverParam = scale.getIndexOfSpilloverParam({
-//                             //     paramName: paramName,
-//                             //     params: p
-//                             // });
-
-//                             for (var i = 0; i < fcs.dataAsNumbers.length; i++) {
-
-//                                 var value = fcs.dataAsNumbers[i][p];
-
-//                                 // disguard any values that are lower than the negative of the max
-//                                 if(value > -paramMax) {
-
-//                                     if (!max) {
-//                                         max = value;
-//                                     }
-
-//                                     if (value > max) {
-//                                         max = value;
-//                                     }
-
-//                                     scaledLin = scale.scaleValueAccordingToFile({
-//                                         value: value,
-//                                         param: p,
-//                                         scaleType: 'lin',
-//                                         g: g,
-//                                         f1: f1,
-//                                         f2: f2
-//                                     });
-
-//                                     scaledBi = scale.scaleValueAccordingToFile({
-//                                         value: value,
-//                                         param: p,
-//                                         scaleType: 'bi',
-//                                         r: r,
-//                                         f1: f1,
-//                                         f2: f2
-//                                     });
-
-//                                     // This takes too long
-//                                     // if(hasSpilloverForParam){
-
-//                                     //     scaledLin = scale.adjustSpillover({
-//                                     //         param: p,
-//                                     //         paramName: paramName,
-//                                     //         values: fcs.dataAsNumbers[i],
-//                                     //         scaleType: 'lin',
-//                                     //         indexOfSpilloverParam: indexOfSpilloverParam
-//                                     //     });
-
-//                                     //     scaledBi = scale.adjustSpillover({
-//                                     //         param: p,
-//                                     //         paramName: paramName,
-//                                     //         values: fcs.dataAsNumbers[i],
-//                                     //         scaleType: 'bi',
-//                                     //         indexOfSpilloverParam: indexOfSpilloverParam
-//                                     //     });
-
-//                                     // }
-
-//                                    if (scaledLin < scaledMinLin) {
-//                                         scaledMinLin = scaledLin;
-//                                     }
-
-//                                     if (scaledBi < scaledMinBi) {
-//                                         scaledMinBi = scaledBi;
-//                                     }
-
-//                                     if(scaledLin > scaledMaxLin) {
-//                                         scaledMaxLin = scaledLin;
-//                                     }
-
-//                                     if(scaledBi > scaledMaxBi) {
-//                                         scaledMaxBi = scaledBi;
-//                                     }
-
-//                                     if (scaledBi < 0) {
-//                                         negatives.push(scaledBi);
-//                                     }
-
-//                                 }
-
-//                             }
-
-//                             negatives.sort(function(a,b) { return a - b;});
-
-//                             var acceptedMin = 0;
-
-//                             // including compensation
-//                             var scaledMin = 0;
-
-//                             var fifthPercentile = 0;
-
-//                             if(negatives.length > 0) {
-
-//                                 // var paramMax = -fcsHelper.getParamMax(fcs, p);
-
-//                                 // //negatives = [-6000000, -500000, -200000, -25]
-
-//                                 // var found = negatives.find(function(negative){
-//                                 //     return negative > paramMax;
-//                                 // });
-
-//                                 // if(found) {
-//                                 //     acceptedMin = found;
-//                                 // }
-
-//                             }
-
-//                             fcsPercentiles[id][p] = {
-//                                 max: max,
-//                                 min: negatives.length > 0 ? negatives[0] : 0,
-//                                 acceptedMin: acceptedMin,
-//                                 fifthPercentile: percentileHelper.percentile(negatives, .05),
-//                                 scaledMinLin: scaledMinLin,
-//                                 scaledMinBi: scaledMinBi,
-//                                 scaledMaxLin: scaledMaxLin,
-//                                 scaledMaxBi: scaledMaxBi,
-//                                 paramName: paramName
-//                             }
-//                         };
-//                 });
-
-//                 var saved = [];
-
-//                 filesRecords.forEach(function(filesRecord){
-
-//                     filesRecord.paramsAnaylsis = fcsPercentiles[filesRecord._id];
-//                     saved.push(filesRecord.save());
-
-//                 });
-
-//                 return Promise.all(saved);
-
-//             })
-//             .catch(function(err){
-//                 console.log('err is ', err);
-//                 return err;
-//             });
-//         })
-//         .catch(function(failedResult){
-//             return err;
-//         });
-//     })
-//     .catch(function(failedResult){
-//         return err;
-//     });
-
-// };
-
-// var checkIfHasCorrectParams = function(uploadingFile, req, res){
-//     console.log('uploadingFile>>>>>>>>>>>>>>')
-//     return fileModel.getUserFilesAsync(req, res)
-//     .then(function(data2){
-//         console.log('1............>>>>>>>>>>>>>>>>>>',data2)
-//         var readFiles = data2.map(readFileAync);
-//         return Promise.all(readFiles);
-//     })
-//     .then(function(files){
-//         console.log('2............>>>>>>>>>>>>>>>>>>')
-//         var fcsFiles = files.map(getFCSAsync);
-//         return Promise.all(fcsFiles);
-//     })
-//     .then(function(fcsFiles){
-//         console.log('3............>>>>>>>>>>>>>>>>>>')
-//         var compared = fcsFiles.map(function(fcsFile){
-//             return compareArraysAsync(fcsFile.get$PnX('N'), uploadingFile.get$PnX('N'))
-//         });
-//         return Promise.all(compared);
-//     })
-//     .then(function(finalResult){
-//         console.log('4............>>>>>>>>>>>>>>>>>>')
-//         // in here if uploaded fcs params are the same as all other file params in workspace
-//         return true;
-//     })
-//     .catch(function(failedResult){
-//         console.log('failedResult>>>>>>>>>>>>>>>>>>>>>',failedResult)
-//         // emailHelper.sendLoggingEmail(req, 'doesnt have same params');
-
-//         throw new Error('All files in the same workspace must have the same parmaters');
-//     });
-// };
-
-function compareArraysAsync(array1, array2) {
-  return new Promise(function (resolve, reject) {
-    var result = generalHelper.compareTwoArrays(array1, array2);
-    if (result) {
-      resolve(result);
-    } else {
-      reject(result);
-    }
-  });
-}
-
-function getFCSAsync(databuf) {
-  var options = {
-    dataFormat: "asNumber",
-    eventsToRead: -1,
-  };
-
-  return new Promise(function (resolve) {
-    var fcs = new CustomFCS(options, databuf);
-    resolve(fcs);
-  });
-}
-
-function readFileAync(fileObject) {
-  var filePath = "uploads/" + fileObject.userId + "/" + fileObject.filename;
-  console.log("inised readFileAync>>>>>", filePath);
-  var readFile = Q.denodeify(FS.readFile);
-  return readFile(filePath);
-}
-
-function readFileAyncFromPath(filePath) {
-  var readFile = Q.denodeify(FS.readFile);
-
-  console.log("readfile is ", readFile);
-  return readFile(filePath);
-}
-
 function checkIfHasMeta(fcs) {
   return fcs && fcs.hasOwnProperty("meta");
 }
 
 var getMinMax = function (fcs, paramX, paramY) {
-  /*
-    var maxArray = fcs.get$PnX('R');
-
-    maxArray = this.removeNulls(maxArray);
-
-    maxX = maxArray[paramX];
-    maxY = maxArray[paramY];
-
-    return {
-        maxX: maxX,
-        maxY: maxY
-    }*/
-
   var maxX = 0;
   var maxY = 0;
   var x;

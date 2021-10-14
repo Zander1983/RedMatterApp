@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
+
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
@@ -10,37 +11,24 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-
 import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
-import Overlays from "./overlays/Overlays";
-
-import dataManager from "graph/dataManagement/dataManager";
-import PlotStats from "graph/dataManagement/stats";
-import ObserverList from "graph/dataManagement/observeList";
-import PlotData from "graph/dataManagement/plotData";
-import ObserversFunctionality from "graph/dataManagement/observersFunctionality";
-
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { getValue } from "@amcharts/amcharts4/.internal/core/utils/Type";
-
-interface Dictionary {
-  [key: string]: number;
-}
-
-const classes = {
-  table: {},
-};
+import { Plot, PopulationGateType } from "graph/resources/types";
+import { createPlot } from "graph/resources/plots";
+import PlotStats from "graph/utils/stats";
+import { getFile, getGate, getPopulation } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const statsProvider = new PlotStats();
 
 export default function PlotMenu(props: {
-  onStatChange: (statObj: any) => void
-}) : JSX.Element {
-  const observerListProvider = new ObserverList();
-  const [plots, setPlots] = React.useState([]);
-  const [setup, setSetup] = React.useState(false);
+  plots: Plot[];
+  onStatChange: (params: { x: any; value: any }) => void;
+}) {
+  const populations = props.plots.map((e) => getPopulation(e.population));
+
   const [statsX, setStatsX] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
@@ -48,52 +36,62 @@ export default function PlotMenu(props: {
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
 
-  const setupObservers = () => {
-    observerListProvider.setup(
-      (newList: ObserversFunctionality[]) => {
-        setPlots(newList);
-      },
-      () => dataManager.getAllPlots().map((e) => e.plot),
-      (id: string) => dataManager.getPlot(id),
-      dataManager,
-      ["addNewPlotToWorkspace", "removePlotFromWorkspace", "clearWorkspace"],
-      ["plotUpdated"]
-    );
-  };
-
   const getDropdownValue = (e: string) => {
-    let statObj: Dictionary = COMMON_CONSTANTS.DROPDOWNS.STATS;
+    let statObj: {
+      [key: string]: number;
+    } = COMMON_CONSTANTS.DROPDOWNS.STATS;
     return statObj[e];
   };
 
-  const deletePlot = (plot: PlotData) => {
-    dataManager.removePlotFromWorkspace(plot.id);
+  const setPlotLabel = (plot: Plot, label: string) => {
+    plot.label = label;
+    WorkspaceDispatch.UpdatePlot(plot);
   };
 
-  const clonePlot = (plot: PlotData) => {
-    const newPlot = new PlotData();
-    newPlot.setState(plot.getState());
-    dataManager.addNewPlotToWorkspace(newPlot);
+  const deletePlot = (plot: Plot) => {
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
-  useEffect(() => {
-    if (!setup) {
-      setupObservers();
-      setSetup(true);
+  const clonePlot = (plot: Plot) => {
+    let newPlot = createPlot({
+      clonePlot: plot,
+    });
+    newPlot.label = plot.label + " clone";
+    WorkspaceDispatch.AddPlot(newPlot);
+  };
+
+  let percentages: any[] = [];
+
+  const getMean = (list: Array<number>) => {
+    let sum = 0;
+    list.forEach((e) => (sum += e));
+    let count = list.length;
+    return sum / count;
+  };
+
+  const getStandardDeviation = (list: Array<number>) => {
+    let mean = getMean(list);
+
+    let squareSum = 0;
+
+    for (let i = 0; i < list.length; i++) {
+      squareSum += Math.pow(list[i] - mean, 2);
     }
-    return () => {
-      observerListProvider.kill();
-    };
-  }, []);
+
+    let divideByNMinus1 = squareSum / list.length;
+
+    let sd = Math.sqrt(divideByNMinus1);
+
+    return sd;
+  };
 
   return (
     <TableContainer component={Paper}>
-      <Table style={classes.table}>
+      <Table>
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
-            <TableCell>Overlays</TableCell>
             <TableCell>Type</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>From file</TableCell>
@@ -105,7 +103,10 @@ export default function PlotMenu(props: {
                 value={statsX}
                 onChange={(e) => {
                   setStatsX(parseInt(e.target.value.toString()));
-                  props.onStatChange({x: true, value: parseInt(e.target.value.toString())});
+                  props.onStatChange({
+                    x: true,
+                    value: parseInt(e.target.value.toString()),
+                  });
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
@@ -120,7 +121,10 @@ export default function PlotMenu(props: {
                 value={statsY}
                 onChange={(e) => {
                   setStatsY(parseInt(e.target.value.toString()));
-                  props.onStatChange({x: false, value: parseInt(e.target.value.toString())});
+                  props.onStatChange({
+                    x: false,
+                    value: parseInt(e.target.value.toString()),
+                  });
                 }}
               >
                 {Object.keys(COMMON_CONSTANTS.DROPDOWNS.STATS).map(
@@ -135,10 +139,25 @@ export default function PlotMenu(props: {
           </TableRow>
         </TableHead>
         <TableBody>
-          {plots.map((plot) => {
+          {props.plots.map((plot, i) => {
             const type =
               plot.xAxis === plot.yAxis ? "histogram" : "scatterplot";
             let stats = statsProvider.getPlotStats(plot, statsX, statsY);
+            let percentageToFloat: number = 0;
+            let meanPlusStandard: number = 0;
+            let meanMinusStandard: number = 0;
+            if (i > 0) {
+              percentageToFloat = parseFloat(
+                stats.gatedFilePopulationPercentage.slice(0, -1)
+              );
+
+              percentages.push(percentageToFloat);
+              let mean = getMean(percentages);
+              let standard = getStandardDeviation(percentages);
+              meanPlusStandard = mean + standard;
+              meanMinusStandard = mean - standard;
+            }
+
             return (
               <TableRow key={plot.id}>
                 <TableCell>
@@ -165,9 +184,6 @@ export default function PlotMenu(props: {
                     <FileCopy></FileCopy>
                   </Button>
                 </TableCell>
-                <TableCell>
-                  <Overlays plot={plot}></Overlays>
-                </TableCell>
                 <TableCell>{type}</TableCell>
                 <TableCell>
                   <TextField
@@ -179,26 +195,25 @@ export default function PlotMenu(props: {
                     }}
                     onChange={(e) => {
                       const newLabel = e.target.value;
-                      plot.update({ label: newLabel });
+                      setPlotLabel(plot, newLabel);
                     }}
                   />
                 </TableCell>
-                <TableCell>{plot.file.name}</TableCell>
+                <TableCell>{getFile(populations[i].file).name}</TableCell>
                 <TableCell>
-                  {plot.population.length === 0
+                  {populations[i].gates.length === 0
                     ? "All"
-                    : plot.population
-                        .reverse()
-                        .map((e: any) => (
+                    : populations[i].gates
+                        .map((e: PopulationGateType) => (
                           <b
                             style={{
-                              color: e.gate.color,
+                              color: getGate(e.gate).color,
                             }}
                           >
                             {e.inverseGating ? (
                               <b style={{ color: "#f00" }}>not </b>
                             ) : null}{" "}
-                            {e.gate.name}
+                            {getGate(e.gate).name}
                           </b>
                         ))
                         //@ts-ignore
@@ -207,19 +222,30 @@ export default function PlotMenu(props: {
                 <TableCell>
                   {stats.gatedFilePopulationSize} / {stats.filePopulationSize}
                 </TableCell>
-                <TableCell>{stats.gatedFilePopulationPercentage}</TableCell>
-                <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "horizontal"
-                    ? "~"
-                    : stats.statX}
+                <TableCell
+                  style={{
+                    color:
+                      percentageToFloat > meanPlusStandard
+                        ? "red"
+                        : percentageToFloat < meanMinusStandard
+                        ? "orange"
+                        : "black",
+                  }}
+                >
+                  {stats.gatedFilePopulationPercentage}{" "}
+                  {percentageToFloat > meanPlusStandard ||
+                  percentageToFloat < meanMinusStandard
+                    ? "(Outlier)"
+                    : null}
                 </TableCell>
+                <TableCell>{stats.statX}</TableCell>
                 <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "vertical"
-                    ? "~"
-                    : stats.statY}
+                  {type === "histogram" ? "~" : stats.statY}
                 </TableCell>
                 <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
-                <TableCell>{stats.pointsOutSideOfRangeObj.percentage}</TableCell>
+                <TableCell>
+                  {stats.pointsOutSideOfRangeObj.percentage}
+                </TableCell>
               </TableRow>
             );
           })}

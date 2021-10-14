@@ -20,14 +20,13 @@ import {
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
-  DeleteFilled,
-  DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
+import { useDispatch } from "react-redux";
 
 const styles = {
   input: {
@@ -35,19 +34,29 @@ const styles = {
     borderBottom: "solid 1px white",
     height: 30,
   },
+  fileEditInput: {
+    borderBottom: "solid 1px white",
+    height: 30,
+  },
 };
 
+const fileTempIdMap: any = {};
+
 const Experiment = (props: any) => {
+  const dispatch = useDispatch();
+
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
+  const [editingFileName, setEditingFileName] = useState<null | string>(null);
+  const [newFileName, setNewFileName] = useState<string>("");
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
   const [experimentSize, setExperimentSize] = useState(0);
-  const [maxExperimentSize, setMaxExperimentSize] = useState(
-    parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES)
+  const maxExperimentSize = parseInt(
+    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
 
   const { classes } = props;
@@ -72,7 +81,38 @@ const Experiment = (props: any) => {
     history.replace("/experiments");
   }
 
-  const fetchExperimentData = (snack = true, callback?: Function) => {
+  useEffect(() => {
+    dispatch({
+      type: "EXPERIMENT_FORM_DATA",
+      payload: {
+        //@ts-ignore
+        formitem: { key: "experimentId", value: props.id },
+      },
+    });
+  }, [dispatch, props.id]);
+
+  useEffect(() => {
+    if (
+      fileTempIdMap &&
+      Object.keys(fileTempIdMap).length > 0 &&
+      uploadingFiles.length > 0
+    ) {
+      let keys = Object.keys(fileTempIdMap)
+        .map((x) => {
+          if (fileTempIdMap[x]) {
+            delete fileTempIdMap[x];
+            return x;
+          }
+          return null;
+        })
+        .filter((x) => x);
+      let files = uploadingFiles.filter((x) => !keys.includes(x.id));
+      setUploadingFiles(files);
+    }
+    //eslint-disable-next-line
+  }, [experimentData]);
+
+  const fetchExperimentData = (snack = true, key: string = "") => {
     const fetchExperiments = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
     }).experimentFiles(
@@ -84,6 +124,14 @@ const Experiment = (props: any) => {
     axios
       .get(fetchExperiments.url, fetchExperiments.options)
       .then((e) => {
+        if (key && fileTempIdMap && Object.keys(fileTempIdMap).length > 0) {
+          if (e.data.files) {
+            fileTempIdMap[key] = e.data.files[0].id;
+          } else {
+            delete fileTempIdMap[key];
+          }
+        }
+
         setExperimentData(e.data);
         let sizeSum = 0;
         for (const file of e.data.files) {
@@ -98,9 +146,6 @@ const Experiment = (props: any) => {
             "error"
           );
         userManager.logout();
-      })
-      .finally(() => {
-        if (callback !== undefined) callback();
       });
   };
 
@@ -124,6 +169,7 @@ const Experiment = (props: any) => {
       });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getExperiment = () => {
     const experimentApiObj = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -185,30 +231,35 @@ const Experiment = (props: any) => {
       );
       return;
     }
-    setUploadingFiles([
-      ...uploadingFiles,
-      ...fileList.map((e) => {
+
+    let filesUpload = uploadingFiles.concat(
+      fileList.map((e) => {
         return { name: e.file.name, id: e.tempId };
-      }),
-    ]);
+      })
+    );
+    setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
+    let finalFileList = [];
     for (const file of fileList) {
+      fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
         const buf = Buffer.from(e);
         return await fcsservice.loadFileMetadata(buf).then((e) => {
           return e;
         });
       });
-      if (channelSet.size === 0) channelSet = new Set(fcsFile.channels);
+      if (channelSet.size === 0) {
+        if (getExperimentChannels().length === 0) {
+          channelSet = new Set(fcsFile.channels);
+        } else {
+          channelSet = new Set(getExperimentChannels());
+        }
+      }
+
       if (
-        (getExperimentChannels().length > 0 &&
-          !setContaineSet(
-            new Set(fcsFile.channels),
-            new Set(getExperimentChannels())
-          )) ||
-        (channelSet.size > 0 &&
-          !setContaineSet(new Set(fcsFile.channels), channelSet))
+        channelSet.size > 0 &&
+        !setContaineSet(new Set(fcsFile.channels), new Set(channelSet))
       ) {
         snackbarService.showSnackbar(
           "Channels of uploaded file " +
@@ -216,12 +267,13 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
-        fetchExperimentData(false, () => {
-          setUploadingFiles(uploadingFiles.filter((e) => e.id !== file.tempId));
-        });
-        setFileUploadInputValue("");
-        return;
+        filesUpload = filesUpload.filter((x) => x.id !== file.tempId);
+      } else {
+        finalFileList.push(file);
       }
+    }
+    setUploadingFiles(filesUpload);
+    for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
@@ -241,14 +293,11 @@ const Experiment = (props: any) => {
           );
         })
         .finally(() => {
-          fetchExperimentData(false, () => {
-            setUploadingFiles(
-              uploadingFiles.filter((e) => e.id !== file.tempId)
-            );
-          });
-          setFileUploadInputValue("");
+          fetchExperimentData(false, file.tempId);
         });
     }
+
+    setFileUploadInputValue("");
   };
 
   const getExperimentChannels = (): string[] => {
@@ -256,34 +305,35 @@ const Experiment = (props: any) => {
     return experimentData.files[0].channels;
   };
 
-  const deleteFile = (file: any) => {
-    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).deleteFile(props.id, file.id, userManager.getToken());
+  // const deleteFile = (file: any) => {
+  //   alert(
+  //     "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
+  //   );
+  //   return;
+  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
+  //     accessToken: userManager.getToken(),
+  //   }).deleteFile(props.id, file.id, userManager.getToken());
 
-    axios
-      .delete(fetchExperiments.url, fetchExperiments.options)
-      .then((e) => {
-        snackbarService.showSnackbar("File deleted!", "success");
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to delete file, try again.",
-          "error"
-        );
-      })
-      .finally(() => {
-        fetchExperimentData();
-      });
-  };
-
-  const updateSize = (newSize: number) => {
-    setExperimentSize(newSize);
-  };
+  //   axios
+  //     .delete(fetchExperiments.url, fetchExperiments.options)
+  //     .then((e) => {
+  //       snackbarService.showSnackbar("File deleted!", "success");
+  //     })
+  //     .catch((e) => {
+  //       snackbarService.showSnackbar(
+  //         "Failed to delete file, try again.",
+  //         "error"
+  //       );
+  //     })
+  //     .finally(() => {
+  //       fetchExperimentData();
+  //     });
+  // };
 
   useEffect(() => {
     fetchExperimentData();
     getExperiment();
+    //eslint-disable-next-line
   }, []);
 
   const handleClose = (func: Function) => {
@@ -292,6 +342,23 @@ const Experiment = (props: any) => {
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
   useEffect(() => {}, [experimentData]);
+
+  const updateExperimentFileName = (id: string, label: string) => {
+    const updatFileName = ExperimentFilesApiFetchParamCreator({
+      apiKey: userManager.getToken(),
+    }).editFiles(props.id, id, label, userManager.getToken());
+    axios
+      .put(updatFileName.url, { label }, updatFileName.options)
+      .then((e) => {
+        fetchExperimentData();
+      })
+      .catch((e) =>
+        snackbarService.showSnackbar(
+          "Could not edit file name, try again",
+          "error"
+        )
+      );
+  };
 
   return (
     <>
@@ -317,11 +384,9 @@ const Experiment = (props: any) => {
           marginTop: 30,
           marginLeft: "auto",
           marginRight: "auto",
+          padding: "0 4em",
         }}
         container
-        xs={12}
-        md={10}
-        lg={8}
       >
         <Grid
           style={{
@@ -330,14 +395,12 @@ const Experiment = (props: any) => {
             marginLeft: 40,
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
+            width: "75%",
           }}
-          xs={12}
         >
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
-              lg={12}
-              sm={12}
               style={{
                 backgroundColor: "#66a",
                 borderTopLeftRadius: 10,
@@ -356,7 +419,11 @@ const Experiment = (props: any) => {
                 }}
                 startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
                 onClick={() => {
-                  history.push("/experiments");
+                  if (props.poke === false) {
+                    history.push("/experiments");
+                  } else {
+                    history.push("/browse-experiments");
+                  }
                 }}
               >
                 Back
@@ -368,7 +435,7 @@ const Experiment = (props: any) => {
                   />
                 ) : (
                   <Grid
-                    xs={12}
+                    container
                     direction="row"
                     style={{
                       color: "#fff",
@@ -396,23 +463,26 @@ const Experiment = (props: any) => {
                     ) : (
                       experiment.name
                     )}
-                    <Button
-                      style={{ fontSize: 20, marginLeft: 20 }}
-                      onClick={() => setEditingName(!editingName)}
-                    >
-                      <EditOutlined
-                        style={{
-                          color: "white",
-                          borderRadius: 5,
-                          marginTop: -4,
-                          border: "solid 1px #fff",
-                          padding: 3,
-                        }}
-                      />
-                    </Button>
+                    {props.poke === true ? null : (
+                      <Button
+                        style={{ fontSize: 20, marginLeft: 20 }}
+                        onClick={() => setEditingName(!editingName)}
+                      >
+                        <EditOutlined
+                          style={{
+                            color: "white",
+                            borderRadius: 5,
+                            marginTop: -4,
+                            border: "solid 1px #fff",
+                            padding: 3,
+                          }}
+                        />
+                      </Button>
+                    )}
                   </Grid>
                 )}
               </div>
+
               <Button
                 variant="contained"
                 style={{
@@ -421,9 +491,13 @@ const Experiment = (props: any) => {
                   visibility:
                     experimentData?.files.length === 0 ? "hidden" : "visible",
                 }}
-                onClick={() =>
-                  history.push("/experiment/" + props.id + "/plots")
-                }
+                onClick={() => {
+                  if (props.poke === false) {
+                    history.push("/experiment/" + props.id + "/plots");
+                  } else {
+                    history.push("/experiment/" + props.id + "/plots/poke");
+                  }
+                }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
                 Workspace
@@ -459,7 +533,6 @@ const Experiment = (props: any) => {
                 Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
-                xs={12}
                 style={{
                   backgroundColor: "#ddd",
                   border: "solid 1px #bbb",
@@ -469,7 +542,6 @@ const Experiment = (props: any) => {
                 }}
               >
                 <Grid
-                  xs={12}
                   style={{
                     backgroundColor:
                       experimentSize === 0
@@ -493,60 +565,64 @@ const Experiment = (props: any) => {
                     : ""}
                 </Grid>
               </Grid>
-              <Grid xs={12} style={{ textAlign: "center" }}>
+              <Grid style={{ textAlign: "center" }}>
                 {/*@ts-ignore*/}
                 {/* {experiments.length > 0
                   ? JSON.stringify(experiments[0].details)
                   : null} */}
-                <Grid
-                  container
-                  direction="row"
-                  style={{
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ textAlign: "left" }}>
-                    <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
-                      Experiment Files
-                    </h1>
-                    <p
-                      style={{
-                        fontSize: 14,
-                      }}
-                    >
-                      To upload files, drag and drop them here or click the
-                      upload button
-                    </p>
-                  </div>
-                  <div>
-                    <Button
-                      variant="contained"
-                      style={{
-                        backgroundColor: "#6666AA",
-                        maxHeight: 50,
-                        marginTop: 5,
-                        color: "white",
-                      }}
-                      onClick={() => {
-                        inputFile.current.click();
-                      }}
-                    >
-                      <input
-                        type="file"
-                        id="file"
-                        ref={inputFile}
-                        value={fileUploadInputValue}
-                        multiple
-                        accept=".fcs, .lmd"
-                        style={{ display: "none" }}
-                        onChange={(e) => {
-                          uploadFiles(e.target.files);
+
+                {props.poke === true ? null : (
+                  <Grid
+                    container
+                    direction="row"
+                    style={{
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ textAlign: "left" }}>
+                      <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                        Experiment Files
+                      </h1>
+                      <p
+                        style={{
+                          fontSize: 14,
                         }}
-                      />
-                      Upload File
-                    </Button>
-                  </div>
-                </Grid>
+                      >
+                        To upload files, drag and drop them here or click the
+                        upload button
+                      </p>
+                    </div>
+                    <div>
+                      <Button
+                        variant="contained"
+                        style={{
+                          backgroundColor: "#6666AA",
+                          maxHeight: 50,
+                          marginTop: 5,
+                          color: "white",
+                        }}
+                        onClick={() => {
+                          inputFile.current.click();
+                        }}
+                      >
+                        <input
+                          type="file"
+                          id="file"
+                          ref={inputFile}
+                          value={fileUploadInputValue}
+                          multiple
+                          accept=".fcs, .lmd"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            uploadFiles(e.target.files);
+                          }}
+                        />
+                        Upload File
+                      </Button>
+                    </div>
+                  </Grid>
+                )}
+
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
@@ -558,9 +634,10 @@ const Experiment = (props: any) => {
                 ) : (
                   experimentData.files.map((e: any, i: number) => {
                     return (
-                      <>
+                      <div key={i}>
                         <Grid
                           item
+                          key={i}
                           xs={12}
                           style={{
                             textAlign: "left",
@@ -569,7 +646,7 @@ const Experiment = (props: any) => {
                           }}
                         >
                           <h3>
-                            <b
+                            {/* <b
                               style={{
                                 backgroundColor: "#ddf",
                                 border: "solid 1px #ddd",
@@ -578,8 +655,8 @@ const Experiment = (props: any) => {
                               }}
                             >
                               .{e.label?.substr(-3).toLowerCase()} file
-                            </b>
-                            <div style={{ display: "inline", width: 10 }}>
+                            </b> */}
+                            {/* <div style={{ display: "inline", width: 10 }}>
                               <Button
                                 onClick={() => {
                                   deleteFile(e);
@@ -590,8 +667,59 @@ const Experiment = (props: any) => {
                                   style={{ color: "#6666aa" }}
                                 ></DeleteFilled>
                               </Button>
-                            </div>
-                            {e.label}
+                            </div> */}
+                            {editingFileName === e.id ? (
+                              <TextField
+                                style={{
+                                  width: "60%",
+                                }}
+                                InputProps={{
+                                  className: classes.fileEditInput,
+                                }}
+                                value={
+                                  editingFileName === e.id
+                                    ? newFileName
+                                    : e.label
+                                }
+                                onChange={(newName: any) => {
+                                  let newExperimentData = experimentData;
+                                  newExperimentData.files.forEach((f: any) => {
+                                    if (f.id === e.id)
+                                      f.label = newName.target.value;
+                                  });
+                                  setNewFileName(newName.target.value);
+                                  setExperimentData(newExperimentData);
+                                }}
+                                onKeyDown={(event: any) => {
+                                  if (event.keyCode === 13) {
+                                    updateExperimentFileName(e.id, newFileName);
+                                    setEditingFileName(null);
+                                  }
+                                }}
+                              ></TextField>
+                            ) : (
+                              <>{e.label}</>
+                            )}
+                            <Button
+                              style={{
+                                fontSize: 16,
+                                maxWidth: 30,
+                                minWidth: 30,
+                              }}
+                              onClick={() => {
+                                setNewFileName(e.label);
+                                setEditingFileName(
+                                  editingFileName ? null : e.id
+                                );
+                              }}
+                            >
+                              <EditOutlined
+                                style={{
+                                  color: "#66d",
+                                  marginTop: -4,
+                                }}
+                              />
+                            </Button>
                             {"   "}•{"   "}
                             <b
                               style={{
@@ -607,7 +735,7 @@ const Experiment = (props: any) => {
                               {getHumanReadableTimeDifference(
                                 new Date(e.createdOn),
                                 new Date()
-                              ) == "just now"
+                              ) === "just now"
                                 ? ""
                                 : "ago"}
                             </b>
@@ -638,7 +766,7 @@ const Experiment = (props: any) => {
                             style={{ marginTop: 15, marginBottom: 15 }}
                           ></Divider>
                         ) : null}
-                      </>
+                      </div>
                     );
                   })
                 )}
@@ -706,25 +834,25 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Details
                         </h1>
-                        {experiment.details.device != undefined ? (
+                        {experiment.details.device !== undefined ? (
                           <h4>• Device: {experiment.details.device}</h4>
                         ) : null}
-                        {experiment.details.cellType != undefined ? (
+                        {experiment.details.cellType !== undefined ? (
                           <h4>• Cell type: {experiment.details.cellType}</h4>
                         ) : null}
-                        {experiment.details.particleSize != undefined ? (
+                        {experiment.details.particleSize !== undefined ? (
                           <h4>
                             • Particle size: {experiment.details.particleSize}
                           </h4>
                         ) : null}
-                        {experiment.details.fluorophoresCategory !=
+                        {experiment.details.fluorophoresCategory !==
                         undefined ? (
                           <h4>
                             • Fluorophores category:{" "}
                             {experiment.details.fluorophoresCategory}
                           </h4>
                         ) : null}
-                        {experiment.details.description != undefined ? (
+                        {experiment.details.description !== undefined ? (
                           <h4>
                             • Description: {experiment.details.description}
                           </h4>
@@ -747,8 +875,8 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Channels
                         </h1>
-                        {getExperimentChannels().map((e) => (
-                          <h4>{"• " + e}</h4>
+                        {getExperimentChannels().map((e, i) => (
+                          <h4 key={i}>{"• " + e}</h4>
                         ))}
                       </div>
                     </Grid>

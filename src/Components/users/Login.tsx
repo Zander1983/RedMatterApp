@@ -8,10 +8,7 @@ import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
-import {
-  AuthenticationApiFetchParamCreator,
-  UserApiFetchParamCreator,
-} from "api_calls/nodejsback";
+import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -57,8 +54,21 @@ const Login = (props: any) => {
     try {
       const req = AuthenticationApiFetchParamCreator().userLogin(formData);
       const res = await axios.post(req.url, req.options.body, req.options);
+      const userDetails = await axios.get("/api/getuserdetails", {
+        headers: {
+          token: res.data.token,
+        },
+      });
+
       setLoading(false);
-      const loginData = res.data;
+
+      const loginData = {
+        subscriptionType: userDetails.data?.userDetails?.subscriptionType,
+        token: res.data.token,
+        organisationId: res.data.organisationId,
+        rules: userDetails.data?.rules,
+      };
+
       dispatch({
         type: "LOGIN",
         payload: { user: { profile: loginData } },
@@ -71,6 +81,7 @@ const Login = (props: any) => {
       }
     } catch (err) {
       setLoading(false);
+      //@ts-ignore
       if (err.response === undefined) {
         snackbarService.showSnackbar(
           "Couldn't connect to Red Matter servers",
@@ -78,6 +89,7 @@ const Login = (props: any) => {
         );
         return;
       }
+      //@ts-ignore
       const errMsg = err.response.data.message;
       snackbarService.showSnackbar(errMsg, "error");
     }
@@ -97,9 +109,6 @@ const Login = (props: any) => {
     >
       <Grid
         container
-        lg={6}
-        md={9}
-        sm={12}
         justify="center"
         direction="column"
         style={{
@@ -109,6 +118,7 @@ const Login = (props: any) => {
           boxShadow: "1px 1px 1px 1px #ddd",
           border: "solid 1px #ddd",
           textAlign: "center",
+          width: "50%",
         }}
       >
         <LockFilled />

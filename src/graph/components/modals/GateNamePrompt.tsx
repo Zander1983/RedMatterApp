@@ -1,58 +1,143 @@
-import React from 'react';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-
-export default function GetNamePrompt(props : {
-    sendName : Function,
-    open : boolean
-}) {
-    const [name, setName] = React.useState(null);
-    const [nameError, setNameError] = React.useState(false)
-
-    const handleClose = () => { // setOpen(false);
-    };
-
-    return (
-        <div>
-            <Dialog open={
-                    props.open
-                }
-                onClose={handleClose}
-                aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Name Your Gate</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Please write the name of the
-                        <b> Gate </b>
-                        to continue.
-                    </DialogContentText>
-                    <TextField error={nameError} helperText="This Field Is Required" autoFocus margin="dense" id="name" label="Gate Name" type="email"
-                        onChange={
-                            (textField : any) => {
-                                setName(textField.target.value);
-                            }
-                        }/>
-                </DialogContent>
-            <DialogActions>
-                <Button onClick={
-                        () => {
-                            if(name == "" || name == null) {
-                                setNameError(true)
-                            } else {
-                                props.sendName(name)
-                            }
-                            }
-                    }
-                    color="primary">
-                    Continue
-                </Button>
-            </DialogActions>
-        </Dialog>
-    </div>
+import React, { useEffect } from "react";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import { useSelector } from "react-redux";
+import {
+  Gate,
+  Plot,
+  WorkspaceEvent,
+  WorkspaceEventGateNaming,
+} from "graph/resources/types";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import {
+  getGate,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
+import { createSubpopPlot } from "graph/resources/plots";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+let gates: Gate[] = [];
+export default function GateNamePrompt() {
+  const [open, setOpen] = React.useState<boolean>(false);
+  const [nameError, setNameError] = React.useState(false);
+  const [name, setName] = React.useState("");
+  const [gate, setGate] = React.useState<Gate>();
+  const [plot, setPlot] = React.useState<Plot>();
+  const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventGateNamingArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used == false
     );
+    if (eventGateNamingArray.length > 0) {
+      let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      let gate = getGate(event.gateID);
+      setName(gate.name);
+      setGate(gate);
+      setPlot(getPlot(event.plotID));
+      setOpen(true);
+      setEvent(event);
+      EventQueueDispatch.UpdateUsed(event.id);
+    }
+  });
+
+  const renameGate = async (newName: string) => {
+    gate.name = newName;
+    WorkspaceDispatch.UpdateGate(gate);
+    setOpen(false);
+    try {
+      instancePlot(plot, gate);
+    } catch {}
+    EventQueueDispatch.DeleteQueueItem(event.id);
+  };
+
+  const quit = () => {
+    setOpen(false);
+    WorkspaceDispatch.DeleteGate(gate);
+    EventQueueDispatch.DeleteQueueItem(event.id);
+  };
+
+  const instancePlot = async (plot: Plot, gate: Gate) => {
+    plot.gates = [...plot.gates, gate.id];
+    plot.gatingActive = "";
+    await WorkspaceDispatch.UpdatePlot(plot);
+    let basedOffPlot = { ...plot };
+    basedOffPlot.gates = [];
+    await createSubpopPlot(basedOffPlot, [
+      { gate: gate.id, inverseGating: false },
+    ]);
+    const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
+    for (let popGate of popGates) {
+      let popIGate = getGate(popGate);
+      popIGate.children.push(gate.id);
+      WorkspaceDispatch.UpdateGate(popIGate);
+    }
+  };
+
+  useEffect(() => {
+    if (open === true) {
+      const inp = document.getElementById("gate-name-textinput");
+      if (inp !== null) {
+        inp.focus();
+      } else {
+        setTimeout(() => {
+          const inp = document.getElementById("gate-name-textinput");
+          if (inp !== null) {
+            inp.focus();
+          }
+        }, 50);
+      }
+    }
+  }, [open]);
+
+  return (
+    <div
+      onKeyDown={(e: any) => {
+        if (e.code === "Enter") {
+          renameGate(name);
+        }
+      }}
+    >
+      <Dialog open={open} aria-labelledby="form-dialog-title">
+        <DialogTitle>Name Your Gate</DialogTitle>
+        <DialogContent>
+          <TextField
+            error={nameError}
+            value={name}
+            helperText="This Field Is Required"
+            autoFocus
+            margin="dense"
+            id="gate-name-textinput"
+            label="Gate Name"
+            type="email"
+            onChange={(e: any) => {
+              setName(e.target.value);
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={quit} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (name === "" || name == null) {
+                setNameError(true);
+              } else {
+                renameGate(name);
+              }
+            }}
+            color="primary"
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 }

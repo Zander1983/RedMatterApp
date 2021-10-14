@@ -1,6 +1,7 @@
 import numeral from "numeral";
 
 import Drawer, { DrawerState } from "graph/renderers/drawers/drawer";
+import { Label } from "../transformers/graphTransformer";
 
 export interface GraphDrawerState extends DrawerState {
   x1: number;
@@ -18,7 +19,7 @@ export interface GraphDrawerState extends DrawerState {
 }
 
 const binSize = 100;
-const graphLineColor = "#888";
+const minLabelPadding = 30;
 
 export default class GraphDrawer extends Drawer {
   x1: number;
@@ -98,6 +99,7 @@ export default class GraphDrawer extends Drawer {
     ib: number;
     ie: number;
     bins?: number;
+    labels?: Label[];
   }) {
     this.segment({
       x1: params.x1,
@@ -115,16 +117,71 @@ export default class GraphDrawer extends Drawer {
     const bins =
       params.bins !== undefined
         ? params.bins
-        : orientation == "v"
+        : orientation === "v"
         ? this.ypts
         : this.xpts;
-    const p1 = orientation == "v" ? this.y1 : this.x1;
-    const p2 = orientation == "v" ? this.y2 : this.x2;
-    const op1 = orientation == "v" ? this.x1 : this.y1;
-    const op2 = orientation == "v" ? this.x2 : this.y2;
+    const p1 = orientation === "v" ? this.y1 : this.x1;
+    const p2 = orientation === "v" ? this.y2 : this.x2;
+    const op1 = orientation === "v" ? this.x1 : this.y1;
+    const op2 = orientation === "v" ? this.x2 : this.y2;
 
     let counter = bins;
     let interval = Math.max(p1, p2) - Math.min(p1, p2);
+
+    if (params.labels !== undefined) {
+      let min = orientation === "h" ? params.ib : params.ib;
+      let max = orientation === "h" ? params.ie : params.ie;
+      let lastLabelPos: number | null = null;
+
+      if (orientation === "v") {
+        for (const label of params.labels) {
+          let pos = (label.pos - min) / (max - min);
+          const y = Math.abs(p1 - p2) * (1 - pos) + Math.min(p1, p2);
+          if (lastLabelPos !== null && lastLabelPos < y) {
+            continue;
+          }
+          this.segment({
+            x1: op1 - 14,
+            y1: y,
+            x2: op1 + 14,
+            y2: y,
+            lineWidth: 1,
+          });
+          this.text({
+            x: op1 - 90,
+            y: y + 8,
+            text: label.name,
+            font: "20px Arial",
+            fillColor: "black",
+          });
+          lastLabelPos = y - minLabelPadding;
+        }
+      } else {
+        for (const label of params.labels) {
+          let pos = (label.pos - min) / (max - min);
+          const x = Math.abs(p1 - p2) * pos + Math.min(p1, p2);
+          if (lastLabelPos !== null && lastLabelPos > x) {
+            continue;
+          }
+          this.segment({
+            x1: x,
+            y1: op2 - 14,
+            x2: x,
+            y2: op2 + 14,
+            lineWidth: 1,
+          });
+          this.text({
+            font: "20px Arial",
+            fillColor: "black",
+            text: label.name,
+            x: x - 24,
+            y: op2 + 40,
+          });
+          lastLabelPos = x + minLabelPadding;
+        }
+      }
+      return;
+    }
 
     if (bins === 0 || bins === null || bins === undefined) {
       throw Error("Bins are unset or set as an invalid amount");
@@ -136,7 +193,7 @@ export default class GraphDrawer extends Drawer {
       throw Error("Width and height are unset");
     }
 
-    if (orientation == "v") {
+    if (orientation === "v") {
       for (let y = Math.min(p1, p2); y <= Math.max(p1, p2); y += interval) {
         this.segment({
           x1: op1 - 14,
@@ -195,57 +252,27 @@ export default class GraphDrawer extends Drawer {
     return snum;
   }
 
-  private drawPlotLines(
-    orientation: "v" | "h",
-    sbins?: number,
-    strokeColor?: string
-  ) {
-    const bins =
-      sbins !== undefined ? sbins : orientation == "h" ? this.ypts : this.xpts;
-
-    const begin = orientation == "h" ? this.y1 : this.x1;
-    const end = orientation == "h" ? this.y2 : this.x2;
-
-    const obegin = orientation == "h" ? this.x1 : this.y1;
-    const oend = orientation == "h" ? this.x2 : this.y2;
-
-    for (
-      let i = orientation == "v" ? 1 : 0;
-      i < bins + (orientation == "v" ? 1 : 0);
-      i++
-    ) {
-      const fd = (Math.abs(begin - end) / bins) * i + Math.min(begin, end);
-      this.segment({
-        x1: orientation == "h" ? obegin : fd,
-        y1: orientation == "h" ? fd : obegin,
-        x2: orientation == "h" ? oend : fd,
-        y2: orientation == "h" ? fd : oend,
-        strokeColor: graphLineColor,
-      });
-    }
-  }
-
   drawPlotGraph(params?: {
+    xLabels: Label[];
+    yLabels: Label[];
     lines?: boolean;
     vbins?: number;
     hbins?: number;
-    xAxisLabel?: string;
-    yAxisLabel?: string;
+    xCustomLabelRange?: [number, number];
+    yCustomLabelRange?: [number, number];
   }): void {
-    const lines =
-      params === undefined || params.lines === undefined ? true : params.lines;
-
     this.graphLine({
       x1: this.x1,
       y1: this.y1,
       x2: this.x1,
       y2: this.y2,
-      ib: this.iby,
-      ie: this.iey,
+      ib: params.yCustomLabelRange ? params.yCustomLabelRange[0] : this.iby,
+      ie: params.yCustomLabelRange ? params.yCustomLabelRange[1] : this.iey,
       bins:
         params === undefined || params.vbins !== undefined
           ? undefined
           : params.vbins,
+      labels: params.yLabels,
     });
 
     this.graphLine({
@@ -253,27 +280,40 @@ export default class GraphDrawer extends Drawer {
       y1: this.y2,
       x2: this.x2,
       y2: this.y2,
-      ib: this.ibx,
-      ie: this.iex,
+      ib: params.xCustomLabelRange ? params.xCustomLabelRange[0] : this.ibx,
+      ie: params.xCustomLabelRange ? params.xCustomLabelRange[1] : this.iex,
       bins:
         params === undefined || params.hbins !== undefined
           ? undefined
           : params.hbins,
+      labels: params.xLabels,
     });
-
-    if (lines) {
-      this.drawPlotLines(
-        "v",
-        params !== undefined && params.vbins !== undefined
-          ? params.vbins
-          : undefined
-      );
-      this.drawPlotLines(
-        "h",
-        params !== undefined && params.hbins !== undefined
-          ? params.hbins
-          : undefined
-      );
-    }
   }
+
+  addPoint = (x: number, y: number, r: number, color: string = "#000") => {
+    this.rect({
+      x: x * this.scale,
+      y: y * this.scale,
+      w: r,
+      h: r,
+      fillColor: color,
+    });
+  };
+
+  addCirclePoint = (
+    x: number,
+    y: number,
+    r: number,
+    color: string = "#000"
+  ) => {
+    this.oval({
+      x: x * this.scale,
+      y: y * this.scale,
+      d1: r,
+      d2: r,
+      fill: true,
+      ang: 0,
+      fillColor: color,
+    });
+  };
 }

@@ -2,9 +2,11 @@ node_modules
 package-lock.json
 .idea
 npm-debug.log
+.vscode/
 
 # Remove all json files that are not package.json
 !package.json
+!reduxModel.json
 *.json
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
@@ -14,3 +16,4 @@ npm-debug.log
 # Build folder should never be commited
 build
 tslint
+.DS_Store

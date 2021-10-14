@@ -4,7 +4,7 @@ import GraphDrawer, {
 import {
   euclidianDistance2D,
   getVectorAngle2D,
-} from "graph/dataManagement/math/euclidianPlane";
+} from "graph/utils/euclidianPlane";
 
 interface ScatterDrawerState extends GraphDrawerState {}
 
@@ -22,15 +22,6 @@ export default class ScatterDrawer extends GraphDrawer {
       ...super.getDrawerState(),
     };
   }
-
-  addPoint = (x: number, y: number, r: number, color: string = "#000") => {
-    this.circle({
-      x: x * this.scale,
-      y: y * this.scale,
-      radius: r * this.scale,
-      fillColor: color,
-    });
-  };
 
   addPolygon = (
     polygon: { x: number; y: number }[],

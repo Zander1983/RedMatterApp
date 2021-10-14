@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
 import axios from "axios";
 import userManager from "Components/users/userManager";
-import Alert from "@material-ui/lab/Alert";
 import {
   Grid,
   Card,
@@ -15,7 +14,6 @@ import {
 } from "@material-ui/core";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
 
 import { getHumanReadableTimeDifference } from "utils/time";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
@@ -29,8 +27,6 @@ const styles = {
 };
 
 export default function ExperimentCard(props: { data: any; update: Function }) {
-  const [files, setFiles] = React.useState([]);
-  const [initLoading, setInitLoading] = React.useState(true);
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
@@ -54,14 +50,8 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
       });
   };
 
-  const [open, setOpen] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState("");
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
-  const [editodal, setEditodal] = React.useState(false);
-
-  const handleClick = () => {
-    setOpen(true);
-  };
+  const rules = userManager.getRules();
 
   const handleClose = (
     event: React.SyntheticEvent | React.MouseEvent,
@@ -70,12 +60,11 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
     if (reason === "clickaway") {
       return;
     }
-
-    setOpen(false);
   };
 
   return (
     <Grid
+      item
       style={{
         padding: 5,
       }}
@@ -166,16 +155,26 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
             </CardContent>
           </NavLink>
           <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            <Tooltip title="Delete experiment">
-              <Button
-                size="small"
-                color="secondary"
-                startIcon={<DeleteIcon />}
-                variant="outlined"
-                onClick={() => setDeleteConfirmModal(true)}
-              >
-                Delete
-              </Button>
+            {/* Delete Button */}
+            <Tooltip
+              title={
+                rules?.experiment?.delete
+                  ? "Delete experiment"
+                  : "The Delete Button is disabled, upgrade your plan to enable it"
+              }
+            >
+              <span>
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  variant="outlined"
+                  onClick={() => setDeleteConfirmModal(true)}
+                  disabled={!rules?.experiment?.delete}
+                >
+                  Delete
+                </Button>
+              </span>
             </Tooltip>
           </CardActions>
         </Card>

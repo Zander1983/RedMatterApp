@@ -8,24 +8,30 @@ import {
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
 
-import AppHeader from "./Components/common/header";
+import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
 import Experiment from "./Components/workspaces/Experiment";
-import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
-import Plots from "./graph/components/Plots";
+import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import PremiumCheckout from "./Components/plans/PremiumCheckout";
+import Cancel from "./Components/plans/Cancel";
+import Success from "./Components/plans/Success";
+import UserProfile from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
+import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
+import ChatBox from "./Components/common/ChatBox/ChatBox";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import PlansPage from "Components/home/PlansPage";
 
 const { Content } = Layout;
 
@@ -37,6 +43,8 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
   },
   mainLayout: {
+    overflow: "hidden",
+    width: "100%",
     padding: 0,
     height: "auto",
     lineHeight: 1.6,
@@ -48,13 +56,13 @@ const router = [
     path: "/",
     component: AppLandingPage,
   },
-  {
-    path: "/questions/:workspaceID",
-    component: ({ match }: any) => {
-      //@ts-ignore
-      return <PrototypeForm workspaceID={match.params.workspaceID} />;
-    },
-  },
+  // {
+  //   path: "/questions/:workspaceID",
+  //   component: ({ match }: any) => {
+  //     //@ts-ignore
+  //     return <PrototypeForm workspaceID={match.params.workspaceID} />;
+  //   },
+  // },
   {
     path: "/authentication/:tabId",
     component: SignInOutContainer,
@@ -64,12 +72,39 @@ const router = [
     component: Login,
   },
   {
+    path: "/browse-experiments",
+    component: BrowseExperiments,
+  },
+  {
     path: "/register",
     component: Register,
   },
   {
+    path: "/plans",
+    component: PlansPage,
+  },
+  {
     path: "/verify",
     component: VerifyEmail,
+  },
+  {
+    path: "/premium-checkout",
+    component: PremiumCheckout,
+  },
+  {
+    path: "/user-profile",
+    component: UserProfile,
+  },
+  {
+    path: "/cancel",
+    component: Cancel,
+  },
+  {
+    path: "/success/:session_id",
+    component: ({ match }: any) => {
+      //@ts-ignore
+      return <Success session_id={match.params.session_id} />;
+    },
   },
   {
     path: "/verify/:verifyStr",
@@ -86,14 +121,28 @@ const router = [
   {
     path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} />
+      <Plots experimentId={match.params.experimentId} shared={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/plots/public",
+    component: ({ match }: any) => (
+      <Plots experimentId={match.params.experimentId} shared={true} />
     ),
   },
   { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
-    component: ({ match }: any) => <Experiment id={match.params.experimentId} />,
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} poke={false} />
+    ),
+  },
+  {
+    path: "/experiment/:experimentId/poke",
+    component: ({ match }: any) => (
+      <Experiment id={match.params.experimentId} poke={true} />
+    ),
   },
   {
     path: "/mailing-list",
@@ -124,6 +173,7 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -136,12 +186,13 @@ const App = () => {
           style={{ fontFamily: "Quicksand" }}
         >
           <Switch>
-            {router.map((e) => (
+            {router.map((e, number) => (
               // @ts-ignore
-              <Route exact path={e.path} component={e.component} />
+              <Route key={number} exact path={e.path} component={e.component} />
             ))}
           </Switch>
         </Content>
+        <ChatBox />
         <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>
