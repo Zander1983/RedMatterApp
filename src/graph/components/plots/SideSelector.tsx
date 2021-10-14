@@ -56,6 +56,8 @@ function PlotComponent(props: {
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
   const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
+  const [xWidth, setXWidth] = React.useState(100);
+  const [yWidth, setYWidth] = React.useState(100);
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     axis === "x"
@@ -111,6 +113,23 @@ function PlotComponent(props: {
     setDownloadingFiles(downloadingFileIds);
   }, [files]);
 
+  useEffect(() => {
+    if (xAxis.length > 8) {
+      const newWidth = 100 + (xAxis.length - 8) * 10;
+      setXWidth(newWidth > 200 ? 200 : newWidth);
+    } else {
+      setXWidth(100);
+    }
+  }, [xAxis]);
+  useEffect(() => {
+    if (yAxis.length > 8) {
+      const newWidth = 100 + (yAxis.length - 8) * 10;
+      setYWidth(newWidth > 200 ? 200 : newWidth);
+    } else {
+      setYWidth(100);
+    }
+  }, [yAxis]);
+
   const isHistogramSelected = (
     plotId: string = "",
     fileId: string = ""
@@ -128,6 +147,7 @@ function PlotComponent(props: {
   const isDownloading = (fileId: FileID) => {
     return downloadingFiles.find((x) => x == fileId);
   };
+  console.log(yWidth);
 
   const handleMultiPlotHistogram = async (
     dataSource: "file" | "plot",
@@ -181,7 +201,7 @@ function PlotComponent(props: {
       <div
         className="pc-y"
         style={{
-          marginTop: 100,
+          marginTop: yWidth >= 200 ? 250 : yWidth,
           marginRight: 20,
           transform: "rotate(270deg)",
           height: "min-content",
@@ -192,7 +212,7 @@ function PlotComponent(props: {
         <Select
           disabled={!props.editWorkspace}
           style={{
-            width: 100,
+            width: yWidth,
             marginRight: 15,
             flex: "1 1 auto",
           }}
@@ -309,7 +329,11 @@ function PlotComponent(props: {
           <div>
             <Select
               disabled={!props.editWorkspace}
-              style={{ width: 100, marginTop: "10px", flex: "1 1 auto" }}
+              style={{
+                width: xWidth,
+                marginTop: "10px",
+                flex: "1 1 auto",
+              }}
               onChange={(e) => {
                 //@ts-ignore
                 setAxis("x", e.target.value);
@@ -317,7 +341,7 @@ function PlotComponent(props: {
               value={xAxis}
             >
               {axes.map((e: any) => (
-                <MenuItem value={e}>{e}</MenuItem>
+                <MenuItem value={e}>{e} </MenuItem>
               ))}
             </Select>
 
