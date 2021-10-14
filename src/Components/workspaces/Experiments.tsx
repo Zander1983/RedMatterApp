@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { Grid, Button, CircularProgress } from "@material-ui/core";
+import { Grid, Button, CircularProgress, Tooltip } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
-import CreateExperimentModal from "./modals/CreateExperimentModal";
+import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
 
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { snackbarService } from "uno-material-ui";
 import IOSSwitch from "Components/common/Switch";
+import { createButtonDisable } from "./UserAuthorizationRules";
 
 interface RemoteExperiment {
   id: string;
@@ -38,29 +39,26 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   const gettingOrganizationId = () => {
     try {
-      let orgID = userManager.getOrganiztionID();
-      return orgID;
+      return userManager.getOrganiztionID();
     } catch (error) {
-      let orgID = null;
       history.replace("/login");
-      return orgID;
+      return null;
     }
   };
-
-  const [organizationExperiments, setExperiments] = React.useState([]);
-  const [privateExperiments, setPrivateExperiments] = React.useState([]);
+  const [organizationExperiments, setExperiments] = useState([]);
+  const [privateExperiments, setPrivateExperiments] = useState([]);
   const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    React.useState(false);
+    useState<boolean>(false);
   const [createExperimentModal, setCreateExperimentModal] =
-    React.useState(false);
-
+    useState<boolean>(false);
   const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    React.useState(true);
+    useState<boolean>(true);
   const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
-    React.useState(false);
-
-  const [displayExperiments, setDisplayExperiments] = React.useState([]);
+    useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
+  const rules = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -70,14 +68,23 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       userManager.getOrganiztionID(),
       userManager.getToken()
     );
+    // rules?.experiment &&
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
         setExperiments(response.data.organisationExperiments);
         setPrivateExperiments(response.data.userExperiments);
         setFetchExperimentsComplete(true);
+        setDisabled(
+          createButtonDisable(
+            response.data.userExperiments.length,
+            rules.experiment.unLimitedPublic,
+            rules.experiment.number
+          )
+        );
       })
       .catch((e) => {
+        console.log(e);
         setFetchExperimentsComplete(true);
         snackbarService.showSnackbar(
           "Failed to find experiment information or Session Expired",
@@ -193,33 +200,55 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     />
                   }
                 />{" "}
-                <FormControlLabel
-                  label={
-                    "Organization Experiments (" +
-                    organizationExperiments.length +
-                    ")"
-                  }
-                  control={
-                    <IOSSwitch
-                      onChange={() =>
-                        setOrganizationExperimentsSwitch(
-                          !organizationExperimentsSwitch
-                        )
-                      }
-                    />
-                  }
-                />{" "}
+                {/* Here */}
+                {rules.createOrganizations && (
+                  <FormControlLabel
+                    label={
+                      "Organization Experiments (" +
+                      organizationExperiments.length +
+                      ")"
+                    }
+                    control={
+                      <IOSSwitch
+                        onChange={() =>
+                          setOrganizationExperimentsSwitch(
+                            !organizationExperimentsSwitch
+                          )
+                        }
+                      />
+                    }
+                  />
+                )}
               </div>
-              <Button
-                variant="contained"
-                style={{
-                  backgroundColor: "#fafafa",
-                  maxHeight: 40,
-                }}
-                onClick={() => setCreateExperimentModal(true)}
+
+              {/* Create Button */}
+              <Tooltip
+                disableFocusListener={!disabled}
+                disableHoverListener={!disabled}
+                disableTouchListener={!disabled}
+                title={
+                  <React.Fragment>
+                    <h3 style={{ color: "white" }}>
+                      The Create Button is disabled, upgrade your plan to enable
+                      it
+                    </h3>
+                  </React.Fragment>
+                }
               >
-                Create
-              </Button>
+                <span>
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: "#fafafa",
+                      maxHeight: 40,
+                    }}
+                    disabled={disabled}
+                    onClick={() => setCreateExperimentModal(true)}
+                  >
+                    Create
+                  </Button>
+                </span>
+              </Tooltip>
             </Grid>
 
             <Grid

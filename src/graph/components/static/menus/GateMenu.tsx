@@ -14,11 +14,14 @@ import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
 import { snackbarService } from "uno-material-ui";
-import { getGate, getWorkspace } from "graph/utils/workspace";
-import { Gate, PolygonGate } from "graph/resources/types";
-import * as GateResource from "graph/resources/types";
+import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { Gate, HistogramGate, PolygonGate } from "graph/resources/types";
 import { store } from "redux/store";
 import { createGate } from "graph/resources/gates";
+import { dowloadAllFileEvents } from "services/FileService";
+import { createPlot } from "graph/resources/plots";
+import { createPopulation } from "graph/resources/populations";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const classes = {
   table: {},
@@ -27,25 +30,16 @@ const classes = {
 export default function GateMenu(props: { gates: Gate[] }) {
   const setGateColor = (gate: Gate, color: any) => {
     gate.color = color.hex;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    WorkspaceDispatch.UpdateGate(gate);
   };
 
   const setGateName = (gate: Gate, name: any) => {
     gate.name = name;
-    store.dispatch({
-      type: "workspace.UPDATE_GATE",
-      payload: { gate },
-    });
+    WorkspaceDispatch.UpdateGate(gate);
   };
 
   const deleteGate = (gate: Gate) => {
-    store.dispatch({
-      type: "workspace.DELETE_GATE",
-      payload: { gate: gate },
-    });
+    WorkspaceDispatch.DeleteGate(gate);
   };
 
   const cloneGate = (gate: PolygonGate) => {
@@ -53,59 +47,50 @@ export default function GateMenu(props: { gates: Gate[] }) {
       cloneGate: gate,
     });
     newGate.name = gate.name + " clone";
-    store.dispatch({
-      type: "workspace.ADD_GATE",
-      payload: { gate: newGate },
-    });
+    WorkspaceDispatch.AddGate(newGate);
   };
 
   const applyGateToAllFiles = async (gate: Gate) => {
-    //TODO
-    // const { gate, gateID } = params;
-    // let downloadSnackbar = false;
-    // const promises = dataManager.files
-    //   .filter((e) => {
-    //     for (const file of dataManager.getAllFiles()) {
-    //       if (e.id === file.fileID) return false;
-    //     }
-    //     return true;
-    //   })
-    //   .map((e) => {
-    //     if (downloadSnackbar === false) {
-    //       downloadSnackbar = true;
-    //       snackbarService.showSnackbar("Downloading files...", "info");
-    //     }
-    //     return dataManager.downloadFileEvent(e.id);
-    //   });
-    // await Promise.all(promises);
-    // let files = dataManager.getAllFiles();
-    // const plots = dataManager.getAllPlots();
-    // // Check gates that already
-    // plots.forEach((plot) => {
-    //   if (
-    //     plot.plot.population.length === 1 &&
-    //     plot.plot.population.filter((plotGate) => plotGate.gate.id === gateID)
-    //       .length > 0
-    //   ) {
-    //     files = files.filter((file) => file.fileID !== plot.plot.file.id);
-    //   }
-    // });
-    // for (const file of files) {
-    //   const plot = new PlotData();
-    //   plot.file = file.file;
-    //   plot.population = [
-    //     {
-    //       inverseGating: false,
-    //       gate: gate,
-    //     },
-    //   ];
-    //   plot.setXAxis(gate.xAxis);
-    //   plot.setYAxis(gate.yAxis);
-    //   plot.setXAxisPlotType(gate.xAxisType);
-    //   plot.setYAxisPlotType(gate.yAxisType);
-    //   dataManager.addNewPlotToWorkspace(plot);
-    // }
-    // dataManager.updateWorkspace();
+    await dowloadAllFileEvents();
+    let files = getWorkspace().files;
+    const plots = getWorkspace().plots;
+
+    // Check gates that already
+    plots.forEach((plot) => {
+      const pop = getPopulation(plot.population);
+      if (
+        pop.gates.length === 1 &&
+        pop.gates.filter((e) => e.gate === gate.id).length > 0
+      ) {
+        files = files.filter((file) => file.id !== pop.file);
+      }
+    });
+
+    for (const file of files) {
+      const population = createPopulation({ file: file.id });
+      population.gates = [
+        {
+          inverseGating: false,
+          gate: gate.id,
+        },
+      ];
+      await WorkspaceDispatch.AddPopulation(population);
+      const plot = createPlot({ population });
+      if (gate.gateType === "polygon") {
+        plot.xAxis = (gate as PolygonGate).xAxis;
+        plot.yAxis = (gate as PolygonGate).yAxis;
+        plot.xPlotType = (gate as PolygonGate).xAxisType;
+        plot.yPlotType = (gate as PolygonGate).yAxisType;
+      }
+      if (gate.gateType === "histogram") {
+        plot.xAxis = (gate as HistogramGate).axis;
+        plot.yAxis = (gate as HistogramGate).axis;
+        plot.xPlotType = (gate as HistogramGate).axisType;
+        plot.yPlotType = (gate as HistogramGate).axisType;
+        plot.histogramAxis = "vertical";
+      }
+      await WorkspaceDispatch.AddPlot(plot);
+    }
   };
   const workspace = getWorkspace();
 

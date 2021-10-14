@@ -8,6 +8,7 @@ import { Plot, Range } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import { getPopulation, getWorkspace } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -45,13 +46,11 @@ const RangeResizeModal = (props: {
   const [minY, setMinY] = React.useState("0");
   const [maxY, setMaxY] = React.useState("0");
 
-  const xAxis = plot.xAxis;
-  const yAxis = plot.yAxis;
-
-  const plotMinX = plot.ranges[xAxis][0];
-  const plotMaxX = plot.ranges[xAxis][1];
-  const plotMinY = plot.ranges[yAxis][0];
-  const plotMaxY = plot.ranges[yAxis][1];
+  const ranges = PlotResource.getXandYRanges(plot);
+  const plotMinX = ranges.x[0];
+  const plotMaxX = ranges.x[1];
+  const plotMinY = ranges.y[0];
+  const plotMaxY = ranges.y[1];
 
   useEffect(() => {
     setMinX(plotMinX.toString());
@@ -78,21 +77,9 @@ const RangeResizeModal = (props: {
     });
 
     targetPlots.forEach((tplot) => {
-      if (histogramAxis !== "horizontal") {
-        tplot.ranges[xAxis] = xRange;
-        store.dispatch({
-          type: "workspace.UPDATE_PLOT",
-          payload: { plot: tplot },
-        });
-      }
-
-      if (histogramAxis !== "vertical") {
-        tplot.ranges[yAxis] = yRange;
-        store.dispatch({
-          type: "workspace.UPDATE_PLOT",
-          payload: { plot: tplot },
-        });
-      }
+      tplot.ranges[PlotResource.getPlotAxisRangeString(plot, "x")] = xRange;
+      tplot.ranges[PlotResource.getPlotAxisRangeString(plot, "y")] = yRange;
+      WorkspaceDispatch.UpdatePlot(tplot);
     });
   };
 
@@ -122,8 +109,9 @@ const RangeResizeModal = (props: {
   };
 
   const setDefaultRanges = (axis: "x" | "y") => {
-    const population = getPopulation(plot.population);
-    const ranges = population.defaultRanges[axis === "x" ? xAxis : yAxis];
+    const file = PlotResource.getPlotFile(plot);
+    const ranges =
+      file.defaultRanges[PlotResource.getPlotAxisRangeString(plot, axis)];
     if (axis === "x") {
       setMinX(ranges[0].toString());
       setMaxX(ranges[1].toString());
@@ -152,43 +140,41 @@ const RangeResizeModal = (props: {
           direction="row"
           style={{ padding: "2rem 1rem 1rem 1rem" }}
         >
-          {plot.histogramAxis !== "horizontal" ? (
-            <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
-              <h3>Edit {plot.xAxis} range</h3>
-              <TextField
-                label="Range min"
-                value={minX}
-                type={"number"}
-                onChange={(e) => {
-                  setMinX(e.target.value);
-                }}
-              />
-              <br />
-              <TextField
-                label="Range max"
-                value={maxX}
-                type={"number"}
-                onChange={(e) => {
-                  setMaxX(e.target.value);
-                }}
-              />
-              <br />
-              <Button
-                variant="contained"
-                style={{
-                  marginTop: 15,
-                  backgroundColor: "#6666aa",
-                  color: "white",
-                  marginLeft: 20,
-                }}
-                onClick={() => setDefaultRanges("x")}
-              >
-                Set Default
-              </Button>
-            </Grid>
-          ) : null}
+          <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
+            <h3>Edit {plot.xAxis} range</h3>
+            <TextField
+              label="Range min"
+              value={minX}
+              type={"number"}
+              onChange={(e) => {
+                setMinX(e.target.value);
+              }}
+            />
+            <br />
+            <TextField
+              label="Range max"
+              value={maxX}
+              type={"number"}
+              onChange={(e) => {
+                setMaxX(e.target.value);
+              }}
+            />
+            <br />
+            <Button
+              variant="contained"
+              style={{
+                marginTop: 15,
+                backgroundColor: "#6666aa",
+                color: "white",
+                marginLeft: 20,
+              }}
+              onClick={() => setDefaultRanges("x")}
+            >
+              Set Default
+            </Button>
+          </Grid>
 
-          {plot.histogramAxis !== "vertical" ? (
+          {plot.histogramAxis ? null : (
             <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
               <h3>Edit {plot.yAxis} range</h3>
               <TextField
@@ -222,7 +208,8 @@ const RangeResizeModal = (props: {
                 Set Default
               </Button>
             </Grid>
-          ) : null}
+          )}
+
           <Divider></Divider>
           <br />
           <Grid

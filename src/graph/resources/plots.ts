@@ -1,4 +1,4 @@
-import { generateColor } from "graph/utils/color";
+import { ColorSchema, generateColor } from "graph/utils/color";
 import FCSServices from "services/FCSServices/FCSServices";
 import {
   AxisName,
@@ -9,12 +9,14 @@ import {
   GateID,
   File,
   Population,
-  Dataset,
+  HistogramOverlay,
+  FileID,
+  HistogramAxisType,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
+  getAllPlots,
   getFile,
-  getGate,
   getPlot,
   getPopulation,
   getWorkspace,
@@ -27,15 +29,13 @@ import {
   getDatasetColors,
   getDatasetFilteredPoints,
 } from "./dataset";
-import { includes } from "lodash";
-import { MINH, MINW } from "graph/components/workspaces/PlotController";
-
-export const commitPlotChange = (plot: Plot) => {
-  store.dispatch({
-    type: "workspace.UPDATE_PLOT",
-    payload: { plot },
-  });
-};
+import {
+  MINH,
+  MINW,
+  getTargetLayoutPlots,
+  getPlotGroups,
+} from "graph/components/workspaces/PlotController";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export const createPlot = ({
   clonePlot,
@@ -46,13 +46,14 @@ export const createPlot = ({
   id?: PlotID;
   population?: Population;
 }): Plot => {
-  let newPlot = createBlankPlotObj();
+  let newPlot = createEmptyPlot();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
   if (population) {
-    newPlot.ranges = { ...population?.defaultRanges };
-    newPlot.axisPlotTypes = { ...population?.defaultAxisPlotTypes };
+    const file = getFile(population.file);
+    newPlot.ranges = { ...file.defaultRanges };
+    newPlot.axisPlotTypes = { ...file.defaultAxisPlotTypes };
     newPlot.population =
       typeof population === "string" ? population : population.id;
   }
@@ -65,17 +66,103 @@ export const createPlot = ({
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
+
+  newPlot.dimensions = { w: MINW, h: MINH };
+  let plots = getTargetLayoutPlots(newPlot);
+  if (plots.length > 0) {
+    newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
+  }
+
   return setupPlot(newPlot);
 };
 
-export const createBlankPlotObj = (): Plot => {
+export const updatePositions = () => {
+  let plots = getAllPlots();
+  let plotGroups = getPlotGroups(plots);
+  let keys = Object.keys(plotGroups);
+  let updatePlots: Plot[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    let key: number = parseInt(keys[i]);
+    let plots = plotGroups[key].plots;
+    for (let j = 0; j < plots.length; j++) {
+      let newPosition = standardGridPlotItem(j, plots[j], plots);
+      plots[j].positions.x = newPosition.x;
+      plots[j].positions.y = newPosition.y;
+    }
+    updatePlots = updatePlots.concat(plots);
+  }
+  WorkspaceDispatch.UpdatePlots(updatePlots);
+};
+
+const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
+  let maxWidth = MINW * 4;
+  let maxHeight = 0;
+  let x = plotData.positions.x;
+  let y = plotData.positions.y;
+  let newy = y;
+  let newX = x;
+
+  let nPlots = plots.filter((x: Plot) => x.id != plotData.id);
+  nPlots.sort(function (a: Plot, b: Plot) {
+    return a.positions.x - b.positions.x && a.positions.y - b.positions.y;
+  });
+  let prevLineWidth = 0;
+  for (let i = 0; i < index; i++) {
+    let plot = nPlots[i];
+    if (
+      i != 0 &&
+      !(
+        plot.positions.y >= nPlots[i - 1].positions.y &&
+        plot.positions.y <
+          nPlots[i - 1].positions.y + nPlots[i - 1].dimensions.h
+      )
+    ) {
+      prevLineWidth = newX;
+    }
+    if (prevLineWidth) {
+      if (maxWidth - prevLineWidth > MINW) {
+        newX = prevLineWidth;
+        break;
+      }
+      prevLineWidth = 0;
+    }
+    if (
+      i != 0 &&
+      plot.positions.x -
+        (nPlots[i - 1].positions.x + nPlots[i - 1].dimensions.w) >=
+        MINW
+    ) {
+      newX = nPlots[i - 1].dimensions.w + nPlots[i - 1].positions.x;
+      break;
+    }
+    newX = plot.dimensions.w + plot.positions.x;
+    if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
+    if (newX + MINW > maxWidth) {
+      prevLineWidth = newX;
+      newX = 0;
+      newy = newy + maxHeight;
+      maxHeight = 0;
+    }
+  }
+
+  if (index == 0) {
+    newX = 0;
+    newy = 0;
+  }
+
+  return {
+    x: newX,
+    y: newy,
+  };
+};
+
+export const createEmptyPlot = (): Plot => {
   let newPlot: Plot = {
     id: "",
     ranges: {},
     axisPlotTypes: {},
     gates: [],
     histogramOverlays: [],
-    histogramBarOverlays: [],
     population: "",
     xAxis: "",
     yAxis: "",
@@ -102,35 +189,38 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
     : getPopulation(plot.population);
   const file = getFile(population.file);
   const axes = file.axes;
+
   if (plot.xAxis.length === 0 && plot.yAxis.length === 0) {
-    if (plot.axisPlotTypes[plot.xAxis])
+    if (Object.keys(plot.axisPlotTypes).length > 0) {
       try {
         const fscssc = getFSCandSSCAxisOnAxesList(file.axes);
         if (plot.xAxis === "" && plot.yAxis === "") {
           plot.xAxis = fscssc.fsc;
           plot.yAxis = fscssc.ssc;
         }
-      } catch {}
-    if (plot.xAxis === "") plot.xAxis = axes[0];
-    if (plot.yAxis === "") plot.yAxis = axes[1];
+      } catch {
+        if (plot.xAxis === "") plot.xAxis = axes[0];
+        if (plot.yAxis === "") plot.yAxis = axes[1];
+      }
+    }
   }
+  if (plot.xAxis === "") plot.xAxis = axes[0];
+  if (plot.yAxis === "") plot.yAxis = axes[1];
+  if (!plot.xPlotType) plot.xPlotType = getPlotType(plot, plot.xAxis);
+  if (!plot.yPlotType) plot.yPlotType = getPlotType(plot, plot.yAxis);
 
-  if (Object.keys(plot.axisPlotTypes).length > 0) {
-    plot.xPlotType = plot.axisPlotTypes[plot.xAxis];
-    plot.yPlotType = plot.axisPlotTypes[plot.yAxis];
-  } else {
-    plot.xPlotType =
-      plot.xAxis.toLowerCase().includes("fsc") ||
-      plot.xAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-    plot.yPlotType =
-      plot.yAxis.toLowerCase().includes("fsc") ||
-      plot.yAxis.toLowerCase().includes("ssc")
-        ? "lin"
-        : "bi";
-  }
   return plot;
+};
+
+const getPlotType = (plot: Plot, plotAxis: string) => {
+  if (Object.keys(plot.axisPlotTypes).length > 0) {
+    return plot.axisPlotTypes[plotAxis];
+  } else {
+    return plotAxis.toLowerCase().includes("fsc") ||
+      plotAxis.toLowerCase().includes("ssc")
+      ? "lin"
+      : "bi";
+  }
 };
 
 export const getPlotOverlays = (plot: Plot) => {
@@ -142,70 +232,75 @@ export const getPlotOverlays = (plot: Plot) => {
   });
 };
 
-export const addOverlay = (
+export const addOverlay = async (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  {
+    fromFile,
+    fromPlot,
+  }: {
+    fromFile?: FileID;
+    fromPlot?: PlotID;
+  }
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
-  commitPlotChange(plot);
+  if (fromPlot) {
+    throw Error("Plot overlays not implemented");
+  } else if (fromFile) {
+    let population: Population = populations.createPopulation({
+      file: fromFile,
+    });
+    population.gates = population.gates.concat(
+      getPopulation(plot.population).gates
+    );
+    await WorkspaceDispatch.AddPopulation(population);
+    const newHistogramOverlay: HistogramOverlay = {
+      id: createID(),
+      color: generateColor(),
+      dataSource: "file",
+      overlayType: "line",
+      file: fromFile,
+      population: population.id,
+    };
+    plot.histogramOverlays.push(newHistogramOverlay);
+  } else {
+    throw Error("No overlay source found");
+  }
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const addBarOverlay = (
+// export const changeOverlayType = (
+//   plot: Plot,
+//   targetPlotId: String,
+//   fileId: String,
+//   newType: PlotType,
+//   oldType: PlotType
+// ) => {
+//   let overlay: HistogramOverlay = plot.histogramOverlays.find(
+//     (e) =>
+//       e.plotId === targetPlotId || e.fileId === fileId || e.plotType === oldType
+//   );
+//   overlay.plotType = newType;
+//   WorkspaceDispatch.UpdatePlot(plot);
+// };
+
+export const removeOverlay = (
   plot: Plot,
-  color?: string,
-  plotId?: string,
-  plotSource?: string
+  histogramOverlay: HistogramOverlay
 ) => {
-  if (!color) color = generateColor();
-  plot.histogramBarOverlays.push({
-    color: color,
-    plotId: plotId,
-    plotSource: plotSource,
-  });
-  commitPlotChange(plot);
-};
-
-export const removeBarOverlay = (plot: Plot, overlayPlot: PlotID) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== overlayPlot
-  );
-  commitPlotChange(plot);
-};
-
-export const removeAnyOverlay = (plot: Plot, targetPopulation: string) => {
-  plot.histogramBarOverlays = plot.histogramBarOverlays.filter(
-    (x) => x.plotId !== targetPopulation
-  );
   plot.histogramOverlays = plot.histogramOverlays.filter(
-    (x) => x.plotId !== targetPopulation
+    (e) => e.id !== histogramOverlay.id
   );
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
-export const removeOverlay = (plot: Plot, targetPlot: string) => {
-  plot.histogramOverlays = plot.histogramOverlays.filter(
-    (e) => e.plotId !== targetPlot
-  );
-
-  commitPlotChange(plot);
-};
-
-export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
+export const createNewPlotFromPlot = async (
+  plot: Plot,
+  inverse: boolean = false
+) => {
   let newPlot = createPlot({ clonePlot: plot });
   let newPopulation = populations.createPopulation({
     clonePopulation: getPopulation(plot.population),
   });
-  store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population: newPopulation },
-  });
+  await WorkspaceDispatch.AddPopulation(newPopulation);
   newPlot.population = newPopulation.id;
   newPlot.parentPlotId = plot.id;
   newPlot.positions = {
@@ -213,20 +308,15 @@ export const createNewPlotFromPlot = (plot: Plot, inverse: boolean = false) => {
     y: -1,
   };
   newPlot.dimensions = {
-    w: 10,
-    h: 12,
+    w: MINW,
+    h: MINH,
   };
-  store.dispatch({
-    type: "workspace.ADD_PLOT",
-    payload: {
-      plot: newPlot,
-    },
-  });
+  await WorkspaceDispatch.AddPlot(newPlot);
 };
 
 export const addGate = (plot: Plot, gate: GateID) => {
   plot.gates.push(gate);
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const removeGate = (plot: Plot, gate: GateID) => {
@@ -239,7 +329,7 @@ export const removeGate = (plot: Plot, gate: GateID) => {
     }
   }
   plot.gates = plot.gates.filter((g) => g !== gate);
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const addPopulation = (
@@ -273,55 +363,56 @@ export const removePopulation = (plot: Plot, gate: GateID) => {
 export const setWidthAndHeight = (plot: Plot, w: number, h: number) => {
   plot.plotWidth = w - 40;
   plot.plotHeight = h - 30;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setXAxisPlotType = (plot: Plot, plotType: PlotType) => {
   plot.gatingActive = "";
   plot.xPlotType = plotType;
   plot.axisPlotTypes[plot.xAxis] = plotType;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setYAxisPlotType = (plot: Plot, plotType: PlotType) => {
   plot.gatingActive = "";
   plot.yPlotType = plotType;
   plot.axisPlotTypes[plot.yAxis] = plotType;
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const xAxisToHistogram = (plot: Plot) => {
   plot.gatingActive = "";
   plot.yAxis = plot.xAxis;
   plot.histogramAxis = "vertical";
-  commitPlotChange(plot);
-};
-
-export const yAxisToHistogram = (plot: Plot) => {
-  plot.gatingActive = "";
-  plot.xAxis = plot.yAxis;
-  plot.histogramAxis = "horizontal";
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setXAxis = (plot: Plot, xAxis: string) => {
   plot.gatingActive = "";
   plot.xAxis = xAxis;
   plot.xPlotType = plot.axisPlotTypes[xAxis];
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setYAxis = (plot: Plot, yAxis: string) => {
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
+};
+
+export const setHistogramAxis = (
+  plot: Plot,
+  histogramAxis: HistogramAxisType
+) => {
+  plot.histogramAxis = histogramAxis;
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const disableHistogram = (plot: Plot) => {
   plot.gatingActive = "";
   plot.histogramAxis = "";
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const getXAxisName = (plot: Plot) => {
@@ -345,31 +436,24 @@ export const getXandYRanges = (
 ): { x: [number, number]; y: [number, number] } => {
   if (!targetXAxis) targetXAxis = plot.xAxis;
   if (!targetYAxis) targetYAxis = plot.yAxis;
-  return { x: plot.ranges[targetXAxis], y: plot.ranges[targetYAxis] };
+  return {
+    x: plot.ranges[getPlotAxisRangeString(plot, "x")],
+    y: plot.ranges[getPlotAxisRangeString(plot, "y")],
+  };
 };
 
 export const getHistogramBins = (
   plot: Plot,
-  binCount?: number,
-  targetAxis?: string
+  binCount: number,
+  targetAxis: string
 ) => {
-  binCount = binCount === undefined ? getBinCount(plot) : binCount;
-  const axisName =
-    targetAxis === undefined
-      ? plot.histogramAxis === "vertical"
-        ? plot.xAxis
-        : plot.yAxis
-      : targetAxis;
-  let range = plot.ranges[axisName];
+  binCount = Math.round(binCount);
+  let range = plot.ranges[getPlotAxisRangeString(plot, "x")];
   let axis = getHistogramAxisData(plot);
-  if (
-    (plot.xAxis === axisName && plot.xPlotType === "bi") ||
-    (plot.yAxis === axisName && plot.yPlotType === "bi")
-  ) {
+  if (plot.xPlotType === "bi") {
     const fcsServices = new FCSServices();
-    const linearRange = plot.ranges[axisName];
     axis = new Float32Array(
-      fcsServices.logicleMarkTransformer(axis, linearRange[0], linearRange[1])
+      fcsServices.logicleMarkTransformer(axis, range[0], range[1])
     );
     range = [0, 1];
   }
@@ -384,22 +468,18 @@ export const getHistogramBins = (
   return { list: binCounts, max: mx };
 };
 
-const STD_BIN_SIZE = 50;
-export const getBinCount = (plot: Plot) => {
-  return plot.histogramAxis === "horizontal"
-    ? plot.plotWidth / STD_BIN_SIZE
-    : plot.plotHeight / STD_BIN_SIZE;
-};
-
 export const resetOriginalRanges = (plot: Plot, axis?: "x" | "y") => {
-  const population = getPopulation(plot.population);
+  const file = getPlotFile(plot);
   if (axis) {
-    const axisName = axis === "x" ? plot.xAxis : plot.yAxis;
-    plot.ranges[axisName] = population.defaultRanges[axisName];
+    const rangeString = getPlotAxisRangeString(
+      plot,
+      axis === "x" ? plot.xAxis : plot.yAxis
+    );
+    plot.ranges[rangeString] = file.defaultRanges[rangeString];
   } else {
-    plot.ranges = population.defaultRanges;
+    plot.ranges = file.defaultRanges;
   }
-  commitPlotChange(plot);
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
@@ -415,22 +495,22 @@ export const getHistogramAxisData = (plot: Plot): Float32Array => {
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  return filteredPoints[
-    plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis
-  ];
+  return filteredPoints[plot.xAxis];
 };
 
 export const getXandYDataAndColors = (
   plot: Plot
-): { points: [Float32Array, Float32Array]; colors: string[] } => {
+): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  const plotGates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const colors = getDatasetColors(dataset, plotGates);
+  const colors = getDatasetColors(
+    filteredPoints,
+    population.gates,
+    plot.gates,
+    "#000"
+  );
   return {
     points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
     colors,
@@ -457,17 +537,9 @@ export const getPlotFile = (plot: Plot): File => {
 
 export const getPointColors = (plot: Plot) => {
   const dataset = getDataset(getPlotFile(plot).id);
-  const gates = plot.gates.map((e) => {
-    return { gate: e, inverseGating: false } as PopulationGateType;
-  });
-  const populationGates = getPopulation(plot.population).gates.map((e) =>
-    getGate(e.gate)
-  );
-  const stdColor =
-    populationGates.length > 0
-      ? populationGates[populationGates.length - 1].color
-      : "#000";
-  return getDatasetColors(dataset, gates, stdColor);
+  const plotGates = plot.gates;
+  const populationGates = getPopulation(plot.population).gates;
+  return getDatasetColors(dataset, populationGates, plotGates, "#000");
 };
 
 export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
@@ -475,15 +547,9 @@ export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
   population = populations.createPopulation({
     file: file.id,
   });
-  await store.dispatch({
-    type: "workspace.ADD_POPULATION",
-    payload: { population },
-  });
+  await WorkspaceDispatch.AddPopulation(population);
   const plot = createPlot({ population, clonePlot });
-  await store.dispatch({
-    type: "workspace.ADD_PLOT",
-    payload: { plot },
-  });
+  await WorkspaceDispatch.AddPlot(plot);
   await setupPlot(plot, population);
   return plot.id;
 };
@@ -493,7 +559,10 @@ export const createSubpopPlot = async (
   additionalGates?: PopulationGateType[]
 ) => {
   const oldPop = getPopulation(plot.population);
-  const newPlotId = await createNewPlotFromFile(getFile(oldPop.file), plot);
+  const newPlotId = await createNewPlotFromFile(getFile(oldPop.file), {
+    ...plot,
+    gates: [],
+  });
   let newPlot = getPlot(newPlotId);
   let pop = getPopulation(newPlot.population);
   if (additionalGates) {
@@ -501,27 +570,22 @@ export const createSubpopPlot = async (
   }
   pop.gates = pop.gates.concat(oldPop.gates);
   const promises: Promise<any>[] = [];
-  promises.push(
-    store.dispatch({
-      type: "workspace.UPDATE_POPULATION",
-      payload: {
-        population: pop,
-      },
-    })
-  );
+  promises.push(WorkspaceDispatch.UpdatePopulation(pop));
   const popGates = pop.gates.map((e) => e.gate);
   for (const gate of newPlot.gates) {
     if (popGates.includes(gate)) {
-      newPlot.gates.filter((e) => e != gate);
+      newPlot.gates.filter((e) => e !== gate);
     }
   }
-  promises.push(
-    store.dispatch({
-      type: "workspace.UPDATE_POPULATION",
-      payload: {
-        population: pop,
-      },
-    })
-  );
+  promises.push(WorkspaceDispatch.UpdatePopulation(pop));
   await Promise.all(promises);
+};
+
+export const getPlotAxisRangeString = (
+  plot: Plot,
+  axis: AxisName | "x" | "y"
+) => {
+  if (axis === "x") axis = plot.xAxis;
+  if (axis === "y") axis = plot.yAxis;
+  return axis + "-" + plot.axisPlotTypes[axis];
 };

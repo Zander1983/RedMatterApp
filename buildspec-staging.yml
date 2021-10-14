@@ -3,6 +3,8 @@ phases:
   install:
     commands:
       - echo Installing Node 12...
+      - apt update
+      - apt install -y ca-certificates
       - curl -sL https://deb.nodesource.com/setup_12.x | bash -
       - apt install -y nodejs
       - echo Installing Yarn...

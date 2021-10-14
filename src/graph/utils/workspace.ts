@@ -1,6 +1,7 @@
 import { WorkspacesApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import userManager from "Components/users/userManager";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import {
   File,
   FileID,
@@ -22,10 +23,17 @@ export const getWorkspace = (): Workspace => {
 
 export const getFile = (fileID: FileID): File => {
   const workspace = getWorkspace();
-  const files = workspace.files.filter((file) => file.id === fileID);
+  const files = workspace.files.filter((file) => {
+    return file.id === fileID;
+  });
   if (files.length === 0) throw Error("File not found");
   if (files.length > 1) throw Error("Multiple files with ID = " + fileID);
   return files[0];
+};
+
+export const getAllFiles = (): Array<File> => {
+  const workspace = getWorkspace();
+  return workspace.files;
 };
 
 export const getPlot = (plotID: PlotID): Plot => {
@@ -36,14 +44,30 @@ export const getPlot = (plotID: PlotID): Plot => {
   return plots[0];
 };
 
+export const getAllPlots = (): Array<Plot> => {
+  const workspace = getWorkspace();
+  return workspace.plots;
+};
+
 export const getPopulation = (populationID: PopulationID): Population => {
   const workspace = getWorkspace();
   const populations = workspace.populations.filter(
     (population) => population.id === populationID
   );
-  if (populations.length === 0) throw Error("Population not found");
+  if (populations.length === 0)
+    throw Error("Population " + populationID + " not found");
   if (populations.length > 1)
-    throw Error("Multiple populations with ID = " + populationID);
+    throw Error("Multiple populations with ID " + populationID);
+  return populations[0];
+};
+
+export const getPopulationFromFileId = (fileId: FileID): Population => {
+  const workspace = getWorkspace();
+  const populations = workspace.populations.filter(
+    (population) => population.file === fileId
+  );
+  if (populations.length === 0) throw Error("Population not found");
+
   return populations[0];
 };
 
@@ -86,34 +110,38 @@ export const saveWorkspaceToRemote = async (
 export const loadWorkspaceFromRemoteIfExists = async (
   shared: boolean,
   experimentId: string
-): Promise<boolean> => {
+): Promise<{
+  loaded: boolean;
+  requestSuccess: boolean;
+}> => {
   let workspaceData;
   try {
-    workspaceData = await axios.post(
-      "/api/getWorkspace",
-      {
-        experimentId,
-      },
-      {
-        headers: {
-          token: userManager.getToken(),
+    if (shared) {
+      workspaceData = await axios.post("/api/verifyWorkspace", {
+        experimentId: experimentId,
+      });
+    } else {
+      workspaceData = await axios.post(
+        "/api/getWorkspace",
+        {
+          experimentId,
         },
-      }
-    );
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+    }
     const workspace = workspaceData.data.state;
     if (Object.keys(workspace).length > 0) {
-      snackbarService.showSnackbar("Loading your saved workspace", "info");
       await loadSavedWorkspace(workspace, shared, experimentId);
-      snackbarService.showSnackbar("Workspace loaded!", "success");
-      return true;
+      return { loaded: true, requestSuccess: true };
     }
   } catch {
-    snackbarService.showSnackbar(
-      "Failed to load workspace, try again!",
-      "error"
-    );
+    return { loaded: false, requestSuccess: false };
   }
-  return false;
+  return { loaded: false, requestSuccess: true };
 };
 
 export const loadIfWorkspaceIsShared = async (
@@ -145,11 +173,17 @@ const loadSavedWorkspace = async (
   shared: boolean,
   experimentId: string
 ) => {
-  await dowloadAllFileEvents(shared, experimentId);
   const workspaceObj = JSON.parse(workspace);
-  const newWorkspace = { ...workspaceObj, files: getWorkspace().files };
-  await store.dispatch({
-    type: "workspace.LOAD_WORKSPACE",
-    payload: { workspace: newWorkspace },
-  });
+  const files = workspaceObj?.files
+    ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
+    : [];
+  await dowloadAllFileEvents(shared, experimentId, files);
+  const newWorkspace: Workspace = {
+    ...workspaceObj,
+    files: getWorkspace().files,
+    notifications: [],
+    sharedWorkspace: shared,
+    editWorkspace: !shared,
+  };
+  await WorkspaceDispatch.LoadWorkspace(newWorkspace);
 };

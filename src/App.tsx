@@ -12,7 +12,6 @@ import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
 import Experiment from "./Components/workspaces/Experiment";
-import PrototypeForm from "./Components/home/PrototypeForm";
 import About from "./Components/home/About";
 
 import Plots from "./graph/WorkspaceComponent";
@@ -21,7 +20,6 @@ import Register from "./Components/users/Register";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
-import Plans from "./Components/plans/Plans";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
@@ -30,8 +28,10 @@ import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
+import ChatBox from "./Components/common/ChatBox/ChatBox";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import PlansPage from "Components/home/PlansPage";
 
 const { Content } = Layout;
 
@@ -43,6 +43,8 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
   },
   mainLayout: {
+    overflow: "hidden",
+    width: "100%",
     padding: 0,
     height: "auto",
     lineHeight: 1.6,
@@ -54,13 +56,13 @@ const router = [
     path: "/",
     component: AppLandingPage,
   },
-  {
-    path: "/questions/:workspaceID",
-    component: ({ match }: any) => {
-      //@ts-ignore
-      return <PrototypeForm workspaceID={match.params.workspaceID} />;
-    },
-  },
+  // {
+  //   path: "/questions/:workspaceID",
+  //   component: ({ match }: any) => {
+  //     //@ts-ignore
+  //     return <PrototypeForm workspaceID={match.params.workspaceID} />;
+  //   },
+  // },
   {
     path: "/authentication/:tabId",
     component: SignInOutContainer,
@@ -79,7 +81,7 @@ const router = [
   },
   {
     path: "/plans",
-    component: Plans,
+    component: PlansPage,
   },
   {
     path: "/verify",
@@ -171,11 +173,8 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // dispatch({
-  //   type: "workspace.RESET",
-  // });
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
@@ -193,6 +192,7 @@ const App = () => {
             ))}
           </Switch>
         </Content>
+        <ChatBox />
         <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>

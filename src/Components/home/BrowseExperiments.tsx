@@ -1,26 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { NavLink, useHistory } from "react-router-dom";
-import { Grid, Button, CircularProgress, TextField } from "@material-ui/core";
+import { Grid, Button, TextField } from "@material-ui/core";
 import useForceUpdate from "hooks/forceUpdate";
 
-import ExperimentCard from "../workspaces/ExperimentCard";
-
-import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
-import {
-  withStyles,
-  Theme,
-  createStyles,
-  makeStyles,
-} from "@material-ui/core/styles";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch, { SwitchClassKey, SwitchProps } from "@material-ui/core/Switch";
-import { snackbarService } from "uno-material-ui";
-
-interface Styles extends Partial<Record<SwitchClassKey, string>> {
-  focusVisible?: string;
-}
+import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,79 +41,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-
-interface Props extends SwitchProps {
-  classes: Styles;
-}
-
-interface RemoteExperiment {
-  id: string;
-  details: {
-    description: string;
-    fluorophoresCategory: string;
-    particleSize: string;
-    cellType: string;
-    device: string;
-  };
-  name: string;
-  fileCount: number;
-  source: string;
-}
-
-const IOSSwitch = withStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: 42,
-      height: 26,
-      padding: 0,
-      margin: theme.spacing(1),
-    },
-    switchBase: {
-      padding: 1,
-      "&$checked": {
-        transform: "translateX(16px)",
-        color: theme.palette.common.white,
-        "& + $track": {
-          backgroundColor: "#bbd",
-          opacity: 1,
-          border: "none",
-        },
-      },
-      "&$focusVisible $thumb": {
-        color: "#ddd",
-        border: "6px solid #fafafa",
-      },
-    },
-    thumb: {
-      width: 24,
-      height: 24,
-    },
-    track: {
-      borderRadius: 26 / 2,
-      border: `1px solid ${theme.palette.grey[400]}`,
-      backgroundColor: "#ddd",
-      opacity: 1,
-      transition: theme.transitions.create(["background-color", "border"]),
-    },
-    checked: {},
-    focusVisible: {},
-  })
-)(({ classes, ...props }: Props) => {
-  return (
-    <Switch
-      focusVisibleClassName={classes.focusVisible}
-      disableRipple
-      classes={{
-        root: classes.root,
-        switchBase: classes.switchBase,
-        thumb: classes.thumb,
-        track: classes.track,
-        checked: classes.checked,
-      }}
-      {...props}
-    />
-  );
-});
 
 const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
@@ -177,6 +89,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
           }
         });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [name, skip]
   );
 
@@ -302,7 +215,12 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                                 padding: ".5em .8em",
                               }}
                             >
-                              <strong>Name: {experiment.name}</strong>
+                              <strong>
+                                Name:{" "}
+                                {experiment.name.length > 10
+                                  ? `${experiment.name.slice(0, 10)}...`
+                                  : experiment.name}
+                              </strong>
                             </h3>
                           </div>
 

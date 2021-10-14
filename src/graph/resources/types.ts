@@ -15,6 +15,8 @@ export type PointObj = { x: number; y: number };
 export type HistogramAxisType = "" | "horizontal" | "vertical";
 export type Range = [number, number];
 export type Dataset = { [index: string]: Float32Array };
+export type OverlaySource = "file" | "plot";
+export type OverlayType = "line" | "bar";
 
 export interface Dimension {
   w: number;
@@ -27,9 +29,13 @@ export interface Point2D {
 }
 
 export interface HistogramOverlay {
+  id: string;
+  overlayType: OverlayType;
+  population: PopulationID;
   color: Color;
-  plotId: PlotID;
-  plotSource: string;
+  dataSource: OverlaySource;
+  file?: FileID;
+  plot?: PlotID;
 }
 
 export interface PopulationGateType {
@@ -87,13 +93,26 @@ export interface File {
   src?: SrcType;
   axes: AxisName[];
   label: string;
-  plotTypes?: PlotType[];
+  defaultRanges: {
+    [index: string]: Range;
+  };
+  defaultAxisPlotTypes: {
+    [index: string]: PlotType;
+  };
   downloaded: boolean;
+  downloading: boolean;
 }
 
 export interface EventsRequestResponse {
   events: number[][];
-  channels: { key: number; value: AxisName; display: PlotType }[];
+  channels: {
+    value: AxisName;
+    display: PlotType;
+    linearMinimum: number;
+    linearMaximum: number;
+    biexponentialMinimum: number;
+    biexponentialMaximum: number;
+  }[];
   $locals: {};
   $op: null;
   title: string;
@@ -110,7 +129,6 @@ export interface Plot {
   };
   gates: GateID[];
   histogramOverlays: HistogramOverlay[];
-  histogramBarOverlays: HistogramOverlay[];
   population: PopulationID;
   xAxis: AxisName;
   yAxis: AxisName;
@@ -132,22 +150,19 @@ export interface Population {
   id: PopulationID;
   label: string;
   file: FileID;
-  defaultRanges: {
-    [index: string]: Range;
-  };
-  defaultAxisPlotTypes: {
-    [index: string]: PlotType;
-  };
   gates: PopulationGateType[];
 }
 
 export interface Workspace {
   id: WorkspaceID;
+  notifications: Notification[];
   gates: Gate[];
   files: File[];
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
+  sharedWorkspace: boolean;
+  editWorkspace: boolean;
 }
 
 export interface PlotSpecificWorkspaceData {
@@ -155,4 +170,26 @@ export interface PlotSpecificWorkspaceData {
   file: File;
   plot: Plot;
   population: Population;
+  key: string; // react won't shut up about each prop list item having a key
+}
+
+export interface Notification {
+  id: string;
+  message: string;
+}
+
+export interface WorkspaceEvent {
+  id: string;
+  type: string;
+  used: boolean;
+}
+
+export interface WorkspaceEventGateNaming extends WorkspaceEvent {
+  type: "gateNaming";
+  plotID: PlotID;
+  gateID: GateID;
+}
+
+export interface WorkspaceEventQueue {
+  queue: WorkspaceEvent[];
 }

@@ -35,7 +35,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     this.lastMousePos = state.lastMousePos;
   }
 
-  protected drawGate(gate: PolygonGate) {
+  protected drawGate(gate: PolygonGate, drawGates?: PolygonGate[]) {
     if (
       gate.xAxisType !== this.plotter.plot.xPlotType ||
       gate.yAxisType !== this.plotter.plot.yPlotType
@@ -49,24 +49,17 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       let pp = { ...gate.points[(i + 1) % gate.points.length] };
       p = this.plotter.transformer.toConcretePoint(p, undefined, true);
       pp = this.plotter.transformer.toConcretePoint(pp, undefined, true);
-      let color = "#f00";
-      let size = 2;
-      if (
-        this.lastMousePos !== undefined &&
-        this.closeToFirstPoint(p, false, this.lastMousePos)
-      ) {
-        color = "#00f";
-        size = 4;
-      }
-      this.plotter.drawer.addPoint(p.x, p.y, size, color);
       this.plotter.drawer.segment({
         x1: p.x * scale,
         y1: p.y * scale,
         x2: pp.x * scale,
         y2: pp.y * scale,
         lineWidth: 2,
-        strokeColor: "#f00",
+        strokeColor: gate.color,
       });
+      let color = "#f00";
+      let size = 5;
+      this.plotter.drawer.addPoint(p.x - size / 4, p.y - size / 4, size, color);
     }
   }
 

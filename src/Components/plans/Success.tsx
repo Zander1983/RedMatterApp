@@ -3,9 +3,12 @@ import axios from "axios";
 import { NavLink } from "react-router-dom";
 import { Grid } from "@material-ui/core";
 import check from "./img/check.png";
+import { useDispatch } from "react-redux";
+import userManager from "Components/users/userManager";
 
 export default function Plans(props: { session_id: any }) {
   const [session, setSession] = useState(null);
+  const dispatch = useDispatch();
   useEffect(() => {
     axios
       .get(`/checkout-session?id=${props.session_id}`)
@@ -13,6 +16,7 @@ export default function Plans(props: { session_id: any }) {
       .then((session) => setSession(JSON.stringify(session, null, 2)))
       .then(() => {
         let data = JSON.parse(session);
+        // console.log(data?.metadata?.subscriptionType);
         if (session) {
           axios
             .post(`/save-checkout`, {
@@ -23,14 +27,31 @@ export default function Plans(props: { session_id: any }) {
               },
             })
             .then(() => {
-              axios.post(`/add-subscription`, {
-                body: {
-                  user: data.metadata.userId,
-                  subscriptionType: data.metadata.subscriptionType,
-                  subscription: data.subscription,
-                  customer: data.customer,
-                },
-              });
+              axios
+                .post(`/add-subscription`, {
+                  body: {
+                    user: data.metadata.userId,
+                    subscriptionType: data.metadata.subscriptionType,
+                    subscription: data.subscription,
+                    customer: data.customer,
+                  },
+                })
+                .then(async () => {
+                  const token = userManager.getToken();
+                  const rules = await axios.get("/api/userSubscriptionRules", {
+                    headers: {
+                      token: token,
+                    },
+                  });
+
+                  dispatch({
+                    type: "CHANGE_SUBSCRIPTION_TYPE",
+                    payload: {
+                      subscriptionType: data?.metadata?.subscriptionType,
+                      rules: rules?.data?.rules,
+                    },
+                  });
+                });
             });
         }
       });

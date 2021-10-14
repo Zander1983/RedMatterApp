@@ -1,6 +1,8 @@
 import GraphPlotter from "graph/renderers/plotters/graphPlotter";
 import PlotterPlugin from "graph/renderers/plotters/plotterPlugin";
-import { Gate, Gate1D, Gate2D, Point } from "graph/resources/types";
+import { Gate, Gate1D, Gate2D, GateID, Point } from "graph/resources/types";
+import { getGate } from "graph/utils/workspace";
+import { checkIfGateNamingQueue } from "graph/utils/workspaceEventQueue";
 
 export default abstract class GatePlotterPlugin extends PlotterPlugin {
   static TargetPlotter = GraphPlotter;
@@ -15,44 +17,57 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   public abstract setGates(gates: Gate[]): void;
   public abstract setGatingState(state: any): void;
 
+  provisoryGateID: GateID | null = null;
+
   /* After draw is called in plotter, draw the gating/gate */
   public draw_AFTER() {
     if (this.isGating) {
       this.drawGating();
     }
 
-    for (let gate of this.gates) {
-      const isGate1D = Object.keys(gate).includes("axis");
-      const isGate2D = ["xAxis", "yAxis"]
-        .map((e) => Object.keys(gate).includes(e))
-        .every((e) => e);
-      if (this.gaterType === "1D" && isGate1D) {
-        const gate1d = gate as Gate1D;
-        const axisPlotType =
-          gate1d.histogramDirection === "vertical"
-            ? this.plotter.plot.xPlotType
-            : this.plotter.plot.yPlotType;
-        if (
-          this.plotter[
-            gate1d.histogramDirection === "vertical" ? "xAxisName" : "yAxisName"
-          ] === gate1d.axis &&
-          gate1d.axisType === axisPlotType
-        ) {
-          this.drawGate(gate);
-        }
-      }
-      if (this.gaterType === "2D" && isGate2D) {
-        const gate2d = gate as Gate2D;
-        if (
-          this.plotter.xAxisName === gate2d.xAxis &&
-          this.plotter.yAxisName === gate2d.yAxis
-        ) {
-          this.drawGate(gate);
-        }
-      }
+    const drawGates = [...this.gates];
+
+    const provisoryGate = getGate(this.provisoryGateID);
+    if (checkIfGateNamingQueue(this.provisoryGateID)) {
+      drawGates.push(provisoryGate);
     }
+
+    try {
+      for (let gate of drawGates) {
+        if (
+          !this.plotter.plot.gates.find((e) => e === gate.id) &&
+          gate.id !== this.provisoryGateID
+        ) {
+          continue;
+        }
+        const isGate1D = Object.keys(gate).includes("axis");
+        const isGate2D = ["xAxis", "yAxis"]
+          .map((e) => Object.keys(gate).includes(e))
+          .every((e) => e);
+        if (this.gaterType === "1D" && isGate1D) {
+          const gate1d = gate as Gate1D;
+          const axisPlotType = this.plotter.plot.xPlotType;
+
+          if (
+            this.plotter.xAxisName === gate1d.axis &&
+            gate1d.axisType === axisPlotType
+          ) {
+            this.drawGate(gate, drawGates);
+          }
+        }
+        if (this.gaterType === "2D" && isGate2D) {
+          const gate2d = gate as Gate2D;
+          if (
+            this.plotter.xAxisName === gate2d.xAxis &&
+            this.plotter.yAxisName === gate2d.yAxis
+          ) {
+            this.drawGate(gate, drawGates);
+          }
+        }
+      }
+    } catch (err) {}
   }
 
-  protected abstract drawGate(gate: Gate): void;
+  protected abstract drawGate(gate: Gate, drawGates?: Gate[]): void;
   protected abstract drawGating(): void;
 }

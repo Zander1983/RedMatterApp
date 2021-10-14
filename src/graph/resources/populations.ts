@@ -1,24 +1,12 @@
 import { createID } from "graph/utils/id";
-import { getFile } from "graph/utils/workspace";
-import { store } from "redux/store";
-import { getDataset } from "./dataset";
 import {
   FileID,
-  Gate,
-  File,
   GateID,
   Population,
   PopulationGateType,
   PopulationID,
 } from "./types";
-import * as DatasetResource from "graph/resources/dataset";
-
-export const commitPopulationChange = async (population: Population) => {
-  store.dispatch({
-    type: "workspace.UPDATE_POPULATION",
-    payload: { population },
-  });
-};
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export const createPopulation = ({
   clonePopulation,
@@ -38,8 +26,6 @@ export const createPopulation = ({
     id: "",
     label: "",
     file: "",
-    defaultRanges: {},
-    defaultAxisPlotTypes: {},
     gates: [],
   };
 
@@ -56,34 +42,7 @@ export const createPopulation = ({
     throw Error("Population without file");
   }
 
-  return setupPopulation(newPopulation);
-};
-
-export const setupPopulation = (
-  pop: Population,
-  inpFile?: File
-): Population => {
-  //@ts-ignore
-  const file: File = inpFile ? inpFile : getFile(pop.file);
-  const axes = file.axes;
-  if (
-    axes
-      .map((e: string) => e in Object.keys(pop.defaultRanges))
-      .every((e: boolean) => e)
-  )
-    return;
-  const axesData = DatasetResource.getDataset(pop.file);
-
-  //@ts-ignore
-  axes.forEach((axis: string, i: number) => {
-    const axisType = file.plotTypes[i];
-
-    pop.defaultAxisPlotTypes[axis] = axisType;
-    const boundaries = findRangeBoundries(axesData[axis]);
-    pop.defaultRanges[axis] = boundaries;
-  });
-
-  return pop;
+  return newPopulation;
 };
 
 export const createSubpop = (
@@ -110,12 +69,12 @@ export const addGate = (pop: Population, gate: GateID) => {
     gate: gate,
     inverseGating: false,
   });
-  commitPopulationChange(pop);
+  WorkspaceDispatch.UpdatePopulation(pop);
 };
 
 export const removeGate = (pop: Population, gate: GateID) => {
   pop.gates = pop.gates.filter((e) => e.gate !== gate);
-  commitPopulationChange(pop);
+  WorkspaceDispatch.UpdatePopulation(pop);
 };
 
 export const findRangeBoundries = (

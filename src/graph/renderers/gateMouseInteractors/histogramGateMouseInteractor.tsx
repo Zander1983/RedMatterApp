@@ -1,7 +1,4 @@
-import {
-  euclidianDistance1D,
-  euclidianDistance2D,
-} from "../../utils/euclidianPlane";
+import { euclidianDistance1D } from "../../utils/euclidianPlane";
 import GateMouseInteractor, {
   GateState,
   MouseInteractorState,
@@ -14,13 +11,13 @@ import {
   HistogramAxisType,
   PlotType,
 } from "graph/resources/types";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { getPopulation } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { isPointInsideInterval } from "graph/resources/dataset";
-import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import HistogramGatePlotter from "../plotters/runtimePlugins/histogramGatePlotter";
+import { getXandYRanges } from "graph/resources/plots";
 
 export interface HistogramGateState extends GateState {
   axis: AxisName;
@@ -37,7 +34,7 @@ export interface HistogramGateMouseInteractorState
   histogramDirection: HistogramAxisType;
 }
 
-export const histogramGateEditThreshold = 7;
+export const histogramGateEditThreshold = 20;
 
 export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   static targetGate: HistogramGate;
@@ -47,8 +44,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
 
   plotter: HistogramPlotter | null = null;
   plugin: HistogramGatePlotter;
-
-  private lastGateUpdate: Date = new Date();
 
   private points: number[] = [];
   axis: AxisName;
@@ -61,11 +56,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   targetEditGate: HistogramGate | null = null;
   targetPointIndex: number | null = null;
 
-  setPluginState() {
-    let state = { ...this.getGatingState() };
-    this.plugin.setGatingState(state);
-  }
-
   setMouseInteractorState(state: HistogramGateMouseInteractorState) {
     super.setMouseInteractorState(state);
     this.axis = state.axis;
@@ -73,60 +63,14 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.histogramDirection = state.histogramDirection;
   }
 
-  editGateEvent(type: string, mouse: Point) {
-    if (this.started) return;
-    this.lastMousePos = this.plugin.lastMousePos = mouse;
-
-    if (
-      this.targetEditGate === null &&
-      type === "mousedown" &&
-      !this.started &&
-      !this.isDraggingGate
-    ) {
-      this.detectPointsClicked(mouse);
-    } else if (this.targetEditGate !== null && type === "mouseup") {
-      this.reset();
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingVertex &&
-      !this.isDraggingGate
-    ) {
-      this.pointMoveToMousePosition(mouse);
-    } else if (
-      this.targetEditGate !== null &&
-      type === "mousemove" &&
-      this.isDraggingGate &&
-      !this.isDraggingVertex
-    ) {
-      this.gateMoveToMousePosition(mouse);
-    }
-    if (
-      type === "mousedown" &&
-      this.plotter.gates.length > 0 &&
-      !this.isDraggingVertex
-    ) {
-      this.detectGatesClicked(mouse);
-    }
-
-    if (type === "mouseup" && this.isDraggingVertex)
-      this.isDraggingVertex = false;
-    else if (type === "mouseup" && this.isDraggingGate)
-      this.isDraggingGate = false;
-  }
-
   private validateGateOnSpace(gate: HistogramGate) {
     return (
-      (gate.axis === this.plotter.plot.xAxis &&
-        gate.axisType === this.plotter.plot.xPlotType &&
-        gate.histogramDirection === "vertical") ||
-      (gate.axis === this.plotter.plot.yAxis &&
-        gate.axisType === this.plotter.plot.yPlotType &&
-        gate.histogramDirection === "horizontal")
+      gate.axis === this.plotter.plot.xAxis &&
+      gate.axisType === this.plotter.plot.xPlotType
     );
   }
 
-  private detectGatesClicked(mouse: Point) {
+  protected detectGatesClicked(mouse: Point) {
     const abstractMouse = this.plotter.transformer.toAbstractPoint(
       { ...mouse },
       true
@@ -149,13 +93,12 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       });
   }
 
-  private detectPointsClicked(mouse: Point) {
-    const axis = this.histogramDirection === "vertical" ? "x" : "y";
-    const mouseP = mouse[axis];
+  protected detectPointsClicked(mouse: Point) {
+    const mouseP = mouse.x;
     this.plotter.gates.forEach((gate: Gate) => {
       if (gate.gateType === "histogram" && this.targetEditGate === null)
         (gate as HistogramGate).points.forEach((p, i) => {
-          p = this.plotter.transformer.toConcretePoint({ x: p, y: p })[axis];
+          p = this.plotter.transformer.toConcretePoint({ x: p, y: p }).x;
           if (
             this.targetEditGate === null &&
             euclidianDistance1D(p, mouseP) <= histogramGateEditThreshold
@@ -168,7 +111,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     });
   }
 
-  private gateMoveToMousePosition(mouse: Point) {
+  protected gateMoveToMousePosition(mouse: Point) {
     const gatePivot = this.plotter.transformer.toConcretePoint(
       {
         ...this.gatePivot,
@@ -187,13 +130,11 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       true
     );
     const gateState = this.targetEditGate;
-    const axis = this.histogramDirection === "vertical" ? "x" : "y";
-    const range = this.plotter.ranges[axis];
+    const range = this.plotter.ranges.x;
     // The 1.5 below is a factor to correct for a weird problem on
     // offset calculation which I have no clue why happens
     const abstractOffset =
-      ((axis === "y" ? -2 : 1) * 1.5 * offset[axis] * (range[1] - range[0])) /
-      this.plotter.width;
+      (1.5 * offset.x * (range[1] - range[0])) / this.plotter.width;
     for (let index = 0; index < gateState.points.length; index++) {
       const newPos = gateState.points[index] + abstractOffset;
       if (newPos >= this.plotter.rangeMax || newPos <= this.plotter.rangeMin) {
@@ -206,12 +147,11 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.gateUpdater(gateState);
   }
 
-  private pointMoveToMousePosition(mouse: Point) {
+  protected pointMoveToMousePosition(mouse: Point) {
     const gateState = this.targetEditGate;
-    const axis = this.histogramDirection === "vertical" ? "x" : "y";
     const newPoint = this.plotter.transformer.rawAbstractLogicleToLinear(
       this.plotter.transformer.toAbstractPoint(mouse)
-    )[axis];
+    ).x;
     if (
       newPoint >= this.plotter.rangeMax ||
       newPoint <= this.plotter.rangeMin
@@ -226,57 +166,22 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.gateUpdater(gateState);
   }
 
-  private reset() {
-    this.isDraggingVertex = false;
-    this.targetEditGate = null;
-    this.targetPointIndex = null;
-  }
-
-  private updateInterval = 20; // miliseconds
-  private currentInterval: NodeJS.Timeout = null;
-  private latest: Gate | null = null;
-  protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate },
-      });
-      this.lastGateUpdate = new Date();
-    }
-  }
-
   protected instanceGate(): HistogramGate {
     if (!this.started) return;
-    const { points, axis, histogramDirection, plotType } =
-      this.getGatingState();
-    let originalRange = this.plotter.plot.ranges[axis];
+    const { points, histogramDirection, plotType } = this.getGatingState();
+    let originalRange = getXandYRanges(this.plotter.plot).x;
 
     const newPoints: [number, number] = [...points] as [number, number];
+
     for (let i = 0; i < points.length; i++) {
       let p = { x: points[i], y: points[i] };
       const a = this.plotter.transformer.toAbstractPoint(p);
       const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
-      newPoints[i] = { ...b }[histogramDirection === "vertical" ? "x" : "y"];
+      newPoints[i] = { ...b }.x;
     }
+
     if (newPoints[0] > newPoints[1]) {
+      // swap ints
       newPoints[0] ^= newPoints[1];
       newPoints[1] ^= newPoints[0];
       newPoints[0] ^= newPoints[1];
@@ -284,7 +189,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
 
     const newGate: HistogramGate = {
       points: [...newPoints],
-      axis: axis,
+      axis: this.plotter.plot.xAxis,
       axisType: plotType,
       axisOriginalRanges: originalRange,
       histogramDirection,
@@ -297,17 +202,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       name: "New Gate",
       children: [],
     };
-    const popGates = getPopulation(this.plotter.plot.population).gates.map(
-      (e) => e.gate
-    );
-    for (let gate of popGates) {
-      let popGate = getGate(gate);
-      popGate.children.push(newGate.id);
-      store.dispatch({
-        type: "workspace.UPDATE_GATE",
-        payload: { gate: popGate },
-      });
-    }
     return newGate;
   }
 
@@ -315,11 +209,6 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.plotter = plotter;
     this.plugin = plotter.histogramGatePlugin;
     this.plugin.isGating = true;
-  }
-
-  end() {
-    this.plugin.isGating = false;
-    super.end();
   }
 
   protected clearGateState() {
@@ -340,9 +229,8 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   gateEvent(type: string, point: Point) {
     if (!this.started) return;
     this.lastMousePos = this.plugin.lastMousePos = point;
-    const axis = this.histogramDirection === "vertical" ? "x" : "y";
     if (type === "mousedown") {
-      this.points = [...this.points, point[axis]];
+      this.points = [...this.points, point.x];
       if (this.points.length === 2) {
         this.createAndAddGate();
       }

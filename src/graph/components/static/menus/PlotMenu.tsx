@@ -1,5 +1,4 @@
-import numeral from "numeral";
-import React, { useEffect } from "react";
+import React from "react";
 
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
@@ -16,11 +15,11 @@ import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { Gate, Plot, PopulationGateType } from "graph/resources/types";
-import { store } from "redux/store";
+import { Plot, PopulationGateType } from "graph/resources/types";
 import { createPlot } from "graph/resources/plots";
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const statsProvider = new PlotStats();
 
@@ -28,7 +27,6 @@ export default function PlotMenu(props: {
   plots: Plot[];
   onStatChange: (params: { x: any; value: any }) => void;
 }) {
-  const plots = props.plots;
   const populations = props.plots.map((e) => getPopulation(e.population));
 
   const [statsX, setStatsX] = React.useState(
@@ -47,28 +45,11 @@ export default function PlotMenu(props: {
 
   const setPlotLabel = (plot: Plot, label: string) => {
     plot.label = label;
-    store.dispatch({
-      type: "workspace.UPDATE_PLOT",
-      payload: { plot },
-    });
+    WorkspaceDispatch.UpdatePlot(plot);
   };
 
-  // const cloneGate = (gate: Plot) => {
-  //   let newGate = createGate({
-  //     cloneGate: gate,
-  //   });
-  //   newGate.name = gate.name + " clone";
-  //   store.dispatch({
-  //     type: "workspace.CREATE_GATE",
-  //     payload: { newGate },
-  //   });
-  // };
-
   const deletePlot = (plot: Plot) => {
-    store.dispatch({
-      type: "workspace.DELETE_PLOT",
-      payload: { plot: plot },
-    });
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
   const clonePlot = (plot: Plot) => {
@@ -76,10 +57,7 @@ export default function PlotMenu(props: {
       clonePlot: plot,
     });
     newPlot.label = plot.label + " clone";
-    store.dispatch({
-      type: "workspace.ADD_PLOT",
-      payload: { plot: newPlot },
-    });
+    WorkspaceDispatch.AddPlot(newPlot);
   };
 
   let percentages: any[] = [];
@@ -226,7 +204,6 @@ export default function PlotMenu(props: {
                   {populations[i].gates.length === 0
                     ? "All"
                     : populations[i].gates
-                        .reverse()
                         .map((e: PopulationGateType) => (
                           <b
                             style={{
@@ -261,15 +238,9 @@ export default function PlotMenu(props: {
                     ? "(Outlier)"
                     : null}
                 </TableCell>
+                <TableCell>{stats.statX}</TableCell>
                 <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "horizontal"
-                    ? "~"
-                    : stats.statX}
-                </TableCell>
-                <TableCell>
-                  {type === "histogram" && plot.histogramAxis === "vertical"
-                    ? "~"
-                    : stats.statY}
+                  {type === "histogram" ? "~" : stats.statY}
                 </TableCell>
                 <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
                 <TableCell>
