@@ -217,8 +217,8 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                             >
                               <strong>
                                 Name:{" "}
-                                {experiment.name.length > 10
-                                  ? `${experiment.name.slice(0, 10)}...`
+                                {experiment.name.length > 20
+                                  ? `${experiment.name.slice(0, 20)}...`
                                   : experiment.name}
                               </strong>
                             </h3>
