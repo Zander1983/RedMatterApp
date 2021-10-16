@@ -68,7 +68,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       userManager.getOrganiztionID(),
       userManager.getToken()
     );
-    // rules?.experiment &&
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
