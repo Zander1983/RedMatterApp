@@ -16,7 +16,16 @@ type UserProfile = {
   token: string;
   organisationId: string;
   rules: Rules;
+  subscriptionDetails: SubscriptionDetail;
 };
+
+type SubscriptionDetail = {
+  everSubscribed: boolean;
+  canceled: boolean;
+  product: string;
+  currentCycleEnd: number;
+};
+
 type UserState = {
   profile: UserProfile;
 };

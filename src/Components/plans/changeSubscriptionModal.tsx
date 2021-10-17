@@ -12,19 +12,10 @@ export default function ChangeSubscriptionModal(props: {
   subscription: String;
   subSelect: any;
   close: Function;
-  refresh: Function;
 }) {
-  const handleClose = () => {
-    // setOpen(false);
-  };
-
   return (
     <div>
-      <Dialog
-        open={props.open}
-        onClose={handleClose}
-        aria-labelledby="form-dialog-title"
-      >
+      <Dialog open={props.open} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Update Subscription</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -43,7 +34,7 @@ export default function ChangeSubscriptionModal(props: {
           <Button
             onClick={() => {
               props.updateSubscription(props.subSelect);
-              props.refresh();
+              props.close();
             }}
             color="primary"
           >

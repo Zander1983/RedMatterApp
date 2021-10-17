@@ -16,6 +16,7 @@ export default function Plans(props: { session_id: any }) {
       .then((session) => setSession(JSON.stringify(session, null, 2)))
       .then(() => {
         let data = JSON.parse(session);
+        debugger;
         // console.log(data?.metadata?.subscriptionType);
         if (session) {
           axios
@@ -55,7 +56,7 @@ export default function Plans(props: { session_id: any }) {
             });
         }
       });
-  });
+  }, []);
   return (
     <Grid
       container

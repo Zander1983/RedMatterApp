@@ -5,7 +5,7 @@ import { Grid, Button, CircularProgress, Tooltip } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
-
+import { useDispatch } from "react-redux";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -29,6 +29,7 @@ interface RemoteExperiment {
 
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
@@ -100,10 +101,27 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
 
   React.useEffect(() => {
-    fetchExperiments();
-    if (props.backFromQuestions) {
-      snackbarService.showSnackbar("Experiment created", "success");
-    }
+    axios
+      .get("/api/getuserdetails", {
+        headers: {
+          token: userManager.getToken(),
+        },
+      })
+      .then((response) => {
+        let userDetails = response.data;
+        dispatch({
+          type: "UPDATE_SUBSCRIPTION_DETAILS",
+          payload: {
+            rules: userDetails.data?.rules,
+            subscriptionDetails: userDetails.data?.subscriptionDetails,
+            subscriptionType: userDetails.data?.userDetails?.subscriptionType,
+          },
+        });
+        fetchExperiments();
+        if (props.backFromQuestions) {
+          snackbarService.showSnackbar("Experiment created", "success");
+        }
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

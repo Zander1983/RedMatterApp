@@ -11,7 +11,6 @@ export default function CancelSubscriptionModal(props: {
   open: boolean;
   subscription: String;
   close: Function;
-  refresh: Function;
 }) {
   const handleClose = () => {
     // setOpen(false);
@@ -44,8 +43,7 @@ export default function CancelSubscriptionModal(props: {
           <Button
             onClick={() => {
               props.cancelSubscription(props.subscription);
-              props.refresh();
-              // props.refresh()
+              props.close();
             }}
             color="primary"
           >

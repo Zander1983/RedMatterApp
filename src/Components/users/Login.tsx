@@ -54,19 +54,20 @@ const Login = (props: any) => {
     try {
       const req = AuthenticationApiFetchParamCreator().userLogin(formData);
       const res = await axios.post(req.url, req.options.body, req.options);
-      const userDetails = await axios.get("/api/getuserdetails", {
-        headers: {
-          token: res.data.token,
-        },
-      });
 
       setLoading(false);
-
+      let blankArray: any[] = [];
       const loginData = {
-        subscriptionType: userDetails.data?.userDetails?.subscriptionType,
+        subscriptionType: "",
         token: res.data.token,
         organisationId: res.data.organisationId,
-        rules: userDetails.data?.rules,
+        rules: blankArray,
+        subscriptionDetails: {
+          everSubscribed: false,
+          canceled: false,
+          product: "",
+          currentCycleEnd: "",
+        },
       };
 
       dispatch({

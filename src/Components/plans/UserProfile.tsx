@@ -87,129 +87,125 @@ export default function Plans(props: any) {
   const [openAddUser, setOpenAddUser] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [subscriptionSend, setSubscriptionSend] = useState(null);
-  const getUserObj = useCallback(() => {
-    if (product == null) {
-      axios
-        .get(`/profile-info`, {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        })
-        .then((response) => response.data)
-        .then((user) => {
-          setuserObj(user);
-          if (user.userDetails.isOrganisationAdmin === true) {
-            setuserObj(user);
-            getSub(user);
-          } else {
-            axios
-              .post(
-                `/admin-profile-info`,
-                {
-                  adminId: user.userDetails.adminId,
-                },
-                {
-                  headers: {
-                    Token: userManager.getToken(),
-                  },
-                }
-              )
-              .then((user) => {
-                getSub(user.data);
-              });
-          }
-        });
-    }
-  }, [email]);
+  // const getUserObj = useCallback(() => {
+  //   if (product == null) {
+  //     axios
+  //       .get(`/profile-info`, {
+  //         headers: {
+  //           Token: userManager.getToken(),
+  //         },
+  //       })
+  //       .then((response) => response.data)
+  //       .then((user) => {
+  //         setuserObj(user);
+  //         if (user.userDetails.isOrganisationAdmin === true) {
+  //           setuserObj(user);
+  //           getSub(user);
+  //         } else {
+  //           axios
+  //             .post(
+  //               `/admin-profile-info`,
+  //               {
+  //                 adminId: user.userDetails.adminId,
+  //               },
+  //               {
+  //                 headers: {
+  //                   Token: userManager.getToken(),
+  //                 },
+  //               }
+  //             )
+  //             .then((user) => {
+  //               getSub(user.data);
+  //             });
+  //         }
+  //       });
+  //   }
+  // }, [email]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-  const getProduct = useCallback((sub: any) => {
-    axios
-      .get(`/get-product?id=${sub.items.data[0].plan.product}`)
-      .then((response) => response.data)
-      .then((product) => {
-        setProduct(product);
-      });
-  }, []);
+  // const getProduct = useCallback((sub: any) => {
+  //   axios
+  //     .get(`/get-product?id=${sub.items.data[0].plan.product}`)
+  //     .then((response) => response.data)
+  //     .then((product) => {
+  //       setProduct(product);
+  //     });
+  // }, []);
 
-  const getSub = useCallback(
-    (user: any) => {
-      if (
-        user.userDetails.subscriptionId != null &&
-        user.userDetails.subscriptionId !== ""
-      ) {
-        axios
-          .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
-          .then((response) => response.data)
-          .then((subscription) => {
-            setSub(subscription);
-            setDate(new Date(subscription.current_period_end * 1000));
-            getProduct(subscription);
-          });
-      } else {
-        setSub("Not currently subscribed");
-        setProduct({ name: "You are not currently Subscribed" });
-      }
-    },
-    [getProduct]
-  );
+  // const getSub = useCallback(
+  //   (user: any) => {
+  //     if (
+  //       user.userDetails.subscriptionId != null &&
+  //       user.userDetails.subscriptionId !== ""
+  //     ) {
+  //       axios
+  //         .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
+  //         .then((response) => response.data)
+  //         .then((subscription) => {
+  //           setSub(subscription);
+  //           setDate(new Date(subscription.current_period_end * 1000));
+  //           getProduct(subscription);
+  //         });
+  //     } else {
+  //       setSub("Not currently subscribed");
+  //       setProduct({ name: "You are not currently Subscribed" });
+  //     }
+  //   },
+  //   [getProduct]
+  // );
 
   const changeSubscription = (option: any) => {
+    let obj: any = {
+      1: {
+        price: "price_1JCargFYFs5GcbAXZowQSPpK",
+        subscriptionType: "Free",
+      },
+      2: {
+        price: "price_1J9tviJI2QgacDzsnRifKjqK",
+        subscriptionType: "Premium",
+      },
+      3: {
+        price: "price_1JknlPJI2QgacDzsM28e4UXK",
+        subscriptionType: "Enterprise",
+      },
+    };
     if (subSelect == null) {
       alert("Please Select a subscription");
-    } else if (option === 3) {
-      // enterprise subscription
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1JCapGFYFs5GcbAXGlbz4pJV",
-          subscriptionType: "Enterprise",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
+    } else {
+      axios
+        .post(
+          "/update-subscription",
+          {
+            subscription: sub.id,
+            price: obj[option].price,
+            subscriptionType: obj[option].subscriptionType,
           },
-        }
-      );
-    } else if (option === 2) {
-      // Premium Subscription
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1J7UmZFYFs5GcbAXvPronXSX",
-          subscriptionType: "Premium",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        }
-      );
-    } else if (option === 1) {
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1JCargFYFs5GcbAXZowQSPpK",
-          subscriptionType: "Free",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        }
-      );
+          {
+            headers: {
+              Token: userManager.getToken(),
+            },
+          }
+        )
+        .then((result) => {
+          let data = result.data;
+          let subscription = data.subscriptionUpdate;
+          setSub(subscription);
+          setDate(new Date(subscription.current_period_end * 1000));
+          //getProduct(subscription);
+        })
+        .catch(() => {});
     }
     // Free Subscription
   };
 
   const cancelSubscription = (option: any) => {
-    axios.post("/cancel-subscription", {
-      subscription: sub.id,
-      userId: userObj.userDetails._id,
-    });
+    axios
+      .post("/cancel-subscription", {
+        subscription: sub.id,
+        userId: userObj.userDetails._id,
+      })
+      .then(() => {})
+      .catch(() => {});
   };
 
   const closeModal = () => {
@@ -229,14 +225,12 @@ export default function Plans(props: any) {
       "Subscription Updated Successfully!",
       "success"
     );
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    // setTimeout(() => {
+    //   window.location.reload();
+    // }, 1000);
   };
 
-  useEffect(() => {
-    getUserObj();
-  }, [getUserObj]);
+  useEffect(() => {}, []);
 
   return (
     <div>
@@ -248,7 +242,6 @@ export default function Plans(props: any) {
       ></AddUsersModal>
       <ChangeSubscriptionModal
         open={openChange}
-        refresh={refresh}
         close={closeModal}
         updateSubscription={changeSubscription}
         subscription={subscriptionSend}
@@ -256,7 +249,6 @@ export default function Plans(props: any) {
       ></ChangeSubscriptionModal>
       <CancelSubscriptionModal
         open={openCancel}
-        refresh={refresh}
         close={closeModal}
         cancelSubscription={cancelSubscription}
         subscription={subscriptionSend}
@@ -351,14 +343,13 @@ export default function Plans(props: any) {
                         }}
                       >
                         <option value={null}></option>
-                        {product == null ? null : product.name ===
+                        {/* {product == null ? null : product.name ===
                           "Free Subscription" ? (
                           <option value={3}>Enterprise</option>
                         ) : (
                           <option value={1}>Free</option>
-                        )}
-                        {product == null ? null : product.name ===
-                          "Premium Subscription" ? (
+                        )} */}
+                        {product == null ? null : product.name === "Premium" ? (
                           <option value={3}>Enterprise</option>
                         ) : (
                           <option value={2}>Premium</option>

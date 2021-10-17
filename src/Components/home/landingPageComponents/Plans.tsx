@@ -84,6 +84,17 @@ export default function Plans(props: any) {
     loadStripe(process.env.REACT_APP_STRIPE_KEY).then((stripe) =>
       setStripe(stripe)
     );
+    return () => {
+      // var head = document.head;
+      // var scripts = document.querySelectorAll(
+      //   'script[src^="'.concat("https://js.stripe.com/v3", '"]')
+      // );
+      // for (let i = 0; i < scripts.length; i++) {
+      //   scripts[i].parentNode.removeChild(scripts[i]);
+      // }
+      // debugger;
+      // setStripe(null);
+    };
   }, []);
 
   const handleClick = async (subType: string) => {
@@ -98,7 +109,8 @@ export default function Plans(props: any) {
           : "REACT_APP_STRIPE_ENTERPRISE_PRICE"
       ];
     const data = await createCheckoutSession(price, subType);
-    stripe.redirectToCheckout({ sessionId: data.sessionId });
+    window.location.href = data.sessionUrl;
+    //stripe.redirectToCheckout({ sessionId: data.sessionId });
   };
 
   return (
