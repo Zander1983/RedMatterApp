@@ -59,7 +59,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
-  const rules = userManager.getRules();
+  let rules = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -100,27 +100,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
 
   React.useEffect(() => {
-    axios
-      .get("/api/getuserdetails", {
-        headers: {
-          token: userManager.getToken(),
-        },
-      })
-      .then((response) => {
-        let userDetails = response.data;
-        dispatch({
-          type: "UPDATE_SUBSCRIPTION_DETAILS",
-          payload: {
-            rules: userDetails.data?.rules,
-            subscriptionDetails: userDetails.data?.subscriptionDetails,
-            subscriptionType: userDetails.data?.userDetails?.subscriptionType,
-          },
-        });
-        fetchExperiments();
-        if (props.backFromQuestions) {
-          snackbarService.showSnackbar("Experiment created", "success");
-        }
-      });
+    // fetchExperiments();
+    setFetchExperimentsComplete(true);
+    if (props.backFromQuestions) {
+      snackbarService.showSnackbar("Experiment created", "success");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -218,7 +202,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                   }
                 />{" "}
                 {/* Here */}
-                {rules.createOrganizations && (
+                {rules?.createOrganizations && (
                   <FormControlLabel
                     label={
                       "Organization Experiments (" +

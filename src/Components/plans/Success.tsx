@@ -13,15 +13,12 @@ export default function Plans(props: { session_id: any }) {
     axios
       .get(`/checkout-session?id=${props.session_id}`)
       .then((response) => response.data)
-      .then((session) => setSession(JSON.stringify(session, null, 2)))
-      .then(() => {
-        let data = JSON.parse(session);
-        debugger;
-        // console.log(data?.metadata?.subscriptionType);
-        if (session) {
+      .then((data) => {
+        if (data) {
           axios
             .post(`/save-checkout`, {
               body: {
+                id: data.id,
                 user: data.metadata.userId,
                 subscription: data.subscription,
                 customer: data.customer,
@@ -39,17 +36,18 @@ export default function Plans(props: { session_id: any }) {
                 })
                 .then(async () => {
                   const token = userManager.getToken();
-                  const rules = await axios.get("/api/userSubscriptionRules", {
+                  const data = await axios.get("/api/profile-info", {
                     headers: {
                       token: token,
                     },
                   });
-
+                  let userDetails = data.data;
                   dispatch({
-                    type: "CHANGE_SUBSCRIPTION_TYPE",
+                    type: "UPDATE_SUBSCRIPTION_DETAILS",
                     payload: {
-                      subscriptionType: data?.metadata?.subscriptionType,
-                      rules: rules?.data?.rules,
+                      rules: userDetails?.rules,
+                      subscriptionDetails: userDetails?.subscriptionDetails,
+                      subscriptionType: userDetails?.subscriptionType,
                     },
                   });
                 });

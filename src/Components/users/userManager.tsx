@@ -67,6 +67,11 @@ class UserManager {
     return this.state.user.profile.rules;
   }
 
+  getSubscriptionDetails() {
+    debugger;
+    return this.state.user.profile.subscriptionDetails;
+  }
+
   getSubscriptionType() {
     return this.state.user.profile.subscriptionType;
   }

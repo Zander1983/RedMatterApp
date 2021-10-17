@@ -78,81 +78,15 @@ export default function Plans(props: any) {
   const [userObj, setuserObj] = useState(null);
   const [sub, setSub] = useState(null);
   const [date, setDate] = useState(null);
-  const [product, setProduct] = useState(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [email, setEmail] = useState("email@email.com");
   const [subSelect, setSubSelect] = useState(null);
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [subscriptionSend, setSubscriptionSend] = useState(null);
-  // const getUserObj = useCallback(() => {
-  //   if (product == null) {
-  //     axios
-  //       .get(`/profile-info`, {
-  //         headers: {
-  //           Token: userManager.getToken(),
-  //         },
-  //       })
-  //       .then((response) => response.data)
-  //       .then((user) => {
-  //         setuserObj(user);
-  //         if (user.userDetails.isOrganisationAdmin === true) {
-  //           setuserObj(user);
-  //           getSub(user);
-  //         } else {
-  //           axios
-  //             .post(
-  //               `/admin-profile-info`,
-  //               {
-  //                 adminId: user.userDetails.adminId,
-  //               },
-  //               {
-  //                 headers: {
-  //                   Token: userManager.getToken(),
-  //                 },
-  //               }
-  //             )
-  //             .then((user) => {
-  //               getSub(user.data);
-  //             });
-  //         }
-  //       });
-  //   }
-  // }, [email]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-  // const getProduct = useCallback((sub: any) => {
-  //   axios
-  //     .get(`/get-product?id=${sub.items.data[0].plan.product}`)
-  //     .then((response) => response.data)
-  //     .then((product) => {
-  //       setProduct(product);
-  //     });
-  // }, []);
-
-  // const getSub = useCallback(
-  //   (user: any) => {
-  //     if (
-  //       user.userDetails.subscriptionId != null &&
-  //       user.userDetails.subscriptionId !== ""
-  //     ) {
-  //       axios
-  //         .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
-  //         .then((response) => response.data)
-  //         .then((subscription) => {
-  //           setSub(subscription);
-  //           setDate(new Date(subscription.current_period_end * 1000));
-  //           getProduct(subscription);
-  //         });
-  //     } else {
-  //       setSub("Not currently subscribed");
-  //       setProduct({ name: "You are not currently Subscribed" });
-  //     }
-  //   },
-  //   [getProduct]
-  // );
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionLastDate, setSubscriptionLastDate] = useState(null);
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
 
   const changeSubscription = (option: any) => {
     let obj: any = {
@@ -229,8 +163,47 @@ export default function Plans(props: any) {
     //   window.location.reload();
     // }, 1000);
   };
+  const [plans, setPlans] = useState([]);
+  useEffect(() => {
+    axios
+      .get("/api/getPlans", {
+        headers: {
+          Token: userManager.getToken(),
+        },
+      })
+      .then((response) => {
+        let data = response.data;
+        setPlans(data);
+        setVisibility(data);
+      });
+  }, []);
 
-  useEffect(() => {}, []);
+  const setVisibility = (plans: any[]) => {
+    //   everSubscribed: boolean;
+    // canceled: boolean;
+    // product: string;
+    // currentCycleEnd: number;
+    let subscriptionDetails = userManager.getSubscriptionDetails();
+    debugger;
+    let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+
+    if (subscriptionDetails.canceled) {
+      let subEndTime = date.getTime();
+      let currentTime = new Date().getTime();
+      if (currentTime <= subEndTime) {
+        setSubscription(userManager.getSubscriptionType());
+        setSubscriptionLastDate(JSON.stringify(date.getDate()));
+      } else {
+        setSubscription("Free");
+        setSubscriptionLastDate("Not Active");
+      }
+    } else if (subscriptionDetails.everSubscribed) {
+      setSubscription(userManager.getSubscriptionType());
+      setSubscriptionLastDate(JSON.stringify(date.getDate()));
+    }
+
+    return true;
+  };
 
   return (
     <div>
@@ -240,19 +213,17 @@ export default function Plans(props: any) {
         user={userObj}
         copiedToClipboard={copiedToClipboard}
       ></AddUsersModal>
-      <ChangeSubscriptionModal
+      {/* <ChangeSubscriptionModal
         open={openChange}
         close={closeModal}
         updateSubscription={changeSubscription}
-        subscription={subscriptionSend}
         subSelect={subSelect}
       ></ChangeSubscriptionModal>
       <CancelSubscriptionModal
         open={openCancel}
         close={closeModal}
         cancelSubscription={cancelSubscription}
-        subscription={subscriptionSend}
-      ></CancelSubscriptionModal>
+      ></CancelSubscriptionModal> */}
       <Grid
         container
         alignContent="center"
@@ -309,62 +280,53 @@ export default function Plans(props: any) {
             <Grid item lg={9} md={6} sm={6}>
               <h3 style={{ marginBottom: "1.5em" }}>
                 Current Subscription:
-                <span>
-                  {" "}
-                  {product == null
-                    ? "Your Subscription Type"
-                    : " " + product.name}{" "}
-                </span>
+                <span>{}</span>
               </h3>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "You are not currently Subscribed" ? null : (
-                  <div>
-                    <h3>
-                      <strong>Change Subscription</strong>
-                    </h3>
-                    <FormControl className={classes.formControl}>
-                      <InputLabel htmlFor="subscriptionSelect">
-                        Select Subscription
-                      </InputLabel>
-                      <Select
-                        native
-                        onChange={(event) => {
-                          setSubSelect(event.target.value);
-                        }}
-                        style={{
-                          width: "200px",
-                          height: "40px",
-                        }}
-                        inputProps={{
-                          name: "age",
-                          id: "subscriptionSelect",
-                        }}
-                      >
-                        <option value={null}></option>
-                        {/* {product == null ? null : product.name ===
+              {true ? (
+                <div>
+                  <h3>
+                    <strong>Change Subscription</strong>
+                  </h3>
+                  <FormControl className={classes.formControl}>
+                    <InputLabel htmlFor="subscriptionSelect">
+                      Select Subscription
+                    </InputLabel>
+                    <Select
+                      native
+                      onChange={(event) => {
+                        setSubSelect(event.target.value);
+                      }}
+                      style={{
+                        width: "200px",
+                        height: "40px",
+                      }}
+                      inputProps={{
+                        name: "age",
+                        id: "subscriptionSelect",
+                      }}
+                    >
+                      <option value={null}></option>
+                      {/* {product == null ? null : product.name ===
                           "Free Subscription" ? (
                           <option value={3}>Enterprise</option>
                         ) : (
                           <option value={1}>Free</option>
                         )} */}
-                        {product == null ? null : product.name === "Premium" ? (
-                          <option value={3}>Enterprise</option>
-                        ) : (
-                          <option value={2}>Premium</option>
-                        )}{" "}
-                      </Select>
-                    </FormControl>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="secondary"
-                      onClick={() => setOpenChange(true)}
-                    >
-                      Change Subscription
-                    </Button>
-                  </div>
-                )
+                      {/* {product == null ? null : product.name === "Premium" ? (
+                        <option value={3}>Enterprise</option>
+                      ) : (
+                        <option value={2}>Premium</option>
+                      )}{" "} */}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="secondary"
+                    onClick={() => setOpenChange(true)}
+                  >
+                    Change Subscription
+                  </Button>
+                </div>
               ) : null}
               {}
               {}{" "}
@@ -378,7 +340,7 @@ export default function Plans(props: any) {
             direction="row"
             style={{ textAlign: "left" }}
           >
-            <Grid item lg={10} md={6} sm={6}>
+            {/* <Grid item lg={10} md={6} sm={6}>
               {userObj == null ? null : userObj.userDetails
                   .isOrganisationAdmin ? (
                 product == null ? null : product.name ===
@@ -401,9 +363,9 @@ export default function Plans(props: any) {
                 )
               ) : null}
               {}{" "}
-            </Grid>
+            </Grid> */}
 
-            <Grid item lg={2} md={6} sm={6}>
+            {/* <Grid item lg={2} md={6} sm={6}>
               {userObj == null ? null : userObj.userDetails
                   .isOrganisationAdmin ? (
                 product == null ? null : product.name ===
@@ -421,7 +383,7 @@ export default function Plans(props: any) {
                 ) : null
               ) : null}
               {}{" "}
-            </Grid>
+            </Grid> */}
           </Grid>
 
           <Grid
