@@ -147,7 +147,6 @@ function PlotComponent(props: {
   const isDownloading = (fileId: FileID) => {
     return downloadingFiles.find((x) => x == fileId);
   };
-  console.log(yWidth);
 
   const handleMultiPlotHistogram = async (
     dataSource: "file" | "plot",
