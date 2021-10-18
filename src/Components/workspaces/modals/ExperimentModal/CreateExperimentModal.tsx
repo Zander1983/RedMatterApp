@@ -445,9 +445,6 @@ function CreateExperimentModal({
 
                     <FormControlLabel
                       className={classes.formControlLabel}
-                      style={{
-                        marginLeft: "-45%",
-                      }}
                       control={
                         <Checkbox
                           color="primary"
