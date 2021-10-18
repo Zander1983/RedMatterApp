@@ -9,7 +9,6 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 export default function CancelSubscriptionModal(props: {
   cancelSubscription: Function;
   open: boolean;
-  subscription: String;
   close: Function;
 }) {
   const handleClose = () => {
@@ -42,7 +41,7 @@ export default function CancelSubscriptionModal(props: {
           </Button>
           <Button
             onClick={() => {
-              props.cancelSubscription(props.subscription);
+              props.cancelSubscription();
               props.close();
             }}
             color="primary"

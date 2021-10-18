@@ -5,6 +5,7 @@ import { Grid } from "@material-ui/core";
 import check from "./img/check.png";
 import { useDispatch } from "react-redux";
 import userManager from "Components/users/userManager";
+import { updateUserStripeDetails } from "../../services/StripeService";
 
 export default function Plans(props: { session_id: any }) {
   const [session, setSession] = useState(null);
@@ -35,21 +36,7 @@ export default function Plans(props: { session_id: any }) {
                   },
                 })
                 .then(async () => {
-                  const token = userManager.getToken();
-                  const data = await axios.get("/api/profile-info", {
-                    headers: {
-                      token: token,
-                    },
-                  });
-                  let userDetails = data.data;
-                  dispatch({
-                    type: "UPDATE_SUBSCRIPTION_DETAILS",
-                    payload: {
-                      rules: userDetails?.rules,
-                      subscriptionDetails: userDetails?.subscriptionDetails,
-                      subscriptionType: userDetails?.subscriptionType,
-                    },
-                  });
+                  updateUserStripeDetails(dispatch);
                 });
             });
         }

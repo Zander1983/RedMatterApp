@@ -64,15 +64,23 @@ class UserManager {
   }
 
   getRules() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
     return this.state.user.profile.rules;
   }
 
   getSubscriptionDetails() {
-    debugger;
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
     return this.state.user.profile.subscriptionDetails;
   }
 
   getSubscriptionType() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
     return this.state.user.profile.subscriptionType;
   }
 

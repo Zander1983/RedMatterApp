@@ -9,7 +9,6 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 export default function ChangeSubscriptionModal(props: {
   updateSubscription: Function;
   open: boolean;
-  subscription: String;
   subSelect: any;
   close: Function;
 }) {

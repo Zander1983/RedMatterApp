@@ -12,6 +12,9 @@ import AddUsersModal from "./addUsersModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
+import { useDispatch } from "react-redux";
+import { updateUserStripeDetails } from "../../services/StripeService";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -74,7 +77,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Plans(props: any) {
   const classes = useStyles();
-
+  const dispatch = useDispatch();
   const [userObj, setuserObj] = useState(null);
   const [sub, setSub] = useState(null);
   const [date, setDate] = useState(null);
@@ -87,32 +90,78 @@ export default function Plans(props: any) {
   const [subscription, setSubscription] = useState(null);
   const [subscriptionLastDate, setSubscriptionLastDate] = useState(null);
   const [subscriptionDetails, setSubscriptionDetails] = useState(null);
+  const [invoiceAmount, setInvoiceAmount] = useState(null);
+  const [invoiceCurrency, setInvoiceCurrency] = useState(null);
+  const [showSubscriptionDropdown, setShowSubscriptionDropdown] =
+    useState(null);
+  const [showCancelSubscription, setShowCancelSubscription] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [planFiltered, setPlanFiltered] = useState([]);
+
+  const getInvoiceBill = async () => {
+    try {
+      let response = await axios.get("/api/getUserNextBill", {
+        headers: {
+          Token: userManager.getToken(),
+        },
+      });
+      let data = response.data.data;
+      setInvoiceAmount(data.amount ? data.amount / 100 : 0);
+      setInvoiceCurrency(data.currency);
+    } catch (e) {}
+  };
+
+  const setVisibility = async (plans: any[]) => {
+    if (plans.length > 0) {
+      let subscriptionType = "Free";
+      let nextBillDate;
+      let subscriptionDetails = userManager.getSubscriptionDetails();
+      let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+      let productId = subscriptionDetails.product;
+      let showSubscriptionChange = false;
+      let showResumeSubscription = false;
+      let showCancelSubscriptionBtn = false;
+      if (subscriptionDetails.canceled) {
+        let subEndTime = date.getTime();
+        let currentTime = new Date().getTime();
+        if (currentTime <= subEndTime) {
+          subscriptionType = userManager.getSubscriptionType();
+          nextBillDate = JSON.stringify(date).substring(1, 11);
+          showResumeSubscription = true;
+          await getInvoiceBill();
+        } else {
+          subscriptionType = "Free";
+          nextBillDate = "Not Active";
+          showSubscriptionChange = false;
+        }
+      } else if (subscriptionDetails.everSubscribed) {
+        if (plans.length > 1) {
+          showSubscriptionChange = true;
+          setPlanFiltered(plans.filter((x) => x.id != productId));
+        }
+        subscriptionType = userManager.getSubscriptionType();
+        nextBillDate = JSON.stringify(date).substring(1, 11);
+        showCancelSubscriptionBtn = true;
+        await getInvoiceBill();
+      }
+      setSubscription(subscriptionType);
+      setSubscriptionLastDate(nextBillDate);
+      setShowSubscriptionDropdown(showSubscriptionChange);
+      setShowCancelSubscription(showCancelSubscriptionBtn);
+    }
+  };
 
   const changeSubscription = (option: any) => {
-    let obj: any = {
-      1: {
-        price: "price_1JCargFYFs5GcbAXZowQSPpK",
-        subscriptionType: "Free",
-      },
-      2: {
-        price: "price_1J9tviJI2QgacDzsnRifKjqK",
-        subscriptionType: "Premium",
-      },
-      3: {
-        price: "price_1JknlPJI2QgacDzsM28e4UXK",
-        subscriptionType: "Enterprise",
-      },
-    };
     if (subSelect == null) {
       alert("Please Select a subscription");
     } else {
+      let plan = plans.find((x) => x.id == option);
       axios
         .post(
           "/update-subscription",
           {
-            subscription: sub.id,
-            price: obj[option].price,
-            subscriptionType: obj[option].subscriptionType,
+            price: plan.price.id,
+            subscriptionType: plan.name,
           },
           {
             headers: {
@@ -120,25 +169,26 @@ export default function Plans(props: any) {
             },
           }
         )
-        .then((result) => {
-          let data = result.data;
-          let subscription = data.subscriptionUpdate;
-          setSub(subscription);
-          setDate(new Date(subscription.current_period_end * 1000));
-          //getProduct(subscription);
+        .then(async (result) => {
+          await updateUserStripeDetails(dispatch);
+          setVisibility(plans);
         })
         .catch(() => {});
     }
     // Free Subscription
   };
 
-  const cancelSubscription = (option: any) => {
+  const cancelSubscription = () => {
     axios
       .post("/cancel-subscription", {
-        subscription: sub.id,
-        userId: userObj.userDetails._id,
+        headers: {
+          Token: userManager.getToken(),
+        },
       })
-      .then(() => {})
+      .then(async () => {
+        await updateUserStripeDetails(dispatch);
+        setVisibility(plans);
+      })
       .catch(() => {});
   };
 
@@ -163,7 +213,7 @@ export default function Plans(props: any) {
     //   window.location.reload();
     // }, 1000);
   };
-  const [plans, setPlans] = useState([]);
+
   useEffect(() => {
     axios
       .get("/api/getPlans", {
@@ -172,38 +222,11 @@ export default function Plans(props: any) {
         },
       })
       .then((response) => {
-        let data = response.data;
+        let data = response.data.data;
         setPlans(data);
         setVisibility(data);
       });
   }, []);
-
-  const setVisibility = (plans: any[]) => {
-    //   everSubscribed: boolean;
-    // canceled: boolean;
-    // product: string;
-    // currentCycleEnd: number;
-    let subscriptionDetails = userManager.getSubscriptionDetails();
-    debugger;
-    let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
-
-    if (subscriptionDetails.canceled) {
-      let subEndTime = date.getTime();
-      let currentTime = new Date().getTime();
-      if (currentTime <= subEndTime) {
-        setSubscription(userManager.getSubscriptionType());
-        setSubscriptionLastDate(JSON.stringify(date.getDate()));
-      } else {
-        setSubscription("Free");
-        setSubscriptionLastDate("Not Active");
-      }
-    } else if (subscriptionDetails.everSubscribed) {
-      setSubscription(userManager.getSubscriptionType());
-      setSubscriptionLastDate(JSON.stringify(date.getDate()));
-    }
-
-    return true;
-  };
 
   return (
     <div>
@@ -213,7 +236,7 @@ export default function Plans(props: any) {
         user={userObj}
         copiedToClipboard={copiedToClipboard}
       ></AddUsersModal>
-      {/* <ChangeSubscriptionModal
+      <ChangeSubscriptionModal
         open={openChange}
         close={closeModal}
         updateSubscription={changeSubscription}
@@ -223,7 +246,7 @@ export default function Plans(props: any) {
         open={openCancel}
         close={closeModal}
         cancelSubscription={cancelSubscription}
-      ></CancelSubscriptionModal> */}
+      ></CancelSubscriptionModal>
       <Grid
         container
         alignContent="center"
@@ -263,16 +286,23 @@ export default function Plans(props: any) {
             <Grid item lg={6} md={6} sm={6}>
               <h3>
                 Next Billing Date:
-                <span>
-                  {userObj == null
-                    ? null
-                    : userObj.userDetails.isOrganisationAdmin
-                    ? date == null
-                      ? "Not Active"
-                      : " " + JSON.stringify(date).substring(1, 11)
-                    : " Managed by Organisation"}
-                </span>
+                <span> </span>
+                <span>{subscriptionLastDate}</span>
               </h3>
+            </Grid>
+          </Grid>
+
+          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+            <Grid item lg={6} md={6} sm={6}>
+              {invoiceAmount ? (
+                <h3>
+                  Next Billing Amount:
+                  <span> </span>
+                  <span>{invoiceAmount}</span>
+                  <span> </span>
+                  <span>{invoiceCurrency}</span>
+                </h3>
+              ) : null}
             </Grid>
           </Grid>
 
@@ -280,9 +310,10 @@ export default function Plans(props: any) {
             <Grid item lg={9} md={6} sm={6}>
               <h3 style={{ marginBottom: "1.5em" }}>
                 Current Subscription:
-                <span>{}</span>
+                <span> </span>
+                <span>{subscription}</span>
               </h3>
-              {true ? (
+              {showSubscriptionDropdown ? (
                 <div>
                   <h3>
                     <strong>Change Subscription</strong>
@@ -306,17 +337,9 @@ export default function Plans(props: any) {
                       }}
                     >
                       <option value={null}></option>
-                      {/* {product == null ? null : product.name ===
-                          "Free Subscription" ? (
-                          <option value={3}>Enterprise</option>
-                        ) : (
-                          <option value={1}>Free</option>
-                        )} */}
-                      {/* {product == null ? null : product.name === "Premium" ? (
-                        <option value={3}>Enterprise</option>
-                      ) : (
-                        <option value={2}>Premium</option>
-                      )}{" "} */}
+                      {planFiltered.map((plan) => {
+                        return <option value={plan.id}>{plan.name}</option>;
+                      })}
                     </Select>
                   </FormControl>
                   <Button
@@ -340,50 +363,40 @@ export default function Plans(props: any) {
             direction="row"
             style={{ textAlign: "left" }}
           >
-            {/* <Grid item lg={10} md={6} sm={6}>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "You are not currently Subscribed" ? (
-                  <h4>
-                    Go to
-                    <NavLink to="/plans">Plans</NavLink>to Subscribe
-                  </h4>
-                ) : (
-                  <div>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="secondary"
-                      variant="contained"
-                      onClick={() => setOpenCancel(true)}
-                    >
-                      Cancel Subscription
-                    </Button>
-                  </div>
-                )
-              ) : null}
-              {}{" "}
-            </Grid> */}
+            <Grid item lg={10} md={6} sm={6}>
+              {showCancelSubscription ? (
+                <div>
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="secondary"
+                    variant="contained"
+                    onClick={() => setOpenCancel(true)}
+                  >
+                    Cancel Subscription
+                  </Button>
+                </div>
+              ) : (
+                <h4>
+                  Go to
+                  <NavLink to="/plans">Plans</NavLink>to Subscribe
+                </h4>
+              )}
+            </Grid>
 
-            {/* <Grid item lg={2} md={6} sm={6}>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "Enterprise Subscription" ? (
-                  <div>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="primary"
-                      variant="contained"
-                      onClick={() => setOpenAddUser(true)}
-                    >
-                      Add Users
-                    </Button>
-                  </div>
-                ) : null
+            <Grid item lg={2} md={6} sm={6}>
+              {subscription == "Enterprise" ? (
+                <div>
+                  <Button
+                    style={{ marginTop: 25 }}
+                    color="primary"
+                    variant="contained"
+                    onClick={() => setOpenAddUser(true)}
+                  >
+                    Add Users
+                  </Button>
+                </div>
               ) : null}
-              {}{" "}
-            </Grid> */}
+            </Grid>
           </Grid>
 
           <Grid
