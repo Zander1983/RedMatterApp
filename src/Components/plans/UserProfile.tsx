@@ -13,7 +13,11 @@ import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch } from "react-redux";
-import { updateUserStripeDetails } from "../../services/StripeService";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import {
+  updateUserStripeDetails,
+  getPlans,
+} from "../../services/StripeService";
 import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -95,8 +99,10 @@ export default function Plans(props: any) {
   const [showSubscriptionDropdown, setShowSubscriptionDropdown] =
     useState(null);
   const [showCancelSubscription, setShowCancelSubscription] = useState(false);
+  const [showResumeSubscription, setShowResumeSubscription] = useState(false);
   const [plans, setPlans] = useState([]);
   const [planFiltered, setPlanFiltered] = useState([]);
+  const [profileLoader, setProfileLoader] = useState(true);
 
   const getInvoiceBill = async () => {
     try {
@@ -114,12 +120,12 @@ export default function Plans(props: any) {
   const setVisibility = async (plans: any[]) => {
     if (plans.length > 0) {
       let subscriptionType = "Free";
-      let nextBillDate;
+      let nextBillDate = "Not Active";
       let subscriptionDetails = userManager.getSubscriptionDetails();
       let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
       let productId = subscriptionDetails.product;
       let showSubscriptionChange = false;
-      let showResumeSubscription = false;
+      let showResumeSubscriptionBtn = false;
       let showCancelSubscriptionBtn = false;
       if (subscriptionDetails.canceled) {
         let subEndTime = date.getTime();
@@ -127,13 +133,13 @@ export default function Plans(props: any) {
         if (currentTime <= subEndTime) {
           subscriptionType = userManager.getSubscriptionType();
           nextBillDate = JSON.stringify(date).substring(1, 11);
-          showResumeSubscription = true;
           await getInvoiceBill();
         } else {
           subscriptionType = "Free";
           nextBillDate = "Not Active";
           showSubscriptionChange = false;
         }
+        showResumeSubscriptionBtn = true;
       } else if (subscriptionDetails.everSubscribed) {
         if (plans.length > 1) {
           showSubscriptionChange = true;
@@ -148,6 +154,7 @@ export default function Plans(props: any) {
       setSubscriptionLastDate(nextBillDate);
       setShowSubscriptionDropdown(showSubscriptionChange);
       setShowCancelSubscription(showCancelSubscriptionBtn);
+      setShowResumeSubscription(showResumeSubscriptionBtn);
     }
   };
 
@@ -155,6 +162,7 @@ export default function Plans(props: any) {
     if (subSelect == null) {
       alert("Please Select a subscription");
     } else {
+      setProfileLoader(true);
       let plan = plans.find((x) => x.id == option);
       axios
         .post(
@@ -171,23 +179,36 @@ export default function Plans(props: any) {
         )
         .then(async (result) => {
           await updateUserStripeDetails(dispatch);
-          setVisibility(plans);
+          await setVisibility(plans);
+          snackbarService.showSnackbar(
+            "Subscription Updated Successfully!",
+            "success"
+          );
         })
-        .catch(() => {});
+        .catch(() => {
+          snackbarService.showSnackbar("Subscription Updated failed!", "error");
+        })
+        .finally(() => {
+          setProfileLoader(false);
+        });
     }
     // Free Subscription
   };
 
   const cancelSubscription = () => {
     axios
-      .post("/cancel-subscription", {
-        headers: {
-          Token: userManager.getToken(),
-        },
-      })
+      .post(
+        "/cancel-subscription",
+        {},
+        {
+          headers: {
+            Token: userManager.getToken(),
+          },
+        }
+      )
       .then(async () => {
         await updateUserStripeDetails(dispatch);
-        setVisibility(plans);
+        await setVisibility(plans);
       })
       .catch(() => {});
   };
@@ -204,29 +225,35 @@ export default function Plans(props: any) {
     closeModal();
   };
 
-  const refresh = () => {
-    snackbarService.showSnackbar(
-      "Subscription Updated Successfully!",
-      "success"
-    );
-    // setTimeout(() => {
-    //   window.location.reload();
-    // }, 1000);
+  useEffect(() => {
+    initUserProfile();
+  }, []);
+
+  const initUserProfile = async () => {
+    setProfileLoader(true);
+    let plans = await getPlans();
+    setPlans(plans);
+    await setVisibility(plans);
+    setProfileLoader(false);
   };
 
-  useEffect(() => {
+  const resumeSubscription = () => {
     axios
-      .get("/api/getPlans", {
-        headers: {
-          Token: userManager.getToken(),
-        },
+      .post(
+        "/api/resume-subscription",
+        {},
+        {
+          headers: {
+            Token: userManager.getToken(),
+          },
+        }
+      )
+      .then(async (result) => {
+        await updateUserStripeDetails(dispatch);
+        setVisibility(plans);
       })
-      .then((response) => {
-        let data = response.data.data;
-        setPlans(data);
-        setVisibility(data);
-      });
-  }, []);
+      .catch(() => {});
+  };
 
   return (
     <div>
@@ -281,123 +308,144 @@ export default function Plans(props: any) {
             My profile
           </h1>
           {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
-
-          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-            <Grid item lg={6} md={6} sm={6}>
-              <h3>
-                Next Billing Date:
-                <span> </span>
-                <span>{subscriptionLastDate}</span>
-              </h3>
-            </Grid>
-          </Grid>
-
-          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-            <Grid item lg={6} md={6} sm={6}>
-              {invoiceAmount ? (
-                <h3>
-                  Next Billing Amount:
-                  <span> </span>
-                  <span>{invoiceAmount}</span>
-                  <span> </span>
-                  <span>{invoiceCurrency}</span>
-                </h3>
-              ) : null}
-            </Grid>
-          </Grid>
-
-          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-            <Grid item lg={9} md={6} sm={6}>
-              <h3 style={{ marginBottom: "1.5em" }}>
-                Current Subscription:
-                <span> </span>
-                <span>{subscription}</span>
-              </h3>
-              {showSubscriptionDropdown ? (
-                <div>
+          {profileLoader ? (
+            <div>
+              <CircularProgress></CircularProgress>
+            </div>
+          ) : (
+            <div>
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={6} md={6} sm={6}>
                   <h3>
-                    <strong>Change Subscription</strong>
+                    Next Billing Date:
+                    <span> </span>
+                    <span>{subscriptionLastDate}</span>
                   </h3>
-                  <FormControl className={classes.formControl}>
-                    <InputLabel htmlFor="subscriptionSelect">
-                      Select Subscription
-                    </InputLabel>
-                    <Select
-                      native
-                      onChange={(event) => {
-                        setSubSelect(event.target.value);
-                      }}
-                      style={{
-                        width: "200px",
-                        height: "40px",
-                      }}
-                      inputProps={{
-                        name: "age",
-                        id: "subscriptionSelect",
-                      }}
-                    >
-                      <option value={null}></option>
-                      {planFiltered.map((plan) => {
-                        return <option value={plan.id}>{plan.name}</option>;
-                      })}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    onClick={() => setOpenChange(true)}
-                  >
-                    Change Subscription
-                  </Button>
-                </div>
-              ) : null}
-              {}
-              {}{" "}
-            </Grid>
-          </Grid>
+                </Grid>
+              </Grid>
 
-          <Grid
-            container
-            alignItems="flex-end"
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
-            <Grid item lg={10} md={6} sm={6}>
-              {showCancelSubscription ? (
-                <div>
-                  <Button
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={6} md={6} sm={6}>
+                  {invoiceAmount ? (
+                    <h3>
+                      Next Billing Amount:
+                      <span> </span>
+                      <span>{invoiceAmount}</span>
+                      <span> </span>
+                      <span>{invoiceCurrency}</span>
+                    </h3>
+                  ) : null}
+                </Grid>
+              </Grid>
+
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={9} md={6} sm={6}>
+                  <h3 style={{ marginBottom: "1.5em" }}>
+                    Current Subscription:
+                    <span> </span>
+                    <span>{subscription}</span>
+                  </h3>
+                  {showSubscriptionDropdown ? (
+                    <div>
+                      <h3>
+                        <strong>Change Subscription</strong>
+                      </h3>
+                      <FormControl className={classes.formControl}>
+                        <InputLabel htmlFor="subscriptionSelect">
+                          Select Subscription
+                        </InputLabel>
+                        <Select
+                          native
+                          onChange={(event) => {
+                            setSubSelect(event.target.value);
+                          }}
+                          style={{
+                            width: "200px",
+                            height: "40px",
+                          }}
+                          inputProps={{
+                            name: "age",
+                            id: "subscriptionSelect",
+                          }}
+                        >
+                          <option value={null}></option>
+                          {planFiltered.map((plan) => {
+                            return <option value={plan.id}>{plan.name}</option>;
+                          })}
+                        </Select>
+                      </FormControl>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="secondary"
+                        onClick={() => setOpenChange(true)}
+                      >
+                        Change Subscription
+                      </Button>
+                    </div>
+                  ) : null}
+                  {}
+                  {}{" "}
+                </Grid>
+              </Grid>
+
+              <Grid
+                container
+                alignItems="flex-end"
+                justify="flex-start"
+                direction="row"
+                style={{ textAlign: "left" }}
+              >
+                <Grid item lg={10} md={6} sm={6}>
+                  {showCancelSubscription ? (
+                    <div>
+                      {/* <Button
                     style={{ marginTop: 25 }}
                     color="secondary"
                     variant="contained"
                     onClick={() => setOpenCancel(true)}
                   >
                     Cancel Subscription
-                  </Button>
-                </div>
-              ) : (
-                <h4>
-                  Go to
-                  <NavLink to="/plans">Plans</NavLink>to Subscribe
-                </h4>
-              )}
-            </Grid>
+                  </Button> */}
+                    </div>
+                  ) : showResumeSubscription ? (
+                    <div>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="secondary"
+                        variant="contained"
+                        onClick={() => resumeSubscription()}
+                      >
+                        Resume Subscription
+                      </Button>
+                    </div>
+                  ) : (
+                    <h4>
+                      Go to
+                      <NavLink to="/plans">
+                        <span> </span>Plans <span> </span>
+                      </NavLink>
+                      to Subscribe
+                    </h4>
+                  )}
+                </Grid>
 
-            <Grid item lg={2} md={6} sm={6}>
-              {subscription == "Enterprise" ? (
-                <div>
-                  <Button
-                    style={{ marginTop: 25 }}
-                    color="primary"
-                    variant="contained"
-                    onClick={() => setOpenAddUser(true)}
-                  >
-                    Add Users
-                  </Button>
-                </div>
-              ) : null}
-            </Grid>
-          </Grid>
+                <Grid item lg={2} md={6} sm={6}>
+                  {subscription == "Enterprise" ? (
+                    <div>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="primary"
+                        variant="contained"
+                        onClick={() => setOpenAddUser(true)}
+                      >
+                        Add Users
+                      </Button>
+                    </div>
+                  ) : null}
+                </Grid>
+              </Grid>
+            </div>
+          )}
 
           <Grid
             container

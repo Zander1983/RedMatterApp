@@ -19,4 +19,13 @@ const updateUserStripeDetails = async (dispatch: any) => {
   });
 };
 
-export { updateUserStripeDetails };
+const getPlans = async () => {
+  let response = await axios.get("/api/getPlans", {
+    headers: {
+      Token: userManager.getToken(),
+    },
+  });
+  return response.data.data;
+};
+
+export { updateUserStripeDetails, getPlans };

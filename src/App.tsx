@@ -34,6 +34,7 @@ import { useDispatch } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
 import userManager from "Components/users/userManager";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const { Content } = Layout;
 
@@ -50,6 +51,12 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     height: "auto",
     lineHeight: 1.6,
+  },
+  loaderClass: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: "1 0 auto",
   },
 }));
 
@@ -214,7 +221,11 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
-        {loading ? null : (
+        {loading ? (
+          <div className={classes.loaderClass}>
+            <CircularProgress></CircularProgress>
+          </div>
+        ) : (
           <Content
             className={classes.content}
             style={{ fontFamily: "Quicksand" }}
