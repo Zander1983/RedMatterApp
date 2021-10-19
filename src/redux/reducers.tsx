@@ -19,7 +19,6 @@ const reducer = (state = initialState, action: any) => {
         profile: action.payload.user.profile,
       };
     case actionTypes.UPDATE_SUBSCRIPTION_DETAILS:
-      debugger;
       return {
         ...state,
         profile: {
