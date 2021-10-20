@@ -180,7 +180,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   useMemo(() => {
     setLoading(true);
-    if (userManager.getToken()) {
+    if (userManager.isLoggedIn() && userManager.getToken()) {
       axios
         .get("/api/getuserdetails", {
           headers: {
