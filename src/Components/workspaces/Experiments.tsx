@@ -5,7 +5,7 @@ import { Grid, Button, CircularProgress, Tooltip } from "@material-ui/core";
 
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
-
+import { useDispatch } from "react-redux";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -29,6 +29,7 @@ interface RemoteExperiment {
 
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
@@ -58,7 +59,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
-  const rules = userManager.getRules();
+  let rules = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -99,7 +100,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
 
   React.useEffect(() => {
-    fetchExperiments();
+    // fetchExperiments();
+    setFetchExperimentsComplete(true);
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
@@ -200,7 +202,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                   }
                 />{" "}
                 {/* Here */}
-                {rules.createOrganizations && (
+                {rules?.createOrganizations && (
                   <FormControlLabel
                     label={
                       "Organization Experiments (" +
