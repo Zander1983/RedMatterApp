@@ -35,6 +35,7 @@ import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
 import userManager from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 
 const { Content } = Layout;
 
@@ -180,6 +181,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   useMemo(() => {
     setLoading(true);
+
     if (userManager.isLoggedIn() && userManager.getToken()) {
       axios
         .get("/api/getuserdetails", {
@@ -221,28 +223,30 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
-        {loading ? (
-          <div className={classes.loaderClass}>
-            <CircularProgress></CircularProgress>
-          </div>
-        ) : (
-          <Content
-            className={classes.content}
-            style={{ fontFamily: "Quicksand" }}
-          >
-            <Switch>
-              {router.map((e, number) => (
-                // @ts-ignore
-                <Route
-                  key={number}
-                  exact
-                  path={e.path}
-                  component={e.component}
-                />
-              ))}
-            </Switch>
-          </Content>
-        )}
+        <ErrorBoundaryMain mainScreen={false} appScreen={true}>
+          {loading ? (
+            <div className={classes.loaderClass}>
+              <CircularProgress></CircularProgress>
+            </div>
+          ) : (
+            <Content
+              className={classes.content}
+              style={{ fontFamily: "Quicksand" }}
+            >
+              <Switch>
+                {router.map((e, number) => (
+                  // @ts-ignore
+                  <Route
+                    key={number}
+                    exact
+                    path={e.path}
+                    component={e.component}
+                  />
+                ))}
+              </Switch>
+            </Content>
+          )}
+        </ErrorBoundaryMain>
         <ChatBox />
         <Footer className={classes.footer} />
       </ThemeProvider>

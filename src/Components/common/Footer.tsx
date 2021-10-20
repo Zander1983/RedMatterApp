@@ -63,6 +63,10 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     overflow: "hidden",
     borderTop: `1px solid ${theme.palette.divider}`,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     marginTop: theme.spacing(8),
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
