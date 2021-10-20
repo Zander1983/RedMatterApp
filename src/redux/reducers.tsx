@@ -18,6 +18,16 @@ const reducer = (state = initialState, action: any) => {
         ...state,
         profile: action.payload.user.profile,
       };
+    case actionTypes.UPDATE_SUBSCRIPTION_DETAILS:
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          subscriptionType: action.payload.subscriptionType,
+          subscriptionDetails: action.payload.subscriptionDetails,
+          rules: action.payload.rules,
+        },
+      };
     case actionTypes.LOGOUT:
       return {
         ...state,

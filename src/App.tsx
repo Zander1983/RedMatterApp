@@ -29,9 +29,12 @@ import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
+import axios from "axios";
+import userManager from "Components/users/userManager";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const { Content } = Layout;
 
@@ -48,6 +51,12 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     height: "auto",
     lineHeight: 1.6,
+  },
+  loaderClass: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: "1 0 auto",
   },
 }));
 
@@ -168,11 +177,42 @@ const theme = createMuiTheme();
 const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
+  const [loading, setLoading] = useState(true);
+  useMemo(() => {
+    setLoading(true);
+    if (userManager.getToken()) {
+      axios
+        .get("/api/getuserdetails", {
+          headers: {
+            token: userManager.getToken(),
+          },
+        })
+        .then((response) => {
+          let userDetails = response.data;
+          dispatch({
+            type: "UPDATE_SUBSCRIPTION_DETAILS",
+            payload: {
+              rules: userDetails?.rules,
+              subscriptionDetails:
+                userDetails?.userDetails?.subscriptionDetails,
+              subscriptionType: userDetails?.userDetails?.subscriptionType,
+            },
+          });
+          setLoading(false);
+        })
+        .catch((e) => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     dispatch({
       type: "RESET",
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -181,17 +221,28 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
-        <Content
-          className={classes.content}
-          style={{ fontFamily: "Quicksand" }}
-        >
-          <Switch>
-            {router.map((e, number) => (
-              // @ts-ignore
-              <Route key={number} exact path={e.path} component={e.component} />
-            ))}
-          </Switch>
-        </Content>
+        {loading ? (
+          <div className={classes.loaderClass}>
+            <CircularProgress></CircularProgress>
+          </div>
+        ) : (
+          <Content
+            className={classes.content}
+            style={{ fontFamily: "Quicksand" }}
+          >
+            <Switch>
+              {router.map((e, number) => (
+                // @ts-ignore
+                <Route
+                  key={number}
+                  exact
+                  path={e.path}
+                  component={e.component}
+                />
+              ))}
+            </Switch>
+          </Content>
+        )}
         <ChatBox />
         <Footer className={classes.footer} />
       </ThemeProvider>

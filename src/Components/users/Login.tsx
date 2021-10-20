@@ -61,12 +61,13 @@ const Login = (props: any) => {
       });
 
       setLoading(false);
-
+      let blankArray: any[] = [];
       const loginData = {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
         token: res.data.token,
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
+        subscriptionDetails: userDetails.data?.subscriptionDetails,
       };
 
       dispatch({

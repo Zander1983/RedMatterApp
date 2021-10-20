@@ -12,6 +12,13 @@ import AddUsersModal from "./addUsersModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
+import { useDispatch } from "react-redux";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import {
+  updateUserStripeDetails,
+  getPlans,
+} from "../../services/StripeService";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -74,142 +81,136 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Plans(props: any) {
   const classes = useStyles();
-
+  const dispatch = useDispatch();
   const [userObj, setuserObj] = useState(null);
   const [sub, setSub] = useState(null);
   const [date, setDate] = useState(null);
-  const [product, setProduct] = useState(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [email, setEmail] = useState("email@email.com");
   const [subSelect, setSubSelect] = useState(null);
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [subscriptionSend, setSubscriptionSend] = useState(null);
-  const getUserObj = useCallback(() => {
-    if (product == null) {
-      axios
-        .get(`/profile-info`, {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        })
-        .then((response) => response.data)
-        .then((user) => {
-          setuserObj(user);
-          if (user.userDetails.isOrganisationAdmin === true) {
-            setuserObj(user);
-            getSub(user);
-          } else {
-            axios
-              .post(
-                `/admin-profile-info`,
-                {
-                  adminId: user.userDetails.adminId,
-                },
-                {
-                  headers: {
-                    Token: userManager.getToken(),
-                  },
-                }
-              )
-              .then((user) => {
-                getSub(user.data);
-              });
-          }
-        });
-    }
-  }, [email]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionLastDate, setSubscriptionLastDate] = useState(null);
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
+  const [invoiceAmount, setInvoiceAmount] = useState(null);
+  const [invoiceCurrency, setInvoiceCurrency] = useState(null);
+  const [showSubscriptionDropdown, setShowSubscriptionDropdown] =
+    useState(null);
+  const [showCancelSubscription, setShowCancelSubscription] = useState(false);
+  const [showResumeSubscription, setShowResumeSubscription] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [planFiltered, setPlanFiltered] = useState([]);
+  const [profileLoader, setProfileLoader] = useState(true);
 
-  const getProduct = useCallback((sub: any) => {
-    axios
-      .get(`/get-product?id=${sub.items.data[0].plan.product}`)
-      .then((response) => response.data)
-      .then((product) => {
-        setProduct(product);
+  const getInvoiceBill = async () => {
+    try {
+      let response = await axios.get("/api/getUserNextBill", {
+        headers: {
+          Token: userManager.getToken(),
+        },
       });
-  }, []);
+      let data = response.data.data;
+      setInvoiceAmount(data.amount ? data.amount / 100 : 0);
+      setInvoiceCurrency(data.currency);
+    } catch (e) {}
+  };
 
-  const getSub = useCallback(
-    (user: any) => {
-      if (
-        user.userDetails.subscriptionId != null &&
-        user.userDetails.subscriptionId !== ""
-      ) {
-        axios
-          .get(`/get-subscription?id=${user.userDetails.subscriptionId}`)
-          .then((response) => response.data)
-          .then((subscription) => {
-            setSub(subscription);
-            setDate(new Date(subscription.current_period_end * 1000));
-            getProduct(subscription);
-          });
-      } else {
-        setSub("Not currently subscribed");
-        setProduct({ name: "You are not currently Subscribed" });
+  const setVisibility = async (plans: any[]) => {
+    if (plans.length > 0) {
+      let subscriptionType = "Free";
+      let nextBillDate = "Not Active";
+      let subscriptionDetails = userManager.getSubscriptionDetails();
+      let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+      let productId = subscriptionDetails.product;
+      let showSubscriptionChange = false;
+      let showResumeSubscriptionBtn = false;
+      let showCancelSubscriptionBtn = false;
+      if (subscriptionDetails.canceled) {
+        let subEndTime = date.getTime();
+        let currentTime = new Date().getTime();
+        if (currentTime <= subEndTime) {
+          subscriptionType = userManager.getSubscriptionType();
+          nextBillDate = JSON.stringify(date).substring(1, 11);
+          await getInvoiceBill();
+        } else {
+          subscriptionType = "Free";
+          nextBillDate = "Not Active";
+          showSubscriptionChange = false;
+        }
+        showResumeSubscriptionBtn = true;
+      } else if (subscriptionDetails.everSubscribed) {
+        if (plans.length > 1) {
+          showSubscriptionChange = true;
+          setPlanFiltered(plans.filter((x) => x.id != productId));
+        }
+        subscriptionType = userManager.getSubscriptionType();
+        nextBillDate = JSON.stringify(date).substring(1, 11);
+        showCancelSubscriptionBtn = true;
+        await getInvoiceBill();
       }
-    },
-    [getProduct]
-  );
+      setSubscription(subscriptionType);
+      setSubscriptionLastDate(nextBillDate);
+      setShowSubscriptionDropdown(showSubscriptionChange);
+      setShowCancelSubscription(showCancelSubscriptionBtn);
+      setShowResumeSubscription(showResumeSubscriptionBtn);
+    }
+  };
 
   const changeSubscription = (option: any) => {
     if (subSelect == null) {
       alert("Please Select a subscription");
-    } else if (option === 3) {
-      // enterprise subscription
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1JCapGFYFs5GcbAXGlbz4pJV",
-          subscriptionType: "Enterprise",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
+    } else {
+      setProfileLoader(true);
+      let plan = plans.find((x) => x.id == option);
+      axios
+        .post(
+          "/update-subscription",
+          {
+            price: plan.price.id,
+            subscriptionType: plan.name,
           },
-        }
-      );
-    } else if (option === 2) {
-      // Premium Subscription
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1J7UmZFYFs5GcbAXvPronXSX",
-          subscriptionType: "Premium",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        }
-      );
-    } else if (option === 1) {
-      axios.post(
-        "/update-subscription",
-        {
-          subscription: sub.id,
-          price: "price_1JCargFYFs5GcbAXZowQSPpK",
-          subscriptionType: "Free",
-        },
-        {
-          headers: {
-            Token: userManager.getToken(),
-          },
-        }
-      );
+          {
+            headers: {
+              Token: userManager.getToken(),
+            },
+          }
+        )
+        .then(async (result) => {
+          await updateUserStripeDetails(dispatch);
+          await setVisibility(plans);
+          snackbarService.showSnackbar(
+            "Subscription Updated Successfully!",
+            "success"
+          );
+        })
+        .catch(() => {
+          snackbarService.showSnackbar("Subscription Updated failed!", "error");
+        })
+        .finally(() => {
+          setProfileLoader(false);
+        });
     }
     // Free Subscription
   };
 
-  const cancelSubscription = (option: any) => {
-    axios.post("/cancel-subscription", {
-      subscription: sub.id,
-      userId: userObj.userDetails._id,
-    });
+  const cancelSubscription = () => {
+    axios
+      .post(
+        "/cancel-subscription",
+        {},
+        {
+          headers: {
+            Token: userManager.getToken(),
+          },
+        }
+      )
+      .then(async () => {
+        await updateUserStripeDetails(dispatch);
+        await setVisibility(plans);
+      })
+      .catch(() => {});
   };
 
   const closeModal = () => {
@@ -224,19 +225,35 @@ export default function Plans(props: any) {
     closeModal();
   };
 
-  const refresh = () => {
-    snackbarService.showSnackbar(
-      "Subscription Updated Successfully!",
-      "success"
-    );
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+  useEffect(() => {
+    initUserProfile();
+  }, []);
+
+  const initUserProfile = async () => {
+    setProfileLoader(true);
+    let plans = await getPlans();
+    setPlans(plans);
+    await setVisibility(plans);
+    setProfileLoader(false);
   };
 
-  useEffect(() => {
-    getUserObj();
-  }, [getUserObj]);
+  const resumeSubscription = () => {
+    axios
+      .post(
+        "/api/resume-subscription",
+        {},
+        {
+          headers: {
+            Token: userManager.getToken(),
+          },
+        }
+      )
+      .then(async (result) => {
+        await updateUserStripeDetails(dispatch);
+        setVisibility(plans);
+      })
+      .catch(() => {});
+  };
 
   return (
     <div>
@@ -248,18 +265,14 @@ export default function Plans(props: any) {
       ></AddUsersModal>
       <ChangeSubscriptionModal
         open={openChange}
-        refresh={refresh}
         close={closeModal}
         updateSubscription={changeSubscription}
-        subscription={subscriptionSend}
         subSelect={subSelect}
       ></ChangeSubscriptionModal>
       <CancelSubscriptionModal
         open={openCancel}
-        refresh={refresh}
         close={closeModal}
         cancelSubscription={cancelSubscription}
-        subscription={subscriptionSend}
       ></CancelSubscriptionModal>
       <Grid
         container
@@ -295,143 +308,144 @@ export default function Plans(props: any) {
             My profile
           </h1>
           {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
+          {profileLoader ? (
+            <div>
+              <CircularProgress></CircularProgress>
+            </div>
+          ) : (
+            <div>
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={6} md={6} sm={6}>
+                  <h3>
+                    Next Billing Date:
+                    <span> </span>
+                    <span>{subscriptionLastDate}</span>
+                  </h3>
+                </Grid>
+              </Grid>
 
-          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-            <Grid item lg={6} md={6} sm={6}>
-              <h3>
-                Next Billing Date:
-                <span>
-                  {userObj == null
-                    ? null
-                    : userObj.userDetails.isOrganisationAdmin
-                    ? date == null
-                      ? "Not Active"
-                      : " " + JSON.stringify(date).substring(1, 11)
-                    : " Managed by Organisation"}
-                </span>
-              </h3>
-            </Grid>
-          </Grid>
-
-          <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-            <Grid item lg={9} md={6} sm={6}>
-              <h3 style={{ marginBottom: "1.5em" }}>
-                Current Subscription:
-                <span>
-                  {" "}
-                  {product == null
-                    ? "Your Subscription Type"
-                    : " " + product.name}{" "}
-                </span>
-              </h3>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "You are not currently Subscribed" ? null : (
-                  <div>
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={6} md={6} sm={6}>
+                  {invoiceAmount ? (
                     <h3>
-                      <strong>Change Subscription</strong>
+                      Next Billing Amount:
+                      <span> </span>
+                      <span>{invoiceAmount}</span>
+                      <span> </span>
+                      <span>{invoiceCurrency}</span>
                     </h3>
-                    <FormControl className={classes.formControl}>
-                      <InputLabel htmlFor="subscriptionSelect">
-                        Select Subscription
-                      </InputLabel>
-                      <Select
-                        native
-                        onChange={(event) => {
-                          setSubSelect(event.target.value);
-                        }}
-                        style={{
-                          width: "200px",
-                          height: "40px",
-                        }}
-                        inputProps={{
-                          name: "age",
-                          id: "subscriptionSelect",
-                        }}
+                  ) : null}
+                </Grid>
+              </Grid>
+
+              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
+                <Grid item lg={9} md={6} sm={6}>
+                  <h3 style={{ marginBottom: "1.5em" }}>
+                    Current Subscription:
+                    <span> </span>
+                    <span>{subscription}</span>
+                  </h3>
+                  {showSubscriptionDropdown ? (
+                    <div>
+                      <h3>
+                        <strong>Change Subscription</strong>
+                      </h3>
+                      <FormControl className={classes.formControl}>
+                        <InputLabel htmlFor="subscriptionSelect">
+                          Select Subscription
+                        </InputLabel>
+                        <Select
+                          native
+                          onChange={(event) => {
+                            setSubSelect(event.target.value);
+                          }}
+                          style={{
+                            width: "200px",
+                            height: "40px",
+                          }}
+                          inputProps={{
+                            name: "age",
+                            id: "subscriptionSelect",
+                          }}
+                        >
+                          <option value={null}></option>
+                          {planFiltered.map((plan) => {
+                            return <option value={plan.id}>{plan.name}</option>;
+                          })}
+                        </Select>
+                      </FormControl>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="secondary"
+                        onClick={() => setOpenChange(true)}
                       >
-                        <option value={null}></option>
-                        {product == null ? null : product.name ===
-                          "Free Subscription" ? (
-                          <option value={3}>Enterprise</option>
-                        ) : (
-                          <option value={1}>Free</option>
-                        )}
-                        {product == null ? null : product.name ===
-                          "Premium Subscription" ? (
-                          <option value={3}>Enterprise</option>
-                        ) : (
-                          <option value={2}>Premium</option>
-                        )}{" "}
-                      </Select>
-                    </FormControl>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="secondary"
-                      onClick={() => setOpenChange(true)}
-                    >
-                      Change Subscription
-                    </Button>
-                  </div>
-                )
-              ) : null}
-              {}
-              {}{" "}
-            </Grid>
-          </Grid>
+                        Change Subscription
+                      </Button>
+                    </div>
+                  ) : null}
+                  {}
+                  {}{" "}
+                </Grid>
+              </Grid>
 
-          <Grid
-            container
-            alignItems="flex-end"
-            justify="flex-start"
-            direction="row"
-            style={{ textAlign: "left" }}
-          >
-            <Grid item lg={10} md={6} sm={6}>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "You are not currently Subscribed" ? (
-                  <h4>
-                    Go to
-                    <NavLink to="/plans">Plans</NavLink>to Subscribe
-                  </h4>
-                ) : (
-                  <div>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="secondary"
-                      variant="contained"
-                      onClick={() => setOpenCancel(true)}
-                    >
-                      Cancel Subscription
-                    </Button>
-                  </div>
-                )
-              ) : null}
-              {}{" "}
-            </Grid>
+              <Grid
+                container
+                alignItems="flex-end"
+                justify="flex-start"
+                direction="row"
+                style={{ textAlign: "left" }}
+              >
+                <Grid item lg={10} md={6} sm={6}>
+                  {showCancelSubscription ? (
+                    <div>
+                      {/* <Button
+                    style={{ marginTop: 25 }}
+                    color="secondary"
+                    variant="contained"
+                    onClick={() => setOpenCancel(true)}
+                  >
+                    Cancel Subscription
+                  </Button> */}
+                    </div>
+                  ) : showResumeSubscription ? (
+                    <div>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="secondary"
+                        variant="contained"
+                        onClick={() => resumeSubscription()}
+                      >
+                        Resume Subscription
+                      </Button>
+                    </div>
+                  ) : (
+                    <h4>
+                      Go to
+                      <NavLink to="/plans">
+                        <span> </span>Plans <span> </span>
+                      </NavLink>
+                      to Subscribe
+                    </h4>
+                  )}
+                </Grid>
 
-            <Grid item lg={2} md={6} sm={6}>
-              {userObj == null ? null : userObj.userDetails
-                  .isOrganisationAdmin ? (
-                product == null ? null : product.name ===
-                  "Enterprise Subscription" ? (
-                  <div>
-                    <Button
-                      style={{ marginTop: 25 }}
-                      color="primary"
-                      variant="contained"
-                      onClick={() => setOpenAddUser(true)}
-                    >
-                      Add Users
-                    </Button>
-                  </div>
-                ) : null
-              ) : null}
-              {}{" "}
-            </Grid>
-          </Grid>
+                <Grid item lg={2} md={6} sm={6}>
+                  {subscription == "Enterprise" ? (
+                    <div>
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="primary"
+                        variant="contained"
+                        onClick={() => setOpenAddUser(true)}
+                      >
+                        Add Users
+                      </Button>
+                    </div>
+                  ) : null}
+                </Grid>
+              </Grid>
+            </div>
+          )}
 
           <Grid
             container

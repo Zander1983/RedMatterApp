@@ -36,7 +36,7 @@ export default function AddUsersModal(props: {
         })
         .catch((err) => {});
     }
-  });
+  }, []);
   return (
     <div>
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
