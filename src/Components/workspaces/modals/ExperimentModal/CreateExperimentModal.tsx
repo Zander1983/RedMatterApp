@@ -119,7 +119,6 @@ function CreateExperimentModal({
         details: formData,
         name: name,
         organisationId: organizationId,
-        experimentLength: experiments.length,
         privateExp: privateExperiment,
       },
       userManager.getToken()
