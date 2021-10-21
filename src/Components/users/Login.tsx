@@ -28,6 +28,51 @@ const useStyles = makeStyles((theme) => ({
   },
   textFieldWidth: {
     width: "100%",
+    marginTop: 30,
+    backgroundColor: "white",
+  },
+  outerGridContainer: {
+    paddingTop: 30,
+    paddingBottom: 50,
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  innerGridContainer: {
+    backgroundColor: "#fafafa",
+    padding: 20,
+    borderRadius: 10,
+    boxShadow: "1px 1px 1px 1px #ddd",
+    border: "solid 1px #ddd",
+    textAlign: "center",
+    width: "50%",
+  },
+  forgetPass: {
+    float: "right",
+    color: "rgb(0, 0, 136)",
+    cursor: "pointer",
+    "&:hover": {
+      textDecoration: "underline",
+    },
+  },
+  btnContainer: {
+    marginTop: 30,
+  },
+  btn: {
+    height: 50,
+    marginRight: 20,
+    width: 170,
+    backgroundColor: "#66a",
+    color: "white",
+  },
+  progress: {
+    color: "white",
+    width: 23,
+    height: 23,
+  },
+  registration: {
+    marginLeft: -21,
+    marginTop: 10,
+    color: "#008",
   },
 }));
 
@@ -101,32 +146,23 @@ const Login = (props: any) => {
       container
       alignContent="center"
       justify="center"
-      style={{
-        paddingTop: 30,
-        paddingBottom: 50,
-        paddingLeft: 20,
-        paddingRight: 20,
-      }}
+      className={classes.outerGridContainer}
     >
       <Grid
         container
         justify="center"
         direction="column"
-        style={{
-          backgroundColor: "#fafafa",
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: "1px 1px 1px 1px #ddd",
-          border: "solid 1px #ddd",
-          textAlign: "center",
-          width: "50%",
-        }}
+        className={classes.innerGridContainer}
       >
         <LockFilled />
+
+        {/* Title */}
         <h2>Login</h2>
+
+        {/* Form */}
         <ValidatorForm ref={loginForm} onSubmit={handleSubmit}>
+          {/* Email Input */}
           <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
             className={classes.textFieldWidth}
             label="Email"
             onChange={handleChange}
@@ -136,8 +172,9 @@ const Login = (props: any) => {
             validators={["required", "isEmail"]}
             errorMessages={["Email is required", "Email is not valid"]}
           />
+
+          {/* Password Input */}
           <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
             className={classes.textFieldWidth}
             label="Password"
             variant="outlined"
@@ -152,43 +189,27 @@ const Login = (props: any) => {
             ]}
           />
 
-          <Grid
-            justify="center"
-            container
-            style={{
-              marginTop: 30,
-            }}
-          >
-            <Button
-              type="submit"
-              style={{
-                height: 50,
-                marginRight: 20,
-                width: 170,
-                backgroundColor: "#66a",
-                color: "white",
-              }}
-              disabled={loading}
-            >
+          {/* Go to Forget Password */}
+          <Link to="/forget-password">
+            <p className={classes.forgetPass}> Forget Password? </p>
+          </Link>
+
+          {/* Submit Button */}
+          <Grid justify="center" container className={classes.btnContainer}>
+            <Button type="submit" className={classes.btn} disabled={loading}>
               {loading ? (
-                <CircularProgress
-                  style={{
-                    color: "white",
-                    width: 23,
-                    height: 23,
-                  }}
-                />
+                <CircularProgress className={classes.progress} />
               ) : (
                 "Submit"
               )}
             </Button>
           </Grid>
         </ValidatorForm>
+
+        {/* Go to registration page */}
         <div>
           <Link to="/register">
-            <h3 style={{ marginLeft: -21, marginTop: 10, color: "#008" }}>
-              Not registred yet?
-            </h3>
+            <h3 className={classes.registration}>Not registred yet?</h3>
           </Link>
         </div>
       </Grid>

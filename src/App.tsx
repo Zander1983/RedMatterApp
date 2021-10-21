@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 import { Route, Switch } from "react-router-dom";
-import { Layout } from "antd";
 
 import {
   createMuiTheme,
@@ -7,6 +8,7 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
+import { Layout } from "antd";
 
 import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
@@ -17,6 +19,7 @@ import About from "./Components/home/About";
 import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
+import ForgetPassword from "Components/users/ForgetPassword";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
@@ -29,8 +32,7 @@ import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
-import { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
 import userManager from "Components/users/userManager";
@@ -88,6 +90,11 @@ const router = [
     path: "/register",
     component: Register,
   },
+  {
+    path: "/forget-password",
+    component: ForgetPassword,
+  },
+
   {
     path: "/plans",
     component: PlansPage,
