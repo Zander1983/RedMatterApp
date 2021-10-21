@@ -39,7 +39,7 @@ const ErrorComponent = (props: any) => {
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Server is down. We will be live shortly.</div>
-              <div>For more information contact support@redmatterapp.com</div>
+              <div>For more information contact admin@redmatterapp.com</div>
             </div>
           </div>
         ) : (
@@ -51,6 +51,10 @@ const ErrorComponent = (props: any) => {
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Something went wrong.</div>
+              <div>
+                please reload the page, if it persists email us at
+                admin@redmatterapp.com
+              </div>
             </div>
             <Button
               color="primary"
