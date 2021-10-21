@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import BrokenImageIcon from "@material-ui/icons/BrokenImage";
+import { Grid, Button, TextField } from "@material-ui/core";
 // import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 
 const ErrorComponent = (props: any) => {
@@ -10,7 +11,6 @@ const ErrorComponent = (props: any) => {
 
   useEffect(() => {
     let mainScreenError = props.location.state.mainScreen;
-    debugger;
     setMainScreenError(mainScreenError);
     if (!mainScreenError) {
       setAppScreenError(true);
@@ -43,15 +43,27 @@ const ErrorComponent = (props: any) => {
             </div>
           </div>
         ) : (
-          <div>
+          <div style={{ paddingTop: 180 }}>
             <div>
               <BrokenImageIcon
-                style={{ width: 130, height: 130, color: "rgb(255 37 69)" }}
+                style={{ width: 100, height: 100, color: "rgb(255 37 69)" }}
               ></BrokenImageIcon>
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Something went wrong.</div>
             </div>
+            <Button
+              color="primary"
+              variant="contained"
+              style={{
+                marginTop: 20,
+              }}
+              onClick={() => {
+                history.replace("/");
+              }}
+            >
+              Go to home page
+            </Button>
           </div>
         )}
       </div>

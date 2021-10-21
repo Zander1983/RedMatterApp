@@ -41,6 +41,7 @@ const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
+    paddingBottom: 240,
     flex: "1 0 auto",
   },
   footer: {
@@ -58,14 +59,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     alignItems: "center",
     flex: "1 0 auto",
+    paddingBottom: 225,
   },
 }));
 
 const router = [
-  {
-    path: "/",
-    component: AppLandingPage,
-  },
   // {
   //   path: "/questions/:workspaceID",
   //   component: ({ match }: any) => {
@@ -223,16 +221,20 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
-        <ErrorBoundaryMain mainScreen={false} appScreen={true}>
-          {loading ? (
-            <div className={classes.loaderClass}>
-              <CircularProgress></CircularProgress>
-            </div>
-          ) : (
-            <Content
-              className={classes.content}
-              style={{ fontFamily: "Quicksand" }}
-            >
+
+        {loading ? (
+          <div className={classes.loaderClass}>
+            <CircularProgress></CircularProgress>
+          </div>
+        ) : (
+          <Content
+            className={classes.content}
+            style={{ fontFamily: "Quicksand" }}
+          >
+            <Switch>
+              <Route key={1001} exact path="/" component={AppLandingPage} />
+            </Switch>
+            <ErrorBoundaryMain mainScreen={false} appScreen={true}>
               <Switch>
                 {router.map((e, number) => (
                   // @ts-ignore
@@ -244,11 +246,10 @@ const App = () => {
                   />
                 ))}
               </Switch>
-            </Content>
-          )}
-        </ErrorBoundaryMain>
+            </ErrorBoundaryMain>
+          </Content>
+        )}
         <ChatBox />
-        <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>
   );
