@@ -37,11 +37,13 @@ import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
 import userManager from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
+    paddingBottom: 240,
     flex: "1 0 auto",
   },
   footer: {
@@ -59,14 +61,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     alignItems: "center",
     flex: "1 0 auto",
+    paddingBottom: 225,
   },
 }));
 
 const router = [
-  {
-    path: "/",
-    component: AppLandingPage,
-  },
   // {
   //   path: "/questions/:workspaceID",
   //   component: ({ match }: any) => {
@@ -187,6 +186,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   useMemo(() => {
     setLoading(true);
+
     if (userManager.isLoggedIn() && userManager.getToken()) {
       axios
         .get("/api/getuserdetails", {
@@ -228,6 +228,7 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
+
         {loading ? (
           <div className={classes.loaderClass}>
             <CircularProgress></CircularProgress>
@@ -238,20 +239,24 @@ const App = () => {
             style={{ fontFamily: "Quicksand" }}
           >
             <Switch>
-              {router.map((e, number) => (
-                // @ts-ignore
-                <Route
-                  key={number}
-                  exact
-                  path={e.path}
-                  component={e.component}
-                />
-              ))}
+              <Route key={1001} exact path="/" component={AppLandingPage} />
             </Switch>
+            <ErrorBoundaryMain mainScreen={false} appScreen={true}>
+              <Switch>
+                {router.map((e, number) => (
+                  // @ts-ignore
+                  <Route
+                    key={number}
+                    exact
+                    path={e.path}
+                    component={e.component}
+                  />
+                ))}
+              </Switch>
+            </ErrorBoundaryMain>
           </Content>
         )}
         <ChatBox />
-        <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>
   );

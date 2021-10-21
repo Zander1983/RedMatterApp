@@ -63,13 +63,16 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     overflow: "hidden",
     borderTop: `1px solid ${theme.palette.divider}`,
-    marginTop: theme.spacing(8),
+    position: "absolute",
+    left: 0,
+    right: 0,
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
     [theme.breakpoints.up("sm")]: {
       paddingTop: theme.spacing(6),
       paddingBottom: theme.spacing(6),
     },
+    marginTop: -225,
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center",
