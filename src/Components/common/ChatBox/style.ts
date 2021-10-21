@@ -18,7 +18,7 @@ export const useStyles = makeStyles((theme) => ({
     zIndex: 100,
   },
   chatBox: {
-    width: 250,
+    width: 350,
     background: "white",
     position: "absolute",
     bottom: 50,
@@ -33,7 +33,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   close: {
     // transform: "translateY(0px);",
-    transform: "translateX(250px);",
+    transform: "translateX(350px);",
     transitionDuration: "1s",
   },
   chatBoxHeader: {
@@ -74,7 +74,7 @@ export const useStyles = makeStyles((theme) => ({
     border: "none",
     width: "100%",
     padding: 5,
-    height: 200,
+    height: 300,
     resize: "none",
     "&:focus": {
       outline: "none",

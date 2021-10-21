@@ -77,8 +77,10 @@ const ChatBox = () => {
             onClick={() => setShowChatBox(false)}
           />
           <div>
-            <h3 className={classes.chatBoxHeaderTitle}> Card Support Team </h3>
-            <p className={classes.headerMessage}> We are here to Help </p>
+            <h3 className={classes.chatBoxHeaderTitle}> Support Team </h3>
+            <p className={classes.headerMessage}>
+              Bugs, Feature Requests, Custom Support...
+            </p>
           </div>
         </div>
         {/* Chat Box Body */}
