@@ -63,7 +63,7 @@ const ErrorComponent = (props: any) => {
                 marginTop: 20,
               }}
               onClick={() => {
-                history.replace("/");
+                window.location.href = "/";
               }}
             >
               Go to home page
