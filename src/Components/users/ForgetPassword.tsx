@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useLayoutEffect } from "react";
 import { Grid, Button, CircularProgress, TextField } from "@material-ui/core";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
+
+import userManager from "./../users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -96,12 +98,18 @@ const useStyles = makeStyles((theme) => ({
 
 const ForgetPassword = () => {
   const classes = useStyles();
+  const isUserLoggedin = userManager.isLoggedIn();
+
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [enableSubmitBtn, setEnableSubmitBtn] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  useLayoutEffect(() => {
+    isUserLoggedin && window.location.replace("/");
+  }, []);
 
   const emailHandler = (value: string) => {
     setEmail(value);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import axios from "axios";
 import { Link, useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,6 +9,7 @@ import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { snackbarService } from "uno-material-ui";
 
 import { counrtyList } from "./common-data";
+import userManager from "./../users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -34,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
 const Register = (props: any) => {
   const classes = useStyles();
   const history = useHistory();
+  const isUserLoggedin = userManager.isLoggedIn();
 
   const [loading, setLoading] = React.useState(false);
   const [isLocationSelected, setLocationStatus] = useState();
@@ -67,6 +69,9 @@ const Register = (props: any) => {
       });
     }
   };
+  useLayoutEffect(() => {
+    isUserLoggedin && window.location.replace("/");
+  }, []);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,6 +9,8 @@ import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
 import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
+
+import userManager from "./../users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -79,6 +81,7 @@ const useStyles = makeStyles((theme) => ({
 const Login = (props: any) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const isUserLoggedin = userManager.isLoggedIn();
 
   const [loading, setLoading] = React.useState(false);
 
@@ -88,6 +91,10 @@ const Login = (props: any) => {
     email: "",
     password: "",
   });
+
+  useLayoutEffect(() => {
+    isUserLoggedin && window.location.replace("/");
+  }, []);
 
   const handleChange = (event: any) => {
     setFormData((prevData: any) => {
