@@ -20,6 +20,7 @@ import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import ForgetPassword from "Components/users/ForgetPassword";
+import ResetPassword from "Components/users/ResetPassword";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
@@ -92,6 +93,10 @@ const router = [
   {
     path: "/forget-password",
     component: ForgetPassword,
+  },
+  {
+    path: "/resetpassword/:verifyString",
+    component: ResetPassword,
   },
 
   {
