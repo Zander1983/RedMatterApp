@@ -16,7 +16,16 @@ type UserProfile = {
   token: string;
   organisationId: string;
   rules: Rules;
+  subscriptionDetails: SubscriptionDetail;
 };
+
+type SubscriptionDetail = {
+  everSubscribed: boolean;
+  canceled: boolean;
+  product: string;
+  currentCycleEnd: number;
+};
+
 type UserState = {
   profile: UserProfile;
 };
@@ -55,10 +64,23 @@ class UserManager {
   }
 
   getRules() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
     return this.state.user.profile.rules;
   }
 
+  getSubscriptionDetails() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
+    return this.state.user.profile.subscriptionDetails;
+  }
+
   getSubscriptionType() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
     return this.state.user.profile.subscriptionType;
   }
 

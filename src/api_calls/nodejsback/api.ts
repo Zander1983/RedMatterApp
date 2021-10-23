@@ -318,7 +318,6 @@ export interface ExperimentPayload {
    * @memberof ExperimentPayload
    */
   organisationId?: string;
-  experimentLength: number;
 }
 /**
  *

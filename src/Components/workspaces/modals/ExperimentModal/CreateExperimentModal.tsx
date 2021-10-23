@@ -119,7 +119,6 @@ function CreateExperimentModal({
         details: formData,
         name: name,
         organisationId: organizationId,
-        experimentLength: experiments.length,
         privateExp: privateExperiment,
       },
       userManager.getToken()
@@ -445,9 +444,6 @@ function CreateExperimentModal({
 
                     <FormControlLabel
                       className={classes.formControlLabel}
-                      style={{
-                        marginLeft: "-45%",
-                      }}
                       control={
                         <Checkbox
                           color="primary"

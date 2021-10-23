@@ -78,7 +78,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   formControlLabel: {
     marginTop: -10,
-    marginLeft: "-55%",
+    justifySelf: "left",
   },
   notFoundLabel: {
     fontSize: "13px",

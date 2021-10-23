@@ -15,7 +15,7 @@ import Delete from "@material-ui/icons/Delete";
 import FileCopy from "@material-ui/icons/FileCopy";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
-import { Plot, PopulationGateType } from "graph/resources/types";
+import { Gate, Plot, PopulationGateType } from "graph/resources/types";
 import { createPlot } from "graph/resources/plots";
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
@@ -157,6 +157,9 @@ export default function PlotMenu(props: {
               meanPlusStandard = mean + standard;
               meanMinusStandard = mean - standard;
             }
+            const popGate = populations[i].gates[0];
+            let gate: Gate;
+            if (popGate) gate = getGate(popGate.gate);
 
             return (
               <TableRow key={plot.id}>
@@ -201,23 +204,20 @@ export default function PlotMenu(props: {
                 </TableCell>
                 <TableCell>{getFile(populations[i].file).name}</TableCell>
                 <TableCell>
-                  {populations[i].gates.length === 0
-                    ? "All"
-                    : populations[i].gates
-                        .map((e: PopulationGateType) => (
-                          <b
-                            style={{
-                              color: getGate(e.gate).color,
-                            }}
-                          >
-                            {e.inverseGating ? (
-                              <b style={{ color: "#f00" }}>not </b>
-                            ) : null}{" "}
-                            {getGate(e.gate).name}
-                          </b>
-                        ))
-                        //@ts-ignore
-                        .reduce((prev, curr) => [prev, " & ", curr])}
+                  {!gate ? (
+                    "All"
+                  ) : (
+                    <b
+                      style={{
+                        color: gate.color,
+                      }}
+                    >
+                      {popGate.inverseGating ? (
+                        <b style={{ color: "#f00" }}>not </b>
+                      ) : null}{" "}
+                      {gate.name}
+                    </b>
+                  )}
                 </TableCell>
                 <TableCell>
                   {stats.gatedFilePopulationSize} / {stats.filePopulationSize}
