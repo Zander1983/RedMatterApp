@@ -232,23 +232,25 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                           >
                             <div className={classes.features}>
                               Device:{" "}
-                              <strong>{experiment.details.device}</strong>
+                              <strong>{experiment?.details?.device}</strong>
                             </div>
                             <br></br>
                             <div className={classes.features}>
                               Cell Type:{" "}
-                              <strong>{experiment.details.cellType}</strong>
+                              <strong>{experiment?.details?.cellType}</strong>
                             </div>
                             <br></br>
                             <div className={classes.features}>
                               Particle Size:{" "}
-                              <strong>{experiment.details.particleSize}</strong>
+                              <strong>
+                                {experiment?.details?.particleSize}
+                              </strong>
                             </div>
                             <br></br>
                             <div className={classes.features}>
                               Fluorophores:{" "}
                               <strong>
-                                {experiment.details.fluorophoresCategory}
+                                {experiment?.details?.fluorophoresCategory}
                               </strong>
                             </div>
                             <div
@@ -261,7 +263,7 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
                               <i>
                                 Description:{" "}
                                 <strong>
-                                  {experiment.details.description}
+                                  {experiment?.details?.description}
                                 </strong>
                               </i>
                             </div>
