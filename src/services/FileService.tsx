@@ -174,5 +174,5 @@ export const dowloadAllFileEvents = async (
       .filter((e) => e.downloaded === false)
       .map((e) => e.id);
   }
-  await downloadFileEvent(workspaceIsShared, files, experimentId, false);
+  await downloadFileEvent(workspaceIsShared, files, experimentId);
 };
