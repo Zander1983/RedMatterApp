@@ -5,6 +5,7 @@ import Plans from "./landingPageComponents/Plans";
 import LandingHeader from "./landingPageComponents/LandingHeader";
 import TargetUsers from "./landingPageComponents/TargetUsers";
 import Features from "./landingPageComponents/Features";
+import Partners from "./landingPageComponents/Partners";
 import Universities from "./landingPageComponents/Universities";
 import { Divider } from "antd";
 
@@ -76,6 +77,8 @@ const AppLandingPage = () => {
         <TargetUsers />
         <Divider></Divider>
         <Features />
+        <Divider></Divider>
+        <Partners />
         <Divider></Divider>
         <Universities />
         {/* <Divider></Divider>

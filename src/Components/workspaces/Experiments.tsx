@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
-import { Grid, Button, CircularProgress, Tooltip } from "@material-ui/core";
-
+import {
+  Grid,
+  Button,
+  CircularProgress,
+  Tooltip,
+  CardContent,
+  Card,
+  Typography,
+} from "@material-ui/core";
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
-
+import { useDispatch } from "react-redux";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -29,6 +36,7 @@ interface RemoteExperiment {
 
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
@@ -57,8 +65,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
+  const [oldExperiments, setOldExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
-  const rules = userManager.getRules();
+  let rules = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -73,6 +82,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       .then((response) => {
         setExperiments(response.data.organisationExperiments);
         setPrivateExperiments(response.data.userExperiments);
+        setOldExperiments(response.data.oldExperiments);
         setFetchExperimentsComplete(true);
         setDisabled(
           createButtonDisable(
@@ -100,6 +110,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   React.useEffect(() => {
     fetchExperiments();
+    setFetchExperimentsComplete(true);
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
@@ -115,6 +126,33 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     privateExperiments,
     organizationExperiments,
   ]);
+
+  const sendRecoveryEmail = (experimentId: String) => {
+    axios
+      .post(
+        "/api/addRecoveryExperiment",
+        {
+          experimentId: experimentId,
+        },
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      )
+      .then((response) => {
+        snackbarService.showSnackbar(
+          "Successfully Added in recovery bucket.",
+          "success"
+        );
+      })
+      .catch((e) => {
+        snackbarService.showSnackbar(
+          "Failed to Add in recovery bucket",
+          "error"
+        );
+      });
+  };
 
   const setExperimentsToBeDisplayed = () => {
     let toDisplay: RemoteExperiment[] = [];
@@ -200,7 +238,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                   }
                 />{" "}
                 {/* Here */}
-                {rules.createOrganizations && (
+                {rules?.createOrganizations && (
                   <FormControlLabel
                     label={
                       "Organization Experiments (" +
@@ -280,6 +318,97 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 </div>
               )}
             </Grid>
+            {oldExperiments.length > 0 ? (
+              <div>
+                <div
+                  style={{
+                    backgroundColor: "#66a",
+                    padding: 20,
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ color: "#fff", fontWeight: 600, fontSize: 26 }}>
+                    Experiments from old version
+                  </div>
+                  <div style={{ color: "#fff", fontSize: 14 }}>
+                    You may send us email at admin@redmatterapp.com to recover
+                    these experiments
+                  </div>
+                </div>
+                <Grid
+                  container
+                  style={{
+                    padding: "10px",
+                    margin: "auto",
+                    width: "100%",
+                  }}
+                >
+                  {oldExperiments.map((data: any, index: number) => {
+                    return (
+                      <Grid
+                        item
+                        style={{
+                          padding: 5,
+                        }}
+                        xs={6}
+                        md={4}
+                        lg={3}
+                      >
+                        <Grid item>
+                          <Card>
+                            <CardContent
+                              style={{
+                                margin: 0,
+                                padding: 0,
+                                textAlign: "center",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  backgroundColor: "#6666AA",
+                                  borderRadius: 10,
+                                  borderBottomLeftRadius: 0,
+                                  borderBottomRightRadius: 0,
+                                }}
+                              >
+                                <Typography
+                                  style={{
+                                    fontWeight: "bold",
+                                    color: "#fff",
+                                    marginBottom: "5px",
+                                    fontSize: 18,
+                                    padding: 5,
+                                  }}
+                                  color="textPrimary"
+                                  align="center"
+                                  gutterBottom
+                                  noWrap
+                                >
+                                  {data.name}
+                                </Typography>
+                              </div>
+                              <div
+                                style={{ paddingBottom: 10, paddingTop: 10 }}
+                              >
+                                <Button
+                                  variant="outlined"
+                                  style={{ color: "grey" }}
+                                  onClick={() => {
+                                    sendRecoveryEmail(data._id);
+                                  }}
+                                >
+                                  Recover
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </div>
+            ) : null}
           </Grid>
         </Grid>
       </Grid>

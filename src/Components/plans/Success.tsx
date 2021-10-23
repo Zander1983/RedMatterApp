@@ -5,6 +5,7 @@ import { Grid } from "@material-ui/core";
 import check from "./img/check.png";
 import { useDispatch } from "react-redux";
 import userManager from "Components/users/userManager";
+import { updateUserStripeDetails } from "../../services/StripeService";
 
 export default function Plans(props: { session_id: any }) {
   const [session, setSession] = useState(null);
@@ -13,14 +14,12 @@ export default function Plans(props: { session_id: any }) {
     axios
       .get(`/checkout-session?id=${props.session_id}`)
       .then((response) => response.data)
-      .then((session) => setSession(JSON.stringify(session, null, 2)))
-      .then(() => {
-        let data = JSON.parse(session);
-        // console.log(data?.metadata?.subscriptionType);
-        if (session) {
+      .then((data) => {
+        if (data) {
           axios
             .post(`/save-checkout`, {
               body: {
+                id: data.id,
                 user: data.metadata.userId,
                 subscription: data.subscription,
                 customer: data.customer,
@@ -37,25 +36,12 @@ export default function Plans(props: { session_id: any }) {
                   },
                 })
                 .then(async () => {
-                  const token = userManager.getToken();
-                  const rules = await axios.get("/api/userSubscriptionRules", {
-                    headers: {
-                      token: token,
-                    },
-                  });
-
-                  dispatch({
-                    type: "CHANGE_SUBSCRIPTION_TYPE",
-                    payload: {
-                      subscriptionType: data?.metadata?.subscriptionType,
-                      rules: rules?.data?.rules,
-                    },
-                  });
+                  updateUserStripeDetails(dispatch);
                 });
             });
         }
       });
-  });
+  }, []);
   return (
     <Grid
       container

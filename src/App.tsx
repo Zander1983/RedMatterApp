@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 import { Route, Switch } from "react-router-dom";
-import { Layout } from "antd";
 
 import {
   createMuiTheme,
@@ -7,6 +8,7 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { SnackbarContainer } from "uno-material-ui";
+import { Layout } from "antd";
 
 import AppHeader from "./Components/common/Header";
 import Experiments from "./Components/workspaces/Experiments";
@@ -17,6 +19,8 @@ import About from "./Components/home/About";
 import Plots from "./graph/WorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
+import ForgetPassword from "Components/users/ForgetPassword";
+import ResetPassword from "Components/users/ResetPassword";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
@@ -29,14 +33,18 @@ import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+
 import PlansPage from "Components/home/PlansPage";
+import axios from "axios";
+import userManager from "Components/users/userManager";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
+    paddingBottom: 240,
     flex: "1 0 auto",
   },
   footer: {
@@ -49,13 +57,16 @@ const useStyles = makeStyles((theme) => ({
     height: "auto",
     lineHeight: 1.6,
   },
+  loaderClass: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: "1 0 auto",
+    paddingBottom: 225,
+  },
 }));
 
 const router = [
-  {
-    path: "/",
-    component: AppLandingPage,
-  },
   // {
   //   path: "/questions/:workspaceID",
   //   component: ({ match }: any) => {
@@ -79,6 +90,15 @@ const router = [
     path: "/register",
     component: Register,
   },
+  {
+    path: "/forget-password",
+    component: ForgetPassword,
+  },
+  {
+    path: "/resetpassword/:verifyString",
+    component: ResetPassword,
+  },
+
   {
     path: "/plans",
     component: PlansPage,
@@ -168,11 +188,43 @@ const theme = createMuiTheme();
 const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
+  const [loading, setLoading] = useState(true);
+  useMemo(() => {
+    setLoading(true);
+
+    if (userManager.isLoggedIn() && userManager.getToken()) {
+      axios
+        .get("/api/getuserdetails", {
+          headers: {
+            token: userManager.getToken(),
+          },
+        })
+        .then((response) => {
+          let userDetails = response.data;
+          dispatch({
+            type: "UPDATE_SUBSCRIPTION_DETAILS",
+            payload: {
+              rules: userDetails?.rules,
+              subscriptionDetails:
+                userDetails?.userDetails?.subscriptionDetails,
+              subscriptionType: userDetails?.userDetails?.subscriptionType,
+            },
+          });
+          setLoading(false);
+        })
+        .catch((e) => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     dispatch({
       type: "RESET",
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -181,19 +233,35 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
         <AppHeader />
-        <Content
-          className={classes.content}
-          style={{ fontFamily: "Quicksand" }}
-        >
-          <Switch>
-            {router.map((e, number) => (
-              // @ts-ignore
-              <Route key={number} exact path={e.path} component={e.component} />
-            ))}
-          </Switch>
-        </Content>
+
+        {loading ? (
+          <div className={classes.loaderClass}>
+            <CircularProgress></CircularProgress>
+          </div>
+        ) : (
+          <Content
+            className={classes.content}
+            style={{ fontFamily: "Quicksand" }}
+          >
+            <Switch>
+              <Route key={1001} exact path="/" component={AppLandingPage} />
+            </Switch>
+            <ErrorBoundaryMain mainScreen={false} appScreen={true}>
+              <Switch>
+                {router.map((e, number) => (
+                  // @ts-ignore
+                  <Route
+                    key={number}
+                    exact
+                    path={e.path}
+                    component={e.component}
+                  />
+                ))}
+              </Switch>
+            </ErrorBoundaryMain>
+          </Content>
+        )}
         <ChatBox />
-        <Footer className={classes.footer} />
       </ThemeProvider>
     </Layout>
   );

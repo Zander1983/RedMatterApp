@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import emailjs from "emailjs-com";
 import { snackbarService } from "uno-material-ui";
+import { Tooltip } from "@material-ui/core";
 
 import {
   UpCircleOutlined,
@@ -49,18 +50,20 @@ const ChatBox = () => {
   return (
     <div className={classes.chatBoxContainer}>
       {/* Icon */}
+
       {showChatBox ? (
         <DownCircleOutlined
           className={classes.icon}
           onClick={() => setShowChatBox((prev) => !prev)}
         />
       ) : (
-        <UpCircleOutlined
-          className={classes.icon}
-          onClick={() => setShowChatBox((prev) => !prev)}
-        />
+        <Tooltip title={"Click here to send feedback to the Red Matter Team."}>
+          <UpCircleOutlined
+            className={classes.icon}
+            onClick={() => setShowChatBox((prev) => !prev)}
+          />
+        </Tooltip>
       )}
-
       {/* Chat Box */}
       <div
         className={`${classes.chatBox} ${
@@ -74,8 +77,10 @@ const ChatBox = () => {
             onClick={() => setShowChatBox(false)}
           />
           <div>
-            <h3 className={classes.chatBoxHeaderTitle}> Card Support Team </h3>
-            <p className={classes.headerMessage}> We are here to Help </p>
+            <h3 className={classes.chatBoxHeaderTitle}> Support Team </h3>
+            <p className={classes.headerMessage}>
+              Bugs, Feature Requests, Custom Support...
+            </p>
           </div>
         </div>
         {/* Chat Box Body */}
