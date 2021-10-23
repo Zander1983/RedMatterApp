@@ -110,7 +110,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   React.useEffect(() => {
     fetchExperiments();
-    setFetchExperimentsComplete(true);
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
