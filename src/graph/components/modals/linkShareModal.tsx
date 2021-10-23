@@ -131,7 +131,7 @@ function LinkShareModal(props: {
             </Grid>
           </Grid>
           <p style={{ marginTop: 20, fontWeight: 500 }}>
-            NOTICE: Workspaces sharing is exclusively private, for now
+            NOTICE: Workspaces sharing is exclusively public, for now
           </p>
           <RadioGroup style={{ marginLeft: 20, marginTop: -15 }}>
             <FormControlLabel
@@ -139,7 +139,6 @@ function LinkShareModal(props: {
               control={<Radio />}
               disabled
               label="Private (only you can access)"
-              checked={true}
             />
             <FormControlLabel
               value="organization"
@@ -154,6 +153,7 @@ function LinkShareModal(props: {
               disabled
               label="Public (everyone with the link can
             access)"
+              checked={true}
             />
           </RadioGroup>
         </Grid>

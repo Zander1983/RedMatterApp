@@ -75,12 +75,13 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
           }
         )
         .then((response) => {
+          const exp = response.data.filter((e: any) => e?.details);
           if (skip === 0) {
-            setExperiments(response.data);
+            setExperiments(exp);
           } else {
             let aux = experiments;
             //@ts-ignore
-            response.data.map((experiment) => {
+            exp.map((experiment) => {
               return aux.push(experiment);
             });
 
