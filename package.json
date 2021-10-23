@@ -117,6 +117,7 @@
     "@types/numeral": "^2.0.1",
     "@types/react-color": "^3.0.4",
     "@types/react-custom-scrollbars": "^4.0.7",
+    "@types/react-google-recaptcha": "^2.1.2",
     "@types/react-material-ui-form-validator": "^2.1.0",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-scroll": "^1.8.2",
