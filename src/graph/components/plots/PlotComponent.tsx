@@ -8,6 +8,7 @@ import { Gate, Plot, PlotSpecificWorkspaceData } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
+import { isEqual } from "lodash";
 
 const classes = {
   itemOuterDiv: {
@@ -45,9 +46,11 @@ const PlotComponent = React.memo(
     editWorkspace: boolean;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
-
     const plotId = plot.id;
-
+    console.log(
+      props.plotRelevantResources.plot.gatingActive,
+      props.plotRelevantResources.plot.id
+    );
     const displayRef = useRef();
     const barRef = useRef();
 
@@ -96,7 +99,8 @@ const PlotComponent = React.memo(
         ></SideSelector>
       </div>
     );
-  }
+  },
+  isEqual
 );
 
 export default PlotComponent;

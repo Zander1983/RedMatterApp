@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
@@ -203,7 +203,6 @@ interface PlotControllerProps {
 
 class PlotController extends React.Component<PlotControllerProps> {
   private static renderCalls = 0;
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
