@@ -229,8 +229,8 @@ export default function SideMenus(props: { workspace: Workspace }) {
             </Button>
           ) : null}
         </div>
-        {/* <div>
-          <Button
+        <div>
+          {/* <Button
             variant="contained"
             size="large"
             onClick={() => downloadCsv()}
@@ -247,8 +247,8 @@ export default function SideMenus(props: { workspace: Workspace }) {
               }}
             ></GetAppIcon>
             Download .csv
-          </Button>
-        </div> */}
+          </Button> */}
+        </div>
       </div>
       <div
         style={{
