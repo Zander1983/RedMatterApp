@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import { Link, useHistory } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
+
 import { Grid, Button, CircularProgress } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import { snackbarService } from "uno-material-ui";
+
+import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import { counrtyList } from "./common-data";
 
@@ -28,6 +31,53 @@ const useStyles = makeStyles((theme) => ({
   },
   textFieldWidth: {
     width: "100%",
+    marginTop: 30,
+    backgroundColor: "white",
+  },
+  gridContainer: {
+    paddingTop: 30,
+    paddingBottom: 50,
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  innerGridContainer: {
+    backgroundColor: "#fafafa",
+    padding: 20,
+    borderRadius: 10,
+    boxShadow: "1px 1px 1px 1px #ddd",
+    border: "solid 1px #ddd",
+    textAlign: "center",
+  },
+  selectCountry: {
+    backgroundColor: "white",
+    marginTop: 30,
+  },
+  orgBtn: {
+    textAlign: "left",
+    color: "#008",
+  },
+  captcha: {
+    marginTop: 30,
+    marginLeft: "auto",
+    marginRight: "auto",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  submitBtn: {
+    height: 50,
+    width: 170,
+    backgroundColor: "#66a",
+    color: "white",
+  },
+  loading: {
+    color: "white",
+    width: 23,
+    height: 23,
+  },
+  captchaError: {
+    color: "red",
+    height: 14,
   },
 }));
 
@@ -37,6 +87,8 @@ const Register = (props: any) => {
 
   const [loading, setLoading] = React.useState(false);
   const [isLocationSelected, setLocationStatus] = useState();
+  const [captcha, setCaptcha] = useState<boolean>(false);
+  const [captchaError, setCaptchaError] = useState<boolean>(false);
 
   const registerForm = useRef();
 
@@ -71,16 +123,18 @@ const Register = (props: any) => {
     window.scrollTo(0, 0);
   }, []);
 
-  // useEffect(() => {}, [isLocationSelected]);
-
   const handleSubmit = async () => {
-    setLoading(true);
     if (formData.location === "") {
       //@ts-ignore
       setLocationStatus((prev: any) => false);
       return;
     }
+    if (!captcha) {
+      setCaptchaError(true);
+      return;
+    }
     try {
+      setLoading(true);
       await axios.post("api/register", formData);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
@@ -101,12 +155,7 @@ const Register = (props: any) => {
       container
       alignContent="center"
       justify="center"
-      style={{
-        paddingTop: 30,
-        paddingBottom: 50,
-        paddingLeft: 20,
-        paddingRight: 20,
-      }}
+      className={classes.gridContainer}
     >
       <Grid
         container
@@ -115,14 +164,7 @@ const Register = (props: any) => {
         sm={12}
         justify="center"
         direction="column"
-        style={{
-          backgroundColor: "#fafafa",
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: "1px 1px 1px 1px #ddd",
-          border: "solid 1px #ddd",
-          textAlign: "center",
-        }}
+        className={classes.innerGridContainer}
       >
         <h2>Create your Red Matter account</h2>
         <ValidatorForm
@@ -131,9 +173,9 @@ const Register = (props: any) => {
             handleSubmit();
           }}
         >
-          {joiningOrg === false ? (
+          {/* Organisation */}
+          {joiningOrg === false && (
             <TextValidator
-              style={{ marginTop: 30, backgroundColor: "white" }}
               className={classes.textFieldWidth}
               variant="outlined"
               label="Organisation"
@@ -143,17 +185,15 @@ const Register = (props: any) => {
               validators={["required"]}
               errorMessages={["Organisation is required"]}
             />
-          ) : null}
+          )}
 
+          {/* Select Country */}
           <Autocomplete
             id="location"
             onChange={(event, value) =>
               handleAutoCompleteField(value, "location")
             }
-            style={{
-              backgroundColor: "white",
-              marginTop: 30,
-            }}
+            className={classes.selectCountry}
             options={counrtyList}
             autoHighlight
             getOptionLabel={(option) => option.value}
@@ -181,8 +221,8 @@ const Register = (props: any) => {
             }}
           />
 
+          {/* Email */}
           <TextValidator
-            style={{ marginTop: 30, backgroundColor: "white" }}
             className={classes.textFieldWidth}
             label="Email"
             onChange={handleChange}
@@ -193,12 +233,9 @@ const Register = (props: any) => {
             errorMessages={["Email is required", "Email is not valid"]}
           />
 
+          {/* Password */}
           <TextValidator
-            style={{
-              marginTop: 30,
-              marginBottom: 10,
-              backgroundColor: "white",
-            }}
+            style={{ marginBottom: 10 }}
             className={classes.textFieldWidth}
             label="Password"
             variant="outlined"
@@ -213,7 +250,8 @@ const Register = (props: any) => {
             ]}
           />
 
-          {joiningOrg === false ? (
+          {/* Switch from Register to create organisation page*/}
+          {joiningOrg === false && (
             <button
               onClick={() => {
                 setJoiningOrg(true);
@@ -226,20 +264,16 @@ const Register = (props: any) => {
                   g_recaptcha_response: formData.g_recaptcha_response,
                 });
               }}
-              style={{ textAlign: "left", color: "#008" }}
+              className={classes.orgBtn}
             >
               I'm here to join my organisation
             </button>
-          ) : null}
+          )}
 
-          {joiningOrg === false ? null : (
+          {joiningOrg && (
             <div>
               <TextValidator
-                style={{
-                  marginTop: 30,
-                  marginBottom: 10,
-                  backgroundColor: "white",
-                }}
+                style={{ marginBottom: 10 }}
                 className={classes.textFieldWidth}
                 variant="outlined"
                 label="Organisation Key"
@@ -269,53 +303,37 @@ const Register = (props: any) => {
             </div>
           )}
 
-          {/* <Grid
+          {/* Captcha */}
+          <Grid
             container
             justify="center"
             alignItems="center"
             alignContent="center"
-            style={{
-              marginTop: 30,
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
+            className={classes.captcha}
           >
             <ReCAPTCHA
               sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-              onChange={onChangeCaptcha}
+              onChange={(value) => {
+                setCaptcha(true);
+                setCaptchaError(false);
+              }}
               onExpired={() => {
                 setFormData((prevData: any) => {
                   return { ...prevData, g_recaptcha_response: "" };
                 });
               }}
             />
-          </Grid> */}
+            {captchaError && (
+              <p className={classes.captchaError}>
+                {"Make sure you are not a robot"}
+              </p>
+            )}
+          </Grid>
 
-          <Grid
-            justify="center"
-            container
-            style={{
-              marginTop: 30,
-            }}
-          >
-            <Button
-              type="submit"
-              style={{
-                height: 50,
-                width: 170,
-                backgroundColor: "#66a",
-                color: "white",
-              }}
-              disabled={loading}
-            >
+          <Grid justify="center" container style={{ marginTop: 30 }}>
+            <Button type="submit" className={classes.submitBtn}>
               {loading ? (
-                <CircularProgress
-                  style={{
-                    color: "white",
-                    width: 23,
-                    height: 23,
-                  }}
-                />
+                <CircularProgress className={classes.loading} />
               ) : (
                 "Submit"
               )}
