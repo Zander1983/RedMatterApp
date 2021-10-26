@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Route, Switch } from "react-router-dom";
-
 import {
   createMuiTheme,
   makeStyles,
@@ -189,6 +188,7 @@ const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
+  const [sessionCheck, setSessionCheck] = useState(false);
   useMemo(() => {
     setLoading(true);
 
@@ -224,6 +224,22 @@ const App = () => {
     dispatch({
       type: "RESET",
     });
+
+    axios.interceptors.response.use(
+      function (response) {
+        return response;
+      },
+      function (error) {
+        if (401 === error.response.status) {
+          if (sessionCheck) {
+            userManager.logout();
+            setSessionCheck(false);
+          } else setSessionCheck(true);
+        } else {
+          return Promise.reject(error);
+        }
+      }
+    );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

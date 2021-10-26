@@ -14,6 +14,7 @@ type Rules = {
 type UserProfile = {
   subscriptionType: string;
   token: string;
+  refreshToken: string;
   organisationId: string;
   rules: Rules;
   subscriptionDetails: SubscriptionDetail;
@@ -50,6 +51,13 @@ class UserManager {
   }
 
   getToken() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
+    return this.state.user.profile.token;
+  }
+
+  getRefreshToken() {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
     }
