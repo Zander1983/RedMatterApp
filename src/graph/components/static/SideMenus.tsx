@@ -43,6 +43,11 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#fff",
     color: "#000",
   },
+  downloadBtnLayout: {
+    display: "flex",
+    alignItems: "center",
+    color: "#000",
+  },
   dataValues: {
     backgroundColor: "#fafafa",
     maxHeight: "calc(100vh - 500px)",
@@ -243,7 +248,6 @@ export default function SideMenus(props: { workspace: Workspace }) {
         </div>
 
         {/* CSV Download Button */}
-        {/* <CSVLink> */}
         <div>
           <Button
             variant="contained"
@@ -251,10 +255,12 @@ export default function SideMenus(props: { workspace: Workspace }) {
             // onClick={() => downloadCsv()}
             className={classes.downloadBtn}
           >
+            {/* <CSVLink> */}
             <CSVLink
               headers={headers}
               data={data}
               filename="WorkspaceReport.csv"
+              className={classes.downloadBtnLayout}
             >
               {/* Download Icon */}
               <GetAppIcon
