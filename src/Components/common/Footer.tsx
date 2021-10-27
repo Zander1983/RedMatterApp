@@ -63,9 +63,7 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     overflow: "hidden",
     borderTop: `1px solid ${theme.palette.divider}`,
-    position: "absolute",
-    left: 0,
-    right: 0,
+
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
     [theme.breakpoints.up("sm")]: {
@@ -78,6 +76,13 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     padding: 10,
   },
+  footerMain: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    background:
+      "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
+  },
 }));
 
 export default function Footer(props: any) {
@@ -89,56 +94,58 @@ export default function Footer(props: any) {
   const [footers, setFooters] = React.useState(footerData);
 
   return (
-    <Grid item xs={12} md={8} component="footer" className={classes.footer}>
-      <Grid container spacing={4} justify="space-evenly">
-        {footers.map((footer, i) => (
-          <Grid
-            key={footer.title}
-            item
-            xs={12}
-            md={4}
-            style={{ textAlign: "left" }}
-          >
-            <Typography variant="h6" color="textPrimary" gutterBottom>
-              {footer.title}
-            </Typography>
-            <ul>
-              {footer.description.map((item, j) => (
-                <li key={item.name} style={{ textAlign: "left" }}>
-                  {item.open !== undefined ? (
-                    <>
-                      <Button
-                        onClick={() => {
-                          let newFooter = footers;
-                          newFooter[i].description[j].open = !item.open;
-                          setFooters(newFooter);
-                          forceUpdate();
-                        }}
-                      >
+    <div className={classes.footerMain}>
+      <Grid item xs={12} md={8} component="footer" className={classes.footer}>
+        <Grid container spacing={4} justify="space-evenly">
+          {footers.map((footer, i) => (
+            <Grid
+              key={footer.title}
+              item
+              xs={12}
+              md={4}
+              style={{ textAlign: "left" }}
+            >
+              <Typography variant="h6" color="textPrimary" gutterBottom>
+                {footer.title}
+              </Typography>
+              <ul>
+                {footer.description.map((item, j) => (
+                  <li key={item.name} style={{ textAlign: "left" }}>
+                    {item.open !== undefined ? (
+                      <>
+                        <Button
+                          onClick={() => {
+                            let newFooter = footers;
+                            newFooter[i].description[j].open = !item.open;
+                            setFooters(newFooter);
+                            forceUpdate();
+                          }}
+                        >
+                          {item.name}
+                          {item.open ? (
+                            <ArrowDropDownIcon></ArrowDropDownIcon>
+                          ) : (
+                            <ArrowRightIcon></ArrowRightIcon>
+                          )}
+                        </Button>
+                        <Collapse in={item.open} children={item.description} />
+                      </>
+                    ) : (
+                      <Button onClick={() => history.push(item.path)}>
                         {item.name}
-                        {item.open ? (
-                          <ArrowDropDownIcon></ArrowDropDownIcon>
-                        ) : (
-                          <ArrowRightIcon></ArrowRightIcon>
-                        )}
                       </Button>
-                      <Collapse in={item.open} children={item.description} />
-                    </>
-                  ) : (
-                    <Button onClick={() => history.push(item.path)}>
-                      {item.name}
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </Grid>
-        ))}
-        <Box mt={1}>
-          <Copyright />
-        </Box>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Grid>
+          ))}
+          <Box mt={1}>
+            <Copyright />
+          </Box>
+        </Grid>
       </Grid>
-    </Grid>
+    </div>
   );
 }
 

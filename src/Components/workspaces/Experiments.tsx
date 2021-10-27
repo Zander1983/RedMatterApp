@@ -389,7 +389,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                               <div
                                 style={{ paddingBottom: 10, paddingTop: 10 }}
                               >
-                                <Button
+                                {/* <Button
                                   variant="outlined"
                                   style={{ color: "grey" }}
                                   onClick={() => {
@@ -397,7 +397,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                                   }}
                                 >
                                   Recover
-                                </Button>
+                                </Button> */}
                               </div>
                             </CardContent>
                           </Card>
