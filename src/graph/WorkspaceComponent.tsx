@@ -144,7 +144,6 @@ const WorkspaceInnerComponent = (props: {
     initializeWorkspace(props.shared, props.experimentId);
 
     return () => {
-      saveWorkspace();
       WorkspaceDispatch.ResetWorkspace();
       memResetDatasetCache();
     };
