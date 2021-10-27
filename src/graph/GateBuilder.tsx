@@ -1,3 +1,7 @@
+// const GateBuilder = () => {
+//   return <div> this is gateBuilder </div>;
+// };
+// export default GateBuilder;
 import { useSelector, useStore } from "react-redux";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -35,8 +39,9 @@ import {
   getAllFiles,
   loadWorkspaceFromRemoteIfExists,
   saveWorkspaceToRemote,
+  getFile,
 } from "./utils/workspace";
-import { Workspace as WorkspaceType } from "./resources/types";
+import { Workspace as WorkspaceTypem, File } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
@@ -46,6 +51,7 @@ import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
+import * as PlotResource from "./resources/plots";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -77,6 +83,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 10,
     marginTop: 5,
     height: "1.9rem",
+    backgroundColor: "#fafafa",
   },
   savingProgress: {
     marginLeft: "-5px",
@@ -97,6 +104,51 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "19px",
     fontWeight: 500,
     color: "white",
+  },
+  mainContainer: {
+    minHeight: "100%",
+    padding: 0,
+    background: "white",
+  },
+  headerGrid: {
+    marginTop: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    justifyContent: "center",
+    display: "flex",
+    flexDirection: "column",
+  },
+  innerHeaderGrid: {
+    backgroundColor: "#fafafa",
+    marginLeft: 0,
+    marginRight: 0,
+    boxShadow: "2px 3px 3px #ddd",
+  },
+  headerGridContainer: {
+    position: "fixed",
+    zIndex: 100,
+    top: 64,
+    backgroundColor: "#66a",
+    paddingTop: 2,
+    paddingBottom: 6,
+    WebkitBorderBottomLeftRadius: 0,
+    WebkitBorderBottomRightRadius: 0,
+    minHeight: "43px",
+  },
+  headerSpan: {
+    display: "flex",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  circularLoader: {
+    width: 20,
+    height: 20,
+  },
+  autoSave: {
+    marginLeft: 0,
+    height: 20,
+    marginTop: 4,
+    color: "#fff",
   },
 }));
 
@@ -130,7 +182,7 @@ const WorkspaceInnerComponent = (props: {
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
-  // Dropdown Code
+  // Theme Dropdown Code
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const dropDownClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -138,6 +190,17 @@ const WorkspaceInnerComponent = (props: {
   };
   const dropDownClose = () => {
     setAnchorEl(null);
+  };
+
+  // Select File DropDown
+  const [selectFileAnchorEl, setSelectFileAnchorEl] =
+    React.useState<null | HTMLElement>(null);
+  const selectFileOpen = Boolean(selectFileAnchorEl);
+  const selectFileDropDownClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSelectFileAnchorEl(event.currentTarget);
+  };
+  const selectFileDropDownClose = () => {
+    setSelectFileAnchorEl(null);
   };
 
   const handleOpen = (func: Function) => {
@@ -170,18 +233,18 @@ const WorkspaceInnerComponent = (props: {
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
     await downloadFileMetadata(shared, experimentId);
-    const loadStatus = await loadWorkspaceFromRemoteIfExists(
-      shared,
-      experimentId
-    );
-    if (!loadStatus.requestSuccess) {
-      snackbarService.showSnackbar("Workspace created", "success");
-    } else {
-      snackbarService.showSnackbar("Workspace loaded", "success");
-    }
+    // const loadStatus = await loadWorkspaceFromRemoteIfExists(
+    //   shared,
+    //   experimentId
+    // );
+    // if (!loadStatus.requestSuccess) {
+    //   snackbarService.showSnackbar("Workspace created", "success");
+    // } else {
+    //   snackbarService.showSnackbar("Workspace loaded", "success");
+    // }
 
-    if (!loadStatus.loaded && shared) {
-    }
+    // if (!loadStatus.loaded && shared) {
+    // }
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
@@ -220,6 +283,25 @@ const WorkspaceInnerComponent = (props: {
     handleOpen(setLinkShareModalOpen);
   };
 
+  const downloadFile = async (fileId: string) => {
+    // WorkspaceDispatch.ResetWorkspace();
+    let file: File = getFile(fileId);
+    if (!file.downloaded) {
+      const newId = await downloadFileEvent(
+        props.shared,
+        fileId,
+        props.experimentId
+      );
+      if (typeof newId !== "string") {
+        throw Error("wtf?");
+      }
+      file = getFile(newId);
+    }
+    await PlotResource.createNewPlotFromFile(file);
+    setSelectFileAnchorEl(null);
+    // props.closeCall.f(props.closeCall.ref);
+  };
+
   const importFlowJoFunc = async (e: any) => {
     e.preventDefault();
     const reader = new FileReader();
@@ -234,12 +316,14 @@ const WorkspaceInnerComponent = (props: {
       result = JSON.parse(result);
       setLoading(true);
       setFileUploadInputValue("");
-      let downloadedFiles = workspace.files.filter((x) => x.downloaded);
+      let downloadedFiles = workspace.files.filter((x: any) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
         initiateParseFlowJo(result, downloadedFiles);
       } else {
-        let filetoBeDownloaded = workspace.files.filter((x) => !x.downloaded);
-        let fileIds = filetoBeDownloaded.map((x) => x.id);
+        let filetoBeDownloaded = workspace.files.filter(
+          (x: any) => !x.downloaded
+        );
+        let fileIds = filetoBeDownloaded.map((x: any) => x.id);
         handleDownLoadFileEvents(fileIds, result);
         snackbarService.showSnackbar(
           "File events are getting downloaded then import will happen!!",
@@ -290,18 +374,7 @@ const WorkspaceInnerComponent = (props: {
   }
 
   return (
-    <div
-      style={{
-        height: "100%",
-        padding: 0,
-      }}
-      // onKeyDown={(e: any) => {
-      //   try {
-      //     if (e.key === "Enter") {
-      //     }
-      //   } catch {}
-      // }}
-    >
+    <div className={classes.mainContainer}>
       {/* == MODALS == */}
       <div>
         <GateNamePrompt />
@@ -341,7 +414,7 @@ const WorkspaceInnerComponent = (props: {
         noButtons={true}
       />
 
-      <MessageModal
+      {/* <MessageModal
         open={clearModal}
         closeCall={{
           f: handleClose,
@@ -364,64 +437,26 @@ const WorkspaceInnerComponent = (props: {
             handleClose(setClearModal);
           },
         }}
-      />
+      /> */}
 
       {/* == STATIC ELEMENTS == */}
       <SideMenus workspace={workspace}></SideMenus>
       <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}
-      <Grid
-        style={{
-          marginTop: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          justifyContent: "center",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Grid
-          style={{
-            backgroundColor: "#fafafa",
-            marginLeft: 0,
-            marginRight: 0,
-            boxShadow: "2px 3px 3px #ddd",
-          }}
-        >
+      <Grid className={classes.headerGrid}>
+        <Grid className={classes.innerHeaderGrid}>
           <div>
-            <Grid
-              style={{
-                position: "fixed",
-                zIndex: 100,
-                top: 64,
-                backgroundColor: "#66a",
-                paddingTop: 2,
-                paddingBottom: 6,
-                WebkitBorderBottomLeftRadius: 0,
-                WebkitBorderBottomRightRadius: 0,
-                minHeight: "43px",
-              }}
-              container
-            >
+            <Grid className={classes.headerGridContainer} container>
               <Grid container>
                 {editWorkspace ? (
-                  <span
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                    }}
-                  >
+                  <span className={classes.headerSpan}>
                     {/* Header */}
                     <div>
                       {/* Back */}
                       <Button
                         size="small"
                         variant="contained"
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
                         className={classes.topButton}
                         startIcon={
                           <ArrowLeftOutlined style={{ fontSize: 15 }} />
@@ -439,21 +474,48 @@ const WorkspaceInnerComponent = (props: {
                         size="small"
                         onClick={() => handleOpen(setAddFileModalOpen)}
                         className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
                       >
                         Plot sample
                       </Button>
+
+                      {/* Select Uploaded Files */}
+                      <Button
+                        variant="contained"
+                        className={classes.topButton}
+                        id="fade-button"
+                        aria-controls="fade-menu"
+                        aria-haspopup="true"
+                        aria-expanded={selectFileOpen ? "true" : undefined}
+                        onClick={selectFileDropDownClick}
+                      >
+                        Select Files
+                      </Button>
+
+                      <Menu
+                        id="fade-menu"
+                        MenuListProps={{
+                          "aria-labelledby": "fade-button",
+                        }}
+                        anchorEl={selectFileAnchorEl}
+                        open={selectFileOpen}
+                        onClose={selectFileDropDownClose}
+                        TransitionComponent={Fade}
+                      >
+                        {workspace.files.map((item: File, index: number) => (
+                          <MenuItem
+                            key={index}
+                            onClick={() => downloadFile(item.id)}
+                          >
+                            {item.name}
+                          </MenuItem>
+                        ))}
+                      </Menu>
 
                       {/* Import Flowjo */}
                       <Button
                         variant="contained"
                         size="small"
                         className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
                         onClick={() => {
                           inputFile.current.click();
                         }}
@@ -478,9 +540,6 @@ const WorkspaceInnerComponent = (props: {
                         size="small"
                         onClick={() => handleOpen(setClearModal)}
                         className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                        }}
                       >
                         Clear
                       </Button>
@@ -492,14 +551,10 @@ const WorkspaceInnerComponent = (props: {
                           size="small"
                           onClick={() => saveWorkspace()}
                           className={classes.topButton}
-                          style={{
-                            backgroundColor: "#fafafa",
-                            width: 137,
-                          }}
                         >
                           {savingWorkspace ? (
                             <CircularProgress
-                              style={{ width: 20, height: 20 }}
+                              className={classes.circularLoader}
                             ></CircularProgress>
                           ) : (
                             <Typography>Save Workspace</Typography>
@@ -510,10 +565,6 @@ const WorkspaceInnerComponent = (props: {
                         <Button
                           variant="contained"
                           className={classes.topButton}
-                          style={{
-                            backgroundColor: "#fafafa",
-                            width: 137,
-                          }}
                           id="fade-button"
                           aria-controls="fade-menu"
                           aria-haspopup="true"
@@ -549,12 +600,7 @@ const WorkspaceInnerComponent = (props: {
                         </Menu>
 
                         <FormControlLabel
-                          style={{
-                            marginLeft: 0,
-                            height: 20,
-                            marginTop: 4,
-                            color: "#fff",
-                          }}
+                          className={classes.autoSave}
                           label={"Autosave"}
                           control={
                             <IOSSwitch
@@ -573,10 +619,7 @@ const WorkspaceInnerComponent = (props: {
                         size="small"
                         onClick={() => onLinkShareClick()}
                         className={classes.topButton}
-                        style={{
-                          backgroundColor: "#fafafa",
-                          marginRight: 10,
-                        }}
+                        style={{ marginRight: 10 }}
                       >
                         <ShareIcon
                           fontSize="small"
@@ -724,20 +767,20 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
   }
 }
 
-class WorkspaceComponent extends React.Component<WorkspaceProps> {
+class GateBuilder extends React.Component<WorkspaceProps> {
   render() {
     return (
-      <ErrorBoundary
+      // <ErrorBoundary
+      //   experimentId={this.props.experimentId}
+      //   shared={this.props.shared}
+      // >
+      // </ErrorBoundary>
+      <WorkspaceInnerComponent
         experimentId={this.props.experimentId}
         shared={this.props.shared}
-      >
-        <WorkspaceInnerComponent
-          experimentId={this.props.experimentId}
-          shared={this.props.shared}
-        />
-      </ErrorBoundary>
+      />
     );
   }
 }
 
-export default WorkspaceComponent;
+export default GateBuilder;
