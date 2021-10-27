@@ -16,17 +16,11 @@ export const downloadFileMetadata = async (
 ): Promise<FileID[]> => {
   let params;
   if (workspaceIsShared) {
-    params = ExperimentFilesApiFetchParamCreator(
-      {}
-    ).experimentFilesWithoutToken(experimentId);
+    params = ExperimentFilesApiFetchParamCreator({}).experimentFilesWithoutToken(experimentId);
   } else {
     params = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      experimentId,
-      userManager.getToken()
-    );
+    }).experimentFiles(userManager.getOrganiztionID(), experimentId, userManager.getToken());
   }
   //@ts-ignore
   const response = await axios.get(params.url, params.options);
@@ -60,14 +54,13 @@ export const downloadFileEvent = async (
   showNotifications: boolean = true,
   retry: number = 3
 ): Promise<FileID | FileID[]> => {
+  let notification: Notification;
+  if (showNotifications) {
+    notification = new Notification(
+      "Dowloading file" + (typeof targetFiles === "string" ? "" : "s")
+    );
+  }
   try {
-    let notification: Notification;
-    if (showNotifications) {
-      notification = new Notification(
-        "Dowloading file" + (typeof targetFiles === "string" ? "" : "s")
-      );
-    }
-
     let files: FileID[] = [];
     if (typeof targetFiles === "string") {
       files = [targetFiles];
@@ -145,9 +138,6 @@ export const downloadFileEvent = async (
       newFile.downloading = false;
       WorkspaceDispatch.UpdateFile(newFile);
     }
-    if (showNotifications) {
-      notification.killNotification();
-    }
 
     if (typeof targetFiles === "string") {
       return targetFiles;
@@ -164,8 +154,14 @@ export const downloadFileEvent = async (
         retry - 1
       );
     } else {
-      throw "File was not downloaded";
+      if (showNotifications) {
+        notification.killNotification();
+      }
+      throw new Error("File was not downloaded");
     }
+  }
+  if (showNotifications) {
+    notification.killNotification();
   }
 };
 
@@ -175,8 +171,7 @@ export const dowloadAllFileEvents = async (
   batch?: string[]
 ) => {
   if (!workspaceIsShared) workspaceIsShared = false;
-  if (!experimentId)
-    experimentId = store.getState().user.experiment.experimentId;
+  if (!experimentId) experimentId = store.getState().user.experiment.experimentId;
   let files: string[] = [];
   if (batch) {
     const workspace = getWorkspace();
@@ -185,9 +180,7 @@ export const dowloadAllFileEvents = async (
       .map((e) => e.id);
   } else {
     const workspace = getWorkspace();
-    files = workspace.files
-      .filter((e) => e.downloaded === false)
-      .map((e) => e.id);
+    files = workspace.files.filter((e) => e.downloaded === false).map((e) => e.id);
   }
   await downloadFileEvent(workspaceIsShared, files, experimentId);
 };
