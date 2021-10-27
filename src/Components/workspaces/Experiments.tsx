@@ -99,8 +99,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           "Failed to find experiment information or Session Expired",
           "error"
         );
-        userManager.logout();
-        history.replace("/login");
+        // userManager.logout();
+        // history.replace("/login");
       });
   };
 

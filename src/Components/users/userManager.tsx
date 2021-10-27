@@ -61,7 +61,7 @@ class UserManager {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
     }
-    return this.state.user.profile.token;
+    return this.state.user.profile.refreshToken;
   }
 
   getOrganiztionID() {

@@ -18,6 +18,15 @@ const reducer = (state = initialState, action: any) => {
         ...state,
         profile: action.payload.user.profile,
       };
+    case actionTypes.UPDATE_TOKENS:
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          token: action.payload.token,
+          refreshToken: action.payload.refreshToken,
+        },
+      };
     case actionTypes.UPDATE_SUBSCRIPTION_DETAILS:
       return {
         ...state,

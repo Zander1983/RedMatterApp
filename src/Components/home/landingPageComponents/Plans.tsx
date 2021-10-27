@@ -202,7 +202,8 @@ export default function Plans(props: any) {
                 <Grid style={{ flexGrow: 1, flex: 1 }}></Grid>
                 <Grid>
                   {subscriptionDetails.everSubscribed ? (
-                    subscriptionDetails.product == plan.id ? (
+                    subscriptionDetails.product == plan.id &&
+                    !subscriptionDetails.canceled ? (
                       <Button
                         color="primary"
                         variant="contained"
