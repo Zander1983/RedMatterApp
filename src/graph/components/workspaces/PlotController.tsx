@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { isEqual } from "lodash";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
@@ -257,6 +258,7 @@ class PlotController extends React.Component<PlotControllerProps> {
   }
 
   getPlotRelevantResources(plot: Plot) {
+    const originalPlot = plot;
     const population = getPopulation(plot.population);
     const file = getFile(population.file);
     const gates: Gate[] = [
@@ -360,16 +362,21 @@ class PlotController extends React.Component<PlotControllerProps> {
                             id={`workspace-outter-${plot.id}`}
                           >
                             <div id="inner" style={classes.itemInnerDiv}>
-                              <PlotComponent
-                                plotRelevantResources={this.getPlotRelevantResources(
-                                  plot
-                                )}
-                                sharedWorkspace={this.props.sharedWorkspace}
-                                editWorkspace={
-                                  this.props.workspace.editWorkspace
-                                }
-                                experimentId={this.props.experimentId}
-                              />
+                              {isEqual(
+                                plot,
+                                this.getPlotRelevantResources(plot).plot
+                              ) && (
+                                <PlotComponent
+                                  plotRelevantResources={this.getPlotRelevantResources(
+                                    plot
+                                  )}
+                                  sharedWorkspace={this.props.sharedWorkspace}
+                                  editWorkspace={
+                                    this.props.workspace.editWorkspace
+                                  }
+                                  experimentId={this.props.experimentId}
+                                />
+                              )}
                             </div>
                           </div>
                         );

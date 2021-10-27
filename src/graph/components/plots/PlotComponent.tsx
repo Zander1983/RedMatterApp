@@ -99,8 +99,8 @@ const PlotComponent = React.memo(
         ></SideSelector>
       </div>
     );
-  },
-  isEqual
+  }
+  // myFUnc(prev, next)
 );
 
 export default PlotComponent;
