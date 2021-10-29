@@ -26,16 +26,16 @@ import Terms from "Components/home/Terms";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
-import UserProfile from "./Components/plans/UserProfile";
+import UserProfileCompo from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import Footer from "Components/common/Footer";
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
-
+import { useSelector, useStore } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
-import userManager from "Components/users/userManager";
+import userManager, { UserProfile } from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 import { updateUserStripeDetails } from "services/StripeService";
@@ -113,7 +113,7 @@ const router = [
   },
   {
     path: "/user-profile",
-    component: UserProfile,
+    component: UserProfileCompo,
   },
   {
     path: "/cancel",
@@ -190,6 +190,39 @@ const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
+  const profile: UserProfile = useSelector((state: any) => state.user.profile);
+  useEffect(() => {
+    let subscriptionDetails = userManager.getSubscriptionDetails();
+    if (
+      subscriptionDetails &&
+      subscriptionDetails.currentCycleEnd &&
+      userManager.getSubscriptionType()
+    ) {
+      let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+      let subEndTime = date.getTime();
+      let currentTime = new Date().getTime();
+      if (currentTime >= subEndTime) {
+        axios
+          .post(
+            "/api/updateProfileSubcription",
+            {
+              subscriptionType: "",
+            },
+            {
+              headers: {
+                token: userManager.getToken(),
+              },
+            }
+          )
+          .then(async (response) => {
+            await updateUserStripeDetails(dispatch);
+            sessionCheckStarted = false;
+          })
+          .catch((e) => {});
+      }
+    }
+  }, [profile]);
+
   useMemo(() => {
     setLoading(true);
 
@@ -254,50 +287,9 @@ const App = () => {
                   },
                 });
                 await updateUserStripeDetails(dispatch);
-
-                let subscriptionDetails = userManager.getSubscriptionDetails();
-                if (subscriptionDetails.currentCycleEnd) {
-                  let date = new Date(
-                    subscriptionDetails.currentCycleEnd * 1000
-                  );
-                  let subEndTime = date.getTime();
-                  let currentTime = new Date().getTime();
-                  if (currentTime >= subEndTime) {
-                    axios
-                      .post(
-                        "/api/updateProfileSubcription",
-                        {
-                          subscriptionType: "",
-                        },
-                        {
-                          headers: {
-                            token: userManager.getToken(),
-                          },
-                        }
-                      )
-                      .then(async (response) => {
-                        await updateUserStripeDetails(dispatch);
-                        sessionCheckStarted = false;
-                        window.location.reload();
-                      })
-                      .catch((e) => {});
-                  } else window.location.reload();
-                } else window.location.reload();
-                // dispatch({
-                //   type: "UPDATE_SUBSCRIPTION_DETAILS",
-                //   payload: {
-                //     rules: userDetails?.rules,
-                //     subscriptionDetails:
-                //       userDetails?.userDetails?.subscriptionDetails,
-                //     subscriptionType:
-                //       userDetails?.userDetails?.subscriptionType,
-                //   },
-                // });
-                // setLoading(false);
+                window.location.reload();
               })
-              .catch((e) => {
-                // setLoading(false);
-              });
+              .catch((e) => {});
           }
         } else {
           return Promise.reject(error);

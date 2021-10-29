@@ -11,7 +11,7 @@ type Rules = {
   createOrganizations: true;
   customerSupport: true;
 };
-type UserProfile = {
+export type UserProfile = {
   subscriptionType: string;
   token: string;
   refreshToken: string;
