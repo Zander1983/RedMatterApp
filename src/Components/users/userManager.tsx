@@ -73,7 +73,7 @@ class UserManager {
 
   getRules() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      return {};
     }
     return this.state.user.profile.rules;
   }

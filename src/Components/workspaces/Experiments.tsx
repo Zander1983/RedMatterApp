@@ -67,7 +67,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const [oldExperiments, setOldExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
-  let rules = userManager.getRules();
+  let rules: any = userManager.getRules();
 
   const fetchExperiments = () => {
     if (!isLoggedIn) return;
@@ -87,8 +87,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         setDisabled(
           createButtonDisable(
             response.data.userExperiments.length,
-            rules.experiment.unLimitedPublic,
-            rules.experiment.number
+            rules?.experiment?.unLimitedPublic,
+            rules?.experiment?.number
           )
         );
       })

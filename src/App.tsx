@@ -192,33 +192,42 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const profile: UserProfile = useSelector((state: any) => state.user.profile);
   useEffect(() => {
-    let subscriptionDetails = userManager.getSubscriptionDetails();
     if (
-      subscriptionDetails &&
-      subscriptionDetails.currentCycleEnd &&
-      userManager.getSubscriptionType()
+      profile &&
+      Object.keys(profile).length > 0 &&
+      userManager.isLoggedIn()
     ) {
-      let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
-      let subEndTime = date.getTime();
-      let currentTime = new Date().getTime();
-      if (currentTime >= subEndTime) {
-        axios
-          .post(
-            "/api/updateProfileSubcription",
-            {
-              subscriptionType: "",
-            },
-            {
-              headers: {
-                token: userManager.getToken(),
+      console.log("sd");
+      let subscriptionDetails = userManager.getSubscriptionDetails();
+      console.log(subscriptionDetails);
+      if (
+        userManager.isLoggedIn() &&
+        subscriptionDetails &&
+        subscriptionDetails.currentCycleEnd &&
+        userManager.getSubscriptionType()
+      ) {
+        let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+        let subEndTime = date.getTime();
+        let currentTime = new Date().getTime();
+        if (currentTime >= subEndTime) {
+          axios
+            .post(
+              "/api/updateProfileSubcription",
+              {
+                subscriptionType: "",
               },
-            }
-          )
-          .then(async (response) => {
-            await updateUserStripeDetails(dispatch);
-            sessionCheckStarted = false;
-          })
-          .catch((e) => {});
+              {
+                headers: {
+                  token: userManager.getToken(),
+                },
+              }
+            )
+            .then(async (response) => {
+              await updateUserStripeDetails(dispatch);
+              sessionCheckStarted = false;
+            })
+            .catch((e) => {});
+        }
       }
     }
   }, [profile]);

@@ -51,7 +51,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
   };
 
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
-  const rules = userManager.getRules();
+  const rules: any = userManager.getRules();
 
   const handleClose = (
     event: React.SyntheticEvent | React.MouseEvent,

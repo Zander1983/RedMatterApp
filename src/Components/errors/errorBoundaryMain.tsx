@@ -26,6 +26,7 @@ class ErrorBoundaryMain extends React.Component<
   }
 
   componentDidCatch(error: any, errorInfo: any) {
+    debugger;
     this.props.history.push({
       pathname: "/error",
       state: {
