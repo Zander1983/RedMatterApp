@@ -197,9 +197,7 @@ const App = () => {
       Object.keys(profile).length > 0 &&
       userManager.isLoggedIn()
     ) {
-      console.log("sd");
       let subscriptionDetails = userManager.getSubscriptionDetails();
-      console.log(subscriptionDetails);
       if (
         userManager.isLoggedIn() &&
         subscriptionDetails &&
