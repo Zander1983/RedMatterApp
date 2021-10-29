@@ -121,6 +121,7 @@ export default function Plans(props: any) {
     if (plans.length > 0) {
       let subscriptionType = "Free";
       let nextBillDate = "Not Active";
+      setInvoiceAmount(null);
       let subscriptionDetails = userManager.getSubscriptionDetails();
       let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
       let productId = subscriptionDetails.product;
