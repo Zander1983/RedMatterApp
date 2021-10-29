@@ -108,6 +108,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   protected gateMoveToMousePosition(mouse: Point) {
+    debugger;
     const gatePivot = this.plotter.transformer.toConcretePoint(
       {
         ...this.gatePivot,

@@ -230,6 +230,7 @@ export default abstract class GateMouseInteractor {
   }
 
   protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
+    debugger
     if (fromTimout) this.currentInterval = null;
     if (
       this.lastGateUpdate.getTime() + this.updateInterval >
@@ -249,6 +250,7 @@ export default abstract class GateMouseInteractor {
         this.latest = gate;
       }
     } else if (gate !== null) {
+      debugger;
       WorkspaceDispatch.UpdateGate(gate);
       this.lastGateUpdate = new Date();
     }

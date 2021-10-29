@@ -17,6 +17,7 @@ import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseI
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
 import { getGate, getPlot, getWorkspace } from "graph/utils/workspace";
 import { snackbarService } from "uno-material-ui";
+import { isEqual } from "lodash";
 
 const plotterFactory = new PlotterFactory();
 
@@ -27,6 +28,12 @@ const typeToClassType = {
 };
 
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
+
+function propsAreEqual(prev: any, next: any) {
+  console.log(prev.plotGates);
+  console.log(next.plotGates);
+  return isEqual(prev, next);
+}
 
 const PlotRenderer = React.memo(
   (props: { plot: Plot; plotGates: Gate[]; population: Population }) => {
@@ -39,6 +46,7 @@ const PlotRenderer = React.memo(
     const [histogramPlotter, setHistogramPlotter] =
       useState<HistogramPlotter | null>(null);
     const [lastGatingType, setLastGatingType] = useState<GateType>("");
+    const [loader, setLoader] = useState(false);
     const plot = props.plot;
 
     const validateReady = (): boolean => {
@@ -55,8 +63,9 @@ const PlotRenderer = React.memo(
     };
 
     const draw = () => {
+      debugger;
       if (!validateReady()) return;
-
+      setLoader(true);
       setCanvasState();
       canvas.render();
 
@@ -104,6 +113,7 @@ const PlotRenderer = React.memo(
         }
         setLastGatingType(gatingType);
       }
+      setLoader(false);
     };
 
     const setCanvasState = () => {
@@ -128,6 +138,7 @@ const PlotRenderer = React.memo(
       start: boolean,
       inpPlotter?: GraphPlotter
     ) => {
+      debugger;
       if (!inpPlotter) inpPlotter = plotter;
       mouseInteractorInstances[plot.id]
         .filter((e) => e instanceof typeToClassType[type])
@@ -142,6 +153,7 @@ const PlotRenderer = React.memo(
                   ? plot.xPlotType
                   : plot.yPlotType,
               rerender: () => {
+                debugger;
                 draw();
               },
             });
@@ -151,6 +163,7 @@ const PlotRenderer = React.memo(
               xAxis: plot.xAxis,
               yAxis: plot.yAxis,
               rerender: () => {
+                debugger;
                 draw();
               },
             });
@@ -186,6 +199,7 @@ const PlotRenderer = React.memo(
     const setMouseEvent = useCallback(
       (type: string, x: number, y: number) => {
         const cplot = getPlot(plot.id);
+        setLoader(true);
         mouseInteractorInstances[cplot.id].forEach((e) => {
           if (
             (cplot.xAxis === cplot.yAxis && e.gaterType === "1D") ||
@@ -266,17 +280,23 @@ const PlotRenderer = React.memo(
     useEffect(draw, [props.plot, props.plotGates, props.population]);
 
     return (
-      <CanvasComponent
-        plotID={plot.id}
-        width={plot.plotWidth}
-        height={plot.plotHeight}
-        setCanvas={(canvas) => {
-          setCanvas(canvas);
-        }}
-        setMouseEvent={(type, x, y) => setMouseEvent(type, x, y)}
-      />
+      <div>
+        <span>{loader}</span>
+        <span>
+          <CanvasComponent
+            plotID={plot.id}
+            width={plot.plotWidth}
+            height={plot.plotHeight}
+            setCanvas={(canvas) => {
+              setCanvas(canvas);
+            }}
+            setMouseEvent={(type, x, y) => setMouseEvent(type, x, y)}
+          />
+        </span>
+      </div>
     );
-  }
+  },
+  propsAreEqual
 );
 
 export default PlotRenderer;
