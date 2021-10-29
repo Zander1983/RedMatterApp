@@ -39,7 +39,7 @@ function CreateExperimentModal({
   const classes = useStyles();
 
   const [formData, setFormData] = useState(null);
-  const rules = userManager.getRules();
+  const rules: any = userManager.getRules();
   const subscriptionType = userManager.getSubscriptionType();
 
   // Name
