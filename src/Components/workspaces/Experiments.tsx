@@ -354,7 +354,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                         lg={3}
                       >
                         <Grid item>
-                          <Card>
+                          <Card
+                            style={{
+                              boxShadow: "unset",
+                            }}
+                          >
                             <CardContent
                               style={{
                                 margin: 0,
@@ -366,15 +370,12 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                                 style={{
                                   backgroundColor: "#6666AA",
                                   borderRadius: 10,
-                                  borderBottomLeftRadius: 0,
-                                  borderBottomRightRadius: 0,
                                 }}
                               >
                                 <Typography
                                   style={{
                                     fontWeight: "bold",
                                     color: "#fff",
-                                    marginBottom: "5px",
                                     fontSize: 18,
                                     padding: 5,
                                   }}
@@ -386,10 +387,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                                   {data.name}
                                 </Typography>
                               </div>
-                              <div
+                              {/* <div
                                 style={{ paddingBottom: 10, paddingTop: 10 }}
                               >
-                                {/* <Button
+                                <Button
                                   variant="outlined"
                                   style={{ color: "grey" }}
                                   onClick={() => {
@@ -397,8 +398,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                                   }}
                                 >
                                   Recover
-                                </Button> */}
-                              </div>
+                                </Button>
+                              </div> */}
                             </CardContent>
                           </Card>
                         </Grid>

@@ -142,8 +142,10 @@ export default function Plans(props: any) {
         }
       } else if (subscriptionDetails.everSubscribed) {
         if (plans.length > 1) {
-          showSubscriptionChange = true;
-          setPlanFiltered(plans.filter((x) => x.id != productId));
+          let filterPlans = plans.filter((x) => x.id != productId);
+          filterPlans = filterPlans.filter((x) => x.name != "Enterprise");
+          setPlanFiltered(filterPlans);
+          if (filterPlans.length > 0) showSubscriptionChange = true;
         }
         subscriptionType = userManager.getSubscriptionType();
         nextBillDate = JSON.stringify(date).substring(1, 11);
