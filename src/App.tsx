@@ -271,12 +271,8 @@ const App = () => {
         return response;
       },
       function (error) {
-        if (401 === error.response.status) {
-          if (sessionCheckStarted) {
-            userManager.logout();
-            sessionCheckStarted = false;
-            history.replace("/login");
-          } else {
+        if (419 === error.response.status) {
+          if (!sessionCheckStarted) {
             sessionCheckStarted = true;
             axios
               .get("/api/authVerify", {
@@ -294,10 +290,15 @@ const App = () => {
                   },
                 });
                 await updateUserStripeDetails(dispatch);
+                sessionCheckStarted = false;
                 window.location.reload();
               })
               .catch((e) => {});
           }
+        } else if (401 === error.response.status) {
+          userManager.logout();
+          sessionCheckStarted = false;
+          history.replace("/login");
         } else {
           return Promise.reject(error);
         }
