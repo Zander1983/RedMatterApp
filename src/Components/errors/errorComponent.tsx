@@ -10,11 +10,14 @@ const ErrorComponent = (props: any) => {
   const [appScreenError, setAppScreenError] = useState(false);
 
   useEffect(() => {
-    let mainScreenError = props.location.state.mainScreen;
-    setMainScreenError(mainScreenError);
-    if (!mainScreenError) {
-      setAppScreenError(true);
+    let mainScreenError = false;
+    try {
+      mainScreenError = props.location.state.mainScreen;
+    } catch (e) {
+      mainScreenError = false;
     }
+    setMainScreenError(mainScreenError);
+    setAppScreenError(!mainScreenError);
   }, []);
 
   return (

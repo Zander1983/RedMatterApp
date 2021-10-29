@@ -109,10 +109,10 @@ const Login = (props: any) => {
       let blankArray: any[] = [];
       const loginData = {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
+        subscriptionDetails: userDetails.data?.userDetails?.subscriptionDetails,
         token: res.data.token,
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
-        subscriptionDetails: userDetails.data?.subscriptionDetails,
       };
 
       dispatch({
