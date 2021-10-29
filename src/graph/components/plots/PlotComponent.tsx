@@ -91,6 +91,7 @@ const PlotComponent = React.memo(
               plot={plot}
               plotGates={gates}
               population={population}
+              editWorkspace={props.editWorkspace}
             ></PlotRenderer>
           }
         ></SideSelector>

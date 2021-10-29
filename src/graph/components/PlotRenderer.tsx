@@ -29,7 +29,12 @@ const typeToClassType = {
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 
 const PlotRenderer = React.memo(
-  (props: { plot: Plot; plotGates: Gate[]; population: Population }) => {
+  (props: {
+    plot: Plot;
+    plotGates: Gate[];
+    population: Population;
+    editWorkspace: boolean;
+  }) => {
     const [canvas, setCanvas] = useState<CanvasManager | null>(null);
     const [configured, setConfigured] = useState<boolean>(false);
     const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
@@ -273,7 +278,9 @@ const PlotRenderer = React.memo(
         setCanvas={(canvas) => {
           setCanvas(canvas);
         }}
-        setMouseEvent={(type, x, y) => setMouseEvent(type, x, y)}
+        setMouseEvent={(type, x, y) => {
+          if (props.editWorkspace) setMouseEvent(type, x, y);
+        }}
       />
     );
   }
