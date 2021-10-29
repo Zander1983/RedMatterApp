@@ -140,40 +140,6 @@ const RangeResizeModal = (props: {
           direction="row"
           style={{ padding: "2rem 1rem 1rem 1rem" }}
         >
-          <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
-            <h3>Edit {plot.xAxis} range</h3>
-            <TextField
-              label="Range min"
-              value={minX}
-              type={"number"}
-              onChange={(e) => {
-                setMinX(e.target.value);
-              }}
-            />
-            <br />
-            <TextField
-              label="Range max"
-              value={maxX}
-              type={"number"}
-              onChange={(e) => {
-                setMaxX(e.target.value);
-              }}
-            />
-            <br />
-            <Button
-              variant="contained"
-              style={{
-                marginTop: 15,
-                backgroundColor: "#6666aa",
-                color: "white",
-                marginLeft: 20,
-              }}
-              onClick={() => setDefaultRanges("x")}
-            >
-              Set Default
-            </Button>
-          </Grid>
-
           {plot.histogramAxis ? null : (
             <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
               <h3>Edit {plot.yAxis} range</h3>
@@ -209,6 +175,40 @@ const RangeResizeModal = (props: {
               </Button>
             </Grid>
           )}
+
+          <Grid item xs={12} md={plot.histogramAxis ? 12 : 6}>
+            <h3>Edit {plot.xAxis} range</h3>
+            <TextField
+              label="Range min"
+              value={minX}
+              type={"number"}
+              onChange={(e) => {
+                setMinX(e.target.value);
+              }}
+            />
+            <br />
+            <TextField
+              label="Range max"
+              value={maxX}
+              type={"number"}
+              onChange={(e) => {
+                setMaxX(e.target.value);
+              }}
+            />
+            <br />
+            <Button
+              variant="contained"
+              style={{
+                marginTop: 15,
+                backgroundColor: "#6666aa",
+                color: "white",
+                marginLeft: 20,
+              }}
+              onClick={() => setDefaultRanges("x")}
+            >
+              Set Default
+            </Button>
+          </Grid>
 
           <Divider></Divider>
           <br />

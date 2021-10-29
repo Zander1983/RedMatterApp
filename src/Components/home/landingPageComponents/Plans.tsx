@@ -202,7 +202,8 @@ export default function Plans(props: any) {
                 <Grid style={{ flexGrow: 1, flex: 1 }}></Grid>
                 <Grid>
                   {subscriptionDetails.everSubscribed ? (
-                    subscriptionDetails.product == plan.id ? (
+                    subscriptionDetails.product == plan.id &&
+                    !subscriptionDetails.canceled ? (
                       <Button
                         color="primary"
                         variant="contained"
@@ -213,7 +214,7 @@ export default function Plans(props: any) {
                           flex: 1,
                         }}
                       >
-                        <b className={classes.white}>Subscribed!!</b>
+                        <b className={classes.white}>Subscribed</b>
                       </Button>
                     ) : (
                       <Button
@@ -221,14 +222,20 @@ export default function Plans(props: any) {
                         variant="contained"
                         className={classes.planButton}
                         style={{
-                          backgroundColor: "#6666A9",
+                          backgroundColor:
+                            plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
                           flex: 1,
                         }}
+                        disabled={plan.name === "Enterprise"}
                         onClick={() => {
                           handleUpdateSubscription(plan);
                         }}
                       >
-                        <b className={classes.white}>Update</b>
+                        <b className={classes.white}>
+                          {plan.name === "Enterprise"
+                            ? "Coming soon..."
+                            : "Update"}
+                        </b>
                       </Button>
                     )
                   ) : (
@@ -237,14 +244,20 @@ export default function Plans(props: any) {
                       variant="contained"
                       className={classes.planButton}
                       style={{
-                        backgroundColor: "#6666A9",
+                        backgroundColor:
+                          plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
                         flex: 1,
                       }}
+                      disabled={plan.name === "Enterprise"}
                       onClick={() => {
                         handleGetStarted(plan);
                       }}
                     >
-                      <b className={classes.white}>Get Started</b>
+                      <b className={classes.white}>
+                        {plan.name === "Enterprise"
+                          ? "Coming soon..."
+                          : "Get Started"}
+                      </b>
                     </Button>
                   )}
                 </Grid>

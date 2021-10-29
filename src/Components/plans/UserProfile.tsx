@@ -84,7 +84,7 @@ export default function Plans(props: any) {
   const dispatch = useDispatch();
   const [userObj, setuserObj] = useState(null);
   const [sub, setSub] = useState(null);
-  const [date, setDate] = useState(null);
+  const [lastDateText, setLastDateText] = useState("Next Billing Date:");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [email, setEmail] = useState("email@email.com");
   const [subSelect, setSubSelect] = useState(null);
@@ -121,6 +121,7 @@ export default function Plans(props: any) {
     if (plans.length > 0) {
       let subscriptionType = "Free";
       let nextBillDate = "Not Active";
+      setInvoiceAmount(null);
       let subscriptionDetails = userManager.getSubscriptionDetails();
       let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
       let productId = subscriptionDetails.product;
@@ -133,17 +134,19 @@ export default function Plans(props: any) {
         if (currentTime <= subEndTime) {
           subscriptionType = userManager.getSubscriptionType();
           nextBillDate = JSON.stringify(date).substring(1, 11);
-          await getInvoiceBill();
+          showResumeSubscriptionBtn = true;
+          setLastDateText("Subscription ends at:");
         } else {
           subscriptionType = "Free";
           nextBillDate = "Not Active";
           showSubscriptionChange = false;
         }
-        showResumeSubscriptionBtn = true;
       } else if (subscriptionDetails.everSubscribed) {
         if (plans.length > 1) {
-          showSubscriptionChange = true;
-          setPlanFiltered(plans.filter((x) => x.id != productId));
+          let filterPlans = plans.filter((x) => x.id != productId);
+          filterPlans = filterPlans.filter((x) => x.name != "Enterprise");
+          setPlanFiltered(filterPlans);
+          if (filterPlans.length > 0) showSubscriptionChange = true;
         }
         subscriptionType = userManager.getSubscriptionType();
         nextBillDate = JSON.stringify(date).substring(1, 11);
@@ -196,6 +199,7 @@ export default function Plans(props: any) {
   };
 
   const cancelSubscription = () => {
+    setProfileLoader(true);
     axios
       .post(
         "/cancel-subscription",
@@ -210,7 +214,10 @@ export default function Plans(props: any) {
         await updateUserStripeDetails(dispatch);
         await setVisibility(plans);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setProfileLoader(false);
+      });
   };
 
   const closeModal = () => {
@@ -238,6 +245,7 @@ export default function Plans(props: any) {
   };
 
   const resumeSubscription = () => {
+    setProfileLoader(true);
     axios
       .post(
         "/api/resume-subscription",
@@ -250,9 +258,12 @@ export default function Plans(props: any) {
       )
       .then(async (result) => {
         await updateUserStripeDetails(dispatch);
-        setVisibility(plans);
+        await setVisibility(plans);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setProfileLoader(false);
+      });
   };
 
   return (
@@ -317,7 +328,7 @@ export default function Plans(props: any) {
               <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
                 <Grid item lg={6} md={6} sm={6}>
                   <h3>
-                    Next Billing Date:
+                    {lastDateText}
                     <span> </span>
                     <span>{subscriptionLastDate}</span>
                   </h3>
@@ -398,14 +409,14 @@ export default function Plans(props: any) {
                 <Grid item lg={10} md={6} sm={6}>
                   {showCancelSubscription ? (
                     <div>
-                      {/* <Button
-                    style={{ marginTop: 25 }}
-                    color="secondary"
-                    variant="contained"
-                    onClick={() => setOpenCancel(true)}
-                  >
-                    Cancel Subscription
-                  </Button> */}
+                      <Button
+                        style={{ marginTop: 25 }}
+                        color="secondary"
+                        variant="contained"
+                        onClick={() => setOpenCancel(true)}
+                      >
+                        Cancel Subscription
+                      </Button>
                     </div>
                   ) : showResumeSubscription ? (
                     <div>
