@@ -28,275 +28,270 @@ const typeToClassType = {
 };
 
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
+let propsStore: any = {};
 
 function propsAreEqual(prev: any, next: any) {
-  console.log(prev.plotGates);
-  console.log(next.plotGates);
-  return isEqual(prev, next);
+  let previous: any = {};
+  if (propsStore && propsStore[next.plot.id]) {
+    previous = propsStore[next.plot.id];
+  }
+  propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
+  return isEqual(previous, next);
 }
 
-const PlotRenderer = React.memo(
-  (props: { plot: Plot; plotGates: Gate[]; population: Population }) => {
-    const [canvas, setCanvas] = useState<CanvasManager | null>(null);
-    const [configured, setConfigured] = useState<boolean>(false);
-    const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
-    const [scatterPlotter, setScatterPlotter] = useState<ScatterPlotter | null>(
-      null
-    );
-    const [histogramPlotter, setHistogramPlotter] =
-      useState<HistogramPlotter | null>(null);
-    const [lastGatingType, setLastGatingType] = useState<GateType>("");
-    const [loader, setLoader] = useState(false);
-    const plot = props.plot;
+const PlotRenderer = (props: {
+  plot: Plot;
+  plotGates: Gate[];
+  population: Population;
+  editWorkspace: boolean;
+}) => {
+  const [canvas, setCanvas] = useState<CanvasManager | null>(null);
+  const [configured, setConfigured] = useState<boolean>(false);
+  const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
+  const [scatterPlotter, setScatterPlotter] = useState<ScatterPlotter | null>(
+    null
+  );
+  const [histogramPlotter, setHistogramPlotter] =
+    useState<HistogramPlotter | null>(null);
+  const [lastGatingType, setLastGatingType] = useState<GateType>("");
+  const [loader, setLoader] = useState(false);
+  const plot = props.plot;
+  const validateReady = (): boolean => {
+    if (
+      plot.plotWidth !== 0 &&
+      plot.plotHeight !== 0 &&
+      plot.plotScale !== 0 &&
+      plotter &&
+      plotter.drawer !== null
+    ) {
+      return true;
+    }
+    return false;
+  };
 
-    const validateReady = (): boolean => {
-      if (
-        plot.plotWidth !== 0 &&
-        plot.plotHeight !== 0 &&
-        plot.plotScale !== 0 &&
-        plotter &&
-        plotter.drawer !== null
-      ) {
-        return true;
-      }
-      return false;
-    };
+  const draw = () => {
+    if (!validateReady()) return;
+    setLoader(true);
+    setCanvasState();
+    canvas.render();
 
-    const draw = () => {
-      debugger;
-      if (!validateReady()) return;
-      setLoader(true);
-      setCanvasState();
-      canvas.render();
+    let selectedPlotter = plotter;
+    if (plot.histogramAxis !== "") {
+      setPlotter(histogramPlotter);
+      selectedPlotter = histogramPlotter;
+    } else {
+      setPlotter(scatterPlotter);
+      selectedPlotter = scatterPlotter;
+    }
 
-      let selectedPlotter = plotter;
-      if (plot.histogramAxis !== "") {
-        setPlotter(histogramPlotter);
-        selectedPlotter = histogramPlotter;
+    setPlotterState(selectedPlotter);
+
+    switch (process.env.REACT_APP_ENV) {
+      case "production":
+      case "staging":
+        try {
+          selectedPlotter.draw();
+        } catch {
+          snackbarService.showSnackbar(
+            "There was an error rendering a plot.",
+            "error"
+          );
+        }
+        break;
+      case "development":
+      default:
+        selectedPlotter.draw();
+    }
+    const gatingType = plot.gatingActive;
+    if (lastGatingType !== gatingType) {
+      const isHistogram = plot.xAxis === plot.yAxis;
+      if (isHistogram) {
+        unsetGating("polygon");
       } else {
-        setPlotter(scatterPlotter);
-        selectedPlotter = scatterPlotter;
+        unsetGating("histogram");
       }
 
-      setPlotterState(selectedPlotter);
+      if (gatingType === "polygon") {
+        setGating("polygon", true);
+      }
+      if (gatingType === "histogram") {
+        setGating("histogram", true);
+      }
+      setLastGatingType(gatingType);
+    }
+    setLoader(false);
+  };
 
-      switch (process.env.REACT_APP_ENV) {
-        case "production":
-        case "staging":
+  const setCanvasState = () => {
+    const canvasState = {
+      id: plot.id,
+      width: plot.plotWidth,
+      height: plot.plotHeight,
+      scale: plot.plotScale,
+    };
+    canvas.setCanvasState(canvasState);
+  };
+
+  const unsetGating = (type: "oval" | "histogram" | "polygon") => {
+    mouseInteractorInstances[plot.id]
+      //@ts-ignore
+      .filter((e) => !(e instanceof typeToClassType[type]))
+      .forEach((e) => e.unsetGating(true));
+  };
+
+  const setGating = (
+    type: "oval" | "histogram" | "polygon",
+    start: boolean,
+    inpPlotter?: GraphPlotter
+  ) => {
+    if (!inpPlotter) inpPlotter = plotter;
+    mouseInteractorInstances[plot.id]
+      .filter((e) => e instanceof typeToClassType[type])
+      .forEach((e) => {
+        if (e.plugin.gaterType === "1D") {
+          (e as HistogramGateMouseInteractor).setMouseInteractorState({
+            plotID: plot.id,
+            axis: plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis,
+            histogramDirection: plot.histogramAxis,
+            axisPlotType:
+              plot.histogramAxis === "vertical"
+                ? plot.xPlotType
+                : plot.yPlotType,
+            rerender: () => {
+              draw();
+            },
+          });
+        } else if (e.plugin.gaterType === "2D") {
+          (e as PolygonMouseInteractor).setMouseInteractorState({
+            plotID: plot.id,
+            xAxis: plot.xAxis,
+            yAxis: plot.yAxis,
+            rerender: () => {
+              draw();
+            },
+          });
+        }
+        //@ts-ignore
+        e.setup(inpPlotter);
+        start ? e.start() : e.end();
+      });
+  };
+
+  const setPlotterState = (inpPlotter?: GraphPlotter) => {
+    if (!inpPlotter) inpPlotter = plotter;
+    const data = PlotResource.getXandYData(plot);
+    const ranges = PlotResource.getXandYRanges(plot);
+
+    const plotterState = {
+      plot: plot,
+      xAxis: data[0],
+      yAxis: data[1],
+      xAxisName: plot.xAxis,
+      yAxisName: plot.yAxis,
+      width: plot.plotWidth,
+      height: plot.plotHeight,
+      scale: plot.plotScale,
+      direction: plot.histogramAxis,
+      gates: props.plot.gates.map((e) => getGate(e)),
+      xRange: ranges.x,
+      yRange: ranges.y,
+    };
+    inpPlotter.setPlotterState(plotterState);
+  };
+
+  const setMouseEvent = useCallback(
+    (type: string, x: number, y: number) => {
+      const cplot = getPlot(plot.id);
+      setLoader(true);
+      mouseInteractorInstances[cplot.id].forEach((e) => {
+        if (
+          (cplot.xAxis === cplot.yAxis && e.gaterType === "1D") ||
+          (cplot.xAxis !== cplot.yAxis && e.gaterType === "2D")
+        ) {
           try {
-            selectedPlotter.draw();
+            e.registerMouseEvent(type, x, y);
           } catch {
-            snackbarService.showSnackbar(
-              "There was an error rendering a plot.",
-              "error"
+            console.error(
+              "[PlotRender:setMouseEvent] Failed to send mouse event to",
+              e
             );
           }
-          break;
-        case "development":
-        default:
-          selectedPlotter.draw();
-      }
-      const gatingType = plot.gatingActive;
-      if (lastGatingType !== gatingType) {
-        const isHistogram = plot.xAxis === plot.yAxis;
-        if (isHistogram) {
-          unsetGating("polygon");
-        } else {
-          unsetGating("histogram");
         }
+      });
+    },
+    [props]
+  );
 
-        if (gatingType === "polygon") {
-          setGating("polygon", true);
-        }
-        if (gatingType === "histogram") {
-          setGating("histogram", true);
-        }
-        setLastGatingType(gatingType);
-      }
-      setLoader(false);
-    };
+  useEffect(() => {
+    if (!configured && canvas) {
+      setConfigured(true);
 
-    const setCanvasState = () => {
-      const canvasState = {
-        id: plot.id,
-        width: plot.plotWidth,
-        height: plot.plotHeight,
-        scale: plot.plotScale,
-      };
-      canvas.setCanvasState(canvasState);
-    };
+      //@ts-ignore
+      const scatterPlotter = plotterFactory.makePlotter("scatter", ["heatmap"]);
+      //@ts-ignore
+      const histogramPlotter = plotterFactory.makePlotter("histogram", []);
 
-    const unsetGating = (type: "oval" | "histogram" | "polygon") => {
-      mouseInteractorInstances[plot.id]
-        //@ts-ignore
-        .filter((e) => !(e instanceof typeToClassType[type]))
-        .forEach((e) => e.unsetGating(true));
-    };
+      //@ts-ignore
+      setScatterPlotter(scatterPlotter);
+      //@ts-ignore
+      setHistogramPlotter(histogramPlotter);
 
-    const setGating = (
-      type: "oval" | "histogram" | "polygon",
-      start: boolean,
-      inpPlotter?: GraphPlotter
-    ) => {
-      debugger;
-      if (!inpPlotter) inpPlotter = plotter;
-      mouseInteractorInstances[plot.id]
-        .filter((e) => e instanceof typeToClassType[type])
-        .forEach((e) => {
-          if (e.plugin.gaterType === "1D") {
-            (e as HistogramGateMouseInteractor).setMouseInteractorState({
-              plotID: plot.id,
-              axis: plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis,
-              histogramDirection: plot.histogramAxis,
-              axisPlotType:
-                plot.histogramAxis === "vertical"
-                  ? plot.xPlotType
-                  : plot.yPlotType,
-              rerender: () => {
-                debugger;
-                draw();
-              },
-            });
-          } else if (e.plugin.gaterType === "2D") {
-            (e as PolygonMouseInteractor).setMouseInteractorState({
-              plotID: plot.id,
-              xAxis: plot.xAxis,
-              yAxis: plot.yAxis,
-              rerender: () => {
-                debugger;
-                draw();
-              },
-            });
-          }
+      //@ts-ignore
+      setPlotter(scatterPlotter);
+
+      //@ts-ignore
+      setPlotterState(scatterPlotter);
+      //@ts-ignore
+      setPlotterState(histogramPlotter);
+
+      histogramPlotter.setup(canvas.getContext());
+      scatterPlotter.setup(canvas.getContext());
+
+      scatterPlotter.update();
+
+      mouseInteractorInstances[plot.id] = [
+        new PolygonMouseInteractor(),
+        new HistogramGateMouseInteractor(),
+      ];
+
+      for (const mouseInteractor of mouseInteractorInstances[plot.id]) {
+        if (mouseInteractor.gaterType === "1D") {
           //@ts-ignore
-          e.setup(inpPlotter);
-          start ? e.start() : e.end();
-        });
-    };
-
-    const setPlotterState = (inpPlotter?: GraphPlotter) => {
-      if (!inpPlotter) inpPlotter = plotter;
-      const data = PlotResource.getXandYData(plot);
-      const ranges = PlotResource.getXandYRanges(plot);
-
-      const plotterState = {
-        plot: plot,
-        xAxis: data[0],
-        yAxis: data[1],
-        xAxisName: plot.xAxis,
-        yAxisName: plot.yAxis,
-        width: plot.plotWidth,
-        height: plot.plotHeight,
-        scale: plot.plotScale,
-        direction: plot.histogramAxis,
-        gates: props.plot.gates.map((e) => getGate(e)),
-        xRange: ranges.x,
-        yRange: ranges.y,
-      };
-      inpPlotter.setPlotterState(plotterState);
-    };
-
-    const setMouseEvent = useCallback(
-      (type: string, x: number, y: number) => {
-        const cplot = getPlot(plot.id);
-        setLoader(true);
-        mouseInteractorInstances[cplot.id].forEach((e) => {
-          if (
-            (cplot.xAxis === cplot.yAxis && e.gaterType === "1D") ||
-            (cplot.xAxis !== cplot.yAxis && e.gaterType === "2D")
-          ) {
-            try {
-              e.registerMouseEvent(type, x, y);
-            } catch {
-              console.error(
-                "[PlotRender:setMouseEvent] Failed to send mouse event to",
-                e
-              );
-            }
-          }
-        });
-      },
-      [props]
-    );
-
-    useEffect(() => {
-      if (!configured && canvas) {
-        setConfigured(true);
-
-        //@ts-ignore
-        const scatterPlotter = plotterFactory.makePlotter("scatter", [
-          "heatmap",
-        ]);
-        //@ts-ignore
-        const histogramPlotter = plotterFactory.makePlotter("histogram", []);
-
-        //@ts-ignore
-        setScatterPlotter(scatterPlotter);
-        //@ts-ignore
-        setHistogramPlotter(histogramPlotter);
-
-        //@ts-ignore
-        setPlotter(scatterPlotter);
-
-        //@ts-ignore
-        setPlotterState(scatterPlotter);
-        //@ts-ignore
-        setPlotterState(histogramPlotter);
-
-        histogramPlotter.setup(canvas.getContext());
-        scatterPlotter.setup(canvas.getContext());
-
-        scatterPlotter.update();
-
-        mouseInteractorInstances[plot.id] = [
-          new PolygonMouseInteractor(),
-          new HistogramGateMouseInteractor(),
-        ];
-
-        for (const mouseInteractor of mouseInteractorInstances[plot.id]) {
-          if (mouseInteractor.gaterType === "1D") {
-            //@ts-ignore
-            mouseInteractor.setup(histogramPlotter);
-          } else {
-            //@ts-ignore
-            mouseInteractor.setup(scatterPlotter);
-          }
+          mouseInteractor.setup(histogramPlotter);
+        } else {
+          //@ts-ignore
+          mouseInteractor.setup(scatterPlotter);
         }
-
-        //@ts-ignore
-        setGating("polygon", true, scatterPlotter);
-        //@ts-ignore
-        setGating("polygon", false, scatterPlotter);
-
-        //@ts-ignore
-        setGating("histogram", true, histogramPlotter);
-        //@ts-ignore
-        setGating("histogram", false, histogramPlotter);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvas]);
 
+      //@ts-ignore
+      setGating("polygon", true, scatterPlotter);
+      //@ts-ignore
+      setGating("polygon", false, scatterPlotter);
+
+      //@ts-ignore
+      setGating("histogram", true, histogramPlotter);
+      //@ts-ignore
+      setGating("histogram", false, histogramPlotter);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(draw, [props.plot, props.plotGates, props.population]);
+  }, [canvas]);
 
-    return (
-      <div>
-        <span>{loader}</span>
-        <span>
-          <CanvasComponent
-            plotID={plot.id}
-            width={plot.plotWidth}
-            height={plot.plotHeight}
-            setCanvas={(canvas) => {
-              setCanvas(canvas);
-            }}
-            setMouseEvent={(type, x, y) => setMouseEvent(type, x, y)}
-          />
-        </span>
-      </div>
-    );
-  },
-  propsAreEqual
-);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(draw, [props.plot, props.plotGates, props.population]);
 
-export default PlotRenderer;
+  return (
+    <CanvasComponent
+      plotID={plot.id}
+      width={plot.plotWidth}
+      height={plot.plotHeight}
+      setCanvas={(canvas) => {
+        setCanvas(canvas);
+      }}
+      setMouseEvent={(type, x, y) => {
+        if (props.editWorkspace) setMouseEvent(type, x, y);
+      }}
+    />
+  );
+};
+export default React.memo(PlotRenderer, propsAreEqual);

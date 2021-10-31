@@ -111,6 +111,7 @@ const Login = (props: any) => {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
         subscriptionDetails: userDetails.data?.userDetails?.subscriptionDetails,
         token: res.data.token,
+        refreshToken: res.data.refreshToken,
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
       };
