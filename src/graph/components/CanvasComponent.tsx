@@ -1,6 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import { PlotID } from "graph/resources/types";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
+import { isEqual } from "lodash";
+
+function propsAreEqual(prev: any, next: any) {
+  let value: boolean = isEqual(prev, next);
+  return value;
+}
 
 export class CanvasManager {
   private context: any | null = null;
