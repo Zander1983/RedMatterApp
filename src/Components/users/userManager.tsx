@@ -11,9 +11,10 @@ type Rules = {
   createOrganizations: true;
   customerSupport: true;
 };
-type UserProfile = {
+export type UserProfile = {
   subscriptionType: string;
   token: string;
+  refreshToken: string;
   organisationId: string;
   rules: Rules;
   subscriptionDetails: SubscriptionDetail;
@@ -56,6 +57,13 @@ class UserManager {
     return this.state.user.profile.token;
   }
 
+  getRefreshToken() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
+    return this.state.user.profile.refreshToken;
+  }
+
   getOrganiztionID() {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
@@ -65,7 +73,7 @@ class UserManager {
 
   getRules() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      return {};
     }
     return this.state.user.profile.rules;
   }
