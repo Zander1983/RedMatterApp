@@ -67,7 +67,7 @@ export const downloadFileEvent = async (
     } else {
       files = targetFiles;
     }
-
+    
     const workspace = getWorkspace();
 
     for (const fileId of files) {
@@ -138,7 +138,9 @@ export const downloadFileEvent = async (
       newFile.downloading = false;
       WorkspaceDispatch.UpdateFile(newFile);
     }
-
+    if (showNotifications) {
+        notification.killNotification();
+    }
     if (typeof targetFiles === "string") {
       return targetFiles;
     } else {
@@ -146,6 +148,9 @@ export const downloadFileEvent = async (
     }
   } catch (err) {
     if (retry > 0) {
+      if (showNotifications) {
+        notification.killNotification();
+      }
       downloadFileEvent(
         workspaceIsShared,
         targetFiles,
