@@ -130,11 +130,11 @@ export default function SideMenus(props: { workspace: Workspace }) {
     });
 
     populations.map((item) => {
-      polulation.push(getFile(item.file).name);
+      fromFile.push(getFile(item.file).name);
       const popGate = item.gates[0];
       let gate: Gate;
       if (popGate) gate = getGate(popGate.gate);
-      fromFile.push(gate ? gate.name : "All");
+      polulation.push(gate ? gate.name : "All");
     });
     let csvData: any[] = [];
     type.map((item, index) => {
