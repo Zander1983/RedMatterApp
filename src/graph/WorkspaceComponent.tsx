@@ -110,8 +110,9 @@ const WorkspaceInnerComponent = (props: {
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-
+  
   const [loading, setLoading] = React.useState(false);
+  const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
@@ -151,6 +152,7 @@ const WorkspaceInnerComponent = (props: {
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
+    setWorkspaceLoading(true);
     await downloadFileMetadata(shared, experimentId);
     const loadStatus = await loadWorkspaceFromRemoteIfExists(
       shared,
@@ -167,6 +169,7 @@ const WorkspaceInnerComponent = (props: {
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
+    setWorkspaceLoading(false);
   };
 
   const saveWorkspace = async (shared: boolean = false) => {
@@ -534,6 +537,7 @@ const WorkspaceInnerComponent = (props: {
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
+                  workspaceLoading={workspaceLoading}
                 ></PlotController>
               ) : (
                 <Grid
