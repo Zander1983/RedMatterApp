@@ -157,13 +157,13 @@ const WorkspaceInnerComponent = (props: {
   shared: boolean;
 }) => {
   const store = useStore();
-
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
@@ -181,6 +181,7 @@ const WorkspaceInnerComponent = (props: {
     workspace.editWorkspace
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [currentPlot, setCurrentPlot] = React.useState("");
 
   // Theme Dropdown Code
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -284,7 +285,11 @@ const WorkspaceInnerComponent = (props: {
   };
 
   const downloadFile = async (fileId: string) => {
-    // WorkspaceDispatch.ResetWorkspace();
+    const plot =
+      currentPlot &&
+      workspace.plots.find((plot: any) => plot.id === currentPlot);
+    plot && WorkspaceDispatch.DeletePlot(plot);
+
     let file: File = getFile(fileId);
     if (!file.downloaded) {
       const newId = await downloadFileEvent(
@@ -297,8 +302,9 @@ const WorkspaceInnerComponent = (props: {
       }
       file = getFile(newId);
     }
-    await PlotResource.createNewPlotFromFile(file);
+    const plotId = await PlotResource.createNewPlotFromFile(file);
     setSelectFileAnchorEl(null);
+    setCurrentPlot(plotId);
     // props.closeCall.f(props.closeCall.ref);
   };
 
@@ -466,16 +472,6 @@ const WorkspaceInnerComponent = (props: {
                         }}
                       >
                         Back
-                      </Button>
-
-                      {/* Plot sample */}
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => handleOpen(setAddFileModalOpen)}
-                        className={classes.topButton}
-                      >
-                        Plot sample
                       </Button>
 
                       {/* Select Uploaded Files */}
@@ -646,6 +642,7 @@ const WorkspaceInnerComponent = (props: {
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
+                  comingFromGateBuilder={true}
                 ></PlotController>
               ) : (
                 <Grid
@@ -770,15 +767,15 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
 class GateBuilder extends React.Component<WorkspaceProps> {
   render() {
     return (
-      // <ErrorBoundary
-      //   experimentId={this.props.experimentId}
-      //   shared={this.props.shared}
-      // >
-      // </ErrorBoundary>
-      <WorkspaceInnerComponent
+      <ErrorBoundary
         experimentId={this.props.experimentId}
         shared={this.props.shared}
-      />
+      >
+        <WorkspaceInnerComponent
+          experimentId={this.props.experimentId}
+          shared={this.props.shared}
+        />
+      </ErrorBoundary>
     );
   }
 }

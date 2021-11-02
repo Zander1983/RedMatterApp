@@ -199,6 +199,7 @@ interface PlotControllerProps {
   experimentId: string;
   workspace: Workspace;
   plotMoving?: boolean;
+  comingFromGateBuilder?: boolean;
 }
 
 class PlotController extends React.Component<PlotControllerProps> {
@@ -276,6 +277,11 @@ class PlotController extends React.Component<PlotControllerProps> {
 
   render() {
     const plotGroups = getPlotGroups(this.props.workspace.plots);
+    const isDraggable = this.props.comingFromGateBuilder
+      ? false
+      : this.props.workspace.editWorkspace;
+    const isResizable = this.props.comingFromGateBuilder ? false : true;
+
     if (this.props.workspace.plots.length > 0) {
       return (
         <div>
@@ -313,6 +319,7 @@ class PlotController extends React.Component<PlotControllerProps> {
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
+
             return (
               <div key={name}>
                 {name.length > 0 ? (
@@ -334,7 +341,8 @@ class PlotController extends React.Component<PlotControllerProps> {
                     cols={{ lg: 36 }}
                     rows={{ lg: 30 }}
                     rowHeight={30}
-                    isDraggable={this.props.workspace.editWorkspace}
+                    isDraggable={isDraggable}
+                    isResizable={isResizable}
                     onLayoutChange={(layout: any) => {
                       this.savePlotPosition(layout);
                     }}
@@ -400,10 +408,16 @@ class PlotController extends React.Component<PlotControllerProps> {
           ) : (
             <span>
               <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                Click on "Plot sample" to visualize
+                {`Click on ${
+                  this.props.comingFromGateBuilder
+                    ? `"Select Files"`
+                    : `"Plot sample"`
+                } to visualize`}
               </h3>
               <h4 style={{ marginBottom: 70, color: "#777" }}>
-                Create a plot from one of your samples to start your analysis
+                {this.props.comingFromGateBuilder
+                  ? "Select a file & start building your gate with it."
+                  : "Create a plot from one of your samples to start your analysis"}
               </h4>
             </span>
           )}
