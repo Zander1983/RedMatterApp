@@ -35,7 +35,6 @@ function propsAreEqual(prev: any, next: any) {
   {
     return false;
   }
-
   let previous: any = {};
   if (propsStore && propsStore[next.plot.id]) {
     previous = propsStore[next.plot.id];

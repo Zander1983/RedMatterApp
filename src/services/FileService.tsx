@@ -67,7 +67,7 @@ export const downloadFileEvent = async (
     } else {
       files = targetFiles;
     }
-
+    debugger
     const workspace = getWorkspace();
 
     for (const fileId of files) {
@@ -79,7 +79,7 @@ export const downloadFileEvent = async (
         throw Error("File already downloaded");
       }
     }
-
+debugger
     let downloadingFiles: File[] = files.map((e) => getFile(e));
     downloadingFiles.forEach((e) => {
       e.downloading = true;
@@ -138,7 +138,9 @@ export const downloadFileEvent = async (
       newFile.downloading = false;
       WorkspaceDispatch.UpdateFile(newFile);
     }
-
+    if (showNotifications) {
+        notification.killNotification();
+    }
     if (typeof targetFiles === "string") {
       return targetFiles;
     } else {
@@ -146,6 +148,9 @@ export const downloadFileEvent = async (
     }
   } catch (err) {
     if (retry > 0) {
+      if (showNotifications) {
+        notification.killNotification();
+      }
       downloadFileEvent(
         workspaceIsShared,
         targetFiles,
