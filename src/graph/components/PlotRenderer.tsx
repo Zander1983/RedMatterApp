@@ -31,6 +31,11 @@ let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 let propsStore: any = {};
 
 function propsAreEqual(prev: any, next: any) {
+  if(next && next.workspaceLoading)
+  {
+    return false;
+  }
+
   let previous: any = {};
   if (propsStore && propsStore[next.plot.id]) {
     previous = propsStore[next.plot.id];
@@ -44,6 +49,7 @@ const PlotRenderer = (props: {
   plotGates: Gate[];
   population: Population;
   editWorkspace: boolean;
+  workspaceLoading: boolean;
 }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
@@ -281,8 +287,8 @@ const PlotRenderer = (props: {
   useEffect(draw, [props.plot, props.plotGates, props.population]);
   useEffect(() => {
     return () =>{
-      if(propsStore[props.plot.id])
-        delete propsStore[props.plot.id]
+      if(propsStore && propsStore[props.plot.id])
+        delete propsStore[props.plot.id];
     }
   }, []);
 

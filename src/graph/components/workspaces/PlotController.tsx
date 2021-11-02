@@ -198,6 +198,7 @@ interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
   workspace: Workspace;
+  workspaceLoading: boolean;
   plotMoving?: boolean;
 }
 
@@ -369,6 +370,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                                 editWorkspace={
                                   this.props.workspace.editWorkspace
                                 }
+                                workspaceLoading={this.props.workspaceLoading}
                                 experimentId={this.props.experimentId}
                               />
                             </div>
