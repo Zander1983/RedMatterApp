@@ -43,6 +43,7 @@ const PlotComponent = React.memo(
     sharedWorkspace: boolean;
     experimentId: string;
     editWorkspace: boolean;
+    workspaceLoading: boolean;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
 
@@ -88,6 +89,7 @@ const PlotComponent = React.memo(
           {...props}
           canvasComponent={
             <PlotRenderer
+              workspaceLoading={props.workspaceLoading}
               plot={plot}
               plotGates={gates}
               population={population}
