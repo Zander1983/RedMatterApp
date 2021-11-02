@@ -67,7 +67,7 @@ export const downloadFileEvent = async (
     } else {
       files = targetFiles;
     }
-    debugger
+    
     const workspace = getWorkspace();
 
     for (const fileId of files) {
@@ -79,7 +79,7 @@ export const downloadFileEvent = async (
         throw Error("File already downloaded");
       }
     }
-debugger
+
     let downloadingFiles: File[] = files.map((e) => getFile(e));
     downloadingFiles.forEach((e) => {
       e.downloading = true;
