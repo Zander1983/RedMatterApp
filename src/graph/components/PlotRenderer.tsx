@@ -279,6 +279,12 @@ const PlotRenderer = (props: {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(draw, [props.plot, props.plotGates, props.population]);
+  useEffect(() => {
+    return () =>{
+      if(propsStore[props.plot.id])
+        delete propsStore[props.plot.id]
+    }
+  }, []);
 
   return (
     <CanvasComponent
