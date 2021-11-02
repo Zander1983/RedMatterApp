@@ -47,9 +47,6 @@ const RangeResizeModal = (props: {
   const [maxY, setMaxY] = React.useState("0");
 
   const ranges = PlotResource.getXandYRanges(plot);
-  if (!ranges.x) {
-    debugger;
-  }
   const plotMinX = ranges.x[0];
   const plotMaxX = ranges.x[1];
   const plotMinY = ranges.y[0];

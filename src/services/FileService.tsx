@@ -145,9 +145,6 @@ export const downloadFileEvent = async (
       return files;
     }
   } catch (err) {
-    if (showNotifications) {
-        notification.killNotification();
-      }
     if (retry > 0) {
       downloadFileEvent(
         workspaceIsShared,
@@ -157,7 +154,9 @@ export const downloadFileEvent = async (
         retry - 1
       );
     } else {
-      
+      if (showNotifications) {
+        notification.killNotification();
+      }
       throw new Error("File was not downloaded");
     }
   }
@@ -183,6 +182,5 @@ export const dowloadAllFileEvents = async (
     const workspace = getWorkspace();
     files = workspace.files.filter((e) => e.downloaded === false).map((e) => e.id);
   }
-  if(files.length>0)
   await downloadFileEvent(workspaceIsShared, files, experimentId);
 };
