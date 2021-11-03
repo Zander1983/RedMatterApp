@@ -201,15 +201,16 @@ interface PlotControllerProps {
   workspaceLoading: boolean;
   plotMoving?: boolean;
 }
-
-class PlotController extends React.Component<PlotControllerProps> {
+interface IState {
+  sortByChanged: boolean
+}
+class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
 
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
-      plots: props.workspace.plots,
-      plotMoving: true,
+      sortByChanged: false
     };
   }
 
@@ -246,7 +247,7 @@ class PlotController extends React.Component<PlotControllerProps> {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
       setTimeout(() => setCanvasSize(true), 50);
     }
-    this.setState(nextProps);
+    //this.setState(nextProps);
   }
 
   componentDidMount() {
@@ -275,6 +276,10 @@ class PlotController extends React.Component<PlotControllerProps> {
     return workspaceForPlot;
   }
 
+  getWorkspaceLoading(){
+    return (this.props.workspaceLoading || this.state.sortByChanged);
+  }
+
   render() {
     const plotGroups = getPlotGroups(this.props.workspace.plots);
     if (this.props.workspace.plots.length > 0) {
@@ -298,9 +303,17 @@ class PlotController extends React.Component<PlotControllerProps> {
                 style={{ marginLeft: 10 }}
                 value={method}
                 onChange={(e) => {
-                  //@ts-ignore
-                  method = e.target.value;
+                  this.setState({
+                    sortByChanged: true
+                  });
+                  let value: any = e.target.value;
+                  method = value;
                   PlotResource.updatePositions();
+                  setTimeout(() => {
+                    this.setState({
+                    sortByChanged: false
+                  });
+                  },0)
                 }}
               >
                 <MenuItem value={"all"}>No sorting</MenuItem>
@@ -370,7 +383,7 @@ class PlotController extends React.Component<PlotControllerProps> {
                                 editWorkspace={
                                   this.props.workspace.editWorkspace
                                 }
-                                workspaceLoading={this.props.workspaceLoading}
+                                workspaceLoading={this.getWorkspaceLoading()}
                                 experimentId={this.props.experimentId}
                               />
                             </div>
