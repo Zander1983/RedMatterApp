@@ -258,16 +258,19 @@ const WorkspaceInnerComponent = (props: {
 
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
     try {
+      setWorkspaceLoading(true);
       await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(
         "Could not parse FlowJo workspace",
         "warning"
       );
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setWorkspaceLoading(false);
+      }, 0);
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 4000);
   };
 
   if (autosaveEnabled) {
