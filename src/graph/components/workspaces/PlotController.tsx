@@ -247,7 +247,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
       setTimeout(() => setCanvasSize(true), 50);
     }
-    //this.setState(nextProps);
+    // this.setState(nextProps);
   }
 
   componentDidMount() {
