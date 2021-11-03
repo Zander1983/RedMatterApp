@@ -218,6 +218,7 @@ const WorkspaceInnerComponent = (props: {
       var result = XML.xml2json(text, options);
       result = JSON.parse(result);
       setLoading(true);
+      setWorkspaceLoading(true);
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
@@ -252,13 +253,13 @@ const WorkspaceInnerComponent = (props: {
       );
       setTimeout(() => {
         setLoading(false);
+        setWorkspaceLoading(false);
       }, 4000);
     }
   };
 
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
-    try {
-      setWorkspaceLoading(true);
+    try {;
       await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(
