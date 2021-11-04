@@ -110,7 +110,7 @@ const WorkspaceInnerComponent = (props: {
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-  
+
   const [loading, setLoading] = React.useState(false);
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
@@ -259,7 +259,7 @@ const WorkspaceInnerComponent = (props: {
   };
 
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
-    try {;
+    try {
       await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(

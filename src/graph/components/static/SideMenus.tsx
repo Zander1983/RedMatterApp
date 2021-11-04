@@ -9,6 +9,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
 import PlotMenu from "./menus/PlotMenu";
+import HierarchyMenu from "./menus/HierarchyMenu";
 
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate } from "graph/utils/workspace";
@@ -65,6 +66,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
   const [fileMenuOpen, setFileMenuOpen] = React.useState(false);
   const [gateMenuOpen, setGateMenuOpen] = React.useState(false);
   const [plotMenuOpen, setPlotMenuOpen] = React.useState(false);
+  const [hierarchyOpen, setHierarchyOpen] = React.useState(false);
   const [statsX, setStatsX] = React.useState(
     COMMON_CONSTANTS.DROPDOWNS.STATS.Median
   );
@@ -170,6 +172,11 @@ export default function SideMenus(props: { workspace: Workspace }) {
         var: plotMenuOpen,
         func: setPlotMenuOpen,
       },
+      {
+        name: "hierarchy",
+        var: hierarchyOpen,
+        func: setHierarchyOpen,
+      },
     ];
     const r = p.filter((e) => e.name !== target);
     for (const e of r) {
@@ -236,8 +243,22 @@ export default function SideMenus(props: { workspace: Workspace }) {
             Files
           </Button>
 
+          {/* Files Hirarchy */}
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => click("hierarchy")}
+            style={{
+              backgroundColor: hierarchyOpen ? "#77d" : "#fff",
+              color: hierarchyOpen ? "#fff" : "#000",
+              marginLeft: 10,
+            }}
+          >
+            File Hirarchy
+          </Button>
+
           {/* KeyboardBackspace */}
-          {(fileMenuOpen || gateMenuOpen || plotMenuOpen) && (
+          {(fileMenuOpen || gateMenuOpen || plotMenuOpen || hierarchyOpen) && (
             <Button
               className={classes.backBtn}
               onClick={() => click(undefined)}
@@ -288,6 +309,8 @@ export default function SideMenus(props: { workspace: Workspace }) {
         {gateMenuOpen && <GateMenu gates={props.workspace.gates} />}
         {/* FILES */}
         {fileMenuOpen && <FileMenu files={props.workspace.files} />}
+        {/* FILES HIERARCHY */}
+        {hierarchyOpen && <HierarchyMenu workspace={props.workspace} />}
       </div>
     </div>
   );
