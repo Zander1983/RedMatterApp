@@ -16,11 +16,17 @@ export const downloadFileMetadata = async (
 ): Promise<FileID[]> => {
   let params;
   if (workspaceIsShared) {
-    params = ExperimentFilesApiFetchParamCreator({}).experimentFilesWithoutToken(experimentId);
+    params = ExperimentFilesApiFetchParamCreator(
+      {}
+    ).experimentFilesWithoutToken(experimentId);
   } else {
     params = ExperimentFilesApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).experimentFiles(userManager.getOrganiztionID(), experimentId, userManager.getToken());
+    }).experimentFiles(
+      userManager.getOrganiztionID(),
+      experimentId,
+      userManager.getToken()
+    );
   }
   //@ts-ignore
   const response = await axios.get(params.url, params.options);
@@ -52,6 +58,7 @@ export const downloadFileEvent = async (
   targetFiles: string | string[],
   experimentId: string,
   showNotifications: boolean = true,
+  comingFromGateBuilder: boolean = false,
   retry: number = 3
 ): Promise<FileID | FileID[]> => {
   let notification: Notification;
@@ -83,8 +90,14 @@ export const downloadFileEvent = async (
     let downloadingFiles: File[] = files.map((e) => getFile(e));
     downloadingFiles.forEach((e) => {
       e.downloading = true;
+      // comingFromGateBuilder
+      //   ? WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id)
+      //   : WorkspaceDispatch.UpdateFile(e);
       WorkspaceDispatch.UpdateFile(e);
+      WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id);
     });
+
+    console.log(files);
 
     let response;
     let payload: {
@@ -136,7 +149,11 @@ export const downloadFileEvent = async (
       newFile = { ...newFile, ...getFile(file.id) };
       newFile.downloaded = true;
       newFile.downloading = false;
+      // comingFromGateBuilder
+      //   ? WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id)
+      //   : WorkspaceDispatch.UpdateFile(newFile);
       WorkspaceDispatch.UpdateFile(newFile);
+      WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id);
     }
 
     if (typeof targetFiles === "string") {
@@ -146,11 +163,13 @@ export const downloadFileEvent = async (
     }
   } catch (err) {
     if (retry > 0) {
+      console.log(retry, err);
       downloadFileEvent(
         workspaceIsShared,
         targetFiles,
         experimentId,
         (showNotifications = true),
+        comingFromGateBuilder,
         retry - 1
       );
     } else {
@@ -171,7 +190,8 @@ export const dowloadAllFileEvents = async (
   batch?: string[]
 ) => {
   if (!workspaceIsShared) workspaceIsShared = false;
-  if (!experimentId) experimentId = store.getState().user.experiment.experimentId;
+  if (!experimentId)
+    experimentId = store.getState().user.experiment.experimentId;
   let files: string[] = [];
   if (batch) {
     const workspace = getWorkspace();
@@ -180,7 +200,9 @@ export const dowloadAllFileEvents = async (
       .map((e) => e.id);
   } else {
     const workspace = getWorkspace();
-    files = workspace.files.filter((e) => e.downloaded === false).map((e) => e.id);
+    files = workspace.files
+      .filter((e) => e.downloaded === false)
+      .map((e) => e.id);
   }
   await downloadFileEvent(workspaceIsShared, files, experimentId);
 };

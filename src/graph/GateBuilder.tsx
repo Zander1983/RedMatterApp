@@ -231,6 +231,12 @@ const WorkspaceInnerComponent = (props: {
     };
   }, []);
 
+  useEffect(() => {
+    workspace?.files.map((item: File) =>
+      WorkspaceDispatch.AddFileIdToGatebuilder(item.id)
+    );
+  }, [workspace.files]);
+
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
     await downloadFileMetadata(shared, experimentId);
@@ -285,27 +291,31 @@ const WorkspaceInnerComponent = (props: {
   };
 
   const downloadFile = async (fileId: string) => {
+    setSelectFileAnchorEl(null);
     const plot =
       currentPlot &&
       workspace.plots.find((plot: any) => plot.id === currentPlot);
     plot && WorkspaceDispatch.DeletePlot(plot);
-
     let file: File = getFile(fileId);
     if (!file.downloaded) {
       const newId = await downloadFileEvent(
         props.shared,
         fileId,
-        props.experimentId
+        props.experimentId,
+        true,
+        true
       );
       if (typeof newId !== "string") {
         throw Error("wtf?");
       }
       file = getFile(newId);
     }
-    const plotId = await PlotResource.createNewPlotFromFile(file);
-    setSelectFileAnchorEl(null);
+    const plotId = await PlotResource.createNewPlotFromFile(
+      file,
+      undefined,
+      true
+    );
     setCurrentPlot(plotId);
-    // props.closeCall.f(props.closeCall.ref);
   };
 
   const importFlowJoFunc = async (e: any) => {

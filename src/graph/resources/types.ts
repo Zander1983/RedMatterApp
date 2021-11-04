@@ -163,6 +163,15 @@ export interface Workspace {
   previousStates: Workspace[];
   sharedWorkspace: boolean;
   editWorkspace: boolean;
+  gateBuilder: GateBuilder[];
+}
+
+export interface GateBuilder {
+  fileId: string;
+  plots: Plot[];
+  files: File[];
+  populations: Population[];
+  gates: Gate[];
 }
 
 export interface PlotSpecificWorkspaceData {

@@ -8,6 +8,7 @@ import {
   Plot,
   Population,
   Workspace,
+  GateBuilder,
 } from "graph/resources/types";
 
 export const graphActions = {
@@ -32,6 +33,8 @@ export const graphActions = {
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
+  ADD_FILEID_TO_GATEBUILDER: "workspace.ADD_FILEID_TO_GATEBUILDER",
+  UPDATE_FILE_IN_GATEBUILDER: "workspace.UPDATE_FILE_IN_GATEBUILDER",
 };
 
 export const initialState: Workspace = {
@@ -44,6 +47,7 @@ export const initialState: Workspace = {
   previousStates: [],
   sharedWorkspace: false,
   editWorkspace: true,
+  gateBuilder: [],
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -275,6 +279,51 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         notifications: state.notifications.filter(
           (e) => e.id !== deleteNotification.id
         ),
+      };
+
+    case graphActions.ADD_FILEID_TO_GATEBUILDER:
+      const fileId: string = action.payload.fileId;
+      const unique = state.gateBuilder.find((item) => item.fileId === fileId);
+      if (!unique) {
+        const newGateBuilder: GateBuilder = {
+          fileId,
+          files: [],
+          gates: [],
+          plots: [],
+          populations: [],
+        };
+        return {
+          ...state,
+          gateBuilder: [...state.gateBuilder, newGateBuilder],
+        };
+      } else {
+        return {
+          ...state,
+        };
+      }
+    case graphActions.UPDATE_FILE_IN_GATEBUILDER:
+      const id: string = action.payload.fileId;
+      const file: File = action.payload.file;
+      state.gateBuilder.map((item: GateBuilder) => {
+        if (item.fileId === id) {
+          let found = false;
+
+          item.files.map((item) => {
+            // If the file already exist then just replacing it with the updated one
+            if (item.id === fileId) {
+              found = true;
+              item = file;
+            }
+            return item;
+          });
+          // if the file is not found then pushing the new file in the list
+          !found && item.files.push(file);
+        }
+        return item;
+      });
+      return {
+        ...state,
+        gateBuilder: state.gateBuilder,
       };
 
     default:

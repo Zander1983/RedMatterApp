@@ -542,16 +542,24 @@ export const getPointColors = (plot: Plot) => {
   return getDatasetColors(dataset, populationGates, plotGates, "#000");
 };
 
-export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
+export const createNewPlotFromFile = async (
+  file: File,
+  clonePlot?: Plot,
+  comingFromGatebuilder: Boolean = false
+) => {
   let population: Population;
   population = populations.createPopulation({
     file: file.id,
   });
-  await WorkspaceDispatch.AddPopulation(population);
-  const plot = createPlot({ population, clonePlot });
-  await WorkspaceDispatch.AddPlot(plot);
-  await setupPlot(plot, population);
-  return plot.id;
+  if (!comingFromGatebuilder) {
+    await WorkspaceDispatch.AddPopulation(population);
+    const plot = createPlot({ population, clonePlot });
+    await WorkspaceDispatch.AddPlot(plot);
+    await setupPlot(plot, population);
+    return plot.id;
+  } else {
+    console.log("hi hi hi...");
+  }
 };
 
 export const createSubpopPlot = async (

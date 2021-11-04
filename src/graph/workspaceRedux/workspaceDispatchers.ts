@@ -7,6 +7,7 @@ import {
   Plot,
   Population,
   Workspace,
+  GateBuilder,
 } from "graph/resources/types";
 
 const WorkspaceDispatch = {
@@ -60,6 +61,12 @@ const WorkspaceDispatch = {
     return store.dispatch({
       type: graphActions.UPDATE_FILE,
       payload: { file },
+    });
+  },
+  UpdateFileInGateBuilder: (file: File, fileId: string) => {
+    return store.dispatch({
+      type: graphActions.UPDATE_FILE_IN_GATEBUILDER,
+      payload: { file, fileId },
     });
   },
   UpdatePopulation: (population: Population) => {
@@ -132,6 +139,12 @@ const WorkspaceDispatch = {
     return store.dispatch({
       type: graphActions.SET_EDIT_WORKSPACE,
       payload: { editWorkspace },
+    });
+  },
+  AddFileIdToGatebuilder: (fileId: string) => {
+    return store.dispatch({
+      type: graphActions.ADD_FILEID_TO_GATEBUILDER,
+      payload: { fileId },
     });
   },
 };
