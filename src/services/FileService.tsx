@@ -155,7 +155,9 @@ export const downloadFileEvent = async (
       WorkspaceDispatch.UpdateFile(newFile);
       WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id);
     }
-
+    if (showNotifications) {
+      notification.killNotification();
+    }
     if (typeof targetFiles === "string") {
       return targetFiles;
     } else {
@@ -163,7 +165,9 @@ export const downloadFileEvent = async (
     }
   } catch (err) {
     if (retry > 0) {
-      console.log(retry, err);
+      if (showNotifications) {
+        notification.killNotification();
+      }
       downloadFileEvent(
         workspaceIsShared,
         targetFiles,

@@ -117,8 +117,9 @@ const WorkspaceInnerComponent = (props: {
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-
+  
   const [loading, setLoading] = React.useState(false);
+  const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
@@ -169,6 +170,7 @@ const WorkspaceInnerComponent = (props: {
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
+    setWorkspaceLoading(true);
     await downloadFileMetadata(shared, experimentId);
     const loadStatus = await loadWorkspaceFromRemoteIfExists(
       shared,
@@ -185,6 +187,7 @@ const WorkspaceInnerComponent = (props: {
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
+    setWorkspaceLoading(false);
   };
 
   const saveWorkspace = async (shared: boolean = false) => {
@@ -233,6 +236,7 @@ const WorkspaceInnerComponent = (props: {
       var result = XML.xml2json(text, options);
       result = JSON.parse(result);
       setLoading(true);
+      setWorkspaceLoading(true);
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
@@ -267,22 +271,25 @@ const WorkspaceInnerComponent = (props: {
       );
       setTimeout(() => {
         setLoading(false);
+        setWorkspaceLoading(false);
       }, 4000);
     }
   };
 
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
-    try {
+    try {;
       await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(
         "Could not parse FlowJo workspace",
         "warning"
       );
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setWorkspaceLoading(false);
+      }, 0);
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 4000);
   };
 
   if (autosaveEnabled) {
@@ -603,6 +610,7 @@ const WorkspaceInnerComponent = (props: {
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
+                  workspaceLoading={workspaceLoading}
                 ></PlotController>
               ) : (
                 <Grid
