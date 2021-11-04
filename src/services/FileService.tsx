@@ -97,8 +97,6 @@ export const downloadFileEvent = async (
       WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id);
     });
 
-    console.log(files);
-
     let response;
     let payload: {
       experimentId: string;
@@ -149,12 +147,14 @@ export const downloadFileEvent = async (
       newFile = { ...newFile, ...getFile(file.id) };
       newFile.downloaded = true;
       newFile.downloading = false;
+      console.log(newFile);
       // comingFromGateBuilder
       //   ? WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id)
       //   : WorkspaceDispatch.UpdateFile(newFile);
       WorkspaceDispatch.UpdateFile(newFile);
-      WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id);
+      // WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id);
     }
+
     if (showNotifications) {
       notification.killNotification();
     }

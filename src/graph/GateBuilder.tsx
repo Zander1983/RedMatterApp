@@ -165,6 +165,7 @@ const WorkspaceInnerComponent = (props: {
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
@@ -239,6 +240,7 @@ const WorkspaceInnerComponent = (props: {
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
+    setWorkspaceLoading(true);
     await downloadFileMetadata(shared, experimentId);
     // const loadStatus = await loadWorkspaceFromRemoteIfExists(
     //   shared,
@@ -255,6 +257,7 @@ const WorkspaceInnerComponent = (props: {
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
+    setWorkspaceLoading(false);
   };
 
   const saveWorkspace = async (shared: boolean = false) => {
@@ -305,6 +308,7 @@ const WorkspaceInnerComponent = (props: {
         true,
         true
       );
+      console.log(newId);
       if (typeof newId !== "string") {
         throw Error("wtf?");
       }
@@ -331,6 +335,7 @@ const WorkspaceInnerComponent = (props: {
       var result = XML.xml2json(text, options);
       result = JSON.parse(result);
       setLoading(true);
+      setWorkspaceLoading(true);
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x: any) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
@@ -367,6 +372,7 @@ const WorkspaceInnerComponent = (props: {
       );
       setTimeout(() => {
         setLoading(false);
+        setWorkspaceLoading(false);
       }, 4000);
     }
   };
@@ -382,6 +388,7 @@ const WorkspaceInnerComponent = (props: {
     }
     setTimeout(() => {
       setLoading(false);
+      setWorkspaceLoading(false);
     }, 4000);
   };
 
@@ -653,6 +660,7 @@ const WorkspaceInnerComponent = (props: {
                   experimentId={props.experimentId}
                   workspace={workspace}
                   comingFromGateBuilder={true}
+                  workspaceLoading={workspaceLoading}
                 ></PlotController>
               ) : (
                 <Grid
