@@ -254,7 +254,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
               marginLeft: 10,
             }}
           >
-            File Hirarchy
+            Gate Hirarchy
           </Button>
 
           {/* KeyboardBackspace */}

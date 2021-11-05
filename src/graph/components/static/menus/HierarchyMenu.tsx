@@ -61,8 +61,6 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
     setOpen(false);
   };
 
-  console.log(dataList);
-
   function handleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Tab") {
       event.preventDefault();
