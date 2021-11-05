@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface nodes extends RawNodeDatum {
   id: string;
+  color: string;
 }
 
 const HierarchyMenu = (props: { workspace: Workspace }) => {
@@ -39,10 +40,11 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
+  const [selectedGate, setSelectedGate] = useState("");
   const [selectedNode, setSelectedNode] = useState<RawNodeDatum>({
     name: "Not Selected",
   });
-  const [dataList, setDataList] = useState<nodes[]>([]);
+  const [dataList, setDataList] = useState<RawNodeDatum>();
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -58,6 +60,8 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
 
     setOpen(false);
   };
+
+  console.log(dataList);
 
   function handleListKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Tab") {
@@ -78,57 +82,33 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
     prevOpen.current = open;
   }, [open]);
 
-  // Getting the root of each file
-  const getRootPlotId = (id: string) => {
-    const population = workspace.populations.find((item) => item.file === id);
-    if (population) {
-      const plot = workspace.plots.find(
-        (item) => item.population === population.id
-      );
-      if (plot) {
-        return plot;
-      }
-      return "END";
+  const getChildrenGates = (ids: string[], data: RawNodeDatum) => {
+    for (let i = 0; i < ids.length; i++) {
+      const gate = workspace.gates.find((item) => item.id === ids[i]);
+
+      const childrenData: RawNodeDatum = {
+        name: gate.name,
+        children: [],
+      };
+      data.children.push(childrenData);
+      getChildrenGates(gate.children, childrenData);
     }
-    return "END";
   };
 
-  // getting the coresponding children of each root node.
-  const getChildPlot = (gate: string) => {
-    const population = workspace.populations.find((population) => {
-      return population.gates.find((item) => item.gate === gate);
-    });
-    if (population) {
-      const plot = workspace.plots.find(
-        (item) => item.population === population.id
-      );
-      if (plot) {
-        return plot;
-      }
-      return "END";
-    }
-    return "END";
-  };
+  const constructGateHierarchy = (id: string) => {
+    const gate = workspace.gates.find((item) => item.id === id);
 
-  // constructing the datastructing on the initial mount
-  useEffect(() => {
-    setDataList([]);
-    workspace.files.map((item) => {
-      const data: nodes = { id: item.id, name: item.name, children: [] };
-      const rootPlot = getRootPlotId(item.id);
-      if (rootPlot === "END") {
-        setDataList((prev) => [...prev, data]);
-      } else {
-        rootPlot.gates.map((gate) => {
-          const plot = getChildPlot(gate);
-          if (plot !== "END") {
-            data.children.push({ name: plot.label });
-          }
-        });
-        setDataList((prev) => [...prev, data]);
-      }
-    });
-  }, []);
+    const data: RawNodeDatum = {
+      name: gate.name,
+      children: [],
+    };
+
+    if (gate.children && gate.children.length) {
+      getChildrenGates(gate.children, data);
+    }
+
+    setDataList(data);
+  };
 
   return (
     <div className={classes.container}>
@@ -143,7 +123,7 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
           onClick={handleToggle}
           className={classes.button}
         >
-          Select Files
+          Select Gates
         </Button>
         <Popper
           open={open}
@@ -169,17 +149,24 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
                     aria-labelledby="composition-button"
                     onKeyDown={handleListKeyDown}
                   >
-                    {workspace.files.map((item) => (
+                    {workspace.gates.map((item) => (
                       <MenuItem
                         onClick={(e) => {
-                          const { id, ...rest } = dataList.find(
-                            (element) => element.id === item.id
-                          );
-                          setSelectedNode(rest);
-                          handleClose(e);
+                          constructGateHierarchy(item.id);
                         }}
                       >
                         {item.name}
+                        <span
+                          style={{
+                            height: 10,
+                            width: 10,
+                            marginLeft: 10,
+                            border: 50,
+                            backgroundColor: item.color,
+                          }}
+                        >
+                          {" "}
+                        </span>
                       </MenuItem>
                     ))}
                   </MenuList>
@@ -192,12 +179,8 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
 
       {/* Tree */}
       <div className={classes.tree}>
-        {selectedNode.name !== "Not Selected" && (
-          <Tree
-            data={selectedNode}
-            orientation="vertical"
-            pathFunc="diagonal"
-          />
+        {dataList && (
+          <Tree data={dataList} orientation="vertical" pathFunc="diagonal" />
         )}
       </div>
     </div>
