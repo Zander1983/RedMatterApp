@@ -28,6 +28,9 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "50vh",
   },
+  dropdown: {
+    position: "absolute",
+  },
 }));
 
 interface nodes extends RawNodeDatum {
@@ -108,10 +111,19 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
     setDataList(data);
   };
 
+  useEffect(() => {
+    const gate = workspace.gates.find((item) => item.id === selectedGate);
+    if (!gate) {
+      setDataList(undefined);
+    } else {
+      constructGateHierarchy(selectedGate);
+    }
+  }, [workspace.gates]);
+
   return (
     <div className={classes.container}>
       {/* Dropdown */}
-      <div>
+      <div className={classes.dropdown}>
         <Button
           ref={anchorRef}
           id="composition-button"
@@ -150,6 +162,7 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
                     {workspace.gates.map((item) => (
                       <MenuItem
                         onClick={(e) => {
+                          setSelectedGate(item.id);
                           constructGateHierarchy(item.id);
                         }}
                       >
