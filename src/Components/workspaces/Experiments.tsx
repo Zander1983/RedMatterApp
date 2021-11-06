@@ -185,9 +185,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         created={(experimentID: string) => {
           fetchExperiments();
         }}
-        experiments={organizationExperiments
-          .concat(privateExperiments)
-          .map((e) => e.name)}
+        userExperimentName={privateExperiments.map((e) => e.name)}
         organizationId={organizationId}
       />
       <Grid
