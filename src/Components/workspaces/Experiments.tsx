@@ -55,12 +55,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
   const [organizationExperiments, setExperiments] = useState([]);
   const [privateExperiments, setPrivateExperiments] = useState([]);
-  const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    useState<boolean>(false);
-  const [createExperimentModal, setCreateExperimentModal] =
-    useState<boolean>(false);
-  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    useState<boolean>(true);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] = useState<boolean>(false);
+  const [createExperimentModal, setCreateExperimentModal] = useState<boolean>(false);
+  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] = useState<boolean>(true);
   const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
     useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -73,10 +70,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     if (!isLoggedIn) return;
     const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
-    }).getAllExperiments(
-      userManager.getOrganiztionID(),
-      userManager.getToken()
-    );
+    }).getAllExperiments(userManager.getOrganiztionID(), userManager.getToken());
     axios
       .get(fetchArgs.url, fetchArgs.options)
       .then((response) => {
@@ -140,16 +134,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         }
       )
       .then((response) => {
-        snackbarService.showSnackbar(
-          "Successfully Added in recovery bucket.",
-          "success"
-        );
+        snackbarService.showSnackbar("Successfully Added in recovery bucket.", "success");
       })
       .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to Add in recovery bucket",
-          "error"
-        );
+        snackbarService.showSnackbar("Failed to Add in recovery bucket", "error");
       });
   };
 
@@ -228,26 +216,18 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                   control={
                     <IOSSwitch
                       checked={privateExperimentsSwitch}
-                      onChange={() =>
-                        setPrivateExperimentsSwitch(!privateExperimentsSwitch)
-                      }
+                      onChange={() => setPrivateExperimentsSwitch(!privateExperimentsSwitch)}
                     />
                   }
                 />{" "}
                 {/* Here */}
                 {rules?.createOrganizations && (
                   <FormControlLabel
-                    label={
-                      "Organization Experiments (" +
-                      organizationExperiments.length +
-                      ")"
-                    }
+                    label={"Organization Experiments (" + organizationExperiments.length + ")"}
                     control={
                       <IOSSwitch
                         onChange={() =>
-                          setOrganizationExperimentsSwitch(
-                            !organizationExperimentsSwitch
-                          )
+                          setOrganizationExperimentsSwitch(!organizationExperimentsSwitch)
                         }
                       />
                     }
@@ -263,8 +243,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 title={
                   <React.Fragment>
                     <h3 style={{ color: "white" }}>
-                      The Create Button is disabled, upgrade your plan to enable
-                      it
+                      The Create Button is disabled, upgrade your plan to enable it
                     </h3>
                   </React.Fragment>
                 }
@@ -296,17 +275,11 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               {displayExperiments.length > 0 ? (
                 displayExperiments.map((data: any, index: number) => {
                   return (
-                    <ExperimentCard
-                      key={`pvt${index}`}
-                      data={data}
-                      update={fetchExperiments}
-                    />
+                    <ExperimentCard key={`pvt${index}`} data={data} update={fetchExperiments} />
                   );
                 })
               ) : (
-                <div
-                  style={{ textAlign: "center", width: "100%", padding: 50 }}
-                >
+                <div style={{ textAlign: "center", width: "100%", padding: 50 }}>
                   {!fetchExperimentsComplete ? (
                     <CircularProgress style={{ width: 20, height: 20 }} />
                   ) : (
@@ -328,8 +301,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     Experiments from old version
                   </div>
                   <div style={{ color: "#fff", fontSize: 14 }}>
-                    You may send us email at admin@redmatterapp.com to recover
-                    these experiments
+                    You may send us email at support@redmatterapp.com to recover these experiments
                   </div>
                 </div>
                 <Grid
