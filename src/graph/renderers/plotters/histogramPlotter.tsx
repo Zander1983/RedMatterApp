@@ -147,7 +147,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     for (const overlay of overlaysObj) {
       if (!overlay) continue;
       let newPlotData = createEmptyPlot();
-
+      newPlotData.axisPlotTypes = this.plot.axisPlotTypes;
       switch (overlay.dataSource) {
         case "file":
           newPlotData = createPlot({
@@ -160,6 +160,7 @@ export default class HistogramPlotter extends PluginGraphPlotter {
           newPlotData.yPlotType = this.plot.yPlotType;
           newPlotData.ranges = this.plot.ranges;
           newPlotData.gates = this.plot.gates;
+
           break;
         default:
           throw Error(

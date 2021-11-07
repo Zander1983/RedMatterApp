@@ -21,8 +21,8 @@ interface CreateExperimentType {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
-  experiments: string[];
   organizationId: any;
+  userExperimentName: string[];
 }
 
 const filterOptions = (options: any, { inputValue }: any) =>
@@ -31,9 +31,9 @@ const filterOptions = (options: any, { inputValue }: any) =>
 function CreateExperimentModal({
   closeCall,
   created,
-  experiments,
   open,
   organizationId,
+  userExperimentName,
 }: CreateExperimentType): JSX.Element {
   const store = useStore();
   const classes = useStyles();
@@ -41,6 +41,7 @@ function CreateExperimentModal({
   const [formData, setFormData] = useState(null);
   const rules: any = userManager.getRules();
   const subscriptionType = userManager.getSubscriptionType();
+  console.log(userExperimentName);
 
   // Name
   const [name, setName] = useState("");
@@ -106,8 +107,8 @@ function CreateExperimentModal({
 
   // it handles the unique name error
   useEffect(() => {
-    setUniqueNameError(experiments.includes(name));
-    setNameError(experiments.includes(name));
+    setUniqueNameError(userExperimentName.includes(name));
+    setNameError(userExperimentName.includes(name));
     //eslint-disable-next-line
   }, [name]);
 
@@ -300,8 +301,8 @@ function CreateExperimentModal({
                     {deviceNotFound && (
                       <div className={classes.notFoundContainer}>
                         Send us an email at{" "}
-                        <a href="mailto:redmatterapp@gmail.com">
-                          <b>redmatterapp@gmail.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your device and we will add it to
@@ -473,8 +474,8 @@ function CreateExperimentModal({
                         }}
                       >
                         Send us an email at{" "}
-                        <a href="mailto:redmatterapp@gmail.com">
-                          <b>redmatterapp@gmail.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your fluorophores and we will add
