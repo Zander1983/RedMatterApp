@@ -67,7 +67,6 @@ const PlotRenderer = (props: {
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
 }) => {
-  console.log(props.plot.id);
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
   const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
