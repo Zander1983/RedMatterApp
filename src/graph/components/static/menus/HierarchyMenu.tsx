@@ -97,6 +97,26 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
   };
 
   const constructGateHierarchy = (id: string) => {
+    const tempGate = workspace.gates;
+
+    // Removing Dulicates
+    for (let i = 0; i < tempGate.length; i++) {
+      for (let j = 0; j < tempGate[i].children.length; j++) {
+        // taking the child from parent
+        const child = tempGate[i].children[j];
+        for (let k = i + 1; k < tempGate.length; k++) {
+          // checking if the child is in other list or not
+          const found = tempGate[k].children.find((item) => item === child);
+          // if the child is in other list then remove it from the parent
+          if (found) {
+            tempGate[i].children = tempGate[i].children.filter(
+              (item) => item !== found
+            );
+          }
+        }
+      }
+    }
+
     const gate = workspace.gates.find((item) => item.id === id);
 
     const data: RawNodeDatum = {
@@ -107,9 +127,10 @@ const HierarchyMenu = (props: { workspace: Workspace }) => {
     if (gate.children && gate.children.length) {
       getChildrenGates(gate.children, data);
     }
-
     setDataList(data);
   };
+
+  console.log(dataList);
 
   useEffect(() => {
     const gate = workspace.gates.find((item) => item.id === selectedGate);
