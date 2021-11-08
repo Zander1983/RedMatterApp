@@ -178,9 +178,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       yAxis: yAxis,
       yAxisType: this.plotter.plot.yPlotType,
       yAxisOriginalRanges: originalRanges.y,
-      parents: getPopulation(this.plotter.plot.population).gates.map(
-        (e) => e.gate
-      ),
+      parents:
+        getPopulation(this.plotter.plot.population).gates.length > 0
+          ? [getPopulation(this.plotter.plot.population).gates[0].gate]
+          : [],
       color: generateColor(),
       gateType: "polygon",
       id: createID(),
