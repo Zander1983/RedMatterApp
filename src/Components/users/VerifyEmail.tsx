@@ -19,10 +19,7 @@ const VerifyEmail = (props: any) => {
     try {
       await axios.get(`/api/verify?verifyStr=${code}`);
       setLoading(false);
-      snackbarService.showSnackbar(
-        "Your account is validated, welcome to Red Matter!",
-        "success"
-      );
+      snackbarService.showSnackbar("Your account is validated, welcome to Red Matter!", "success");
     } catch (err: any) {
       setFailed(true);
       snackbarService.showSnackbar("Validation failed, try again", "error");
@@ -107,10 +104,8 @@ const VerifyEmail = (props: any) => {
                   <h1>Unfortunately, we couldn't validate your account</h1>
                   <h4>
                     This is an error on our end.
-                    <br /> Please send an email to <b>
-                      admin@redmatterapp.com
-                    </b>{" "}
-                    so we can help you!
+                    <br /> Please send an email to <b>support@redmatterapp.com</b> so we can help
+                    you!
                   </h4>
                 </>
               ) : loading ? (
@@ -126,9 +121,8 @@ const VerifyEmail = (props: any) => {
                 <>
                   <h1>Welcome to Red Matter!</h1>
                   <p>
-                    We are currently in our version{" "}
-                    {process.env.REACT_APP_CURRENT_APP_VERSION} and building
-                    several features to make your analysis easier
+                    We are currently in our version {process.env.REACT_APP_CURRENT_APP_VERSION} and
+                    building several features to make your analysis easier
                   </p>
                   <Button
                     type="submit"
