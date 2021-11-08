@@ -114,7 +114,7 @@ const WorkspaceInnerComponent = (props: {
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "plotsRerender" && x.used == false
+      (x: WorkspaceEvent) => x.type == "plotsRerender"
     );
     if (eventPlotsRerenderArray.length > 0) {
       let event: PlotsRerender = eventPlotsRerenderArray[0];

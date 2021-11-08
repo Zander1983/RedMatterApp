@@ -42,7 +42,7 @@ function propsAreEqual(prev: any, next: any) {
   } else if (
     next.customPlotRerender &&
     next.customPlotRerender.length > 0 &&
-    next.customPlotRerender.includes[next.plot.id]
+    next.customPlotRerender.includes(next.plot.id)
   ) {
     return false;
   }
@@ -51,7 +51,12 @@ function propsAreEqual(prev: any, next: any) {
     previous = propsStore[next.plot.id];
   }
   propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
-  return isEqual(previous, next);
+  return (
+    isEqual(previous.plot, next.plot) &&
+    isEqual(previous.plotGates, next.plotGates) &&
+    isEqual(previous.population, next.population) &&
+    isEqual(previous.editWorkspace, next.editWorkspace)
+  );
 }
 
 const PlotRenderer = (props: {
@@ -62,6 +67,7 @@ const PlotRenderer = (props: {
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
 }) => {
+  console.log(props.plot.id);
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
   const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
