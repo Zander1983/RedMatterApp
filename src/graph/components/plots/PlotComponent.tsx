@@ -4,7 +4,12 @@ import { Divider, Grid } from "@material-ui/core";
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
-import { Gate, Plot, PlotSpecificWorkspaceData } from "graph/resources/types";
+import {
+  Gate,
+  Plot,
+  PlotSpecificWorkspaceData,
+  PlotID,
+} from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
@@ -44,6 +49,7 @@ const PlotComponent = React.memo(
     experimentId: string;
     editWorkspace: boolean;
     workspaceLoading: boolean;
+    customPlotRerender: PlotID[];
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
 
@@ -94,6 +100,7 @@ const PlotComponent = React.memo(
               plotGates={gates}
               population={population}
               editWorkspace={props.editWorkspace}
+              customPlotRerender={props.customPlotRerender}
             ></PlotRenderer>
           }
         ></SideSelector>

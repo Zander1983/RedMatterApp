@@ -190,6 +190,11 @@ export interface WorkspaceEventGateNaming extends WorkspaceEvent {
   gateID: GateID;
 }
 
+export interface PlotsRerender extends WorkspaceEvent {
+  type: "plotsRerender";
+  plotIDs: PlotID[];
+}
+
 export interface WorkspaceEventQueue {
   queue: WorkspaceEvent[];
 }

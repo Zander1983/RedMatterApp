@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import {
   Gate,
   Plot,
+  PlotsRerender,
   WorkspaceEvent,
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
@@ -60,6 +61,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
+    let plotsRerenderQueueItem: PlotsRerender = {
+      id: "",
+      used: false,
+      type: "plotsRerender",
+      plotIDs: [plot.id],
+    };
+    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
