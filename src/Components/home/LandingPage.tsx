@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-
+import Button from "@material-ui/core/Button";
 import Plans from "./landingPageComponents/Plans";
 import LandingHeader from "./landingPageComponents/LandingHeader";
 import TargetUsers from "./landingPageComponents/TargetUsers";
@@ -8,6 +8,14 @@ import Features from "./landingPageComponents/Features";
 import Partners from "./landingPageComponents/Partners";
 import Universities from "./landingPageComponents/Universities";
 import { Divider } from "antd";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@material-ui/core";
+import { useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
   contentContainer: {
@@ -60,8 +68,61 @@ const useStyles = makeStyles((theme) => ({
 const AppLandingPage = () => {
   const classes = useStyles();
 
+  const [openVersionDialog, setOpenVersionDialog] = useState(true);
+
   return (
     <Grid className={classes.mainContainer}>
+      <Dialog
+        open={openVersionDialog}
+        onClose={() => {
+          setOpenVersionDialog(false);
+        }}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle
+          id="form-dialog-title"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <span>Version updates </span>
+          <span
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              setOpenVersionDialog(false);
+            }}
+          >
+            X
+          </span>{" "}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This is new version of red matter which is a major upgradation of
+            the previous one.
+          </DialogContentText>
+          <DialogContentText>
+            We encourage you to use the new version currently it does not hold
+            the previous version data but on demand we can make that happen.
+          </DialogContentText>
+          <DialogContentText>
+            Your old workspace are shifted to a different domain and you can
+            access them with below button click
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              window.open("https://old.redmatterapp.com", "_blank").focus();
+              setOpenVersionDialog(false);
+            }}
+            color="primary"
+          >
+            Load old redmatter
+          </Button>
+        </DialogActions>
+      </Dialog>
       <LandingHeader />
       <div className={classes.topRightTriangleContainer}>
         <div className={classes.triangleTopRight}></div>
