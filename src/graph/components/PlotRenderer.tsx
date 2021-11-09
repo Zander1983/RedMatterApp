@@ -91,6 +91,16 @@ const PlotRenderer = (props: {
     return false;
   };
 
+  useEffect(() => {
+    if (props.customPlotRerender.includes(props.plot.id)) {
+      let interactor: GateMouseInteractor[] = mouseInteractorInstances[plot.id];
+      if (interactor && interactor.length > 0) {
+        interactor[0].end();
+        interactor[1].end();
+      }
+    }
+  }, [props.customPlotRerender]);
+
   const draw = () => {
     if (!validateReady()) return;
     setLoader(true);
@@ -155,10 +165,11 @@ const PlotRenderer = (props: {
   };
 
   const unsetGating = (type: "oval" | "histogram" | "polygon") => {
-    mouseInteractorInstances[plot.id]
-      //@ts-ignore
-      .filter((e) => !(e instanceof typeToClassType[type]))
-      .forEach((e) => e.unsetGating(true));
+    if (mouseInteractorInstances[plot.id])
+      mouseInteractorInstances[plot.id]
+        //@ts-ignore
+        .filter((e) => !(e instanceof typeToClassType[type]))
+        .forEach((e) => e.unsetGating(true));
   };
 
   const setGating = (

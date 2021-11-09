@@ -201,7 +201,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.plugin.isGating = true;
   }
 
-  protected clearGateState() {
+  clearGateState() {
     this.points = [];
   }
 
