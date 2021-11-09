@@ -79,23 +79,24 @@ const AppLandingPage = () => {
         }}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle
-          id="form-dialog-title"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <span>Version updates </span>
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              setOpenVersionDialog(false);
+        <DialogTitle id="form-dialog-title">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
             }}
           >
-            X
-          </span>{" "}
+            <span>Version updates </span>
+            <span
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setOpenVersionDialog(false);
+              }}
+            >
+              X
+            </span>{" "}
+          </div>
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
