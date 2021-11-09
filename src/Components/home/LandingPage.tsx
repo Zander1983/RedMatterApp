@@ -68,62 +68,8 @@ const useStyles = makeStyles((theme) => ({
 const AppLandingPage = () => {
   const classes = useStyles();
 
-  const [openVersionDialog, setOpenVersionDialog] = useState(true);
-
   return (
     <Grid className={classes.mainContainer}>
-      <Dialog
-        open={openVersionDialog}
-        onClose={() => {
-          setOpenVersionDialog(false);
-        }}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            <span>Version updates </span>
-            <span
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                setOpenVersionDialog(false);
-              }}
-            >
-              X
-            </span>{" "}
-          </div>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This is new version of red matter which is a major upgradation of
-            the previous one.
-          </DialogContentText>
-          <DialogContentText>
-            We encourage you to use the new version currently it does not hold
-            the previous version data but on demand we can make that happen.
-          </DialogContentText>
-          <DialogContentText>
-            Your old workspace are shifted to a different domain and you can
-            access them with below button click
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              window.open("https://old.redmatterapp.com", "_blank").focus();
-              setOpenVersionDialog(false);
-            }}
-            color="primary"
-          >
-            Load old redmatter
-          </Button>
-        </DialogActions>
-      </Dialog>
       <LandingHeader />
       <div className={classes.topRightTriangleContainer}>
         <div className={classes.triangleTopRight}></div>
@@ -145,6 +91,35 @@ const AppLandingPage = () => {
         <Universities />
         {/* <Divider></Divider>
         <Plans /> */}
+        <DialogTitle id="form-dialog-title">
+          <div>
+            <span>Version updates </span>
+          </div>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This is the new version of red matter, which is a significant
+            up-gradation of the previous one.
+          </DialogContentText>
+          <DialogContentText>
+            We encourage you to use the new version currently. It does not hold
+            the previous version data, but on-demand, we can make that happen.
+          </DialogContentText>
+          <DialogContentText>
+            Your old workspace is now available in a different domain, and you
+            can access them with a click on the button below.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              window.open("https://old.redmatterapp.com", "_blank").focus();
+            }}
+            color="primary"
+          >
+            Load old redmatter
+          </Button>
+        </DialogActions>
       </Grid>
     </Grid>
   );
