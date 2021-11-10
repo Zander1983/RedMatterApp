@@ -10,12 +10,13 @@ import RangeResizeModal from "../modals/rangeResizeModal";
 import normalGatingIcon from "../../../assets/images/normalGatingIcon.png";
 import inverseGatingIcon from "../../../assets/images/inverseGatingIcon.png";
 import gate from "../../../assets/images/gate.png";
-import { Plot, PopulationGateType } from "graph/resources/types";
+import { Plot, PlotsRerender, PopulationGateType } from "graph/resources/types";
 import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { store } from "redux/store";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { CameraFilled } from "@ant-design/icons";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const classes = {
   main: {
@@ -71,6 +72,13 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";
+      let plotsRerenderQueueItem: PlotsRerender = {
+        id: "",
+        used: false,
+        type: "plotsRerender",
+        plotIDs: [plot.id],
+      };
+      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
     } else if (plot.histogramAxis === "") {
       plot.gatingActive = "polygon";
     } else {

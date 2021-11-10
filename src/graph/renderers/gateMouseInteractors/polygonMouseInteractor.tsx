@@ -168,6 +168,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
       newPoints.push({ ...b });
     }
+    let population = getPopulation(this.plotter.plot.population);
     const newGate: PolygonGate = {
       points: [...newPoints].map((e) => {
         return { ...e };
@@ -178,9 +179,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       yAxis: yAxis,
       yAxisType: this.plotter.plot.yPlotType,
       yAxisOriginalRanges: originalRanges.y,
-      parents: getPopulation(this.plotter.plot.population).gates.map(
-        (e) => e.gate
-      ),
+      parents:
+        population && population.gates && population.gates.length > 0
+          ? [population.gates[0].gate]
+          : [],
       color: generateColor(),
       gateType: "polygon",
       id: createID(),

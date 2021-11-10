@@ -186,16 +186,17 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       newPoints[1] ^= newPoints[0];
       newPoints[0] ^= newPoints[1];
     }
-
+    let population = getPopulation(this.plotter.plot.population);
     const newGate: HistogramGate = {
       points: [...newPoints],
       axis: this.plotter.plot.xAxis,
       axisType: plotType,
       axisOriginalRanges: originalRange,
       histogramDirection,
-      parents: getPopulation(this.plotter.plot.population).gates.map(
-        (e) => e.gate
-      ),
+      parents:
+        population && population.gates && population.gates.length > 0
+          ? [population.gates[0].gate]
+          : [],
       color: generateColor(),
       gateType: "histogram",
       id: createID(),

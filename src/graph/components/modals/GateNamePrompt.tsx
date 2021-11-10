@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import {
   Gate,
   Plot,
+  PlotsRerender,
   WorkspaceEvent,
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
@@ -60,6 +61,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
+    let plotsRerenderQueueItem: PlotsRerender = {
+      id: "",
+      used: false,
+      type: "plotsRerender",
+      plotIDs: [plot.id],
+    };
+    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
@@ -71,12 +79,17 @@ export default function GateNamePrompt() {
     await createSubpopPlot(basedOffPlot, [
       { gate: gate.id, inverseGating: false },
     ]);
-    const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
-    for (let popGate of popGates) {
-      let popIGate = getGate(popGate);
-      popIGate.children.push(gate.id);
-      WorkspaceDispatch.UpdateGate(popIGate);
+    // const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
+    // for (let popGate of popGates) {
+    if (gate.parents && gate.parents.length > 0) {
+      let popIGate = getGate(gate.parents[0]);
+      if (popIGate) {
+        if (!popIGate.children) popIGate.children = [];
+        popIGate.children.push(gate.id);
+        WorkspaceDispatch.UpdateGate(popIGate);
+      }
     }
+    // }
   };
 
   useEffect(() => {
