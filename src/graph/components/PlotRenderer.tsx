@@ -95,8 +95,8 @@ const PlotRenderer = (props: {
     if (props.customPlotRerender.includes(props.plot.id)) {
       let interactor: GateMouseInteractor[] = mouseInteractorInstances[plot.id];
       if (interactor && interactor.length > 0) {
-        interactor[0].end();
-        interactor[1].end();
+        if (interactor[0]) interactor[0].end();
+        if (interactor[1]) interactor[1].end();
       }
     }
   }, [props.customPlotRerender]);
