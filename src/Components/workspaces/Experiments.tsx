@@ -36,8 +36,9 @@ interface RemoteExperiment {
 
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
-  const dispatch = useDispatch();
   const isLoggedIn = userManager.isLoggedIn();
+  const isAdmin = userManager.getUserAdminStatus();
+
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
@@ -104,12 +105,33 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
       });
   };
 
+  const fetchAllExperiments = async () => {
+    const data = await (
+      await axios.get(`/api/getAllExperiments`, {
+        headers: {
+          token: userManager.getToken(),
+        },
+      })
+    ).data;
+    setExperiments(data.organisationExperiments);
+    setPrivateExperiments(data.userExperiments);
+    setOldExperiments(data.oldExperiments);
+    setFetchExperimentsComplete(true);
+    setDisabled(
+      createButtonDisable(
+        data.userExperiments.length,
+        rules?.experiment?.unLimitedPublic,
+        rules?.experiment?.number
+      )
+    );
+  };
+
   const handleClose = (func: Function) => {
     func(false);
   };
 
   React.useEffect(() => {
-    fetchExperiments();
+    isAdmin ? fetchAllExperiments() : fetchExperiments();
     if (props.backFromQuestions) {
       snackbarService.showSnackbar("Experiment created", "success");
     }
