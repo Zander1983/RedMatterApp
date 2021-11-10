@@ -35,6 +35,8 @@ export const graphActions = {
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   ADD_FILEID_TO_GATEBUILDER: "workspace.ADD_FILEID_TO_GATEBUILDER",
   UPDATE_FILE_IN_GATEBUILDER: "workspace.UPDATE_FILE_IN_GATEBUILDER",
+  ADD_POPULATION_TO_GATEBUILDER: "workspace.ADD_POPULATION_TO_GATEBUILDER",
+  ADD_PLOT_TO_GATEBUILDER: "workspace.ADD_PLOT_TO_GATEBUILDER",
 };
 
 export const initialState: Workspace = {
@@ -302,10 +304,10 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         };
       }
     case graphActions.UPDATE_FILE_IN_GATEBUILDER:
-      const id: string = action.payload.fileId;
+      const idForFile: string = action.payload.fileId;
       const file: File = action.payload.file;
       state.gateBuilder.map((item: GateBuilder) => {
-        if (item.fileId === id) {
+        if (item.fileId === idForFile) {
           let found = false;
 
           item.files.map((item) => {
@@ -321,6 +323,36 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         }
         return item;
       });
+      return {
+        ...state,
+        gateBuilder: state.gateBuilder,
+      };
+
+    case graphActions.ADD_POPULATION_TO_GATEBUILDER:
+      const idForPopulation: string = action.payload.fileId;
+      const population: Population = action.payload.population;
+
+      state.gateBuilder.map((item) => {
+        if (item.fileId === idForPopulation) {
+          item.populations.push(population);
+        }
+      });
+
+      return {
+        ...state,
+        gateBuilder: state.gateBuilder,
+      };
+
+    case graphActions.ADD_PLOT_TO_GATEBUILDER:
+      const idForPlot: string = action.payload.fileId;
+      const plot: Plot = action.payload.plot;
+
+      state.gateBuilder.map((item) => {
+        if (item.fileId === idForPlot) {
+          item.plots.push(plot);
+        }
+      });
+
       return {
         ...state,
         gateBuilder: state.gateBuilder,

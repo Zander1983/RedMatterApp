@@ -39,10 +39,22 @@ const WorkspaceDispatch = {
       payload: { population },
     });
   },
+  AddPopulationToGateBuilder: (population: Population, fileId: string) => {
+    return store.dispatch({
+      type: graphActions.ADD_POPULATION_TO_GATEBUILDER,
+      payload: { population, fileId },
+    });
+  },
   AddPlot: (plot: Plot) => {
     return store.dispatch({
       type: graphActions.ADD_PLOT,
       payload: { plot },
+    });
+  },
+  AddPlotToGateBuilder: (plot: Plot, fileId: string) => {
+    return store.dispatch({
+      type: graphActions.ADD_PLOT_TO_GATEBUILDER,
+      payload: { plot, fileId },
     });
   },
   AddPlots: (plots: Plot[]) => {

@@ -60,6 +60,26 @@ export const getPopulation = (populationID: PopulationID): Population => {
     throw Error("Multiple populations with ID " + populationID);
   return populations[0];
 };
+export const getPopulationFromGateBuilder = (
+  populationID: PopulationID,
+  fileID: string
+): Population => {
+  console.log(populationID, fileID);
+  const workspace = getWorkspace();
+  const exist = workspace.gateBuilder.find((item) => item.fileId === fileID);
+  console.log(exist);
+  if (exist) {
+    const populations = exist.populations.filter(
+      (population) => population.id === populationID
+    );
+    console.log(populations);
+    if (populations.length === 0)
+      throw Error("Population " + populationID + " not found");
+    if (populations.length > 1)
+      throw Error("Multiple populations with ID " + populationID);
+    return populations[0];
+  }
+};
 
 export const getPopulationFromFileId = (fileId: FileID): Population => {
   const workspace = getWorkspace();

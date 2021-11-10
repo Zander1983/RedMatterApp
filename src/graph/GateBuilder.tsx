@@ -1,9 +1,5 @@
-// const GateBuilder = () => {
-//   return <div> this is gateBuilder </div>;
-// };
-// export default GateBuilder;
 import { useSelector, useStore } from "react-redux";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 
@@ -308,7 +304,7 @@ const WorkspaceInnerComponent = (props: {
         true,
         true
       );
-      console.log(newId);
+
       if (typeof newId !== "string") {
         throw Error("wtf?");
       }

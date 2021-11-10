@@ -19,6 +19,7 @@ import {
   getFile,
   getPlot,
   getPopulation,
+  getPopulationFromGateBuilder,
   getWorkspace,
 } from "graph/utils/workspace";
 import { getFSCandSSCAxisOnAxesList } from "graph/utils/stringProcessing";
@@ -183,10 +184,21 @@ export const createEmptyPlot = (): Plot => {
   return newPlot;
 };
 
-export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
+export const setupPlot = (
+  plot: Plot,
+  incPopulation?: Population,
+  gateBuilder?: Boolean,
+  files?: File
+): Plot => {
+  console.log(gateBuilder, files);
+  const p = getPopulationFromGateBuilder(plot.population, files.id);
+  console.log(p);
   const population = incPopulation
     ? incPopulation
+    : gateBuilder
+    ? getPopulationFromGateBuilder(plot.population, files.id)
     : getPopulation(plot.population);
+  console.log(population);
   const file = getFile(population.file);
   const axes = file.axes;
 
@@ -558,7 +570,12 @@ export const createNewPlotFromFile = async (
     await setupPlot(plot, population);
     return plot.id;
   } else {
-    console.log("hi hi hi...");
+    console.log(file);
+    await WorkspaceDispatch.AddPopulationToGateBuilder(population, file.id);
+    const plot = createPlot({ population, clonePlot });
+    await WorkspaceDispatch.AddPlotToGateBuilder(plot, file.id);
+    await setupPlot(plot, population, true, file);
+    return plot.id;
   }
 };
 

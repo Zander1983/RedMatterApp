@@ -147,7 +147,7 @@ export const downloadFileEvent = async (
       newFile = { ...newFile, ...getFile(file.id) };
       newFile.downloaded = true;
       newFile.downloading = false;
-      console.log(newFile);
+
       // comingFromGateBuilder
       //   ? WorkspaceDispatch.UpdateFileInGateBuilder(newFile, newFile.id)
       //   : WorkspaceDispatch.UpdateFile(newFile);
