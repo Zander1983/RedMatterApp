@@ -212,7 +212,7 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     this.plugin.isGating = true;
   }
 
-  protected clearGateState() {
+  clearGateState() {
     this.points = [];
   }
 

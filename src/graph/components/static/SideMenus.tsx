@@ -9,7 +9,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
 import PlotMenu from "./menus/PlotMenu";
-import HierarchyMenu from "./menus/HierarchyMenu";
+//import HierarchyMenu from "./menus/HierarchyMenu";
 
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate } from "graph/utils/workspace";
@@ -244,7 +244,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
           </Button>
 
           {/* Files Hirarchy */}
-          <Button
+          {/* <Button
             variant="contained"
             size="large"
             onClick={() => click("hierarchy")}
@@ -255,7 +255,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
             }}
           >
             Gate Hirarchy
-          </Button>
+          </Button> */}
 
           {/* KeyboardBackspace */}
           {(fileMenuOpen || gateMenuOpen || plotMenuOpen || hierarchyOpen) && (
@@ -310,7 +310,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
         {/* FILES */}
         {fileMenuOpen && <FileMenu files={props.workspace.files} />}
         {/* FILES HIERARCHY */}
-        {hierarchyOpen && <HierarchyMenu workspace={props.workspace} />}
+        {/* {hierarchyOpen && <HierarchyMenu workspace={props.workspace} />} */}
       </div>
     </div>
   );
