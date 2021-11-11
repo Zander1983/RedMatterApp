@@ -37,7 +37,12 @@ import {
   saveWorkspaceToRemote,
   getFile,
 } from "./utils/workspace";
-import { Workspace as WorkspaceTypem, File } from "./resources/types";
+import {
+  Workspace as WorkspaceType,
+  File,
+  WorkspaceEvent,
+  PlotsRerender,
+} from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
@@ -48,6 +53,7 @@ import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import * as PlotResource from "./resources/plots";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -153,12 +159,27 @@ const WorkspaceInnerComponent = (props: {
   shared: boolean;
 }) => {
   const store = useStore();
-  const classes = useStyles();
   const history = useHistory();
+  const classes = useStyles();
   const isLoggedIn = userManager.isLoggedIn();
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventPlotsRerenderArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "plotsRerender"
+    );
+    if (eventPlotsRerenderArray.length > 0) {
+      let event: PlotsRerender = eventPlotsRerenderArray[0];
+      setCustomPlotRerender(event.plotIDs);
+      EventQueueDispatch.DeleteQueueItem(event.id);
+      setTimeout(() => {
+        setCustomPlotRerender([]);
+      }, 0);
+    }
+  });
 
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
@@ -657,6 +678,7 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   comingFromGateBuilder={true}
                   workspaceLoading={workspaceLoading}
+                  customPlotRerender={customPlotRerender}
                 ></PlotController>
               ) : (
                 <Grid

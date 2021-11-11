@@ -94,7 +94,7 @@ export const downloadFileEvent = async (
       //   ? WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id)
       //   : WorkspaceDispatch.UpdateFile(e);
       WorkspaceDispatch.UpdateFile(e);
-      WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id);
+      // WorkspaceDispatch.UpdateFileInGateBuilder(e, e.id);
     });
 
     let response;
