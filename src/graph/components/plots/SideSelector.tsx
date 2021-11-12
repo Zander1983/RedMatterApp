@@ -226,9 +226,9 @@ function PlotComponent(props: {
           }}
           value={isPlotHistogram() ? "hist" : yAxis}
         >
-          {axes.map((e: any) => (
-            <MenuItem value={e}>{e}</MenuItem>
-          ))}
+          {axes &&
+            axes.length &&
+            axes.map((e: any) => <MenuItem value={e}>{e}</MenuItem>)}
           <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
           <MenuItem
             value={"hist"}
@@ -339,9 +339,9 @@ function PlotComponent(props: {
               }}
               value={xAxis}
             >
-              {axes.map((e: any) => (
-                <MenuItem value={e}>{e} </MenuItem>
-              ))}
+              {axes &&
+                axes.length &&
+                axes.map((e: any) => <MenuItem value={e}>{e} </MenuItem>)}
             </Select>
 
             <Select
