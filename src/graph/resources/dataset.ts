@@ -61,7 +61,6 @@ export const createDataset = (data: number[][], file: File): FileID => {
 
 export const deleteDataset = (id: FileID) => {
   const storage = new DatasetStorage();
-  storage.delete(id);
 };
 
 export const getDataset = (fileId: FileID): Dataset => {
