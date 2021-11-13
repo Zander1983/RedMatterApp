@@ -19,6 +19,7 @@ export type UserProfile = {
   rules: Rules;
   subscriptionDetails: SubscriptionDetail;
   isAdmin: Boolean;
+  email: string;
 };
 
 type SubscriptionDetail = {
@@ -98,6 +99,13 @@ class UserManager {
       throw Error("Can't get admin status of unlogged user");
     }
     return this.state.user.profile.isAdmin;
+  }
+
+  getUserEmail() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get Email of unlogged user");
+    }
+    return this.state.user.profile.email;
   }
 
   canAccessExperiment(id: string) {
