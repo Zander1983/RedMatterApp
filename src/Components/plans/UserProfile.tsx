@@ -14,6 +14,11 @@ import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
 import { useDispatch } from "react-redux";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
+
 import {
   updateUserStripeDetails,
   getPlans,
@@ -78,6 +83,39 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: "30px",
   },
 }));
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box css={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 export default function Plans(props: any) {
   const classes = useStyles();
@@ -265,6 +303,10 @@ export default function Plans(props: any) {
         setProfileLoader(false);
       });
   };
+  const [value, setValue] = useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   return (
     <div>
@@ -297,7 +339,6 @@ export default function Plans(props: any) {
           paddingRight: "4em",
         }}
       >
-        <script src="https://js.stripe.com/v3/"></script>
         <Grid
           item
           style={{
@@ -310,164 +351,203 @@ export default function Plans(props: any) {
             width: "75%",
           }}
         >
-          <h1
-            style={{
-              marginBottom: "1.5em",
-              fontSize: "36px",
-            }}
-          >
-            My profile
-          </h1>
-          {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
-          {profileLoader ? (
-            <div>
-              <CircularProgress></CircularProgress>
-            </div>
-          ) : (
-            <div>
-              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-                <Grid item lg={6} md={6} sm={6}>
-                  <h3>
-                    {lastDateText}
-                    <span> </span>
-                    <span>{subscriptionLastDate}</span>
-                  </h3>
-                </Grid>
-              </Grid>
-
-              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-                <Grid item lg={6} md={6} sm={6}>
-                  {invoiceAmount ? (
-                    <h3>
-                      Next Billing Amount:
-                      <span> </span>
-                      <span>{invoiceAmount}</span>
-                      <span> </span>
-                      <span>{invoiceCurrency}</span>
-                    </h3>
-                  ) : null}
-                </Grid>
-              </Grid>
-
-              <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
-                <Grid item lg={9} md={6} sm={6}>
-                  <h3 style={{ marginBottom: "1.5em" }}>
-                    Current Subscription:
-                    <span> </span>
-                    <span>{subscription}</span>
-                  </h3>
-                  {showSubscriptionDropdown ? (
-                    <div>
+          <Box css={{ width: "100%" }}>
+            <Box css={{ borderBottom: 1, borderColor: "divider" }}>
+              <Tabs
+                value={value}
+                onChange={(e: any, value: any) => {
+                  handleChange(e, value);
+                }}
+                aria-label="basic tabs example"
+              >
+                <Tab label="Profile Info" {...a11yProps(0)} />
+                <Tab label="User Management" {...a11yProps(1)} />
+              </Tabs>
+            </Box>
+            <TabPanel value={value} index={0}>
+              <h1
+                style={{
+                  marginBottom: "1.5em",
+                  fontSize: "36px",
+                }}
+              >
+                My profile
+              </h1>
+              {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
+              {profileLoader ? (
+                <div>
+                  <CircularProgress></CircularProgress>
+                </div>
+              ) : (
+                <div>
+                  <Grid
+                    item
+                    lg={12}
+                    md={12}
+                    sm={12}
+                    style={{ textAlign: "left" }}
+                  >
+                    <Grid item lg={6} md={6} sm={6}>
                       <h3>
-                        <strong>Change Subscription</strong>
+                        {lastDateText}
+                        <span> </span>
+                        <span>{subscriptionLastDate}</span>
                       </h3>
-                      <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="subscriptionSelect">
-                          Select Subscription
-                        </InputLabel>
-                        <Select
-                          native
-                          onChange={(event) => {
-                            setSubSelect(event.target.value);
-                          }}
-                          style={{
-                            width: "200px",
-                            height: "40px",
-                          }}
-                          inputProps={{
-                            name: "age",
-                            id: "subscriptionSelect",
-                          }}
-                        >
-                          <option value={null}></option>
-                          {planFiltered.map((plan) => {
-                            return <option value={plan.id}>{plan.name}</option>;
-                          })}
-                        </Select>
-                      </FormControl>
-                      <Button
-                        style={{ marginTop: 25 }}
-                        color="secondary"
-                        onClick={() => setOpenChange(true)}
-                      >
-                        Change Subscription
-                      </Button>
-                    </div>
-                  ) : null}
-                  {}
-                  {}{" "}
-                </Grid>
-              </Grid>
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    item
+                    lg={12}
+                    md={12}
+                    sm={12}
+                    style={{ textAlign: "left" }}
+                  >
+                    <Grid item lg={6} md={6} sm={6}>
+                      {invoiceAmount ? (
+                        <h3>
+                          Next Billing Amount:
+                          <span> </span>
+                          <span>{invoiceAmount}</span>
+                          <span> </span>
+                          <span>{invoiceCurrency}</span>
+                        </h3>
+                      ) : null}
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    item
+                    lg={12}
+                    md={12}
+                    sm={12}
+                    style={{ textAlign: "left" }}
+                  >
+                    <Grid item lg={9} md={6} sm={6}>
+                      <h3 style={{ marginBottom: "1.5em" }}>
+                        Current Subscription:
+                        <span> </span>
+                        <span>{subscription}</span>
+                      </h3>
+                      {showSubscriptionDropdown ? (
+                        <div>
+                          <h3>
+                            <strong>Change Subscription</strong>
+                          </h3>
+                          <FormControl className={classes.formControl}>
+                            <InputLabel htmlFor="subscriptionSelect">
+                              Select Subscription
+                            </InputLabel>
+                            <Select
+                              native
+                              onChange={(event) => {
+                                setSubSelect(event.target.value);
+                              }}
+                              style={{
+                                width: "200px",
+                                height: "40px",
+                              }}
+                              inputProps={{
+                                name: "age",
+                                id: "subscriptionSelect",
+                              }}
+                            >
+                              <option value={null}></option>
+                              {planFiltered.map((plan) => {
+                                return (
+                                  <option value={plan.id}>{plan.name}</option>
+                                );
+                              })}
+                            </Select>
+                          </FormControl>
+                          <Button
+                            style={{ marginTop: 25 }}
+                            color="secondary"
+                            onClick={() => setOpenChange(true)}
+                          >
+                            Change Subscription
+                          </Button>
+                        </div>
+                      ) : null}
+                      {}
+                      {}{" "}
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    container
+                    alignItems="flex-end"
+                    justify="flex-start"
+                    direction="row"
+                    style={{ textAlign: "left" }}
+                  >
+                    <Grid item lg={10} md={6} sm={6}>
+                      {showCancelSubscription ? (
+                        <div>
+                          <Button
+                            style={{ marginTop: 25 }}
+                            color="secondary"
+                            variant="contained"
+                            onClick={() => setOpenCancel(true)}
+                          >
+                            Cancel Subscription
+                          </Button>
+                        </div>
+                      ) : showResumeSubscription ? (
+                        <div>
+                          <Button
+                            style={{ marginTop: 25 }}
+                            color="secondary"
+                            variant="contained"
+                            onClick={() => resumeSubscription()}
+                          >
+                            Resume Subscription
+                          </Button>
+                        </div>
+                      ) : (
+                        <h4>
+                          Go to
+                          <NavLink to="/plans">
+                            <span> </span>Plans <span> </span>
+                          </NavLink>
+                          to Subscribe
+                        </h4>
+                      )}
+                    </Grid>
+
+                    <Grid item lg={2} md={6} sm={6}>
+                      {subscription == "Enterprise" ? (
+                        <div>
+                          <Button
+                            style={{ marginTop: 25 }}
+                            color="primary"
+                            variant="contained"
+                            onClick={() => setOpenAddUser(true)}
+                          >
+                            Add Users
+                          </Button>
+                        </div>
+                      ) : null}
+                    </Grid>
+                  </Grid>
+                </div>
+              )}
 
               <Grid
                 container
-                alignItems="flex-end"
-                justify="flex-start"
+                justify="center"
                 direction="row"
-                style={{ textAlign: "left" }}
+                style={{ textAlign: "center" }}
               >
-                <Grid item lg={10} md={6} sm={6}>
-                  {showCancelSubscription ? (
-                    <div>
-                      <Button
-                        style={{ marginTop: 25 }}
-                        color="secondary"
-                        variant="contained"
-                        onClick={() => setOpenCancel(true)}
-                      >
-                        Cancel Subscription
-                      </Button>
-                    </div>
-                  ) : showResumeSubscription ? (
-                    <div>
-                      <Button
-                        style={{ marginTop: 25 }}
-                        color="secondary"
-                        variant="contained"
-                        onClick={() => resumeSubscription()}
-                      >
-                        Resume Subscription
-                      </Button>
-                    </div>
-                  ) : (
-                    <h4>
-                      Go to
-                      <NavLink to="/plans">
-                        <span> </span>Plans <span> </span>
-                      </NavLink>
-                      to Subscribe
-                    </h4>
-                  )}
-                </Grid>
+                <Grid item lg={7} md={6} sm={1}></Grid>
 
-                <Grid item lg={2} md={6} sm={6}>
-                  {subscription == "Enterprise" ? (
-                    <div>
-                      <Button
-                        style={{ marginTop: 25 }}
-                        color="primary"
-                        variant="contained"
-                        onClick={() => setOpenAddUser(true)}
-                      >
-                        Add Users
-                      </Button>
-                    </div>
-                  ) : null}
-                </Grid>
+                <Grid item lg={1} md={1} sm={1}></Grid>
               </Grid>
-            </div>
-          )}
-
-          <Grid
-            container
-            justify="center"
-            direction="row"
-            style={{ textAlign: "center" }}
-          >
-            <Grid item lg={7} md={6} sm={1}></Grid>
-
-            <Grid item lg={1} md={1} sm={1}></Grid>
-          </Grid>
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+              Item Two
+            </TabPanel>
+          </Box>
         </Grid>
       </Grid>
     </div>
