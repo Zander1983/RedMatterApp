@@ -216,7 +216,6 @@ const WorkspaceInnerComponent = (props: {
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
-
     if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
     WorkspaceDispatch.SetWorkspaceShared(props.shared);
     setSharedWorkspace(props.shared);
@@ -238,18 +237,19 @@ const WorkspaceInnerComponent = (props: {
     const notification = new Notification("Loading workspace");
     setWorkspaceLoading(true);
     await downloadFileMetadata(shared, experimentId);
-    // const loadStatus = await loadWorkspaceFromRemoteIfExists(
-    //   shared,
-    //   experimentId
-    // );
-    // if (!loadStatus.requestSuccess) {
-    //   snackbarService.showSnackbar("Workspace created", "success");
-    // } else {
-    //   snackbarService.showSnackbar("Workspace loaded", "success");
-    // }
 
-    // if (!loadStatus.loaded && shared) {
-    // }
+    const loadStatus = await loadWorkspaceFromRemoteIfExists(
+      shared,
+      experimentId
+    );
+    if (!loadStatus.requestSuccess) {
+      snackbarService.showSnackbar("Workspace created", "success");
+    } else {
+      snackbarService.showSnackbar("Workspace loaded", "success");
+    }
+
+    if (!loadStatus.loaded && shared) {
+    }
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
@@ -459,7 +459,7 @@ const WorkspaceInnerComponent = (props: {
       /> */}
 
       {/* == STATIC ELEMENTS == */}
-      <SideMenus workspace={workspace}></SideMenus>
+      {/* <SideMenus workspace={workspace}></SideMenus> */}
       <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}

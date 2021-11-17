@@ -42,17 +42,23 @@ export const createPlot = ({
   clonePlot,
   id,
   population,
+  gateBuilder,
+  fileId,
 }: {
   clonePlot?: Plot;
   id?: PlotID;
   population?: Population;
+  gateBuilder?: Boolean;
+  fileId?: String;
 }): Plot => {
   let newPlot = createEmptyPlot();
   if (clonePlot) newPlot = { ...clonePlot };
   if (id) newPlot.id = id;
   else newPlot.id = createID();
+
   if (population) {
     const file = getFile(population.file);
+
     newPlot.ranges = { ...file.defaultRanges };
     newPlot.axisPlotTypes = { ...file.defaultAxisPlotTypes };
     newPlot.population =
@@ -73,8 +79,11 @@ export const createPlot = ({
   if (plots.length > 0) {
     newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
   }
-
-  return setupPlot(newPlot);
+  if (gateBuilder) {
+    return setupPlot(newPlot, undefined, true, fileId);
+  } else {
+    return setupPlot(newPlot);
+  }
 };
 
 export const updatePositions = () => {
@@ -188,17 +197,13 @@ export const setupPlot = (
   plot: Plot,
   incPopulation?: Population,
   gateBuilder?: Boolean,
-  files?: File
+  fileId?: String
 ): Plot => {
-  console.log(gateBuilder, files);
-  const p = getPopulationFromGateBuilder(plot.population, files.id);
-  console.log(p);
   const population = incPopulation
     ? incPopulation
     : gateBuilder
-    ? getPopulationFromGateBuilder(plot.population, files.id)
+    ? getPopulationFromGateBuilder(plot.population, fileId)
     : getPopulation(plot.population);
-  console.log(population);
   const file = getFile(population.file);
   const axes = file.axes;
 
@@ -570,11 +575,15 @@ export const createNewPlotFromFile = async (
     await setupPlot(plot, population);
     return plot.id;
   } else {
-    console.log(file);
     await WorkspaceDispatch.AddPopulationToGateBuilder(population, file.id);
-    const plot = createPlot({ population, clonePlot });
+    const plot = createPlot({
+      population,
+      clonePlot,
+      gateBuilder: true,
+      fileId: file.id,
+    });
     await WorkspaceDispatch.AddPlotToGateBuilder(plot, file.id);
-    await setupPlot(plot, population, true, file);
+    await setupPlot(plot, population, true, file.id);
     return plot.id;
   }
 };

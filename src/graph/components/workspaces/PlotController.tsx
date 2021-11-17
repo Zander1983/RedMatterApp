@@ -9,6 +9,7 @@ import {
   getFile,
   getGate,
   getPopulation,
+  getPopulationFromGateBuilder,
   getWorkspace,
 } from "graph/utils/workspace";
 import {
@@ -77,6 +78,10 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       };
       for (const plot of plots) {
         try {
+          // const pop = getPopulationFromGateBuilder(
+          //   plot.population,
+          //   "123123123131"
+          // );
           const pop = getPopulation(plot.population);
           if (pop.gates.length === 0) {
             plotByPopGateMap["No gates"].push(plot);
@@ -114,6 +119,10 @@ export const getTargetLayoutPlots = (protoPlot: any): Plot[] => {
   let plotGroups: PlotGroup[] = getPlotGroups(getWorkspace().plots);
   try {
     const pop = getPopulation(protoPlot.population);
+    // const pop = getPopulationFromGateBuilder(
+    //   protoPlot.population,
+    //   "123123123131"
+    // );
     switch (method) {
       case "file":
         const file = getFile(pop.file);
@@ -203,7 +212,7 @@ interface PlotControllerProps {
   comingFromGateBuilder?: boolean;
 }
 interface IState {
-  sortByChanged: boolean
+  sortByChanged: boolean;
 }
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
@@ -211,10 +220,9 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
-      sortByChanged: false
+      sortByChanged: false,
     };
   }
-
   savePlotPosition(layouts: any) {
     let plots = this.props.workspace.plots;
     let plotChanges = [];
@@ -259,9 +267,13 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     resetPlotSizes();
     setCanvasSize(true);
   }
-
   getPlotRelevantResources(plot: Plot) {
+    // const population = getPopulationFromGateBuilder(
+    //   plot.population,
+    //   "123123123131"
+    // );
     const population = getPopulation(plot.population);
+
     const file = getFile(population.file);
     const gates: Gate[] = [
       ...plot.gates.map((e) => getGate(e)).filter((x) => x),
@@ -277,8 +289,8 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     return workspaceForPlot;
   }
 
-  getWorkspaceLoading(){
-    return (this.props.workspaceLoading || this.state.sortByChanged);
+  getWorkspaceLoading() {
+    return this.props.workspaceLoading || this.state.sortByChanged;
   }
 
   render() {
@@ -310,16 +322,16 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                 value={method}
                 onChange={(e) => {
                   this.setState({
-                    sortByChanged: true
+                    sortByChanged: true,
                   });
                   let value: any = e.target.value;
                   method = value;
                   PlotResource.updatePositions();
                   setTimeout(() => {
                     this.setState({
-                    sortByChanged: false
-                  });
-                  },0)
+                      sortByChanged: false,
+                    });
+                  }, 0);
                 }}
               >
                 <MenuItem value={"all"}>No sorting</MenuItem>
