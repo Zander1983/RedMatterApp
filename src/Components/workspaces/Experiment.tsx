@@ -55,8 +55,6 @@ const Experiment = (props: any) => {
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
-  console.log(experimentData);
-
   const [experimentSize, setExperimentSize] = useState(0);
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES

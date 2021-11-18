@@ -22,6 +22,8 @@ import {
 } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import useGAEventTrackers from "hooks/useGAEvents";
+
 let gates: Gate[] = [];
 export default function GateNamePrompt() {
   const [open, setOpen] = React.useState<boolean>(false);
@@ -30,6 +32,8 @@ export default function GateNamePrompt() {
   const [gate, setGate] = React.useState<Gate>();
   const [plot, setPlot] = React.useState<Plot>();
   const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
+
+  const eventStacker = useGAEventTrackers("Gate Created.");
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
@@ -143,6 +147,9 @@ export default function GateNamePrompt() {
                 setNameError(true);
               } else {
                 renameGate(name);
+                eventStacker(
+                  `A gate with Name: ${name} is created on Plot:${plot.label}.`
+                );
               }
             }}
             color="primary"
