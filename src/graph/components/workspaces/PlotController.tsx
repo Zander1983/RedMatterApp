@@ -15,6 +15,7 @@ import {
   FileID,
   Gate,
   Plot,
+  PlotID,
   PlotSpecificWorkspaceData,
   Workspace,
 } from "graph/resources/types";
@@ -199,10 +200,11 @@ interface PlotControllerProps {
   experimentId: string;
   workspace: Workspace;
   workspaceLoading: boolean;
+  customPlotRerender: PlotID[];
   plotMoving?: boolean;
 }
 interface IState {
-  sortByChanged: boolean
+  sortByChanged: boolean;
 }
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
@@ -210,7 +212,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
-      sortByChanged: false
+      sortByChanged: false,
     };
   }
 
@@ -276,8 +278,8 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     return workspaceForPlot;
   }
 
-  getWorkspaceLoading(){
-    return (this.props.workspaceLoading || this.state.sortByChanged);
+  getWorkspaceLoading() {
+    return this.props.workspaceLoading || this.state.sortByChanged;
   }
 
   render() {
@@ -304,16 +306,16 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                 value={method}
                 onChange={(e) => {
                   this.setState({
-                    sortByChanged: true
+                    sortByChanged: true,
                   });
                   let value: any = e.target.value;
                   method = value;
                   PlotResource.updatePositions();
                   setTimeout(() => {
                     this.setState({
-                    sortByChanged: false
-                  });
-                  },0)
+                      sortByChanged: false,
+                    });
+                  }, 0);
                 }}
               >
                 <MenuItem value={"all"}>No sorting</MenuItem>
@@ -384,6 +386,9 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                   this.props.workspace.editWorkspace
                                 }
                                 workspaceLoading={this.getWorkspaceLoading()}
+                                customPlotRerender={
+                                  this.props.customPlotRerender
+                                }
                                 experimentId={this.props.experimentId}
                               />
                             </div>

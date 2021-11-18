@@ -10,6 +10,7 @@ import { snackbarService } from "uno-material-ui";
 
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
+import useGAEventTrackers from "hooks/useGAEvents";
 
 import { counrtyList } from "./common-data";
 
@@ -101,6 +102,8 @@ const Register = (props: any) => {
     g_recaptcha_response: "",
   });
 
+  const eventStacker = useGAEventTrackers("Registration");
+
   const handleChange = (event: any) => {
     setFormData((prevData: any) => {
       return { ...prevData, [event.target.name]: event.target.value };
@@ -138,6 +141,10 @@ const Register = (props: any) => {
       await axios.post("api/register", formData);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
+      eventStacker(
+        "A new user has registered.",
+        `User has registered but yet to be varified.`
+      );
       history.push("/verify");
     } catch (err) {
       try {

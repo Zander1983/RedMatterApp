@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
+import useGAEventTrackers from "hooks/useGAEvents";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -32,6 +33,7 @@ function MessageModal(props: {
 }): JSX.Element {
   const classes = useStyles();
 
+  const eventStacker = useGAEventTrackers("Plot Deleted.");
   return (
     <Modal
       open={props.open}
@@ -58,6 +60,7 @@ function MessageModal(props: {
                   variant="contained"
                   color="primary"
                   onClick={() => {
+                    eventStacker("A plot was deleted.");
                     props.options?.yes();
                     props.closeCall.f(props.closeCall.ref);
                   }}

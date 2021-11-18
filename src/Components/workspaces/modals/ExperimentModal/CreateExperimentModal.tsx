@@ -10,6 +10,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import { deviceData } from "assets/staticData/CreateExperimentModalData";
 
 import userManager from "Components/users/userManager";
+import useGAEventTrackers from "hooks/useGAEvents";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
@@ -35,13 +36,10 @@ function CreateExperimentModal({
   organizationId,
   userExperimentName,
 }: CreateExperimentType): JSX.Element {
-  const store = useStore();
   const classes = useStyles();
 
   const [formData, setFormData] = useState(null);
   const rules: any = userManager.getRules();
-  const subscriptionType = userManager.getSubscriptionType();
-  console.log(userExperimentName);
 
   // Name
   const [name, setName] = useState("");
@@ -78,6 +76,8 @@ function CreateExperimentModal({
     setName(userInput);
     userInput && setNameError(false);
   };
+
+  const eventStacker = useGAEventTrackers("Create Experiment");
 
   const onBlurValidator = (userInput: string) => {
     !userInput && setNameError(true);
@@ -130,6 +130,10 @@ function CreateExperimentModal({
         closeCall.f(closeCall.ref);
         created(e.data.id);
         // Clearing Data Can also be done here too...
+        eventStacker(
+          "An experiment has been created.",
+          `The name of the experiment is ${name}`
+        );
         setName("");
       })
       .catch((e) => {

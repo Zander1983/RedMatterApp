@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Gate, GateType, Plot, Population } from "graph/resources/types";
+import {
+  Gate,
+  GateType,
+  Plot,
+  Population,
+  PlotID,
+} from "graph/resources/types";
 
 import CanvasComponent, {
   CanvasManager,
@@ -31,8 +37,13 @@ let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 let propsStore: any = {};
 
 function propsAreEqual(prev: any, next: any) {
-  if(next && next.workspaceLoading)
-  {
+  if (next && next.workspaceLoading) {
+    return false;
+  } else if (
+    next.customPlotRerender &&
+    next.customPlotRerender.length > 0 &&
+    next.customPlotRerender.includes(next.plot.id)
+  ) {
     return false;
   }
   let previous: any = {};
@@ -40,7 +51,12 @@ function propsAreEqual(prev: any, next: any) {
     previous = propsStore[next.plot.id];
   }
   propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
-  return isEqual(previous, next);
+  return (
+    isEqual(previous.plot, next.plot) &&
+    isEqual(previous.plotGates, next.plotGates) &&
+    isEqual(previous.population, next.population) &&
+    isEqual(previous.editWorkspace, next.editWorkspace)
+  );
 }
 
 const PlotRenderer = (props: {
@@ -49,6 +65,7 @@ const PlotRenderer = (props: {
   population: Population;
   editWorkspace: boolean;
   workspaceLoading: boolean;
+  customPlotRerender: PlotID[];
 }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
@@ -73,6 +90,16 @@ const PlotRenderer = (props: {
     }
     return false;
   };
+
+  useEffect(() => {
+    if (props.customPlotRerender.includes(props.plot.id)) {
+      let interactor: GateMouseInteractor[] = mouseInteractorInstances[plot.id];
+      if (interactor && interactor.length > 0) {
+        if (interactor[0]) interactor[0].end();
+        if (interactor[1]) interactor[1].end();
+      }
+    }
+  }, [props.customPlotRerender]);
 
   const draw = () => {
     if (!validateReady()) return;
@@ -138,10 +165,11 @@ const PlotRenderer = (props: {
   };
 
   const unsetGating = (type: "oval" | "histogram" | "polygon") => {
-    mouseInteractorInstances[plot.id]
-      //@ts-ignore
-      .filter((e) => !(e instanceof typeToClassType[type]))
-      .forEach((e) => e.unsetGating(true));
+    if (mouseInteractorInstances[plot.id])
+      mouseInteractorInstances[plot.id]
+        //@ts-ignore
+        .filter((e) => !(e instanceof typeToClassType[type]))
+        .forEach((e) => e.unsetGating(true));
   };
 
   const setGating = (
@@ -285,10 +313,10 @@ const PlotRenderer = (props: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(draw, [props.plot, props.plotGates, props.population]);
   useEffect(() => {
-    return () =>{
-      if(propsStore && propsStore[props.plot.id])
+    return () => {
+      if (propsStore && propsStore[props.plot.id])
         delete propsStore[props.plot.id];
-    }
+    };
   }, []);
 
   return (

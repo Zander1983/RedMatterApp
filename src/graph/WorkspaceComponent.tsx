@@ -29,7 +29,11 @@ import {
   loadWorkspaceFromRemoteIfExists,
   saveWorkspaceToRemote,
 } from "./utils/workspace";
-import { Workspace as WorkspaceType } from "./resources/types";
+import {
+  PlotsRerender,
+  Workspace as WorkspaceType,
+  WorkspaceEvent,
+} from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
@@ -39,6 +43,7 @@ import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -102,15 +107,30 @@ const WorkspaceInnerComponent = (props: {
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventPlotsRerenderArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "plotsRerender"
+    );
+    if (eventPlotsRerenderArray.length > 0) {
+      let event: PlotsRerender = eventPlotsRerenderArray[0];
+      setCustomPlotRerender(event.plotIDs);
+      EventQueueDispatch.DeleteQueueItem(event.id);
+      setTimeout(() => {
+        setCustomPlotRerender([]);
+      }, 0);
+    }
+  });
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-  
+
   const [loading, setLoading] = React.useState(false);
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
@@ -259,7 +279,7 @@ const WorkspaceInnerComponent = (props: {
   };
 
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
-    try {;
+    try {
       await ParseFlowJoJson(flowJoJson, files);
     } catch (e) {
       snackbarService.showSnackbar(
@@ -542,6 +562,7 @@ const WorkspaceInnerComponent = (props: {
                   experimentId={props.experimentId}
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
+                  customPlotRerender={customPlotRerender}
                 ></PlotController>
               ) : (
                 <Grid

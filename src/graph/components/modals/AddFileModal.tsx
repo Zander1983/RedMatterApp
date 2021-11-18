@@ -18,6 +18,7 @@ import * as PlotResource from "graph/resources/plots";
 import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { filterArrayAsPerInput } from "utils/searchFunction";
+import useGAEventTrackers from "hooks/useGAEvents";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -74,6 +75,7 @@ const AddFileModal = React.memo(
 
     const [downloading, setDowloading] = useState<FileID[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
+    const eventStacker = useGAEventTrackers("Plot Added.");
 
     const downloadFile = async (fileId: string) => {
       let file: File = getFile(fileId);
@@ -364,7 +366,12 @@ const AddFileModal = React.memo(
                               marginLeft: 20,
                             }}
                             disabled={isDownloading}
-                            onClick={() => downloadFile(fileMetadata.id)}
+                            onClick={() => {
+                              eventStacker(
+                                `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
+                              );
+                              downloadFile(fileMetadata.id);
+                            }}
                           >
                             {isDownloading ? (
                               <CircularProgress
@@ -388,6 +395,9 @@ const AddFileModal = React.memo(
                               marginLeft: 20,
                             }}
                             onClick={() => {
+                              eventStacker(
+                                `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
+                              );
                               PlotResource.createNewPlotFromFile(
                                 getFile(fileMetadata.id)
                               );
