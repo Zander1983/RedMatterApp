@@ -35,13 +35,10 @@ function CreateExperimentModal({
   organizationId,
   userExperimentName,
 }: CreateExperimentType): JSX.Element {
-  const store = useStore();
   const classes = useStyles();
 
   const [formData, setFormData] = useState(null);
   const rules: any = userManager.getRules();
-  const subscriptionType = userManager.getSubscriptionType();
-  console.log(userExperimentName);
 
   // Name
   const [name, setName] = useState("");
