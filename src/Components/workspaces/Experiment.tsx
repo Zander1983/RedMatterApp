@@ -23,6 +23,7 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import UploadFileModal from "./modals/UploadFileModal";
+import useGAEventTrackers from "hooks/useGAEvents";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
@@ -54,6 +55,8 @@ const Experiment = (props: any) => {
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
+  console.log(experimentData);
+
   const [experimentSize, setExperimentSize] = useState(0);
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
@@ -62,7 +65,7 @@ const Experiment = (props: any) => {
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
-
+  const eventStacker = useGAEventTrackers("File Upload");
   const isLoggedIn = userManager.isLoggedIn();
   if (!isLoggedIn) {
     history.replace("/login");
@@ -281,6 +284,10 @@ const Experiment = (props: any) => {
         file.file
       )
         .then((e) => {
+          eventStacker(
+            `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
+            `Uploaded file name is ${file.file.name}`
+          );
           snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
         })
         .catch((e) => {
