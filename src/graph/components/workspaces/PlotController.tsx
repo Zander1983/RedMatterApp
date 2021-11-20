@@ -178,7 +178,7 @@ export const setCanvasSize = (save: boolean = false) => {
   if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
-const standardGridPlotItem = (
+export const standardGridPlotItem = (
   index: number,
   plotData: any,
   plots: Plot[],

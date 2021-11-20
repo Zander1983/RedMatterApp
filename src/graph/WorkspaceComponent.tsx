@@ -4,7 +4,13 @@ import axios from "axios";
 import { useHistory } from "react-router";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import {
+  Button,
+  FormControlLabel,
+  Menu,
+  MenuItem,
+  Fade,
+} from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -33,6 +39,7 @@ import {
   PlotsRerender,
   Workspace as WorkspaceType,
   WorkspaceEvent,
+  File,
 } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
@@ -44,6 +51,7 @@ import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import GateBuilder from "./GateBuilder";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -142,7 +150,23 @@ const WorkspaceInnerComponent = (props: {
   const [editWorkspace, setEditWorkspace] = React.useState(
     workspace.editWorkspace
   );
+  const [gateBuilder, setGateBuilder] = React.useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = React.useState<undefined | File>(
+    undefined
+  );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+
+  // Select File DropDown
+  const [selectFileAnchorEl, setSelectFileAnchorEl] =
+    React.useState<null | HTMLElement>(null);
+  const selectFileOpen = Boolean(selectFileAnchorEl);
+  const selectFileDropDownClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSelectFileAnchorEl(event.currentTarget);
+  };
+  const selectFileDropDownClose = () => {
+    setSelectFileAnchorEl(null);
+  };
+
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -523,6 +547,65 @@ const WorkspaceInnerComponent = (props: {
                             />
                           }
                         />
+                        {/* Gate Builder */}
+                        <FormControlLabel
+                          style={{
+                            marginLeft: 0,
+                            height: 20,
+                            marginTop: 4,
+                            color: "#fff",
+                          }}
+                          label={"GateBuilder"}
+                          control={
+                            <IOSSwitch
+                              checked={gateBuilder}
+                              onChange={() => setGateBuilder(!gateBuilder)}
+                            />
+                          }
+                        />
+
+                        {/* Select Uploaded Files */}
+                        {gateBuilder && (
+                          <>
+                            <Button
+                              variant="contained"
+                              className={classes.topButton}
+                              style={{ backgroundColor: "#fafafa" }}
+                              id="fade-button"
+                              aria-controls="fade-menu"
+                              aria-haspopup="true"
+                              aria-expanded={
+                                selectFileOpen ? "true" : undefined
+                              }
+                              onClick={selectFileDropDownClick}
+                            >
+                              Select Files
+                            </Button>
+
+                            <Menu
+                              id="fade-menu"
+                              MenuListProps={{
+                                "aria-labelledby": "fade-button",
+                              }}
+                              anchorEl={selectFileAnchorEl}
+                              open={selectFileOpen}
+                              onClose={selectFileDropDownClose}
+                              TransitionComponent={Fade}
+                            >
+                              {workspace.files.map((item, index) => (
+                                <MenuItem
+                                  key={index}
+                                  onClick={() => {
+                                    setSelectedFile(item);
+                                    selectFileDropDownClose();
+                                  }}
+                                >
+                                  {item.name}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
+                        )}
                       </span>
                     </div>
                     <div>
@@ -557,13 +640,24 @@ const WorkspaceInnerComponent = (props: {
               <PrototypeNotice experimentId={props.experimentId} />
 
               {!loading ? (
-                <PlotController
-                  sharedWorkspace={sharedWorkspace}
-                  experimentId={props.experimentId}
-                  workspace={workspace}
-                  workspaceLoading={workspaceLoading}
-                  customPlotRerender={customPlotRerender}
-                ></PlotController>
+                gateBuilder ? (
+                  <GateBuilder
+                    file={selectedFile}
+                    workspace={workspace}
+                    sharedWorkspace={sharedWorkspace}
+                    workspaceLoading={workspaceLoading}
+                    experimentId={props.experimentId}
+                    customPlotRerender={customPlotRerender}
+                  />
+                ) : (
+                  <PlotController
+                    sharedWorkspace={sharedWorkspace}
+                    experimentId={props.experimentId}
+                    workspace={workspace}
+                    workspaceLoading={workspaceLoading}
+                    customPlotRerender={customPlotRerender}
+                  ></PlotController>
+                )
               ) : (
                 <Grid
                   container
