@@ -26,7 +26,7 @@ export default function CancelSubscriptionModal(props: {
         <DialogContent>
           <DialogContentText>
             Are you sure you want to
-            <strong>cancel</strong>
+            <strong> cancel </strong>
             your subscription?
           </DialogContentText>
         </DialogContent>

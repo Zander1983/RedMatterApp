@@ -10,6 +10,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import { deviceData } from "assets/staticData/CreateExperimentModalData";
 
 import userManager from "Components/users/userManager";
+import useGAEventTrackers from "hooks/useGAEvents";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
@@ -21,8 +22,8 @@ interface CreateExperimentType {
   open: boolean;
   closeCall: { f: Function; ref: Function };
   created: Function;
-  experiments: string[];
   organizationId: any;
+  userExperimentName: string[];
 }
 
 const filterOptions = (options: any, { inputValue }: any) =>
@@ -31,16 +32,14 @@ const filterOptions = (options: any, { inputValue }: any) =>
 function CreateExperimentModal({
   closeCall,
   created,
-  experiments,
   open,
   organizationId,
+  userExperimentName,
 }: CreateExperimentType): JSX.Element {
-  const store = useStore();
   const classes = useStyles();
 
   const [formData, setFormData] = useState(null);
-  const rules = userManager.getRules();
-  const subscriptionType = userManager.getSubscriptionType();
+  const rules: any = userManager.getRules();
 
   // Name
   const [name, setName] = useState("");
@@ -78,6 +77,8 @@ function CreateExperimentModal({
     userInput && setNameError(false);
   };
 
+  const eventStacker = useGAEventTrackers("Create Experiment");
+
   const onBlurValidator = (userInput: string) => {
     !userInput && setNameError(true);
   };
@@ -106,8 +107,8 @@ function CreateExperimentModal({
 
   // it handles the unique name error
   useEffect(() => {
-    setUniqueNameError(experiments.includes(name));
-    setNameError(experiments.includes(name));
+    setUniqueNameError(userExperimentName.includes(name));
+    setNameError(userExperimentName.includes(name));
     //eslint-disable-next-line
   }, [name]);
 
@@ -129,6 +130,10 @@ function CreateExperimentModal({
         closeCall.f(closeCall.ref);
         created(e.data.id);
         // Clearing Data Can also be done here too...
+        eventStacker(
+          "An experiment has been created.",
+          `The name of the experiment is ${name}`
+        );
         setName("");
       })
       .catch((e) => {
@@ -300,8 +305,8 @@ function CreateExperimentModal({
                     {deviceNotFound && (
                       <div className={classes.notFoundContainer}>
                         Send us an email at{" "}
-                        <a href="mailto:redmatterapp@gmail.com">
-                          <b>redmatterapp@gmail.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your device and we will add it to
@@ -473,8 +478,8 @@ function CreateExperimentModal({
                         }}
                       >
                         Send us an email at{" "}
-                        <a href="mailto:redmatterapp@gmail.com">
-                          <b>redmatterapp@gmail.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your fluorophores and we will add

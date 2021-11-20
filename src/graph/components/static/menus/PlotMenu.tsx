@@ -163,6 +163,7 @@ export default function PlotMenu(props: {
 
             return (
               <TableRow key={plot.id}>
+                {/* Delete Button */}
                 <TableCell>
                   <Button
                     style={{
@@ -175,6 +176,8 @@ export default function PlotMenu(props: {
                     <Delete></Delete>
                   </Button>
                 </TableCell>
+
+                {/* File Copy Button */}
                 <TableCell>
                   <Button
                     style={{
@@ -187,7 +190,11 @@ export default function PlotMenu(props: {
                     <FileCopy></FileCopy>
                   </Button>
                 </TableCell>
+
+                {/* Type */}
                 <TableCell>{type}</TableCell>
+
+                {/* Name */}
                 <TableCell>
                   <TextField
                     value={plot.label}
@@ -202,7 +209,11 @@ export default function PlotMenu(props: {
                     }}
                   />
                 </TableCell>
+
+                {/* File Name */}
                 <TableCell>{getFile(populations[i].file).name}</TableCell>
+
+                {/* Population */}
                 <TableCell>
                   {!gate ? (
                     "All"
@@ -219,9 +230,13 @@ export default function PlotMenu(props: {
                     </b>
                   )}
                 </TableCell>
+
+                {/* Brute # */}
                 <TableCell>
                   {stats.gatedFilePopulationSize} / {stats.filePopulationSize}
                 </TableCell>
+
+                {/* Percentage */}
                 <TableCell
                   style={{
                     color:
@@ -238,11 +253,19 @@ export default function PlotMenu(props: {
                     ? "(Outlier)"
                     : null}
                 </TableCell>
+
+                {/* Median X */}
                 <TableCell>{stats.statX}</TableCell>
+
+                {/* Median Y */}
                 <TableCell>
                   {type === "histogram" ? "~" : stats.statY}
                 </TableCell>
+
+                {/* Points outside */}
                 <TableCell>{stats.pointsOutSideOfRangeObj.count}</TableCell>
+
+                {/* % of points outside */}
                 <TableCell>
                   {stats.pointsOutSideOfRangeObj.percentage}
                 </TableCell>

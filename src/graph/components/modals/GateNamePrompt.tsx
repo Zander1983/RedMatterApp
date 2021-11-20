@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import {
   Gate,
   Plot,
+  PlotsRerender,
   WorkspaceEvent,
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
@@ -21,6 +22,8 @@ import {
 } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import useGAEventTrackers from "hooks/useGAEvents";
+
 let gates: Gate[] = [];
 export default function GateNamePrompt() {
   const [open, setOpen] = React.useState<boolean>(false);
@@ -29,6 +32,8 @@ export default function GateNamePrompt() {
   const [gate, setGate] = React.useState<Gate>();
   const [plot, setPlot] = React.useState<Plot>();
   const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
+
+  const eventStacker = useGAEventTrackers("Gate Created.");
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
@@ -60,6 +65,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
+    let plotsRerenderQueueItem: PlotsRerender = {
+      id: "",
+      used: false,
+      type: "plotsRerender",
+      plotIDs: [plot.id],
+    };
+    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
@@ -71,12 +83,17 @@ export default function GateNamePrompt() {
     await createSubpopPlot(basedOffPlot, [
       { gate: gate.id, inverseGating: false },
     ]);
-    const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
-    for (let popGate of popGates) {
-      let popIGate = getGate(popGate);
-      popIGate.children.push(gate.id);
-      WorkspaceDispatch.UpdateGate(popIGate);
+    // const popGates = getPopulation(plot.population).gates.map((e) => e.gate);
+    // for (let popGate of popGates) {
+    if (gate.parents && gate.parents.length > 0) {
+      let popIGate = getGate(gate.parents[0]);
+      if (popIGate) {
+        if (!popIGate.children) popIGate.children = [];
+        popIGate.children.push(gate.id);
+        WorkspaceDispatch.UpdateGate(popIGate);
+      }
     }
+    // }
   };
 
   useEffect(() => {
@@ -130,6 +147,9 @@ export default function GateNamePrompt() {
                 setNameError(true);
               } else {
                 renameGate(name);
+                eventStacker(
+                  `A gate with Name: ${name} is created on Plot:${plot.label}.`
+                );
               }
             }}
             color="primary"

@@ -24,13 +24,17 @@ const styles = {
     fontSize: 14,
     color: "#222",
   },
+  ownerTitle: {
+    fontSize: 12,
+    color: "#222",
+    fontWeight: 500,
+  },
 };
 
 export default function ExperimentCard(props: { data: any; update: Function }) {
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
-
   const deleteExperiment = () => {
     const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -51,7 +55,9 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
   };
 
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
-  const rules = userManager.getRules();
+  const rules: any = userManager.getRules();
+  const isAdmin: Boolean = userManager.getUserAdminStatus();
+  const userEmail: String = userManager.getUserEmail();
 
   const handleClose = (
     event: React.SyntheticEvent | React.MouseEvent,
@@ -123,6 +129,20 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
                 </Typography>
               </div>
               <div>
+                {isAdmin && (
+                  <Typography
+                    style={styles.ownerTitle}
+                    color="textSecondary"
+                    gutterBottom
+                  >
+                    Owner:{" "}
+                    {props.data.userEmail === userEmail
+                      ? "YOU"
+                      : props.data.userEmail === undefined
+                      ? "User Account Deleted"
+                      : props.data.userEmail}
+                  </Typography>
+                )}
                 <Typography
                   style={styles.title}
                   color="textSecondary"

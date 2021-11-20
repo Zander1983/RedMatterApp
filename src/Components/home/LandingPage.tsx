@@ -1,12 +1,21 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-
+import Button from "@material-ui/core/Button";
 import Plans from "./landingPageComponents/Plans";
 import LandingHeader from "./landingPageComponents/LandingHeader";
 import TargetUsers from "./landingPageComponents/TargetUsers";
 import Features from "./landingPageComponents/Features";
+import Partners from "./landingPageComponents/Partners";
 import Universities from "./landingPageComponents/Universities";
 import { Divider } from "antd";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@material-ui/core";
+import { useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
   contentContainer: {
@@ -77,9 +86,40 @@ const AppLandingPage = () => {
         <Divider></Divider>
         <Features />
         <Divider></Divider>
+        <Partners />
+        <Divider></Divider>
         <Universities />
         {/* <Divider></Divider>
         <Plans /> */}
+        <DialogTitle id="form-dialog-title">
+          <div>
+            <span>Version updates </span>
+          </div>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This is the new version of red matter, which is a significant
+            up-gradation of the previous one.
+          </DialogContentText>
+          <DialogContentText>
+            We encourage you to use the new version currently. It does not hold
+            the previous version data, but on-demand, we can make that happen.
+          </DialogContentText>
+          <DialogContentText>
+            Your old workspace is now available in a different domain, and you
+            can access them with a click on the button below.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              window.open("https://old.redmatterapp.com", "_blank").focus();
+            }}
+            color="primary"
+          >
+            Load old redmatter
+          </Button>
+        </DialogActions>
       </Grid>
     </Grid>
   );

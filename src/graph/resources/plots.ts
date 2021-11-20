@@ -206,8 +206,8 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
   }
   if (plot.xAxis === "") plot.xAxis = axes[0];
   if (plot.yAxis === "") plot.yAxis = axes[1];
-  if (!plot.xPlotType) plot.xPlotType = getPlotType(plot, plot.xAxis);
-  if (!plot.yPlotType) plot.yPlotType = getPlotType(plot, plot.yAxis);
+  plot.xPlotType = getPlotType(plot, plot.xAxis);
+  plot.yPlotType = getPlotType(plot, plot.yAxis);
 
   return plot;
 };

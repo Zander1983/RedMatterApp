@@ -1,4 +1,5 @@
-import React from "react";
+import { useEffect } from "react";
+import ReactGA from "react-ga";
 
 import { NavLink } from "react-router-dom";
 
@@ -6,6 +7,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import { useHistory, useLocation } from "react-router";
 
 import icon from "../../assets/images/white_icon.png";
 import userManager from "Components/users/userManager";
@@ -37,6 +39,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const AppHeader = (props: any) => {
+  const history = useHistory();
+  const location = useLocation();
   const isLoggedIn =
     Object.keys(
       useSelector((state: any) => {
@@ -53,6 +57,11 @@ const AppHeader = (props: any) => {
   const onLogout = () => {
     userManager.logout();
   };
+
+  useEffect(() => {
+    ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
+    ReactGA.pageview(location.pathname);
+  }, [location.pathname]);
 
   return (
     <div>
@@ -111,9 +120,9 @@ const AppHeader = (props: any) => {
               <NavLink className={classes.topBarLink} to="/user-profile">
                 Profile
               </NavLink>
-              <NavLink className={classes.topBarLink} to="/browse-experiments">
+              {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
                 Browse
-              </NavLink>
+              </NavLink> */}
               <a className={classes.topBarLink} onClick={onLogout} href="/">
                 Logout
               </a>

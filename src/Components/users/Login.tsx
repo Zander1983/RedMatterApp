@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { snackbarService } from "uno-material-ui";
 import { LockFilled } from "@ant-design/icons";
 import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
+import useGAEventTrackers from "hooks/useGAEvents";
 
 import userManager from "./../users/userManager";
 
@@ -96,6 +97,7 @@ const Login = (props: any) => {
     isUserLoggedin && window.location.replace("/");
   }, []);
 
+  const eventStacker = useGAEventTrackers("LogIn");
   const handleChange = (event: any) => {
     setFormData((prevData: any) => {
       return { ...prevData, [event.target.name]: event.target.value };
@@ -116,16 +118,24 @@ const Login = (props: any) => {
       let blankArray: any[] = [];
       const loginData = {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
+        subscriptionDetails: userDetails.data?.userDetails?.subscriptionDetails,
+        isAdmin: userDetails.data?.userDetails?.isAdmin,
+        email: userDetails.data?.userDetails?.email,
         token: res.data.token,
+        refreshToken: res.data.refreshToken,
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
-        subscriptionDetails: userDetails.data?.subscriptionDetails,
       };
 
       dispatch({
         type: "LOGIN",
         payload: { user: { profile: loginData } },
       });
+
+      eventStacker(
+        "A user has LoggedIn",
+        `User's subscription type is ${loginData.subscriptionType}.`
+      );
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
         props.history.push("/analyse");

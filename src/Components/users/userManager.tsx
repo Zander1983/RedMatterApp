@@ -11,12 +11,15 @@ type Rules = {
   createOrganizations: true;
   customerSupport: true;
 };
-type UserProfile = {
+export type UserProfile = {
   subscriptionType: string;
   token: string;
+  refreshToken: string;
   organisationId: string;
   rules: Rules;
   subscriptionDetails: SubscriptionDetail;
+  isAdmin: Boolean;
+  email: string;
 };
 
 type SubscriptionDetail = {
@@ -56,6 +59,13 @@ class UserManager {
     return this.state.user.profile.token;
   }
 
+  getRefreshToken() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get token of unlogged user");
+    }
+    return this.state.user.profile.refreshToken;
+  }
+
   getOrganiztionID() {
     if (!this.isLoggedIn()) {
       throw Error("Can't get token of unlogged user");
@@ -65,7 +75,7 @@ class UserManager {
 
   getRules() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      return {};
     }
     return this.state.user.profile.rules;
   }
@@ -82,6 +92,20 @@ class UserManager {
       throw Error("Can't get token of unlogged user");
     }
     return this.state.user.profile.subscriptionType;
+  }
+
+  getUserAdminStatus() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get admin status of unlogged user");
+    }
+    return this.state.user.profile.isAdmin;
+  }
+
+  getUserEmail() {
+    if (!this.isLoggedIn()) {
+      throw Error("Can't get Email of unlogged user");
+    }
+    return this.state.user.profile.email;
   }
 
   canAccessExperiment(id: string) {

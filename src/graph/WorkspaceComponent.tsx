@@ -29,7 +29,11 @@ import {
   loadWorkspaceFromRemoteIfExists,
   saveWorkspaceToRemote,
 } from "./utils/workspace";
-import { Workspace as WorkspaceType } from "./resources/types";
+import {
+  PlotsRerender,
+  Workspace as WorkspaceType,
+  WorkspaceEvent,
+} from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
@@ -39,6 +43,7 @@ import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -102,9 +107,24 @@ const WorkspaceInnerComponent = (props: {
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventPlotsRerenderArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "plotsRerender"
+    );
+    if (eventPlotsRerenderArray.length > 0) {
+      let event: PlotsRerender = eventPlotsRerenderArray[0];
+      setCustomPlotRerender(event.plotIDs);
+      EventQueueDispatch.DeleteQueueItem(event.id);
+      setTimeout(() => {
+        setCustomPlotRerender([]);
+      }, 0);
+    }
+  });
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
@@ -112,6 +132,7 @@ const WorkspaceInnerComponent = (props: {
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
 
   const [loading, setLoading] = React.useState(false);
+  const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [generateReportModalOpen, setGenerateReportModalOpen] =
@@ -144,7 +165,6 @@ const WorkspaceInnerComponent = (props: {
     initializeWorkspace(props.shared, props.experimentId);
 
     return () => {
-      saveWorkspace();
       WorkspaceDispatch.ResetWorkspace();
       memResetDatasetCache();
     };
@@ -152,6 +172,7 @@ const WorkspaceInnerComponent = (props: {
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
+    setWorkspaceLoading(true);
     await downloadFileMetadata(shared, experimentId);
     const loadStatus = await loadWorkspaceFromRemoteIfExists(
       shared,
@@ -168,6 +189,7 @@ const WorkspaceInnerComponent = (props: {
 
     setAutosaveEnabled(shared ? false : true);
     notification.killNotification();
+    setWorkspaceLoading(false);
   };
 
   const saveWorkspace = async (shared: boolean = false) => {
@@ -216,6 +238,7 @@ const WorkspaceInnerComponent = (props: {
       var result = XML.xml2json(text, options);
       result = JSON.parse(result);
       setLoading(true);
+      setWorkspaceLoading(true);
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x) => x.downloaded);
       if (workspace.files.length == downloadedFiles.length) {
@@ -250,6 +273,7 @@ const WorkspaceInnerComponent = (props: {
       );
       setTimeout(() => {
         setLoading(false);
+        setWorkspaceLoading(false);
       }, 4000);
     }
   };
@@ -262,10 +286,12 @@ const WorkspaceInnerComponent = (props: {
         "Could not parse FlowJo workspace",
         "warning"
       );
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setWorkspaceLoading(false);
+      }, 0);
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 4000);
   };
 
   if (autosaveEnabled) {
@@ -535,6 +561,8 @@ const WorkspaceInnerComponent = (props: {
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
+                  workspaceLoading={workspaceLoading}
+                  customPlotRerender={customPlotRerender}
                 ></PlotController>
               ) : (
                 <Grid

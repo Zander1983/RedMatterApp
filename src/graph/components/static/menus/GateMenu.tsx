@@ -54,28 +54,36 @@ export default function GateMenu(props: { gates: Gate[] }) {
     await dowloadAllFileEvents();
     let files = getWorkspace().files;
     const plots = getWorkspace().plots;
-
-    // Check gates that already
+    let population: any = null;
+    
     plots.forEach((plot) => {
       const pop = getPopulation(plot.population);
       if (
-        pop.gates.length === 1 &&
         pop.gates.filter((e) => e.gate === gate.id).length > 0
       ) {
+        population = pop;
         files = files.filter((file) => file.id !== pop.file);
       }
     });
 
     for (const file of files) {
-      const population = createPopulation({ file: file.id });
-      population.gates = [
-        {
-          inverseGating: false,
-          gate: gate.id,
-        },
-      ];
-      await WorkspaceDispatch.AddPopulation(population);
-      const plot = createPlot({ population });
+      const newPopulation = createPopulation({ file: file.id });
+      if(population)
+      {
+        newPopulation.gates = population.gates;
+      }
+      else
+      {
+          newPopulation.gates = [
+          {
+            inverseGating: false,
+            gate: gate.id,
+          }
+        ];
+      }
+      
+      await WorkspaceDispatch.AddPopulation(newPopulation);
+      const plot = createPlot({ population: newPopulation });
       if (gate.gateType === "polygon") {
         plot.xAxis = (gate as PolygonGate).xAxis;
         plot.yAxis = (gate as PolygonGate).yAxis;
@@ -100,7 +108,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            <TableCell></TableCell>
+            {/* <TableCell></TableCell> */}
             {workspace.files.length > 1 ? <TableCell></TableCell> : null}
             <TableCell>Name</TableCell>
             <TableCell>Color</TableCell>
@@ -118,13 +126,14 @@ export default function GateMenu(props: { gates: Gate[] }) {
                     display: "inline-block",
                     padding: 0,
                     minWidth: 0,
+                    marginBottom: -3,
                   }}
                   onClick={() => deleteGate(gate)}
                 >
                   <Delete></Delete>
                 </Button>
               </TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Button
                   style={{
                     display: "inline-block",
@@ -135,15 +144,19 @@ export default function GateMenu(props: { gates: Gate[] }) {
                 >
                   <FileCopy></FileCopy>
                 </Button>
-              </TableCell>
+              </TableCell> */}
               {workspace.files.length > 1 ? (
                 <TableCell>
                   <Button
                     style={{
-                      display: "inline-block",
-                      padding: 0,
-                      minWidth: 0,
+                      flex: 1,
+                      height: "2rem",
+                      fontSize: 13,
+                      color: "white",
+                      backgroundColor: "#6666aa",
                     }}
+                    variant="contained"
+                    size="small"
                     onClick={() => applyGateToAllFiles(gate)}
                   >
                     Apply to all files

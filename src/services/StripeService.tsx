@@ -25,7 +25,10 @@ const getPlans = async () => {
       Token: userManager.getToken(),
     },
   });
-  return response.data.data;
+  if (response && response.data && response.data.data)
+    return response.data.data;
+
+  return [];
 };
 
 export { updateUserStripeDetails, getPlans };

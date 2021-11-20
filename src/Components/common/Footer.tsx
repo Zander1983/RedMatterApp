@@ -50,9 +50,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeader: {
     backgroundColor:
-      theme.palette.type === "light"
-        ? theme.palette.grey[200]
-        : theme.palette.grey[700],
+      theme.palette.type === "light" ? theme.palette.grey[200] : theme.palette.grey[700],
   },
   cardPricing: {
     display: "flex",
@@ -63,9 +61,7 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     overflow: "hidden",
     borderTop: `1px solid ${theme.palette.divider}`,
-    position: "absolute",
-    left: 0,
-    right: 0,
+
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
     [theme.breakpoints.up("sm")]: {
@@ -78,6 +74,12 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     padding: 10,
   },
+  footerMain: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    background: "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
+  },
 }));
 
 export default function Footer(props: any) {
@@ -89,56 +91,50 @@ export default function Footer(props: any) {
   const [footers, setFooters] = React.useState(footerData);
 
   return (
-    <Grid item xs={12} md={8} component="footer" className={classes.footer}>
-      <Grid container spacing={4} justify="space-evenly">
-        {footers.map((footer, i) => (
-          <Grid
-            key={footer.title}
-            item
-            xs={12}
-            md={4}
-            style={{ textAlign: "left" }}
-          >
-            <Typography variant="h6" color="textPrimary" gutterBottom>
-              {footer.title}
-            </Typography>
-            <ul>
-              {footer.description.map((item, j) => (
-                <li key={item.name} style={{ textAlign: "left" }}>
-                  {item.open !== undefined ? (
-                    <>
-                      <Button
-                        onClick={() => {
-                          let newFooter = footers;
-                          newFooter[i].description[j].open = !item.open;
-                          setFooters(newFooter);
-                          forceUpdate();
-                        }}
-                      >
-                        {item.name}
-                        {item.open ? (
-                          <ArrowDropDownIcon></ArrowDropDownIcon>
-                        ) : (
-                          <ArrowRightIcon></ArrowRightIcon>
-                        )}
-                      </Button>
-                      <Collapse in={item.open} children={item.description} />
-                    </>
-                  ) : (
-                    <Button onClick={() => history.push(item.path)}>
-                      {item.name}
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </Grid>
-        ))}
-        <Box mt={1}>
-          <Copyright />
-        </Box>
+    <div className={classes.footerMain}>
+      <Grid item xs={12} md={8} component="footer" className={classes.footer}>
+        <Grid container spacing={4} justify="space-evenly">
+          {footers.map((footer, i) => (
+            <Grid key={footer.title} item xs={12} md={4} style={{ textAlign: "left" }}>
+              <Typography variant="h6" color="textPrimary" gutterBottom>
+                {footer.title}
+              </Typography>
+              <ul>
+                {footer.description.map((item, j) => (
+                  <li key={item.name} style={{ textAlign: "left" }}>
+                    {item.open !== undefined ? (
+                      <>
+                        <Button
+                          onClick={() => {
+                            let newFooter = footers;
+                            newFooter[i].description[j].open = !item.open;
+                            setFooters(newFooter);
+                            forceUpdate();
+                          }}
+                        >
+                          {item.name}
+                          {item.open ? (
+                            <ArrowDropDownIcon></ArrowDropDownIcon>
+                          ) : (
+                            <ArrowRightIcon></ArrowRightIcon>
+                          )}
+                        </Button>
+                        <Collapse in={item.open} children={item.description} />
+                      </>
+                    ) : (
+                      <Button onClick={() => history.push(item.path)}>{item.name}</Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Grid>
+          ))}
+          <Box mt={1}>
+            <Copyright />
+          </Box>
+        </Grid>
       </Grid>
-    </Grid>
+    </div>
   );
 }
 
@@ -183,11 +179,10 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It
-            was built in conjunction with a local hospital who wanted to be able
-            to access FCS tools remotely and from mobile devices. Red Matter is
-            now used by users in over 2,000 institutes and in over 100
-            countries.
+            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It was built in
+            conjunction with a local hospital who wanted to be able to access FCS tools remotely and
+            from mobile devices. Red Matter is now used by users in over 2,000 institutes and in
+            over 100 countries.
           </div>
         ),
       },
@@ -201,10 +196,9 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Any FCS data uploaded to Red Matter may be used by Red Matter in an
-            anonymised form. Red Matter defines anonymised FCS data as data that
-            excludes any file metadata, labels, or any other infromation that
-            would identify the FCS file or its source.
+            Any FCS data uploaded to Red Matter may be used by Red Matter in an anonymised form. Red
+            Matter defines anonymised FCS data as data that excludes any file metadata, labels, or
+            any other infromation that would identify the FCS file or its source.
           </div>
         ),
       },
@@ -222,7 +216,7 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Send us an email at <b>admin@redmatterapp.com</b>
+            Send us an email at <b>support@redmatterapp.com</b>
           </div>
         ),
       },

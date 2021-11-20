@@ -10,11 +10,14 @@ const ErrorComponent = (props: any) => {
   const [appScreenError, setAppScreenError] = useState(false);
 
   useEffect(() => {
-    let mainScreenError = props.location.state.mainScreen;
-    setMainScreenError(mainScreenError);
-    if (!mainScreenError) {
-      setAppScreenError(true);
+    let mainScreenError = false;
+    try {
+      mainScreenError = props.location.state.mainScreen;
+    } catch (e) {
+      mainScreenError = false;
     }
+    setMainScreenError(mainScreenError);
+    setAppScreenError(!mainScreenError);
   }, []);
 
   return (
@@ -41,7 +44,7 @@ const ErrorComponent = (props: any) => {
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Server is down. We will be live shortly.</div>
-              <div>For more information contact admin@redmatterapp.com</div>
+              <div>For more information contact support@redmatterapp.com</div>
             </div>
           </div>
         ) : (
@@ -55,7 +58,7 @@ const ErrorComponent = (props: any) => {
               <div>Something went wrong.</div>
               <div>
                 please reload the page, if it persists email us at
-                admin@redmatterapp.com
+                support@redmatterapp.com
               </div>
             </div>
             <Button
