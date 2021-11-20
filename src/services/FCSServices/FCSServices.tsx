@@ -65,7 +65,7 @@ class FCSServices {
     rangeEnd?: number
   ): Float32Array {
     const logicle = new MarkLogicle(rangeBegin, rangeEnd);
-    return new Float32Array(data.map((e) => logicle.scale(e)));
+    return new Float32Array(data.map((e: any) => logicle.scale(e)));
   }
 
   logicleInverseMarkTransformer(
