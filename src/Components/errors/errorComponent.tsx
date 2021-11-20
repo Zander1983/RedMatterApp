@@ -30,6 +30,8 @@ const ErrorComponent = (props: any) => {
         top: 0,
         left: 0,
         right: 0,
+        bottom: 0,
+        margin: "auto",
       }}
     >
       <div style={{ textAlign: "center" }}>
@@ -54,7 +56,10 @@ const ErrorComponent = (props: any) => {
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Something went wrong.</div>
-              <div>please reload the page, if it persists email us at support@redmatterapp.com</div>
+              <div>
+                please reload the page, if it persists email us at
+                support@redmatterapp.com
+              </div>
             </div>
             <Button
               color="primary"
