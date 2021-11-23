@@ -50,9 +50,6 @@ const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
-  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
-    history.replace("/");
-  }
 
   const [experiments, setExperiments] = useState(null);
   const [name, setName] = useState("");

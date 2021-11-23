@@ -113,8 +113,14 @@ class UserManager {
   }
 
   fail() {
-    snackbarService.showSnackbar("Session token expired, please login again", "warning");
-    window.location.href = "/login";
+    snackbarService.showSnackbar(
+      "Session token expired, please login again",
+      "warning"
+    );
+    this.logout();
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 0);
   }
 }
 

@@ -66,12 +66,8 @@ const Experiment = (props: any) => {
   const inputFile = React.useRef(null);
   const eventStacker = useGAEventTrackers("File Upload");
   const isLoggedIn = userManager.isLoggedIn();
-  if (!isLoggedIn) {
+  if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
-  }
-
-  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
-    history.replace("/");
   }
 
   const allowedInThisExperiment = userManager.canAccessExperiment(props.id);

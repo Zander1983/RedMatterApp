@@ -37,14 +37,10 @@ interface RemoteExperiment {
 const Experiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
-  const isAdmin = userManager.getUserAdminStatus();
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
-  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
-    history.replace("/");
-  }
-
+  const isAdmin = userManager.getUserAdminStatus();
   const gettingOrganizationId = () => {
     try {
       return userManager.getOrganiztionID();
