@@ -89,7 +89,7 @@ export default abstract class GateMouseInteractor {
   }
 
   protected abstract instanceGate(): Gate;
-  protected abstract clearGateState(): void;
+  abstract clearGateState(): void;
   protected abstract gateEvent(type: string, point: Point): void;
   protected abstract detectPointsClicked(mouse: Point): void;
   protected abstract pointMoveToMousePosition(mouse: Point): void;

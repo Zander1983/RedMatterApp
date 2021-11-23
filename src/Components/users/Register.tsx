@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import { Grid, Button, CircularProgress } from "@material-ui/core";
@@ -10,8 +10,10 @@ import { snackbarService } from "uno-material-ui";
 
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha";
+import useGAEventTrackers from "hooks/useGAEvents";
 
 import { counrtyList } from "./common-data";
+import userManager from "./../users/userManager";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -84,6 +86,7 @@ const useStyles = makeStyles((theme) => ({
 const Register = (props: any) => {
   const classes = useStyles();
   const history = useHistory();
+  const isUserLoggedin = userManager.isLoggedIn();
 
   const [loading, setLoading] = React.useState(false);
   const [isLocationSelected, setLocationStatus] = useState();
@@ -100,6 +103,8 @@ const Register = (props: any) => {
     password: "",
     g_recaptcha_response: "",
   });
+
+  const eventStacker = useGAEventTrackers("Registration");
 
   const handleChange = (event: any) => {
     setFormData((prevData: any) => {
@@ -119,6 +124,9 @@ const Register = (props: any) => {
       });
     }
   };
+  useLayoutEffect(() => {
+    isUserLoggedin && window.location.replace("/");
+  }, []);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -138,6 +146,10 @@ const Register = (props: any) => {
       await axios.post("api/register", formData);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
+      eventStacker(
+        "A new user has registered.",
+        `User has registered but yet to be varified.`
+      );
       history.push("/verify");
     } catch (err) {
       try {
