@@ -59,6 +59,7 @@ const Experiment = (props: any) => {
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
+  const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
 
   const { classes } = props;
   const history = useHistory();
@@ -208,6 +209,13 @@ const Experiment = (props: any) => {
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
+      if (file.size > maxFileSize) {
+        const errorString = `File "${file.name.substring(0, 20)}${
+          file.name.length > 20 ? "..." : ""
+        }" goes above file size limit: it's ${(file.size / 1e6).toFixed(2)}MB`;
+        snackbarService.showSnackbar(errorString, "error");
+        return;
+      }
       if (
         !allowedExtensions.includes(file.name.split(".").pop().toLowerCase())
       ) {
@@ -535,6 +543,8 @@ const Experiment = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
+                File size limit: <b>{maxFileSize / 1e6}MB</b>
+                <br />
                 Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
