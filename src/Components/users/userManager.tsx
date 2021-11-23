@@ -1,4 +1,5 @@
 import { store } from "redux/store";
+import { snackbarService } from "uno-material-ui";
 
 type Experiment = {
   number: "unlimited";
@@ -54,21 +55,21 @@ class UserManager {
 
   getToken() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.token;
   }
 
   getRefreshToken() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.refreshToken;
   }
 
   getOrganiztionID() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.organisationId;
   }
@@ -82,34 +83,38 @@ class UserManager {
 
   getSubscriptionDetails() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.subscriptionDetails;
   }
 
   getSubscriptionType() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get token of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.subscriptionType;
   }
 
   getUserAdminStatus() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get admin status of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.isAdmin;
   }
 
   getUserEmail() {
     if (!this.isLoggedIn()) {
-      throw Error("Can't get Email of unlogged user");
+      this.fail();
     }
     return this.state.user.profile.email;
   }
-
   canAccessExperiment(id: string) {
     return true;
+  }
+
+  fail() {
+    snackbarService.showSnackbar("Session token expired, please login again", "warning");
+    window.location.href = "/login";
   }
 }
 
