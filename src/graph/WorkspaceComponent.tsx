@@ -156,6 +156,14 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
+  // saves the workSpace when a new plot is added or deleted
+  useEffect(() => {
+    const timer = setTimeout(() => saveWorkspace(), 1000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [workspace.plots.length]);
+
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
 
@@ -191,7 +199,6 @@ const WorkspaceInnerComponent = (props: {
     notification.killNotification();
     setWorkspaceLoading(false);
   };
-
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
     await saveWorkspaceToRemote(workspace, shared, props.experimentId);
