@@ -143,6 +143,7 @@ const WorkspaceInnerComponent = (props: {
     workspace.editWorkspace
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [isCleared, setIsCleared] = React.useState(false);
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -169,6 +170,11 @@ const WorkspaceInnerComponent = (props: {
       memResetDatasetCache();
     };
   }, []);
+
+  useEffect(() => {
+    isCleared && saveWorkspace();
+    setIsCleared(false);
+  }, [isCleared]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
@@ -368,6 +374,7 @@ const WorkspaceInnerComponent = (props: {
         options={{
           yes: () => {
             WorkspaceDispatch.ResetWorkspaceExceptFiles();
+            setIsCleared(true);
           },
           no: () => {
             handleClose(setClearModal);
