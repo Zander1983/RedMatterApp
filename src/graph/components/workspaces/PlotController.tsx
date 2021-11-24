@@ -390,6 +390,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                   this.props.customPlotRerender
                                 }
                                 experimentId={this.props.experimentId}
+                                fileName={name}
                               />
                             </div>
                           </div>

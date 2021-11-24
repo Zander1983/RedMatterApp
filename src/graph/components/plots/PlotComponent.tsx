@@ -50,6 +50,7 @@ const PlotComponent = React.memo(
     editWorkspace: boolean;
     workspaceLoading: boolean;
     customPlotRerender: PlotID[];
+    fileName: string;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
 
@@ -73,6 +74,7 @@ const PlotComponent = React.memo(
               gap: 5,
             }}
           >
+            <div>{props.fileName}</div>
             <MainBar plot={plot} editWorkspace={props.editWorkspace}></MainBar>
             <GateBar
               plotId={plot.id}
