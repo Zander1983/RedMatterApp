@@ -66,6 +66,10 @@ const AddFileModal = React.memo(
     isShared: boolean;
     experimentId: string;
     files: File[];
+    // setPlotAllSamplesClicked: (
+    //   value: boolean | ((prevVar: boolean) => boolean)
+    // ) => void;
+    setPlotAllSamplesClicked: React.Dispatch<React.SetStateAction<boolean>>;
   }): JSX.Element => {
     const classes = useStyles();
 
@@ -103,7 +107,10 @@ const AddFileModal = React.memo(
       setDowloading(downloadingFileIds);
     }, [props.files]);
 
-    const downloadAll = () => filesMetadata.forEach((e) => downloadFile(e.id));
+    const downloadAll = () => {
+      filesMetadata.forEach(async (e) => await downloadFile(e.id));
+      props.setPlotAllSamplesClicked(true);
+    };
 
     const everythingDownloaded = filesMetadata
       .map((e) => e.downloaded)

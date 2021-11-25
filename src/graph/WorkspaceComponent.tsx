@@ -143,6 +143,10 @@ const WorkspaceInnerComponent = (props: {
     workspace.editWorkspace
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [workspaceCleared, setWorkspaceCleared] = React.useState(false);
+  const [plotAllSamplesClicked, setPlotAllSamplesClicked] =
+    React.useState(false);
+
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -156,13 +160,34 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
-  // saves the workSpace when a new plot is added or deleted
+  // saves the workSpace when a new plot is added or deleted or cleared
   useEffect(() => {
-    const timer = setTimeout(() => saveWorkspace(), 1000);
-    return () => {
-      clearTimeout(timer);
-    };
+    if (!plotAllSamplesClicked && !workspace.allSampleClickLength) {
+      if (workspace.plots.length) {
+        const timer = setTimeout(() => saveWorkspace(), 1000);
+        return () => {
+          clearTimeout(timer);
+        };
+      } else if (workspaceCleared) {
+        saveWorkspace();
+      }
+    } else if (workspace.allSampleClickLength) {
+      if (workspace.allSampleClickLength === workspace.plots.length) {
+        WorkspaceDispatch.setClickAllSampleLength(0);
+        saveWorkspace();
+      }
+    }
   }, [workspace.plots.length]);
+
+  // saves after clicking the plot all samples button
+  useEffect(() => {
+    if (plotAllSamplesClicked) {
+      WorkspaceDispatch.setClickAllSampleLength(
+        workspace.plots.length + workspace.files.length
+      );
+      setPlotAllSamplesClicked(false);
+    }
+  }, [plotAllSamplesClicked]);
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
@@ -200,9 +225,14 @@ const WorkspaceInnerComponent = (props: {
     setWorkspaceLoading(false);
   };
   const saveWorkspace = async (shared: boolean = false) => {
-    setSavingWorkspace(true);
-    await saveWorkspaceToRemote(workspace, shared, props.experimentId);
-    setSavingWorkspace(false);
+    if (
+      !workspace.allSampleClickLength ||
+      workspace.allSampleClickLength === workspace.plots.length
+    ) {
+      setSavingWorkspace(true);
+      await saveWorkspaceToRemote(workspace, shared, props.experimentId);
+      setSavingWorkspace(false);
+    }
   };
 
   var onLinkShareClick = async () => {
@@ -328,6 +358,7 @@ const WorkspaceInnerComponent = (props: {
           isShared={sharedWorkspace}
           experimentId={props.experimentId}
           files={workspace.files}
+          setPlotAllSamplesClicked={setPlotAllSamplesClicked}
         />
 
         <GenerateReportModal
@@ -375,6 +406,7 @@ const WorkspaceInnerComponent = (props: {
         options={{
           yes: () => {
             WorkspaceDispatch.ResetWorkspaceExceptFiles();
+            setWorkspaceCleared(true);
           },
           no: () => {
             handleClose(setClearModal);

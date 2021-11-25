@@ -32,6 +32,7 @@ export const graphActions = {
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
+  ALL_SAMPLES_CLICK_LENGTH: "workspace.ALL_SAMPLES_CLICK_LENGTH",
 };
 
 export const initialState: Workspace = {
@@ -44,6 +45,7 @@ export const initialState: Workspace = {
   previousStates: [],
   sharedWorkspace: false,
   editWorkspace: true,
+  allSampleClickLength: 0,
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -275,6 +277,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         notifications: state.notifications.filter(
           (e) => e.id !== deleteNotification.id
         ),
+      };
+
+    case graphActions.ALL_SAMPLES_CLICK_LENGTH:
+      return {
+        ...state,
+        allSampleClickLength: action.payload.length,
       };
 
     default:

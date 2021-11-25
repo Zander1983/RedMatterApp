@@ -134,6 +134,12 @@ const WorkspaceDispatch = {
       payload: { editWorkspace },
     });
   },
+  setClickAllSampleLength: (length: number) => {
+    return store.dispatch({
+      type: graphActions.ALL_SAMPLES_CLICK_LENGTH,
+      payload: { length },
+    });
+  },
 };
 
 export default WorkspaceDispatch;
