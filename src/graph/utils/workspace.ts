@@ -92,7 +92,6 @@ export const saveWorkspaceToRemote = async (
     isShared: shared,
   });
   try {
-    console.log("WorkSpace is Called...");
     await axios.post(
       updateWorkSpace.url,
       updateWorkSpace.options.body,
