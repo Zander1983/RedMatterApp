@@ -143,6 +143,7 @@ const WorkspaceInnerComponent = (props: {
     workspace.editWorkspace
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [lastSavedTime, setLastSavedTime] = React.useState(null);
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -201,6 +202,7 @@ const WorkspaceInnerComponent = (props: {
   };
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
+    setLastSavedTime(new Date().toLocaleString());
     await saveWorkspaceToRemote(workspace, shared, props.experimentId);
     setSavingWorkspace(false);
   };
@@ -531,6 +533,11 @@ const WorkspaceInnerComponent = (props: {
                           }
                         />
                       </span>
+                      {lastSavedTime ? (
+                        <span>
+                          <span>last saved at {lastSavedTime}</span>
+                        </span>
+                      ) : null}
                     </div>
                     <div>
                       <Button

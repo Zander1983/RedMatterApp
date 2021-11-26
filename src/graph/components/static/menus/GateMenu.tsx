@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
@@ -15,19 +15,30 @@ import FileCopy from "@material-ui/icons/FileCopy";
 
 import { snackbarService } from "uno-material-ui";
 import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
-import { Gate, HistogramGate, PolygonGate } from "graph/resources/types";
+import {
+  FileID,
+  Gate,
+  HistogramGate,
+  PolygonGate,
+} from "graph/resources/types";
 import { store } from "redux/store";
 import { createGate } from "graph/resources/gates";
 import { dowloadAllFileEvents } from "services/FileService";
 import { createPlot } from "graph/resources/plots";
 import { createPopulation } from "graph/resources/populations";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import ApplyGateToFilesModal from "graph/components/modals/applyGateToFilesModal";
 
 const classes = {
   table: {},
 };
 
 export default function GateMenu(props: { gates: Gate[] }) {
+  const [applyGateModalOpen, setApplyGateModalOpen] = useState(false);
+  const [filesMetadata, setFilesMetadata] = useState([]);
+  const [gatePopulation, setGatePopulation] = useState(null);
+  const [gateSelectedId, setGateSelectedId] = useState("");
+
   const setGateColor = (gate: Gate, color: any) => {
     gate.color = color.hex;
     WorkspaceDispatch.UpdateGate(gate);
@@ -55,12 +66,10 @@ export default function GateMenu(props: { gates: Gate[] }) {
     let files = getWorkspace().files;
     const plots = getWorkspace().plots;
     let population: any = null;
-    
+
     plots.forEach((plot) => {
       const pop = getPopulation(plot.population);
-      if (
-        pop.gates.filter((e) => e.gate === gate.id).length > 0
-      ) {
+      if (pop.gates.filter((e) => e.gate === gate.id).length > 0) {
         population = pop;
         files = files.filter((file) => file.id !== pop.file);
       }
@@ -68,20 +77,17 @@ export default function GateMenu(props: { gates: Gate[] }) {
 
     for (const file of files) {
       const newPopulation = createPopulation({ file: file.id });
-      if(population)
-      {
+      if (population) {
         newPopulation.gates = population.gates;
-      }
-      else
-      {
-          newPopulation.gates = [
+      } else {
+        newPopulation.gates = [
           {
             inverseGating: false,
             gate: gate.id,
-          }
+          },
         ];
       }
-      
+
       await WorkspaceDispatch.AddPopulation(newPopulation);
       const plot = createPlot({ population: newPopulation });
       if (gate.gateType === "polygon") {
@@ -102,38 +108,121 @@ export default function GateMenu(props: { gates: Gate[] }) {
   };
   const workspace = getWorkspace();
 
+  const applyGateToFiles = (gate: Gate) => {
+    setFilesMetadata([]);
+
+    let files = getWorkspace().files;
+    const plots = getWorkspace().plots;
+    let alreadySelectedFileIds: FileID[] = [];
+    let population: any = null;
+    plots.forEach((plot) => {
+      const pop = getPopulation(plot.population);
+      if (pop.gates.filter((e) => e.gate === gate.id).length > 0) {
+        population = pop;
+        alreadySelectedFileIds.push(pop.file);
+      }
+    });
+    setGatePopulation(population);
+    let filesMetadata: any = [];
+    for (let i = 0; i < files.length; i++) {
+      let file = files[i];
+      let selected = false;
+      if (alreadySelectedFileIds.includes(file.id)) selected = true;
+      filesMetadata.push({
+        id: file.id,
+        selected: selected,
+        name: file.name,
+      });
+    }
+    setGateSelectedId(gate.id);
+    setFilesMetadata(filesMetadata);
+    setApplyGateModalOpen(true);
+  };
+
+  const applyGateToFilesFunc = async (fileIds: FileID[]) => {
+    await dowloadAllFileEvents(false, "", fileIds);
+    let files = getWorkspace().files.filter((x) => fileIds.includes(x.id));
+    let gateSelected = props.gates.find((x) => x.id == gateSelectedId);
+    for (let i = 0; i < files.length; i++) {
+      let file = files[i];
+      const newPopulation = createPopulation({ file: file.id });
+      if (gatePopulation) {
+        newPopulation.gates = gatePopulation.gates;
+      } else {
+        newPopulation.gates = [
+          {
+            inverseGating: false,
+            gate: gateSelected.id,
+          },
+        ];
+      }
+      await WorkspaceDispatch.AddPopulation(newPopulation);
+      const plot = createPlot({ population: newPopulation });
+      if (gateSelected.gateType === "polygon") {
+        plot.xAxis = (gateSelected as PolygonGate).xAxis;
+        plot.yAxis = (gateSelected as PolygonGate).yAxis;
+        plot.xPlotType = (gateSelected as PolygonGate).xAxisType;
+        plot.yPlotType = (gateSelected as PolygonGate).yAxisType;
+      }
+      if (gateSelected.gateType === "histogram") {
+        plot.xAxis = (gateSelected as HistogramGate).axis;
+        plot.yAxis = (gateSelected as HistogramGate).axis;
+        plot.xPlotType = (gateSelected as HistogramGate).axisType;
+        plot.yPlotType = (gateSelected as HistogramGate).axisType;
+        plot.histogramAxis = "vertical";
+      }
+      await WorkspaceDispatch.AddPlot(plot);
+    }
+  };
+
+  const handleSubmitFiles = (files: FileID[]) => {
+    if (files) {
+      applyGateToFilesFunc(files);
+    } else {
+      setGatePopulation(null);
+    }
+    setApplyGateModalOpen(false);
+  };
+
   return (
-    <TableContainer component={Paper}>
-      <Table style={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell></TableCell>
-            {/* <TableCell></TableCell> */}
-            {workspace.files.length > 1 ? <TableCell></TableCell> : null}
-            <TableCell>Name</TableCell>
-            <TableCell>Color</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>X Axis</TableCell>
-            <TableCell>Y Axis</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {props.gates.map((gate) => (
-            <TableRow key={gate.id}>
-              <TableCell>
-                <Button
-                  style={{
-                    display: "inline-block",
-                    padding: 0,
-                    minWidth: 0,
-                    marginBottom: -3,
-                  }}
-                  onClick={() => deleteGate(gate)}
-                >
-                  <Delete></Delete>
-                </Button>
-              </TableCell>
-              {/* <TableCell>
+    <div>
+      <ApplyGateToFilesModal
+        filesMetadata={filesMetadata}
+        modalOpen={applyGateModalOpen}
+        handleSubmitFiles={handleSubmitFiles}
+      />
+
+      <TableContainer component={Paper}>
+        <Table style={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell></TableCell>
+              {/* <TableCell></TableCell> */}
+              {workspace.files.length > 1 ? <TableCell></TableCell> : null}
+              <TableCell>Name</TableCell>
+              <TableCell>Color</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>X Axis</TableCell>
+              <TableCell>Y Axis</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {props.gates.map((gate) => (
+              <TableRow key={gate.id}>
+                <TableCell>
+                  <Button
+                    style={{
+                      display: "inline-block",
+                      padding: 0,
+                      minWidth: 0,
+                      marginBottom: -3,
+                    }}
+                    onClick={() => deleteGate(gate)}
+                  >
+                    <Delete></Delete>
+                  </Button>
+                </TableCell>
+                {/* <TableCell>
                 <Button
                   style={{
                     display: "inline-block",
@@ -145,56 +234,57 @@ export default function GateMenu(props: { gates: Gate[] }) {
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell> */}
-              {workspace.files.length > 1 ? (
+                {workspace.files.length > 1 ? (
+                  <TableCell>
+                    <Button
+                      style={{
+                        flex: 1,
+                        height: "2rem",
+                        fontSize: 13,
+                        color: "white",
+                        backgroundColor: "#6666aa",
+                      }}
+                      variant="contained"
+                      size="small"
+                      onClick={() => applyGateToFiles(gate)}
+                    >
+                      Apply to files
+                    </Button>
+                  </TableCell>
+                ) : null}
                 <TableCell>
-                  <Button
+                  <TextField
+                    value={gate.name}
+                    inputProps={{ "aria-label": "naked" }}
                     style={{
-                      flex: 1,
-                      height: "2rem",
-                      fontSize: 13,
-                      color: "white",
-                      backgroundColor: "#6666aa",
+                      fontSize: 14,
                     }}
-                    variant="contained"
-                    size="small"
-                    onClick={() => applyGateToAllFiles(gate)}
-                  >
-                    Apply to all files
-                  </Button>
+                    onChange={(e) => {
+                      const newName = e.target.value;
+                      setGateName(gate, newName);
+                    }}
+                  />
                 </TableCell>
-              ) : null}
-              <TableCell>
-                <TextField
-                  value={gate.name}
-                  inputProps={{ "aria-label": "naked" }}
-                  style={{
-                    fontSize: 14,
-                  }}
-                  onChange={(e) => {
-                    const newName = e.target.value;
-                    setGateName(gate, newName);
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <HuePicker
-                  color={gate.color}
-                  width="150px"
-                  onChange={(color, _) => {
-                    gate.color =
-                      `rgba(${color.rgb.r},${color.rgb.g},` +
-                      `${color.rgb.b},${color.rgb.a})`;
-                    setGateColor(gate, color);
-                  }}
-                />
-              </TableCell>
-              <TableCell>{gate.gateType}</TableCell>
-              <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
-              <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                <TableCell>
+                  <HuePicker
+                    color={gate.color}
+                    width="150px"
+                    onChange={(color, _) => {
+                      gate.color =
+                        `rgba(${color.rgb.r},${color.rgb.g},` +
+                        `${color.rgb.b},${color.rgb.a})`;
+                      setGateColor(gate, color);
+                    }}
+                  />
+                </TableCell>
+                <TableCell>{gate.gateType}</TableCell>
+                <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
+                <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
