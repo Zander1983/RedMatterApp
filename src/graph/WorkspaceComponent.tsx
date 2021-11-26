@@ -534,8 +534,12 @@ const WorkspaceInnerComponent = (props: {
                         />
                       </span>
                       {lastSavedTime ? (
-                        <span>
-                          <span>last saved at {lastSavedTime}</span>
+                        <span
+                          style={{ height: "100%", display: "inline-flex" }}
+                        >
+                          <span style={{ color: "white", fontStyle: "italic" }}>
+                            saved at {lastSavedTime}
+                          </span>
                         </span>
                       ) : null}
                     </div>
