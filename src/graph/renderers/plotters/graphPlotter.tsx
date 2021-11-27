@@ -105,7 +105,7 @@ export default class GraphPlotter extends Plotter {
       xLabels: this.xLabels,
       yLabels: this.yLabels,
     });
-    this.drawHeader();
+    //this.drawHeader();
   }
 
   public update(): void {

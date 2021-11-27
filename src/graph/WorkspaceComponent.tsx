@@ -143,6 +143,7 @@ const WorkspaceInnerComponent = (props: {
     workspace.editWorkspace
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [lastSavedTime, setLastSavedTime] = React.useState(null);
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -155,6 +156,14 @@ const WorkspaceInnerComponent = (props: {
       setEditWorkspace(workspace.editWorkspace);
     }
   }, [workspace.editWorkspace]);
+
+  // saves the workSpace when a new plot is added or deleted
+  useEffect(() => {
+    const timer = setTimeout(() => saveWorkspace(), 1000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [workspace.plots.length]);
 
   useEffect(() => {
     WorkspaceDispatch.ResetWorkspace();
@@ -191,9 +200,9 @@ const WorkspaceInnerComponent = (props: {
     notification.killNotification();
     setWorkspaceLoading(false);
   };
-
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
+    setLastSavedTime(new Date().toLocaleString());
     await saveWorkspaceToRemote(workspace, shared, props.experimentId);
     setSavingWorkspace(false);
   };
@@ -524,6 +533,15 @@ const WorkspaceInnerComponent = (props: {
                           }
                         />
                       </span>
+                      {lastSavedTime ? (
+                        <span
+                          style={{ height: "100%", display: "inline-flex" }}
+                        >
+                          <span style={{ color: "white", fontStyle: "italic" }}>
+                            saved at {lastSavedTime}
+                          </span>
+                        </span>
+                      ) : null}
                     </div>
                     <div>
                       <Button
