@@ -183,7 +183,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
         },
         customRanges
       );
-      this.drawer.addPoint(x, y, 3, colors.getI(i));
+      this.drawer.addPoint(x, y - 25, 3, colors.getI(i));
     }
   }
 

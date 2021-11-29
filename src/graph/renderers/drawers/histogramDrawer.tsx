@@ -55,7 +55,7 @@ export default class HistogramDrawer extends GraphDrawer {
 
     this.rect({
       x: innerBeginX,
-      y: y,
+      y: y - 25,
       w: innerEndX - innerBeginX,
       h: (this.y2 - this.y1) * heightPercentage,
       fill: true,

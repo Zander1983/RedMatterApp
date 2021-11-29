@@ -142,14 +142,14 @@ export default class GraphDrawer extends Drawer {
           }
           this.segment({
             x1: op1 - 14,
-            y1: y,
+            y1: y - 25,
             x2: op1 + 14,
-            y2: y,
+            y2: y - 25,
             lineWidth: 1,
           });
           this.text({
-            x: op1 - 90,
-            y: y + 8,
+            x: op1 - 75,
+            y: y - 17,
             text: label.name,
             font: "20px Arial",
             fillColor: "black",
@@ -165,9 +165,9 @@ export default class GraphDrawer extends Drawer {
           }
           this.segment({
             x1: x,
-            y1: op2 - 14,
+            y1: op2 - 39,
             x2: x,
-            y2: op2 + 14,
+            y2: op2 - 11,
             lineWidth: 1,
           });
           this.text({
@@ -175,7 +175,7 @@ export default class GraphDrawer extends Drawer {
             fillColor: "black",
             text: label.name,
             x: x - 24,
-            y: op2 + 40,
+            y: op2 + 15,
           });
           lastLabelPos = x + minLabelPadding;
         }
@@ -255,6 +255,9 @@ export default class GraphDrawer extends Drawer {
   drawPlotGraph(params?: {
     xLabels: Label[];
     yLabels: Label[];
+    xAxisName?: string;
+    yAxisName?: string;
+    historamSelected?: boolean;
     lines?: boolean;
     vbins?: number;
     hbins?: number;
@@ -263,9 +266,9 @@ export default class GraphDrawer extends Drawer {
   }): void {
     this.graphLine({
       x1: this.x1,
-      y1: this.y1,
+      y1: this.y1 - 25,
       x2: this.x1,
-      y2: this.y2,
+      y2: this.y2 - 25,
       ib: params.yCustomLabelRange ? params.yCustomLabelRange[0] : this.iby,
       ie: params.yCustomLabelRange ? params.yCustomLabelRange[1] : this.iey,
       bins:
@@ -275,11 +278,26 @@ export default class GraphDrawer extends Drawer {
       labels: params.yLabels,
     });
 
+    // Y-Axis Title
+    !params.historamSelected &&
+      this.text({
+        x: 20,
+        y: this.y2 / 2 + 150,
+        text: `Y-Axis: ${
+          params.yAxisName.length <= 10
+            ? params.yAxisName
+            : params.yAxisName.slice(0, 10) + "..."
+        }`,
+        fillColor: "black",
+        font: "25px Arial",
+        rotate: (270 * Math.PI) / 180,
+      });
+
     this.graphLine({
       x1: this.x1,
-      y1: this.y2,
+      y1: this.y2 - 25,
       x2: this.x2,
-      y2: this.y2,
+      y2: this.y2 - 25,
       ib: params.xCustomLabelRange ? params.xCustomLabelRange[0] : this.ibx,
       ie: params.xCustomLabelRange ? params.xCustomLabelRange[1] : this.iex,
       bins:
@@ -287,6 +305,19 @@ export default class GraphDrawer extends Drawer {
           ? undefined
           : params.hbins,
       labels: params.xLabels,
+    });
+
+    // X-Axis Title
+    this.text({
+      x: this.x2 / 2 - 80,
+      y: this.y2 + 50,
+      text: `X-Axis: ${
+        params.xAxisName.length <= 10
+          ? params.xAxisName
+          : params.xAxisName.slice(0, 10) + "..."
+      }`,
+      fillColor: "black",
+      font: "25px Arial",
     });
   }
 

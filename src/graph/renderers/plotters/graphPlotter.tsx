@@ -104,6 +104,9 @@ export default class GraphPlotter extends Plotter {
       ...drawPlotGraphParams,
       xLabels: this.xLabels,
       yLabels: this.yLabels,
+      historamSelected: this.plot.histogramAxis.length,
+      xAxisName: this.xAxisName,
+      yAxisName: this.yAxisName,
     });
     //this.drawHeader();
   }
