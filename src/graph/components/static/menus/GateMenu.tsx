@@ -183,6 +183,34 @@ export default function GateMenu(props: { gates: Gate[] }) {
     }
     setApplyGateModalOpen(false);
   };
+  const getChildrenGates = (ids: string[], data: string, level: string) => {
+    for (let i = 0; i < ids.length; i++) {
+      let gate = workspace.gates.find((item) => item.id === ids[i]);
+      let childrenData: string = `<div>${level}${gate.name}`;
+      childrenData = getChildrenGates(
+        gate.children,
+        childrenData,
+        `(-)${level}`
+      );
+      childrenData += "</div>";
+      data += childrenData;
+    }
+    return data;
+  };
+
+  const constructGateHierarchy = (gate: Gate) => {
+    let data: string = "<div>";
+    if (gate.children && gate.children.length) {
+      data = getChildrenGates(gate.children, data, "(-)");
+    }
+    data += "</div>";
+    debugger;
+    return { __html: data };
+  };
+
+  const getGateHtml = (gate: Gate): any => {
+    return constructGateHierarchy(gate);
+  };
 
   return (
     <div>
@@ -280,6 +308,10 @@ export default function GateMenu(props: { gates: Gate[] }) {
                 <TableCell>{gate.gateType}</TableCell>
                 <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
                 <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
+                <br />
+                <div>
+                  <div dangerouslySetInnerHTML={getGateHtml(gate)}></div>
+                </div>
               </TableRow>
             ))}
           </TableBody>
