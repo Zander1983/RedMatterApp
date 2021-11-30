@@ -78,7 +78,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
     { label: "From file", key: "fromFile" },
     { label: "Population", key: "polulation" },
     { label: "X Axis", key: "xAxis" },
-    { label: "y Axis", key: "yAxis" },
+    { label: "Y Axis", key: "yAxis" },
     { label: "Sampled Event Count", key: "brute" },
     { label: "Percentage", key: "percentage" },
     { label: "Median X", key: "medianX" },
@@ -92,7 +92,8 @@ export default function SideMenus(props: { workspace: Workspace }) {
   const [data, setData] = React.useState<any[]>([]);
 
   useEffect(() => {
-    setTimeout(() => downloadCsv(), 100);
+    const timer = setTimeout(() => downloadCsv(), 100);
+    return () => clearTimeout(timer);
   }, [props.workspace.plots.length]);
 
   const downloadCsv = () => {

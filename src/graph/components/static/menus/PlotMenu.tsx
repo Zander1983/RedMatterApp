@@ -93,9 +93,10 @@ export default function PlotMenu(props: {
             <TableCell></TableCell>
             <TableCell></TableCell>
             <TableCell>Type</TableCell>
-            <TableCell>Name</TableCell>
             <TableCell>From file</TableCell>
             <TableCell>Population</TableCell>
+            <TableCell>X-Axis Name</TableCell>
+            <TableCell>Y-Axis Name</TableCell>
             <TableCell>Brute #</TableCell>
             <TableCell>Percentage</TableCell>
             <TableCell>
@@ -195,7 +196,7 @@ export default function PlotMenu(props: {
                 <TableCell>{type}</TableCell>
 
                 {/* Name */}
-                <TableCell>
+                {/* <TableCell>
                   <TextField
                     value={plot.label}
                     inputProps={{ "aria-label": "naked" }}
@@ -208,7 +209,7 @@ export default function PlotMenu(props: {
                       setPlotLabel(plot, newLabel);
                     }}
                   />
-                </TableCell>
+                </TableCell> */}
 
                 {/* File Name */}
                 <TableCell>{getFile(populations[i].file).name}</TableCell>
@@ -230,6 +231,12 @@ export default function PlotMenu(props: {
                     </b>
                   )}
                 </TableCell>
+
+                {/* X-Axis Channelname */}
+                <TableCell> {plot.xAxis} </TableCell>
+
+                {/* Y-Axis Channelname */}
+                <TableCell> {plot.yAxis} </TableCell>
 
                 {/* Brute # */}
                 <TableCell>
