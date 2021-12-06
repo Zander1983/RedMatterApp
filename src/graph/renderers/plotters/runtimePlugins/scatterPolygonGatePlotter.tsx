@@ -1,13 +1,14 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import { euclidianDistance2D } from "graph/utils/euclidianPlane";
-import FCSServices from "services/FCSServices/FCSServices";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import * as PlotResource from "graph/resources/plots";
-import { Point, PolygonGate, Range } from "graph/resources/types";
+import { Point, PolygonGate, Workspace } from "graph/resources/types";
+import { getWorkspace } from "graph/utils/workspace";
+import PlotStats from "graph/utils/stats";
+import { min } from "lodash";
 
 export interface ScatterPolygonGatePlotterState {}
-
+const statsProvider = new PlotStats();
 interface PolygonGateState {
   points: Point[];
   lastMousePos: Point | null;
@@ -36,19 +37,31 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
   }
 
   protected drawGate(gate: PolygonGate, drawGates?: PolygonGate[]) {
+    //@ts-ignore
+    const workspace: Workspace = getWorkspace();
     if (
       gate.xAxisType !== this.plotter.plot.xPlotType ||
       gate.yAxisType !== this.plotter.plot.yPlotType
     ) {
       return;
     }
+
     const pointCount = gate.points.length;
     const scale = this.plotter.scale;
+    let x = 10000000000,
+      y = 10000000000;
     for (let i = 0; i < pointCount; i++) {
       let p = { ...gate.points[i] };
       let pp = { ...gate.points[(i + 1) % gate.points.length] };
       p = this.plotter.transformer.toConcretePoint(p, undefined, true);
       pp = this.plotter.transformer.toConcretePoint(pp, undefined, true);
+
+      // Setting the X & Y value for Stats
+      if (p.x < x || pp.x < x) {
+        x = p.x > pp.x ? pp.x : p.x;
+        y = p.x > pp.x ? pp.y : p.y;
+      }
+
       this.plotter.drawer.segment({
         x1: p.x * scale,
         y1: p.y * scale,
@@ -61,6 +74,29 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       let size = 5;
       this.plotter.drawer.addPoint(p.x - size / 4, p.y - size / 4, size, color);
     }
+
+    // setting up the states
+    let stats: any;
+    workspace.plots.map((plot) => {
+      const population = workspace.populations.find(
+        (item) => item.id === plot.population
+      );
+      if (population && population.gates.length) {
+        population.gates.map((g) => {
+          if (g.gate === gate.id) {
+            stats = statsProvider.getPlotStats(plot, 1, 1);
+          }
+        });
+      }
+    });
+    // Stat Text
+    this.plotter.drawer.text({
+      x: x * scale,
+      y: y * scale,
+      text: stats.gatedFilePopulationPercentage,
+      font: `24px Roboto`,
+      fillColor: gate.color,
+    });
   }
 
   protected drawGating() {
