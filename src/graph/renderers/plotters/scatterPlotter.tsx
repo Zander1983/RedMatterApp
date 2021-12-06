@@ -1,6 +1,5 @@
 import { GraphPlotterState } from "graph/renderers/plotters/graphPlotter";
 import ScatterDrawer from "graph/renderers/drawers/scatterDrawer";
-// import ScatterOvalGatePlotter from "./runtimePlugins/scatterOvalGatePlotter";
 import ScatterPolygonGatePlotter from "./runtimePlugins/scatterPolygonGatePlotter";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import FCSServices from "services/FCSServices/FCSServices";
