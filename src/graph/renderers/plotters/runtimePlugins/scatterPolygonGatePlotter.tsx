@@ -5,7 +5,6 @@ import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMou
 import { Point, PolygonGate, Workspace } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
 import PlotStats from "graph/utils/stats";
-import { min } from "lodash";
 
 export interface ScatterPolygonGatePlotterState {}
 const statsProvider = new PlotStats();
@@ -57,9 +56,9 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       pp = this.plotter.transformer.toConcretePoint(pp, undefined, true);
 
       // Setting the X & Y value for Stats
-      if (p.x < x || pp.x < x) {
-        x = p.x > pp.x ? pp.x : p.x;
-        y = p.x > pp.x ? pp.y : p.y;
+      if (p.y < y || pp.y < y) {
+        y = p.y < pp.y ? p.y : pp.y;
+        x = p.y < pp.y ? p.x : pp.x;
       }
 
       this.plotter.drawer.segment({

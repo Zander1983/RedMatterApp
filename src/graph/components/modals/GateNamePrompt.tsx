@@ -14,17 +14,11 @@ import {
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {
-  getGate,
-  getPlot,
-  getPopulation,
-  getWorkspace,
-} from "graph/utils/workspace";
+import { getGate, getPlot } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 import useGAEventTrackers from "hooks/useGAEvents";
 
-let gates: Gate[] = [];
 export default function GateNamePrompt() {
   const [open, setOpen] = React.useState<boolean>(false);
   const [nameError, setNameError] = React.useState(false);
