@@ -9,7 +9,6 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import GateMenu from "./menus/GateMenu";
 import FileMenu from "./menus/FileMenu";
 import PlotMenu from "./menus/PlotMenu";
-//import HierarchyMenu from "./menus/HierarchyMenu";
 
 import PlotStats from "graph/utils/stats";
 import { getFile, getGate } from "graph/utils/workspace";
@@ -76,10 +75,11 @@ export default function SideMenus(props: { workspace: Workspace }) {
 
   const headers = [
     { label: "Type", key: "type" },
-    { label: "Name", key: "name" },
     { label: "From file", key: "fromFile" },
     { label: "Population", key: "polulation" },
-    { label: "Brute #", key: "brute" },
+    { label: "X Axis", key: "xAxis" },
+    { label: "Y Axis", key: "yAxis" },
+    { label: "Sampled Event Count", key: "brute" },
     { label: "Percentage", key: "percentage" },
     { label: "Median X", key: "medianX" },
     { label: "Median Y", key: "medianY" },
@@ -92,15 +92,17 @@ export default function SideMenus(props: { workspace: Workspace }) {
   const [data, setData] = React.useState<any[]>([]);
 
   useEffect(() => {
-    downloadCsv();
+    const timer = setTimeout(() => downloadCsv(), 100);
+    return () => clearTimeout(timer);
   }, [props.workspace.plots.length]);
 
   const downloadCsv = () => {
     const { plots, populations } = props.workspace;
     const type: string[] = [];
-    const name: string[] = [];
     const fromFile: string[] = [];
     const polulation: string[] = [];
+    const xaxis: string[] = [];
+    const yaxis: string[] = [];
     const brute: string[] = [];
     const percentage: string[] = [];
     const medianX: string[] = [];
@@ -116,7 +118,9 @@ export default function SideMenus(props: { workspace: Workspace }) {
       const mean = statsProvider.getPlotStats(plot, 2, 2);
 
       type.push(plot.xAxis === plot.yAxis ? "histogram" : "scatterplot");
-      name.push(plot.label);
+
+      xaxis.push(plot.xAxis);
+      yaxis.push(plot.yAxis);
       brute.push(
         `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`
       );
@@ -142,9 +146,10 @@ export default function SideMenus(props: { workspace: Workspace }) {
     type.map((item, index) => {
       const element = {
         type: item,
-        name: name[index],
         fromFile: fromFile[index],
         polulation: polulation[index],
+        xAxis: xaxis[index],
+        yAxis: yaxis[index],
         brute: brute[index],
         percentage: percentage[index],
         medianX: medianX[index],

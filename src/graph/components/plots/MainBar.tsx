@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Tooltip } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import CancelIcon from "@material-ui/icons/Cancel";
@@ -7,13 +7,10 @@ import TuneIcon from "@material-ui/icons/Tune";
 import TouchAppIcon from "@material-ui/icons/TouchApp";
 import MessageModal from "../modals/MessageModal";
 import RangeResizeModal from "../modals/rangeResizeModal";
-import normalGatingIcon from "../../../assets/images/normalGatingIcon.png";
-import inverseGatingIcon from "../../../assets/images/inverseGatingIcon.png";
 import gate from "../../../assets/images/gate.png";
-import { Plot, PlotsRerender, PopulationGateType } from "graph/resources/types";
-import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { Plot, PlotsRerender } from "graph/resources/types";
+import { getGate, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
-import { store } from "redux/store";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { CameraFilled } from "@ant-design/icons";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
@@ -105,7 +102,25 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
         gateName ? gateName + "-" : plotName ? plotName + "-" : ""
       }${fileLabel}.png`
     );
-    let canvas = document.getElementById(`canvas-${props.plot.id}`);
+
+    // selecting the canvas from dom
+    const canvas: HTMLCanvasElement = document.getElementById(
+      `canvas-${props.plot.id}`
+    ) as HTMLCanvasElement;
+    const context: CanvasRenderingContext2D = canvas.getContext("2d");
+
+    // Adding x-axis
+    context.font = "16px Roboto black";
+    context.fillText(
+      `X-AxisName: ${props.plot.xAxis}`,
+      canvas.offsetWidth / 2 + 35,
+      canvas.offsetHeight * 2 - 10
+    );
+
+    // Adding y-axis
+    context.font = "16px Roboto black";
+    context.fillText(`Y-AxisName: ${props.plot.yAxis}`, 20, 20);
+
     //@ts-ignore
     let dataURL = canvas.toDataURL("image/png");
     let url = dataURL.replace(
@@ -114,6 +129,26 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     );
     downloadLink.setAttribute("href", url);
     downloadLink.click();
+
+    // Clearing the X-Axis
+    context.clearRect(
+      canvas.offsetWidth / 2,
+      canvas.offsetHeight * 2 - 30,
+      canvas.offsetWidth,
+      32
+    );
+    context.fillStyle = "white";
+    context.fillRect(
+      canvas.offsetWidth / 2,
+      canvas.offsetHeight * 2 - 30,
+      canvas.offsetWidth,
+      32
+    );
+
+    // Clearing the Y-Axis
+    context.clearRect(0, 0, canvas.offsetWidth, 32);
+    context.fillStyle = "white";
+    context.fillRect(0, 0, canvas.offsetWidth, 32);
   };
 
   return (
