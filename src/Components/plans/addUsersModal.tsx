@@ -33,19 +33,19 @@ export default function AddUsersModal(props: {
           token: userManager.getToken(),
         },
       });
+
       setFormData((prevData: any) => {
         return { ...prevData, email: "" };
       });
       props.close();
-      snackbarService.showSnackbar(
-        "Invitation Link has been sent Successfully",
-        "success"
-      );
-    } catch (err) {
-      try {
-        //@ts-ignore
-        const errMsg = err.response.data.message;
-      } catch (e) {}
+      snackbarService.showSnackbar(response?.data?.message, "success");
+    } catch (err: any) {
+      const errMsg = err.response.data.message;
+      snackbarService.showSnackbar(errMsg, "error");
+      setFormData((prevData: any) => {
+        return { ...prevData, email: "" };
+      });
+      props.close();
     }
   };
 
@@ -56,12 +56,14 @@ export default function AddUsersModal(props: {
           Add Users To Your Organisation
         </DialogTitle>
         <DialogContent>
+          {/* Form */}
           <ValidatorForm
             ref={addUserForm}
             onSubmit={() => {
               handleSubmit();
             }}
           >
+            {/* Email */}
             <TextValidator
               style={{
                 width: "100%",
@@ -79,6 +81,7 @@ export default function AddUsersModal(props: {
                 "Email Address is not valid",
               ]}
             />
+            {/* Predefined OrganisationId */}
             <TextValidator
               style={{
                 width: "100%",
@@ -92,6 +95,7 @@ export default function AddUsersModal(props: {
               value={formData.organizationId}
             />
 
+            {/* Buttons */}
             <div
               style={{
                 marginTop: 30,
