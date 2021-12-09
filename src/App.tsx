@@ -21,6 +21,7 @@ import Register from "./Components/users/Register";
 import ForgetPassword from "Components/users/ForgetPassword";
 import ResetPassword from "Components/users/ResetPassword";
 import VerifyEmail from "./Components/users/VerifyEmail";
+import Invite from "Components/users/Invite";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
@@ -98,7 +99,10 @@ const router = [
     path: "/resetpassword/:verifyString",
     component: ResetPassword,
   },
-
+  {
+    path: "/invite/:id",
+    component: Invite,
+  },
   {
     path: "/plans",
     component: PlansPage,

@@ -18,7 +18,6 @@ import {
   updateUserStripeDetails,
   getPlans,
 } from "../../services/StripeService";
-import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -441,7 +440,7 @@ export default function Plans(props: any) {
                 </Grid>
 
                 <Grid item lg={2} md={6} sm={6}>
-                  {subscription == "Enterprise" ? (
+                  {subscription == "Premium" ? (
                     <div>
                       <Button
                         style={{ marginTop: 25 }}
