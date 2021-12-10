@@ -88,13 +88,27 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
         });
       }
     });
+
+    // adding a rect for better visualization
+    const rectY = y - 15;
+    y = y - 3;
+    this.plotter.drawer.rect({
+      x: x * scale,
+      y: rectY * scale,
+      w: 100,
+      h: 30,
+      fill: true,
+      fillColor: gate.color,
+    });
+
     // Stat Text
+    x = x + 5;
     this.plotter.drawer.text({
       x: x * scale,
       y: y * scale,
       text: stats.gatedFilePopulationPercentage,
       font: `24px Roboto`,
-      fillColor: gate.color,
+      fillColor: "white",
     });
   }
 

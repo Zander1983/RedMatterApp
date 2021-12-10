@@ -21,7 +21,7 @@ import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygon
 import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
-import { getGate, getPlot, getWorkspace } from "graph/utils/workspace";
+import { getGate, getPlot } from "graph/utils/workspace";
 import { snackbarService } from "uno-material-ui";
 import { isEqual } from "lodash";
 
