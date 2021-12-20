@@ -59,6 +59,7 @@ interface ParamsType {
 }
 interface Invite {
   accepted: boolean;
+  facilityId: string;
   email: string;
   organisationId: string;
   __v: number;
@@ -72,6 +73,7 @@ interface User {
   organisationId: string;
   verified: true;
   inviteId: string;
+  facilityId: string;
 }
 
 // the component
@@ -89,7 +91,6 @@ const Invite = () => {
     confirmPassword: "",
   });
   const [invitation, setInvitation] = useState<Invite>();
-  // invitation.
 
   // this one triggers when user changes the state
   const handleChange = (event: any) => {
@@ -106,6 +107,7 @@ const Invite = () => {
         password: formData.password,
         email: invitation.email,
         inviteId: invitation._id,
+        facilityId: invitation.facilityId,
         organisationId: invitation.organisationId,
         verified: true,
       };

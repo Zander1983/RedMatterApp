@@ -121,6 +121,7 @@ const Login = (props: any) => {
         subscriptionDetails: userDetails.data?.userDetails?.subscriptionDetails,
         isAdmin: userDetails.data?.userDetails?.isAdmin,
         email: userDetails.data?.userDetails?.email,
+        facility: userDetails.data?.userDetails?.facilityId,
         token: res.data.token,
         refreshToken: res.data.refreshToken,
         organisationId: res.data.organisationId,

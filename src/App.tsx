@@ -22,6 +22,7 @@ import ForgetPassword from "Components/users/ForgetPassword";
 import ResetPassword from "Components/users/ResetPassword";
 import VerifyEmail from "./Components/users/VerifyEmail";
 import Invite from "Components/users/Invite";
+import InviteExisting from "Components/users/InviteExisting";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
@@ -102,6 +103,10 @@ const router = [
   {
     path: "/invite/:id",
     component: Invite,
+  },
+  {
+    path: "/inviteExisting/:id",
+    component: InviteExisting,
   },
   {
     path: "/plans",

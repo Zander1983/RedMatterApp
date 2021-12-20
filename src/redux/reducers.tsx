@@ -18,6 +18,14 @@ const reducer = (state = initialState, action: any) => {
         ...state,
         profile: action.payload.user.profile,
       };
+    case actionTypes.ADD_FACILITY:
+      return {
+        ...state,
+        profile: {
+          ...state.profile,
+          facility: action.payload.facility,
+        },
+      };
     case actionTypes.UPDATE_TOKENS:
       return {
         ...state,
