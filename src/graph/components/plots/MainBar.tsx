@@ -219,6 +219,8 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             }}
           ></CancelIcon>
         </Button>
+
+        {/* Drawing Polygon Gate */}
         <Tooltip
           title={
             <React.Fragment>
