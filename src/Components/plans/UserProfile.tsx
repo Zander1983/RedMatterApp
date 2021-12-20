@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Grid, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,10 +9,11 @@ import FormControl from "@material-ui/core/FormControl";
 import ChangeSubscriptionModal from "./changeSubscriptionModal";
 import CancelSubscriptionModal from "./cancelSubscriptionModal";
 import AddUsersModal from "./addUsersModal";
+import AddFacilityModal from "./addFacilityModal";
 import Select from "@material-ui/core/Select";
 import userManager from "Components/users/userManager";
 import { snackbarService } from "uno-material-ui";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import {
   updateUserStripeDetails,
@@ -90,6 +91,7 @@ export default function Plans(props: any) {
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
+  const [openAddFacility, setOpenAddFacility] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [subscriptionLastDate, setSubscriptionLastDate] = useState(null);
   const [subscriptionDetails, setSubscriptionDetails] = useState(null);
@@ -102,6 +104,8 @@ export default function Plans(props: any) {
   const [plans, setPlans] = useState([]);
   const [planFiltered, setPlanFiltered] = useState([]);
   const [profileLoader, setProfileLoader] = useState(true);
+  // @ts-ignore
+  const facility = useSelector((state) => state?.user?.profile?.facility);
 
   const getInvoiceBill = async () => {
     try {
@@ -223,6 +227,7 @@ export default function Plans(props: any) {
     setOpenChange(false);
     setOpenCancel(false);
     setOpenAddUser(false);
+    setOpenAddFacility(false);
   };
 
   const copiedToClipboard = () => {
@@ -272,7 +277,13 @@ export default function Plans(props: any) {
         close={closeModal}
         user={userObj}
         copiedToClipboard={copiedToClipboard}
+        facility={facility}
       ></AddUsersModal>
+      <AddFacilityModal
+        open={openAddFacility}
+        close={closeModal}
+        facility={facility}
+      />
       <ChangeSubscriptionModal
         open={openChange}
         close={closeModal}
@@ -405,7 +416,7 @@ export default function Plans(props: any) {
                 direction="row"
                 style={{ textAlign: "left" }}
               >
-                <Grid item lg={10} md={6} sm={6}>
+                <Grid item lg={6} md={6} sm={6}>
                   {showCancelSubscription ? (
                     <div>
                       <Button
@@ -439,9 +450,20 @@ export default function Plans(props: any) {
                   )}
                 </Grid>
 
-                <Grid item lg={2} md={6} sm={6}>
-                  {subscription == "Premium" ? (
-                    <div>
+                <Grid item lg={6} md={6} sm={6}>
+                  {subscription == "Premium" ? ( // should be Enterprise here.
+                    <div
+                      style={{ display: "flex", justifyContent: "flex-end" }}
+                    >
+                      <Button
+                        style={{ marginTop: 25, marginRight: 20 }}
+                        color="primary"
+                        variant="contained"
+                        onClick={() => setOpenAddFacility(true)}
+                      >
+                        {facility ? "Update Facility" : "Create Facility"}
+                      </Button>
+
                       <Button
                         style={{ marginTop: 25 }}
                         color="primary"

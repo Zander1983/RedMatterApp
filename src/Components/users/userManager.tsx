@@ -21,6 +21,14 @@ export type UserProfile = {
   subscriptionDetails: SubscriptionDetail;
   isAdmin: Boolean;
   email: string;
+  facility: Facility;
+};
+
+export type Facility = {
+  _id: string;
+  location: string;
+  name: string;
+  ownerId: string[];
 };
 
 type SubscriptionDetail = {
@@ -100,6 +108,13 @@ class UserManager {
       this.fail();
     }
     return this.state.user.profile.isAdmin;
+  }
+
+  getUserFacility() {
+    if (!this.isLoggedIn()) {
+      this.fail();
+    }
+    return this.state.user.profile.facility;
   }
 
   getUserEmail() {
