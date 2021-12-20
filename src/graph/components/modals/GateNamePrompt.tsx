@@ -22,6 +22,7 @@ import useGAEventTrackers from "hooks/useGAEvents";
 export default function GateNamePrompt() {
   const [open, setOpen] = React.useState<boolean>(false);
   const [nameError, setNameError] = React.useState(false);
+  const [newGateCreated, setNewGateCreated] = React.useState(false);
   const [name, setName] = React.useState("");
   const [gate, setGate] = React.useState<Gate>();
   const [plot, setPlot] = React.useState<Plot>();
@@ -106,6 +107,13 @@ export default function GateNamePrompt() {
     }
   }, [open]);
 
+  useEffect(() => {
+    if (newGateCreated) {
+      WorkspaceDispatch.UpdatePlot(plot);
+      setNewGateCreated(false);
+    }
+  }, [plot?.plotWidth]);
+
   return (
     <div
       onKeyDown={(e: any) => {
@@ -144,6 +152,12 @@ export default function GateNamePrompt() {
                 eventStacker(
                   `A gate with Name: ${name} is created on Plot:${plot.label}.`
                 );
+
+                // re-rendering the plot again so that the percentage shows up
+                setPlot((prev: Plot) => {
+                  return { ...prev, plotWidth: prev.plotWidth - 1 };
+                });
+                setNewGateCreated(true);
               }
             }}
             color="primary"

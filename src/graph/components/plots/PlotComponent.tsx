@@ -74,7 +74,11 @@ const PlotComponent = React.memo(
               gap: 5,
             }}
           >
-            <div>{props.fileName}</div>
+            <div>
+              {props.fileName.length < 35
+                ? props.fileName
+                : `${props.fileName.slice(0, 35)}...`}
+            </div>
             <MainBar plot={plot} editWorkspace={props.editWorkspace}></MainBar>
             <GateBar
               plotId={plot.id}
