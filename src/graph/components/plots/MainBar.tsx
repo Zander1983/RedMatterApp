@@ -8,6 +8,7 @@ import TouchAppIcon from "@material-ui/icons/TouchApp";
 import MessageModal from "../modals/MessageModal";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import gate from "../../../assets/images/gate.png";
+import circle from "../../../assets/images/circle.png";
 import { Plot, PlotsRerender } from "graph/resources/types";
 import { getGate, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
@@ -69,6 +70,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";
+      plot.histogramAxis = "";
       let plotsRerenderQueueItem: PlotsRerender = {
         id: "",
         used: false,
@@ -78,6 +80,19 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
       EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
     } else if (plot.histogramAxis === "") {
       plot.gatingActive = "polygon";
+    } else {
+      plot.gatingActive = "histogram";
+    }
+    WorkspaceDispatch.UpdatePlot(plot);
+  };
+
+  const eclipseGettingSetter = () => {
+    let plot = props.plot;
+    if (plot.gatingActive) {
+      plot.gatingActive = "";
+      plot.histogramAxis = "";
+    } else if (!plot.histogramAxis) {
+      plot.gatingActive = "oval";
     } else {
       plot.gatingActive = "histogram";
     }
@@ -243,16 +258,59 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
               color: "white",
               height: "2rem",
               fontSize: "12",
-              backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
+              backgroundColor:
+                plot.gatingActive === "polygon" ? "#6666ee" : "#6666aa",
             }}
             disabled={!props.editWorkspace}
           >
-            {plot.gatingActive !== "" ? (
-              <TouchAppIcon />
-            ) : (
+            {plot.gatingActive !== "polygon" && (
               <img
                 src={gate}
                 alt={"gate"}
+                style={{
+                  height: "1.2rem",
+                  fill: "none",
+                  strokeWidth: 3,
+                  stroke: "#491EC4",
+                }}
+              ></img>
+            )}
+            {plot.gatingActive === "polygon" && <TouchAppIcon />}
+          </Button>
+        </Tooltip>
+
+        {/* Drawing Eclipse Gate */}
+        <Tooltip
+          title={
+            <React.Fragment>
+              <h3 style={{ color: "white" }}>
+                This button enables/disables eclipse gate drawing
+              </h3>
+              <br />
+              Click anywhere on plot below to create eclipse gate points. <br />
+              A new plot will be created with the population inside your gate.
+            </React.Fragment>
+          }
+        >
+          <Button
+            variant="contained"
+            size="small"
+            onClick={eclipseGettingSetter}
+            style={{
+              flex: 1,
+              color: "white",
+              height: "2rem",
+              fontSize: "12",
+              backgroundColor:
+                plot.gatingActive === "oval" ? "#6666ee" : "#6666aa",
+            }}
+            disabled={!props.editWorkspace}
+          >
+            {plot.gatingActive === "oval" && <TouchAppIcon />}
+            {plot.gatingActive !== "oval" && (
+              <img
+                src={circle}
+                alt={"circle"}
                 style={{
                   height: "1.2rem",
                   fill: "none",

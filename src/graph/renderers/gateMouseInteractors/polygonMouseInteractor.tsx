@@ -5,13 +5,11 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { AxisName, Gate, Point, PolygonGate } from "graph/resources/types";
-import { createGate } from "graph/resources/gates";
-import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { AxisName, Point, PolygonGate } from "graph/resources/types";
+import { getPopulation } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { isPointInsideWithLogicle } from "graph/resources/dataset";
-import { store } from "redux/store";
 import { getXandYRanges } from "graph/resources/plots";
 
 export const selectPointDist = 15;

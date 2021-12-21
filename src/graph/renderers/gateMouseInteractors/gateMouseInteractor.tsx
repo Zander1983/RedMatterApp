@@ -2,12 +2,13 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import { Gate, Point, WorkspaceEventGateNaming } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { getPopulation } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+
+// interfaces
 export interface GateState {
   lastMousePos: Point;
 }
@@ -17,6 +18,7 @@ export interface MouseInteractorState {
   rerender: Function;
 }
 
+// the class
 export default abstract class GateMouseInteractor {
   started: boolean = false;
   plugin: GatePlotterPlugin;

@@ -13,18 +13,14 @@ import {
   Plot,
   PlotSpecificWorkspaceData,
   PlotType,
-  Population,
-  Range,
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
-import { createPopulation } from "graph/resources/populations";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { Typography } from "antd";
 import { useSelector } from "react-redux";
-import { slice } from "lodash";
 
 function PlotComponent(props: {
   plotRelevantResources: PlotSpecificWorkspaceData;
@@ -54,7 +50,6 @@ function PlotComponent(props: {
 
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
   const [xWidth, setXWidth] = React.useState(100);
   const [yWidth, setYWidth] = React.useState(100);
@@ -74,6 +69,14 @@ function PlotComponent(props: {
       PlotResource.disableHistogram(plot);
     }
   };
+
+  // setting the historam to gatingActive
+  useEffect(() => {
+    if (plot.histogramAxis) {
+      plot.gatingActive = "histogram";
+      WorkspaceDispatch.UpdatePlot(plot);
+    }
+  }, [plot.histogramAxis]);
 
   const isPlotHistogram = () => {
     return plot.histogramAxis !== "";

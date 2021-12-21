@@ -1,16 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Divider, Grid } from "@material-ui/core";
 
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
-import {
-  Gate,
-  Plot,
-  PlotSpecificWorkspaceData,
-  PlotID,
-} from "graph/resources/types";
-import * as PlotResource from "graph/resources/plots";
+import { PlotSpecificWorkspaceData, PlotID } from "graph/resources/types";
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
 
