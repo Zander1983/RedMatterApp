@@ -12,6 +12,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   gates: Gate[] = [];
   isGating: boolean = false;
   lastMousePos: Point;
+  isOval: boolean = false;
 
   abstract gaterType: "1D" | "2D";
   public abstract setGates(gates: Gate[]): void;
@@ -22,7 +23,11 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   /* After draw is called in plotter, draw the gating/gate */
   public draw_AFTER() {
     if (this.isGating) {
-      this.drawGating();
+      if (this.isOval) {
+        this.drawOvalGating();
+      } else {
+        this.drawGating();
+      }
     }
 
     const drawGates = [...this.gates];
@@ -52,7 +57,9 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
             this.plotter.xAxisName === gate1d.axis &&
             gate1d.axisType === axisPlotType
           ) {
-            this.drawGate(gate, drawGates);
+            this.isOval
+              ? this.drawOvalGate(gate, drawGates)
+              : this.drawGate(gate, drawGates);
           }
         }
         if (this.gaterType === "2D" && isGate2D) {
@@ -61,7 +68,9 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
             this.plotter.xAxisName === gate2d.xAxis &&
             this.plotter.yAxisName === gate2d.yAxis
           ) {
-            this.drawGate(gate, drawGates);
+            this.isOval
+              ? this.drawOvalGate(gate, drawGates)
+              : this.drawGate(gate, drawGates);
           }
         }
       }
@@ -69,5 +78,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   }
 
   protected abstract drawGate(gate: Gate, drawGates?: Gate[]): void;
+  protected abstract drawOvalGate(gate: Gate, drawGates?: Gate[]): void;
   protected abstract drawGating(): void;
+  protected abstract drawOvalGating(): void;
 }

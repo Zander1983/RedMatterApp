@@ -165,6 +165,36 @@ export default abstract class Drawer {
   }
 
   @resetStyleAfter()
+  ellipse(params: {
+    mouseX: number;
+    mouseY: number;
+    mouseLastX: number;
+    mouseLastY: number;
+    color: string;
+  }) {
+    // initializing the canvas
+
+    this.setLineWidth(2);
+    this.ctx.beginPath();
+
+    // setting the scale
+    const scaleX = 1 * ((params.mouseX - params.mouseLastX) / 2);
+    const scaleY = 1 * ((params.mouseY - params.mouseLastY) / 2);
+
+    // setting up the centers
+    const centerX = params.mouseLastX / scaleX + 1;
+    const centerY = params.mouseLastY / scaleY + 1;
+
+    // drawing the ellipse
+    this.setStrokeColor(params.color);
+    this.ctx.globalAlpha = 0.75;
+    this.setFillColor(params.color);
+    this.ctx.scale(scaleX, scaleY);
+    this.ctx.arc(centerX, centerY, 1, 0, 2 * Math.PI);
+    this.ctx.stroke();
+  }
+
+  @resetStyleAfter()
   curve(params: {
     points: { x: number; y: number }[];
     lineWidth?: number;

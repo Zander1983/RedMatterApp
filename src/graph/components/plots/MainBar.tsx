@@ -66,7 +66,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     func(false);
   };
 
-  const gatingSetter = () => {
+  const gatingSetter = (isOval: Boolean) => {
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";
@@ -79,20 +79,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
       };
       EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
     } else if (plot.histogramAxis === "") {
-      plot.gatingActive = "polygon";
-    } else {
-      plot.gatingActive = "histogram";
-    }
-    WorkspaceDispatch.UpdatePlot(plot);
-  };
-
-  const eclipseGettingSetter = () => {
-    let plot = props.plot;
-    if (plot.gatingActive) {
-      plot.gatingActive = "";
-      plot.histogramAxis = "";
-    } else if (!plot.histogramAxis) {
-      plot.gatingActive = "oval";
+      plot.gatingActive = isOval ? "oval" : "polygon";
     } else {
       plot.gatingActive = "histogram";
     }
@@ -252,7 +239,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           <Button
             variant="contained"
             size="small"
-            onClick={gatingSetter}
+            onClick={() => gatingSetter(false)}
             style={{
               flex: 1,
               color: "white",
@@ -295,7 +282,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           <Button
             variant="contained"
             size="small"
-            onClick={eclipseGettingSetter}
+            onClick={() => gatingSetter(true)}
             style={{
               flex: 1,
               color: "white",

@@ -28,7 +28,7 @@ import { isEqual } from "lodash";
 const plotterFactory = new PlotterFactory();
 
 const typeToClassType = {
-  oval: Error,
+  oval: PolygonMouseInteractor,
   polygon: PolygonMouseInteractor,
   histogram: HistogramGateMouseInteractor,
 };
@@ -149,6 +149,10 @@ const PlotRenderer = (props: {
       if (gatingType === "histogram") {
         setGating("histogram", true);
       }
+      if (gatingType === "oval") {
+        setGating("oval", true);
+      }
+
       setLastGatingType(gatingType);
     }
     setLoader(false);
@@ -177,6 +181,8 @@ const PlotRenderer = (props: {
     start: boolean,
     inpPlotter?: GraphPlotter
   ) => {
+    const isOval = type === "oval";
+    if (type === "oval") type = "polygon";
     if (!inpPlotter) inpPlotter = plotter;
     mouseInteractorInstances[plot.id]
       .filter((e) => e instanceof typeToClassType[type])
@@ -199,6 +205,7 @@ const PlotRenderer = (props: {
             plotID: plot.id,
             xAxis: plot.xAxis,
             yAxis: plot.yAxis,
+            isOval: isOval,
             rerender: () => {
               draw();
             },
@@ -301,6 +308,11 @@ const PlotRenderer = (props: {
       setGating("polygon", true, scatterPlotter);
       //@ts-ignore
       setGating("polygon", false, scatterPlotter);
+
+      // //@ts-ignore
+      // setGating("oval", true, scatterPlotter);
+      // //@ts-ignore
+      // setGating("oval", false, scatterPlotter);
 
       //@ts-ignore
       setGating("histogram", true, histogramPlotter);

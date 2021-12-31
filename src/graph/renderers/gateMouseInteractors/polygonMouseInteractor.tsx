@@ -23,6 +23,7 @@ export interface PolygonGateState extends GateState {
 export interface PolygonMouseInteractorState extends MouseInteractorState {
   xAxis: AxisName;
   yAxis: AxisName;
+  isOval: boolean;
 }
 
 export default class PolygonMouseInteractor extends GateMouseInteractor {
@@ -47,6 +48,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     super.setMouseInteractorState(state);
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
+    this.plugin.isOval = state.isOval;
   }
 
   private validateGateOnSpace(gate: PolygonGate) {
@@ -58,6 +60,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     );
   }
 
+  // detects if the polygongate is clicked
   protected detectGatesClicked(mouse: Point) {
     const abstractMouse = this.plotter.transformer.toAbstractPoint(
       { ...mouse },
@@ -81,6 +84,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       });
   }
 
+  // detects if the points of the gates are clicked or not
   protected detectPointsClicked(mouse: Point) {
     this.plotter.gates.forEach((gate) => {
       if (gate.gateType === "polygon" && this.targetEditGate === null)
@@ -105,6 +109,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     });
   }
 
+  // can move the gate position with mouse
   protected gateMoveToMousePosition(mouse: Point) {
     const gatePivot = this.plotter.transformer.toConcretePoint(
       {
@@ -190,6 +195,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     newGate.points = [...newGate.points].map((e) => {
       return { ...e };
     });
+    console.log(newGate.color);
     return newGate;
   }
 
@@ -229,6 +235,11 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   gateEvent(type: string, point: Point) {
     if (!this.started) return;
     this.lastMousePos = this.plugin.lastMousePos = point;
+    if (this.plugin.isOval && this.plugin.points.length === 2) {
+      this.createAndAddGate();
+      return;
+    }
+
     const isCloseToFirstPoint = this.closeToFirstPoint(point);
     if (type === "mousedown" && !isCloseToFirstPoint) {
       this.points = [...this.points, { ...point }];

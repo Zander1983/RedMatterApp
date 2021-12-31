@@ -2,7 +2,7 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import { euclidianDistance2D } from "graph/utils/euclidianPlane";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
-import { Point, PolygonGate, Workspace } from "graph/resources/types";
+import { Gate, Point, PolygonGate, Workspace } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
 import PlotStats from "graph/utils/stats";
 
@@ -61,6 +61,7 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
         x = p.y < pp.y ? p.x : pp.x;
       }
 
+      // drawing the lines of the polygon
       this.plotter.drawer.segment({
         x1: p.x * scale,
         y1: p.y * scale,
@@ -109,6 +110,45 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       text: stats.gatedFilePopulationPercentage,
       font: `24px Roboto`,
       fillColor: "white",
+    });
+  }
+
+  protected drawOvalGate(gate: PolygonGate, drawGates?: Gate[]): void {
+    if (
+      gate.xAxisType !== this.plotter.plot.xPlotType ||
+      gate.yAxisType !== this.plotter.plot.yPlotType
+    ) {
+      return;
+    }
+
+    const scale = this.plotter.scale;
+    this.plotter.drawer.ellipse({
+      mouseX: gate.points[0].x * scale,
+      mouseY: gate.points[0].y * scale,
+      mouseLastX: gate.points[1].x * scale,
+      mouseLastY: gate.points[1].y * scale,
+      color: gate.color,
+    });
+  }
+
+  protected drawOvalGating() {
+    if (!this.points) return;
+    let lastMousePos = { ...this.lastMousePos };
+    const points = [
+      ...this.points.map((e) => {
+        return { ...e };
+      }),
+    ];
+    const length = points.length;
+    const mouse = lastMousePos;
+    const scale = this.plotter.scale;
+
+    this.plotter.drawer.ellipse({
+      mouseX: points[0].x * scale,
+      mouseY: points[0].y * scale,
+      mouseLastX: length === 2 ? points[1].x * scale : mouse.x * scale,
+      mouseLastY: length === 2 ? points[1].y * scale : mouse.y * scale,
+      color: "green",
     });
   }
 

@@ -64,6 +64,9 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
     }
   }
 
+  protected drawOvalGating(): void {}
+  protected drawOvalGate(gate: Gate, drawGates?: Gate[]): void {}
+
   protected drawGating() {
     if (this.points === undefined || this.lastMousePos === undefined) return;
     const scale = this.plotter.scale;
