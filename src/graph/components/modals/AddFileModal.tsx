@@ -404,7 +404,7 @@ const AddFileModal = React.memo(
                             }}
                             disabled={isDownloading}
                           >
-                            Add to Workspace
+                            Set As Control
                           </Button>
                         ) : null}
                       </div>

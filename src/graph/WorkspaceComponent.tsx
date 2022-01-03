@@ -429,6 +429,7 @@ const WorkspaceInnerComponent = (props: {
                       display: "flex",
                       justifyContent: "space-between",
                       width: "100%",
+                      background: "white",
                     }}
                   >
                     <div>
@@ -520,7 +521,7 @@ const WorkspaceInnerComponent = (props: {
                             marginLeft: 0,
                             height: 20,
                             marginTop: 4,
-                            color: "#fff",
+                            color: "#333",
                           }}
                           label={"Autosave"}
                           control={
@@ -537,7 +538,12 @@ const WorkspaceInnerComponent = (props: {
                         <span
                           style={{ height: "100%", display: "inline-flex" }}
                         >
-                          <span style={{ color: "white", fontStyle: "italic" }}>
+                          <span
+                            style={{
+                              color: "#333",
+                              fontStyle: "italic",
+                            }}
+                          >
                             saved at {lastSavedTime}
                           </span>
                         </span>
