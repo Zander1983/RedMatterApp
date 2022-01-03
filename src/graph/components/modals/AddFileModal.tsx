@@ -19,6 +19,7 @@ import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
 import { store } from "redux/store";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -66,6 +67,7 @@ const AddFileModal = React.memo(
     isShared: boolean;
     experimentId: string;
     files: File[];
+    selectedFile: string;
   }): JSX.Element => {
     const classes = useStyles();
 
@@ -371,6 +373,9 @@ const AddFileModal = React.memo(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
                               downloadFile(fileMetadata.id);
+                              WorkspaceDispatch.UpdateSelectedFile(
+                                fileMetadata.name
+                              );
                             }}
                           >
                             {isDownloading ? (
@@ -381,6 +386,8 @@ const AddFileModal = React.memo(
                                   height: 23,
                                 }}
                               />
+                            ) : props.selectedFile === fileMetadata.label ? (
+                              "Selected As Control"
                             ) : (
                               "Set As Control"
                             )}
@@ -401,10 +408,15 @@ const AddFileModal = React.memo(
                               PlotResource.createNewPlotFromFile(
                                 getFile(fileMetadata.id)
                               );
+                              WorkspaceDispatch.UpdateSelectedFile(
+                                fileMetadata.name
+                              );
                             }}
                             disabled={isDownloading}
                           >
-                            Set As Control
+                            {props.selectedFile === fileMetadata.label
+                              ? "Selected As Control"
+                              : "Set As Control"}
                           </Button>
                         ) : null}
                       </div>

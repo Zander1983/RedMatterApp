@@ -134,6 +134,12 @@ const WorkspaceDispatch = {
       payload: { editWorkspace },
     });
   },
+  UpdateSelectedFile: (fileName: string) => {
+    return store.dispatch({
+      type: graphActions.UPDATE_SELECTED_FILE,
+      payload: { fileName },
+    });
+  },
 };
 
 export default WorkspaceDispatch;
