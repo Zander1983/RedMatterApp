@@ -123,7 +123,7 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2>Plot a sample</h2>
+          <h2>Pick Control File</h2>
 
           <p
             style={{
@@ -136,7 +136,7 @@ const AddFileModal = React.memo(
           </p>
 
           <Grid container direction="row">
-            <Grid item xs={4} style={{ paddingRight: 20 }}>
+            {/* <Grid item xs={4} style={{ paddingRight: 20 }}>
               <Button
                 size="large"
                 variant="contained"
@@ -159,8 +159,8 @@ const AddFileModal = React.memo(
               >
                 Plot all samples
               </Button>
-            </Grid>
-            <Grid item xs={8}>
+            </Grid> */}
+            <Grid item xs={12}>
               <TextField
                 style={{ width: "100%" }}
                 InputProps={{
@@ -382,7 +382,7 @@ const AddFileModal = React.memo(
                                 }}
                               />
                             ) : (
-                              "Plot"
+                              "Set As Control"
                             )}
                           </Button>
                         ) : null}
