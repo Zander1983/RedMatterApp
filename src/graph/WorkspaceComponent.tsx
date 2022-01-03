@@ -330,6 +330,7 @@ const WorkspaceInnerComponent = (props: {
           isShared={sharedWorkspace}
           experimentId={props.experimentId}
           files={workspace.files}
+          selectedFile={workspace.selectedFile}
         />
 
         <GenerateReportModal

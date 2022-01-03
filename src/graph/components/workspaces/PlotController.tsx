@@ -329,6 +329,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
+
             return (
               <div key={name}>
                 {name.length > 0 ? (
@@ -340,7 +341,15 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                       paddingTop: 3,
                     }}
                   >
-                    <h3 style={{ color: "white", marginBottom: 0 }}>{name}</h3>
+                    <h3 style={{ color: "white", marginBottom: 0 }}>
+                      {this.props.workspace.selectedFile === name && (
+                        <span style={{ fontWeight: "bolder" }}>
+                          {" "}
+                          Control Sample:{" "}
+                        </span>
+                      )}
+                      {name}
+                    </h3>
                   </div>
                 ) : null}
                 <div style={{ marginTop: 3, marginBottom: 10 }}>

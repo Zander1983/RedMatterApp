@@ -32,6 +32,7 @@ export const graphActions = {
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
+  UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
 };
 
 export const initialState: Workspace = {
@@ -44,6 +45,7 @@ export const initialState: Workspace = {
   previousStates: [],
   sharedWorkspace: false,
   editWorkspace: true,
+  selectedFile: "",
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -120,6 +122,14 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...state,
         gates: [...state.gates, newGate],
+      };
+
+    case graphActions.UPDATE_SELECTED_FILE:
+      const fileName: string = action.payload.fileName;
+
+      return {
+        ...state,
+        selectedFile: fileName,
       };
 
     case graphActions.UPDATE_FILE:

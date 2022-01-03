@@ -163,6 +163,7 @@ export interface Workspace {
   previousStates: Workspace[];
   sharedWorkspace: boolean;
   editWorkspace: boolean;
+  selectedFile: string;
 }
 
 export interface PlotSpecificWorkspaceData {
