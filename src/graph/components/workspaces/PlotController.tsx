@@ -3,7 +3,7 @@ import React from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
-
+import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
   getFile,
@@ -215,7 +215,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
       sortByChanged: false,
     };
   }
-
   savePlotPosition(layouts: any) {
     let plots = this.props.workspace.plots;
     let plotChanges = [];
@@ -353,60 +352,78 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                   </div>
                 ) : null}
                 <div style={{ marginTop: 3, marginBottom: 10 }}>
-                  <ResponsiveGridLayout
-                    className="layout"
-                    breakpoints={{ lg: 1200 }}
-                    cols={{ lg: 36 }}
-                    rows={{ lg: 30 }}
-                    rowHeight={30}
-                    isDraggable={this.props.workspace.editWorkspace}
-                    onLayoutChange={(layout: any) => {
-                      this.savePlotPosition(layout);
-                    }}
-                    onResize={(layout: any) => {
-                      setCanvasSize(false);
-                    }}
-                    onResizeStop={(layout: any) => {
-                      setCanvasSize(true);
-                    }}
-                  >
-                    {
-                      //@ts-ignore
-                      plots.map((plot, i) => {
-                        return (
-                          <div
-                            key={plot.id}
-                            style={classes.itemOuterDiv}
-                            data-grid={standardGridPlotItem(
-                              i,
-                              plot,
-                              plots,
-                              this.props.workspace.editWorkspace
-                            )}
-                            id={`workspace-outter-${plot.id}`}
-                          >
-                            <div id="inner" style={classes.itemInnerDiv}>
-                              <PlotComponent
-                                plotRelevantResources={this.getPlotRelevantResources(
-                                  plot
-                                )}
-                                sharedWorkspace={this.props.sharedWorkspace}
-                                editWorkspace={
-                                  this.props.workspace.editWorkspace
-                                }
-                                workspaceLoading={this.getWorkspaceLoading()}
-                                customPlotRerender={
-                                  this.props.customPlotRerender
-                                }
-                                experimentId={this.props.experimentId}
-                                fileName={name}
-                              />
+                  <Xwrapper>
+                    <ResponsiveGridLayout
+                      className="layout"
+                      breakpoints={{ lg: 1200 }}
+                      cols={{ lg: 36 }}
+                      rows={{ lg: 30 }}
+                      rowHeight={30}
+                      isDraggable={this.props.workspace.editWorkspace}
+                      onLayoutChange={(layout: any) => {
+                        this.savePlotPosition(layout);
+                      }}
+                      onResize={(layout: any) => {
+                        setCanvasSize(false);
+                        useXarrow();
+                      }}
+                      onResizeStop={(layout: any) => {
+                        setCanvasSize(true);
+                        useXarrow();
+                      }}
+                    >
+                      {
+                        //@ts-ignore
+                        plots.map((plot, i) => {
+                          return (
+                            <div
+                              key={plot.id}
+                              style={classes.itemOuterDiv}
+                              data-grid={standardGridPlotItem(
+                                i,
+                                plot,
+                                plots,
+                                this.props.workspace.editWorkspace
+                              )}
+                              id={`workspace-outter-${plot.id}`}
+                            >
+                              <div id="inner" style={classes.itemInnerDiv}>
+                                <PlotComponent
+                                  plotRelevantResources={this.getPlotRelevantResources(
+                                    plot
+                                  )}
+                                  sharedWorkspace={this.props.sharedWorkspace}
+                                  editWorkspace={
+                                    this.props.workspace.editWorkspace
+                                  }
+                                  workspaceLoading={this.getWorkspaceLoading()}
+                                  customPlotRerender={
+                                    this.props.customPlotRerender
+                                  }
+                                  experimentId={this.props.experimentId}
+                                  fileName={name}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    }
-                  </ResponsiveGridLayout>
+                          );
+                        })
+                      }
+                    </ResponsiveGridLayout>
+                    {plots.map((plot, i) => {
+                      return (
+                        <div>
+                          {i + 1 < plots.length ? (
+                            <Xarrow
+                              start={`workspace-outter-${plot.id}`}
+                              end={`workspace-outter-${
+                                plots[i + 1] ? plots[i + 1].id : ""
+                              }`}
+                            />
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </Xwrapper>
                 </div>
               </div>
             );
