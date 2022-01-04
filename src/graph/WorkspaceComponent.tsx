@@ -417,7 +417,6 @@ const WorkspaceInnerComponent = (props: {
                 backgroundColor: "white",
                 paddingTop: 4,
                 paddingBottom: 6,
-                borderBottom: "1px solid black",
                 WebkitBorderBottomLeftRadius: 0,
                 WebkitBorderBottomRightRadius: 0,
                 minHeight: "43px",
