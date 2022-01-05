@@ -22,7 +22,7 @@ import {
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
-
+import { isEqual } from "lodash";
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const classes = {
@@ -205,6 +205,7 @@ interface PlotControllerProps {
 }
 interface IState {
   sortByChanged: boolean;
+  arrowPlot: any[];
 }
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
@@ -213,6 +214,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     super(props);
     this.state = {
       sortByChanged: false,
+      arrowPlot: [],
     };
   }
   savePlotPosition(layouts: any) {
@@ -279,6 +281,34 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
 
   getWorkspaceLoading() {
     return this.props.workspaceLoading || this.state.sortByChanged;
+  }
+
+  assignPlotArrows = () => {
+    let arr = [];
+    let plots = this.props.workspace.plots;
+    for (let i = 0; i < plots.length; i++) {
+      let plot = plots[i];
+      let plotId = plot.id;
+      let childPlots = this.props.workspace.plots.filter(
+        (x) => x.parentPlotId == plotId
+      );
+
+      for (let j = 0; j < childPlots.length; j++) {
+        arr.push({
+          start: `workspace-outter-${plotId}`,
+          end: `workspace-outter-${childPlots[j].id}`,
+        });
+      }
+    }
+    this.setState({
+      arrowPlot: arr,
+    });
+  };
+
+  componentDidUpdate(prevProps: PlotControllerProps) {
+    if (!isEqual(prevProps.workspace.plots, this.props.workspace.plots)) {
+      this.assignPlotArrows();
+    }
   }
 
   render() {
@@ -409,17 +439,10 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                         })
                       }
                     </ResponsiveGridLayout>
-                    {plots.map((plot, i) => {
+                    {this.state.arrowPlot.map((obj, i) => {
                       return (
                         <div>
-                          {i + 1 < plots.length ? (
-                            <Xarrow
-                              start={`workspace-outter-${plot.id}`}
-                              end={`workspace-outter-${
-                                plots[i + 1] ? plots[i + 1].id : ""
-                              }`}
-                            />
-                          ) : null}
+                          <Xarrow start={obj.start} end={obj.end} />
                         </div>
                       );
                     })}

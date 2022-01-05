@@ -62,6 +62,7 @@ export const createPlot = ({
     newPlot.axisPlotTypes = { ...clonePlot.axisPlotTypes };
     newPlot.xPlotType = clonePlot.xPlotType;
     newPlot.yPlotType = clonePlot.yPlotType;
+    newPlot.parentPlotId = clonePlot.id;
   }
   if (newPlot.population === "") {
     throw Error("Plot without population");
@@ -568,6 +569,7 @@ export const createSubpopPlot = async (
   if (additionalGates) {
     pop.gates = pop.gates.concat(additionalGates);
   }
+
   pop.gates = pop.gates.concat(oldPop.gates);
   const promises: Promise<any>[] = [];
   promises.push(WorkspaceDispatch.UpdatePopulation(pop));
