@@ -11,6 +11,9 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
+// import { getFile } from "graph/utils/workspace";
+// import { File } from "graph/resources/types";
+// import * as PlotResource from "graph/resources/plots";
 
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
@@ -144,12 +147,37 @@ const WorkspaceInnerComponent = (props: {
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [lastSavedTime, setLastSavedTime] = React.useState(null);
+  // const [downloadAllEvents, setDownloadAllEvents] = React.useState(false);
+
   const handleOpen = (func: Function) => {
     func(true);
   };
   const handleClose = (func: Function) => {
     func(false);
   };
+
+  // useEffect(() => {
+  //   downloadAllEvents &&
+  //     workspace.plots.length < workspace.files.length &&
+  //     workspace.files.forEach((e) => downloadFile(e.id));
+  // }, [downloadAllEvents]);
+
+  // const downloadFile = async (fileId: string) => {
+  //   let file: File = getFile(fileId);
+  //   if (!file.downloaded) {
+  //     const newId = await downloadFileEvent(
+  //       sharedWorkspace,
+  //       fileId,
+  //       props.experimentId
+  //     );
+  //     if (typeof newId !== "string") {
+  //       throw Error("wtf?");
+  //     }
+  //     file = getFile(newId);
+  //   }
+  //   await PlotResource.createNewPlotFromFile(file);
+  //   handleClose(setAddFileModalOpen);
+  // };
 
   useEffect(() => {
     if (workspace.editWorkspace != editWorkspace) {
@@ -187,6 +215,8 @@ const WorkspaceInnerComponent = (props: {
       shared,
       experimentId
     );
+    // setDownloadAllEvents(loadStatus.requestSuccess);
+
     if (!loadStatus.requestSuccess) {
       snackbarService.showSnackbar("Workspace created", "success");
     } else {
@@ -459,6 +489,7 @@ const WorkspaceInnerComponent = (props: {
                         style={{
                           backgroundColor: "#fafafa",
                         }}
+                        disabled={!!workspace.selectedFile}
                       >
                         Plot sample
                       </Button>
