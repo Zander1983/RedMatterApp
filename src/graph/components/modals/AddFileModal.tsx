@@ -372,7 +372,7 @@ const AddFileModal = React.memo(
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
-                              downloadFile(fileMetadata.id);
+                              // downloadFile(fileMetadata.id);
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.name
                               );
@@ -405,9 +405,9 @@ const AddFileModal = React.memo(
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
-                              PlotResource.createNewPlotFromFile(
-                                getFile(fileMetadata.id)
-                              );
+                              // PlotResource.createNewPlotFromFile(
+                              //   getFile(fileMetadata.id)
+                              // );
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.name
                               );

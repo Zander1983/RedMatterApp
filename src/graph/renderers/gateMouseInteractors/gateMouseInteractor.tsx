@@ -8,6 +8,7 @@ import { createPopulation } from "graph/resources/populations";
 import { getGate, getPopulation } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import { applyGateToAllFiles } from "graph/components/static/menus/GateMenu";
 export interface GateState {
   lastMousePos: Point;
 }
@@ -114,6 +115,7 @@ export default abstract class GateMouseInteractor {
       used: false,
     };
     await EventQueueDispatch.AddQueueItem(eventGateName);
+    await applyGateToAllFiles(gate);
     this.end();
   }
 
