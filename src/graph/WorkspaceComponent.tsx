@@ -44,6 +44,7 @@ import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -110,6 +111,7 @@ const WorkspaceInnerComponent = (props: {
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
+
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
@@ -130,7 +132,7 @@ const WorkspaceInnerComponent = (props: {
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
   const inputFile = React.useRef(null);
   const [fileUploadInputValue, setFileUploadInputValue] = React.useState("");
-
+  const updateXarrow = useXarrow();
   const [loading, setLoading] = React.useState(false);
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
@@ -591,6 +593,7 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
+                  arrowFunc={updateXarrow}
                 ></PlotController>
               ) : (
                 <Grid

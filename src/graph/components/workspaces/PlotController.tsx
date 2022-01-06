@@ -202,11 +202,13 @@ interface PlotControllerProps {
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
+  arrowFunc: Function;
 }
 interface IState {
   sortByChanged: boolean;
   arrowPlot: any[];
 }
+
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
 
@@ -392,14 +394,22 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                       isDraggable={this.props.workspace.editWorkspace}
                       onLayoutChange={(layout: any) => {
                         this.savePlotPosition(layout);
+                        this.props.arrowFunc();
+                      }}
+                      onDrag={() => {
+                        this.props.arrowFunc();
+                      }}
+                      onDragStop={() => {
+                        this.props.arrowFunc();
+                      }}
+                      onDragStart={() => {
+                        this.props.arrowFunc();
                       }}
                       onResize={(layout: any) => {
                         setCanvasSize(false);
-                        useXarrow();
                       }}
                       onResizeStop={(layout: any) => {
                         setCanvasSize(true);
-                        useXarrow();
                       }}
                     >
                       {
@@ -441,9 +451,11 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     </ResponsiveGridLayout>
                     {this.state.arrowPlot.map((obj, i) => {
                       return (
-                        <div>
-                          <Xarrow start={obj.start} end={obj.end} />
-                        </div>
+                        <Xarrow
+                          start={obj.start}
+                          end={obj.end}
+                          path={"straight"}
+                        />
                       );
                     })}
                   </Xwrapper>
