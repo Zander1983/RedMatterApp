@@ -198,6 +198,16 @@ const Experiment = (props: any) => {
     return true;
   }
 
+  function isPermittedFileSize(file: any) {
+    if (file.size > 1000) {
+      const errorString = `File "${file.name.substring(0, 20)}${
+          file.name.length > 20 ? "..." : ""
+          }" goes above file size limit: it's ${(file.size / 1e6).toFixed(2)}MB`;
+      snackbarService.showSnackbar(errorString, "error");
+      return;
+    }
+  }
+
   const uploadFiles = async (files: FileList) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
@@ -205,13 +215,6 @@ const Experiment = (props: any) => {
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
-      if (file.size > maxFileSize) {
-        const errorString = `File "${file.name.substring(0, 20)}${
-          file.name.length > 20 ? "..." : ""
-        }" goes above file size limit: it's ${(file.size / 1e6).toFixed(2)}MB`;
-        snackbarService.showSnackbar(errorString, "error");
-        return;
-      }
       if (
         !allowedExtensions.includes(file.name.split(".").pop().toLowerCase())
       ) {
