@@ -490,6 +490,17 @@ export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
 };
 
+export const getXandYDataWithFiles = (
+  file: File,
+  population: PopulationGateType[],
+  xAxis: string,
+  yAxis: string
+) => {
+  const dataset = getDataset(file.id);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population);
+  return [filteredPoints[xAxis], filteredPoints[yAxis]];
+};
+
 export const getHistogramAxisData = (plot: Plot): Float32Array => {
   const file = getPlotFile(plot);
   const dataset = getDataset(file.id);

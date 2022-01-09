@@ -176,7 +176,6 @@ const WorkspaceInnerComponent = (props: {
       }
       file = getFile(newId);
     }
-    await PlotResource.createNewPlotFromFile(file);
     handleClose(setAddFileModalOpen);
   };
 

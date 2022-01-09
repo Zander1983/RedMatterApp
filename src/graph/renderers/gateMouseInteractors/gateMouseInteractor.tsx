@@ -115,7 +115,6 @@ export default abstract class GateMouseInteractor {
       used: false,
     };
     await EventQueueDispatch.AddQueueItem(eventGateName);
-    await applyGateToAllFiles(gate);
     this.end();
   }
 
