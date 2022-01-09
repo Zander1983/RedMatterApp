@@ -47,7 +47,9 @@ const PlotTable = ({ workspace }: TableProps) => {
       for (let j = 0; j < workspace.plots.length; j += workspace.files.length) {
         raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
       }
-      raws.push(raw);
+      if (!raw.includes(undefined)) {
+        raws.push(raw);
+      }
     }
     setData(raws);
   };
