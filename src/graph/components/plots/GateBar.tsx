@@ -10,7 +10,14 @@ import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 
-import { Plot, Gate, GateID, Gate2D, PlotID } from "graph/resources/types";
+import {
+  Plot,
+  Gate,
+  GateID,
+  Gate2D,
+  PlotID,
+  FileID,
+} from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
 import { getPlot, getPopulation } from "graph/utils/workspace";
@@ -45,6 +52,7 @@ const GateBar = React.memo(
     populationGates: { gate: Gate; inverseGating: boolean }[];
     plotGates: Gate[];
     editWorkspace: boolean;
+    file: FileID;
   }) => {
     return <PopulationSelectorGateBar {...props} />;
     // return <PopAndGatesGateBar {...props} />;

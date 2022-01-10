@@ -17,6 +17,7 @@ import { createID } from "graph/utils/id";
 import {
   getAllPlots,
   getFile,
+  getGate,
   getPlot,
   getPopulation,
   getWorkspace,
@@ -248,6 +249,7 @@ export const addOverlay = async (
   } else if (fromFile) {
     let population: Population = populations.createPopulation({
       file: fromFile,
+      parentPopulationId: plot.population,
     });
     population.gates = population.gates.concat(
       getPopulation(plot.population).gates
@@ -300,6 +302,7 @@ export const createNewPlotFromPlot = async (
   let newPlot = createPlot({ clonePlot: plot });
   let newPopulation = populations.createPopulation({
     clonePopulation: getPopulation(plot.population),
+    parentPopulationId: plot.population,
   });
   await WorkspaceDispatch.AddPopulation(newPopulation);
   newPlot.population = newPopulation.id;
@@ -547,6 +550,7 @@ export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
   let population: Population;
   population = populations.createPopulation({
     file: file.id,
+    parentPopulationId: clonePlot?.population,
   });
   await WorkspaceDispatch.AddPopulation(population);
   const plot = createPlot({ population, clonePlot });
@@ -567,6 +571,8 @@ export const createSubpopPlot = async (
   let newPlot = getPlot(newPlotId);
   let pop = getPopulation(newPlot.population);
   if (additionalGates) {
+    let gateId = additionalGates[0].gate;
+    pop.label = getGate(gateId).name;
     pop.gates = pop.gates.concat(additionalGates);
   }
 

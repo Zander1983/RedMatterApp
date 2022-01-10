@@ -121,6 +121,7 @@ export default abstract class GateMouseInteractor {
     const originPlot = this.plotter.plot;
     let newPopulation = createPopulation({
       clonePopulation: getPopulation(originPlot.population),
+      parentPopulationId: originPlot.parentPlotId,
     });
     newPopulation.gates = [
       ...newPopulation.gates,

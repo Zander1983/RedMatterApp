@@ -290,10 +290,18 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     let plots = this.props.workspace.plots;
     for (let i = 0; i < plots.length; i++) {
       let plot = plots[i];
-      let plotId = plot.id;
-      let childPlots = this.props.workspace.plots.filter(
-        (x) => x.parentPlotId == plotId
+      let populationId = plot.population;
+      let childPopulationIds = this.props.workspace.populations
+        .filter((x) => x.parentPopulationId == populationId)
+        .map((x) => x.id);
+      let childPlots = this.props.workspace.plots.filter((x) =>
+        childPopulationIds.includes(x.population)
       );
+
+      let plotId = plot.id;
+      // let childPlots = this.props.workspace.plots.filter(
+      //   (x) => x.parentPlotId == plotId
+      // );
 
       for (let j = 0; j < childPlots.length; j++) {
         arr.push({
@@ -302,15 +310,14 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
         });
       }
     }
-    this.setState({
-      arrowPlot: arr,
-    });
+    if (!isEqual(this.state.arrowPlot, arr))
+      this.setState({
+        arrowPlot: arr,
+      });
   };
 
   componentDidUpdate(prevProps: PlotControllerProps) {
-    if (!isEqual(prevProps.workspace.plots, this.props.workspace.plots)) {
-      this.assignPlotArrows();
-    }
+    this.assignPlotArrows();
   }
 
   render() {

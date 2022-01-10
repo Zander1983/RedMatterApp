@@ -225,7 +225,10 @@ const addNewPlot = (
   populationCreate: boolean
 ) => {
   if (populationCreate) {
-    let population: Population = createPopulation({ file: fileID });
+    let population: Population = createPopulation({
+      file: fileID,
+      parentPopulationId: plot.population,
+    });
     WorkspaceDispatch.AddPopulation(population);
     plot.population = population.id;
   }
@@ -318,7 +321,10 @@ const parseSubpopulation = async (
             inverseGating: false,
             gate: polygonGate.id,
           };
-          let childPopulation = createPopulation({ file: fileId });
+          let childPopulation = createPopulation({
+            file: fileId,
+            parentPopulationId: plot.population,
+          });
           childPopulation.gates.push(populationGate);
           WorkspaceDispatch.AddPopulation(childPopulation);
           newPlot.population = childPopulation.id;
