@@ -14,20 +14,27 @@ import { useEffect, useState } from "react";
 const useStyles = makeStyles((theme) => ({
   container: {
     position: "absolute",
-    zIndex: 500,
-    bottom: "-13vh",
-    backgroundColor: "#333",
-    height: "35vh",
+    zIndex: 2,
+    top: "78vh",
+    backgroundColor: "#F0F0FE",
     width: "100%",
-    color: "white",
+    color: "#333",
     padding: 20,
   },
   tableCell: {
-    width: "25%",
-    color: "white",
-    border: "1px white solid",
+    width: "auto",
+    color: "#333",
+    border: "1px #333 solid",
     textAlign: "center",
     padding: "5px !important",
+  },
+  view: {
+    textDecoration: "underline",
+    cursor: "pointer",
+  },
+  otherFiles: {
+    height: "15vh",
+    transition: "height 1s ease",
   },
 }));
 
@@ -39,10 +46,14 @@ const statsProvider = new PlotStats();
 
 const PlotTable = ({ workspace }: TableProps) => {
   const classes = useStyles();
-  const [headers, setHeaders] = useState<string[]>(["File Name"]);
+  const [headers, setHeaders] = useState<string[]>([
+    "File Name",
+    "Click to View",
+  ]);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [statistics, setStatistics] = useState<any[]>([]);
   const [data, setData] = useState([]);
+  const [fileToBeViewed, setFileToBeViewed] = useState<string>("");
 
   const raws: any[] = [];
   let gateLength: number = 1;
@@ -68,18 +79,7 @@ const PlotTable = ({ workspace }: TableProps) => {
       if (population.gates.length > 0) {
         workspace.files.map((file) => {
           if (workspace.plots.length > 0) {
-            const { xAxis, yAxis } = workspace.plots[0];
-            const { gates } = population;
-            stats.push(
-              statsProvider.getPlotStatsWithFiles(
-                file,
-                gates,
-                1,
-                1,
-                xAxis,
-                yAxis
-              )
-            );
+            stats.push(statsProvider.getPlotStatsWithFiles(file, population));
           }
         });
       }
@@ -100,7 +100,11 @@ const PlotTable = ({ workspace }: TableProps) => {
   }, [workspace]);
 
   useEffect(() => {
-    setHeaders(["File Name", ...workspace.gates.map((gate) => gate.name)]);
+    setHeaders([
+      "File Name",
+      ...workspace.gates.map((gate) => gate.name),
+      "Click to View",
+    ]);
   }, [workspace.gates]);
 
   useEffect(() => {
@@ -121,18 +125,37 @@ const PlotTable = ({ workspace }: TableProps) => {
         </TableHead>
         <TableBody>
           {workspace?.files?.map((files, i) => (
-            <TableRow key={i}>
-              <TableCell className={classes.tableCell}>
-                {fileNames[i]}
-              </TableCell>
-              {headers.length > 1 &&
-                data.length > 0 &&
-                data[i]?.map((value: any, index: any) => (
-                  <TableCell className={classes.tableCell} key={index + value}>
-                    {value}
-                  </TableCell>
-                ))}
-            </TableRow>
+            <>
+              <TableRow key={i}>
+                <TableCell className={classes.tableCell}>
+                  {fileNames[i]}
+                </TableCell>
+                {headers.length > 1 &&
+                  data.length > 0 &&
+                  data[i]?.map((value: any, index: any) => (
+                    <TableCell
+                      className={classes.tableCell}
+                      key={index + value}
+                    >
+                      {value}
+                    </TableCell>
+                  ))}
+                <TableCell
+                  className={`${classes.tableCell}  ${classes.view}`}
+                  onClick={() =>
+                    setFileToBeViewed(
+                      fileToBeViewed === fileNames[i] ? "" : fileNames[i]
+                    )
+                  }
+                >
+                  {fileToBeViewed === fileNames[i] ? "Close" : "View"}
+                </TableCell>
+              </TableRow>
+
+              {fileToBeViewed === fileNames[i] && (
+                <TableRow className={classes.otherFiles}></TableRow>
+              )}
+            </>
           ))}
         </TableBody>
       </Table>

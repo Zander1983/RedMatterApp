@@ -1,31 +1,25 @@
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
 import { sqrt } from "mathjs";
-import { Plot, File, PopulationGateType } from "graph/resources/types";
+import {
+  Plot,
+  File,
+  PopulationGateType,
+  Population,
+} from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import * as DatasetResource from "graph/resources/dataset";
-import { getFile, getPopulation } from "./workspace";
+import { getFile, getPopulation, getPlotFromPopulationId } from "./workspace";
 
 export default class PlotStats {
   plot: Plot;
   file: File;
 
-  getPlotStatsWithFiles(
-    file: File,
-    gates: PopulationGateType[],
-    statsX: number,
-    statsY: number,
-    xAxis: string,
-    yAxis: string
-  ) {
+  getPlotStatsWithFiles(file: File, population: Population) {
     this.file = file;
-    // const stat = this.getStatsWithFile(statsX, statsY, gates, xAxis, yAxis); // all good till now
-    const pop = this.getPopulationStatsWithFile(gates, xAxis, yAxis);
+    const { xAxis, yAxis } = getPlotFromPopulationId(population.id);
+    const pop = this.getPopulationStatsWithFile(population.gates, xAxis, yAxis);
     return {
-      // statX: stat.x,
-      // statY: stat.y,
-      // filePopulationSize: pop.fileSize,
-      // gatedFilePopulationSize: pop.plotSize,
       gatedFilePopulationPercentage: pop.percentage,
     };
   }
@@ -91,8 +85,6 @@ export default class PlotStats {
     }
     return {
       percentage: percentage,
-      // fileSize: fileSize,
-      // plotSize: plotSize,
     };
   }
 

@@ -107,6 +107,7 @@ export interface EventsRequestResponse {
   events: number[][];
   channels: {
     value: AxisName;
+    label: string;
     display: PlotType;
     linearMinimum: number;
     linearMaximum: number;

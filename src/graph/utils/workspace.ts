@@ -61,6 +61,15 @@ export const getPopulation = (populationID: PopulationID): Population => {
   return populations[0];
 };
 
+export const getPlotFromPopulationId = (populationId: string) => {
+  const workspace = getWorkspace();
+  const plot = workspace.plots.find((ele) => ele.population === populationId);
+  return {
+    xAxis: plot.xAxis,
+    yAxis: plot.yAxis,
+  };
+};
+
 export const getPopulationFromFileId = (fileId: FileID): Population => {
   const workspace = getWorkspace();
   const populations = workspace.populations.filter(
