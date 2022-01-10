@@ -206,17 +206,14 @@ interface PlotControllerProps {
 }
 interface IState {
   sortByChanged: boolean;
-  arrowPlot: any[];
 }
 
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       sortByChanged: false,
-      arrowPlot: [],
     };
   }
   savePlotPosition(layouts: any) {
@@ -285,8 +282,8 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     return this.props.workspaceLoading || this.state.sortByChanged;
   }
 
-  assignPlotArrows = () => {
-    let arr = [];
+  getArrowArray = () => {
+    let arr: any[] = [];
     let plots = this.props.workspace.plots;
     for (let i = 0; i < plots.length; i++) {
       let plot = plots[i];
@@ -307,15 +304,10 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
         });
       }
     }
-    if (!isEqual(this.state.arrowPlot, arr))
-      this.setState({
-        arrowPlot: arr,
-      });
+    return arr;
   };
 
-  componentDidUpdate(prevProps: PlotControllerProps) {
-    this.assignPlotArrows();
-  }
+  componentDidUpdate(prevProps: PlotControllerProps) {}
 
   render() {
     const plotGroups = getPlotGroups(this.props.workspace.plots);
@@ -395,10 +387,13 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                       cols={{ lg: 36 }}
                       rows={{ lg: 30 }}
                       rowHeight={30}
+                      compactType={null}
                       isDraggable={this.props.workspace.editWorkspace}
                       onLayoutChange={(layout: any) => {
                         this.savePlotPosition(layout);
-                        this.props.arrowFunc();
+                        setTimeout(() => {
+                          this.props.arrowFunc();
+                        }, 100);
                       }}
                       onDrag={() => {
                         this.props.arrowFunc();
@@ -453,7 +448,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                         })
                       }
                     </ResponsiveGridLayout>
-                    {this.state.arrowPlot.map((obj, i) => {
+                    {this.getArrowArray().map((obj, i) => {
                       return (
                         <Xarrow
                           start={obj.start}
