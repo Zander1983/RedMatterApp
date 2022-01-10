@@ -93,6 +93,7 @@ export interface File {
   src?: SrcType;
   axes: AxisName[];
   label: string;
+  labels: string[];
   defaultRanges: {
     [index: string]: Range;
   };

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import {
   Divider,
   MenuItem,
@@ -41,7 +41,7 @@ function PlotComponent(props: {
 
   const xAxis = plot.xAxis;
   const yAxis = plot.yAxis;
-  const axes = getFile(getPopulation(plot.population).file).axes;
+  const { axes, labels } = getFile(getPopulation(plot.population).file);
   const files = getAllFiles();
 
   const yPlotType = plot.yPlotType;
@@ -58,6 +58,8 @@ function PlotComponent(props: {
   const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
   const [xWidth, setXWidth] = React.useState(100);
   const [yWidth, setYWidth] = React.useState(100);
+  const [currentXIndex, setCurrentXIndex] = useState<number>(0);
+  const [currentYIndex, setCurrentYIndex] = useState<number>(0);
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     axis === "x"
@@ -120,6 +122,10 @@ function PlotComponent(props: {
     } else {
       setXWidth(100);
     }
+    if (xAxis) {
+      let index = axes.findIndex((ele) => ele === xAxis);
+      setCurrentXIndex(index !== -1 ? index : 0);
+    }
   }, [xAxis]);
   useEffect(() => {
     if (yAxis.length > 8) {
@@ -127,6 +133,11 @@ function PlotComponent(props: {
       setYWidth(newWidth > 200 ? 200 : newWidth);
     } else {
       setYWidth(100);
+    }
+
+    if (yAxis) {
+      let index = axes.findIndex((ele) => ele === yAxis);
+      setCurrentYIndex(index !== -1 ? index : 0);
     }
   }, [yAxis]);
 
@@ -221,14 +232,17 @@ function PlotComponent(props: {
             } else {
               if (isPlotHistogram()) setHistogram(false);
               //@ts-ignore
-              setAxis("y", e.target.value);
+              const value: string = e.target.value;
+              const index = labels.findIndex((ele) => ele === value);
+              setCurrentYIndex(index);
+              setAxis("y", axes[index]);
             }
           }}
-          value={isPlotHistogram() ? "hist" : yAxis}
+          value={isPlotHistogram() ? "hist" : labels[currentYIndex]}
         >
-          {axes &&
-            axes.length &&
-            axes.map((e: any) => <MenuItem value={e}>{e}</MenuItem>)}
+          {labels &&
+            labels.length &&
+            labels.map((e, index) => <MenuItem value={e}>{e}</MenuItem>)}
           <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
           <MenuItem
             value={"hist"}
@@ -335,13 +349,16 @@ function PlotComponent(props: {
               }}
               onChange={(e) => {
                 //@ts-ignore
-                setAxis("x", e.target.value);
+                const value: string = e.target.value;
+                const index = labels.findIndex((ele) => ele === value);
+                setCurrentXIndex(index);
+                setAxis("x", axes[index]);
               }}
-              value={xAxis}
+              value={labels[currentXIndex]}
             >
-              {axes &&
-                axes.length &&
-                axes.map((e: any) => <MenuItem value={e}>{e} </MenuItem>)}
+              {labels &&
+                labels.length &&
+                labels.map((e) => <MenuItem value={e}>{e} </MenuItem>)}
             </Select>
 
             <Select
