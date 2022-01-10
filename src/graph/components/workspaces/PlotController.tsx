@@ -299,9 +299,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
       );
 
       let plotId = plot.id;
-      // let childPlots = this.props.workspace.plots.filter(
-      //   (x) => x.parentPlotId == plotId
-      // );
 
       for (let j = 0; j < childPlots.length; j++) {
         arr.push({
