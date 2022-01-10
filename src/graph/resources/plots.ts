@@ -188,7 +188,7 @@ export const setupPlot = (plot: Plot, incPopulation?: Population): Plot => {
     ? incPopulation
     : getPopulation(plot.population);
   const file = getFile(population.file);
-  const axes = file.axes;
+  const { axes } = file;
 
   if (plot.xAxis.length === 0 && plot.yAxis.length === 0) {
     if (Object.keys(plot.axisPlotTypes).length > 0) {
@@ -388,16 +388,22 @@ export const xAxisToHistogram = (plot: Plot) => {
 };
 
 export const setXAxis = (plot: Plot, xAxis: string) => {
+  // setting up xAxis
   plot.gatingActive = "";
   plot.xAxis = xAxis;
   plot.xPlotType = plot.axisPlotTypes[xAxis];
+
+  // updating the plot
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
 export const setYAxis = (plot: Plot, yAxis: string) => {
+  // setting up yAxis
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
+
+  // updating the plot
   WorkspaceDispatch.UpdatePlot(plot);
 };
 
@@ -488,6 +494,17 @@ export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
+};
+
+export const getXandYDataWithFiles = (
+  file: File,
+  population: PopulationGateType[],
+  xAxis: string,
+  yAxis: string
+) => {
+  const dataset = getDataset(file.id);
+  const filteredPoints = getDatasetFilteredPoints(dataset, population);
+  return [filteredPoints[xAxis], filteredPoints[yAxis]];
 };
 
 export const getHistogramAxisData = (plot: Plot): Float32Array => {

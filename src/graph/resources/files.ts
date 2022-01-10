@@ -33,11 +33,13 @@ export const createFile = async ({
     experimentId: "",
     createdOn: new Date(),
     downloading: false,
+    labels: [],
   };
   const createdID = createID();
   if (requestData) {
     requestData.channels.forEach((e) => {
       newFile.axes.push(e.value);
+      newFile.labels.push(e.label);
       newFile.defaultRanges[e.value + "-lin"] = [
         e.linearMinimum,
         e.linearMaximum,

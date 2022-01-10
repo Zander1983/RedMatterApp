@@ -93,6 +93,7 @@ export interface File {
   src?: SrcType;
   axes: AxisName[];
   label: string;
+  labels: string[];
   defaultRanges: {
     [index: string]: Range;
   };
@@ -107,6 +108,7 @@ export interface EventsRequestResponse {
   events: number[][];
   channels: {
     value: AxisName;
+    label: string;
     display: PlotType;
     linearMinimum: number;
     linearMaximum: number;

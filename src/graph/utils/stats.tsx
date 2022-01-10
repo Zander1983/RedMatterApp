@@ -1,13 +1,28 @@
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
 import numeral from "numeral";
 import { sqrt } from "mathjs";
-import { Plot } from "graph/resources/types";
+import {
+  Plot,
+  File,
+  PopulationGateType,
+  Population,
+} from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
 import * as DatasetResource from "graph/resources/dataset";
-import { getFile, getPopulation } from "./workspace";
+import { getFile, getPopulation, getPlotFromPopulationId } from "./workspace";
 
 export default class PlotStats {
   plot: Plot;
+  file: File;
+
+  getPlotStatsWithFiles(file: File, population: Population) {
+    this.file = file;
+    const { xAxis, yAxis } = getPlotFromPopulationId(population.id);
+    const pop = this.getPopulationStatsWithFile(population.gates, xAxis, yAxis);
+    return {
+      gatedFilePopulationPercentage: pop.percentage,
+    };
+  }
 
   getPlotStats(plot: Plot, statsX: number, statsY: number) {
     this.plot = plot;
@@ -24,41 +39,53 @@ export default class PlotStats {
     };
   }
 
-  getPointsOutOfRange() {
-    let xyRange = PlotResource.getXandYRanges(this.plot);
-    let xRange = xyRange.x;
-    let yRange = xyRange.y;
-
-    let xMin = xRange[0];
-    let xMax = xRange[1];
-    let yMin = yRange[0];
-    let yMax = yRange[1];
-
-    let data = PlotResource.getXandYData(this.plot);
-
-    let length = Object.keys(data[0]).length;
-
-    let count = 0;
-
-    for (let i = 0; i < length; i++) {
-      let x = data[0][i];
-      let y = data[1][i];
-
-      if (x < xMin || x > xMax || y < yMin || y > yMax) {
-        count++;
-      }
-    }
-    return {
-      count: count,
-      percentage: count ? this.parseNum((count / length) * 100) : 0,
-    };
-  }
-
   private getStats(statX: number, statY: number) {
     const data = PlotResource.getXandYData(this.plot);
     let x = this.getMedianOrMean(statX, data[0]);
     let y = this.getMedianOrMean(statY, data[1]);
     return { x: x, y: y };
+  }
+
+  private getStatsWithFile(
+    statX: number,
+    statY: number,
+    gates: PopulationGateType[],
+    xAxis: string,
+    yAxis: string
+  ) {
+    const data = PlotResource.getXandYDataWithFiles(
+      this.file,
+      gates,
+      xAxis,
+      yAxis
+    );
+    let x = this.getMedianOrMean(statX, data[0]);
+    let y = this.getMedianOrMean(statY, data[1]);
+    return { x: x, y: y };
+  }
+
+  private getPopulationStatsWithFile(
+    gates: PopulationGateType[],
+    xAxis: string,
+    yAxis: string
+  ) {
+    const plotSize = PlotResource.getXandYDataWithFiles(
+      this.file,
+      gates,
+      xAxis,
+      yAxis
+    )[0].length;
+    const fileSize = DatasetResource.getDataset(this.file.id)[this.file.axes[0]]
+      .length;
+    let percentage: number | string = 100 * (plotSize / fileSize);
+    if (percentage < 1) {
+      percentage = " < 1%";
+    } else {
+      percentage = percentage.toFixed(2) + " %";
+    }
+    return {
+      percentage: percentage,
+    };
   }
 
   private getMedianOrMean(val: number, axis: Float32Array) {
@@ -122,5 +149,35 @@ export default class PlotStats {
     }
 
     return numeral(value).format("0a");
+  }
+
+  getPointsOutOfRange() {
+    let xyRange = PlotResource.getXandYRanges(this.plot);
+    let xRange = xyRange.x;
+    let yRange = xyRange.y;
+
+    let xMin = xRange[0];
+    let xMax = xRange[1];
+    let yMin = yRange[0];
+    let yMax = yRange[1];
+
+    let data = PlotResource.getXandYData(this.plot);
+
+    let length = Object.keys(data[0]).length;
+
+    let count = 0;
+
+    for (let i = 0; i < length; i++) {
+      let x = data[0][i];
+      let y = data[1][i];
+
+      if (x < xMin || x > xMax || y < yMin || y > yMax) {
+        count++;
+      }
+    }
+    return {
+      count: count,
+      percentage: count ? this.parseNum((count / length) * 100) : 0,
+    };
   }
 }
