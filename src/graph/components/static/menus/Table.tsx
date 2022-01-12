@@ -24,6 +24,7 @@ import {
   Population,
   Workspace,
   File,
+  PlotsRerender,
 } from "graph/resources/types";
 import {
   standardGridPlotItem,
@@ -32,6 +33,7 @@ import {
 
 import upArrow from "./../../../../assets/images/up_arrow.png";
 import downArrow from "./../../../../assets/images/down_arrow.png";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -282,6 +284,13 @@ const PlotTable = ({
           }
         });
       });
+      const plotsRerenderQueueItem: PlotsRerender = {
+        id: "",
+        used: false,
+        type: "plotsRerender",
+        plotIDs: plots.map((plot) => plot.id),
+      };
+      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
       setPlots(plots);
     }
     file.view = !file.view;
