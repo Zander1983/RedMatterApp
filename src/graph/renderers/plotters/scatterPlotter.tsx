@@ -8,6 +8,7 @@ import * as PlotResource from "graph/resources/plots";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
+
 /*
   How to use plotters?
    1. Instance the plotter (no args)
@@ -41,6 +42,8 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
   static instaceIndex = 0;
   instance: number;
+
+
 
   /* This will also create and add to itself all gate plugins it supports, so
      it's never duplicated. Needless to say this is a bad idea and should be
@@ -171,20 +174,27 @@ export default class ScatterPlotter extends PluginGraphPlotter {
         this.ranges.y[1]
       );
     }
+    let lastDistance = 0;
+    for (let i = 0; i < pointCount - 1; i++) {
+      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges)) continue;
+      if (this.isOutOfRange({ x: xData[i + 1], y: yData[i  + 1] }, customRanges)) continue;
 
-    for (let i = 0; i < pointCount; i++) {
-      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges))
-        continue;
-      const { x, y } = this.transformer.toConcretePoint(
-        {
-          x: xData[i],
-          y: yData[i],
-        },
-        customRanges
-      );
-      this.drawer.addPoint(x, y, 3, colors.getI(i));
+      const { x, y } = this.transformer.toConcretePoint({x: xData[i], y: yData[i]}, customRanges);
+      const { x: x2, y: y2 } = this.transformer.toConcretePoint({x: xData[i + 1], y: yData[i + 1]}, customRanges);
+
+      const xDiff: number = Math.abs(x - x2);
+      const yDiff: number = Math.abs(y - y2);
+      const distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+
+      if (Math.abs(distance) <= 60 || Math.abs(lastDistance - distance) <= 60) {
+          lastDistance = distance;
+          this.drawer.addPoint(x, y, 3, "#cc37c7");
+      } else {
+          this.drawer.addPoint(x, y, 3, colors.getI(i));
+      }
     }
   }
+
 
   private isOutOfRange(
     p: { x: number; y: number },
