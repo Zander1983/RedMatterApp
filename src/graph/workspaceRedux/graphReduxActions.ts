@@ -33,6 +33,7 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
+  ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
 };
 
 export const initialState: Workspace = {
@@ -85,6 +86,15 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...state,
         populations: [...state.populations, newPop],
+      };
+    case graphActions.ADD_PLOTS_AND_POPULATIONS:
+      const plotArray: Plot[] = action.payload.plots;
+      const populationArray: Population[] = action.payload.populations;
+
+      return {
+        ...state,
+        plots: [...state.plots, ...plotArray],
+        populations: [...state.populations, ...populationArray],
       };
 
     case graphActions.ADD_PLOT:

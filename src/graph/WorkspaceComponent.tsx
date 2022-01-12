@@ -416,7 +416,6 @@ const WorkspaceInnerComponent = (props: {
       />
 
       {/* == STATIC ELEMENTS == */}
-      {workspace.selectedFile && <PlotTable workspace={workspace} />}
       {/* <SideMenus workspace={workspace}></SideMenus> */}
       <NotificationsOverlay />
 
@@ -645,6 +644,15 @@ const WorkspaceInnerComponent = (props: {
           </div>
         </Grid>
       </Grid>
+      {workspace.selectedFile && (
+        <PlotTable
+          workspace={workspace}
+          sharedWorkspace={sharedWorkspace}
+          experimentId={props.experimentId}
+          workspaceLoading={workspaceLoading}
+          customPlotRerender={customPlotRerender}
+        />
+      )}
     </div>
   );
 };

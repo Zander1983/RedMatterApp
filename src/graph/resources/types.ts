@@ -102,6 +102,7 @@ export interface File {
   };
   downloaded: boolean;
   downloading: boolean;
+  view?: boolean;
 }
 
 export interface EventsRequestResponse {

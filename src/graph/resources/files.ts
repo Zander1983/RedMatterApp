@@ -34,6 +34,7 @@ export const createFile = async ({
     createdOn: new Date(),
     downloading: false,
     labels: [],
+    view: false,
   };
   const createdID = createID();
   if (requestData) {

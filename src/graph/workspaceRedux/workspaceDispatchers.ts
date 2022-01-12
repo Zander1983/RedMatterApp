@@ -50,6 +50,12 @@ const WorkspaceDispatch = {
       payload: { plots },
     });
   },
+  AddPlotsAndPopulations: (plots: Plot[], populations: Population[]) => {
+    return store.dispatch({
+      type: graphActions.ADD_PLOTS_AND_POPULATIONS,
+      payload: { plots, populations },
+    });
+  },
   AddGate: (gate: Gate) => {
     return store.dispatch({
       type: graphActions.ADD_GATE,

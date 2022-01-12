@@ -374,7 +374,7 @@ const AddFileModal = React.memo(
                               );
                               downloadFile(fileMetadata.id);
                               WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.name
+                                fileMetadata.id
                               );
                             }}
                           >
@@ -386,7 +386,7 @@ const AddFileModal = React.memo(
                                   height: 23,
                                 }}
                               />
-                            ) : props.selectedFile === fileMetadata.label ? (
+                            ) : props.selectedFile === fileMetadata.id ? (
                               "Selected As Control"
                             ) : (
                               "Set As Control"
@@ -409,12 +409,12 @@ const AddFileModal = React.memo(
                                 getFile(fileMetadata.id)
                               );
                               WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.name
+                                fileMetadata.id
                               );
                             }}
                             disabled={isDownloading}
                           >
-                            {props.selectedFile === fileMetadata.label
+                            {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"
                               : "Set As Control"}
                           </Button>

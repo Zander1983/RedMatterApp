@@ -66,14 +66,13 @@ export const createPlot = ({
   if (newPlot.population === "") {
     throw Error("Plot without population");
   }
-
   newPlot.dimensions = { w: MINW, h: MINH };
   let plots = getTargetLayoutPlots(newPlot);
   if (plots.length > 0) {
     newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
   }
 
-  return setupPlot(newPlot);
+  return setupPlot(newPlot, population);
 };
 
 export const updatePositions = () => {

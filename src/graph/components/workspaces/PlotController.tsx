@@ -45,6 +45,7 @@ let method = "file"; // TODO: sorry for this will be fixed later
 export interface PlotGroup {
   name: string;
   plots: Plot[];
+  id: string;
 }
 export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
@@ -68,6 +69,7 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       plotGroups = Object.keys(plotByFileMap).map((e) => {
         return {
           name: getFile(e).name,
+          id: getFile(e).id,
           plots: plotByFileMap[e],
         } as PlotGroup;
       });
@@ -98,12 +100,13 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       plotGroups = Object.keys(plotByPopGateMap).map((e) => {
         return {
           name: e === "No gates" ? e : getGate(e).name,
+          id: getFile(e).id,
           plots: plotByPopGateMap[e],
         } as PlotGroup;
       });
       break;
     case "all":
-      plotGroups = [{ name: "", plots: plots }];
+      plotGroups = [{ name: "", plots: plots, id: "" }];
       break;
     default:
       throw Error("wtf?");
@@ -178,7 +181,7 @@ export const setCanvasSize = (save: boolean = false) => {
   if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
-const standardGridPlotItem = (
+export const standardGridPlotItem = (
   index: number,
   plotData: any,
   plots: Plot[],
@@ -329,9 +332,10 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
+            const id = plotGroup.id;
 
             return (
-              <div key={name}>
+              <div key={id}>
                 {/* {name.length > 0 ? (
                   <div
                     style={{
@@ -352,7 +356,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     </h3>
                   </div>
                 ) : null} */}
-                {this.props.workspace.selectedFile === name && (
+                {this.props.workspace.selectedFile === id && (
                   <>
                     <div
                       style={{
