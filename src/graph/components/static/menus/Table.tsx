@@ -326,26 +326,28 @@ const PlotTable = ({
             {headers.map((values, index) => (
               <TableCell className={classes.tableCell} key={index}>
                 {values}
-                {index !== 0 && index !== headers.length - 1 && (
-                  <>
-                    <img
-                      onClick={() => {
-                        sortByColumn(index, "asc");
-                      }}
-                      src={downArrow}
-                      alt="down-arrow"
-                      className={classes.arrow}
-                    />
-                    <img
-                      onClick={() => {
-                        sortByColumn(index, "dsc");
-                      }}
-                      src={upArrow}
-                      alt="up-arrow"
-                      className={classes.arrow}
-                    />
-                  </>
-                )}
+                {index !== 0 &&
+                  index !== headers.length - 1 &&
+                  workspace.files.filter((file) => file.view).length === 0 && (
+                    <>
+                      <img
+                        onClick={() => {
+                          sortByColumn(index, "asc");
+                        }}
+                        src={downArrow}
+                        alt="down-arrow"
+                        className={classes.arrow}
+                      />
+                      <img
+                        onClick={() => {
+                          sortByColumn(index, "dsc");
+                        }}
+                        src={upArrow}
+                        alt="up-arrow"
+                        className={classes.arrow}
+                      />
+                    </>
+                  )}
               </TableCell>
             ))}
           </TableRow>

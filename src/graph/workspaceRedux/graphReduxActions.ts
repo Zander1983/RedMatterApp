@@ -25,6 +25,7 @@ export const graphActions = {
   UPDATE_PLOTS: "workspace.UPDATE_PLOTS",
   UPDATE_GATE: "workspace.UPDATE_GATE",
   DELETE_GATE: "workspace.DELETE_GATE",
+  DELETE_GATE_ONLY: "workspace.DELETE_GATE_ONLY",
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
@@ -240,7 +241,18 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         plots: state.plots,
       };
 
+    case graphActions.DELETE_GATE_ONLY:
+      const gateToBeDeleted = action.payload.gate;
+      state.gates = state.gates.filter((gate) => gate.id !== gateToBeDeleted);
+      return {
+        ...state,
+      };
+
     case graphActions.DELETE_POPULATION:
+      const populationToBeDeleted = action.payload.population;
+      state.populations = state.populations.filter(
+        (e) => e.id !== populationToBeDeleted.id
+      );
       return {
         ...state,
       };

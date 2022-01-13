@@ -116,6 +116,12 @@ const WorkspaceDispatch = {
       payload: { gate },
     });
   },
+  DeleteGateOnly: (gate: string) => {
+    return store.dispatch({
+      type: graphActions.DELETE_GATE_ONLY,
+      payload: { gate },
+    });
+  },
   SetWorkspaceShared: (sharedWorkspace: boolean) => {
     return store.dispatch({
       type: graphActions.SET_WORKSPACE_SHARED,
