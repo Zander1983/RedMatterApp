@@ -86,6 +86,11 @@ interface TableProps {
   customPlotRerender: string[];
 }
 
+interface PlotsAndFiles {
+  plot: Plot;
+  file: File;
+}
+
 const statsProvider = new PlotStats();
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -99,7 +104,7 @@ const PlotTable = ({
   const classes = useStyles();
   const [data, setData] = useState([]);
   const [file, setFile] = useState<File>(null);
-  const [plots, setPlots] = useState<Plot[]>([]);
+  const [plots, setPlots] = useState<PlotsAndFiles[]>([]);
   const [statistics, setStatistics] = useState<any[]>([]);
   const [headers, setHeaders] = useState<string[]>([
     "File Name",
@@ -115,6 +120,7 @@ const PlotTable = ({
           raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
         }
       }
+      raw.push(workspace.files[i].view ? "Close" : "View");
 
       if (!raw.includes(undefined)) {
         raws.push(raw);
@@ -192,7 +198,7 @@ const PlotTable = ({
     // filtering out the neumeric values from the string
     array = array.map((arr) => {
       return arr.map((value: any, index: number) => {
-        if (index) {
+        if (index !== 0 && index !== arr.length - 1) {
           return parseFloat(value.match(/[-+]?([0-9]*\.[0-9]+|[0-9]+)/));
         } else {
           return value;
@@ -218,7 +224,7 @@ const PlotTable = ({
     // converting the neumeric values to suitable string format
     array = array.map((arr) => {
       return arr.map((value: number, index: number) => {
-        if (index) {
+        if (index !== 0 && index !== arr.length - 1) {
           if (value === 1) {
             return `< ${value}%`;
           } else {
@@ -229,72 +235,75 @@ const PlotTable = ({
         }
       });
     });
-
+    const files: File[] = [];
+    for (let i = 0; i < workspace.files.length; i++) {
+      files.push(workspace.files.find((item) => item.name === array[i][0]));
+    }
+    WorkspaceDispatch.SetFiles(files);
     setData(array);
   };
 
-  const generatePlots = (file: File) => {
-    let populations: Population[] = [];
-    populations = workspace.populations.filter(
-      (population) => population.file === file.id
-    );
-
-    if (populations.length === 0) {
-      // Creating new Populations from old Populations
-      const controlFilePopulations = workspace.populations.filter(
-        (pop) => pop.file === workspace.selectedFile
-      );
-      const controlFilePlots: Plot[] = [];
-      const newPlots: Plot[] = [];
-      const newPopulations = controlFilePopulations.map((pop) =>
-        PopulationResource.createPopulation({
-          clonePopulation: pop,
-          file: file.id,
-        })
-      );
-
-      // Creating new plots with the newPopulations
-      controlFilePopulations.map((pop) =>
-        workspace.plots.map((plot) => {
-          if (plot.population === pop.id) {
-            controlFilePlots.push(plot);
-          }
-        })
-      );
-
-      for (let i = 0; i < controlFilePlots.length; i++) {
-        newPlots.push(
-          PlotResource.createPlot({
-            clonePlot: controlFilePlots[i],
-            population: newPopulations[i],
-          })
+  const generatePlots = () => {
+    const plots: PlotsAndFiles[] = [];
+    workspace.files.map((file) => {
+      if (file.view) {
+        let populations: Population[] = [];
+        populations = workspace.populations.filter(
+          (population) => population.file === file.id
         );
-      }
-      WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
-      setFile(file);
-      return;
-    }
 
-    const plots: Plot[] = [];
-    workspace.plots.map((plot) => {
-      populations.map((population) => {
-        if (population.id === plot.population) {
-          plots.push(plot);
+        if (populations.length === 0) {
+          // Creating new Populations from old Populations
+          const controlFilePopulations = workspace.populations.filter(
+            (pop) => pop.file === workspace.selectedFile
+          );
+          const controlFilePlots: Plot[] = [];
+          const newPlots: Plot[] = [];
+          const newPopulations = controlFilePopulations.map((pop) =>
+            PopulationResource.createPopulation({
+              clonePopulation: pop,
+              file: file.id,
+            })
+          );
+
+          // Creating new plots with the newPopulations
+          controlFilePopulations.map((pop) =>
+            workspace.plots.map((plot) => {
+              if (plot.population === pop.id) {
+                controlFilePlots.push(plot);
+              }
+            })
+          );
+
+          for (let i = 0; i < controlFilePlots.length; i++) {
+            newPlots.push(
+              PlotResource.createPlot({
+                clonePlot: controlFilePlots[i],
+                population: newPopulations[i],
+              })
+            );
+          }
+          WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
+          return;
         }
-      });
-    });
-    const plotsRerenderQueueItem: PlotsRerender = {
-      id: "",
-      used: false,
-      type: "plotsRerender",
-      plotIDs: plots.map((plot) => plot.id),
-    };
-    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-    setPlots(plots);
 
-    file.view = !file.view;
-    setFile(null);
-    WorkspaceDispatch.UpdateFile(file);
+        workspace.plots.map((plot) => {
+          populations.map((population) => {
+            if (population.id === plot.population) {
+              plots.push({ plot, file: getFile(population.file) });
+            }
+          });
+        });
+        const plotsRerenderQueueItem: PlotsRerender = {
+          id: "",
+          used: false,
+          type: "plotsRerender",
+          plotIDs: plots.map(({ plot }) => plot.id),
+        };
+        EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+      }
+    });
+    setPlots(plots);
   };
 
   useEffect(() => {
@@ -314,8 +323,8 @@ const PlotTable = ({
   }, [statistics]);
 
   useEffect(() => {
-    file && generatePlots(file);
-  }, [workspace.plots.length]);
+    generatePlots();
+  }, [workspace.plots.length, workspace.files]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
@@ -325,28 +334,26 @@ const PlotTable = ({
             {headers.map((values, index) => (
               <TableCell className={classes.tableCell} key={index}>
                 {values}
-                {index !== 0 &&
-                  index !== headers.length - 1 &&
-                  workspace.files.filter((file) => file.view).length === 0 && (
-                    <>
-                      <img
-                        onClick={() => {
-                          sortByColumn(index, "asc");
-                        }}
-                        src={downArrow}
-                        alt="down-arrow"
-                        className={classes.arrow}
-                      />
-                      <img
-                        onClick={() => {
-                          sortByColumn(index, "dsc");
-                        }}
-                        src={upArrow}
-                        alt="up-arrow"
-                        className={classes.arrow}
-                      />
-                    </>
-                  )}
+                {index !== 0 && index !== headers.length - 1 && (
+                  <>
+                    <img
+                      onClick={() => {
+                        sortByColumn(index, "asc");
+                      }}
+                      src={downArrow}
+                      alt="down-arrow"
+                      className={classes.arrow}
+                    />
+                    <img
+                      onClick={() => {
+                        sortByColumn(index, "dsc");
+                      }}
+                      src={upArrow}
+                      alt="up-arrow"
+                      className={classes.arrow}
+                    />
+                  </>
+                )}
               </TableCell>
             ))}
           </TableRow>
@@ -357,17 +364,23 @@ const PlotTable = ({
               <TableRow key={i}>
                 {headers.length > 1 &&
                   data.length > 0 &&
-                  data[i]?.map((value: any, index: any) => (
-                    <TableCell className={classes.tableCell} key={index}>
-                      {value}
-                    </TableCell>
-                  ))}
-                <TableCell
-                  className={`${classes.tableCell}  ${classes.view}`}
-                  onClick={() => generatePlots(file)}
-                >
-                  {file.view ? "Close" : "View"}
-                </TableCell>
+                  data[i]?.map((value: any, index: any) =>
+                    index !== data[i].length - 1 ? (
+                      <TableCell className={classes.tableCell} key={index}>
+                        {value}
+                      </TableCell>
+                    ) : (
+                      <TableCell
+                        className={`${classes.tableCell}  ${classes.view}`}
+                        onClick={() => {
+                          file.view = !file.view;
+                          WorkspaceDispatch.UpdateFile(file);
+                        }}
+                      >
+                        {value}
+                      </TableCell>
+                    )
+                  )}
               </TableRow>
               {file.view && (
                 <TableRow className={classes.otherFiles}>
@@ -392,37 +405,39 @@ const PlotTable = ({
                       >
                         {
                           //@ts-ignore
-                          plots.map((plot, i) => {
-                            return (
-                              <div
-                                key={plot.id}
-                                className={classes.itemOuterDiv}
-                                data-grid={standardGridPlotItem(
-                                  i,
-                                  plot,
-                                  plots,
-                                  workspace.editWorkspace
-                                )}
-                                id={`workspace-outter-${plot.id}`}
-                              >
+                          plots.map(({ plot, file: PlotFile }, i) => {
+                            if (PlotFile.id === file.id) {
+                              return (
                                 <div
-                                  id="inner"
-                                  className={classes.itemInnerDiv}
+                                  key={plot.id}
+                                  className={classes.itemOuterDiv}
+                                  data-grid={standardGridPlotItem(
+                                    i,
+                                    plot,
+                                    plots.map(({ plot }) => plot),
+                                    workspace.editWorkspace
+                                  )}
+                                  id={`workspace-outter-${plot.id}`}
                                 >
-                                  <PlotComponent
-                                    plotRelevantResources={getPlotRelevantResources(
-                                      plot
-                                    )}
-                                    sharedWorkspace={sharedWorkspace}
-                                    editWorkspace={workspace.editWorkspace}
-                                    workspaceLoading={workspaceLoading}
-                                    customPlotRerender={customPlotRerender}
-                                    experimentId={experimentId}
-                                    fileName={file.name}
-                                  />
+                                  <div
+                                    id="inner"
+                                    className={classes.itemInnerDiv}
+                                  >
+                                    <PlotComponent
+                                      plotRelevantResources={getPlotRelevantResources(
+                                        plot
+                                      )}
+                                      sharedWorkspace={sharedWorkspace}
+                                      editWorkspace={workspace.editWorkspace}
+                                      workspaceLoading={workspaceLoading}
+                                      customPlotRerender={customPlotRerender}
+                                      experimentId={experimentId}
+                                      fileName={file.name}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            );
+                              );
+                            }
                           })
                         }
                       </ResponsiveGridLayout>

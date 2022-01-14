@@ -157,12 +157,14 @@ const WorkspaceInnerComponent = (props: {
     func(false);
   };
 
+  // // Loading the files on creating the experiment
   useEffect(() => {
-    downloadAllEvents &&
-      workspace.plots.length < workspace.files.length &&
-      workspace.files.forEach((e) => downloadFile(e.id));
-  }, [downloadAllEvents]);
-
+    workspace.files.map((file) => {
+      if (!file.downloaded && !file.downloading) {
+        downloadFile(file.id);
+      }
+    });
+  }, [workspace.files]);
   const downloadFile = async (fileId: string) => {
     let file: File = getFile(fileId);
     if (!file.downloaded) {

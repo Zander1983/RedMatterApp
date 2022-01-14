@@ -76,36 +76,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
     // setting up the states
     let stats: any;
-    // let stats2: any;
-    // workspace.populations.map((population) => {
-    //   if (
-    //     population.gates.length > 0 &&
-    //     workspace.selectedFile === population.file
-    //   ) {
-    //     workspace.files.map((file) => {
-    //       if (file.id === population.file) {
-    //         if (workspace.plots.length > 0) {
-    //           stats2 = statsProvider.getPlotStatsWithFiles(file, population);
-    //         }
-    //       }
-    //     });
-    //   }
-    // });
-
-    // workspace.plots.map((plot) => {
-    //   const population = workspace.populations.find(
-    //     (item) => item.id === plot.population
-    //   );
-    //   if (population && population.gates.length) {
-    //     population.gates.map((g) => {
-    //       if (g.gate === gate.id) {
-    //         stats = statsProvider.getPlotStats(plot, 1, 1);
-    //       }
-    //     });
-    //   }
-    // });
-
-    // stats = statsProvider.getPlotStats(this.plotter.plot, 1, 1);
     const plotPopulation = getPopulation(this.plotter.plot.population);
     const plotFile = getFile(plotPopulation.file);
     const gates = JSON.parse(JSON.stringify(plotPopulation.gates));
@@ -116,8 +86,6 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
       plotPopulation,
       gates
     );
-    console.log(stats, plotFile);
-    // console.log(stats2);
 
     // adding a rect for better visualization
     const rectY = y - 15;

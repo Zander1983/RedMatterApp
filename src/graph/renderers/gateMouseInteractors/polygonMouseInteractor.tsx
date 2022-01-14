@@ -5,13 +5,11 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { AxisName, Gate, Point, PolygonGate } from "graph/resources/types";
-import { createGate } from "graph/resources/gates";
-import { getGate, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { AxisName, Point, PolygonGate } from "graph/resources/types";
+import { getPopulation, getWorkspace } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { isPointInsideWithLogicle } from "graph/resources/dataset";
-import { store } from "redux/store";
 import { getXandYRanges } from "graph/resources/plots";
 
 export const selectPointDist = 15;
@@ -108,53 +106,61 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   protected gateMoveToMousePosition(mouse: Point) {
-    const gatePivot = this.plotter.transformer.toConcretePoint(
-      {
-        ...this.gatePivot,
-      },
-      undefined,
-      true
-    );
-    let offset = {
-      x: mouse.x - gatePivot.x,
-      y: mouse.y - gatePivot.y,
-    };
-    this.gatePivot = this.plotter.transformer.toAbstractPoint(
-      {
-        ...mouse,
-      },
-      true
-    );
-    const gateState = this.targetEditGate;
-    for (let index = 0; index < gateState.points.length; index++) {
-      gateState.points[index] = { ...gateState.points[index] };
-      gateState.points[index] = this.plotter.transformer.toConcretePoint(
-        gateState.points[index],
+    const workspace = getWorkspace();
+    const plotPopulation = getPopulation(this.plotter.plot.population);
+    if (workspace.selectedFile === plotPopulation.file) {
+      const gatePivot = this.plotter.transformer.toConcretePoint(
+        {
+          ...this.gatePivot,
+        },
         undefined,
         true
       );
-      gateState.points[index] = {
-        x: gateState.points[index].x + offset.x,
-        y: gateState.points[index].y + offset.y,
+      let offset = {
+        x: mouse.x - gatePivot.x,
+        y: mouse.y - gatePivot.y,
       };
-      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
-        gateState.points[index],
+      this.gatePivot = this.plotter.transformer.toAbstractPoint(
+        {
+          ...mouse,
+        },
         true
       );
+      const gateState = this.targetEditGate;
+      for (let index = 0; index < gateState.points.length; index++) {
+        gateState.points[index] = { ...gateState.points[index] };
+        gateState.points[index] = this.plotter.transformer.toConcretePoint(
+          gateState.points[index],
+          undefined,
+          true
+        );
+        gateState.points[index] = {
+          x: gateState.points[index].x + offset.x,
+          y: gateState.points[index].y + offset.y,
+        };
+        gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+          gateState.points[index],
+          true
+        );
+      }
+      this.gateUpdater(gateState);
     }
-    this.gateUpdater(gateState);
   }
 
   protected pointMoveToMousePosition(mouse: Point) {
-    const gateState = this.targetEditGate;
-    gateState.points[this.targetPointIndex] = {
-      ...gateState.points[this.targetPointIndex],
-    };
-    gateState.points[this.targetPointIndex] =
-      this.plotter.transformer.rawAbstractLogicleToLinear(
-        this.plotter.transformer.toAbstractPoint(mouse)
-      );
-    this.gateUpdater(gateState);
+    const workspace = getWorkspace();
+    const plotPopulation = getPopulation(this.plotter.plot.population);
+    if (workspace.selectedFile === plotPopulation.file) {
+      const gateState = this.targetEditGate;
+      gateState.points[this.targetPointIndex] = {
+        ...gateState.points[this.targetPointIndex],
+      };
+      gateState.points[this.targetPointIndex] =
+        this.plotter.transformer.rawAbstractLogicleToLinear(
+          this.plotter.transformer.toAbstractPoint(mouse)
+        );
+      this.gateUpdater(gateState);
+    }
   }
 
   protected instanceGate(): PolygonGate {

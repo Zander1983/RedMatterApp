@@ -105,8 +105,6 @@ const AddFileModal = React.memo(
       setDowloading(downloadingFileIds);
     }, [props.files]);
 
-    const downloadAll = () => filesMetadata.forEach((e) => downloadFile(e.id));
-
     const everythingDownloaded = filesMetadata
       .map((e) => e.downloaded)
       .every((e) => e);
@@ -372,7 +370,7 @@ const AddFileModal = React.memo(
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
-                              downloadFile(fileMetadata.id);
+                              // downloadFile(fileMetadata.id);
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );

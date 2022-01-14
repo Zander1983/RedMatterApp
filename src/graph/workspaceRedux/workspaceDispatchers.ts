@@ -26,6 +26,12 @@ const WorkspaceDispatch = {
       payload: { workspace },
     });
   },
+  SetFiles: (files: File[]) => {
+    return store.dispatch({
+      type: graphActions.SET_FILES,
+      payload: { files },
+    });
+  },
   AddFile: (file: File) => {
     return store.dispatch({
       type: graphActions.ADD_FILE,

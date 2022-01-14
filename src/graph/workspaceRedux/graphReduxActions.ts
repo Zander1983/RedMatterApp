@@ -14,6 +14,7 @@ export const graphActions = {
   RESET: "workspace.RESET",
   RESET_EVERYTHING_BUT_FILES: "workspace.RESET_EVERYTHING_BUT_FILES",
   LOAD_WORKSPACE: "workspace.LOAD_WORKSPACE",
+  SET_FILES: "workspace.SET_FILES",
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
@@ -66,6 +67,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       const newWorkspace: Workspace = action.payload.workspace;
       return newWorkspace;
 
+    case graphActions.SET_FILES:
+      const files = action.payload.files;
+      return {
+        ...state,
+        files: files,
+      };
     case graphActions.ADD_FILE:
       const newFile: File = action.payload.file;
       if (state.files.find((e) => e.id === newFile.id)) {
