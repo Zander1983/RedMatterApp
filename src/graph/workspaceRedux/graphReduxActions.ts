@@ -35,6 +35,7 @@ export const graphActions = {
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
   ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
+  DELETE_PLOTS_AND_POPULATIONS: "workspace.DELETE_PLOTS_AND_POPULATIONS",
 };
 
 export const initialState: Workspace = {
@@ -98,6 +99,19 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         populations: [...state.populations, ...populationArray],
       };
 
+    case graphActions.DELETE_PLOTS_AND_POPULATIONS:
+      const deletePlots: string[] = action.payload.plots;
+      const deletePopulations: string[] = action.payload.populations;
+
+      state.plots = state.plots.filter((plot) => {
+        return !deletePlots.includes(plot.id);
+      });
+      state.populations = state.populations.filter((pop) => {
+        return !deletePopulations.includes(pop.id);
+      });
+      return {
+        ...state,
+      };
     case graphActions.ADD_PLOT:
       const newPlot: Plot = action.payload.plot;
       if (state.plots.find((e) => e.id === newPlot.id)) {

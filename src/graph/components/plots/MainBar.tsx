@@ -8,7 +8,7 @@ import TouchAppIcon from "@material-ui/icons/TouchApp";
 import MessageModal from "../modals/MessageModal";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import gate from "../../../assets/images/gate.png";
-import { Plot, PlotsRerender } from "graph/resources/types";
+import { Plot, PlotsRerender, Population } from "graph/resources/types";
 import {
   getFile,
   getGate,
@@ -42,6 +42,31 @@ const classes = {
   },
 };
 
+export const deleteAllPlotsAndPopulationOfNonControlFile = () => {
+  const workspace = getWorkspace();
+  workspace.files.map((file) => {
+    file.view = false;
+    WorkspaceDispatch.UpdateFile(file);
+  });
+  const plots: string[] = [];
+  const populations: string[] = [];
+  workspace.files.map((file) => {
+    if (file.id !== workspace.selectedFile) {
+      workspace.populations.map((pop) => {
+        if (pop.file === file.id) {
+          populations.push(pop.id);
+          workspace.plots.map((plot) => {
+            if (plot.population === pop.id) {
+              plots.push(plot.id);
+            }
+          });
+        }
+      });
+    }
+  });
+  WorkspaceDispatch.DeletePlotsAndPopulations(plots, populations);
+};
+
 export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
@@ -62,7 +87,6 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
 
   const plot = props.plot;
   const workspace = getWorkspace();
-
   const deleteGateWithNoChild = () => {
     // Delete the plot
     WorkspaceDispatch.DeletePlot(plot);
@@ -81,7 +105,23 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
       WorkspaceDispatch.UpdatePlot(plt);
     });
     // Delete the gate
-    gates.map((gate) => WorkspaceDispatch.DeleteGateOnly(gate.gate));
+    gates.map((gate) => {
+      workspace.populations.map((pop) => {
+        pop.gates.map((g) => {
+          if (g.gate === gate.gate) {
+            workspace.plots.map((plt) => {
+              if (plt.population === pop.id) {
+                console.log("Delete Plot", pop.id);
+                WorkspaceDispatch.DeletePlot(plt);
+                WorkspaceDispatch.DeletePopulation(pop);
+              }
+            });
+            // console.log("Delete Population");
+          }
+        });
+      });
+      WorkspaceDispatch.DeleteGateOnly(gate.gate);
+    });
   };
 
   const deleteGateWithChild = () => {
@@ -221,16 +261,14 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
 
   const deletePlot = () => {
     const population = getPopulation(plot.population);
+    deleteAllPlotsAndPopulationOfNonControlFile();
+
     // If the plot is of Controlled file
     if (population.file === workspace.selectedFile) {
       // If the main plot is deleted of the control file
       // Clear the entire workspace
       if (population.gates.length === 0) {
         WorkspaceDispatch.ResetWorkspaceExceptFiles();
-        workspace.files.map((file) => {
-          file.view = false;
-          WorkspaceDispatch.UpdateFile(file);
-        });
       } else if (population.gates.length === 1) {
         // Gates Created from RootFile
         if (plot.gates.length === 0) {
@@ -258,6 +296,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   };
 
   const gatingSetter = () => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";
@@ -382,6 +421,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           </h2>
         }
       />
+      {/* Drawing Polygon Gate */}
 
       <Grid
         container
@@ -393,24 +433,27 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
         }}
         direction="row"
       >
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setDeleteModalOpen(true)}
-          style={{
-            backgroundColor: "#c45",
-            fontSize: 12,
-            height: "2rem",
-          }}
-          disabled={!props.editWorkspace}
-        >
-          <CancelIcon
-            fontSize="small"
+        {workspace.selectedFile ===
+          getFile(getPopulation(plot.population).file).id && (
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => setDeleteModalOpen(true)}
             style={{
-              ...classes.iconButtonIcon,
+              backgroundColor: "#c45",
+              fontSize: 12,
+              height: "2rem",
             }}
-          ></CancelIcon>
-        </Button>
+            disabled={!props.editWorkspace}
+          >
+            <CancelIcon
+              fontSize="small"
+              style={{
+                ...classes.iconButtonIcon,
+              }}
+            ></CancelIcon>
+          </Button>
+        )}
 
         {/* Drawing Polygon Gate */}
         {workspace.selectedFile ===

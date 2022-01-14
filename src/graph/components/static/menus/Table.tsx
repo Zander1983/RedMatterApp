@@ -234,65 +234,64 @@ const PlotTable = ({
   };
 
   const generatePlots = (file: File) => {
-    if (!file.view) {
-      let populations: Population[] = [];
-      populations = workspace.populations.filter(
-        (population) => population.file === file.id
+    let populations: Population[] = [];
+    populations = workspace.populations.filter(
+      (population) => population.file === file.id
+    );
+
+    if (populations.length === 0) {
+      // Creating new Populations from old Populations
+      const controlFilePopulations = workspace.populations.filter(
+        (pop) => pop.file === workspace.selectedFile
+      );
+      const controlFilePlots: Plot[] = [];
+      const newPlots: Plot[] = [];
+      const newPopulations = controlFilePopulations.map((pop) =>
+        PopulationResource.createPopulation({
+          clonePopulation: pop,
+          file: file.id,
+        })
       );
 
-      if (populations.length === 0) {
-        // Creating new Populations from old Populations
-        const controlFilePopulations = workspace.populations.filter(
-          (pop) => pop.file === workspace.selectedFile
-        );
-        const controlFilePlots: Plot[] = [];
-        const newPlots: Plot[] = [];
-        const newPopulations = controlFilePopulations.map((pop) =>
-          PopulationResource.createPopulation({
-            clonePopulation: pop,
-            file: file.id,
-          })
-        );
-
-        // Creating new plots with the newPopulations
-        controlFilePopulations.map((pop) =>
-          workspace.plots.map((plot) => {
-            if (plot.population === pop.id) {
-              controlFilePlots.push(plot);
-            }
-          })
-        );
-
-        for (let i = 0; i < controlFilePlots.length; i++) {
-          newPlots.push(
-            PlotResource.createPlot({
-              clonePlot: controlFilePlots[i],
-              population: newPopulations[i],
-            })
-          );
-        }
-        WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
-        setFile(file);
-        return;
-      }
-
-      const plots: Plot[] = [];
-      workspace.plots.map((plot) => {
-        populations.map((population) => {
-          if (population.id === plot.population) {
-            plots.push(plot);
+      // Creating new plots with the newPopulations
+      controlFilePopulations.map((pop) =>
+        workspace.plots.map((plot) => {
+          if (plot.population === pop.id) {
+            controlFilePlots.push(plot);
           }
-        });
-      });
-      const plotsRerenderQueueItem: PlotsRerender = {
-        id: "",
-        used: false,
-        type: "plotsRerender",
-        plotIDs: plots.map((plot) => plot.id),
-      };
-      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-      setPlots(plots);
+        })
+      );
+
+      for (let i = 0; i < controlFilePlots.length; i++) {
+        newPlots.push(
+          PlotResource.createPlot({
+            clonePlot: controlFilePlots[i],
+            population: newPopulations[i],
+          })
+        );
+      }
+      WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
+      setFile(file);
+      return;
     }
+
+    const plots: Plot[] = [];
+    workspace.plots.map((plot) => {
+      populations.map((population) => {
+        if (population.id === plot.population) {
+          plots.push(plot);
+        }
+      });
+    });
+    const plotsRerenderQueueItem: PlotsRerender = {
+      id: "",
+      used: false,
+      type: "plotsRerender",
+      plotIDs: plots.map((plot) => plot.id),
+    };
+    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    setPlots(plots);
+
     file.view = !file.view;
     setFile(null);
     WorkspaceDispatch.UpdateFile(file);
@@ -419,7 +418,7 @@ const PlotTable = ({
                                     workspaceLoading={workspaceLoading}
                                     customPlotRerender={customPlotRerender}
                                     experimentId={experimentId}
-                                    fileName={""}
+                                    fileName={file.name}
                                   />
                                 </div>
                               </div>
