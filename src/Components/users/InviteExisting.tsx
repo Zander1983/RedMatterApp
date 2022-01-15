@@ -49,6 +49,7 @@ const InviteExisting = () => {
   const classes = useStyles();
   const history = useHistory();
   const [invitation, setInvitation] = useState<Invite>();
+  const [isInit, setInit] = useState(false);
 
   const onSubmit = async () => {
     try {
@@ -79,21 +80,29 @@ const InviteExisting = () => {
 
   useEffect(() => {
     !userManager.isLoggedIn() && history.push("/login");
-    fetchInvitation(params.id);
-  }, []);
+    if(isInit) {
+      const fetchInvitation = async (id: string) => {
+        try {
+          const {response}: { response: Invite } = await (
+              await axios.get(`/api/invite/${id}`)
+          ).data;
+          setInvitation(response);
+        } catch (error: any) {
+          const errorMsg = error.response.data.message;
+          snackbarService.showSnackbar(`${errorMsg}`, "error");
+          history.push("/");
+        }
+      };
 
-  const fetchInvitation = async (id: string) => {
-    try {
-      const { response }: { response: Invite } = await (
-        await axios.get(`/api/invite/${id}`)
-      ).data;
-      setInvitation(response);
-    } catch (error: any) {
-      const errorMsg = error.response.data.message;
-      snackbarService.showSnackbar(`${errorMsg}`, "error");
-      history.push("/");
+      (async () => {
+        await fetchInvitation(params.id);
+        setInit(true)
+      })();
     }
-  };
+
+  }, [params.id, history, isInit]);
+
+
 
   return (
     <Button className={classes.content} onClick={() => onSubmit()}>

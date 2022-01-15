@@ -45,7 +45,7 @@ const Features = () => {
 
   return (
     <Grid container className={classes.featuresContainer}>
-      <Grid xs={12} className={classes.featuresHeader}>
+      <Grid item xs={12} className={classes.featuresHeader}>
         <h1 className={classes.featuresHeaderText}>Features</h1>
       </Grid>
       {featureList.map((e, i) => (

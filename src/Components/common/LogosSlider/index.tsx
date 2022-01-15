@@ -19,12 +19,11 @@ const LogosSlider = ({ rtl, content }: LogoSliderType) => {
         {content &&
           content.length > 0 &&
           content.map((item: any, index: number) => (
-            <div>
+            <div key={Math.random() + index }>
               <img
                 src={"/universityLogos/" + item.name}
                 alt={`Clients-${index}`}
                 className={classes.logo}
-                key={index}
                 height={75}
               />
             </div>

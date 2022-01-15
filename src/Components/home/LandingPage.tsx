@@ -1,7 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
-import Plans from "./landingPageComponents/Plans";
 import LandingHeader from "./landingPageComponents/LandingHeader";
 import TargetUsers from "./landingPageComponents/TargetUsers";
 import Features from "./landingPageComponents/Features";
@@ -9,13 +8,12 @@ import Partners from "./landingPageComponents/Partners";
 import Universities from "./landingPageComponents/Universities";
 import { Divider } from "antd";
 import {
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from "@material-ui/core";
-import { useState } from "react";
+
 
 const useStyles = makeStyles((theme) => ({
   contentContainer: {
@@ -69,25 +67,24 @@ const AppLandingPage = () => {
   const classes = useStyles();
 
   return (
-    <Grid className={classes.mainContainer}>
+    <Grid className={classes.mainContainer} component={"div"}>
       <LandingHeader />
       <div className={classes.topRightTriangleContainer}>
-        <div className={classes.triangleTopRight}></div>
+        <div className={classes.triangleTopRight} />
       </div>
-      <div className={classes.triangleTopLeft}></div>
-      <Grid
+      <div className={classes.triangleTopLeft}/>
+      <Grid item
         className={classes.contentContainer}
         container
         xs={12}
         md={9}
-        lg={8}
-      >
+        lg={8} component={"div"}>
         <TargetUsers />
-        <Divider></Divider>
+        <Divider/>
         <Features />
-        <Divider></Divider>
+        <Divider/>
         <Partners />
-        <Divider></Divider>
+        <Divider/>
         <Universities />
         {/* <Divider></Divider>
         <Plans /> */}
@@ -97,15 +94,15 @@ const AppLandingPage = () => {
           </div>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component={"p"}>
             This is the new version of red matter, which is a significant
             up-gradation of the previous one.
           </DialogContentText>
-          <DialogContentText>
+          <DialogContentText component={'p'}>
             We encourage you to use the new version currently. It does not hold
             the previous version data, but on-demand, we can make that happen.
           </DialogContentText>
-          <DialogContentText>
+          <DialogContentText component={'p'}>
             Your old workspace is now available in a different domain, and you
             can access them with a click on the button below.
           </DialogContentText>

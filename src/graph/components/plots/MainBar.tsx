@@ -42,15 +42,15 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
   const [openResize, setOpenResize] = useState(false);
-  const [rangeResizeModalAxisX, setRangeResizeModalAxisX] = React.useState("");
-  const [rangeResizeModalAxisY, setRangeResizeModalAxisY] = React.useState("");
-  const [rangeResizeModalTargetMinX, setRangeResizeModalTargetMinX] =
+  const [, setRangeResizeModalAxisX] = React.useState("");
+  const [, setRangeResizeModalAxisY] = React.useState("");
+  const [, setRangeResizeModalTargetMinX] =
     React.useState(0);
-  const [rangeResizeModalTargetMaxX, setRangeResizeModalTargetMaxX] =
+  const [, setRangeResizeModalTargetMaxX] =
     React.useState(0);
-  const [rangeResizeModalTargetMinY, setRangeResizeModalTargetMinY] =
+  const [, setRangeResizeModalTargetMinY] =
     React.useState(0);
-  const [rangeResizeModalTargetMaxY, setRangeResizeModalTargetMaxY] =
+  const [, setRangeResizeModalTargetMaxY] =
     React.useState(0);
 
   //cambie los min y max para que ahora reciban los parametros para X e Y
@@ -152,7 +152,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   };
 
   return (
-    <Grid direction="row" style={classes.main} container>
+    <Grid direction="row" style={classes.main} container component={"div"}>
       <RangeResizeModal
         open={openResize}
         closeCall={{
@@ -160,7 +160,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           ref: setOpenResize,
         }}
         plot={props.plot}
-      ></RangeResizeModal>
+      />
       <MessageModal
         open={deleteModalOpen}
         closeCall={{
@@ -217,7 +217,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             style={{
               ...classes.iconButtonIcon,
             }}
-          ></CancelIcon>
+          />
         </Button>
 
         {/* Drawing Polygon Gate */}
@@ -259,7 +259,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
                   strokeWidth: 3,
                   stroke: "#491EC4",
                 }}
-              ></img>
+              />
             )}
           </Button>
         </Tooltip>
@@ -403,7 +403,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             }}
             disabled={!props.editWorkspace}
           >
-            <CameraFilled style={classes.iconButtonIcon}></CameraFilled>
+            <CameraFilled style={classes.iconButtonIcon}/>
           </Button>
         </Tooltip>
       </Grid>

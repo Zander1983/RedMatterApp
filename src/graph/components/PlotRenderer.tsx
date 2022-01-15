@@ -76,7 +76,7 @@ const PlotRenderer = (props: {
   const [histogramPlotter, setHistogramPlotter] =
     useState<HistogramPlotter | null>(null);
   const [lastGatingType, setLastGatingType] = useState<GateType>("");
-  const [loader, setLoader] = useState(false);
+  const [, setLoader] = useState(false);
   const plot = props.plot;
   const validateReady = (): boolean => {
     if (

@@ -32,7 +32,7 @@ export default function GateNamePrompt() {
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used == false
+      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
     );
     if (eventGateNamingArray.length > 0) {
       let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
@@ -145,7 +145,7 @@ export default function GateNamePrompt() {
           </Button>
           <Button
             onClick={() => {
-              if (name === "" || name == null) {
+              if (name === "" || name === null) {
                 setNameError(true);
               } else {
                 renameGate(name);

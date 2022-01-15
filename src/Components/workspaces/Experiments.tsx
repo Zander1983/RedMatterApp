@@ -12,7 +12,6 @@ import {
 } from "@material-ui/core";
 import ExperimentCard from "./ExperimentCard";
 import CreateExperimentModal from "./modals/ExperimentModal/CreateExperimentModal";
-import { useDispatch } from "react-redux";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import userManager from "Components/users/userManager";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -142,33 +141,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     privateExperiments,
     organizationExperiments,
   ]);
-
-  const sendRecoveryEmail = (experimentId: String) => {
-    axios
-      .post(
-        "/api/addRecoveryExperiment",
-        {
-          experimentId: experimentId,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      )
-      .then((response) => {
-        snackbarService.showSnackbar(
-          "Successfully Added in recovery bucket.",
-          "success"
-        );
-      })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failed to Add in recovery bucket",
-          "error"
-        );
-      });
-  };
 
   const setExperimentsToBeDisplayed = () => {
     let toDisplay: RemoteExperiment[] = [];

@@ -124,9 +124,11 @@ const Register = (props: any) => {
       });
     }
   };
+
   useLayoutEffect(() => {
     isUserLoggedin && window.location.replace("/");
-  }, []);
+  }, [isUserLoggedin]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -169,15 +171,11 @@ const Register = (props: any) => {
       justify="center"
       className={classes.gridContainer}
     >
-      <Grid
-        container
+      <Grid item
         lg={6}
         md={9}
         sm={12}
-        justify="center"
-        direction="column"
-        className={classes.innerGridContainer}
-      >
+        className={classes.innerGridContainer}>
         <h2>Create your Red Matter account</h2>
         <ValidatorForm
           ref={registerForm}
@@ -342,7 +340,7 @@ const Register = (props: any) => {
             )}
           </Grid>
 
-          <Grid justify="center" container style={{ marginTop: 30 }}>
+          <Grid container justify="center" style={{ marginTop: 30 }}>
             <Button type="submit" className={classes.submitBtn}>
               {loading ? (
                 <CircularProgress className={classes.loading} />

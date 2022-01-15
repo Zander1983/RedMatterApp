@@ -19,14 +19,14 @@ const Universities = () => {
   const classes = useStyles();
 
   return (
-    <Grid>
-      <Grid item={true} className={classes.mainContainer}>
+    <Grid container>
+      <Grid item className={classes.mainContainer}>
         <h1>
           Users all over the world trust{" "}
           <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry
         </h1>
         <Grid container className={classes.universitiesContainer}>
-          <Grid container className={classes.back}>
+          <Grid item className={classes.back}>
             <LogosSlider content={universities} />
             <LogosSlider content={universities.reverse()} rtl={true} />
           </Grid>

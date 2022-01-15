@@ -24,20 +24,20 @@ const AddFacilityModal = (props: {
     name: "",
     location: "",
   });
-  const { facility } = props;
+  // const { facility } = props;
   useEffect(() => {
-    if (facility) {
+    if (props.facility) {
       setFormData({
-        location: facility?.location,
-        name: facility?.name,
+        location: props.facility?.location,
+        name: props.facility?.name,
       });
     }
-  }, []);
+  }, [props.facility]);
 
   useEffect(() => {
     setIsChanged(
-      formData.name !== facility?.name ||
-        formData.location !== facility?.location
+      formData.name !== props.facility?.name ||
+        formData.location !== props.facility?.location
     );
   }, [formData]);
 
@@ -51,8 +51,8 @@ const AddFacilityModal = (props: {
     try {
       setLoading(true);
       const response = await axios.post(
-        facility ? "/api/updateFacility" : "/api/createFacility",
-        facility ? { ...formData, id: facility._id } : formData,
+          props.facility ? "/api/updateFacility" : "/api/createFacility",
+          props.facility ? { ...formData, id: props.facility._id } : formData,
         {
           headers: {
             token: userManager.getToken(),
@@ -78,7 +78,7 @@ const AddFacilityModal = (props: {
     <div>
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title" style={{ margin: "auto" }}>
-          {facility ? "Update " : "Add "}
+          {props.facility ? "Update " : "Add "}
           {"Facility To Your Organisation"}
         </DialogTitle>
         <DialogContent>
@@ -139,7 +139,7 @@ const AddFacilityModal = (props: {
               <Button type="submit" disabled={!isChanged}>
                 {loading ? (
                   <CircularProgress style={{ width: 23, height: 23 }} />
-                ) : facility ? (
+                ) : props.facility ? (
                   "Update"
                 ) : (
                   "Add"

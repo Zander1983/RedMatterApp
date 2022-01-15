@@ -14,7 +14,6 @@ import useGAEventTrackers from "hooks/useGAEvents";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
 import axios from "axios";
 import { snackbarService } from "uno-material-ui";
-import { useStore } from "react-redux";
 import { fluorophoresData } from "../../../../assets/staticData/CreateExperimentModalData";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 

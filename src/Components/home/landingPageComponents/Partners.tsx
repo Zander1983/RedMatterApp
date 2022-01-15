@@ -30,15 +30,16 @@ const Partners = () => {
   const classes = useStyles();
   return (
     <Grid container>
-      <Grid xs={12} className={classes.featuresHeader}>
+      <Grid item xs={12} className={classes.featuresHeader}>
         <h1 className={classes.featuresHeaderText}>Partners</h1>
       </Grid>
-      <Grid xs={12}>
+      <Grid item xs={12}>
         <p className={classes.textContent}>
           {"Red Matter has partnered with "}
           <a
             href="https://fluorofinder.com/"
             target="_blank"
+            rel="noopener noreferrer"
             className={classes.fluoroFinder}
           >
             {"FluoroFinder"}
@@ -46,7 +47,7 @@ const Partners = () => {
           .
           <a
             href="https://fluorofinder.com/"
-            target="_blank"
+            rel="noopener noreferrer"
             className={classes.fluoroFinder}
           >
             {"FluoroFinder"}

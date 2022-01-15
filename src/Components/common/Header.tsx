@@ -7,7 +7,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import { useHistory, useLocation } from "react-router";
+import { useLocation } from "react-router";
 
 import icon from "../../assets/images/white_icon.png";
 import userManager from "Components/users/userManager";
@@ -39,7 +39,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const AppHeader = (props: any) => {
-  const history = useHistory();
   const location = useLocation();
   const isLoggedIn =
     Object.keys(

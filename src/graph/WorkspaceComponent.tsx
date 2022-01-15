@@ -1,5 +1,5 @@
-import { useSelector, useStore } from "react-redux";
-import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 
@@ -13,11 +13,10 @@ import ShareIcon from "@material-ui/icons/Share";
 import { green } from "@material-ui/core/colors";
 import { getFile } from "graph/utils/workspace";
 import { File } from "graph/resources/types";
-import * as PlotResource from "graph/resources/plots";
+
 
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
-import HowToUseModal from "./HowToUseModal";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 import MessageModal from "./components/modals/MessageModal";
@@ -25,7 +24,6 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import SideMenus from "./components/static/SideMenus";
 import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
 import {
   getAllFiles,
@@ -101,13 +99,11 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
   },
 }));
-
+let i = 0;
 const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
-  const store = useStore();
-
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -118,7 +114,7 @@ const WorkspaceInnerComponent = (props: {
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "plotsRerender"
+      (x: WorkspaceEvent) => x.type === "plotsRerender"
     );
     if (eventPlotsRerenderArray.length > 0) {
       let event: PlotsRerender = eventPlotsRerenderArray[0];
@@ -180,7 +176,7 @@ const WorkspaceInnerComponent = (props: {
   };
 
   useEffect(() => {
-    if (workspace.editWorkspace != editWorkspace) {
+    if (workspace.editWorkspace !== editWorkspace) {
       setEditWorkspace(workspace.editWorkspace);
     }
   }, [workspace.editWorkspace]);
@@ -226,7 +222,7 @@ const WorkspaceInnerComponent = (props: {
     if (!loadStatus.loaded && shared) {
     }
 
-    setAutosaveEnabled(shared ? false : true);
+    setAutosaveEnabled(!shared);
     notification.killNotification();
     setWorkspaceLoading(false);
   };
@@ -280,7 +276,7 @@ const WorkspaceInnerComponent = (props: {
       setWorkspaceLoading(true);
       setFileUploadInputValue("");
       let downloadedFiles = workspace.files.filter((x) => x.downloaded);
-      if (workspace.files.length == downloadedFiles.length) {
+      if (workspace.files.length === downloadedFiles.length) {
         initiateParseFlowJo(result, downloadedFiles);
       } else {
         let filetoBeDownloaded = workspace.files.filter((x) => !x.downloaded);
@@ -336,6 +332,8 @@ const WorkspaceInnerComponent = (props: {
   if (autosaveEnabled) {
     Debounce(() => saveWorkspace(), 5000);
   }
+
+  console.log("=======call work space============"+ (i++));
 
   return (
     <div
@@ -509,7 +507,7 @@ const WorkspaceInnerComponent = (props: {
                           type="file"
                           id="file"
                           ref={inputFile}
-                          value={fileUploadInputValue}
+                          value={fileUploadInputValue || null}
                           accept=".wsp"
                           style={{ display: "none" }}
                           onChange={(e) => {
@@ -544,7 +542,7 @@ const WorkspaceInnerComponent = (props: {
                           {savingWorkspace ? (
                             <CircularProgress
                               style={{ width: 20, height: 20 }}
-                            ></CircularProgress>
+                            />
                           ) : (
                             <Typography>Save Workspace</Typography>
                           )}
@@ -623,7 +621,7 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
-                ></PlotController>
+                />
               ) : (
                 <Grid
                   container
@@ -638,7 +636,7 @@ const WorkspaceInnerComponent = (props: {
                   alignItems="center"
                   alignContent="center"
                 >
-                  <CircularProgress></CircularProgress>
+                  <CircularProgress/>
                 </Grid>
               )}
             </Grid>

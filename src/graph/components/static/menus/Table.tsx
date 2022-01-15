@@ -154,7 +154,6 @@ const PlotTable = ({ workspace }: TableProps) => {
   useEffect(() => {
     workspace.files.map((file) => setData((prev) => [...prev, [file.name]]));
   }, [workspace.files.length]);
-  console.log(data);
 
   useEffect(() => {
     setHeaders([
@@ -174,7 +173,7 @@ const PlotTable = ({ workspace }: TableProps) => {
         <TableHead>
           <TableRow>
             {headers.map((values, index) => (
-              <TableCell className={classes.tableCell} key={values}>
+              <TableCell className={classes.tableCell} key={"top-"+ index}>
                 {values}
                 {index !== 0 && index !== headers.length - 1 && (
                   <>
@@ -203,15 +202,15 @@ const PlotTable = ({ workspace }: TableProps) => {
         <TableBody>
           {workspace?.files?.map((files, i) => (
             <>
-              <TableRow key={i}>
+              <TableRow key={"file-" + i}>
                 {headers.length > 1 &&
                   data.length > 0 &&
                   data[i]?.map((value: any, index: any) => (
                     <TableCell
                       className={classes.tableCell}
-                      key={index + value}
+                      key={"content-" + value}
                     >
-                      {value}
+                      {value || "NA"}
                     </TableCell>
                   ))}
                 <TableCell
@@ -227,7 +226,7 @@ const PlotTable = ({ workspace }: TableProps) => {
               </TableRow>
 
               {fileToBeViewed === fileNames[i] && (
-                <TableRow className={classes.otherFiles}></TableRow>
+                <TableRow className={classes.otherFiles}/>
               )}
             </>
           ))}
