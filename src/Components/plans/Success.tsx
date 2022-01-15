@@ -1,47 +1,47 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { NavLink } from "react-router-dom";
 import { Grid } from "@material-ui/core";
 import check from "./img/check.png";
 import { useDispatch } from "react-redux";
-import userManager from "Components/users/userManager";
 import { updateUserStripeDetails } from "../../services/StripeService";
 
 export default function Plans(props: { session_id: any }) {
-  const [session, setSession] = useState(null);
   const dispatch = useDispatch();
   useEffect(() => {
-    axios
-      .get(`/checkout-session?id=${props.session_id}`)
-      .then((response) => response.data)
-      .then((data) => {
-        if (data) {
+      if (props.session_id) {
           axios
-            .post(`/save-checkout`, {
-              body: {
-                id: data.id,
-                user: data.metadata.userId,
-                subscription: data.subscription,
-                customer: data.customer,
-              },
-            })
-            .then(() => {
-              axios
-                .post(`/add-subscription`, {
-                  body: {
-                    user: data.metadata.userId,
-                    subscriptionType: data.metadata.subscriptionType,
-                    subscription: data.subscription,
-                    customer: data.customer,
-                  },
-                })
-                .then(async () => {
-                  updateUserStripeDetails(dispatch);
-                });
-            });
-        }
-      });
-  }, []);
+              .get(`/checkout-session?id=${props.session_id}`)
+              .then((response) => response.data)
+              .then((data) => {
+                  if (data) {
+                      axios
+                          .post(`/save-checkout`, {
+                              body: {
+                                  id: data.id,
+                                  user: data.metadata.userId,
+                                  subscription: data.subscription,
+                                  customer: data.customer,
+                              },
+                          })
+                          .then(() => {
+                              axios
+                                  .post(`/add-subscription`, {
+                                      body: {
+                                          user: data.metadata.userId,
+                                          subscriptionType: data.metadata.subscriptionType,
+                                          subscription: data.subscription,
+                                          customer: data.customer,
+                                      },
+                                  })
+                                  .then(async () => {
+                                      updateUserStripeDetails(dispatch);
+                                  });
+                          });
+                  }
+              });
+      }
+  }, [dispatch, props.session_id]);
   return (
     <Grid
       container
@@ -78,7 +78,7 @@ export default function Plans(props: { session_id: any }) {
             width: "4em",
             margin: "15px auto 20px",
           }}
-        ></img>
+        />
         <h1>Your payment has been Received!</h1>
         <h2>
           Go to your

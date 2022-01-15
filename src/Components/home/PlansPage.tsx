@@ -16,8 +16,8 @@ const PlansPage = () => {
   const classes = useStyles();
 
   return (
-    <Grid>
-      <Grid className={classes.mainContainer} container xs={12} md={9} lg={8}>
+    <Grid container >
+      <Grid item className={classes.mainContainer} xs={12} md={9} lg={8} component={"div"}>
         <Plans />
       </Grid>
     </Grid>

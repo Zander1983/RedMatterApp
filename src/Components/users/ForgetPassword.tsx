@@ -98,7 +98,6 @@ const useStyles = makeStyles((theme) => ({
 
 const ForgetPassword = () => {
   const classes = useStyles();
-  const isUserLoggedin = userManager.isLoggedIn();
 
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -108,7 +107,10 @@ const ForgetPassword = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   useLayoutEffect(() => {
-    isUserLoggedin && window.location.replace("/");
+    const isLoggedIn = userManager.isLoggedIn() ;
+    if(isLoggedIn){
+      window.location.replace("/")
+    }
   }, []);
 
   const emailHandler = (value: string) => {

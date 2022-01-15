@@ -117,7 +117,7 @@ const ResetPassword = () => {
     setEnableSubmitBtn(
       password && confirmPassword && password === confirmPassword
     );
-  }, [confirmPassword]);
+  }, [confirmPassword, password]);
 
   // handling the reset password logic
   const submitHandler = async () => {

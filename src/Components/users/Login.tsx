@@ -115,7 +115,6 @@ const Login = (props: any) => {
       });
 
       setLoading(false);
-      let blankArray: any[] = [];
       const loginData = {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
         subscriptionDetails: userDetails.data?.userDetails?.subscriptionDetails,
@@ -185,7 +184,7 @@ const Login = (props: any) => {
             label="Email"
             onChange={handleChange}
             name="email"
-            value={formData.email}
+            value={formData.email || ""}
             variant="outlined"
             validators={["required", "isEmail"]}
             errorMessages={["Email is required", "Email is not valid"]}
@@ -199,7 +198,7 @@ const Login = (props: any) => {
             type="password"
             onChange={handleChange}
             name="password"
-            value={formData.password}
+            value={formData.password || ""}
             validators={["required", "minStringLength:8"]}
             errorMessages={[
               "Password is required",

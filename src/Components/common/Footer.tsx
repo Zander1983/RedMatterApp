@@ -10,7 +10,6 @@ import { useHistory } from "react-router";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import useForceUpdate from "hooks/forceUpdate";
-import { useLocation } from "react-router-dom";
 
 function Copyright() {
   return (
@@ -86,7 +85,6 @@ export default function Footer(props: any) {
   const forceUpdate = useForceUpdate();
   const classes = useStyles();
   const history = useHistory();
-  const location = useLocation();
 
   const [footers, setFooters] = React.useState(footerData);
 

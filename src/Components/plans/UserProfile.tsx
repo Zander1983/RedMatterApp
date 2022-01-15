@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Grid, Button } from "@material-ui/core";
@@ -82,11 +81,8 @@ const useStyles = makeStyles((theme) => ({
 export default function Plans(props: any) {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const [userObj, setuserObj] = useState(null);
-  const [sub, setSub] = useState(null);
+  const [userObj] = useState(null);
   const [lastDateText, setLastDateText] = useState("Next Billing Date:");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [email, setEmail] = useState("email@email.com");
   const [subSelect, setSubSelect] = useState(null);
   const [openChange, setOpenChange] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
@@ -94,7 +90,6 @@ export default function Plans(props: any) {
   const [openAddFacility, setOpenAddFacility] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [subscriptionLastDate, setSubscriptionLastDate] = useState(null);
-  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
   const [invoiceAmount, setInvoiceAmount] = useState(null);
   const [invoiceCurrency, setInvoiceCurrency] = useState(null);
   const [showSubscriptionDropdown, setShowSubscriptionDropdown] =
@@ -146,8 +141,8 @@ export default function Plans(props: any) {
         }
       } else if (subscriptionDetails.everSubscribed) {
         if (plans.length > 1) {
-          let filterPlans = plans.filter((x) => x.id != productId);
-          filterPlans = filterPlans.filter((x) => x.name != "Enterprise");
+          let filterPlans = plans.filter((x) => x.id !== productId);
+          filterPlans = filterPlans.filter((x) => x.name !== "Enterprise");
           setPlanFiltered(filterPlans);
           if (filterPlans.length > 0) showSubscriptionChange = true;
         }
@@ -169,7 +164,7 @@ export default function Plans(props: any) {
       alert("Please Select a subscription");
     } else {
       setProfileLoader(true);
-      let plan = plans.find((x) => x.id == option);
+      let plan = plans.find((x) => x.id === option);
       axios
         .post(
           "/update-subscription",
@@ -232,21 +227,20 @@ export default function Plans(props: any) {
 
   const copiedToClipboard = () => {
     snackbarService.showSnackbar("Copied to clipboard", "success");
-
     closeModal();
   };
 
   useEffect(() => {
+    const initUserProfile = async () => {
+      setProfileLoader(true);
+      let plans = await getPlans();
+      setPlans(plans);
+      await setVisibility(plans);
+      setProfileLoader(false);
+    };
     initUserProfile();
-  }, []);
+  }, [dispatch]);
 
-  const initUserProfile = async () => {
-    setProfileLoader(true);
-    let plans = await getPlans();
-    setPlans(plans);
-    await setVisibility(plans);
-    setProfileLoader(false);
-  };
 
   const resumeSubscription = () => {
     setProfileLoader(true);
@@ -277,24 +271,21 @@ export default function Plans(props: any) {
         close={closeModal}
         user={userObj}
         copiedToClipboard={copiedToClipboard}
-        facility={facility}
-      ></AddUsersModal>
+        facility={facility}/>
       <AddFacilityModal
         open={openAddFacility}
         close={closeModal}
-        facility={facility}
-      />
+        facility={facility}/>
       <ChangeSubscriptionModal
         open={openChange}
         close={closeModal}
         updateSubscription={changeSubscription}
-        subSelect={subSelect}
-      ></ChangeSubscriptionModal>
+        subSelect={subSelect}/>
       <CancelSubscriptionModal
         open={openCancel}
         close={closeModal}
         cancelSubscription={cancelSubscription}
-      ></CancelSubscriptionModal>
+      />
       <Grid
         container
         alignContent="center"
@@ -331,7 +322,7 @@ export default function Plans(props: any) {
           {/* <h2>{userObj == null ? "user email" : userObj.userDetails.email}</h2> */}
           {profileLoader ? (
             <div>
-              <CircularProgress></CircularProgress>
+              <CircularProgress/>
             </div>
           ) : (
             <div>
@@ -451,7 +442,7 @@ export default function Plans(props: any) {
                 </Grid>
 
                 <Grid item lg={6} md={6} sm={6}>
-                  {subscription == "Premium" ? ( // should be Enterprise here.
+                  {subscription === "Premium" ? ( // should be Enterprise here.
                     <div
                       style={{ display: "flex", justifyContent: "flex-end" }}
                     >
@@ -485,9 +476,9 @@ export default function Plans(props: any) {
             direction="row"
             style={{ textAlign: "center" }}
           >
-            <Grid item lg={7} md={6} sm={1}></Grid>
+            <Grid item lg={7} md={6} sm={1}/>
 
-            <Grid item lg={1} md={1} sm={1}></Grid>
+            <Grid item lg={1} md={1} sm={1}/>
           </Grid>
         </Grid>
       </Grid>

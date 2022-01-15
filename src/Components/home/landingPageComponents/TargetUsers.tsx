@@ -4,7 +4,6 @@ import Grid from "@material-ui/core/Grid";
 import lab from "assets/images/lab2.png";
 import researcher from "assets/images/researcher.png";
 import uni from "assets/images/uni3.png";
-import { Divider } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
@@ -38,7 +37,7 @@ const TargetUsers = () => {
   return (
     <Grid container className={classes.mainContainer} spacing={3}>
       {targetUserList.map((targetUser, i) => (
-        <Grid item container xs={12} md={4} className={classes.cardContainer}>
+        <Grid key={i} item container xs={12} md={4} className={classes.cardContainer}>
           <Grid className={classes.imageContainer}>
             <img
               alt={targetUser.title}

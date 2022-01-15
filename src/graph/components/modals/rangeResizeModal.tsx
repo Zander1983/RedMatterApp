@@ -6,8 +6,7 @@ import { snackbarService } from "uno-material-ui";
 import { Divider } from "antd";
 import { Plot, Range } from "graph/resources/types";
 import * as PlotResource from "graph/resources/plots";
-import { store } from "redux/store";
-import { getPopulation, getWorkspace } from "graph/utils/workspace";
+import { getWorkspace } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const useStyles = makeStyles((theme) => ({
