@@ -347,12 +347,12 @@ const Experiment = (props: any) => {
 
   const GenOrView = async (event: any) => {
     event.preventDefault();
-    console.log(event.target);
-    console.log(event.target.getAttribute("data-id"));
-    console.log(event.target.getAttribute("data-link"));
+    //console.log(event.target);
+   // console.log(event.target.getAttribute("data-id"));
+    //console.log(event.target.getAttribute("data-link"));
     let currentElm = event.target;
     const link = currentElm.getAttribute("data-link");
-    if (link) {
+    if (!link) {
       ///open report in new tab
       let win = window.open();
       win.location.href = link;
@@ -366,42 +366,41 @@ const Experiment = (props: any) => {
       // fileid : event.target.id
       try {
         //build url to dynamic
-        const URL = "";
-        const response = await axios.post(
-          URL,
-          {
-            environment: "integration",
-            experimentId: props.id,
-            fileId: event.target.id,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              token: userManager.getToken(),
-            },
-          }
-        );
-        if (response.status === 200) await handleResponse(response.data);
-        else
-          await handleError({
-            message: "Request not completed",
-            saverity: "error",
-          });
+        const fileId = event.target.getAttribute("data-id");
+        const URL = `http://localhost:8080/api/report/${'61d1df3b4775ec12f26a8bcb'}/${'9fc51860-6bf0-11ec-8baf-b9ee2147d2ed'}`;
+        const response = await axios.get(URL, {headers: {"Content-Type": "application/json",token: userManager.getToken()}});
+        //console.log(" ==== response ========");
+        //console.log(response);
+        if (response.status === 200) await handleResponse(response.data, true);
+        else await handleError({message: "Request not completed", saverity: "error"});
       } catch (error) {
         await handleError(error);
       }
     }
   };
 
+  const doStaff = async (data:any) => {
+    //link veiw code here
+  };
+
   const handleResponse = async (response: any, isMsgShow = false) => {
-    if (isMsgShow) {
+    if(response?.level === "success") {
+      if (isMsgShow) {
+        showMessageBox({
+          title: "Success !",
+          message: response?.data?.message || "Request Success",
+          saverity: "success",
+        });
+      }
+      await doStaff(response);
+    }else if(response?.level === "danger"){
       showMessageBox({
-        title: "Success !",
-        message: response?.data?.message || "Request Success",
-        saverity: "success",
+        message: response?.message || "Request Not Completed",
+        saverity: "error",
       });
+    }else {
+      await handleError({});
     }
-    // take other action for success
   };
 
   const handleError = async (error: any) => {
@@ -424,6 +423,11 @@ const Experiment = (props: any) => {
           saverity: "error",
         });
       }
+    }else{
+      showMessageBox({
+        message: error?.message || "Request Failed",
+        saverity: error.saverity || "error",
+      });
     }
   };
 
