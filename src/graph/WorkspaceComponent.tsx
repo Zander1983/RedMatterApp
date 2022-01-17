@@ -14,6 +14,7 @@ import { green } from "@material-ui/core/colors";
 import { getFile } from "graph/utils/workspace";
 import { File } from "graph/resources/types";
 
+
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
 import SmallScreenNotice from "./SmallScreenNotice";
@@ -23,11 +24,13 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
+
 import {
   downloadFileEvent,
   downloadFileMetadata,
   dowloadAllFileEvents,
 } from "services/FileService";
+
 import {
   getAllFiles,
   loadWorkspaceFromRemoteIfExists,
@@ -211,6 +214,7 @@ const WorkspaceInnerComponent = (props: {
     if (!loadStatus.loaded && shared) {
     }
 
+    setAutosaveEnabled(!shared);
     notification.killNotification();
     await downloadFileMetadata(shared, experimentId);
     setWorkspaceLoading(false);
@@ -323,7 +327,7 @@ const WorkspaceInnerComponent = (props: {
   }
 
   console.log("=======call work space============" + i++);
-
+      
   return (
     <div
       style={{

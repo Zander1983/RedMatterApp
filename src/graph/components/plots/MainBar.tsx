@@ -79,6 +79,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [, setRangeResizeModalTargetMinY] = React.useState(0);
   const [, setRangeResizeModalTargetMaxY] = React.useState(0);
 
+
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
   const plot = props.plot;
@@ -418,7 +419,6 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           </h2>
         }
       />
-      {/* Drawing Polygon Gate */}
 
       <Grid
         container
@@ -430,26 +430,28 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
         }}
         direction="row"
       >
+
         {workspace.selectedFile ===
           getFile(getPopulation(plot.population).file).id && (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => setDeleteModalOpen(true)}
+
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => setDeleteModalOpen(true)}
+          style={{
+            backgroundColor: "#c45",
+            fontSize: 12,
+            height: "2rem",
+          }}
+          disabled={!props.editWorkspace}
+        >
+          <CancelIcon
+            fontSize="small"
             style={{
-              backgroundColor: "#c45",
-              fontSize: 12,
-              height: "2rem",
+              ...classes.iconButtonIcon,
             }}
-            disabled={!props.editWorkspace}
-          >
-            <CancelIcon
-              fontSize="small"
-              style={{
-                ...classes.iconButtonIcon,
-              }}
-            ></CancelIcon>
-          </Button>
+          />
+        </Button>
         )}
 
         {/* Drawing Polygon Gate */}

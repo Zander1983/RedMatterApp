@@ -321,6 +321,7 @@ const PlotTable = ({
     updateStats();
   }, [workspace]);
 
+
   useEffect(() => {
     setHeaders([
       "File Name",
