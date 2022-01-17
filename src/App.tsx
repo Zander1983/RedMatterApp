@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Route, Switch, useHistory } from "react-router-dom";
 import {
@@ -203,45 +203,45 @@ const App = () => {
   const profile: UserProfile = useSelector((state: any) => state.user.profile);
 
   useEffect(() => {
-     const updateProfileSub = (dispatch: any) => {
-       if (
-           profile &&
-           Object.keys(profile).length > 0 &&
-           userManager.isLoggedIn()
-       ) {
-         let subscriptionDetails = userManager.getSubscriptionDetails();
-         if (
-             userManager.isLoggedIn() &&
-             subscriptionDetails &&
-             subscriptionDetails.currentCycleEnd &&
-             userManager.getSubscriptionType()
-         ) {
-           let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
-           let subEndTime = date.getTime();
-           let currentTime = new Date().getTime();
-           if (currentTime >= subEndTime) {
-             axios
-                 .post(
-                     "/api/updateProfileSubcription",
-                     {
-                       subscriptionType: "",
-                     },
-                     {
-                       headers: {
-                         token: userManager.getToken(),
-                       },
-                     }
-                 )
-                 .then(async (response) => {
-                   await updateUserStripeDetails(dispatch);
-                   sessionCheckStarted = false;
-                 })
-                 .catch((e) => {});
-           }
-         }
-       }
-     };
-     updateProfileSub(dispatch);
+    const updateProfileSub = (dispatch: any) => {
+      if (
+        profile &&
+        Object.keys(profile).length > 0 &&
+        userManager.isLoggedIn()
+      ) {
+        let subscriptionDetails = userManager.getSubscriptionDetails();
+        if (
+          userManager.isLoggedIn() &&
+          subscriptionDetails &&
+          subscriptionDetails.currentCycleEnd &&
+          userManager.getSubscriptionType()
+        ) {
+          let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
+          let subEndTime = date.getTime();
+          let currentTime = new Date().getTime();
+          if (currentTime >= subEndTime) {
+            axios
+              .post(
+                "/api/updateProfileSubcription",
+                {
+                  subscriptionType: "",
+                },
+                {
+                  headers: {
+                    token: userManager.getToken(),
+                  },
+                }
+              )
+              .then(async (response) => {
+                await updateUserStripeDetails(dispatch);
+                sessionCheckStarted = false;
+              })
+              .catch((e) => {});
+          }
+        }
+      }
+    };
+    updateProfileSub(dispatch);
   }, [profile, dispatch]);
 
   useMemo(() => {
@@ -274,44 +274,36 @@ const App = () => {
     }
   }, [dispatch]);
 
-
   useEffect(() => {
-    dispatch({type: "RESET"});
+    dispatch({ type: "RESET" });
     axios.interceptors.response.use(
-        function (response) {
-          return response;
-        },
-        function (error) {
-          if (419 === error.response.status) {
-            if (!sessionCheckStarted) {
-              sessionCheckStarted = true;
-              axios
-                  .get("/api/authVerify", {
-                    headers: {
-                      refreshToken: userManager.getRefreshToken(),
-                    },
-                  })
-                  .then(async (response) => {
-                    let data = response.data;
-                    dispatch({
-                      type: "UPDATE_TOKENS",
-                      payload: {
-                        token: data.token,
-                        refreshToken: data.refreshToken,
-                      },
-                    });
-                    await updateUserStripeDetails(dispatch);
-                    sessionCheckStarted = false;
-                    window.location.reload();
-                  })
-                  .catch((e) => {});
-            }
-          } else if (401 === error.response.status) {
-            userManager.logout();
-            sessionCheckStarted = false;
-            history.replace("/login");
-          } else {
-            return Promise.reject(error);
+      function (response) {
+        return response;
+      },
+      function (error) {
+        if (419 === error.response.status) {
+          if (!sessionCheckStarted) {
+            sessionCheckStarted = true;
+            axios
+              .get("/api/authVerify", {
+                headers: {
+                  refreshToken: userManager.getRefreshToken(),
+                },
+              })
+              .then(async (response) => {
+                let data = response.data;
+                dispatch({
+                  type: "UPDATE_TOKENS",
+                  payload: {
+                    token: data.token,
+                    refreshToken: data.refreshToken,
+                  },
+                });
+                await updateUserStripeDetails(dispatch);
+                sessionCheckStarted = false;
+                window.location.reload();
+              })
+              .catch((e) => {});
           }
         } else if (401 === error.response.status) {
           userManager.logout();
@@ -334,7 +326,7 @@ const App = () => {
 
         {loading ? (
           <div className={classes.loaderClass}>
-            <CircularProgress/>
+            <CircularProgress />
           </div>
         ) : (
           <Content
