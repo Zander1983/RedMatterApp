@@ -14,6 +14,7 @@ export const graphActions = {
   RESET: "workspace.RESET",
   RESET_EVERYTHING_BUT_FILES: "workspace.RESET_EVERYTHING_BUT_FILES",
   LOAD_WORKSPACE: "workspace.LOAD_WORKSPACE",
+  SET_FILES: "workspace.SET_FILES",
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
@@ -25,6 +26,7 @@ export const graphActions = {
   UPDATE_PLOTS: "workspace.UPDATE_PLOTS",
   UPDATE_GATE: "workspace.UPDATE_GATE",
   DELETE_GATE: "workspace.DELETE_GATE",
+  DELETE_GATE_ONLY: "workspace.DELETE_GATE_ONLY",
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
   DELETE_PLOT: "workspace.DELETE_PLOT",
   DELETE_FILE: "workspace.DELETE_FILE",
@@ -33,6 +35,8 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
+  ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
+  DELETE_PLOTS_AND_POPULATIONS: "workspace.DELETE_PLOTS_AND_POPULATIONS",
 };
 
 export const initialState: Workspace = {
@@ -63,6 +67,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       const newWorkspace: Workspace = action.payload.workspace;
       return newWorkspace;
 
+    case graphActions.SET_FILES:
+      const files = action.payload.files;
+      return {
+        ...state,
+        files: files,
+      };
     case graphActions.ADD_FILE:
       const newFile: File = action.payload.file;
       if (state.files.find((e) => e.id === newFile.id)) {
@@ -86,7 +96,29 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         populations: [...state.populations, newPop],
       };
+    case graphActions.ADD_PLOTS_AND_POPULATIONS:
+      const plotArray: Plot[] = action.payload.plots;
+      const populationArray: Population[] = action.payload.populations;
 
+      return {
+        ...state,
+        plots: [...state.plots, ...plotArray],
+        populations: [...state.populations, ...populationArray],
+      };
+
+    case graphActions.DELETE_PLOTS_AND_POPULATIONS:
+      const deletePlots: string[] = action.payload.plots;
+      const deletePopulations: string[] = action.payload.populations;
+
+      state.plots = state.plots.filter((plot) => {
+        return !deletePlots.includes(plot.id);
+      });
+      state.populations = state.populations.filter((pop) => {
+        return !deletePopulations.includes(pop.id);
+      });
+      return {
+        ...state,
+      };
     case graphActions.ADD_PLOT:
       const newPlot: Plot = action.payload.plot;
       if (state.plots.find((e) => e.id === newPlot.id)) {
@@ -230,7 +262,18 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         plots: state.plots,
       };
 
+    case graphActions.DELETE_GATE_ONLY:
+      const gateToBeDeleted = action.payload.gate;
+      state.gates = state.gates.filter((gate) => gate.id !== gateToBeDeleted);
+      return {
+        ...state,
+      };
+
     case graphActions.DELETE_POPULATION:
+      const populationToBeDeleted = action.payload.population;
+      state.populations = state.populations.filter(
+        (e) => e.id !== populationToBeDeleted.id
+      );
       return {
         ...state,
       };

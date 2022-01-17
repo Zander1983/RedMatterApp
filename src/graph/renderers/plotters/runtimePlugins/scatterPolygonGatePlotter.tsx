@@ -3,7 +3,7 @@ import ScatterPlotter from "graph/renderers/plotters/scatterPlotter";
 import { euclidianDistance2D } from "graph/utils/euclidianPlane";
 import { selectPointDist } from "graph/renderers/gateMouseInteractors/polygonMouseInteractor";
 import { Point, PolygonGate, Workspace } from "graph/resources/types";
-import { getWorkspace } from "graph/utils/workspace";
+import { getWorkspace, getFile, getPopulation } from "graph/utils/workspace";
 import PlotStats from "graph/utils/stats";
 
 export interface ScatterPolygonGatePlotterState {}
@@ -76,18 +76,16 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
     // setting up the states
     let stats: any;
-    workspace.plots.map((plot) => {
-      const population = workspace.populations.find(
-        (item) => item.id === plot.population
-      );
-      if (population && population.gates.length) {
-        population.gates.map((g) => {
-          if (g.gate === gate.id) {
-            stats = statsProvider.getPlotStats(plot, 1, 1);
-          }
-        });
-      }
-    });
+    const plotPopulation = getPopulation(this.plotter.plot.population);
+    const plotFile = getFile(plotPopulation.file);
+    const gates = JSON.parse(JSON.stringify(plotPopulation.gates));
+    gates.push({ gate: gate.id, inverseGating: false });
+
+    stats = statsProvider.getPlotStatsWithFiles(
+      plotFile,
+      plotPopulation,
+      gates
+    );
 
     // adding a rect for better visualization
     const rectY = y - 15;

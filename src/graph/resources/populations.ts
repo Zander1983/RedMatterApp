@@ -30,10 +30,11 @@ export const createPopulation = ({
   };
 
   if (clonePopulation) newPopulation = { ...clonePopulation };
-  else if (subpopFrom) {
+  if (subpopFrom) {
     newPopulation = subpopFrom.population;
     newPopulation.gates = [...subpopFrom.population.gates, ...subpopFrom.gates];
-  } else if (file) newPopulation.file = file;
+  }
+  if (file) newPopulation.file = file;
 
   if (id) newPopulation.id = id;
   else newPopulation.id = createID();

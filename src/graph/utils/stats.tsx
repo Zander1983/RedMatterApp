@@ -15,10 +15,18 @@ export default class PlotStats {
   plot: Plot;
   file: File;
 
-  getPlotStatsWithFiles(file: File, population: Population) {
+  getPlotStatsWithFiles(
+    file: File,
+    population: Population,
+    gates: PopulationGateType[] = []
+  ) {
     this.file = file;
     const { xAxis, yAxis } = getPlotFromPopulationId(population.id);
-    const pop = this.getPopulationStatsWithFile(population.gates, xAxis, yAxis);
+    const pop = this.getPopulationStatsWithFile(
+      gates.length > 0 ? gates : population.gates,
+      xAxis,
+      yAxis
+    );
     return {
       gatedFilePopulationPercentage: pop.percentage,
     };
@@ -75,6 +83,7 @@ export default class PlotStats {
       xAxis,
       yAxis
     )[0].length;
+    // console.log(this.file);
     const fileSize = DatasetResource.getDataset(this.file.id)[this.file.axes[0]]
       .length;
     let percentage: number | string = 100 * (plotSize / fileSize);

@@ -33,6 +33,7 @@ export const downloadFileMetadata = async (
   const files = response.data.files;
   const workspace: Workspace = store.getState().workspace;
   let newFilesIds: FileID[] = [];
+  let allFiles: File[] = [];
   for (let newFile of files) {
     let file: any = {};
     file.createdOn = new Date(newFile.createdOn);
@@ -42,14 +43,14 @@ export const downloadFileMetadata = async (
     file.eventCount = newFile.eventCount;
     if (newFile.id in workspace.files.map((e: File) => e.id)) {
       file = { ...getFile(newFile.id), ...file };
-      WorkspaceDispatch.UpdateFile(file);
     } else {
       file.downloaded = false;
       file.id = newFile.id;
-      WorkspaceDispatch.AddFile(file);
     }
+    allFiles.push(file);
     newFilesIds.push(file.id);
   }
+  WorkspaceDispatch.SetFiles(allFiles);
   return newFilesIds;
 };
 
@@ -62,9 +63,7 @@ export const downloadFileEvent = async (
 ): Promise<FileID | FileID[]> => {
   let notification: Notification;
   if (showNotifications) {
-    notification = new Notification(
-      "Dowloading file" + (typeof targetFiles === "string" ? "" : "s")
-    );
+    notification = new Notification("Dowloading files", 120000);
   }
   try {
     let files: FileID[] = [];
@@ -130,7 +129,7 @@ export const downloadFileEvent = async (
       }
       return e;
     });
-
+    let killNoti = false;
     for (const file of response.data) {
       let newFile = await createFile({
         //@ts-ignore
@@ -143,8 +142,10 @@ export const downloadFileEvent = async (
       newFile.downloaded = true;
       newFile.downloading = false;
       WorkspaceDispatch.UpdateFile(newFile);
+      killNoti = true;
     }
-    if (showNotifications) {
+
+    if (killNoti && showNotifications) {
       notification.killNotification();
     }
     if (typeof targetFiles === "string") {

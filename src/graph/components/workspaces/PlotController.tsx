@@ -45,6 +45,7 @@ let method = "file"; // TODO: sorry for this will be fixed later
 export interface PlotGroup {
   name: string;
   plots: Plot[];
+  id: string;
 }
 export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
@@ -68,6 +69,7 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       plotGroups = Object.keys(plotByFileMap).map((e) => {
         return {
           name: getFile(e).name,
+          id: getFile(e).id,
           plots: plotByFileMap[e],
         } as PlotGroup;
       });
@@ -98,12 +100,13 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       plotGroups = Object.keys(plotByPopGateMap).map((e) => {
         return {
           name: e === "No gates" ? e : getGate(e).name,
+          id: getFile(e).id,
           plots: plotByPopGateMap[e],
         } as PlotGroup;
       });
       break;
     case "all":
-      plotGroups = [{ name: "", plots: plots }];
+      plotGroups = [{ name: "", plots: plots, id: "" }];
       break;
     default:
       throw Error("wtf?");
@@ -178,7 +181,7 @@ export const setCanvasSize = (save: boolean = false) => {
   if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
 };
 
-const standardGridPlotItem = (
+export const standardGridPlotItem = (
   index: number,
   plotData: any,
   plots: Plot[],
@@ -329,9 +332,10 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
+            const id = plotGroup.id;
 
             return (
-              <div key={name}>
+              <div key={`plot-controller-${id}`}>
                 {/* {name.length > 0 ? (
                   <div
                     style={{
@@ -352,84 +356,87 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     </h3>
                   </div>
                 ) : null} */}
-                {this.props.workspace.selectedFile === name && (
-                  <>
-                    <div
-                      style={{
-                        backgroundColor: "#6666AA",
-                        paddingLeft: 20,
-                        paddingBottom: 3,
-                        paddingTop: 3,
-                      }}
-                    >
-                      <h3 style={{ color: "white", marginBottom: 0 }}>
-                        {this.props.workspace.selectedFile === name && (
-                          <span style={{ fontWeight: "bolder" }}>
-                            {" "}
-                            Control Sample:{" "}
-                          </span>
-                        )}
-                        {name}
-                      </h3>
-                    </div>
-                    <div style={{ marginTop: 3, marginBottom: 10 }}>
-                      <ResponsiveGridLayout
-                        className="layout"
-                        breakpoints={{ lg: 1200 }}
-                        cols={{ lg: 36 }}
-                        rows={{ lg: 30 }}
-                        rowHeight={30}
-                        isDraggable={this.props.workspace.editWorkspace}
-                        onLayoutChange={(layout: any) => {
-                          this.savePlotPosition(layout);
-                        }}
-                        onResize={(layout: any) => {
-                          setCanvasSize(false);
-                        }}
-                        onResizeStop={(layout: any) => {
-                          setCanvasSize(true);
+                {this.props.workspace.selectedFile === id &&
+                  this.props.workspace.files[0].downloaded && (
+                    <>
+                      <div
+                        style={{
+                          backgroundColor: "#6666AA",
+                          paddingLeft: 20,
+                          paddingBottom: 3,
+                          paddingTop: 3,
                         }}
                       >
-                        {
-                          //@ts-ignore
-                          plots.map((plot, i) => {
-                            return (
-                              <div
-                                key={plot.id}
-                                style={classes.itemOuterDiv}
-                                data-grid={standardGridPlotItem(
-                                  i,
-                                  plot,
-                                  plots,
-                                  this.props.workspace.editWorkspace
-                                )}
-                                id={`workspace-outter-${plot.id}`}
-                              >
-                                <div id="inner" style={classes.itemInnerDiv}>
-                                  <PlotComponent
-                                    plotRelevantResources={this.getPlotRelevantResources(
-                                      plot
-                                    )}
-                                    sharedWorkspace={this.props.sharedWorkspace}
-                                    editWorkspace={
-                                      this.props.workspace.editWorkspace
-                                    }
-                                    workspaceLoading={this.getWorkspaceLoading()}
-                                    customPlotRerender={
-                                      this.props.customPlotRerender
-                                    }
-                                    experimentId={this.props.experimentId}
-                                    fileName={name}
-                                  />
+                        <h3 style={{ color: "white", marginBottom: 0 }}>
+                          {this.props.workspace.selectedFile === name && (
+                            <span style={{ fontWeight: "bolder" }}>
+                              {" "}
+                              Control Sample:{" "}
+                            </span>
+                          )}
+                          {name}
+                        </h3>
+                      </div>
+                      <div style={{ marginTop: 3, marginBottom: 10 }}>
+                        <ResponsiveGridLayout
+                          className="layout"
+                          breakpoints={{ lg: 1200 }}
+                          cols={{ lg: 36 }}
+                          rows={{ lg: 30 }}
+                          rowHeight={30}
+                          isDraggable={this.props.workspace.editWorkspace}
+                          onLayoutChange={(layout: any) => {
+                            this.savePlotPosition(layout);
+                          }}
+                          onResize={(layout: any) => {
+                            setCanvasSize(false);
+                          }}
+                          onResizeStop={(layout: any) => {
+                            setCanvasSize(true);
+                          }}
+                        >
+                          {
+                            //@ts-ignore
+                            plots.map((plot, i) => {
+                              return (
+                                <div
+                                  key={`plot-controller-inner-${plot.id}`}
+                                  style={classes.itemOuterDiv}
+                                  data-grid={standardGridPlotItem(
+                                    i,
+                                    plot,
+                                    plots,
+                                    this.props.workspace.editWorkspace
+                                  )}
+                                  id={`workspace-outter-${plot.id}`}
+                                >
+                                  <div id="inner" style={classes.itemInnerDiv}>
+                                    <PlotComponent
+                                      plotRelevantResources={this.getPlotRelevantResources(
+                                        plot
+                                      )}
+                                      sharedWorkspace={
+                                        this.props.sharedWorkspace
+                                      }
+                                      editWorkspace={
+                                        this.props.workspace.editWorkspace
+                                      }
+                                      workspaceLoading={this.getWorkspaceLoading()}
+                                      customPlotRerender={
+                                        this.props.customPlotRerender
+                                      }
+                                      experimentId={this.props.experimentId}
+                                      fileName={name}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                        }
-                      </ResponsiveGridLayout>
-                    </div>
-                  </>
-                )}
+                              );
+                            })
+                          }
+                        </ResponsiveGridLayout>
+                      </div>
+                    </>
+                  )}
               </div>
             );
           })}

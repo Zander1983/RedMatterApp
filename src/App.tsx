@@ -34,7 +34,7 @@ import BrowseExperiments from "Components/home/BrowseExperiments";
 
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
-import { useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
 import userManager, { UserProfile } from "Components/users/userManager";
@@ -313,7 +313,16 @@ const App = () => {
           } else {
             return Promise.reject(error);
           }
-        });
+        } else if (401 === error.response.status) {
+          userManager.logout();
+          sessionCheckStarted = false;
+          history.replace("/login");
+        } else {
+          return Promise.reject(error);
+        }
+      }
+    );
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

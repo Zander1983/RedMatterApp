@@ -736,7 +736,7 @@ const Experiment = (props: any) => {
                       <div key={i}>
                         <Grid
                           item
-                          key={i}
+                          key={`experiment-file-id-${i}`}
                           xs={12}
                           style={{
                             textAlign: "left",
