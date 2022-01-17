@@ -26,6 +26,12 @@ const WorkspaceDispatch = {
       payload: { workspace },
     });
   },
+  SetFiles: (files: File[]) => {
+    return store.dispatch({
+      type: graphActions.SET_FILES,
+      payload: { files },
+    });
+  },
   AddFile: (file: File) => {
     return store.dispatch({
       type: graphActions.ADD_FILE,
@@ -48,6 +54,18 @@ const WorkspaceDispatch = {
     return store.dispatch({
       type: graphActions.ADD_PLOTS,
       payload: { plots },
+    });
+  },
+  AddPlotsAndPopulations: (plots: Plot[], populations: Population[]) => {
+    return store.dispatch({
+      type: graphActions.ADD_PLOTS_AND_POPULATIONS,
+      payload: { plots, populations },
+    });
+  },
+  DeletePlotsAndPopulations: (plots: string[], populations: string[]) => {
+    return store.dispatch({
+      type: graphActions.DELETE_PLOTS_AND_POPULATIONS,
+      payload: { plots, populations },
     });
   },
   AddGate: (gate: Gate) => {
@@ -107,6 +125,12 @@ const WorkspaceDispatch = {
   DeleteGate: (gate: Gate) => {
     return store.dispatch({
       type: graphActions.DELETE_GATE,
+      payload: { gate },
+    });
+  },
+  DeleteGateOnly: (gate: string) => {
+    return store.dispatch({
+      type: graphActions.DELETE_GATE_ONLY,
       payload: { gate },
     });
   },

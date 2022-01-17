@@ -8,8 +8,13 @@ import TouchAppIcon from "@material-ui/icons/TouchApp";
 import MessageModal from "../modals/MessageModal";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import gate from "../../../assets/images/gate.png";
-import { Plot, PlotsRerender } from "graph/resources/types";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { Plot, PlotsRerender, Population } from "graph/resources/types";
+import {
+  getFile,
+  getGate,
+  getPopulation,
+  getWorkspace,
+} from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { CameraFilled } from "@ant-design/icons";
@@ -37,6 +42,31 @@ const classes = {
   },
 };
 
+export const deleteAllPlotsAndPopulationOfNonControlFile = () => {
+  const workspace = getWorkspace();
+  workspace.files.map((file) => {
+    file.view = false;
+    WorkspaceDispatch.UpdateFile(file);
+  });
+  const plots: string[] = [];
+  const populations: string[] = [];
+  workspace.files.map((file) => {
+    if (file.id !== workspace.selectedFile) {
+      workspace.populations.map((pop) => {
+        if (pop.file === file.id) {
+          populations.push(pop.id);
+          workspace.plots.map((plot) => {
+            if (plot.population === pop.id) {
+              plots.push(plot.id);
+            }
+          });
+        }
+      });
+    }
+  });
+  WorkspaceDispatch.DeletePlotsAndPopulations(plots, populations);
+};
+
 export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
@@ -44,21 +74,218 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [openResize, setOpenResize] = useState(false);
   const [, setRangeResizeModalAxisX] = React.useState("");
   const [, setRangeResizeModalAxisY] = React.useState("");
-  const [, setRangeResizeModalTargetMinX] =
-    React.useState(0);
-  const [, setRangeResizeModalTargetMaxX] =
-    React.useState(0);
-  const [, setRangeResizeModalTargetMinY] =
-    React.useState(0);
-  const [, setRangeResizeModalTargetMaxY] =
-    React.useState(0);
+  const [, setRangeResizeModalTargetMinX] = React.useState(0);
+  const [, setRangeResizeModalTargetMaxX] = React.useState(0);
+  const [, setRangeResizeModalTargetMinY] = React.useState(0);
+  const [, setRangeResizeModalTargetMaxY] = React.useState(0);
 
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
   const plot = props.plot;
+  const workspace = getWorkspace();
+  const deleteGateWithNoChild = () => {
+    // Delete the plot
+    WorkspaceDispatch.DeletePlot(plot);
+    // Delete the population and take the gateId
+    const gates = getPopulation(plot.population).gates;
+    WorkspaceDispatch.DeletePopulation(getPopulation(plot.population));
+    // Delete the gate id from parent plot
+    workspace.plots.map((plt) => {
+      plt.gates.map((gate) => {
+        gates.map((g) => {
+          if (g.gate === gate) {
+            plt.gates = plt.gates.filter((gate) => gate !== g.gate);
+          }
+        });
+      });
+      WorkspaceDispatch.UpdatePlot(plt);
+    });
+    // Delete the gate
+    gates.map((gate) => {
+      workspace.populations.map((pop) => {
+        pop.gates.map((g) => {
+          if (g.gate === gate.gate) {
+            workspace.plots.map((plt) => {
+              if (plt.population === pop.id) {
+                console.log("Delete Plot", pop.id);
+                WorkspaceDispatch.DeletePlot(plt);
+                WorkspaceDispatch.DeletePopulation(pop);
+              }
+            });
+            // console.log("Delete Population");
+          }
+        });
+      });
+      WorkspaceDispatch.DeleteGateOnly(gate.gate);
+    });
+  };
+
+  const deleteGateWithChild = () => {
+    // 1. Handeling the Parent Part
+    WorkspaceDispatch.DeletePlot(plot);
+    plot.gates.map((gate) => WorkspaceDispatch.DeleteGateOnly(gate));
+    const gates = getPopulation(plot.population).gates;
+    WorkspaceDispatch.DeletePopulation(getPopulation(plot.population));
+    workspace.plots.map((plt) => {
+      plt.gates.map((gate) => {
+        gates.map((g) => {
+          if (g.gate === gate) {
+            plt.gates = plt.gates.filter((gate) => gate !== g.gate);
+          }
+        });
+      });
+      WorkspaceDispatch.UpdatePlot(plt);
+    });
+
+    // 2. Handeling the Child Part
+    const children: string[] = [];
+    gates.map((gate) => {
+      workspace.gates.map((gate) => gate.children.map((c) => children.push(c)));
+      WorkspaceDispatch.DeleteGateOnly(gate.gate);
+    });
+    children.map((child) => {
+      workspace.populations.map((pop) => {
+        pop.gates.map((gate) => {
+          if (gate.gate === child) {
+            workspace.plots.map((plot) => {
+              if (plot.population === pop.id) {
+                WorkspaceDispatch.DeletePlot(plot);
+                plot.gates.map((gate) =>
+                  WorkspaceDispatch.DeleteGateOnly(gate)
+                );
+              }
+            });
+            WorkspaceDispatch.DeletePopulation(pop);
+          }
+        });
+      });
+    });
+  };
+
+  const deleteGateFromGateWithNoChild = () => {
+    // Delete the plot
+    WorkspaceDispatch.DeletePlot(plot);
+    // Delete the population and take the gateId
+    const gates = getPopulation(plot.population).gates[0];
+    WorkspaceDispatch.DeletePopulation(getPopulation(plot.population));
+    // Delete the gate id from parent plot
+    workspace.plots.map((plt) => {
+      plt.gates.map((gate) => {
+        if (gate === gates.gate) {
+          plt.gates = plt.gates.filter((gate) => gate !== gates.gate);
+        }
+      });
+      WorkspaceDispatch.UpdatePlot(plt);
+    });
+    // Delete the Gate and Update Parent Gate
+    workspace.gates.map((gate) => {
+      if (gate.id === gates.gate) {
+        gate.parents.map((parent) => {
+          workspace.gates.map((g) => {
+            if (g.id === parent) {
+              g.children = g.children.filter((ele) => ele !== gate.id);
+              WorkspaceDispatch.UpdateGate(g);
+            }
+          });
+        });
+        WorkspaceDispatch.DeleteGateOnly(gate.id);
+      }
+    });
+  };
+
+  const deleteGateFromGateWithChild = () => {
+    // Handeling the Parent part
+    // Deleting the plot
+    WorkspaceDispatch.DeletePlot(plot);
+    plot.gates.map((gate) => WorkspaceDispatch.DeleteGateOnly(gate));
+    const gates = getPopulation(plot.population).gates[0];
+    // Deleting the population
+    WorkspaceDispatch.DeletePopulation(getPopulation(plot.population));
+    // Removing the Gate from Parent Plot
+    workspace.plots.map((plt) => {
+      plt.gates.map((gate) => {
+        if (gate === gates.gate) {
+          plt.gates = plt.gates.filter((gate) => gate !== gates.gate);
+        }
+      });
+      WorkspaceDispatch.UpdatePlot(plt);
+    });
+    // Deleting the Gate and Updating its Parent Gate
+    workspace.gates.map((gate) => {
+      if (gate.id === gates.gate) {
+        gate.parents.map((parent) => {
+          workspace.gates.map((g) => {
+            if (g.id === parent) {
+              g.children = g.children.filter((ele) => ele !== gate.id);
+              WorkspaceDispatch.UpdateGate(g);
+            }
+          });
+        });
+        WorkspaceDispatch.DeleteGateOnly(gate.id);
+      }
+    });
+
+    // Handling the Child Part
+    const children: string[] = [];
+    workspace.gates.map((gate) =>
+      gate.parents.map((p) => {
+        if (p === gates.gate) {
+          children.push(p);
+        }
+        WorkspaceDispatch.DeleteGateOnly(gates.gate);
+      })
+    );
+
+    children.map((child) => {
+      workspace.populations.map((pop) => {
+        pop.gates.map((gate) => {
+          if (gate.gate === child) {
+            workspace.plots.map((plot) => {
+              if (plot.population === pop.id) {
+                WorkspaceDispatch.DeletePlot(plot);
+                plot.gates.map((gate) =>
+                  WorkspaceDispatch.DeleteGateOnly(gate)
+                );
+              }
+            });
+            WorkspaceDispatch.DeletePopulation(pop);
+          }
+        });
+      });
+    });
+  };
 
   const deletePlot = () => {
-    WorkspaceDispatch.DeletePlot(plot);
+    deleteAllPlotsAndPopulationOfNonControlFile();
+
+    const population = getPopulation(plot.population);
+
+    // If the plot is of Controlled file
+    if (population.file === workspace.selectedFile) {
+      // If the main plot is deleted of the control file
+      // Clear the entire workspace
+      if (population.gates.length === 0) {
+        WorkspaceDispatch.ResetWorkspaceExceptFiles();
+      } else if (population.gates.length === 1) {
+        // Gates Created from RootFile
+        if (plot.gates.length === 0) {
+          // A gate from Rootfile with no clild
+          deleteGateWithNoChild();
+        } else {
+          // A gate from Rootfile with clild
+          deleteGateWithChild();
+        }
+      } else {
+        // Gates Are created from Gates
+        if (plot.gates.length === 0) {
+          // A gate from Gate with no clild
+          deleteGateFromGateWithNoChild();
+        } else {
+          // A gate from Gate with no clild
+          deleteGateFromGateWithChild();
+        }
+      }
+    }
   };
 
   const handleClose = (func: Function) => {
@@ -66,6 +293,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   };
 
   const gatingSetter = () => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
     let plot = props.plot;
     if (plot.gatingActive) {
       plot.gatingActive = "";
@@ -201,68 +429,76 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
         }}
         direction="row"
       >
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setDeleteModalOpen(true)}
-          style={{
-            backgroundColor: "#c45",
-            fontSize: 12,
-            height: "2rem",
-          }}
-          disabled={!props.editWorkspace}
-        >
-          <CancelIcon
-            fontSize="small"
-            style={{
-              ...classes.iconButtonIcon,
-            }}
-          />
-        </Button>
-
-        {/* Drawing Polygon Gate */}
-        <Tooltip
-          title={
-            <React.Fragment>
-              <h3 style={{ color: "white" }}>
-                This button enables/disables gate drawing
-              </h3>
-              <br />
-              Click anywhere on plot below to create gate points. <br />
-              Connect the final point with the first to create your gate. <br />
-              A new plot will be created with the population inside your gate.
-            </React.Fragment>
-          }
-        >
+        {workspace.selectedFile ===
+          getFile(getPopulation(plot.population).file).id && (
           <Button
             variant="contained"
             size="small"
-            onClick={gatingSetter}
+            onClick={() => setDeleteModalOpen(true)}
             style={{
-              flex: 1,
-              color: "white",
+              backgroundColor: "#c45",
+              fontSize: 12,
               height: "2rem",
-              fontSize: "12",
-              backgroundColor: plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
             }}
             disabled={!props.editWorkspace}
           >
-            {plot.gatingActive !== "" ? (
-              <TouchAppIcon />
-            ) : (
-              <img
-                src={gate}
-                alt={"gate"}
-                style={{
-                  height: "1.2rem",
-                  fill: "none",
-                  strokeWidth: 3,
-                  stroke: "#491EC4",
-                }}
-              />
-            )}
+            <CancelIcon
+              fontSize="small"
+              style={{
+                ...classes.iconButtonIcon,
+              }}
+            />
           </Button>
-        </Tooltip>
+        )}
+
+        {/* Drawing Polygon Gate */}
+        {workspace.selectedFile ===
+          getFile(getPopulation(plot.population).file).id && (
+          <Tooltip
+            title={
+              <React.Fragment>
+                <h3 style={{ color: "white" }}>
+                  This button enables/disables gate drawing
+                </h3>
+                <br />
+                Click anywhere on plot below to create gate points. <br />
+                Connect the final point with the first to create your gate.{" "}
+                <br />A new plot will be created with the population inside your
+                gate.
+              </React.Fragment>
+            }
+          >
+            <Button
+              variant="contained"
+              size="small"
+              onClick={gatingSetter}
+              style={{
+                flex: 1,
+                color: "white",
+                height: "2rem",
+                fontSize: "12",
+                backgroundColor:
+                  plot.gatingActive !== "" ? "#6666ee" : "#6666aa",
+              }}
+              disabled={!props.editWorkspace}
+            >
+              {plot.gatingActive !== "" ? (
+                <TouchAppIcon />
+              ) : (
+                <img
+                  src={gate}
+                  alt={"gate"}
+                  style={{
+                    height: "1.2rem",
+                    fill: "none",
+                    strokeWidth: 3,
+                    stroke: "#491EC4",
+                  }}
+                ></img>
+              )}
+            </Button>
+          </Tooltip>
+        )}
         {/* <Tooltip
           title={
             <React.Fragment>
@@ -403,7 +639,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             }}
             disabled={!props.editWorkspace}
           >
-            <CameraFilled style={classes.iconButtonIcon}/>
+            <CameraFilled style={classes.iconButtonIcon} />
           </Button>
         </Tooltip>
       </Grid>
