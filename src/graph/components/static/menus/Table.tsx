@@ -30,10 +30,13 @@ import {
   standardGridPlotItem,
   setCanvasSize,
 } from "graph/components/workspaces/PlotController";
+import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
-import upArrow from "./../../../../assets/images/up_arrow.png";
-import downArrow from "./../../../../assets/images/down_arrow.png";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+
+import upArrow from "assets/images/up_arrow.png";
+import downArrow from "assets/images/down_arrow.png";
+import deleteIcon from "assets/images/delete.png";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -62,6 +65,12 @@ const useStyles = makeStyles((theme) => ({
     height: 15,
     width: 10,
     marginLeft: 5,
+    cursor: "pointer",
+  },
+  delete: {
+    height: 15,
+    width: 15,
+    marginLeft: 10,
     cursor: "pointer",
   },
   itemOuterDiv: {
@@ -138,7 +147,9 @@ const PlotTable = ({
       ) {
         workspace.files.map((file) => {
           if (workspace.plots.length > 0) {
-            stats.push(statsProvider.getPlotStatsWithFiles(file, population));
+            if (file.downloaded && !file.downloading) {
+              stats.push(statsProvider.getPlotStatsWithFiles(file, population));
+            }
           }
         });
       }
@@ -332,7 +343,7 @@ const PlotTable = ({
         <TableHead>
           <TableRow>
             {headers.map((values, index) => (
-              <TableCell className={classes.tableCell} key={index}>
+              <TableCell className={classes.tableCell} key={"top-" + index}>
                 {values}
                 {index !== 0 && index !== headers.length - 1 && (
                   <>
@@ -352,6 +363,14 @@ const PlotTable = ({
                       alt="up-arrow"
                       className={classes.arrow}
                     />
+                    {/* <img
+                      onClick={() => {
+                        deleteColumn(index - 1);
+                      }}
+                      src={deleteIcon}
+                      alt="delete-icon"
+                      className={classes.delete}
+                    /> */}
                   </>
                 )}
               </TableCell>
@@ -361,17 +380,21 @@ const PlotTable = ({
         <TableBody>
           {workspace?.files?.map((file, i) => (
             <>
-              <TableRow key={i}>
+              <TableRow key={"file-" + i}>
                 {headers.length > 1 &&
                   data.length > 0 &&
                   data[i]?.map((value: any, index: any) =>
                     index !== data[i].length - 1 ? (
-                      <TableCell className={classes.tableCell} key={index}>
-                        {value}
+                      <TableCell
+                        className={classes.tableCell}
+                        key={"content-" + value + index}
+                      >
+                        {value || "NA"}
                       </TableCell>
                     ) : (
                       <TableCell
                         className={`${classes.tableCell}  ${classes.view}`}
+                        key={"content-" + value + index}
                         onClick={() => {
                           file.view = !file.view;
                           WorkspaceDispatch.UpdateFile(file);
@@ -409,7 +432,7 @@ const PlotTable = ({
                             if (PlotFile.id === file.id) {
                               return (
                                 <div
-                                  key={plot.id}
+                                  key={`table-plots-${plot.id}`}
                                   className={classes.itemOuterDiv}
                                   data-grid={standardGridPlotItem(
                                     i,

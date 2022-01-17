@@ -9,14 +9,14 @@ import {
   Grid,
   TextField,
 } from "@material-ui/core";
-import { snackbarService } from "uno-material-ui";
-import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
+
+import { SearchOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
-import { getFile, getWorkspace, getAllFiles } from "graph/utils/workspace";
-import { store } from "redux/store";
+import { getFile, getAllFiles } from "graph/utils/workspace";
+
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
@@ -354,7 +354,7 @@ const AddFileModal = React.memo(
                                   ? "#66d"
                                   : "#d66",
                               }}
-                            ></Grid>
+                            />
                           </Grid>
                         </Grid>
                         {isDownloaded === false ? (

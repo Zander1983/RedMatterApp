@@ -72,16 +72,12 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
   const [openResize, setOpenResize] = useState(false);
-  const [rangeResizeModalAxisX, setRangeResizeModalAxisX] = React.useState("");
-  const [rangeResizeModalAxisY, setRangeResizeModalAxisY] = React.useState("");
-  const [rangeResizeModalTargetMinX, setRangeResizeModalTargetMinX] =
-    React.useState(0);
-  const [rangeResizeModalTargetMaxX, setRangeResizeModalTargetMaxX] =
-    React.useState(0);
-  const [rangeResizeModalTargetMinY, setRangeResizeModalTargetMinY] =
-    React.useState(0);
-  const [rangeResizeModalTargetMaxY, setRangeResizeModalTargetMaxY] =
-    React.useState(0);
+  const [, setRangeResizeModalAxisX] = React.useState("");
+  const [, setRangeResizeModalAxisY] = React.useState("");
+  const [, setRangeResizeModalTargetMinX] = React.useState(0);
+  const [, setRangeResizeModalTargetMaxX] = React.useState(0);
+  const [, setRangeResizeModalTargetMinY] = React.useState(0);
+  const [, setRangeResizeModalTargetMaxY] = React.useState(0);
 
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
@@ -260,8 +256,9 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   };
 
   const deletePlot = () => {
-    const population = getPopulation(plot.population);
     deleteAllPlotsAndPopulationOfNonControlFile();
+
+    const population = getPopulation(plot.population);
 
     // If the plot is of Controlled file
     if (population.file === workspace.selectedFile) {
@@ -383,7 +380,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   };
 
   return (
-    <Grid direction="row" style={classes.main} container>
+    <Grid direction="row" style={classes.main} container component={"div"}>
       <RangeResizeModal
         open={openResize}
         closeCall={{
@@ -391,7 +388,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
           ref: setOpenResize,
         }}
         plot={props.plot}
-      ></RangeResizeModal>
+      />
       <MessageModal
         open={deleteModalOpen}
         closeCall={{
@@ -643,7 +640,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             }}
             disabled={!props.editWorkspace}
           >
-            <CameraFilled style={classes.iconButtonIcon}></CameraFilled>
+            <CameraFilled style={classes.iconButtonIcon} />
           </Button>
         </Tooltip>
       </Grid>

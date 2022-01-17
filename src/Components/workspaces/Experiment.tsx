@@ -205,13 +205,6 @@ const Experiment = (props: any) => {
     let listSize = 0;
     for (const file of Array.from(files)) {
       listSize += file.size;
-      if (file.size > maxFileSize) {
-        const errorString = `File "${file.name.substring(0, 20)}${
-          file.name.length > 20 ? "..." : ""
-        }" goes above file size limit: it's ${(file.size / 1e6).toFixed(2)}MB`;
-        snackbarService.showSnackbar(errorString, "error");
-        return;
-      }
       if (
         !allowedExtensions.includes(file.name.split(".").pop().toLowerCase())
       ) {
@@ -351,6 +344,101 @@ const Experiment = (props: any) => {
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
   useEffect(() => {}, [experimentData]);
+
+  const GenOrView = async (event: any) => {
+    event.preventDefault();
+    console.log(event.target);
+    console.log(event.target.getAttribute("data-id"));
+    console.log(event.target.getAttribute("data-link"));
+    let currentElm = event.target;
+    const link = currentElm.getAttribute("data-link");
+    if (link) {
+      ///open report in new tab
+      let win = window.open();
+      win.location.href = link;
+      win.opener = null;
+      win.blur();
+      window.focus();
+    } else {
+      //set state for loader generating report
+      // bucket: integration
+      // exp id : props.id
+      // fileid : event.target.id
+      try {
+        //build url to dynamic
+        const URL = "";
+        const response = await axios.post(
+          URL,
+          {
+            environment: "integration",
+            experimentId: props.id,
+            fileId: event.target.id,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              token: userManager.getToken(),
+            },
+          }
+        );
+        if (response.status === 200) await handleResponse(response.data);
+        else
+          await handleError({
+            message: "Request not completed",
+            saverity: "error",
+          });
+      } catch (error) {
+        await handleError(error);
+      }
+    }
+  };
+
+  const handleResponse = async (response: any, isMsgShow = false) => {
+    if (isMsgShow) {
+      showMessageBox({
+        title: "Success !",
+        message: response?.data?.message || "Request Success",
+        saverity: "success",
+      });
+    }
+    // take other action for success
+  };
+
+  const handleError = async (error: any) => {
+    if (
+      error?.name === "Error" ||
+      error?.message.toString() === "Network Error"
+    ) {
+      showMessageBox({
+        message: "Connectivity Problem, please check your internet connection",
+        saverity: "error",
+      });
+    } else if (error?.response) {
+      if (error.response?.status == 401 || error.response.status == 419) {
+        setTimeout(() => {
+          userManager.logout();
+          history.replace("/login");
+        }, 3000);
+        showMessageBox({
+          message: "Authentication Failed Or Session Time out",
+          saverity: "error",
+        });
+      }
+    }
+  };
+
+  const showMessageBox = (response: any) => {
+    switch (response.saverity) {
+      case "error":
+        snackbarService.showSnackbar(response?.message, "error");
+        break;
+      case "success":
+        snackbarService.showSnackbar(response?.message, "success");
+        break;
+      default:
+        break;
+    }
+  };
 
   const updateExperimentFileName = (id: string, label: string) => {
     const updatFileName = ExperimentFilesApiFetchParamCreator({
@@ -770,6 +858,31 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
+                            <Button
+                              variant="contained"
+                              style={{
+                                background: "#66a",
+                                margin: 0,
+                                padding: 0,
+                                float: "right",
+                              }}
+                            >
+                              <input
+                                type={"button"}
+                                data-id={e.id}
+                                data-link={e.link || "http://www.google.com"}
+                                value={"Generate Rport"}
+                                style={{
+                                  backgroundColor: "transparent",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: "white",
+                                  fontWeight: 500,
+                                  padding: "2px 5px",
+                                }}
+                                onClick={(event) => GenOrView(event)}
+                              />
+                            </Button>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (

@@ -89,26 +89,26 @@ export default function Plans(props: any) {
   };
 
   useEffect(() => {
+    const initPlanPage = async () => {
+      setPageLoader(true);
+      setValues();
+      let plans = await getPlans();
+
+      plans.forEach((plan: any) => {
+        let metadata = plansMetaData.find((x) => x.name === plan.name);
+        plan["features"] = metadata.features;
+      });
+
+      plans.sort((a: any, b: any) => {
+        return a.price.amount - b.price.amount;
+      });
+
+      setPlans(plans);
+      setPageLoader(false);
+    };
+
     initPlanPage();
   }, []);
-
-  const initPlanPage = async () => {
-    setPageLoader(true);
-    setValues();
-    let plans = await getPlans();
-
-    plans.forEach((plan: any) => {
-      let metadata = plansMetaData.find((x) => x.name == plan.name);
-      plan["features"] = metadata.features;
-    });
-
-    plans.sort((a: any, b: any) => {
-      return a.price.amount - b.price.amount;
-    });
-
-    setPlans(plans);
-    setPageLoader(false);
-  };
 
   const setValues = () => {
     let subscriptionDetails = userManager.getSubscriptionDetails();
@@ -160,7 +160,7 @@ export default function Plans(props: any) {
   };
 
   return (
-    <Grid className={classes.mainContainer}>
+    <Grid item className={classes.mainContainer}>
       <Grid item xs={12} className={classes.plansHeader}>
         Choose Your Plan
       </Grid>
@@ -168,7 +168,7 @@ export default function Plans(props: any) {
         <div
           style={{ display: "flex", justifyContent: "center", paddingTop: 100 }}
         >
-          <CircularProgress></CircularProgress>
+          <CircularProgress/>
         </div>
       ) : (
         <Grid
@@ -177,16 +177,14 @@ export default function Plans(props: any) {
           style={{ display: "flex", justifyContent: "center" }}
         >
           {plans.map((plan, index) => (
-            <Grid
+            <Grid key={Math.random() + index}
               item
               md={4}
               xs={12}
-              className={classes.planContainer}
-              key={index}
-            >
-              <Grid className={classes.plan}>
-                <Grid style={{ flex: 1 }}>
-                  <Grid className={classes.nameHighlight}>
+              className={classes.planContainer} component={"div"}>
+              <Grid item className={classes.plan}>
+                <Grid item style={{ flex: 1 }}>
+                  <Grid item className={classes.nameHighlight}>
                     <h2 className={classes.white}>{plan.name}</h2>
                   </Grid>
                   <h1>
@@ -195,14 +193,14 @@ export default function Plans(props: any) {
                     <span>{"/month"}</span>
                   </h1>
 
-                  {plan.features.map((feature: any) => (
-                    <p className={classes.planFeature}>{feature}</p>
+                  {plan.features.map((feature: any, index: number) => (
+                    <p key={index} className={classes.planFeature}>{feature}</p>
                   ))}
                 </Grid>
-                <Grid style={{ flexGrow: 1, flex: 1 }}></Grid>
-                <Grid>
+                <Grid item style={{ flexGrow: 1, flex: 1 }}/>
+                <Grid item>
                   {subscriptionDetails.everSubscribed ? (
-                    subscriptionDetails.product == plan.id &&
+                    subscriptionDetails.product === plan.id &&
                     !subscriptionDetails.canceled ? (
                       <Button
                         color="primary"

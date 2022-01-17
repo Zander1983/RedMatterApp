@@ -1,5 +1,4 @@
 import React from "react";
-import { useHistory } from "react-router";
 import { withRouter, RouteComponentProps } from "react-router-dom";
 
 interface errorBoundaryState {

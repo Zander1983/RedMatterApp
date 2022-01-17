@@ -12,19 +12,14 @@ import {
   HistogramOverlay,
   Plot,
   PlotSpecificWorkspaceData,
-  PlotType,
-  Population,
-  Range,
+  PlotType
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
-import { createPopulation } from "graph/resources/populations";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { Typography } from "antd";
 import { useSelector } from "react-redux";
-import { slice } from "lodash";
 
 function PlotComponent(props: {
   plotRelevantResources: PlotSpecificWorkspaceData;
@@ -54,8 +49,7 @@ function PlotComponent(props: {
 
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-  const [lastSelectEvent, setLastSelectEvent] = React.useState(0);
-  const [histogramOverlayOpen, setHistogramOverlayOpen] = React.useState(false);
+  const [, setHistogramOverlayOpen] = React.useState(false);
   const [xWidth, setXWidth] = React.useState(100);
   const [yWidth, setYWidth] = React.useState(100);
   const [currentXIndex, setCurrentXIndex] = useState<number>(0);
@@ -127,6 +121,7 @@ function PlotComponent(props: {
       setCurrentXIndex(index !== -1 ? index : 0);
     }
   }, [xAxis]);
+
   useEffect(() => {
     if (yAxis.length > 8) {
       const newWidth = 100 + (yAxis.length - 8) * 10;
@@ -152,11 +147,11 @@ function PlotComponent(props: {
   };
 
   const isDownloaded = (fileId: FileID) => {
-    return downloadedFiles.find((x) => x == fileId);
+    return downloadedFiles.find((x) => x === fileId);
   };
 
   const isDownloading = (fileId: FileID) => {
-    return downloadingFiles.find((x) => x == fileId);
+    return downloadingFiles.find((x) => x === fileId);
   };
 
   const handleMultiPlotHistogram = async (

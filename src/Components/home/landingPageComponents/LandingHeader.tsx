@@ -68,10 +68,10 @@ const LandingHeader = () => {
       </div>
 
       <div className={classes.topDialogContent}>
-        <Grid container xs={10} sm={9} md={6} lg={4} xl={3}>
+        <Grid item container xs={10} sm={9} md={6} lg={4} xl={3}>
           <Card className={classes.card} variant="outlined">
-            <CardContent>
-              <Typography variant="h6">
+            <CardContent component={"div"}>
+              <Typography variant="h6" component={'p'}>
                 <img
                   src={icon}
                   alt="Red matter logo"

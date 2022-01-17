@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import { PlotID } from "graph/resources/types";
-import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 
 export class CanvasManager {
   private context: any | null = null;
@@ -128,7 +127,7 @@ const CanvasComponent = React.memo(
           canvas.setUseCanvasUsed(false);
         }
       };
-    }, [canvasRef.current]);
+    }, [canvas,canvasRef.current]);
 
     const id = `canvas-${props.plotID}`;
 

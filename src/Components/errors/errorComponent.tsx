@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { useHistory } from "react-router";
 import BrokenImageIcon from "@material-ui/icons/BrokenImage";
-import { Grid, Button, TextField } from "@material-ui/core";
+import { Button} from "@material-ui/core";
 // import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 
 const ErrorComponent = (props: any) => {
-  const history = useHistory();
   const [mainScreenError, setMainScreenError] = useState(false);
-  const [appScreenError, setAppScreenError] = useState(false);
+  const [,setAppScreenError] = useState(false);
 
   useEffect(() => {
     let mainScreenError = false;
@@ -18,7 +16,7 @@ const ErrorComponent = (props: any) => {
     }
     setMainScreenError(mainScreenError);
     setAppScreenError(!mainScreenError);
-  }, []);
+  }, [props.location.state.mainScreen]);
 
   return (
     <div
@@ -40,7 +38,7 @@ const ErrorComponent = (props: any) => {
             <div>
               <BrokenImageIcon
                 style={{ width: 130, height: 130, color: "rgb(255 37 69)" }}
-              ></BrokenImageIcon>
+              />
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Server is down. We will be live shortly.</div>
@@ -52,7 +50,7 @@ const ErrorComponent = (props: any) => {
             <div>
               <BrokenImageIcon
                 style={{ width: 100, height: 100, color: "rgb(255 37 69)" }}
-              ></BrokenImageIcon>
+              />
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Something went wrong.</div>

@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
 interface ParamsType {
   id: string;
 }
-interface Invite {
+interface InviteType {
   accepted: boolean;
   facilityId: string;
   email: string;
@@ -84,13 +84,14 @@ const Invite = () => {
 
   // refs
   const formRef = useRef();
+  const [isInit, setInit] = useState(false);
 
   // states
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
-  const [invitation, setInvitation] = useState<Invite>();
+  const [invitation, setInvitation] = useState<InviteType>();
 
   // this one triggers when user changes the state
   const handleChange = (event: any) => {
@@ -122,8 +123,26 @@ const Invite = () => {
 
   // getting the invitation object on initial load
   useEffect(() => {
-    fetchInvitation(params.id);
-  }, []);
+    if(isInit) {
+    // fetching the invitation object from DB
+      const fetchInvitation = async (id: string) => {
+        try {
+          const { response }: { response: InviteType } = await (
+              await axios.get(`/api/invite/${id}`)
+          ).data;
+          setInvitation(response);
+        } catch (error: any) {
+          const errorMsg = error.response.data.message;
+          snackbarService.showSnackbar(`${errorMsg}`, "error");
+          history.push("/");
+        }
+      };
+      (async () => {
+        await fetchInvitation(params.id);
+        setInit(true);
+      })();
+    }
+  }, [params.id, isInit, history]);
 
   // Adding custom validation
   useEffect(() => {
@@ -141,19 +160,6 @@ const Invite = () => {
     };
   }, [formData]);
 
-  // fetching the invitation object from DB
-  const fetchInvitation = async (id: string) => {
-    try {
-      const { response }: { response: Invite } = await (
-        await axios.get(`/api/invite/${id}`)
-      ).data;
-      setInvitation(response);
-    } catch (error: any) {
-      const errorMsg = error.response.data.message;
-      snackbarService.showSnackbar(`${errorMsg}`, "error");
-      history.push("/");
-    }
-  };
 
   return (
     <Grid
