@@ -16,7 +16,7 @@ import PlotComponent from "graph/components/plots/PlotComponent";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+
 import {
   Gate,
   Plot,
@@ -33,6 +33,7 @@ import {
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -320,7 +321,6 @@ const PlotTable = ({
   useEffect(() => {
     updateStats();
   }, [workspace]);
-
 
   useEffect(() => {
     setHeaders([

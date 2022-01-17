@@ -13,13 +13,20 @@ import {
   Plot,
   PlotSpecificWorkspaceData,
   PlotType,
+  PlotsRerender,
 } from "graph/resources/types";
-import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
+import {
+  getFile,
+  getPopulation,
+  getAllFiles,
+  getWorkspace,
+} from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import { Typography } from "antd";
 import { useSelector } from "react-redux";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 function PlotComponent(props: {
   plotRelevantResources: PlotSpecificWorkspaceData;
@@ -122,6 +129,19 @@ function PlotComponent(props: {
       setCurrentXIndex(index !== -1 ? index : 0);
     }
   }, [xAxis]);
+
+  useEffect(() => {
+    const workspace = getWorkspace();
+    if (workspace.files[0].downloaded) {
+      const plotsRerenderQueueItem: PlotsRerender = {
+        id: "",
+        used: false,
+        type: "plotsRerender",
+        plotIDs: workspace.plots.map((plot) => plot.id),
+      };
+      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    }
+  }, [labels]);
 
   useEffect(() => {
     if (yAxis.length > 8) {
