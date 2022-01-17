@@ -83,6 +83,7 @@ export default class PlotStats {
       xAxis,
       yAxis
     )[0].length;
+    // console.log(this.file);
     const fileSize = DatasetResource.getDataset(this.file.id)[this.file.axes[0]]
       .length;
     let percentage: number | string = 100 * (plotSize / fileSize);

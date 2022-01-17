@@ -12,7 +12,7 @@ import {
   HistogramOverlay,
   Plot,
   PlotSpecificWorkspaceData,
-  PlotType
+  PlotType,
 } from "graph/resources/types";
 import { getFile, getPopulation, getAllFiles } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
@@ -117,7 +117,8 @@ function PlotComponent(props: {
       setXWidth(100);
     }
     if (xAxis) {
-      let index = axes.findIndex((ele) => ele === xAxis);
+      let index =
+        axes && axes.length > 0 && axes.findIndex((ele) => ele === xAxis);
       setCurrentXIndex(index !== -1 ? index : 0);
     }
   }, [xAxis]);
@@ -131,7 +132,8 @@ function PlotComponent(props: {
     }
 
     if (yAxis) {
-      let index = axes.findIndex((ele) => ele === yAxis);
+      let index =
+        axes && axes.length > 0 && axes.findIndex((ele) => ele === yAxis);
       setCurrentYIndex(index !== -1 ? index : 0);
     }
   }, [yAxis]);
@@ -233,7 +235,13 @@ function PlotComponent(props: {
               setAxis("y", axes[index]);
             }
           }}
-          value={isPlotHistogram() ? "hist" : labels[currentYIndex]}
+          value={
+            isPlotHistogram()
+              ? "hist"
+              : labels
+              ? labels[currentYIndex]
+              : plot.yAxis
+          }
         >
           {labels &&
             labels.length &&
@@ -335,42 +343,46 @@ function PlotComponent(props: {
           <div>{/* Space between so that selectors are centralized */}</div>
 
           <div>
-            <Select
-              disabled={!props.editWorkspace}
-              style={{
-                width: xWidth,
-                marginTop: "10px",
-                flex: "1 1 auto",
-              }}
-              onChange={(e) => {
-                //@ts-ignore
-                const value: string = e.target.value;
-                const index = labels.findIndex((ele) => ele === value);
-                setCurrentXIndex(index);
-                setAxis("x", axes[index]);
-              }}
-              value={labels[currentXIndex]}
-            >
-              {labels &&
-                labels.length &&
-                labels.map((e) => <MenuItem value={e}>{e} </MenuItem>)}
-            </Select>
+            {labels && labels.length && (
+              <>
+                <Select
+                  disabled={!props.editWorkspace}
+                  style={{
+                    width: xWidth,
+                    marginTop: "10px",
+                    flex: "1 1 auto",
+                  }}
+                  onChange={(e) => {
+                    //@ts-ignore
+                    const value: string = e.target.value;
+                    const index = labels.findIndex((ele) => ele === value);
+                    setCurrentXIndex(index);
+                    setAxis("x", axes[index]);
+                  }}
+                  value={labels[currentXIndex] || plot.xAxis}
+                >
+                  {labels &&
+                    labels.length &&
+                    labels.map((e) => <MenuItem value={e}>{e} </MenuItem>)}
+                </Select>
 
-            <Select
-              disabled={!props.editWorkspace}
-              style={{
-                width: 100,
-                marginTop: "10px",
-                marginLeft: 10,
-                flex: "1 1 auto",
-              }}
-              value={xPlotType}
-              //@ts-ignore
-              onChange={(e) => setPlotType("x", e.target.value)}
-            >
-              <MenuItem value={"lin"}>Linear</MenuItem>
-              <MenuItem value={"bi"}>Logicle</MenuItem>
-            </Select>
+                <Select
+                  disabled={!props.editWorkspace}
+                  style={{
+                    width: 100,
+                    marginTop: "10px",
+                    marginLeft: 10,
+                    flex: "1 1 auto",
+                  }}
+                  value={xPlotType}
+                  //@ts-ignore
+                  onChange={(e) => setPlotType("x", e.target.value)}
+                >
+                  <MenuItem value={"lin"}>Linear</MenuItem>
+                  <MenuItem value={"bi"}>Logicle</MenuItem>
+                </Select>
+              </>
+            )}
           </div>
 
           <div style={{ paddingRight: 6, marginTop: -5 }}>

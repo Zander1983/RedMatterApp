@@ -14,7 +14,6 @@ import { green } from "@material-ui/core/colors";
 import { getFile } from "graph/utils/workspace";
 import { File } from "graph/resources/types";
 
-
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
 import SmallScreenNotice from "./SmallScreenNotice";
@@ -24,7 +23,11 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import { downloadFileEvent, downloadFileMetadata } from "services/FileService";
+import {
+  downloadFileEvent,
+  downloadFileMetadata,
+  dowloadAllFileEvents,
+} from "services/FileService";
 import {
   getAllFiles,
   loadWorkspaceFromRemoteIfExists,
@@ -144,7 +147,6 @@ const WorkspaceInnerComponent = (props: {
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [lastSavedTime, setLastSavedTime] = React.useState(null);
-  const [downloadAllEvents, setDownloadAllEvents] = React.useState(false);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -153,29 +155,14 @@ const WorkspaceInnerComponent = (props: {
     func(false);
   };
 
-  // // Loading the files on creating the experiment
+  // Loading the files on creating the experiment
   useEffect(() => {
-    workspace.files.map((file) => {
-      if (!file.downloaded && !file.downloading) {
-        downloadFile(file.id);
-      }
-    });
-  }, [workspace.files]);
-  const downloadFile = async (fileId: string) => {
-    let file: File = getFile(fileId);
-    if (!file.downloaded) {
-      const newId = await downloadFileEvent(
-        sharedWorkspace,
-        fileId,
-        props.experimentId
-      );
-      if (typeof newId !== "string") {
-        throw Error("wtf?");
-      }
-      file = getFile(newId);
-    }
-    handleClose(setAddFileModalOpen);
-  };
+    dowloadAllFileEvents(
+      sharedWorkspace,
+      props.experimentId,
+      workspace.files.map((file) => file.id)
+    );
+  }, [workspace.files.length]);
 
   useEffect(() => {
     if (workspace.editWorkspace !== editWorkspace) {
@@ -208,12 +195,12 @@ const WorkspaceInnerComponent = (props: {
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
     setWorkspaceLoading(true);
-    await downloadFileMetadata(shared, experimentId);
+    setAutosaveEnabled(!shared);
+
     const loadStatus = await loadWorkspaceFromRemoteIfExists(
       shared,
       experimentId
     );
-    setDownloadAllEvents(loadStatus.requestSuccess);
 
     if (!loadStatus.requestSuccess) {
       snackbarService.showSnackbar("Workspace created", "success");
@@ -224,8 +211,8 @@ const WorkspaceInnerComponent = (props: {
     if (!loadStatus.loaded && shared) {
     }
 
-    setAutosaveEnabled(!shared);
     notification.killNotification();
+    await downloadFileMetadata(shared, experimentId);
     setWorkspaceLoading(false);
   };
   const saveWorkspace = async (shared: boolean = false) => {
@@ -335,7 +322,7 @@ const WorkspaceInnerComponent = (props: {
     Debounce(() => saveWorkspace(), 5000);
   }
 
-  console.log("=======call work space============"+ (i++));
+  console.log("=======call work space============" + i++);
 
   return (
     <div
@@ -637,7 +624,7 @@ const WorkspaceInnerComponent = (props: {
                   alignItems="center"
                   alignContent="center"
                 >
-                  <CircularProgress/>
+                  <CircularProgress />
                 </Grid>
               )}
             </Grid>

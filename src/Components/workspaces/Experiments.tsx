@@ -339,6 +339,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                         xs={6}
                         md={4}
                         lg={3}
+                        key={`old-${index}`}
                       >
                         <Grid item>
                           <Card
