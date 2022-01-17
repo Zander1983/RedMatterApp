@@ -14,7 +14,6 @@ import { green } from "@material-ui/core/colors";
 import { getFile } from "graph/utils/workspace";
 import { File } from "graph/resources/types";
 
-
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
 import SmallScreenNotice from "./SmallScreenNotice";
@@ -327,7 +326,7 @@ const WorkspaceInnerComponent = (props: {
   }
 
   console.log("=======call work space============" + i++);
-      
+
   return (
     <div
       style={{
@@ -635,7 +634,7 @@ const WorkspaceInnerComponent = (props: {
           </div>
         </Grid>
       </Grid>
-      {workspace.selectedFile && (
+      {workspace.selectedFile && workspace?.files[0]?.downloaded && (
         <PlotTable
           workspace={workspace}
           sharedWorkspace={sharedWorkspace}
