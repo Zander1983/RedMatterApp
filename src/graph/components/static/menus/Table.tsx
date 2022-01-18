@@ -122,6 +122,10 @@ const PlotTable = ({
   ]);
 
   const raws: any[] = [];
+  const deletedPlots: string[] = [];
+  const deletedPopulations: string[] = [];
+  const deletedGates: string[] = [];
+
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
       const raw = [workspace.files[i].name];
@@ -316,6 +320,68 @@ const PlotTable = ({
     setPlots(plots);
   };
 
+  const deleteChildGate = (children: string[]) => {
+    children.map((child) => {
+      workspace.populations.map((pop) => {
+        if (pop.gates && pop.gates.length > 0) {
+          if (pop.gates[0].gate === child) {
+            workspace.plots.map((plot) => {
+              if (plot.gates.includes(child)) {
+                plot.gates = plot.gates.filter((gate) => gate !== child);
+                WorkspaceDispatch.UpdatePlot(plot);
+              }
+              if (plot.population === pop.id) {
+                deletedPlots.push(plot.id);
+              }
+            });
+            deletedPopulations.push(pop.id);
+          }
+        }
+      });
+      if (workspace.gates.find((gate) => gate.id === child).children) {
+        deleteChildGate(
+          workspace.gates.find((gate) => gate.id === child).children
+        );
+      }
+      deletedGates.push(child);
+    });
+  };
+  const deleteColumn = (index: number) => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
+    workspace.populations.map((pop) => {
+      if (pop.gates && pop.gates.length > 0) {
+        if (pop.gates[0].gate === workspace.gates[index].id) {
+          workspace.plots.map((plot) => {
+            if (plot.gates.includes(workspace.gates[index].id)) {
+              plot.gates = plot.gates.filter(
+                (gate) => gate !== workspace.gates[index].id
+              );
+              WorkspaceDispatch.UpdatePlot(plot);
+            }
+            if (plot.population === pop.id) {
+              deletedPlots.push(plot.id);
+            }
+          });
+          deletedPopulations.push(pop.id);
+        }
+      }
+    });
+
+    deleteChildGate(workspace.gates[index].children);
+    // deleting the gate
+    deletedGates.push(workspace.gates[index].id);
+
+    WorkspaceDispatch.DeletePlotsAndPopulations(
+      deletedPlots,
+      deletedPopulations,
+      deletedGates
+    );
+
+    deletedPlots.length = 0;
+    deletedPopulations.length = 0;
+    deletedGates.length = 0;
+  };
+
   useEffect(() => {
     updateStats();
   }, [workspace]);
@@ -362,14 +428,14 @@ const PlotTable = ({
                       alt="up-arrow"
                       className={classes.arrow}
                     />
-                    {/* <img
+                    <img
                       onClick={() => {
                         deleteColumn(index - 1);
                       }}
                       src={deleteIcon}
                       alt="delete-icon"
                       className={classes.delete}
-                    /> */}
+                    />
                   </>
                 )}
               </TableCell>
