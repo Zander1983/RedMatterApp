@@ -147,10 +147,8 @@ const PlotTable = ({
         workspace.selectedFile === population.file
       ) {
         workspace.files.map((file) => {
-          if (workspace.plots.length > 0) {
-            if (file.downloaded && !file.downloading) {
-              stats.push(statsProvider.getPlotStatsWithFiles(file, population));
-            }
+          if (file.downloaded && !file.downloading) {
+            stats.push(statsProvider.getPlotStatsWithFiles(file, population));
           }
         });
       }

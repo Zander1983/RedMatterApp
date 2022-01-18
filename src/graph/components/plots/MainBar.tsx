@@ -255,7 +255,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     });
   };
 
-  const deletePlot = () => {
+  const delPlot = () => {
     deleteAllPlotsAndPopulationOfNonControlFile();
 
     const population = getPopulation(plot.population);
@@ -286,6 +286,11 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
         }
       }
     }
+  };
+
+  const deletePlot = () => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
+    WorkspaceDispatch.DeletePlot(plot);
   };
 
   const handleClose = (func: Function) => {

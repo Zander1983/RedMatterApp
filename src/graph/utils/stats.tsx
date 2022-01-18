@@ -21,9 +21,12 @@ export default class PlotStats {
     gates: PopulationGateType[] = []
   ) {
     this.file = file;
-    const { xAxis, yAxis } = getPlotFromPopulationId(population.id);
+    const { xAxis, yAxis } = getPlotFromPopulationId(
+      gates && gates?.length > 0 ? gates[0].gate : population.gates[0].gate
+    );
+
     const pop = this.getPopulationStatsWithFile(
-      gates.length > 0 ? gates : population.gates,
+      gates && gates?.length > 0 ? gates : population.gates,
       xAxis,
       yAxis
     );
@@ -83,7 +86,6 @@ export default class PlotStats {
       xAxis,
       yAxis
     )[0].length;
-    // console.log(this.file);
     const fileSize = DatasetResource.getDataset(this.file.id)[this.file.axes[0]]
       .length;
     let percentage: number | string = 100 * (plotSize / fileSize);
