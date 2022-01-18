@@ -174,24 +174,25 @@ export default class ScatterPlotter extends PluginGraphPlotter {
         this.ranges.y[1]
       );
     }
-    let lastDistance = 0;
-    for (let i = 0; i < pointCount - 1; i++) {
+
+    // let lastDistance = 0;
+    for (let i = 0; i < pointCount; i++) {
       if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges)) continue;
-      if (this.isOutOfRange({ x: xData[i + 1], y: yData[i  + 1] }, customRanges)) continue;
+      // if (this.isOutOfRange({ x: xData[i + 1], y: yData[i  + 1] }, customRanges)) continue;
 
       const { x, y } = this.transformer.toConcretePoint({x: xData[i], y: yData[i]}, customRanges);
-      const { x: x2, y: y2 } = this.transformer.toConcretePoint({x: xData[i + 1], y: yData[i + 1]}, customRanges);
+      // const { x: x2, y: y2 } = this.transformer.toConcretePoint({x: xData[i + 1], y: yData[i + 1]}, customRanges);
 
-      const xDiff: number = Math.abs(x - x2);
-      const yDiff: number = Math.abs(y - y2);
-      const distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-
-      if (Math.abs(distance) <= 60 || Math.abs(lastDistance - distance) <= 60) {
-          lastDistance = distance;
-          this.drawer.addPoint(x, y, 3, "#cc37c7");
-      } else {
-          this.drawer.addPoint(x, y, 3, colors.getI(i));
-      }
+      // const xDiff: number = Math.abs(x - x2);
+      // const yDiff: number = Math.abs(y - y2);
+      // const distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+      this.drawer.addPoint(x, y, 3, colors.getI(i));
+      // if (Math.abs(distance) <= 60 || Math.abs(lastDistance - distance) <= 60) {
+      //     lastDistance = distance;
+      //     this.drawer.addPoint(x, y, 3, "#cc37c7");
+      // } else {
+      //     this.drawer.addPoint(x, y, 3, colors.getI(i));
+      // }
     }
   }
 

@@ -325,8 +325,6 @@ const WorkspaceInnerComponent = (props: {
     Debounce(() => saveWorkspace(), 5000);
   }
 
-  console.log("=======call work space============" + i++);
-
   return (
     <div
       style={{

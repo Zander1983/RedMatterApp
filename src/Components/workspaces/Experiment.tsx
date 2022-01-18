@@ -55,6 +55,9 @@ const Experiment = (props: any) => {
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
+  const [reports, setReport] = useState([]);
+  const [reportStatus, setReportStatus] = useState(false);
+
   const [experimentSize, setExperimentSize] = useState(0);
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
@@ -346,62 +349,69 @@ const Experiment = (props: any) => {
   useEffect(() => {}, [experimentData]);
 
   const GenOrView = async (event: any) => {
-    event.preventDefault();
-    console.log(event.target);
-    console.log(event.target.getAttribute("data-id"));
-    console.log(event.target.getAttribute("data-link"));
-    let currentElm = event.target;
-    const link = currentElm.getAttribute("data-link");
-    if (link) {
-      ///open report in new tab
-      let win = window.open();
-      win.location.href = link;
-      win.opener = null;
-      win.blur();
-      window.focus();
-    } else {
-      //set state for loader generating report
-      // bucket: integration
-      // exp id : props.id
-      // fileid : event.target.id
+      event.preventDefault();
+      setReportStatus(true);
       try {
         //build url to dynamic
-        const URL = "";
-        const response = await axios.post(
-          URL,
-          {
-            environment: "integration",
-            experimentId: props.id,
-            fileId: event.target.id,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              token: userManager.getToken(),
-            },
-          }
-        );
-        if (response.status === 200) await handleResponse(response.data);
-        else
-          await handleError({
-            message: "Request not completed",
-            saverity: "error",
-          });
+        //const fileId = event.target.getAttribute("data-id");
+        const URL = `http://localhost:8080/api/report/${'61d1df3b4775ec12f26a8bcb'}/${'9fc51860-6bf0-11ec-8baf-b9ee2147d2ed'}`;
+        const response = await axios.get(URL, {headers: {"Content-Type": "application/json",token: userManager.getToken()}});
+        if (response.status === 200) await handleResponse(response.data, true);
+        else await handleError({message: "Request not completed", saverity: "error"});
       } catch (error) {
         await handleError(error);
       }
-    }
+      setReportStatus(false);
+  };
+
+  const doStaff = async (data:any) => {
+      //link view code here
+      let availableReports = reports.slice();
+      if(availableReports && availableReports.length <= 0){
+          availableReports.push({fileId:data.fileId, link:data.link});
+          setTimeout( () => {
+              setReport(availableReports);
+          }, 50);
+
+      }else {
+        let index = availableReports.findIndex( report => report.fileId === data.fileId);
+        if(index > -1){
+            const updatedReport = { ...availableReports[index], ...{fileId:data.fileId, link:data.link}};
+            const updatedReports = [
+                    ...availableReports.slice(0, index),
+                    updatedReport,
+                    ...availableReports.slice(index + 1),
+                ];
+            setTimeout( () => {
+                setReport(updatedReports);
+            }, 50);
+        }else {
+            availableReports.push({fileId:data.fileId, link:data.link});
+            setTimeout( () => {
+                setReport(availableReports);
+            }, 50);
+        }
+      }
   };
 
   const handleResponse = async (response: any, isMsgShow = false) => {
-    if (isMsgShow) {
+    if(response?.level === "success") {
+      if (isMsgShow) {
+        showMessageBox({
+          title: "Success !",
+          message: response?.message || "Report Generating Success",
+          saverity: "success",
+        });
+      }
+      await doStaff(response);
+    }else if(response?.level === "danger"){
       showMessageBox({
-        title: "Success !",
-        message: response?.data?.message || "Request Success",
-        saverity: "success",
+        message: response?.message || "Request Not Completed",
+        saverity: "error",
       });
+    }else {
+      await handleError({});
     }
-    // take other action for success
   };
 
   const handleError = async (error: any) => {
@@ -424,6 +434,11 @@ const Experiment = (props: any) => {
           saverity: "error",
         });
       }
+    }else{
+      showMessageBox({
+        message: error?.message || "Request Failed. May be Time out",
+        saverity: error.saverity || "error",
+      });
     }
   };
 
@@ -721,7 +736,33 @@ const Experiment = (props: any) => {
                     </div>
                   </Grid>
                 )}
-
+                <Divider style={{ marginBottom: 10 }}></Divider>
+                  {reports && reports.map((report: any, index: number) => {
+                      return (
+                          <div key={Math.random() + index}>
+                              <Grid
+                                  item
+                                  key={Math.random() + index}
+                                  xs={12}
+                                  style={{
+                                      textAlign: "left",
+                                      marginTop: 15,
+                                      marginLeft: 10,
+                                  }}>
+                                  <h3>
+                                      <a href={report.link} style={{
+                                              background: "#66a",
+                                              margin: 0,
+                                              padding: 0,
+                                              float: "right",
+                                          }}>
+                                          {report.fileId}
+                                      </a>
+                                  </h3>
+                              </Grid>
+                          </div>
+                      );
+                  })}
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
@@ -858,7 +899,7 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            <Button
+                            <Button disabled={reportStatus}
                               variant="contained"
                               style={{
                                 background: "#66a",
@@ -871,7 +912,7 @@ const Experiment = (props: any) => {
                                 type={"button"}
                                 data-id={e.id}
                                 data-link={e.link || "http://www.google.com"}
-                                value={"Generate Rport"}
+                                value={"Generate Report"}
                                 style={{
                                   backgroundColor: "transparent",
                                   border: "none",
