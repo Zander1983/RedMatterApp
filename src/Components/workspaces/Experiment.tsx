@@ -360,7 +360,8 @@ const Experiment = (props: any) => {
       //const URL = `http://localhost:8080/api/report/${"615207baa0f5847ee122fb07"}/${"e45c58a0-1fbd-11ec-a311-714960590ddc"}`;
       //5.3 MB
       //const URL = `http://localhost:8080/api/report/${"6123a8ca7d7dff74498e07ab"}/${"a7b7b350-1bd9-11ec-8260-571cd83d40c9"}`;
-      const URL = `http://localhost:8080/api/report/${props.id}/${fileId}`;
+      //const URL = `http://localhost:8080/api/report/${props.id}/${fileId}`;
+      const URL = `${process.env.REACT_APP_API_URL}api/report/${props.id}/${fileId}`;
       const response = await axios.get(URL, {
         headers: {
           "Content-Type": "application/json",
