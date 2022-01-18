@@ -50,6 +50,7 @@ const Experiment = (props: any) => {
   const [editingName, setEditingName] = useState(false);
   const [editingFileName, setEditingFileName] = useState<null | string>(null);
   const [newFileName, setNewFileName] = useState<string>("");
+  const [reportName, setReportName] = useState("");
   const [onDropZone, setOnDropZone] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
@@ -348,54 +349,68 @@ const Experiment = (props: any) => {
 
   useEffect(() => {}, [experimentData]);
 
-  const GenOrView = async (event: any) => {
-      event.preventDefault();
-      setReportStatus(true);
-      try {
-        //build url to dynamic
-        //const fileId = event.target.getAttribute("data-id");
-        const URL = `http://localhost:8080/api/report/${'61d1df3b4775ec12f26a8bcb'}/${'9fc51860-6bf0-11ec-8baf-b9ee2147d2ed'}`;
-        const response = await axios.get(URL, {headers: {"Content-Type": "application/json",token: userManager.getToken()}});
-        if (response.status === 200) await handleResponse(response.data, true);
-        else await handleError({message: "Request not completed", saverity: "error"});
-      } catch (error) {
-        await handleError(error);
-      }
-      setReportStatus(false);
+  const GenOrView = async (event: any, name: string) => {
+    setReportName(name);
+    event.preventDefault();
+    setReportStatus(true);
+    try {
+      //build url to dynamic
+      //const fileId = event.target.getAttribute("data-id");
+      const URL = `http://localhost:8080/api/report/${"61d1df3b4775ec12f26a8bcb"}/${"9fc51860-6bf0-11ec-8baf-b9ee2147d2ed"}`;
+      const response = await axios.get(URL, {
+        headers: {
+          "Content-Type": "application/json",
+          token: userManager.getToken(),
+        },
+      });
+      if (response.status === 200) await handleResponse(response.data, true);
+      else
+        await handleError({
+          message: "Request not completed",
+          saverity: "error",
+        });
+    } catch (error) {
+      await handleError(error);
+    }
+    setReportStatus(false);
   };
 
-  const doStaff = async (data:any) => {
-      //link view code here
-      let availableReports = reports.slice();
-      if(availableReports && availableReports.length <= 0){
-          availableReports.push({fileId:data.fileId, link:data.link});
-          setTimeout( () => {
-              setReport(availableReports);
-          }, 50);
-
-      }else {
-        let index = availableReports.findIndex( report => report.fileId === data.fileId);
-        if(index > -1){
-            const updatedReport = { ...availableReports[index], ...{fileId:data.fileId, link:data.link}};
-            const updatedReports = [
-                    ...availableReports.slice(0, index),
-                    updatedReport,
-                    ...availableReports.slice(index + 1),
-                ];
-            setTimeout( () => {
-                setReport(updatedReports);
-            }, 50);
-        }else {
-            availableReports.push({fileId:data.fileId, link:data.link});
-            setTimeout( () => {
-                setReport(availableReports);
-            }, 50);
-        }
+  const doStaff = async (data: any) => {
+    //link view code here
+    let availableReports = reports.slice();
+    if (availableReports && availableReports.length <= 0) {
+      availableReports.push({ fileId: data.fileId, link: data.link });
+      setTimeout(() => {
+        setReport(availableReports);
+      }, 50);
+    } else {
+      let index = availableReports.findIndex(
+        (report) => report.fileId === data.fileId
+      );
+      if (index > -1) {
+        const updatedReport = {
+          ...availableReports[index],
+          ...{ fileId: data.fileId, link: data.link },
+        };
+        const updatedReports = [
+          ...availableReports.slice(0, index),
+          updatedReport,
+          ...availableReports.slice(index + 1),
+        ];
+        setTimeout(() => {
+          setReport(updatedReports);
+        }, 50);
+      } else {
+        availableReports.push({ fileId: data.fileId, link: data.link });
+        setTimeout(() => {
+          setReport(availableReports);
+        }, 50);
       }
+    }
   };
 
   const handleResponse = async (response: any, isMsgShow = false) => {
-    if(response?.level === "success") {
+    if (response?.level === "success") {
       if (isMsgShow) {
         showMessageBox({
           title: "Success !",
@@ -404,12 +419,12 @@ const Experiment = (props: any) => {
         });
       }
       await doStaff(response);
-    }else if(response?.level === "danger"){
+    } else if (response?.level === "danger") {
       showMessageBox({
         message: response?.message || "Request Not Completed",
         saverity: "error",
       });
-    }else {
+    } else {
       await handleError({});
     }
   };
@@ -434,7 +449,7 @@ const Experiment = (props: any) => {
           saverity: "error",
         });
       }
-    }else{
+    } else {
       showMessageBox({
         message: error?.message || "Request Failed. May be Time out",
         saverity: error.saverity || "error",
@@ -737,32 +752,37 @@ const Experiment = (props: any) => {
                   </Grid>
                 )}
                 <Divider style={{ marginBottom: 10 }}></Divider>
-                  {reports && reports.map((report: any, index: number) => {
-                      return (
-                          <div key={Math.random() + index}>
-                              <Grid
-                                  item
-                                  key={Math.random() + index}
-                                  xs={12}
-                                  style={{
-                                      textAlign: "left",
-                                      marginTop: 15,
-                                      marginLeft: 10,
-                                  }}>
-                                  <h3>
-                                      <a href={report.link} style={{
-                                              background: "#66a",
-                                              margin: 0,
-                                              padding: 0,
-                                              float: "right",
-                                          }}>
-                                          {report.fileId}
-                                      </a>
-                                  </h3>
-                              </Grid>
-                          </div>
-                      );
-                  })}
+                {/* {reports &&
+                  reports.map((report: any, index: number) => {
+                    return (
+                      <div key={Math.random() + index}>
+                        <Grid
+                          item
+                          key={Math.random() + index}
+                          xs={12}
+                          style={{
+                            textAlign: "left",
+                            marginTop: 15,
+                            marginLeft: 10,
+                          }}
+                        >
+                          <h3>
+                            <a
+                              href={report.link}
+                              style={{
+                                background: "#66a",
+                                margin: 0,
+                                padding: 0,
+                                float: "right",
+                              }}
+                            >
+                              {report.fileId}
+                            </a>
+                          </h3>
+                        </Grid>
+                      </div>
+                    );
+                  })} */}
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
@@ -781,7 +801,7 @@ const Experiment = (props: any) => {
                           xs={12}
                           style={{
                             textAlign: "left",
-                            marginTop: 15,
+                            marginTop: 25,
                             marginLeft: 10,
                           }}
                         >
@@ -899,31 +919,62 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            <Button disabled={reportStatus}
-                              variant="contained"
+                            <div
                               style={{
-                                background: "#66a",
-                                margin: 0,
-                                padding: 0,
+                                display: "flex",
+                                flexDirection: "column",
                                 float: "right",
+                                alignItems: "flex-end",
+                                marginTop: -15,
                               }}
                             >
-                              <input
-                                type={"button"}
-                                data-id={e.id}
-                                data-link={e.link || "http://www.google.com"}
-                                value={"Generate Report"}
+                              <Button
+                                disabled={reportStatus}
+                                variant="contained"
                                 style={{
-                                  backgroundColor: "transparent",
-                                  border: "none",
+                                  background: "#66a",
+                                  margin: 0,
+                                  padding: 0,
+                                  width: 150,
+                                  float: "right",
                                   cursor: "pointer",
-                                  color: "white",
-                                  fontWeight: 500,
-                                  padding: "2px 5px",
                                 }}
-                                onClick={(event) => GenOrView(event)}
-                              />
-                            </Button>
+                              >
+                                <input
+                                  type={"button"}
+                                  data-id={e.id}
+                                  data-link={e.link || "http://www.google.com"}
+                                  value={
+                                    reports[i]
+                                      ? "Generated Report"
+                                      : reportName === e.label
+                                      ? "Generating Report..."
+                                      : "Generate Report"
+                                  }
+                                  style={{
+                                    backgroundColor: "transparent",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "white",
+                                    fontWeight: 500,
+                                    padding: "2px 5px",
+                                  }}
+                                  onClick={(event) => GenOrView(event, e.label)}
+                                />
+                              </Button>
+                              <p
+                                style={{
+                                  fontSize: 14,
+                                  color: "#66a",
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                {" "}
+                                {reports &&
+                                  reports[i] &&
+                                  reports[i].fileId}{" "}
+                              </p>
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
