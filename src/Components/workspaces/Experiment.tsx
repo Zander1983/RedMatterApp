@@ -349,14 +349,18 @@ const Experiment = (props: any) => {
 
   useEffect(() => {}, [experimentData]);
 
-  const GenOrView = async (event: any, name: string) => {
+  const GenOrView = async (event: any, fileId: any, name: string) => {
     setReportName(name);
     event.preventDefault();
     setReportStatus(true);
     try {
-      //build url to dynamic
-      //const fileId = event.target.getAttribute("data-id");
-      const URL = `http://localhost:8080/api/report/${"61d1df3b4775ec12f26a8bcb"}/${"9fc51860-6bf0-11ec-8baf-b9ee2147d2ed"}`;
+        //370 KB file
+       //const URL = `http://localhost:8080/api/report/${"61d1df3b4775ec12f26a8bcb"}/${"9fc51860-6bf0-11ec-8baf-b9ee2147d2ed"}`;
+        // 13 MB file
+      //const URL = `http://localhost:8080/api/report/${"615207baa0f5847ee122fb07"}/${"e45c58a0-1fbd-11ec-a311-714960590ddc"}`;
+      //5.3 MB
+      //const URL = `http://localhost:8080/api/report/${"6123a8ca7d7dff74498e07ab"}/${"a7b7b350-1bd9-11ec-8260-571cd83d40c9"}`;
+      const URL = `http://localhost:8080/api/report/${props.id}/${fileId}`;
       const response = await axios.get(URL, {
         headers: {
           "Content-Type": "application/json",
@@ -366,7 +370,7 @@ const Experiment = (props: any) => {
       if (response.status === 200) await handleResponse(response.data, true);
       else
         await handleError({
-          message: "Request not completed",
+          message: response?.data?.message || "Request not completed. Due to Time out Or Unable To Allocation",
           saverity: "error",
         });
     } catch (error) {
@@ -944,10 +948,7 @@ const Experiment = (props: any) => {
                                   type={"button"}
                                   data-id={e.id}
                                   data-link={e.link || "http://www.google.com"}
-                                  value={
-                                    reports[i]
-                                      ? "Generated Report"
-                                      : reportName === e.label
+                                  value={reportStatus && reportName === e.label
                                       ? "Generating Report..."
                                       : "Generate Report"
                                   }
@@ -959,7 +960,7 @@ const Experiment = (props: any) => {
                                     fontWeight: 500,
                                     padding: "2px 5px",
                                   }}
-                                  onClick={(event) => GenOrView(event, e.label)}
+                                  onClick={(event) => GenOrView(event, e.id, e.label)}
                                 />
                               </Button>
                               <p
@@ -967,12 +968,11 @@ const Experiment = (props: any) => {
                                   fontSize: 14,
                                   color: "#66a",
                                   textDecoration: "underline",
-                                }}
-                              >
+                                }}>
                                 {" "}
                                 {reports &&
-                                  reports[i] &&
-                                  reports[i].fileId}{" "}
+                                  reports[i] && (<a target="_blank" rel="noopener" href={reports[i].link}>{"View Report"}</a>)}
+
                               </p>
                             </div>
                           </h3>
