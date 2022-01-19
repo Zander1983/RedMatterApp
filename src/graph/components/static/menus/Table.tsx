@@ -128,7 +128,7 @@ const PlotTable = ({
 
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
-      const raw = [workspace.files[i].name];
+      const raw = [workspace.files[i].id];
       for (let j = 0; j < statistics.length; j += workspace.files.length) {
         if (statistics[i + j]?.gatedFilePopulationPercentage) {
           raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
@@ -251,7 +251,7 @@ const PlotTable = ({
     });
     const files: File[] = [];
     for (let i = 0; i < workspace.files.length; i++) {
-      files.push(workspace.files.find((item) => item.name === array[i][0]));
+      files.push(workspace.files.find((item) => item.id === array[i][0]));
     }
     WorkspaceDispatch.SetFiles(files);
     setData(array);
@@ -389,7 +389,7 @@ const PlotTable = ({
   useEffect(() => {
     setHeaders([
       "File Name",
-      ...workspace.gates.map((gate) => gate.name),
+      ...workspace.gates.map((gate) => gate.id),
       "Click to View",
     ]);
   }, [workspace.gates]);
@@ -449,7 +449,14 @@ const PlotTable = ({
                 {headers.length > 1 &&
                   data.length > 0 &&
                   data[i]?.map((value: any, index: any) =>
-                    index !== data[i].length - 1 ? (
+                    index === 0 ? (
+                      <TableCell
+                        className={`${classes.tableCell}  ${classes.view}`}
+                        key={"content-" + value + index}
+                      >
+                        {workspace.files?.find((f) => f.id === value).name}
+                      </TableCell>
+                    ) : index !== data[i].length - 1 ? (
                       <TableCell
                         className={classes.tableCell}
                         key={"content-" + value + index}
