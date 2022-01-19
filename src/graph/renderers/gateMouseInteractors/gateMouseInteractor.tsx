@@ -47,6 +47,7 @@ export default abstract class GateMouseInteractor {
   private updateInterval = 20; // miliseconds
   private currentInterval: NodeJS.Timeout = null;
   private latest: Gate | null = null;
+  private updateGate: Gate | null = null;
 
   setMouseInteractorState(state: MouseInteractorState) {
     this.rerender = state.rerender;
@@ -216,10 +217,15 @@ export default abstract class GateMouseInteractor {
       if (this.targetEditGate !== null) this.lastGateMouseClick = new Date();
     }
 
-    if (type === "mouseup" && this.isDraggingVertex)
-      this.isDraggingVertex = false;
-    else if (type === "mouseup" && this.isDraggingGate)
-      this.isDraggingGate = false;
+    if (type === "mouseup") {
+      if (this.isDraggingVertex) this.isDraggingVertex = false;
+      else if (type === "mouseup" && this.isDraggingGate) {
+        this.isDraggingGate = false;
+      }
+      if (this.updateGate) {
+        WorkspaceDispatch.UpdateGate(this.updateGate);
+      }
+    }
 
     if (type !== "mousemove") this.lastMouseAction = type;
   }
@@ -231,27 +237,29 @@ export default abstract class GateMouseInteractor {
   }
 
   protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
-      WorkspaceDispatch.UpdateGate(gate);
-      this.lastGateUpdate = new Date();
-    }
+    this.rerender();
+    this.updateGate = gate;
+    // if (fromTimout) this.currentInterval = null;
+    // if (
+    //   this.lastGateUpdate.getTime() + this.updateInterval >
+    //   new Date().getTime()
+    // ) {
+    //   if (this.currentInterval === null) {
+    //     const waitUntilCurrentCycleTimesOut =
+    //       this.lastGateUpdate.getTime() +
+    //       this.updateInterval -
+    //       new Date().getTime() +
+    //       1;
+    //     this.currentInterval = setTimeout(
+    //       () => this.gateUpdater(this.latest, true),
+    //       waitUntilCurrentCycleTimesOut
+    //     );
+    //   } else {
+    //     this.latest = gate;
+    //   }
+    // } else if (gate !== null) {
+    //   WorkspaceDispatch.UpdateGate(gate);
+    //   this.lastGateUpdate = new Date();
+    // }
   }
 }

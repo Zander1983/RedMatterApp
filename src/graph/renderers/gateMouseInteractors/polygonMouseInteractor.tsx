@@ -143,6 +143,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
           true
         );
       }
+      let scatterPlotterGate: any = this.plotter.gates.find(
+        (x) => x.id == gateState.id
+      );
+      scatterPlotterGate.points = gateState.points;
       this.gateUpdater(gateState);
     }
   }
@@ -159,6 +163,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
         this.plotter.transformer.rawAbstractLogicleToLinear(
           this.plotter.transformer.toAbstractPoint(mouse)
         );
+      let scatterPlotterGate: any = this.plotter.gates.find(
+        (x) => x.id == gateState.id
+      );
+      scatterPlotterGate.points = gateState.points;
       this.gateUpdater(gateState);
     }
   }
