@@ -49,68 +49,30 @@ export interface PlotGroup {
 }
 export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
-  switch (method) {
-    case "file":
-      const plotByFileMap: { [index: string]: Plot[] } = {};
-      for (const plot of plots) {
-        try {
-          const file = getPlotFile(plot);
-          if (file.id in plotByFileMap) {
-            plotByFileMap[file.id].push(plot);
-          } else {
-            plotByFileMap[file.id] = [plot];
-          }
-        } catch {
-          console.error(
-            "[PlotController] Plot has not been rendered due to population not found"
-          );
-        }
+
+  const plotByFileMap: { [index: string]: Plot[] } = {};
+  for (const plot of plots) {
+    try {
+      const file = getPlotFile(plot);
+      if (file.id in plotByFileMap) {
+        plotByFileMap[file.id].push(plot);
+      } else {
+        plotByFileMap[file.id] = [plot];
       }
-      plotGroups = Object.keys(plotByFileMap).map((e) => {
-        return {
-          name: getFile(e).name,
-          id: getFile(e).id,
-          plots: plotByFileMap[e],
-        } as PlotGroup;
-      });
-      break;
-    case "gate":
-      const plotByPopGateMap: { [index: string]: Plot[] } = {
-        "No gates": [],
-      };
-      for (const plot of plots) {
-        try {
-          const pop = getPopulation(plot.population);
-          if (pop.gates.length === 0) {
-            plotByPopGateMap["No gates"].push(plot);
-          } else if (pop.gates[0].gate in plotByPopGateMap) {
-            plotByPopGateMap[pop.gates[0].gate].push(plot);
-          } else {
-            plotByPopGateMap[pop.gates[0].gate] = [plot];
-          }
-        } catch {
-          console.error(
-            "[PlotController] Plot has not been rendered due to population gate error"
-          );
-        }
-      }
-      if (plotByPopGateMap["No gates"].length === 0) {
-        delete plotByPopGateMap["No gates"];
-      }
-      plotGroups = Object.keys(plotByPopGateMap).map((e) => {
-        return {
-          name: e === "No gates" ? e : getGate(e).name,
-          id: getFile(e).id,
-          plots: plotByPopGateMap[e],
-        } as PlotGroup;
-      });
-      break;
-    case "all":
-      plotGroups = [{ name: "", plots: plots, id: "" }];
-      break;
-    default:
-      throw Error("wtf?");
+    } catch {
+      console.error(
+        "[PlotController] Plot has not been rendered due to population not found"
+      );
+    }
   }
+  plotGroups = Object.keys(plotByFileMap).map((e) => {
+    return {
+      name: getFile(e).name,
+      id: getFile(e).id,
+      plots: plotByFileMap[e],
+    } as PlotGroup;
+  });
+
   return plotGroups;
 };
 
@@ -208,6 +170,7 @@ interface PlotControllerProps {
 }
 interface IState {
   sortByChanged: boolean;
+  sortBy: string;
 }
 class PlotController extends React.Component<PlotControllerProps, IState> {
   private static renderCalls = 0;
@@ -216,6 +179,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     super(props);
     this.state = {
       sortByChanged: false,
+      sortBy: "file",
     };
   }
 
@@ -306,13 +270,16 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
               Sort by:
               <Select
                 style={{ marginLeft: 10 }}
-                value={method}
+                value={this.state.sortBy}
                 onChange={(e) => {
                   this.setState({
                     sortByChanged: true,
                   });
                   let value: any = e.target.value;
                   method = value;
+                  this.setState({
+                    sortBy: value,
+                  });
                   PlotResource.updatePositions();
                   setTimeout(() => {
                     this.setState({
@@ -323,7 +290,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
               >
                 <MenuItem value={"all"}>No sorting</MenuItem>
                 <MenuItem value={"file"}>File</MenuItem>
-                <MenuItem value={"gate"}>Gate</MenuItem>
               </Select>
             </div>
           ) : null}
@@ -333,31 +299,99 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
             const id = plotGroup.id;
-
-            return (
-              <div key={`plot-controller-${id}`}>
-                {/* {name.length > 0 ? (
-                  <div
-                    style={{
-                      backgroundColor: "#6666AA",
-                      paddingLeft: 20,
-                      paddingBottom: 3,
-                      paddingTop: 3,
-                    }}
-                  >
-                    <h3 style={{ color: "white", marginBottom: 0 }}>
-                      {this.props.workspace.selectedFile === name && (
-                        <span style={{ fontWeight: "bolder" }}>
-                          {" "}
-                          Control Sample:{" "}
-                        </span>
-                      )}
-                      {name}
-                    </h3>
-                  </div>
-                ) : null} */}
-                {this.props.workspace.selectedFile === id &&
-                  this.props.workspace.files[0].downloaded && (
+            if (this.state.sortBy === "file") {
+              return (
+                <div key={`plot-controller-${id}`}>
+                  {this.props.workspace.selectedFile === id &&
+                    this.props.workspace.files[0].downloaded && (
+                      <>
+                        <div
+                          style={{
+                            backgroundColor: "#6666AA",
+                            paddingLeft: 20,
+                            paddingBottom: 3,
+                            paddingTop: 3,
+                          }}
+                        >
+                          <h3 style={{ color: "white", marginBottom: 0 }}>
+                            {this.props.workspace.selectedFile === name && (
+                              <span style={{ fontWeight: "bolder" }}>
+                                {" "}
+                                Control Sample:{" "}
+                              </span>
+                            )}
+                            {name}
+                          </h3>
+                        </div>
+                        <div style={{ marginTop: 3, marginBottom: 10 }}>
+                          <ResponsiveGridLayout
+                            className="layout"
+                            breakpoints={{ lg: 1200 }}
+                            cols={{ lg: 36 }}
+                            rows={{ lg: 30 }}
+                            rowHeight={30}
+                            isDraggable={this.props.workspace.editWorkspace}
+                            onLayoutChange={(layout: any) => {
+                              this.savePlotPosition(layout);
+                            }}
+                            onResize={(layout: any) => {
+                              setCanvasSize(false);
+                            }}
+                            onResizeStop={(layout: any) => {
+                              setCanvasSize(true);
+                            }}
+                          >
+                            {
+                              //@ts-ignore
+                              plots.map((plot, i) => {
+                                return (
+                                  <div
+                                    key={`plot-controller-inner-${plot.id}`}
+                                    style={classes.itemOuterDiv}
+                                    data-grid={standardGridPlotItem(
+                                      i,
+                                      plot,
+                                      plots,
+                                      this.props.workspace.editWorkspace
+                                    )}
+                                    id={`workspace-outter-${plot.id}`}
+                                  >
+                                    <div
+                                      id="inner"
+                                      style={classes.itemInnerDiv}
+                                    >
+                                      <PlotComponent
+                                        plotRelevantResources={this.getPlotRelevantResources(
+                                          plot
+                                        )}
+                                        sharedWorkspace={
+                                          this.props.sharedWorkspace
+                                        }
+                                        editWorkspace={
+                                          this.props.workspace.editWorkspace
+                                        }
+                                        workspaceLoading={this.getWorkspaceLoading()}
+                                        customPlotRerender={
+                                          this.props.customPlotRerender
+                                        }
+                                        experimentId={this.props.experimentId}
+                                        fileName={name}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            }
+                          </ResponsiveGridLayout>
+                        </div>
+                      </>
+                    )}
+                </div>
+              );
+            } else {
+              return (
+                <div key={`plot-controller-${id}`}>
+                  {this.props.workspace.files[0].downloaded && (
                     <>
                       <div
                         style={{
@@ -437,8 +471,9 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                       </div>
                     </>
                   )}
-              </div>
-            );
+                </div>
+              );
+            }
           })}
         </div>
       );
