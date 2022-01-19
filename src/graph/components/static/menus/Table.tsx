@@ -389,7 +389,7 @@ const PlotTable = ({
   useEffect(() => {
     setHeaders([
       "File Name",
-      ...workspace.gates.map((gate) => gate.id),
+      ...workspace.gates.map((gate) => gate.name),
       "Click to View",
     ]);
   }, [workspace.gates]);
