@@ -128,13 +128,29 @@ const PlotTable = ({
 
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
-      const raw = [workspace.files[i].id];
+      let raw = [workspace.files[i].id];
       for (let j = 0; j < statistics.length; j += workspace.files.length) {
         if (statistics[i + j]?.gatedFilePopulationPercentage) {
           raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
         }
       }
       raw.push(workspace.files[i].view ? "Close" : "View");
+
+      // Removing unnecessary extra values
+      if (raw.length < workspace.gates.length + 2) {
+        raw = [
+          raw[0],
+          ...raw.slice(1, 1 + workspace.gates.length - 1),
+          raw[raw.length - 1] === "View" ? "--" : raw[raw.length - 2],
+          raw[raw.length - 1],
+        ];
+      } else {
+        raw = [
+          raw[0],
+          ...raw.slice(1, 1 + workspace.gates.length),
+          raw[raw.length - 1],
+        ];
+      }
 
       if (!raw.includes(undefined)) {
         raws.push(raw);
@@ -465,7 +481,7 @@ const PlotTable = ({
                   data[i]?.map((value: any, index: any) =>
                     index === 0 ? (
                       <TableCell
-                        className={`${classes.tableCell}  ${classes.view}`}
+                        className={`${classes.tableCell}`}
                         key={"content-" + value + index}
                       >
                         {workspace.files?.find((f) => f.id === value).name}
