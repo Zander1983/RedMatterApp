@@ -632,15 +632,6 @@ const WorkspaceInnerComponent = (props: {
           </div>
         </Grid>
       </Grid>
-      {workspace.selectedFile && workspace?.files[0]?.downloaded && (
-        <PlotTable
-          workspace={workspace}
-          sharedWorkspace={sharedWorkspace}
-          experimentId={props.experimentId}
-          workspaceLoading={workspaceLoading}
-          customPlotRerender={customPlotRerender}
-        />
-      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import React from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
-
+import PlotTable from "../static/menus/Table";
 import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
   getFile,
@@ -475,6 +475,17 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
               );
             }
           })}
+          {this.props.workspace.selectedFile &&
+            this.props.workspace?.files[0]?.downloaded &&
+            this.state.sortBy === "file" && (
+              <PlotTable
+                workspace={this.props.workspace}
+                sharedWorkspace={this.props.sharedWorkspace}
+                experimentId={this.props.experimentId}
+                workspaceLoading={this.props.workspaceLoading}
+                customPlotRerender={this.props.customPlotRerender}
+              />
+            )}
         </div>
       );
     } else {
