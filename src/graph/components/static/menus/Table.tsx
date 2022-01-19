@@ -356,20 +356,34 @@ const PlotTable = ({
               plot.gates = plot.gates.filter(
                 (gate) => gate !== workspace.gates[index].id
               );
+              // removing gate from the plot
               WorkspaceDispatch.UpdatePlot(plot);
             }
             if (plot.population === pop.id) {
+              // deleting the plot of the gate
               deletedPlots.push(plot.id);
             }
           });
+          // deleting the population of the gate
           deletedPopulations.push(pop.id);
         }
       }
     });
-
+    // deleting the children
     deleteChildGate(workspace.gates[index].children);
+
     // deleting the gate
     deletedGates.push(workspace.gates[index].id);
+
+    // updating the parents gates
+    deletedGates.map((gateId) => {
+      workspace.gates.map((gate) => {
+        if (gate.children.includes(gateId)) {
+          gate.children = gate.children.filter((child) => child !== gateId);
+          WorkspaceDispatch.UpdateGate(gate);
+        }
+      });
+    });
 
     WorkspaceDispatch.DeletePlotsAndPopulations(
       deletedPlots,
