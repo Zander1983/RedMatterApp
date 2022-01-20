@@ -13,7 +13,7 @@ const EVENTS_LIMIT = 4000;
 export const downloadFileMetadata = async (
   workspaceIsShared: boolean,
   experimentId: string
-): Promise<FileID[]> => {
+): Promise<any[]> => {
   let params;
   if (workspaceIsShared) {
     params = ExperimentFilesApiFetchParamCreator(
@@ -30,6 +30,7 @@ export const downloadFileMetadata = async (
   }
   //@ts-ignore
   const response = await axios.get(params.url, params.options);
+
   const files = response.data.files;
   const workspace: Workspace = store.getState().workspace;
   let newFilesIds: FileID[] = [];
@@ -52,6 +53,7 @@ export const downloadFileMetadata = async (
   }
   WorkspaceDispatch.SetFiles(allFiles);
   return newFilesIds;
+    //return  allFiles;
 };
 
 export const downloadFileEvent = async (
@@ -90,6 +92,8 @@ export const downloadFileEvent = async (
       e.downloading = true;
       WorkspaceDispatch.UpdateFile(e);
     });
+
+
 
     let response;
     let payload: {
@@ -197,5 +201,5 @@ export const dowloadAllFileEvents = async (
       .filter((e) => e.downloaded === false)
       .map((e) => e.id);
   }
-  await downloadFileEvent(workspaceIsShared, files, experimentId);
+  return await downloadFileEvent(workspaceIsShared, files, experimentId);
 };

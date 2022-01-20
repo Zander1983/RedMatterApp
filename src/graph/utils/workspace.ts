@@ -26,8 +26,8 @@ export const getFile = (fileID: FileID): File => {
   const files = workspace.files.filter((file) => {
     return file.id === fileID;
   });
-  if (files.length === 0) throw Error("File not found");
-  if (files.length > 1) throw Error("Multiple files with ID = " + fileID);
+  if (files?.length === 0) throw Error("File not found");
+  if (files?.length > 1) throw Error("Multiple files with ID = " + fileID);
   return files[0];
 };
 
@@ -143,7 +143,7 @@ export const loadWorkspaceFromRemoteIfExists = async (
       );
     }
     const workspace = workspaceData.data.state;
-    if (Object.keys(workspace).length > 0) {
+    if (workspace && Object.keys(workspace).length > 0) {
       await loadSavedWorkspace(workspace, shared, experimentId);
       return { loaded: true, requestSuccess: true };
     }
@@ -182,10 +182,10 @@ const loadSavedWorkspace = async (
   shared: boolean,
   experimentId: string
 ) => {
-  const workspaceObj = JSON.parse(workspace);
-  const files = workspaceObj?.files
-    ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
-    : [];
+  const workspaceObj = JSON.parse(workspace || "{}");
+  // const files = workspaceObj?.files
+  //   ? workspaceObj.files.filter((e: any) => e.downloaded).map((e: any) => e.id)
+  //   : [];
   // await dowloadAllFileEvents(shared, experimentId, files);
   const newWorkspace: Workspace = {
     ...workspaceObj,

@@ -3,6 +3,7 @@ import React from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import PlotComponent from "../plots/PlotComponent";
+import _ from 'lodash';
 
 import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
@@ -61,8 +62,7 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
             plotByFileMap[file.id] = [plot];
           }
         } catch {
-          console.error(
-            "[PlotController] Plot has not been rendered due to population not found"
+          console.error("[PlotController] Plot has not been rendered due to population not found"
           );
         }
       }
@@ -176,9 +176,10 @@ export const setCanvasSize = (save: boolean = false) => {
 
       docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
       updateList.push(plot);
+
     }
   }
-  if (save && plots.length > 0) WorkspaceDispatch.UpdatePlots(updateList);
+  if (save && plots.length > 0)  WorkspaceDispatch.UpdatePlots(updateList);
 };
 
 export const standardGridPlotItem = (
@@ -208,14 +209,16 @@ interface PlotControllerProps {
 }
 interface IState {
   sortByChanged: boolean;
+  method:string
 }
+
 class PlotController extends React.Component<PlotControllerProps, IState> {
-  private static renderCalls = 0;
 
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       sortByChanged: false,
+      method : "file"
     };
   }
 
@@ -256,12 +259,10 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   componentDidMount() {
-    window.addEventListener("resize", () => {
+      window.addEventListener("mouseup", (event) => {_.debounce(() => {resetPlotSizes();setCanvasSize(true);}, 500)});
+      window.addEventListener("resize", _.debounce(() => {resetPlotSizes();setCanvasSize(true);}, 1500));
       resetPlotSizes();
       setCanvasSize(true);
-    });
-    resetPlotSizes();
-    setCanvasSize(true);
   }
 
   getPlotRelevantResources(plot: Plot) {
@@ -286,27 +287,26 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   render() {
-    const plotGroups = getPlotGroups(this.props.workspace.plots);
-    if (this.props.workspace.plots.length > 0) {
-      return (
-        <div>
-          {this.props.workspace.editWorkspace ? (
-            <div
-              style={{
-                position: "fixed",
-                right: 0,
-                backgroundColor: "#fff",
-                borderLeft: "solid 1px #ddd",
-                borderBottom: "solid 1px #ddd",
-                borderBottomLeftRadius: 5,
-                padding: 3,
-                zIndex: 1000,
-              }}
-            >
+      if (this.props.workspace.plots.length > 0) {
+        const plotGroups = getPlotGroups(this.props.workspace.plots);
+        return (
+            <div>
+                {this.props.workspace.editWorkspace ? (
+                    <div
+                        style={{
+                            position: "fixed",
+                            right: 0,
+                            backgroundColor: "#fff",
+                            borderLeft: "solid 1px #ddd",
+                            borderBottom: "solid 1px #ddd",
+                            borderBottomLeftRadius: 5,
+                            padding: 3,
+                            zIndex: 1000,
+              }}>
               Sort by:
               <Select
                 style={{ marginLeft: 10 }}
-                value={method}
+                value={this.state.method == null ? "" : this.state.method}
                 onChange={(e) => {
                   this.setState({
                     sortByChanged: true,
@@ -328,7 +328,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
             </div>
           ) : null}
 
-          <Divider></Divider>
+          <Divider/>
           {plotGroups.map((plotGroup: PlotGroup) => {
             const name = plotGroup.name;
             const plots = plotGroup.plots;
