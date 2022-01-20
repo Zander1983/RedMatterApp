@@ -70,7 +70,7 @@ const PopulationSelectorGateBar = React.memo(
             displayEmpty={true}
             renderValue={(value: unknown) => {
               //@ts-ignore
-              return value === null ? "All" : getGate(value).name;
+              return value === null ? "All" : getGate(value)?.name;
             }}
             onChange={(e) => {
               //@ts-ignore

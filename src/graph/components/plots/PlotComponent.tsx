@@ -56,7 +56,7 @@ const PlotComponent = React.memo(
 
     const displayRef = useRef();
     const barRef = useRef();
-
+    console.log("==== render PlotCmp =====");
     return (
       <div
         id={`display-ref-${plotId}`}
@@ -77,7 +77,7 @@ const PlotComponent = React.memo(
                 ? props.fileName
                 : `${props.fileName.slice(0, 35)}...`}
             </div>
-            <MainBar plot={plot} editWorkspace={props.editWorkspace}></MainBar>
+            <MainBar plot={plot} editWorkspace={props.editWorkspace}/>
             <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}
@@ -88,12 +88,12 @@ const PlotComponent = React.memo(
                 };
               })}
               editWorkspace={props.editWorkspace}
-            ></GateBar>
+            />
           </Grid>
         </div>
         <Divider
           style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
-        ></Divider>
+        />
 
         <SideSelector
           {...props}
@@ -105,9 +105,8 @@ const PlotComponent = React.memo(
               population={population}
               editWorkspace={props.editWorkspace}
               customPlotRerender={props.customPlotRerender}
-            ></PlotRenderer>
-          }
-        ></SideSelector>
+            />
+          }/>
       </div>
     );
   }

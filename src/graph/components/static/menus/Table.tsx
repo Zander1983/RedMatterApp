@@ -122,6 +122,7 @@ const PlotTable = ({
   ]);
 
   const raws: any[] = [];
+
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
       const raw = [workspace.files[i].name];
