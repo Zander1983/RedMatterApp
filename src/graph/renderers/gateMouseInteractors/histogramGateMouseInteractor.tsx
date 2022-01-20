@@ -144,6 +144,11 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     for (let index = 0; index < gateState.points.length; index++) {
       gateState.points[index] += abstractOffset;
     }
+    let scatterPlotterGate: any = this.plotter.gates.find(
+      (x) => x.id == gateState.id
+    );
+    scatterPlotterGate.points = gateState.points;
+
     this.gateUpdater(gateState);
   }
 
@@ -163,6 +168,10 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       gateState.points = gateState.points.reverse() as [number, number];
       this.targetPointIndex = this.targetPointIndex === 0 ? 1 : 0;
     }
+    let scatterPlotterGate: any = this.plotter.gates.find(
+      (x) => x.id == gateState.id
+    );
+    scatterPlotterGate.points = gateState.points;
     this.gateUpdater(gateState);
   }
 

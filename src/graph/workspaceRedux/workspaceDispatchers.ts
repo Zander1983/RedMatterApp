@@ -62,10 +62,14 @@ const WorkspaceDispatch = {
       payload: { plots, populations },
     });
   },
-  DeletePlotsAndPopulations: (plots: string[], populations: string[]) => {
+  DeletePlotsAndPopulations: (
+    plots: string[],
+    populations: string[],
+    gates?: string[]
+  ) => {
     return store.dispatch({
-      type: graphActions.DELETE_PLOTS_AND_POPULATIONS,
-      payload: { plots, populations },
+      type: graphActions.DELETE_PLOTS_GATES_AND_POPULATIONS,
+      payload: { plots, populations, gates },
     });
   },
   AddGate: (gate: Gate) => {

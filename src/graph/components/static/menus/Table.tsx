@@ -123,15 +123,36 @@ const PlotTable = ({
 
   const raws: any[] = [];
 
+  const deletedPlots: string[] = [];
+  const deletedPopulations: string[] = [];
+  const deletedGates: string[] = [];
+
+
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
-      const raw = [workspace.files[i].name];
+      let raw = [workspace.files[i].id];
       for (let j = 0; j < statistics.length; j += workspace.files.length) {
         if (statistics[i + j]?.gatedFilePopulationPercentage) {
           raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
         }
       }
       raw.push(workspace.files[i].view ? "Close" : "View");
+
+      // Removing unnecessary extra values
+      if (raw.length < workspace.gates.length + 2) {
+        raw = [
+          raw[0],
+          ...raw.slice(1, 1 + workspace.gates.length - 1),
+          raw[raw.length - 1] === "View" ? "--" : raw[raw.length - 2],
+          raw[raw.length - 1],
+        ];
+      } else {
+        raw = [
+          raw[0],
+          ...raw.slice(1, 1 + workspace.gates.length),
+          raw[raw.length - 1],
+        ];
+      }
 
       if (!raw.includes(undefined)) {
         raws.push(raw);
@@ -148,10 +169,8 @@ const PlotTable = ({
         workspace.selectedFile === population.file
       ) {
         workspace.files.map((file) => {
-          if (workspace.plots.length > 0) {
-            if (file.downloaded && !file.downloading) {
-              stats.push(statsProvider.getPlotStatsWithFiles(file, population));
-            }
+          if (file.downloaded && !file.downloading) {
+            stats.push(statsProvider.getPlotStatsWithFiles(file, population));
           }
         });
       }
@@ -250,7 +269,7 @@ const PlotTable = ({
     });
     const files: File[] = [];
     for (let i = 0; i < workspace.files.length; i++) {
-      files.push(workspace.files.find((item) => item.name === array[i][0]));
+      files.push(workspace.files.find((item) => item.id === array[i][0]));
     }
     WorkspaceDispatch.SetFiles(files);
     setData(array);
@@ -319,6 +338,82 @@ const PlotTable = ({
     setPlots(plots);
   };
 
+  const deleteChildGate = (children: string[]) => {
+    children.map((child) => {
+      workspace.populations.map((pop) => {
+        if (pop.gates && pop.gates.length > 0) {
+          if (pop.gates[0].gate === child) {
+            workspace.plots.map((plot) => {
+              if (plot.gates.includes(child)) {
+                plot.gates = plot.gates.filter((gate) => gate !== child);
+                WorkspaceDispatch.UpdatePlot(plot);
+              }
+              if (plot.population === pop.id) {
+                deletedPlots.push(plot.id);
+              }
+            });
+            deletedPopulations.push(pop.id);
+          }
+        }
+      });
+      if (workspace.gates.find((gate) => gate.id === child).children) {
+        deleteChildGate(
+          workspace.gates.find((gate) => gate.id === child).children
+        );
+      }
+      deletedGates.push(child);
+    });
+  };
+  const deleteColumn = (index: number) => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
+    workspace.populations.map((pop) => {
+      if (pop.gates && pop.gates.length > 0) {
+        if (pop.gates[0].gate === workspace.gates[index].id) {
+          workspace.plots.map((plot) => {
+            if (plot.gates.includes(workspace.gates[index].id)) {
+              plot.gates = plot.gates.filter(
+                (gate) => gate !== workspace.gates[index].id
+              );
+              // removing gate from the plot
+              WorkspaceDispatch.UpdatePlot(plot);
+            }
+            if (plot.population === pop.id) {
+              // deleting the plot of the gate
+              deletedPlots.push(plot.id);
+            }
+          });
+          // deleting the population of the gate
+          deletedPopulations.push(pop.id);
+        }
+      }
+    });
+    // deleting the children
+    deleteChildGate(workspace.gates[index].children);
+
+    // deleting the gate
+    deletedGates.push(workspace.gates[index].id);
+
+    // updating the parents gates
+    deletedGates.map((gateId) => {
+      workspace.gates.map((gate) => {
+        if (gate.children.includes(gateId)) {
+          gate.children = gate.children.filter((child) => child !== gateId);
+          WorkspaceDispatch.UpdateGate(gate);
+        }
+      });
+    });
+
+    WorkspaceDispatch.DeletePlotsAndPopulations(
+      deletedPlots,
+      deletedPopulations,
+      deletedGates
+    );
+
+    deletedPlots.length = 0;
+    deletedPopulations.length = 0;
+    deletedGates.length = 0;
+  };
+
   useEffect(() => {
     updateStats();
   }, [workspace]);
@@ -365,14 +460,14 @@ const PlotTable = ({
                       alt="up-arrow"
                       className={classes.arrow}
                     />
-                    {/* <img
+                    <img
                       onClick={() => {
                         deleteColumn(index - 1);
                       }}
                       src={deleteIcon}
                       alt="delete-icon"
                       className={classes.delete}
-                    /> */}
+                    />
                   </>
                 )}
               </TableCell>
@@ -386,7 +481,14 @@ const PlotTable = ({
                 {headers.length > 1 &&
                   data.length > 0 &&
                   data[i]?.map((value: any, index: any) =>
-                    index !== data[i].length - 1 ? (
+                    index === 0 ? (
+                      <TableCell
+                        className={`${classes.tableCell}`}
+                        key={"content-" + value + index}
+                      >
+                        {workspace.files?.find((f) => f.id === value).name}
+                      </TableCell>
+                    ) : index !== data[i].length - 1 ? (
                       <TableCell
                         className={classes.tableCell}
                         key={"content-" + value + index}

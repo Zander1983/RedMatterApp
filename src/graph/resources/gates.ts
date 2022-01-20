@@ -2,8 +2,6 @@ import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { getGate } from "graph/utils/workspace";
 import { Gate, GateID, HistogramGate, OvalGate, PolygonGate } from "./types";
-import { store } from "redux/store";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 export const createGate = ({
   cloneGate,

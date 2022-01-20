@@ -799,7 +799,7 @@ const Experiment = (props: any) => {
                 ) : (
                   experimentData.files.map((e: any, i: number) => {
                     return (
-                      <div key={i}>
+                      <div key={`experiment-data-${i}`}>
                         <Grid
                           item
                           key={`experiment-file-id-${i}`}
@@ -998,6 +998,7 @@ const Experiment = (props: any) => {
                   return (
                     <>
                       <Grid
+                        key={`uploadingFiles-${i}`}
                         item
                         xs={12}
                         style={{
@@ -1093,7 +1094,9 @@ const Experiment = (props: any) => {
                           Experiment Channels
                         </h1>
                         {getExperimentChannels().map((e, i) => (
-                          <h4 key={i}>{"• " + e}</h4>
+                          <h4 key={`get-experiment-channels-${i}`}>
+                            {"• " + e}
+                          </h4>
                         ))}
                       </div>
                     </Grid>

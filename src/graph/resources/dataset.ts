@@ -366,7 +366,7 @@ const gate2BiConverter = (e: PopulationGateType) => {
     });
   }
   const gate = getGate(e.gate);
-  if (gate.gateType === "polygon") {
+  if (gate?.gateType === "polygon") {
     const newGate = {
       //@ts-ignore
       gate: { ...(gate as PolygonGate) },

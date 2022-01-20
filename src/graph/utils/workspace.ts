@@ -61,12 +61,14 @@ export const getPopulation = (populationID: PopulationID): Population => {
   return populations[0];
 };
 
-export const getPlotFromPopulationId = (populationId: string) => {
+export const getPlotFromPopulationId = (gateId: string) => {
   const workspace = getWorkspace();
-  const plot = workspace.plots.find((ele) => ele.population === populationId);
+  const gate = workspace.gates.find((ele) => ele.id === gateId);
   return {
-    xAxis: plot.xAxis,
-    yAxis: plot.yAxis,
+    //@ts-ignore
+    xAxis: gate.xAxis ? gate.xAxis : gate.axis,
+    //@ts-ignore
+    yAxis: gate.yAxis ? gate.yAxis : gate.axis,
   };
 };
 
