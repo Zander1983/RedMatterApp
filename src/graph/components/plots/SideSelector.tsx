@@ -132,14 +132,16 @@ function PlotComponent(props: {
 
   useEffect(() => {
     const workspace = getWorkspace();
-    if (workspace.files[0].downloaded) {
-      const plotsRerenderQueueItem: PlotsRerender = {
-        id: "",
-        used: false,
-        type: "plotsRerender",
-        plotIDs: workspace.plots.map((plot) => plot.id),
-      };
-      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    if(workspace) {
+      if (typeof workspace.files[0]?.downloaded !== 'undefined') {
+        const plotsRerenderQueueItem: PlotsRerender = {
+          id: "",
+          used: false,
+          type: "plotsRerender",
+          plotIDs: workspace.plots.map((plot) => plot.id),
+        };
+        EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+      }
     }
   }, [labels]);
 
@@ -258,10 +260,7 @@ function PlotComponent(props: {
           value={
             isPlotHistogram()
               ? "hist"
-              : labels
-              ? labels[currentYIndex]
-              : plot.yAxis
-          }
+              : (labels !== null && typeof labels[currentYIndex] !== 'undefined') ? labels[currentYIndex] : plot.yAxis}
         >
           {labels &&
             labels.length &&
@@ -283,7 +282,7 @@ function PlotComponent(props: {
             marginRight: 15,
             flex: "1 1 auto",
           }}
-          value={yPlotType}
+          value={yPlotType === "" ? "" : yPlotType}
           //@ts-ignore
           onChange={(e) => setPlotType("y", e.target.value)}
         >
@@ -379,7 +378,7 @@ function PlotComponent(props: {
                     setCurrentXIndex(index);
                     setAxis("x", axes[index]);
                   }}
-                  value={labels[currentXIndex] || plot.xAxis}
+                  value={labels[currentXIndex] !== null ? labels[currentXIndex] : plot.xAxis}
                 >
                   {labels &&
                     labels.length &&
@@ -394,7 +393,7 @@ function PlotComponent(props: {
                     marginLeft: 10,
                     flex: "1 1 auto",
                   }}
-                  value={xPlotType}
+                  value={xPlotType === "" ? "" : xPlotType}
                   //@ts-ignore
                   onChange={(e) => setPlotType("x", e.target.value)}
                 >
@@ -420,7 +419,7 @@ function PlotComponent(props: {
                     height: 30,
                     marginTop: -26,
                   }}
-                  value={null}
+                  value={""}
                 >
                   <div style={{ textAlign: "center", width: "100%" }}>
                     File overlays

@@ -122,9 +122,11 @@ const PlotTable = ({
   ]);
 
   const raws: any[] = [];
+
   const deletedPlots: string[] = [];
   const deletedPopulations: string[] = [];
   const deletedGates: string[] = [];
+
 
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {

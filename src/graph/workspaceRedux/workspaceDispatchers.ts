@@ -152,7 +152,7 @@ const WorkspaceDispatch = {
   },
   DeleteNotification: (notification: Notification) => {
     return store.dispatch({
-      type: graphActions.DELETE_NOTIFICATION,
+      type: "workspace.DELETE_NOTIFICATION" || graphActions?.DELETE_NOTIFICATION,
       payload: { notification },
     });
   },

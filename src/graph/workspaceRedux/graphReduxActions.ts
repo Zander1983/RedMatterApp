@@ -77,7 +77,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_FILE:
       const newFile: File = action.payload.file;
       if (state.files.find((e) => e.id === newFile.id)) {
-        console.error("[workspace.ADD_FILE] File already in workspace");
+        //console.error("[workspace.ADD_FILE] File already in workspace");
         return state;
       }
       return {
@@ -88,9 +88,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_POPULATION:
       const newPop: Population = action.payload.population;
       if (state.populations.find((e) => e.id === newPop.id)) {
-        console.error(
-          "[workspace.ADD_POPULATION] Population already in workspace"
-        );
+       // console.error("[workspace.ADD_POPULATION] Population already in workspace");
         return state;
       }
       return {
@@ -129,7 +127,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_PLOT:
       const newPlot: Plot = action.payload.plot;
       if (state.plots.find((e) => e.id === newPlot.id)) {
-        console.error("[workspace.ADD_PLOT] Plot already in workspace");
+        //console.error("[workspace.ADD_PLOT] Plot already in workspace");
         return state;
       }
       return {
@@ -143,7 +141,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       newPlots.forEach((newPlot) => {
         if (state.plots.find((e) => e.id === newPlot.id)) {
           failed = true;
-          console.error("[workspace.ADD_PLOTS] Plot already in workspace");
+          //console.error("[workspace.ADD_PLOTS] Plot already in workspace");
         }
       });
       if (failed) return state;
@@ -155,7 +153,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_GATE:
       const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
-        console.error("[workspace.ADD_GATE] Gate already in workspace");
+        //console.error("[workspace.ADD_GATE] Gate already in workspace");
         return state;
       }
       return {
@@ -174,7 +172,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.UPDATE_FILE:
       const updateFile: File = action.payload.file;
       if (!state.files.find((e) => e.id === updateFile.id)) {
-        console.error("[workspace.UPDATE_FILE] File does not exist");
+        //console.error("[workspace.UPDATE_FILE] File does not exist");
         return state;
       }
       state.files = state.files.map((e) => {
@@ -194,7 +192,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.UPDATE_PLOT:
       const updatePlot: Plot = action.payload.plot;
       if (!state.plots.find((e) => e.id === updatePlot.id)) {
-        console.error("[workspace.UPDATE_PLOT] Plot does not exist");
+        //console.error("[workspace.UPDATE_PLOT] Plot does not exist");
         return state;
       }
       state.plots = state.plots.map((e) => {
@@ -210,11 +208,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       const updatePlots: Plot[] = action.payload.plots;
       for (const plot of updatePlots) {
         if (!state.plots.find((e) => e.id === plot.id)) {
-          console.error(
-            "[workspace.UPDATE_PLOT] Plot",
-            plot.id,
-            "does not exist"
-          );
+          //console.error("[workspace.UPDATE_PLOT] Plot", plot.id, "does not exist");
           continue;
         }
         state.plots = state.plots.map((e) => {
@@ -230,7 +224,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.UPDATE_GATE:
       const updateGate: Gate = action.payload.gate;
       if (!state.gates.find((e) => e.id === updateGate.id)) {
-        console.error("[workspace.UPDATE_GATE] Gate does not exist");
+       // console.error("[workspace.UPDATE_GATE] Gate does not exist");
         return state;
       }
       state.gates = state.gates.map((e) => {
@@ -245,7 +239,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.DELETE_GATE:
       const deleteGate: Gate = action.payload.gate;
       if (!state.gates.find((e) => e.id === deleteGate.id)) {
-        console.error("[workspace.DELETE_GATE] Gate does not exist");
+        //console.error("[workspace.DELETE_GATE] Gate does not exist");
         return state;
       }
       state.gates = state.gates.filter((e) => e.id !== deleteGate.id);
@@ -288,7 +282,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.DELETE_PLOT:
       const deletePlot: Plot = action.payload.plot;
       if (!state.plots.find((e) => e.id === deletePlot.id)) {
-        console.error("[workspace.DELETE_PLOT] Plot does not exist");
+        //console.error("[workspace.DELETE_PLOT] Plot does not exist");
         return state;
       }
       state.plots = state.plots.filter((e) => e.id !== deletePlot.id);
@@ -314,9 +308,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_NOTIFICATION:
       const newNotification: Notification = action.payload.notification;
       if (state.notifications.find((e) => e.id === newNotification.id)) {
-        console.error(
-          "[workspace.ADD_NOTIFICATION] Notification already exists"
-        );
+        //console.error("[workspace.ADD_NOTIFICATION] Notification already exists");
       }
       return {
         ...state,
@@ -326,9 +318,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.DELETE_NOTIFICATION:
       const deleteNotification: Notification = action.payload.notification;
       if (!state.notifications.find((e) => e.id === deleteNotification.id)) {
-        console.error(
-          "[workspace.DELETE_NOTIFICATION] Notification doesn't exist"
-        );
+        //console.error("[workspace.DELETE_NOTIFICATION] Notification doesn't exist");
       }
       return {
         ...state,
