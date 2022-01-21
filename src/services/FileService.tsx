@@ -29,6 +29,7 @@ export const downloadFileMetadata = async (
     );
   }
   //@ts-ignore
+
   const response = await axios.get(params.url, params.options);
 
   const files = response.data.files;
@@ -92,8 +93,6 @@ export const downloadFileEvent = async (
       e.downloading = true;
       WorkspaceDispatch.UpdateFile(e);
     });
-
-
 
     let response;
     let payload: {
@@ -173,7 +172,7 @@ export const downloadFileEvent = async (
       if (showNotifications) {
         notification.killNotification();
       }
-      throw new Error("File was not downloaded");
+      throw err ;//Error("File was not downloaded");
     }
   }
   if (showNotifications) {

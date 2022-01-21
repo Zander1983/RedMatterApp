@@ -144,6 +144,7 @@ export const loadWorkspaceFromRemoteIfExists = async (
         }
       );
     }
+
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
       await loadSavedWorkspace(workspace, shared, experimentId);

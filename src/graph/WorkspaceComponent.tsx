@@ -25,7 +25,7 @@ import LinkShareModal from "./components/modals/linkShareModal";
 import {
   downloadFileEvent,
   downloadFileMetadata,
-  dowloadAllFileEvents,
+  dowloadAllFileEvents
 } from "services/FileService";
 
 import {
@@ -48,7 +48,6 @@ import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
-import PlotTable from "./components/static/menus/Table";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -161,19 +160,63 @@ const WorkspaceInnerComponent = (props: {
   };
 
   useEffect(() => {
-    WorkspaceDispatch.ResetWorkspace();
-    if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-    WorkspaceDispatch.SetWorkspaceShared(props.shared);
-    setSharedWorkspace(props.shared);
-    (async () => {
-      await initializeWorkspace(props.shared, props.experimentId);
-    })();
-
-    return () => {
-      WorkspaceDispatch.ResetWorkspace();
-      memResetDatasetCache();
-    };
+      (async () => {
+          WorkspaceDispatch.ResetWorkspace();
+          if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+          WorkspaceDispatch.SetWorkspaceShared(props.shared);
+          setSharedWorkspace(props.shared);
+          try {
+              await initializeWorkspace(props.shared, props.experimentId);
+          } catch (e) {
+              await handleError(e);
+          }
+          return () => {
+              WorkspaceDispatch.ResetWorkspace();
+              memResetDatasetCache();
+          };
+      })();
   }, []);
+
+  const handleError = async (error: any) => {
+        if (
+            error?.name === "Error" ||
+            error?.message.toString() === "Network Error"
+        ) {
+            showMessageBox({
+                message: "Connectivity Problem, please check your internet connection",
+                saverity: "error",
+            });
+        } else if (error?.response) {
+            if (error.response?.status == 401 || error.response.status == 419) {
+                setTimeout(() => {
+                    userManager.logout();
+                    history.replace("/login");
+                }, 3000);
+                showMessageBox({
+                    message: "Authentication Failed Or Session Time out",
+                    saverity: "error",
+                });
+            }
+        } else {
+            showMessageBox({
+                message: error?.message || "Request Failed. May be Time out",
+                saverity: error.saverity || "error",
+            });
+        }
+    };
+
+  const showMessageBox = (response: any) => {
+        switch (response.saverity) {
+            case "error":
+                snackbarService.showSnackbar(response?.message, "error");
+                break;
+            case "success":
+                snackbarService.showSnackbar(response?.message, "success");
+                break;
+            default:
+                break;
+        }
+    };
 
   const downloadAllEvents = async (
     fileIds: any[],
@@ -215,25 +258,21 @@ const WorkspaceInnerComponent = (props: {
   useEffect(() => {
     if (workspace.editWorkspace !== editWorkspace) {
       setEditWorkspace(workspace.editWorkspace);
-      setInitState(true);
+      //setInitState(true);
     }
   }, [workspace.editWorkspace]);
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-    if (!plotCallNeeded && !savingWorkspace) {
-      setSavingWorkspace(true);
       const timer = setTimeout(() => saveWorkspace(), 1000);
       return () => {
         clearTimeout(timer);
       };
-    }
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
     setWorkspaceLoading(true);
-    setAutosaveEnabled(false);
     const loadStatus = await loadWorkspaceFromRemoteIfExists(
       shared,
       experimentId
