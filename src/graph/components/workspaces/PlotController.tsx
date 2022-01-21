@@ -336,7 +336,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               this.savePlotPosition(layout);
                             }}
                             onResize={(layout: any) => {
-                                console.log(layout);
                               setCanvasSize(false);
                             }}
                             onResizeStop={(layout: any) => {
