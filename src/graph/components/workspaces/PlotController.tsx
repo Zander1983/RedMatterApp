@@ -225,7 +225,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   componentDidMount() {
-      //window.addEventListener("mouseup", (event) => {_.debounce(() => {resetPlotSizes();setCanvasSize(true, true);}, 100)});
+      window.addEventListener("mouseup", (event) => {_.debounce(() => {resetPlotSizes();setCanvasSize(true, true);}, 100)});
       window.addEventListener("resize", _.debounce(() => {resetPlotSizes();setCanvasSize(true, false);}, 300));
       resetPlotSizes();
       setCanvasSize(true);
