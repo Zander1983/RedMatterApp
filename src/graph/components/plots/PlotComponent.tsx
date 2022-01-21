@@ -61,7 +61,8 @@ const PlotComponent = React.memo(
         id={`display-ref-${plotId}`}
         key={`display-ref-${plotId}`}
         style={classes.mainContainer}
-        ref={displayRef}>
+        ref={displayRef}
+      >
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
           <Grid
             container
@@ -75,7 +76,7 @@ const PlotComponent = React.memo(
                 ? props.fileName
                 : `${props.fileName.slice(0, 35)}...`}
             </div>
-            <MainBar plot={plot} editWorkspace={props.editWorkspace}/>
+            <MainBar plot={plot} editWorkspace={props.editWorkspace} />
             <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}

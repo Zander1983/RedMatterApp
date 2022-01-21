@@ -135,6 +135,16 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
       break;
     }
     newX = plot.dimensions.w + plot.positions.x;
+
+    // 311 is the size of the plotWidth on creation
+    if (plot.plotWidth > 311) {
+      let plotWidth = plot.plotWidth - 311;
+      // converting plotWith to the scale of positions
+      // 380 / 9 ~~~ 40
+      plotWidth = plotWidth / 40;
+      newX += plotWidth;
+    }
+
     if (maxHeight < plot.dimensions.h) maxHeight = plot.dimensions.h;
     if (newX + MINW > maxWidth) {
       prevLineWidth = newX;
