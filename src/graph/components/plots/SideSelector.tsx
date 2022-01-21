@@ -225,8 +225,7 @@ function PlotComponent(props: {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-      }}
-    >
+      }}>
       <div
         className="pc-y"
         style={{

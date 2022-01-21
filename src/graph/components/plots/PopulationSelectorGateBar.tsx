@@ -65,7 +65,7 @@ const PopulationSelectorGateBar = React.memo(
               width: "100%",
             }}
             value={
-              populationGates.length > 0 ? populationGates[0].gate.id : null
+              populationGates.length > 0 ? populationGates[0].gate.id : ""
             }
             displayEmpty={true}
             renderValue={(value: unknown) => {

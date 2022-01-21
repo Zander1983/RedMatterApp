@@ -53,14 +53,15 @@ const PlotComponent = React.memo(
 
     const displayRef = useRef();
     const barRef = useRef();
+
     console.log("==== render PlotCmp =====");
+
     return (
       <div
         id={`display-ref-${plotId}`}
         key={`display-ref-${plotId}`}
         style={classes.mainContainer}
-        ref={displayRef}
-      >
+        ref={displayRef}>
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
           <Grid
             container

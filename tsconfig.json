@@ -27,13 +27,13 @@
     "strictNullChecks": false,
 
     // Risky new features of typescript
-    "experimentalDecorators": true,
+    "experimentalDecorators": true
   },
   "include": [
     "src"
   ],
   "exclude": [
     "src/api_calls",
-    "src/graph/z_trash",
+    "src/graph/z_trash"
   ]
 }
