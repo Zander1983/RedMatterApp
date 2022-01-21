@@ -54,7 +54,7 @@ const PlotComponent = React.memo(
     const displayRef = useRef();
     const barRef = useRef();
 
-    console.log("==== render PlotCmp =====");
+    //console.log("==== render PlotCmp =====");
 
     return (
       <div
@@ -104,7 +104,8 @@ const PlotComponent = React.memo(
               editWorkspace={props.editWorkspace}
               customPlotRerender={props.customPlotRerender}
             />
-          }/>
+          }
+        />
       </div>
     );
   }
