@@ -281,7 +281,7 @@ const App = () => {
         return response;
       },
       function (error) {
-        if (419 === error.response.status) {
+        if (419 === error?.response?.status) {
           if (!sessionCheckStarted) {
             sessionCheckStarted = true;
             axios
@@ -305,7 +305,7 @@ const App = () => {
               })
               .catch((e) => {});
           }
-        } else if (401 === error.response.status) {
+        } else if (401 === error?.response?.status) {
           userManager.logout();
           sessionCheckStarted = false;
           history.replace("/login");
