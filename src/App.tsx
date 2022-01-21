@@ -186,7 +186,7 @@ const router = [
     component: Jobs,
   },
 ].filter((e) => {
-  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
+  if(process.env.REACT_APP_NO_WORKSPACES === "true") {
     return e.path.indexOf("experiment") === -1;
   }
   return true;
@@ -331,8 +331,7 @@ const App = () => {
         ) : (
           <Content
             className={classes.content}
-            style={{ fontFamily: "Quicksand" }}
-          >
+            style={{ fontFamily: "Quicksand" }}>
             <Switch>
               <Route key={1001} exact path="/" component={AppLandingPage} />
             </Switch>

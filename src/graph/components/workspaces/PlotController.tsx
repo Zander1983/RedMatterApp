@@ -115,12 +115,15 @@ export const resetPlotSizes = (id?: string) => {
     if (docBarRef && docDisplayRef && docIdRef) {
       let width = docDisplayRef.offsetWidth - 55;
       let height = docDisplayRef.offsetHeight - docBarRef.offsetHeight - 40;
-      docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+      setTimeout(() => {
+          docIdRef.setAttribute("style", `width:${width}px;height:${height}px;`);
+      }, 0);
+
     }
   }
 };
 
-export const setCanvasSize = (save: boolean = false) => {
+export const setCanvasSize = (save: boolean = false, isAsync: boolean = false) => {
   const plots = getWorkspace().plots;
   const updateList: Plot[] = [];
   for (let plot of plots) {
@@ -143,7 +146,10 @@ export const setCanvasSize = (save: boolean = false) => {
 
     }
   }
-  if (save && plots.length > 0)  WorkspaceDispatch.UpdatePlots(updateList);
+  if (save && plots.length > 0) {
+      if(isAsync) _.debounce(() => WorkspaceDispatch.UpdatePlots(updateList),20);
+      else setTimeout( () => WorkspaceDispatch.UpdatePlots(updateList), 10);
+  }
 };
 
 export const standardGridPlotItem = (
@@ -223,8 +229,8 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   componentDidMount() {
-      window.addEventListener("mouseup", (event) => {_.debounce(() => {resetPlotSizes();setCanvasSize(true);}, 200)});
-      window.addEventListener("resize", _.debounce(() => {resetPlotSizes();setCanvasSize(true);}, 200));
+      window.addEventListener("mouseup", (event) => {_.debounce(() => {resetPlotSizes();setCanvasSize(true, true);}, 200)});
+      window.addEventListener("resize", _.debounce(() => {resetPlotSizes();setCanvasSize(true, false);}, 500));
       resetPlotSizes();
       setCanvasSize(true);
   }
@@ -270,7 +276,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
               Sort by:
               <Select
                 style={{ marginLeft: 10 }}
-                value={this.state.sortBy}
+                value={this.state.sortBy !== "" ? this.state.sortBy : "" }
                 onChange={(e) => {
                   this.setState({
                     sortByChanged: true,
@@ -311,8 +317,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             paddingLeft: 20,
                             paddingBottom: 3,
                             paddingTop: 3,
-                          }}
-                        >
+                          }}>
                           <h3 style={{ color: "white", marginBottom: 0 }}>
                             {this.props.workspace.selectedFile === name && (
                               <span style={{ fontWeight: "bolder" }}>
