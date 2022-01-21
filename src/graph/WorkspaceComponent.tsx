@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 
@@ -140,10 +140,13 @@ const WorkspaceInnerComponent = (props: {
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(false);
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const [editWorkspace, setEditWorkspace] = React.useState(workspace.editWorkspace);
+  const [editWorkspace, setEditWorkspace] = React.useState(
+    workspace.editWorkspace
+  );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [lastSavedTime, setLastSavedTime] = React.useState(null);
 
@@ -158,48 +161,55 @@ const WorkspaceInnerComponent = (props: {
   };
 
   useEffect(() => {
+    WorkspaceDispatch.ResetWorkspace();
+    if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+    WorkspaceDispatch.SetWorkspaceShared(props.shared);
+    setSharedWorkspace(props.shared);
+    (async () => {
+      await initializeWorkspace(props.shared, props.experimentId);
+    })();
+
+    return () => {
       WorkspaceDispatch.ResetWorkspace();
-      if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-      WorkspaceDispatch.SetWorkspaceShared(props.shared);
-      setSharedWorkspace(props.shared);
-      (async () => {
-          await initializeWorkspace(props.shared, props.experimentId);
-      })();
+      memResetDatasetCache();
+    };
+  }, []);
 
-      return () => {
-          WorkspaceDispatch.ResetWorkspace();
-          memResetDatasetCache();
-      };
-    }, []);
-
-  const downloadAllEvents = async (fileIds:any[], isInitTime:boolean = false) => {
-      if(isInitTime) return;
-      setPlotCallNeeded(false);
-      dowloadAllFileEvents(
-          sharedWorkspace,
-          props.experimentId,
-          fileIds
-      ).then(result => {
-          if(result?.length > 0){
-              setPlotCallNeeded(true);
-          }
-      }).catch(err => {
-          setPlotCallNeeded(false);
-          snackbarService.showSnackbar("File downloading failed. due to retry completed", "error");
+  const downloadAllEvents = async (
+    fileIds: any[],
+    isInitTime: boolean = false
+  ) => {
+    if (isInitTime) return;
+    setPlotCallNeeded(false);
+    dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
+      .then((result) => {
+        if (result?.length > 0) {
+          setPlotCallNeeded(true);
+        }
+      })
+      .catch((err) => {
+        setPlotCallNeeded(false);
+        snackbarService.showSnackbar(
+          "File downloading failed. due to retry completed",
+          "error"
+        );
       });
   };
 
   // Loading the files on creating the experiment
   useEffect(() => {
-      if(! workspaceLoading){
-          setWorkspaceLoading(false);
-          try {
-              downloadAllEvents(workspace.files.map((file) => file.id)).then();
-          } catch (e) {
-              setPlotCallNeeded(false);
-              snackbarService.showSnackbar("File downloading failed. due to retry completed", "error");
-          }
+    if (!workspaceLoading) {
+      setWorkspaceLoading(false);
+      try {
+        downloadAllEvents(workspace.files.map((file) => file.id)).then();
+      } catch (e) {
+        setPlotCallNeeded(false);
+        snackbarService.showSnackbar(
+          "File downloading failed. due to retry completed",
+          "error"
+        );
       }
+    }
   }, [workspace.files.length]);
 
   useEffect(() => {
@@ -211,20 +221,23 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-      if (!plotCallNeeded && !savingWorkspace){
-          setSavingWorkspace(true);
-          const timer = setTimeout(() => saveWorkspace(), 1000);
-          return () => {
-              clearTimeout(timer);
-          };
-      }
+    if (!plotCallNeeded && !savingWorkspace) {
+      setSavingWorkspace(true);
+      const timer = setTimeout(() => saveWorkspace(), 1000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
     const notification = new Notification("Loading workspace");
     setWorkspaceLoading(true);
     setAutosaveEnabled(false);
-    const loadStatus = await loadWorkspaceFromRemoteIfExists(shared, experimentId);
+    const loadStatus = await loadWorkspaceFromRemoteIfExists(
+      shared,
+      experimentId
+    );
 
     if (!loadStatus.requestSuccess) {
       snackbarService.showSnackbar("Workspace created", "success");
@@ -243,10 +256,10 @@ const WorkspaceInnerComponent = (props: {
   };
 
   const saveWorkspace = async (shared: boolean = false) => {
-      setSavingWorkspace(true);
-      setLastSavedTime(new Date().toLocaleString());
-      await saveWorkspaceToRemote(workspace, shared, props.experimentId);
-      setSavingWorkspace(false);
+    setSavingWorkspace(true);
+    setLastSavedTime(new Date().toLocaleString());
+    await saveWorkspaceToRemote(workspace, shared, props.experimentId);
+    setSavingWorkspace(false);
   };
 
   var onLinkShareClick = async () => {
@@ -307,7 +320,10 @@ const WorkspaceInnerComponent = (props: {
     reader.readAsText(e.target.files[0]);
   };
 
-  const handleDownLoadFileEvents = async (fileIds: Array<string>, flowJoJson: any) => {
+  const handleDownLoadFileEvents = async (
+    fileIds: Array<string>,
+    flowJoJson: any
+  ) => {
     for (let i = 0; i < fileIds.length; i++) {
       await downloadFileEvent(sharedWorkspace, fileIds[i], props.experimentId);
     }
@@ -343,7 +359,7 @@ const WorkspaceInnerComponent = (props: {
   };
 
   if (autosaveEnabled) {
-      Debounce(() => saveWorkspace(), 5000);
+    Debounce(() => saveWorkspace(), 5000);
   }
 
   return (
@@ -473,7 +489,8 @@ const WorkspaceInnerComponent = (props: {
                     }}
                   >
                     <div>
-                      <Button disabled={!plotCallNeeded}
+                      <Button
+                        disabled={!plotCallNeeded}
                         size="small"
                         variant="contained"
                         style={{
@@ -502,7 +519,8 @@ const WorkspaceInnerComponent = (props: {
                       >
                         Plot sample
                       </Button>
-                      <Button disabled={!plotCallNeeded}
+                      <Button
+                        disabled={!plotCallNeeded}
                         variant="contained"
                         size="small"
                         className={classes.topButton}
@@ -517,7 +535,11 @@ const WorkspaceInnerComponent = (props: {
                           type="file"
                           id="file"
                           ref={inputFile}
-                          value={fileUploadInputValue == null ?  "" : fileUploadInputValue}
+                          value={
+                            fileUploadInputValue == null
+                              ? ""
+                              : fileUploadInputValue
+                          }
                           accept=".wsp"
                           style={{ display: "none" }}
                           onChange={(e) => {
@@ -527,7 +549,8 @@ const WorkspaceInnerComponent = (props: {
                         Import FlowJo (experimental)
                       </Button>
 
-                      <Button disabled={!plotCallNeeded}
+                      <Button
+                        disabled={!plotCallNeeded}
                         variant="contained"
                         size="small"
                         onClick={() => handleOpen(setClearModal)}
@@ -539,7 +562,8 @@ const WorkspaceInnerComponent = (props: {
                         Clear
                       </Button>
                       <span>
-                        <Button disabled={!plotCallNeeded}
+                        <Button
+                          disabled={!plotCallNeeded}
                           variant="contained"
                           size="small"
                           onClick={() => saveWorkspace()}
@@ -566,7 +590,8 @@ const WorkspaceInnerComponent = (props: {
                           }}
                           label={"Autosave"}
                           control={
-                            <IOSSwitch disabled={!plotCallNeeded}
+                            <IOSSwitch
+                              disabled={!plotCallNeeded}
                               checked={autosaveEnabled}
                               onChange={() =>
                                 setAutosaveEnabled(!autosaveEnabled)
@@ -594,7 +619,8 @@ const WorkspaceInnerComponent = (props: {
                       ) : null}
                     </div>
                     <div>
-                      <Button disabled={!plotCallNeeded}
+                      <Button
+                        disabled={!plotCallNeeded}
                         variant="contained"
                         size="small"
                         onClick={() => onLinkShareClick()}
@@ -646,23 +672,17 @@ const WorkspaceInnerComponent = (props: {
                   alignItems="center"
                   alignContent="center"
                 >
-                    { workspaceLoading ? <CircularProgress /> : "Wait preparing......" }
-
+                  {workspaceLoading ? (
+                    <CircularProgress />
+                  ) : (
+                    "Wait preparing......"
+                  )}
                 </Grid>
               )}
             </Grid>
           </div>
         </Grid>
       </Grid>
-      {plotCallNeeded && workspace.selectedFile && workspace?.files[0]?.downloaded && (
-        <PlotTable
-          workspace={workspace}
-          sharedWorkspace={sharedWorkspace}
-          experimentId={props.experimentId}
-          workspaceLoading={workspaceLoading}
-          customPlotRerender={customPlotRerender}
-        />
-      )}
     </div>
   );
 };
