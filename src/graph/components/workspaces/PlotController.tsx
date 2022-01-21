@@ -148,7 +148,7 @@ export const setCanvasSize = (save: boolean = false, isAsync: boolean = false) =
   }
   if (save && plots.length > 0) {
       if(isAsync) _.debounce(() => WorkspaceDispatch.UpdatePlots(updateList),20);
-      else setTimeout( () => WorkspaceDispatch.UpdatePlots(updateList), 10);
+      else WorkspaceDispatch.UpdatePlots(updateList);//setTimeout( () => , 10);
   }
 };
 
