@@ -21,11 +21,12 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
+import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 
 import {
   downloadFileEvent,
   downloadFileMetadata,
-  dowloadAllFileEvents
+  dowloadAllFileEvents,
 } from "services/FileService";
 
 import {
@@ -128,7 +129,7 @@ const WorkspaceInnerComponent = (props: {
       }, 0);
     }
   });
-
+  const updateXarrow = useXarrow();
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
   const [autosaveEnabled, setAutosaveEnabled] = React.useState(false);
@@ -160,63 +161,63 @@ const WorkspaceInnerComponent = (props: {
   };
 
   useEffect(() => {
-      (async () => {
-          WorkspaceDispatch.ResetWorkspace();
-          if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-          WorkspaceDispatch.SetWorkspaceShared(props.shared);
-          setSharedWorkspace(props.shared);
-          try {
-              await initializeWorkspace(props.shared, props.experimentId);
-          } catch (e) {
-              await handleError(e);
-          }
-          return () => {
-              WorkspaceDispatch.ResetWorkspace();
-              memResetDatasetCache();
-          };
-      })();
+    (async () => {
+      WorkspaceDispatch.ResetWorkspace();
+      if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+      WorkspaceDispatch.SetWorkspaceShared(props.shared);
+      setSharedWorkspace(props.shared);
+      try {
+        await initializeWorkspace(props.shared, props.experimentId);
+      } catch (e) {
+        await handleError(e);
+      }
+      return () => {
+        WorkspaceDispatch.ResetWorkspace();
+        memResetDatasetCache();
+      };
+    })();
   }, []);
 
   const handleError = async (error: any) => {
-        if (
-            error?.name === "Error" ||
-            error?.message.toString() === "Network Error"
-        ) {
-            showMessageBox({
-                message: "Connectivity Problem, please check your internet connection",
-                saverity: "error",
-            });
-        } else if (error?.response) {
-            if (error.response?.status == 401 || error.response.status == 419) {
-                setTimeout(() => {
-                    userManager.logout();
-                    history.replace("/login");
-                }, 3000);
-                showMessageBox({
-                    message: "Authentication Failed Or Session Time out",
-                    saverity: "error",
-                });
-            }
-        } else {
-            showMessageBox({
-                message: error?.message || "Request Failed. May be Time out",
-                saverity: error.saverity || "error",
-            });
-        }
-    };
+    if (
+      error?.name === "Error" ||
+      error?.message.toString() === "Network Error"
+    ) {
+      showMessageBox({
+        message: "Connectivity Problem, please check your internet connection",
+        saverity: "error",
+      });
+    } else if (error?.response) {
+      if (error.response?.status == 401 || error.response.status == 419) {
+        setTimeout(() => {
+          userManager.logout();
+          history.replace("/login");
+        }, 3000);
+        showMessageBox({
+          message: "Authentication Failed Or Session Time out",
+          saverity: "error",
+        });
+      }
+    } else {
+      showMessageBox({
+        message: error?.message || "Request Failed. May be Time out",
+        saverity: error.saverity || "error",
+      });
+    }
+  };
 
   const showMessageBox = (response: any) => {
-        switch (response.saverity) {
-            case "error":
-                snackbarService.showSnackbar(response?.message, "error");
-                break;
-            case "success":
-                snackbarService.showSnackbar(response?.message, "success");
-                break;
-            default:
-                break;
-        }
-    };
+    switch (response.saverity) {
+      case "error":
+        snackbarService.showSnackbar(response?.message, "error");
+        break;
+      case "success":
+        snackbarService.showSnackbar(response?.message, "success");
+        break;
+      default:
+        break;
+    }
+  };
 
   const downloadAllEvents = async (
     fileIds: any[],
@@ -264,10 +265,10 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-      const timer = setTimeout(() => saveWorkspace(), 1000);
-      return () => {
-        clearTimeout(timer);
-      };
+    const timer = setTimeout(() => saveWorkspace(), 1000);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -696,6 +697,7 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
+                  arrowFunc={updateXarrow}
                 />
               ) : (
                 <Grid

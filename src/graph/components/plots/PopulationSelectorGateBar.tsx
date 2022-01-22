@@ -1,10 +1,18 @@
 import React from "react";
 
-import { Gate, GateID, Gate2D, PlotID } from "graph/resources/types";
+import {
+  Gate,
+  GateID,
+  Gate2D,
+  PlotID,
+  PopulationID,
+  FileID,
+} from "graph/resources/types";
 import * as PopulationResource from "graph/resources/populations";
 import { getGate, getPlot, getPopulation } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 const PopulationSelectorGateBar = React.memo(
   (props: {
@@ -12,8 +20,12 @@ const PopulationSelectorGateBar = React.memo(
     populationGates: { gate: Gate; inverseGating: boolean }[];
     plotGates: Gate[];
     editWorkspace: boolean;
+    file: FileID;
   }) => {
     const allGates: Gate2D[] = useSelector((e: any) => e.workspace.gates);
+    const allPopulations: any[] = useSelector(
+      (e: any) => e.workspace.populations
+    );
     const plot = getPlot(props.plotId);
     const population = getPopulation(plot.population);
     const populationGates = props.populationGates;
@@ -36,15 +48,16 @@ const PopulationSelectorGateBar = React.memo(
       PopulationResource.removeGate(population, gateId);
     };
 
-    const setPopulation = (gateId: GateID | null) => {
-      for (const pop of props.populationGates) {
-        removeGateFromPopulation(pop.gate.id);
+    const setPopulation = (populationId: PopulationID | null) => {
+      if (populationId == null) {
+        populationId = allPopulations.find(
+          (x) => x.file == props.file && x.gates.length == 0
+        ).id;
       }
-      if (gateId !== null) {
-        addGateToPopulation(gateId);
-      }
+      let plot = getPlot(props.plotId);
+      plot.population = populationId;
+      WorkspaceDispatch.UpdatePlot(plot);
     };
-
     return (
       <span
         style={{
@@ -64,9 +77,7 @@ const PopulationSelectorGateBar = React.memo(
             style={{
               width: "100%",
             }}
-            value={
-              populationGates.length > 0 ? populationGates[0].gate.id : ""
-            }
+            value={populationGates.length > 0 ? populationGates[0].gate.id : ""}
             displayEmpty={true}
             renderValue={(value: unknown) => {
               //@ts-ignore
@@ -78,12 +89,13 @@ const PopulationSelectorGateBar = React.memo(
             }}
           >
             <MenuItem value={null}>All</MenuItem>
-            {allGates
-              .filter((e) => !gateInPlotGates(e.id))
+            {allPopulations
+              .filter((e) => e.file == props.file)
               .map((e) => {
                 return (
                   <MenuItem value={e.id} key={e.id}>
                     {e.name}
+                    {e.label}
                   </MenuItem>
                 );
               })}

@@ -13,6 +13,7 @@ export const createPopulation = ({
   id,
   file,
   subpopFrom,
+  parentPopulationId,
 }: {
   clonePopulation?: Population;
   id?: PopulationID;
@@ -21,12 +22,14 @@ export const createPopulation = ({
     population: Population;
     gates: PopulationGateType[];
   };
+  parentPopulationId?: PopulationID;
 }): Population => {
   let newPopulation: Population = {
     id: "",
     label: "",
     file: "",
     gates: [],
+    parentPopulationId: "",
   };
 
   if (clonePopulation) newPopulation = { ...clonePopulation };
@@ -38,6 +41,8 @@ export const createPopulation = ({
 
   if (id) newPopulation.id = id;
   else newPopulation.id = createID();
+
+  if (parentPopulationId) newPopulation.parentPopulationId = parentPopulationId;
 
   if (!newPopulation?.file) {
     throw Error("Population without file");
@@ -51,7 +56,10 @@ export const createSubpop = (
   newGates: GateID[],
   inverse: boolean = false
 ) => {
-  let newPop = createPopulation({ clonePopulation: pop });
+  let newPop = createPopulation({
+    clonePopulation: pop,
+    parentPopulationId: pop.id,
+  });
   newPop.gates = [
     ...newPop.gates,
     ...newGates.map((e: GateID) => {

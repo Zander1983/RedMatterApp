@@ -153,6 +153,7 @@ export interface Population {
   id: PopulationID;
   label: string;
   file: FileID;
+  parentPopulationId: PopulationID;
   gates: PopulationGateType[];
 }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import {Gate, PlotID } from "graph/resources/types";
+import { Gate, PlotID, FileID } from "graph/resources/types";
 import PopulationSelectorGateBar from "./PopulationSelectorGateBar";
 
 const GateBar = React.memo(
@@ -8,6 +8,7 @@ const GateBar = React.memo(
     populationGates: { gate: Gate; inverseGating: boolean }[];
     plotGates: Gate[];
     editWorkspace: boolean;
+    file: FileID;
   }) => {
     return <PopulationSelectorGateBar {...props} />;
     // return <PopAndGatesGateBar {...props} />;

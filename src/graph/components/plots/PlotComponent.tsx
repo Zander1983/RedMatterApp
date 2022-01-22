@@ -80,6 +80,7 @@ const PlotComponent = React.memo(
             <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}
+              file={population.file}
               populationGates={population.gates.map((e) => {
                 return {
                   gate: getGate(e.gate),

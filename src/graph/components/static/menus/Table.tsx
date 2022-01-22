@@ -127,7 +127,6 @@ const PlotTable = ({
   const deletedPopulations: string[] = [];
   const deletedGates: string[] = [];
 
-
   const fillUpRows = () => {
     for (let i = 0; i < workspace.files.length; i++) {
       let raw = [workspace.files[i].id];
@@ -536,7 +535,7 @@ const PlotTable = ({
                             if (PlotFile.id === file.id) {
                               return (
                                 <div
-                                  key={`table-plots-${plot.id}`}
+                                  key={`plot-controller-inner-${plot.id}`}
                                   className={classes.itemOuterDiv}
                                   data-grid={standardGridPlotItem(
                                     i,
