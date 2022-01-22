@@ -284,18 +284,26 @@ const PlotTable = ({
         );
 
         if (populations.length === 0) {
-          // Creating new Populations from old Populations
           const controlFilePopulations = workspace.populations.filter(
             (pop) => pop.file === workspace.selectedFile
           );
+
+          controlFilePopulations.sort((a, b) => {
+            return a.gates.length - b.gates.length;
+          });
+
           const controlFilePlots: Plot[] = [];
           const newPlots: Plot[] = [];
-          const newPopulations = controlFilePopulations.map((pop) =>
-            PopulationResource.createPopulation({
+          let prevPopulationId = "";
+          const newPopulations = controlFilePopulations.map((pop) => {
+            let newPopulation = PopulationResource.createPopulation({
               clonePopulation: pop,
               file: file.id,
-            })
-          );
+              parentPopulationId: prevPopulationId,
+            });
+            prevPopulationId = newPopulation.id;
+            return newPopulation;
+          });
 
           // Creating new plots with the newPopulations
           controlFilePopulations.map((pop) =>
