@@ -406,7 +406,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                 plots.map((plot, i) => {
                                   return (
                                     <div
-                                      key={`plot-controller-inner-${plot.id}`}
+                                      key={plot.id}
                                       style={classes.itemOuterDiv}
                                       data-grid={standardGridPlotItem(
                                         i,
@@ -494,7 +494,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               plots.map((plot, i) => {
                                 return (
                                   <div
-                                    key={`plot-controller-inner-${plot.id}`}
+                                    key={plot.id}
                                     style={classes.itemOuterDiv}
                                     data-grid={standardGridPlotItem(
                                       i,
