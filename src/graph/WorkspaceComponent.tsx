@@ -266,6 +266,7 @@ const WorkspaceInnerComponent = (props: {
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
     const timer = setTimeout(() => saveWorkspace(), 1000);
+    updateXarrow();
     return () => {
       clearTimeout(timer);
     };
@@ -300,6 +301,7 @@ const WorkspaceInnerComponent = (props: {
     setLastSavedTime(new Date().toLocaleString());
     await saveWorkspaceToRemote(workspace, shared, props.experimentId);
     setSavingWorkspace(false);
+    updateXarrow();
   };
 
   var onLinkShareClick = async () => {

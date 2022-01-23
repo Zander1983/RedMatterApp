@@ -383,7 +383,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                 this.savePlotPosition(layout);
                                 setTimeout(() => {
                                   this.props.arrowFunc();
-                                }, 100);
+                                }, 150);
                               }}
                               onDrag={() => {
                                 this.props.arrowFunc();
@@ -478,9 +478,22 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             cols={{ lg: 36 }}
                             rows={{ lg: 30 }}
                             rowHeight={30}
+                            compactType={null}
                             isDraggable={this.props.workspace.editWorkspace}
                             onLayoutChange={(layout: any) => {
                               this.savePlotPosition(layout);
+                              setTimeout(() => {
+                                this.props.arrowFunc();
+                              }, 150);
+                            }}
+                            onDrag={() => {
+                              this.props.arrowFunc();
+                            }}
+                            onDragStop={() => {
+                              this.props.arrowFunc();
+                            }}
+                            onDragStart={() => {
+                              this.props.arrowFunc();
                             }}
                             onResize={(layout: any) => {
                               setCanvasSize(false);
@@ -547,6 +560,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                   experimentId={this.props.experimentId}
                   workspaceLoading={this.props.workspaceLoading}
                   customPlotRerender={this.props.customPlotRerender}
+                  arrowFunc={this.props.arrowFunc}
                 />
               )}
             {this.getArrowArray().map((obj, i) => {

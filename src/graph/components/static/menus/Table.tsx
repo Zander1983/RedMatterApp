@@ -94,6 +94,7 @@ interface TableProps {
   experimentId: string;
   workspaceLoading: boolean;
   customPlotRerender: string[];
+  arrowFunc: Function;
 }
 
 interface PlotsAndFiles {
@@ -110,6 +111,7 @@ const PlotTable = ({
   experimentId,
   workspaceLoading,
   customPlotRerender,
+  arrowFunc,
 }: TableProps) => {
   const classes = useStyles();
   const [data, setData] = useState([]);
@@ -286,21 +288,24 @@ const PlotTable = ({
       const controlFilePopulations = workspace.populations.filter(
         (pop) => pop.file === workspace.selectedFile
       );
-
       controlFilePopulations.sort((a, b) => {
         return a.gates.length - b.gates.length;
       });
 
+      let populationIdMap: any = {};
+
       const controlFilePlots: Plot[] = [];
       const newPlots: Plot[] = [];
-      let prevPopulationId = "";
       const newPopulations = controlFilePopulations.map((pop) => {
         let newPopulation = PopulationResource.createPopulation({
           clonePopulation: pop,
           file: file.id,
-          parentPopulationId: prevPopulationId,
+          parentPopulationId:
+            populationIdMap && populationIdMap[pop.parentPopulationId]
+              ? populationIdMap[pop.parentPopulationId]
+              : "",
         });
-        prevPopulationId = newPopulation.id;
+        populationIdMap[pop.id] = newPopulation.id;
         return newPopulation;
       });
 
@@ -327,15 +332,6 @@ const PlotTable = ({
 
     file.view = !file.view;
     WorkspaceDispatch.UpdateFile(file);
-    // const plotsRerenderQueueItem: PlotsRerender = {
-    //   id: "",
-    //   used: false,
-    //   type: "plotsRerender",
-    //   plotIDs: plots.map(({ plot }) => plot.id),
-    // };
-    // EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-
-    // setPlots(plots);
   };
 
   const getTableRowPlots = (file: File) => {
@@ -353,7 +349,6 @@ const PlotTable = ({
         }
       });
     });
-    debugger;
     return plots;
   };
 
@@ -537,9 +532,22 @@ const PlotTable = ({
                         cols={{ lg: 36 }}
                         rows={{ lg: 30 }}
                         rowHeight={30}
+                        compactType={null}
                         isDraggable={workspace.editWorkspace}
                         onLayoutChange={(layout: any) => {
-                          //savePlotPosition(layout);
+                          savePlotPosition(layout);
+                          setTimeout(() => {
+                            arrowFunc();
+                          }, 100);
+                        }}
+                        onDrag={() => {
+                          arrowFunc();
+                        }}
+                        onDragStop={() => {
+                          arrowFunc();
+                        }}
+                        onDragStart={() => {
+                          arrowFunc();
                         }}
                         onResize={(layout: any) => {
                           setCanvasSize(false);
