@@ -291,7 +291,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
         });
       }
     }
-    console.log(arr);
+    //console.log(arr);
     return arr;
   };
 

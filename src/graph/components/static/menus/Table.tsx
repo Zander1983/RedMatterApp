@@ -113,6 +113,7 @@ const PlotTable = ({
   customPlotRerender,
   arrowFunc,
 }: TableProps) => {
+  console.log("===== Table render =====");
   const classes = useStyles();
   const [data, setData] = useState([]);
   const [file, setFile] = useState<File>(null);
@@ -378,6 +379,7 @@ const PlotTable = ({
       deletedGates.push(child);
     });
   };
+
   const deleteColumn = (index: number) => {
     deleteAllPlotsAndPopulationOfNonControlFile();
     workspace.populations.map((pop) => {
