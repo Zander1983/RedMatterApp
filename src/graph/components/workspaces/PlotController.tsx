@@ -25,7 +25,6 @@ import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
-import { isEqual } from "lodash";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -122,10 +121,7 @@ export const resetPlotSizes = (id?: string) => {
   }
 };
 
-export const setCanvasSize = (
-  save: boolean = false,
-  isAsync: boolean = false
-) => {
+export const setCanvasSize = (save: boolean = false, isAsync: boolean = false) => {
   const plots = getWorkspace().plots;
   const updateList: Plot[] = [];
   for (let plot of plots) {
@@ -180,12 +176,14 @@ interface PlotControllerProps {
   plotMoving?: boolean;
   arrowFunc: Function;
 }
+
 interface IState {
   sortByChanged: boolean;
   sortBy: string;
 }
 
 class PlotController extends React.Component<PlotControllerProps, IState> {
+
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
@@ -398,7 +396,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                 setCanvasSize(false);
                               }}
                               onResizeStop={(layout: any) => {
-                                setCanvasSize(true);
+                                setCanvasSize(true, true);
                               }}
                             >
                               {
@@ -553,7 +551,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
             })}
             {this.props.workspace.selectedFile &&
               this.props.workspace?.files[0]?.downloaded &&
-              this.state.sortBy === "file" && (
+              this.state.sortBy === "file" &&   (
                 <PlotTable
                   workspace={this.props.workspace}
                   sharedWorkspace={this.props.sharedWorkspace}

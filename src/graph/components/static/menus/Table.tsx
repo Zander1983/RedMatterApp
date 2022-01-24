@@ -113,7 +113,7 @@ const PlotTable = ({
   customPlotRerender,
   arrowFunc,
 }: TableProps) => {
-  console.log("===== Table render =====");
+
   const classes = useStyles();
   const [data, setData] = useState([]);
   const [file, setFile] = useState<File>(null);
@@ -450,6 +450,7 @@ const PlotTable = ({
     //generatePlots();
   }, [workspace.plots.length, workspace.files]);
 
+
   return (
     <TableContainer component={Paper} className={classes.container}>
       <Table style={{ overflowY: "scroll" }}>
@@ -528,76 +529,76 @@ const PlotTable = ({
                 <TableRow className={classes.otherFiles}>
                   <TableCell colSpan={headers.length}>
                     <div style={{ marginTop: 3, marginBottom: 10 }}>
-                      <ResponsiveGridLayout
-                        className="layout"
-                        breakpoints={{ lg: 1200 }}
-                        cols={{ lg: 36 }}
-                        rows={{ lg: 30 }}
-                        rowHeight={30}
-                        compactType={null}
-                        isDraggable={workspace.editWorkspace}
-                        onLayoutChange={(layout: any) => {
-                          savePlotPosition(layout);
-                          setTimeout(() => {
-                            arrowFunc();
-                          }, 100);
-                        }}
-                        onDrag={() => {
-                          arrowFunc();
-                        }}
-                        onDragStop={() => {
-                          arrowFunc();
-                        }}
-                        onDragStart={() => {
-                          arrowFunc();
-                        }}
-                        onResize={(layout: any) => {
-                          setCanvasSize(false);
-                        }}
-                        onResizeStop={(layout: any) => {
-                          setCanvasSize(true);
-                        }}
-                      >
-                        {
-                          //@ts-ignore
-                          getTableRowPlots(file).map(
-                            ({ plot, file: PlotFile }, i) => {
-                              if (PlotFile.id === file.id) {
-                                return (
-                                  <div
-                                    key={plot.id}
-                                    className={classes.itemOuterDiv}
-                                    data-grid={standardGridPlotItem(
-                                      i,
-                                      plot,
-                                      workspace.plots,
-                                      workspace.editWorkspace
-                                    )}
-                                    id={`workspace-outter-${plot.id}`}
-                                  >
-                                    <div
-                                      id="inner"
-                                      className={classes.itemInnerDiv}
-                                    >
-                                      <PlotComponent
-                                        plotRelevantResources={getPlotRelevantResources(
-                                          plot
-                                        )}
-                                        sharedWorkspace={sharedWorkspace}
-                                        editWorkspace={workspace.editWorkspace}
-                                        workspaceLoading={workspaceLoading}
-                                        customPlotRerender={customPlotRerender}
-                                        experimentId={experimentId}
-                                        fileName={file.name}
-                                      />
-                                    </div>
-                                  </div>
-                                );
-                              }
+                         <ResponsiveGridLayout
+                            className="layout"
+                            breakpoints={{lg: 1200}}
+                            cols={{lg: 36}}
+                            rows={{lg: 30}}
+                            rowHeight={30}
+                            compactType={null}
+                            isDraggable={workspace.editWorkspace}
+                            onLayoutChange={(layout: any) => {
+                                savePlotPosition(layout);
+                                setTimeout(() => {
+                                    arrowFunc();
+                                }, 100);
+                            }}
+                            onDrag={() => {
+                                arrowFunc();
+                            }}
+                            onDragStop={() => {
+                                arrowFunc();
+                            }}
+                            onDragStart={() => {
+                                arrowFunc();
+                            }}
+                            onResize={(layout: any) => {
+                                setCanvasSize(false);
+                            }}
+                            onResizeStop={(layout: any) => {
+                                setCanvasSize(true);
+                            }}
+                        >
+                            {
+                                //@ts-ignore
+                                getTableRowPlots(file).map(
+                                    ({plot, file: PlotFile}, i) => {
+                                        if (PlotFile.id === file.id) {
+                                            return (
+                                                <div
+                                                    key={plot.id}
+                                                    className={classes.itemOuterDiv}
+                                                    data-grid={standardGridPlotItem(
+                                                        i,
+                                                        plot,
+                                                        workspace.plots,
+                                                        workspace.editWorkspace
+                                                    )}
+                                                    id={`workspace-outter-${plot.id}`}
+                                                >
+                                                    <div
+                                                        id="inner"
+                                                        className={classes.itemInnerDiv}
+                                                    >
+                                                        <PlotComponent
+                                                            plotRelevantResources={getPlotRelevantResources(
+                                                                plot
+                                                            )}
+                                                            sharedWorkspace={sharedWorkspace}
+                                                            editWorkspace={workspace.editWorkspace}
+                                                            workspaceLoading={workspaceLoading}
+                                                            customPlotRerender={customPlotRerender}
+                                                            experimentId={experimentId}
+                                                            fileName={file.name}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                    }
+                                )
                             }
-                          )
-                        }
-                      </ResponsiveGridLayout>
+                        </ResponsiveGridLayout>
                     </div>
                   </TableCell>
                 </TableRow>

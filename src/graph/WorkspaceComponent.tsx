@@ -152,6 +152,7 @@ const WorkspaceInnerComponent = (props: {
 
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
   const [initState, setInitState] = React.useState(true);
+  const [isConnectivity, setConnectivity] = React.useState(true);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -169,6 +170,8 @@ const WorkspaceInnerComponent = (props: {
       try {
         await initializeWorkspace(props.shared, props.experimentId);
       } catch (e) {
+        setInitState(true);
+        setPlotCallNeeded(false);
         await handleError(e);
       }
       return () => {
@@ -183,6 +186,7 @@ const WorkspaceInnerComponent = (props: {
       error?.name === "Error" ||
       error?.message.toString() === "Network Error"
     ) {
+      setConnectivity(false);
       showMessageBox({
         message: "Connectivity Problem, please check your internet connection",
         saverity: "error",
@@ -715,10 +719,10 @@ const WorkspaceInnerComponent = (props: {
                   alignItems="center"
                   alignContent="center"
                 >
-                  {workspaceLoading ? (
+                  {workspaceLoading && isConnectivity ? (
                     <CircularProgress />
                   ) : (
-                    "Wait preparing......"
+                    isConnectivity ? "Wait preparing......" : "Internet connection failed. Check your connection"
                   )}
                 </Grid>
               )}

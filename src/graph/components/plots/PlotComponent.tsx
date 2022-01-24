@@ -54,7 +54,7 @@ const PlotComponent = React.memo(
     const displayRef = useRef();
     const barRef = useRef();
 
-    //console.log("==== render PlotCmp =====");
+    console.log("==== Render Plot Component =====");
 
     return (
       <div
