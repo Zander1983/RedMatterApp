@@ -227,7 +227,7 @@ const WorkspaceInnerComponent = (props: {
     fileIds: any[],
     isInitTime: boolean = false
   ) => {
-    if (isInitTime) return;
+    if (isInitTime && setPlotCallNeeded) return;
     setPlotCallNeeded(false);
     dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
       .then((result) => {
@@ -269,10 +269,10 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-    const timer = setTimeout(() => saveWorkspace(), 1000);
+    const timer = setTimeout(() =>{ saveWorkspace();}, 1000);
     updateXarrow();
     return () => {
-      clearTimeout(timer);
+      if(timer !== null) clearTimeout(timer);
     };
   }, [workspace.plots.length]);
 
@@ -679,7 +679,7 @@ const WorkspaceInnerComponent = (props: {
                         <ShareIcon
                           fontSize="small"
                           style={{ marginRight: 10 }}
-                        ></ShareIcon>
+                        />
                         Share Workspace
                       </Button>
                     </div>

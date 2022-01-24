@@ -32,7 +32,6 @@ import {
 } from "graph/components/workspaces/PlotController";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
-import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 import upArrow from "assets/images/up_arrow.png";
@@ -337,9 +336,7 @@ const PlotTable = ({
 
   const getTableRowPlots = (file: File) => {
     let plots: PlotsAndFiles[] = [];
-
-    let populations: Population[] = [];
-    populations = workspace.populations.filter(
+    let populations = workspace.populations.filter(
       (population) => population.file === file.id
     );
 
@@ -561,7 +558,7 @@ const PlotTable = ({
                         >
                             {
                                 //@ts-ignore
-                                getTableRowPlots(file).map(
+                                getTableRowPlots(file)?.map(
                                     ({plot, file: PlotFile}, i) => {
                                         if (PlotFile.id === file.id) {
                                             return (

@@ -25,6 +25,8 @@ import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import Grid from "@material-ui/core/Grid";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -180,6 +182,7 @@ interface PlotControllerProps {
 interface IState {
   sortByChanged: boolean;
   sortBy: string;
+  isTableRenderCall: boolean
 }
 
 class PlotController extends React.Component<PlotControllerProps, IState> {
@@ -189,6 +192,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     this.state = {
       sortByChanged: false,
       sortBy: "file",
+      isTableRenderCall: false
     };
   }
 
@@ -244,6 +248,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     );
     resetPlotSizes();
     setCanvasSize(true);
+    setTimeout(()=> this.setState({isTableRenderCall:true}), 2000);
   }
 
   getPlotRelevantResources(plot: Plot) {
@@ -291,6 +296,23 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     }
     //console.log(arr);
     return arr;
+  };
+
+  renderTable = () => {
+    if(this.props.workspace.selectedFile &&
+    this.props.workspace?.files[0]?.downloaded &&
+    this.state.sortBy === "file" && this.state.isTableRenderCall) {
+      return (
+          <PlotTable
+              workspace={this.props.workspace}
+              sharedWorkspace={this.props.sharedWorkspace}
+              experimentId={this.props.experimentId}
+              workspaceLoading={this.props.workspaceLoading}
+              customPlotRerender={this.props.customPlotRerender}
+              arrowFunc={this.props.arrowFunc}
+          />
+      )
+    }else return (null);
   };
 
   render() {
@@ -549,19 +571,22 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                 );
               }
             })}
-            {this.props.workspace.selectedFile &&
-              this.props.workspace?.files[0]?.downloaded &&
-              this.state.sortBy === "file" &&   (
-                <PlotTable
-                  workspace={this.props.workspace}
-                  sharedWorkspace={this.props.sharedWorkspace}
-                  experimentId={this.props.experimentId}
-                  workspaceLoading={this.props.workspaceLoading}
-                  customPlotRerender={this.props.customPlotRerender}
-                  arrowFunc={this.props.arrowFunc}
-                />
-              )}
-            {this.getArrowArray().map((obj, i) => {
+            {!this.state.isTableRenderCall ?(
+                <Grid container
+                    style={{
+                      height:100,
+                      borderBottomLeftRadius: 10,
+                      borderBottomRightRadius: 10,
+                      textAlign: "center",
+                    }}
+                    justify="center"
+                    alignItems="center"
+                    alignContent="center">
+                  <CircularProgress style={{padding: "10px"}}  />
+                  <span>Wait Loading...</span>
+                </Grid>
+            ): this.renderTable()}
+            {this.state.isTableRenderCall && this.getArrowArray().map((obj, i) => {
               return (
                 <Xarrow start={obj.start} end={obj.end} path={"straight"} />
               );
