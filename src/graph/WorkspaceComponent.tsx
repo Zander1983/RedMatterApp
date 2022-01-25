@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 
@@ -21,7 +21,7 @@ import AddFileModal from "./components/modals/AddFileModal";
 import GateNamePrompt from "./components/modals/GateNamePrompt";
 import GenerateReportModal from "./components/modals/GenerateReportModal";
 import LinkShareModal from "./components/modals/linkShareModal";
-import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
+import { useXarrow } from "react-xarrows";
 
 import {
   downloadFileEvent,
