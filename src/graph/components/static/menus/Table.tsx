@@ -495,6 +495,7 @@ const PlotTable = ({
               <TableRow key={"file-" + i}>
                 {headers.length > 1 &&
                   data.length > 0 &&
+                  file.id !== workspace.selectedFile &&
                   data[i]?.map((value: any, index: any) =>
                     index === 0 ? (
                       <TableCell
