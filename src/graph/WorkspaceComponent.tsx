@@ -167,6 +167,7 @@ const WorkspaceInnerComponent = (props: {
       if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
       WorkspaceDispatch.SetWorkspaceShared(props.shared);
       setSharedWorkspace(props.shared);
+      setAutosaveEnabled(false);
       try {
         await initializeWorkspace(props.shared, props.experimentId);
       } catch (e) {
@@ -229,6 +230,7 @@ const WorkspaceInnerComponent = (props: {
   ) => {
     if (isInitTime && setPlotCallNeeded) return;
     setPlotCallNeeded(false);
+    setAutosaveEnabled(false);
     dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
       .then((result) => {
         if (result?.length > 0) {
@@ -237,6 +239,7 @@ const WorkspaceInnerComponent = (props: {
       })
       .catch((err) => {
         setPlotCallNeeded(false);
+        setAutosaveEnabled(false);
         snackbarService.showSnackbar(
           "File downloading failed. due to retry completed",
           "error"
@@ -269,11 +272,18 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-    const timer = setTimeout(() =>{ saveWorkspace();}, 1000);
-    updateXarrow();
-    return () => {
-      if(timer !== null) clearTimeout(timer);
-    };
+      console.log("== call save =====");
+      if(!initState && plotCallNeeded) {
+          console.log("== calll save called =====");
+          const timer = setTimeout(async () => {
+              await saveWorkspace();
+          }, 1000);
+          updateXarrow();
+          return () => {
+              if (timer !== null) clearTimeout(timer);
+          };
+      }
+
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -405,7 +415,12 @@ const WorkspaceInnerComponent = (props: {
   };
 
   if (autosaveEnabled) {
-    Debounce(() => saveWorkspace(), 5000);
+      if(!initState && plotCallNeeded) {
+          console.log("==== call auto save ===");
+          Debounce(() => saveWorkspace(), 5000)
+      }else{
+          console.log("==== call auto save ===");
+      }
   }
 
   return (
