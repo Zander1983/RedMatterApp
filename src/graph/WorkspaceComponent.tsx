@@ -272,9 +272,7 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-      console.log("== call save =====");
       if(!initState && plotCallNeeded) {
-          console.log("== calll save called =====");
           const timer = setTimeout(async () => {
               await saveWorkspace();
           }, 1000);
@@ -416,10 +414,7 @@ const WorkspaceInnerComponent = (props: {
 
   if (autosaveEnabled) {
       if(!initState && plotCallNeeded) {
-          console.log("==== call auto save ===");
           Debounce(() => saveWorkspace(), 5000)
-      }else{
-          console.log("==== call auto save ===");
       }
   }
 
