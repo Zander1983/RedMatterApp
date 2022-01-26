@@ -152,6 +152,7 @@ const WorkspaceInnerComponent = (props: {
 
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
   const [initState, setInitState] = React.useState(true);
+  const [isConnectivity, setConnectivity] = React.useState(true);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -166,9 +167,12 @@ const WorkspaceInnerComponent = (props: {
       if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
       WorkspaceDispatch.SetWorkspaceShared(props.shared);
       setSharedWorkspace(props.shared);
+      setAutosaveEnabled(false);
       try {
         await initializeWorkspace(props.shared, props.experimentId);
       } catch (e) {
+        setInitState(true);
+        setPlotCallNeeded(false);
         await handleError(e);
       }
       return () => {
@@ -183,6 +187,7 @@ const WorkspaceInnerComponent = (props: {
       error?.name === "Error" ||
       error?.message.toString() === "Network Error"
     ) {
+      setConnectivity(false);
       showMessageBox({
         message: "Connectivity Problem, please check your internet connection",
         saverity: "error",
@@ -223,8 +228,9 @@ const WorkspaceInnerComponent = (props: {
     fileIds: any[],
     isInitTime: boolean = false
   ) => {
-    if (isInitTime) return;
+    if (isInitTime && setPlotCallNeeded) return;
     setPlotCallNeeded(false);
+    setAutosaveEnabled(false);
     dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
       .then((result) => {
         if (result?.length > 0) {
@@ -233,6 +239,7 @@ const WorkspaceInnerComponent = (props: {
       })
       .catch((err) => {
         setPlotCallNeeded(false);
+        setAutosaveEnabled(false);
         snackbarService.showSnackbar(
           "File downloading failed. due to retry completed",
           "error"
@@ -265,11 +272,16 @@ const WorkspaceInnerComponent = (props: {
 
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-    const timer = setTimeout(() => saveWorkspace(), 1000);
-    updateXarrow();
-    return () => {
-      clearTimeout(timer);
-    };
+      if(!initState && plotCallNeeded) {
+          const timer = setTimeout(async () => {
+              await saveWorkspace();
+          }, 1000);
+          updateXarrow();
+          return () => {
+              if (timer !== null) clearTimeout(timer);
+          };
+      }
+
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -401,7 +413,9 @@ const WorkspaceInnerComponent = (props: {
   };
 
   if (autosaveEnabled) {
-    Debounce(() => saveWorkspace(), 5000);
+      if(!initState && plotCallNeeded) {
+          Debounce(() => saveWorkspace(), 5000)
+      }
   }
 
   return (
@@ -675,7 +689,7 @@ const WorkspaceInnerComponent = (props: {
                         <ShareIcon
                           fontSize="small"
                           style={{ marginRight: 10 }}
-                        ></ShareIcon>
+                        />
                         Share Workspace
                       </Button>
                     </div>
@@ -715,10 +729,10 @@ const WorkspaceInnerComponent = (props: {
                   alignItems="center"
                   alignContent="center"
                 >
-                  {workspaceLoading ? (
+                  {workspaceLoading && isConnectivity ? (
                     <CircularProgress />
                   ) : (
-                    "Wait preparing......"
+                    isConnectivity ? "Wait preparing......" : "Internet connection failed. Check your connection"
                   )}
                 </Grid>
               )}
