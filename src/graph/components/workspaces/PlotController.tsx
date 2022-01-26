@@ -248,7 +248,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     );
     resetPlotSizes();
     setCanvasSize(true);
-    setTimeout(()=> this.setState({isTableRenderCall:true}), 2000);
+    setTimeout(()=> this.setState({isTableRenderCall:true}), 1000);
   }
 
   getPlotRelevantResources(plot: Plot) {
