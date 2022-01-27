@@ -455,7 +455,7 @@ const PlotTable = ({
       ...workspace.gates.map((gate) => gate.name),
       "Click to View",
     ]);
-  }, [workspace.gates, workspace.plots.length]);
+  }, [workspace]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
