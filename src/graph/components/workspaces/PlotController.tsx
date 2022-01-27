@@ -123,7 +123,10 @@ export const resetPlotSizes = (id?: string) => {
   }
 };
 
-export const setCanvasSize = (save: boolean = false, isAsync: boolean = false) => {
+export const setCanvasSize = (
+  save: boolean = false,
+  isAsync: boolean = false
+) => {
   const plots = getWorkspace().plots;
   const updateList: Plot[] = [];
   for (let plot of plots) {
@@ -182,17 +185,16 @@ interface PlotControllerProps {
 interface IState {
   sortByChanged: boolean;
   sortBy: string;
-  isTableRenderCall: boolean
+  isTableRenderCall: boolean;
 }
 
 class PlotController extends React.Component<PlotControllerProps, IState> {
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       sortByChanged: false,
       sortBy: "file",
-      isTableRenderCall: false
+      isTableRenderCall: false,
     };
   }
 
@@ -248,7 +250,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     );
     resetPlotSizes();
     setCanvasSize(true);
-    setTimeout(()=> this.setState({isTableRenderCall:true}), 1000);
+    setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }
 
   getPlotRelevantResources(plot: Plot) {
@@ -299,20 +301,23 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   renderTable = () => {
-    if(this.props.workspace.selectedFile &&
-    this.props.workspace?.files[0]?.downloaded &&
-    this.state.sortBy === "file" && this.state.isTableRenderCall) {
+    if (
+      this.props.workspace.selectedFile &&
+      this.props.workspace?.files[0]?.downloaded &&
+      this.state.sortBy === "file" &&
+      this.state.isTableRenderCall
+    ) {
       return (
-          <PlotTable
-              workspace={this.props.workspace}
-              sharedWorkspace={this.props.sharedWorkspace}
-              experimentId={this.props.experimentId}
-              workspaceLoading={this.props.workspaceLoading}
-              customPlotRerender={this.props.customPlotRerender}
-              arrowFunc={this.props.arrowFunc}
-          />
-      )
-    }else return (null);
+        <PlotTable
+          workspace={this.props.workspace}
+          sharedWorkspace={this.props.sharedWorkspace}
+          experimentId={this.props.experimentId}
+          workspaceLoading={this.props.workspaceLoading}
+          customPlotRerender={this.props.customPlotRerender}
+          arrowFunc={this.props.arrowFunc}
+        />
+      );
+    } else return null;
   };
 
   render() {
@@ -571,26 +576,31 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                 );
               }
             })}
-            {!this.state.isTableRenderCall ?(
-                <Grid container
-                    style={{
-                      height:100,
-                      borderBottomLeftRadius: 10,
-                      borderBottomRightRadius: 10,
-                      textAlign: "center",
-                    }}
-                    justify="center"
-                    alignItems="center"
-                    alignContent="center">
-                  <CircularProgress style={{padding: "10px"}}  />
-                  <span>Wait Loading...</span>
-                </Grid>
-            ): this.renderTable()}
-            {this.state.isTableRenderCall && this.getArrowArray().map((obj, i) => {
-              return (
-                <Xarrow start={obj.start} end={obj.end} path={"straight"} />
-              );
-            })}
+            {!this.state.isTableRenderCall ? (
+              <Grid
+                container
+                style={{
+                  height: 100,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,
+                  textAlign: "center",
+                }}
+                justify="center"
+                alignItems="center"
+                alignContent="center"
+              >
+                <CircularProgress style={{ padding: "10px" }} />
+                <span>Wait Loading...</span>
+              </Grid>
+            ) : (
+              this.renderTable()
+            )}
+            {this.state.isTableRenderCall &&
+              this.getArrowArray().map((obj, i) => {
+                return (
+                  <Xarrow start={obj.start} end={obj.end} path={"straight"} />
+                );
+              })}
           </Xwrapper>
         </div>
       );

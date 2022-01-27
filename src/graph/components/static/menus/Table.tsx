@@ -8,6 +8,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 import PlotStats from "graph/utils/stats";
 import { useEffect, useState } from "react";
@@ -29,7 +30,10 @@ import {
   standardGridPlotItem,
   setCanvasSize,
 } from "graph/components/workspaces/PlotController";
-import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
+import {
+  deleteAllPlotsAndPopulationOfNonControlFile,
+  deletePlotAndPopulationOfFile,
+} from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 import upArrow from "assets/images/up_arrow.png";
@@ -91,6 +95,15 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 3,
     marginBottom: 10,
   },
+  loaderContainerStyle: {
+    position: "relative",
+    left: "45vw",
+    height: 419,
+  },
+  loader: {
+    width: 50,
+    height: 50,
+  },
 }));
 
 interface TableProps {
@@ -120,6 +133,7 @@ const PlotTable = ({
 }: TableProps) => {
   const classes = useStyles();
   const [data, setData] = useState([]);
+  const [openFiles, setOpenFiles] = useState<string[]>([]);
   const [headers, setHeaders] = useState<string[]>([
     "File Name",
     "Click to View",
@@ -281,6 +295,7 @@ const PlotTable = ({
     if (file.view) {
       file.view = !file.view;
       WorkspaceDispatch.UpdateFile(file);
+      deletePlotAndPopulationOfFile(file.id);
       return;
     }
 
@@ -440,7 +455,7 @@ const PlotTable = ({
       ...workspace.gates.map((gate) => gate.name),
       "Click to View",
     ]);
-  }, [workspace]);
+  }, [workspace.gates, workspace.plots.length]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
@@ -509,16 +524,19 @@ const PlotTable = ({
                         className={`${classes.tableCell}`}
                         key={"content-" + value + index}
                         onClick={() => {
-                          generatePlots(file);
-                          const plots: Plot[] = [];
-                          getTableRowPlots(file).map(({ plot }) => {
-                            if (plot.plotWidth < 50 && plot.plotHeight < 50) {
-                              plot.plotHeight = 204;
-                              plot.plotWidth = 256;
-                              plots.push(plot);
-                            }
-                          });
-                          WorkspaceDispatch.UpdatePlots(plots);
+                          if (openFiles.includes(file.id)) {
+                            setOpenFiles((prev) =>
+                              prev.filter((id) => id !== file.id)
+                            );
+                            setTimeout(() => {
+                              generatePlots(file);
+                            }, 0);
+                          } else if (!file.view) {
+                            setOpenFiles((prev) => [...prev, file.id]);
+                            setTimeout(() => {
+                              generatePlots(file);
+                            }, 500);
+                          }
                         }}
                       >
                         <span className={classes.view}> {value} </span>
@@ -527,82 +545,106 @@ const PlotTable = ({
                   )}
               </TableRow>
 
-              <TableRow className={file.view ? classes.show : classes.hide}>
-                <TableCell colSpan={headers.length}>
-                  <div className={classes.responsiveContainer}>
-                    <ResponsiveGridLayout
-                      className="layout"
-                      breakpoints={{ lg: 1200 }}
-                      cols={{ lg: 36 }}
-                      rows={{ lg: 30 }}
-                      rowHeight={30}
-                      compactType={null}
-                      isDraggable={workspace.editWorkspace}
-                      onLayoutChange={(layout: any) => {
-                        savePlotPosition(layout);
-                        setTimeout(() => {
-                          arrowFunc();
-                        }, 100);
-                      }}
-                      onDrag={() => {
-                        arrowFunc();
-                      }}
-                      onDragStop={() => {
-                        arrowFunc();
-                      }}
-                      onDragStart={() => {
-                        arrowFunc();
-                      }}
-                      onResize={(layout: any) => {
-                        setCanvasSize(false);
-                      }}
-                      onResizeStop={(layout: any) => {
-                        setCanvasSize(true);
+              <TableRow
+                className={
+                  openFiles.includes(file.id) ? classes.show : classes.hide
+                }
+              >
+                {getTableRowPlots(file).length === 0 ? (
+                  <TableCell
+                    colSpan={headers.length}
+                    className={classes.loaderContainerStyle}
+                  >
+                    <CircularProgress className={classes.loader} />
+                  </TableCell>
+                ) : (
+                  <TableCell colSpan={headers.length}>
+                    <div
+                      className={classes.responsiveContainer}
+                      style={{
+                        opacity: file.view ? 1 : 0,
+                        transition: "all 3s",
                       }}
                     >
-                      {
-                        //@ts-ignore
-                        file.id !== workspace.selectedFile &&
-                          getTableRowPlots(file).map(
-                            ({ plot, file: PlotFile }, i) => {
-                              if (PlotFile.id === file.id) {
-                                return (
-                                  <div
-                                    key={plot.id}
-                                    className={classes.itemOuterDiv}
-                                    data-grid={standardGridPlotItem(
-                                      i,
-                                      plot,
-                                      workspace.plots,
-                                      workspace.editWorkspace
-                                    )}
-                                    id={`workspace-outter-${plot.id}`}
-                                  >
+                      <ResponsiveGridLayout
+                        className="layout"
+                        breakpoints={{ lg: 1200 }}
+                        cols={{ lg: 36 }}
+                        rows={{ lg: 30 }}
+                        rowHeight={30}
+                        compactType={null}
+                        isDraggable={workspace.editWorkspace}
+                        onLayoutChange={(layout: any) => {
+                          savePlotPosition(layout);
+                          setTimeout(() => {
+                            arrowFunc();
+                          }, 100);
+                        }}
+                        onDrag={() => {
+                          arrowFunc();
+                        }}
+                        onDragStop={() => {
+                          arrowFunc();
+                        }}
+                        onDragStart={() => {
+                          arrowFunc();
+                        }}
+                        onResize={(layout: any) => {
+                          setCanvasSize(false);
+                        }}
+                        onResizeStop={(layout: any) => {
+                          setCanvasSize(true);
+                        }}
+                      >
+                        {
+                          //@ts-ignore
+                          // file.view &&
+                          file.id !== workspace.selectedFile &&
+                            getTableRowPlots(file).map(
+                              ({ plot, file: PlotFile }, i) => {
+                                if (PlotFile.id === file.id) {
+                                  return (
                                     <div
-                                      id="inner"
-                                      className={classes.itemInnerDiv}
+                                      key={plot.id}
+                                      className={classes.itemOuterDiv}
+                                      data-grid={standardGridPlotItem(
+                                        i,
+                                        plot,
+                                        workspace.plots,
+                                        workspace.editWorkspace
+                                      )}
+                                      id={`workspace-outter-${plot.id}`}
                                     >
-                                      <PlotComponent
-                                        plotRelevantResources={getPlotRelevantResources(
-                                          plot
-                                        )}
-                                        sharedWorkspace={sharedWorkspace}
-                                        editWorkspace={workspace.editWorkspace}
-                                        workspaceLoading={workspaceLoading}
-                                        customPlotRerender={customPlotRerender}
-                                        experimentId={experimentId}
-                                        fileName={file.name}
-                                      />
+                                      <div
+                                        id="inner"
+                                        className={classes.itemInnerDiv}
+                                      >
+                                        <PlotComponent
+                                          plotRelevantResources={getPlotRelevantResources(
+                                            plot
+                                          )}
+                                          sharedWorkspace={sharedWorkspace}
+                                          editWorkspace={
+                                            workspace.editWorkspace
+                                          }
+                                          workspaceLoading={workspaceLoading}
+                                          customPlotRerender={
+                                            customPlotRerender
+                                          }
+                                          experimentId={experimentId}
+                                          fileName={file.name}
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                );
+                                  );
+                                }
                               }
-                            }
-                          )
-                      }
-                    </ResponsiveGridLayout>
-                  </div>
-                </TableCell>
+                            )
+                        }
+                      </ResponsiveGridLayout>
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             </>
           ))}

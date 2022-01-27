@@ -67,6 +67,27 @@ export const deleteAllPlotsAndPopulationOfNonControlFile = () => {
   WorkspaceDispatch.DeletePlotsAndPopulations(plots, populations);
 };
 
+export const deletePlotAndPopulationOfFile = (fileId: string) => {
+  const workspace = getWorkspace();
+  const plots: string[] = [];
+  const populations: string[] = [];
+  workspace.files.map((file) => {
+    if (file.id === fileId) {
+      workspace.populations.map((pop) => {
+        if (pop.file === file.id) {
+          populations.push(pop.id);
+          workspace.plots.map((plot) => {
+            if (plot.population === pop.id) {
+              plots.push(plot.id);
+            }
+          });
+        }
+      });
+    }
+  });
+  WorkspaceDispatch.DeletePlotsAndPopulations(plots, populations);
+};
+
 export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
