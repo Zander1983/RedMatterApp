@@ -152,23 +152,19 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
 
   protected pointMoveToMousePosition(mouse: Point) {
-    const workspace = getWorkspace();
-    const plotPopulation = getPopulation(this.plotter.plot.population);
-    if (workspace.selectedFile === plotPopulation.file) {
-      const gateState = this.targetEditGate;
-      gateState.points[this.targetPointIndex] = {
-        ...gateState.points[this.targetPointIndex],
-      };
-      gateState.points[this.targetPointIndex] =
-        this.plotter.transformer.rawAbstractLogicleToLinear(
-          this.plotter.transformer.toAbstractPoint(mouse)
-        );
-      let scatterPlotterGate: any = this.plotter.gates.find(
-        (x) => x.id == gateState.id
+    const gateState = this.targetEditGate;
+    gateState.points[this.targetPointIndex] = {
+      ...gateState.points[this.targetPointIndex],
+    };
+    gateState.points[this.targetPointIndex] =
+      this.plotter.transformer.rawAbstractLogicleToLinear(
+        this.plotter.transformer.toAbstractPoint(mouse)
       );
-      scatterPlotterGate.points = gateState.points;
-      this.gateUpdater(gateState);
-    }
+    let scatterPlotterGate: any = this.plotter.gates.find(
+      (x) => x.id == gateState.id
+    );
+    scatterPlotterGate.points = gateState.points;
+    this.gateUpdater(gateState);
   }
 
   protected instanceGate(): PolygonGate {
