@@ -270,18 +270,20 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
+  useEffect(() => {
+    updateXarrow();
+  }, [workspace]);
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-      if(!initState && plotCallNeeded && autosaveEnabled) {
-          const timer = setTimeout(async () => {
-              await saveWorkspace();
-          }, 1000);
-          updateXarrow();
-          return () => {
-              if (timer !== null) clearTimeout(timer);
-          };
-      }
-
+    if (!initState && plotCallNeeded && autosaveEnabled) {
+      const timer = setTimeout(async () => {
+        await saveWorkspace();
+      }, 1000);
+      updateXarrow();
+      return () => {
+        if (timer !== null) clearTimeout(timer);
+      };
+    }
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -413,9 +415,9 @@ const WorkspaceInnerComponent = (props: {
   };
 
   if (autosaveEnabled) {
-      if(!initState && plotCallNeeded) {
-          Debounce(() => saveWorkspace(), 5000)
-      }
+    if (!initState && plotCallNeeded) {
+      Debounce(() => saveWorkspace(), 5000);
+    }
   }
 
   return (
@@ -731,8 +733,10 @@ const WorkspaceInnerComponent = (props: {
                 >
                   {workspaceLoading && isConnectivity ? (
                     <CircularProgress />
+                  ) : isConnectivity ? (
+                    "Wait preparing......"
                   ) : (
-                    isConnectivity ? "Wait preparing......" : "Internet connection failed. Check your connection"
+                    "Internet connection failed. Check your connection"
                   )}
                 </Grid>
               )}
