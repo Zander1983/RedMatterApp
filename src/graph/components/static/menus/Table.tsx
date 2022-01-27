@@ -455,6 +455,11 @@ const PlotTable = ({
       ...workspace.gates.map((gate) => gate.name),
       "Click to View",
     ]);
+    workspace.plots.map((plot) => {
+      if (plot.gatingActive === "polygon") {
+        setOpenFiles([]);
+      }
+    });
   }, [workspace]);
 
   useEffect(() => {
