@@ -457,6 +457,10 @@ const PlotTable = ({
     ]);
   }, [workspace]);
 
+  useEffect(() => {
+    deleteAllPlotsAndPopulationOfNonControlFile();
+  }, []);
+
   return (
     <TableContainer component={Paper} className={classes.container}>
       <Table style={{ overflowY: "scroll" }}>
