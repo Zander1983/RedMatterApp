@@ -5,11 +5,18 @@ import {
   GateID,
   Gate2D,
   PlotID,
+  Plot,
   PopulationID,
   FileID,
 } from "graph/resources/types";
 import * as PopulationResource from "graph/resources/populations";
-import { getGate, getPlot, getPopulation } from "graph/utils/workspace";
+import {
+  getGate,
+  getPlot,
+  getPopulation,
+  getWorkspace,
+  getFile,
+} from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
@@ -49,14 +56,45 @@ const PopulationSelectorGateBar = React.memo(
     };
 
     const setPopulation = (populationId: PopulationID | null) => {
+      const workspace = getWorkspace();
       if (populationId == null) {
         populationId = allPopulations.find(
           (x) => x.file == props.file && x.gates.length == 0
         ).id;
       }
-      let plot = getPlot(props.plotId);
-      plot.population = populationId;
-      WorkspaceDispatch.UpdatePlot(plot);
+
+      const position = allPopulations
+        .filter((e) => e.file == props.file)
+        .findIndex((population) => population.id === populationId);
+
+      const plots: Plot[] = [];
+
+      if (props.file === workspace.selectedFile) {
+        let selectedFilePlotLength = 0;
+        workspace.plots.map((plot) => {
+          if (
+            getFile(getPopulation(plot.population).file).id ===
+            workspace.selectedFile
+          ) {
+            selectedFilePlotLength += 1;
+          }
+        });
+
+        const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+        for (
+          let i = position, j = index;
+          i < workspace.plots.length;
+          i += selectedFilePlotLength, j += selectedFilePlotLength
+        ) {
+          workspace.plots[j].population = workspace.populations[i].id;
+          plots.push(workspace.plots[j]);
+        }
+      } else {
+        let plot = getPlot(props.plotId);
+        plot.population = populationId;
+        plots.push(plot);
+      }
+      WorkspaceDispatch.UpdatePlots(plots);
     };
     return (
       <span
