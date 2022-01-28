@@ -252,7 +252,9 @@ const WorkspaceInnerComponent = (props: {
     if (!workspaceLoading) {
       setWorkspaceLoading(false);
       try {
-        downloadAllEvents(workspace.files.map((file) => file.id)).then();
+          let fileIds = workspace.files.map((file) => file.id);
+          if (fileIds.length > 0) downloadAllEvents(fileIds).then();
+          fileIds = null;
       } catch (e) {
         setPlotCallNeeded(false);
         snackbarService.showSnackbar(

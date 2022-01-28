@@ -109,7 +109,7 @@ export const saveWorkspaceToRemote = async (
       updateWorkSpace.options
     );
     return true;
-  } catch {
+  } catch(err) {
     snackbarService.showSnackbar(
       "Could not save the workspace, reload the page and try again!",
       "error"
