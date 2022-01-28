@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: "1px 3px 4px #bbd",
     borderRadius: 5,
     paddingBottom: "2rem",
+    minWidth: 370,
     backgroundColor: "rgb(238, 238, 255)",
   },
   itemInnerDiv: {
@@ -547,7 +548,7 @@ const PlotTable = ({
                             getTableRowPlots(file).map(({ plot }) => {
                               if (plot.plotWidth < 50 && plot.plotHeight < 50) {
                                 plot.plotHeight = 204;
-                                plot.plotWidth = 256;
+                                plot.plotWidth = 319;
                                 plots.push(plot);
                               }
                             });
@@ -596,7 +597,7 @@ const PlotTable = ({
                       className={classes.responsiveContainer}
                       style={{
                         opacity: file.view ? 1 : 0,
-                        transition: "all 3s",
+                        transition: "all 1s",
                       }}
                     >
                       <ResponsiveGridLayout

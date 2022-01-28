@@ -14,7 +14,6 @@ import {
   getWorkspace,
 } from "graph/utils/workspace";
 import {
-  FileID,
   Gate,
   Plot,
   PlotID,
@@ -38,6 +37,7 @@ const classes = {
     border: "solid 0.5px #bbb",
     boxShadow: "1px 3px 4px #bbd",
     borderRadius: 5,
+    // minWidth: 370,
     paddingBottom: "2rem",
   },
   itemInnerDiv: {
