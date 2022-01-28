@@ -62,6 +62,12 @@ const WorkspaceDispatch = {
       payload: { plots, populations },
     });
   },
+  DeletePlots: (plots: string[]) => {
+    return store.dispatch({
+      type: graphActions.DELETE_PLOTS,
+      payload: { plots },
+    });
+  },
   DeletePlotsAndPopulations: (
     plots: string[],
     populations: string[],
@@ -152,7 +158,8 @@ const WorkspaceDispatch = {
   },
   DeleteNotification: (notification: Notification) => {
     return store.dispatch({
-      type: "workspace.DELETE_NOTIFICATION" || graphActions?.DELETE_NOTIFICATION,
+      type:
+        "workspace.DELETE_NOTIFICATION" || graphActions?.DELETE_NOTIFICATION,
       payload: { notification },
     });
   },
@@ -166,6 +173,12 @@ const WorkspaceDispatch = {
     return store.dispatch({
       type: graphActions.UPDATE_SELECTED_FILE,
       payload: { fileName },
+    });
+  },
+  ClearOpenFiles: () => {
+    return store.dispatch({
+      type: graphActions.CLEAR_OPEN_FILE,
+      payload: {},
     });
   },
 };

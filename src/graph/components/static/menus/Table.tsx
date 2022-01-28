@@ -25,6 +25,7 @@ import {
   Population,
   Workspace,
   File,
+  PlotsRerender,
 } from "graph/resources/types";
 import {
   standardGridPlotItem,
@@ -34,7 +35,9 @@ import {
   deleteAllPlotsAndPopulationOfNonControlFile,
   deletePlotAndPopulationOfFile,
 } from "graph/components/plots/MainBar";
+
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -158,8 +161,10 @@ const PlotTable = ({
       if (raw.length < workspace.gates.length + 2) {
         raw = [
           raw[0],
-          ...raw.slice(1, 1 + workspace.gates.length - 1),
-          raw[raw.length - 1] === "View" ? "--" : raw[raw.length - 2],
+          ...raw.slice(1, workspace.gates.length),
+          raw[raw.length - 1] === "View" || "Close"
+            ? "--"
+            : raw[raw.length - 2],
           raw[raw.length - 1],
         ];
       } else {
@@ -455,16 +460,11 @@ const PlotTable = ({
       ...workspace.gates.map((gate) => gate.name),
       "Click to View",
     ]);
-    workspace.plots.map((plot) => {
-      if (plot.gatingActive === "polygon") {
-        setOpenFiles([]);
-      }
-    });
+    if (workspace.clearOpenFiles) {
+      setOpenFiles([]);
+      WorkspaceDispatch.ClearOpenFiles();
+    }
   }, [workspace]);
-
-  useEffect(() => {
-    deleteAllPlotsAndPopulationOfNonControlFile();
-  }, []);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
@@ -542,6 +542,31 @@ const PlotTable = ({
                             }, 0);
                           } else if (!file.view) {
                             setOpenFiles((prev) => [...prev, file.id]);
+
+                            // taking care of plots showing up from saved workspace
+                            const plots: Plot[] = [];
+                            getTableRowPlots(file).map(({ plot }) => {
+                              if (plot.plotWidth < 50 && plot.plotHeight < 50) {
+                                plot.plotHeight = 204;
+                                plot.plotWidth = 256;
+                                plots.push(plot);
+                              }
+                            });
+                            if (plots.length > 0) {
+                              WorkspaceDispatch.UpdatePlots(plots);
+                            } else {
+                              const plotsRerenderQueueItem: PlotsRerender = {
+                                id: "",
+                                used: false,
+                                type: "plotsRerender",
+                                plotIDs: getTableRowPlots(file).map(
+                                  ({ plot }) => plot.id
+                                ),
+                              };
+                              EventQueueDispatch.AddQueueItem(
+                                plotsRerenderQueueItem
+                              );
+                            }
                             setTimeout(() => {
                               generatePlots(file);
                             }, 500);

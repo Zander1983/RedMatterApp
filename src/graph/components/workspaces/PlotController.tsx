@@ -24,6 +24,7 @@ import {
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
+import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
@@ -296,7 +297,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
         });
       }
     }
-    //console.log(arr);
     return arr;
   };
 
@@ -349,6 +349,9 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     });
                     let value: any = e.target.value;
                     method = value;
+                    if (value === "file") {
+                      deleteAllPlotsAndPopulationOfNonControlFile();
+                    }
                     this.setState({
                       sortBy: value,
                     });
