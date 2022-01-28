@@ -70,7 +70,7 @@ const Experiment = (props: any) => {
   const inputFile = React.useRef(null);
   const eventStacker = useGAEventTrackers("File Upload");
   const isLoggedIn = userManager.isLoggedIn();
-  if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
+  if (!isLoggedIn || (null !== process && process.env.REACT_APP_NO_WORKSPACES === "true")) {
     history.replace("/login");
   }
 

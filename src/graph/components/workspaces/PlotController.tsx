@@ -52,6 +52,7 @@ export interface PlotGroup {
   plots: Plot[];
   id: string;
 }
+
 export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   let plotGroups: PlotGroup[] = [];
 
@@ -70,6 +71,7 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
       );
     }
   }
+
   plotGroups = Object.keys(plotByFileMap).map((e) => {
     return {
       name: getFile(e).name,

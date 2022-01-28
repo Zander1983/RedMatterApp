@@ -66,8 +66,9 @@ export const downloadFileEvent = async (
 ): Promise<FileID | FileID[]> => {
   let notification: Notification;
   if (showNotifications) {
-    notification = new Notification("Dowloading files", 120000);
+    notification = new Notification("Downloading files");
   }
+
   try {
     let files: FileID[] = [];
     if (typeof targetFiles === "string") {
@@ -122,9 +123,7 @@ export const downloadFileEvent = async (
     let headers = {};
     if (token) headers = { token };
 
-    response = await axios.post("/api/events", payload, {
-      headers,
-    });
+    response = await axios.post("/api/events", payload, {headers});
 
     response.data = response.data.map((e: any) => {
       if (e.events.length > EVENTS_LIMIT) {
@@ -147,7 +146,6 @@ export const downloadFileEvent = async (
       WorkspaceDispatch.UpdateFile(newFile);
       killNoti = true;
     }
-
     if (killNoti && showNotifications) {
       notification.killNotification();
     }
@@ -157,10 +155,10 @@ export const downloadFileEvent = async (
       return files;
     }
   } catch (err) {
+    if (showNotifications) {
+      notification.killNotification();
+    }
     if (retry > 0) {
-      if (showNotifications) {
-        notification.killNotification();
-      }
       downloadFileEvent(
         workspaceIsShared,
         targetFiles,
@@ -175,9 +173,7 @@ export const downloadFileEvent = async (
       throw err ;//Error("File was not downloaded");
     }
   }
-  if (showNotifications) {
-    notification.killNotification();
-  }
+
 };
 
 export const dowloadAllFileEvents = async (
