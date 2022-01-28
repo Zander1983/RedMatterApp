@@ -253,52 +253,10 @@ export const addOverlay = async (
     fromPlot?: PlotID;
   }
 ) => {
-  // const plots: Plot[] = [];
+  const plots: Plot[] = [];
   if (fromPlot) {
     throw Error("Plot overlays not implemented");
   } else if (fromFile) {
-    // const workspace = getWorkspace();
-    // if (
-    //   getFile(getPopulation(plot.population).file).id === workspace.selectedFile
-    // ) {
-    //   let selectedFilePlotLength = 0;
-    //   workspace.plots.map((plot) => {
-    //     if (
-    //       getFile(getPopulation(plot.population).file).id ===
-    //       workspace.selectedFile
-    //     ) {
-    //       selectedFilePlotLength += 1;
-    //     }
-    //   });
-
-    //   const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
-    //   for (
-    //     let i = index;
-    //     i < workspace.plots.length;
-    //     i += selectedFilePlotLength
-    //   ) {
-    //     let population: Population = populations.createPopulation({
-    //       file: fromFile,
-    //       parentPopulationId: plot.population,
-    //     });
-    //     population.gates = population.gates.concat(
-    //       getPopulation(plot.population).gates
-    //     );
-    //     await WorkspaceDispatch.AddPopulation(population);
-    //     const newHistogramOverlay: HistogramOverlay = {
-    //       id: createID(),
-    //       color: generateColor(),
-    //       dataSource: "file",
-    //       overlayType: "line",
-    //       file: fromFile,
-    //       population: population.id,
-    //     };
-    //     workspace.plots[i].histogramOverlays.push(newHistogramOverlay);
-
-    //     plots.push(workspace.plots[i]);
-    //   }
-    // }
-
     let population: Population = populations.createPopulation({
       file: fromFile,
       parentPopulationId: plot.population,
@@ -315,8 +273,34 @@ export const addOverlay = async (
       file: fromFile,
       population: population.id,
     };
+
+    const workspace = getWorkspace();
+    if (
+      getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+    ) {
+      let selectedFilePlotLength = 0;
+      workspace.plots.map((plot) => {
+        if (
+          getFile(getPopulation(plot.population).file).id ===
+          workspace.selectedFile
+        ) {
+          selectedFilePlotLength += 1;
+        }
+      });
+
+      const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+      for (
+        let i = index;
+        i < workspace.plots.length;
+        i += selectedFilePlotLength
+      ) {
+        workspace.plots[i].histogramOverlays.push(newHistogramOverlay);
+        plots.push(workspace.plots[i]);
+      }
+    }
+
     plot.histogramOverlays.push(newHistogramOverlay);
-    // plots.push(plot);
+    plots.push(plot);
   } else {
     throw Error("No overlay source found");
   }
@@ -344,32 +328,32 @@ export const removeOverlay = (
 ) => {
   const workspace = getWorkspace();
   const plots: Plot[] = [];
-  // if (
-  //   getFile(getPopulation(plot.population).file).id === workspace.selectedFile
-  // ) {
-  //   let selectedFilePlotLength = 0;
-  //   workspace.plots.map((plot) => {
-  //     if (
-  //       getFile(getPopulation(plot.population).file).id ===
-  //       workspace.selectedFile
-  //     ) {
-  //       selectedFilePlotLength += 1;
-  //     }
-  //   });
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
 
-  //   const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
-  //   for (
-  //     let i = index;
-  //     i < workspace.plots.length;
-  //     i += selectedFilePlotLength
-  //   ) {
-  //     workspace.plots[i].histogramOverlays = workspace.plots[
-  //       i
-  //     ].histogramOverlays.filter((e) => e.id !== histogramOverlay.id);
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].histogramOverlays = workspace.plots[
+        i
+      ].histogramOverlays.filter((e) => e.id !== histogramOverlay.id);
 
-  //     plots.push(workspace.plots[i]);
-  //   }
-  // }
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.histogramOverlays = plot.histogramOverlays.filter(
     (e) => e.id !== histogramOverlay.id
   );

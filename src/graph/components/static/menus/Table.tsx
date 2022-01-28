@@ -198,7 +198,6 @@ const PlotTable = ({
     });
     fillUpRows(stats);
   };
-  console.log(workspace);
   const savePlotPosition = (layouts: any) => {
     let plots = workspace.plots;
     let plotChanges = [];
