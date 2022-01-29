@@ -162,7 +162,7 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   }
 
   return {
-    x: newX,
+    x: newX + 3,
     y: newy,
   };
 };
