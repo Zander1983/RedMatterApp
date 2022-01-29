@@ -4,7 +4,7 @@ import GraphTransformer, {
   Label,
 } from "graph/renderers/transformers/graphTransformer";
 import { Gate, Plot } from "graph/resources/types";
-import { getFile, getPopulation } from "graph/utils/workspace";
+import { getFile, getPopulation, getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 
 export const leftPadding = 55;
@@ -99,6 +99,10 @@ export default class GraphPlotter extends Plotter {
   }
 
   public draw(drawPlotGraphParams?: any): void {
+    const workspace = getWorkspace();
+    let upatedPlot = workspace.plots.find((x) => x.id == this.plot.id);
+    this.width = upatedPlot.plotWidth;
+    this.height = upatedPlot.plotHeight;
     this.update();
     this.drawer.drawPlotGraph({
       ...drawPlotGraphParams,

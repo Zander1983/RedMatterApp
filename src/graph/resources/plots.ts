@@ -294,17 +294,16 @@ export const addOverlay = async (
         i < workspace.plots.length;
         i += selectedFilePlotLength
       ) {
+        if (fromFile === getPopulation(workspace.plots[i].population).file)
+          continue;
         workspace.plots[i].histogramOverlays.push(newHistogramOverlay);
         plots.push(workspace.plots[i]);
       }
     }
-
-    plot.histogramOverlays.push(newHistogramOverlay);
-    plots.push(plot);
   } else {
     throw Error("No overlay source found");
   }
-  WorkspaceDispatch.UpdatePlot(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 // export const changeOverlayType = (
