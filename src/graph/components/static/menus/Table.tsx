@@ -574,7 +574,9 @@ const PlotTable = ({
                           }
                         }}
                       >
-                        <span className={classes.view}> {value} </span>
+                        <span className={classes.view}>
+                          {openFiles.includes(file.id) ? "Close" : "View"}
+                        </span>
                       </TableCell>
                     )
                   )}
