@@ -494,6 +494,7 @@ const PlotTable = ({
                     />
                     <img
                       onClick={() => {
+                        setOpenFiles([]);
                         deleteColumn(index - 1);
                       }}
                       src={deleteIcon}
@@ -573,7 +574,9 @@ const PlotTable = ({
                           }
                         }}
                       >
-                        <span className={classes.view}> {value} </span>
+                        <span className={classes.view}>
+                          {openFiles.includes(file.id) ? "Close" : "View"}
+                        </span>
                       </TableCell>
                     )
                   )}
@@ -597,7 +600,13 @@ const PlotTable = ({
                       className={classes.responsiveContainer}
                       style={{
                         opacity: file.view ? 1 : 0,
-                        transition: "all 1s",
+                        transition: `all ${
+                          workspace.files.length < 30
+                            ? 1
+                            : workspace.files.length < 60
+                            ? 2
+                            : 3
+                        }s`,
                       }}
                     >
                       <ResponsiveGridLayout
