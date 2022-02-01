@@ -409,6 +409,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               rowHeight={30}
                               compactType={null}
                               isDraggable={this.props.workspace.editWorkspace}
+                              isResizable={false}
                               onLayoutChange={(layout: any) => {
                                 this.savePlotPosition(layout);
                                 setTimeout(() => {
@@ -424,12 +425,12 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               onDragStart={() => {
                                 this.props.arrowFunc();
                               }}
-                              onResize={(layout: any) => {
-                                setCanvasSize(false);
-                              }}
-                              onResizeStop={(layout: any) => {
-                                setCanvasSize(true, true);
-                              }}
+                              // onResize={(layout: any) => {
+                              //   setCanvasSize(false);
+                              // }}
+                              // onResizeStop={(layout: any) => {
+                              //   setCanvasSize(true, true);
+                              // }}
                             >
                               {
                                 //@ts-ignore
@@ -510,6 +511,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             rowHeight={30}
                             compactType={null}
                             isDraggable={this.props.workspace.editWorkspace}
+                            isResizable={false}
                             onLayoutChange={(layout: any) => {
                               this.savePlotPosition(layout);
                               setTimeout(() => {
@@ -525,12 +527,12 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             onDragStart={() => {
                               this.props.arrowFunc();
                             }}
-                            onResize={(layout: any) => {
-                              setCanvasSize(false);
-                            }}
-                            onResizeStop={(layout: any) => {
-                              setCanvasSize(true);
-                            }}
+                            // onResize={(layout: any) => {
+                            //   setCanvasSize(false);
+                            // }}
+                            // onResizeStop={(layout: any) => {
+                            //   setCanvasSize(true);
+                            // }}
                           >
                             {
                               //@ts-ignore

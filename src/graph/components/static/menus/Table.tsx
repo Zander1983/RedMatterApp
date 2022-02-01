@@ -617,12 +617,13 @@ const PlotTable = ({
                         rowHeight={30}
                         compactType={null}
                         isDraggable={workspace.editWorkspace}
-                        onLayoutChange={(layout: any) => {
-                          savePlotPosition(layout);
-                          setTimeout(() => {
-                            arrowFunc();
-                          }, 100);
-                        }}
+                        isResizable={false}
+                        // onLayoutChange={(layout: any) => {
+                        //   savePlotPosition(layout);
+                        //   setTimeout(() => {
+                        //     arrowFunc();
+                        //   }, 100);
+                        // }}
                         onDrag={() => {
                           arrowFunc();
                         }}
@@ -632,12 +633,12 @@ const PlotTable = ({
                         onDragStart={() => {
                           arrowFunc();
                         }}
-                        onResize={(layout: any) => {
-                          setCanvasSize(false);
-                        }}
-                        onResizeStop={(layout: any) => {
-                          setCanvasSize(true);
-                        }}
+                        // onResize={(layout: any) => {
+                        //   setCanvasSize(false);
+                        // }}
+                        // onResizeStop={(layout: any) => {
+                        //   setCanvasSize(true);
+                        // }}
                       >
                         {
                           //@ts-ignore
