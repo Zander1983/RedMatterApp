@@ -40,6 +40,7 @@ import {
   WorkspaceEvent,
 } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
+import SideMenus from "./components/static/SideMenus";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
@@ -252,9 +253,9 @@ const WorkspaceInnerComponent = (props: {
     if (!workspaceLoading) {
       setWorkspaceLoading(false);
       try {
-          let fileIds = workspace.files.map((file) => file.id);
-          if (fileIds.length > 0) downloadAllEvents(fileIds).then();
-          fileIds = null;
+        let fileIds = workspace.files.map((file) => file.id);
+        if (fileIds.length > 0) downloadAllEvents(fileIds).then();
+        fileIds = null;
       } catch (e) {
         setPlotCallNeeded(false);
         snackbarService.showSnackbar(
@@ -501,7 +502,7 @@ const WorkspaceInnerComponent = (props: {
       />
 
       {/* == STATIC ELEMENTS == */}
-      {/* <SideMenus workspace={workspace}></SideMenus> */}
+      <SideMenus workspace={workspace}></SideMenus>
       <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}

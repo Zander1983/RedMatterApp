@@ -91,78 +91,78 @@ export default function SideMenus(props: { workspace: Workspace }) {
 
   const [data, setData] = React.useState<any[]>([]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => downloadCsv(), 100);
-    return () => clearTimeout(timer);
-  }, [props.workspace.plots.length]);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => downloadCsv(), 100);
+  //   return () => clearTimeout(timer);
+  // }, [props.workspace.plots.length]);
 
-  const downloadCsv = () => {
-    const { plots, populations } = props.workspace;
-    const type: string[] = [];
-    const fromFile: string[] = [];
-    const polulation: string[] = [];
-    const xaxis: string[] = [];
-    const yaxis: string[] = [];
-    const brute: string[] = [];
-    const percentage: string[] = [];
-    const medianX: string[] = [];
-    const medianY: string[] = [];
-    const meanX: string[] = [];
-    const meanY: string[] = [];
-    const pointsOutsideCount: string[] = [];
-    const pointsOutsidePercentage: string[] = [];
+  // const downloadCsv = () => {
+  //   const { plots, populations } = props.workspace;
+  //   const type: string[] = [];
+  //   const fromFile: string[] = [];
+  //   const polulation: string[] = [];
+  //   const xaxis: string[] = [];
+  //   const yaxis: string[] = [];
+  //   const brute: string[] = [];
+  //   const percentage: string[] = [];
+  //   const medianX: string[] = [];
+  //   const medianY: string[] = [];
+  //   const meanX: string[] = [];
+  //   const meanY: string[] = [];
+  //   const pointsOutsideCount: string[] = [];
+  //   const pointsOutsidePercentage: string[] = [];
 
-    plots.map((plot) => {
-      const stats = statsProvider.getPlotStats(plot, statsX, statsY);
-      const median = statsProvider.getPlotStats(plot, 1, 1);
-      const mean = statsProvider.getPlotStats(plot, 2, 2);
+  //   plots.map((plot) => {
+  //     const stats = statsProvider.getPlotStats(plot, statsX, statsY);
+  //     const median = statsProvider.getPlotStats(plot, 1, 1);
+  //     const mean = statsProvider.getPlotStats(plot, 2, 2);
 
-      type.push(plot.xAxis === plot.yAxis ? "histogram" : "scatterplot");
+  //     type.push(plot.xAxis === plot.yAxis ? "histogram" : "scatterplot");
 
-      xaxis.push(plot.xAxis);
-      yaxis.push(plot.yAxis);
-      brute.push(
-        `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`
-      );
-      percentage.push(stats.gatedFilePopulationPercentage);
-      medianX.push(median.statX);
-      medianY.push(median.statY);
-      meanX.push(mean.statX);
-      meanY.push(mean.statY);
-      pointsOutsideCount.push(stats.pointsOutSideOfRangeObj.count.toString());
-      pointsOutsidePercentage.push(
-        stats.pointsOutSideOfRangeObj.percentage.toString()
-      );
-    });
+  //     xaxis.push(plot.xAxis);
+  //     yaxis.push(plot.yAxis);
+  //     brute.push(
+  //       `${stats.gatedFilePopulationSize} / ${stats.filePopulationSize}`
+  //     );
+  //     percentage.push(stats.gatedFilePopulationPercentage);
+  //     medianX.push(median.statX);
+  //     medianY.push(median.statY);
+  //     meanX.push(mean.statX);
+  //     meanY.push(mean.statY);
+  //     pointsOutsideCount.push(stats.pointsOutSideOfRangeObj.count.toString());
+  //     pointsOutsidePercentage.push(
+  //       stats.pointsOutSideOfRangeObj.percentage.toString()
+  //     );
+  //   });
 
-    populations.map((item) => {
-      fromFile.push(getFile(item.file).name);
-      const popGate = item.gates[0];
-      let gate: Gate;
-      if (popGate) gate = getGate(popGate.gate);
-      polulation.push(gate ? gate.name : "All");
-    });
-    let csvData: any[] = [];
-    type.map((item, index) => {
-      const element = {
-        type: item,
-        fromFile: fromFile[index],
-        polulation: polulation[index],
-        xAxis: xaxis[index],
-        yAxis: yaxis[index],
-        brute: brute[index],
-        percentage: percentage[index],
-        medianX: medianX[index],
-        medianY: medianY[index],
-        meanX: meanX[index],
-        meanY: meanY[index],
-        pointsOutsideCount: pointsOutsideCount[index],
-        pointsOutsidePercentage: pointsOutsidePercentage[index],
-      };
-      csvData.push(element);
-    });
-    setData(csvData);
-  };
+  //   populations.map((item) => {
+  //     fromFile.push(getFile(item.file).name);
+  //     const popGate = item.gates[0];
+  //     let gate: Gate;
+  //     if (popGate) gate = getGate(popGate.gate);
+  //     polulation.push(gate ? gate.name : "All");
+  //   });
+  //   let csvData: any[] = [];
+  //   type.map((item, index) => {
+  //     const element = {
+  //       type: item,
+  //       fromFile: fromFile[index],
+  //       polulation: polulation[index],
+  //       xAxis: xaxis[index],
+  //       yAxis: yaxis[index],
+  //       brute: brute[index],
+  //       percentage: percentage[index],
+  //       medianX: medianX[index],
+  //       medianY: medianY[index],
+  //       meanX: meanX[index],
+  //       meanY: meanY[index],
+  //       pointsOutsideCount: pointsOutsideCount[index],
+  //       pointsOutsidePercentage: pointsOutsidePercentage[index],
+  //     };
+  //     csvData.push(element);
+  //   });
+  //   setData(csvData);
+  // };
 
   const click = (target: string | undefined) => {
     let p = [
@@ -208,7 +208,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
       <div className={classes.sidebarLayout}>
         <div>
           {/* Stats & Plots */}
-          <Button
+          {/* <Button
             variant="contained"
             size="large"
             onClick={() => click("plots")}
@@ -218,7 +218,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
             }}
           >
             Stats & Plots
-          </Button>
+          </Button> */}
 
           {/* Gates */}
           <Button
@@ -235,7 +235,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
           </Button>
 
           {/* Files */}
-          <Button
+          {/* <Button
             variant="contained"
             size="large"
             onClick={() => click("files")}
@@ -246,7 +246,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
             }}
           >
             Files
-          </Button>
+          </Button> */}
 
           {/* Files Hirarchy */}
           {/* <Button
@@ -274,21 +274,21 @@ export default function SideMenus(props: { workspace: Workspace }) {
         </div>
 
         {/* CSV Download Button */}
-        <div>
+        {/* <div>
           <Button
             variant="contained"
             size="large"
             // onClick={() => downloadCsv()}
             className={classes.downloadBtn}
           >
-            {/* <CSVLink> */}
+            
             <CSVLink
               headers={headers}
               data={data}
               filename="WorkspaceReport.csv"
               className={classes.downloadBtnLayout}
             >
-              {/* Download Icon */}
+              
               <GetAppIcon
                 fontSize="small"
                 style={{ marginRight: 10 }}
@@ -296,24 +296,24 @@ export default function SideMenus(props: { workspace: Workspace }) {
               Download .csv
             </CSVLink>
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Values */}
       <div className={classes.dataValues}>
         {/* STATS & PLOTS */}
-        {plotMenuOpen && (
+        {/* {plotMenuOpen && (
           <PlotMenu
             plots={props.workspace.plots}
             onStatChange={(e) => {
               e["x"] ? setStatsX(e["value"]) : setStatsY(e["value"]);
             }}
           />
-        )}
+        )} */}
         {/* GATES */}
         {gateMenuOpen && <GateMenu gates={props.workspace.gates} />}
         {/* FILES */}
-        {fileMenuOpen && <FileMenu files={props.workspace.files} />}
+        {/* {fileMenuOpen && <FileMenu files={props.workspace.files} />} */}
         {/* FILES HIERARCHY */}
         {/* {hierarchyOpen && <HierarchyMenu workspace={props.workspace} />} */}
       </div>
