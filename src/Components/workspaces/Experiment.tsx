@@ -70,7 +70,10 @@ const Experiment = (props: any) => {
   const inputFile = React.useRef(null);
   const eventStacker = useGAEventTrackers("File Upload");
   const isLoggedIn = userManager.isLoggedIn();
-  if (!isLoggedIn || (null !== process && process.env.REACT_APP_NO_WORKSPACES === "true")) {
+  if (
+    !isLoggedIn ||
+    (null !== process && process.env.REACT_APP_NO_WORKSPACES === "true")
+  ) {
     history.replace("/login");
   }
 
@@ -347,16 +350,14 @@ const Experiment = (props: any) => {
   };
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
-  useEffect(() => {}, [experimentData]);
-
   const GenOrView = async (event: any, fileId: any, name: string) => {
     setReportName(name);
     event.preventDefault();
     setReportStatus(true);
     try {
-        //370 KB file
-       //const URL = `http://localhost:8080/api/report/${"61d1df3b4775ec12f26a8bcb"}/${"9fc51860-6bf0-11ec-8baf-b9ee2147d2ed"}`;
-        // 14 MB file
+      //370 KB file
+      //const URL = `http://localhost:8080/api/report/${"61d1df3b4775ec12f26a8bcb"}/${"9fc51860-6bf0-11ec-8baf-b9ee2147d2ed"}`;
+      // 14 MB file
       //const URL = `http://localhost:8080/api/report/${"615207baa0f5847ee122fb07"}/${"e45c58a0-1fbd-11ec-a311-714960590ddc"}`;
       //5.3 MB
       //const URL = `http://localhost:8080/api/report/${"6123a8ca7d7dff74498e07ab"}/${"a7b7b350-1bd9-11ec-8260-571cd83d40c9"}`;
@@ -371,7 +372,9 @@ const Experiment = (props: any) => {
       if (response.status === 200) await handleResponse(response.data, true);
       else
         await handleError({
-          message: response?.data?.message || "Request not completed. Due to Time out Or Unable To Allocation",
+          message:
+            response?.data?.message ||
+            "Request not completed. Due to Time out Or Unable To Allocation",
           saverity: "error",
         });
     } catch (error) {
@@ -834,57 +837,104 @@ const Experiment = (props: any) => {
                               </Button>
                             </div> */}
                             {editingFileName === e.id ? (
-                              <TextField
-                                style={{
-                                  width: "60%",
-                                }}
-                                InputProps={{
-                                  className: classes.fileEditInput,
-                                }}
-                                value={
-                                  editingFileName === e.id
-                                    ? newFileName
-                                    : e.label
-                                }
-                                onChange={(newName: any) => {
-                                  let newExperimentData = experimentData;
-                                  newExperimentData.files.forEach((f: any) => {
-                                    if (f.id === e.id)
-                                      f.label = newName.target.value;
-                                  });
-                                  setNewFileName(newName.target.value);
-                                  setExperimentData(newExperimentData);
-                                }}
-                                onKeyDown={(event: any) => {
-                                  if (event.keyCode === 13) {
+                              <>
+                                <TextField
+                                  style={{
+                                    width: "20%",
+                                  }}
+                                  InputProps={{
+                                    className: classes.fileEditInput,
+                                  }}
+                                  value={
+                                    editingFileName === e.id
+                                      ? newFileName
+                                      : e.label
+                                  }
+                                  onChange={(newName: any) => {
+                                    let newExperimentData = experimentData;
+                                    newExperimentData.files.forEach(
+                                      (f: any) => {
+                                        if (f.id === e.id)
+                                          f.label = newName.target.value;
+                                      }
+                                    );
+                                    setNewFileName(newName.target.value);
+                                    setExperimentData(newExperimentData);
+                                  }}
+                                  onKeyDown={(event: any) => {
+                                    if (event.keyCode === 13) {
+                                      updateExperimentFileName(
+                                        e.id,
+                                        newFileName
+                                      );
+                                      setEditingFileName(null);
+                                    }
+                                  }}
+                                ></TextField>
+
+                                <button
+                                  onClick={() => {
                                     updateExperimentFileName(e.id, newFileName);
                                     setEditingFileName(null);
-                                  }
-                                }}
-                              ></TextField>
+                                  }}
+                                  style={{
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "white",
+                                    fontWeight: 500,
+                                    padding: "2px 5px",
+                                    background: "#66a",
+                                    width: 50,
+                                    margin: "0px 8px",
+                                    borderRadius: 5,
+                                  }}
+                                >
+                                  {"Save"}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setEditingFileName(null);
+                                  }}
+                                  style={{
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "white",
+                                    fontWeight: 500,
+                                    padding: "2px 5px",
+                                    background: "#66a",
+                                    width: 70,
+                                    borderRadius: 5,
+                                  }}
+                                >
+                                  {"Cancel"}
+                                </button>
+                              </>
                             ) : (
                               <>{e.label}</>
                             )}
-                            <Button
-                              style={{
-                                fontSize: 16,
-                                maxWidth: 30,
-                                minWidth: 30,
-                              }}
-                              onClick={() => {
-                                setNewFileName(e.label);
-                                setEditingFileName(
-                                  editingFileName ? null : e.id
-                                );
-                              }}
-                            >
-                              <EditOutlined
+                            {!editingFileName && (
+                              <Button
                                 style={{
-                                  color: "#66d",
-                                  marginTop: -4,
+                                  fontSize: 16,
+                                  maxWidth: 30,
+                                  minWidth: 30,
                                 }}
-                              />
-                            </Button>
+                                onClick={() => {
+                                  setNewFileName(e.label);
+                                  setEditingFileName(
+                                    editingFileName ? null : e.id
+                                  );
+                                }}
+                              >
+                                <EditOutlined
+                                  style={{
+                                    color: "#66d",
+                                    marginTop: -4,
+                                  }}
+                                />
+                              </Button>
+                            )}
                             {"   "}•{"   "}
                             <b
                               style={{
@@ -949,7 +999,8 @@ const Experiment = (props: any) => {
                                   type={"button"}
                                   data-id={e.id}
                                   data-link={e.link || "http://www.google.com"}
-                                  value={reportStatus && reportName === e.label
+                                  value={
+                                    reportStatus && reportName === e.label
                                       ? "Generating Report..."
                                       : "Generate Report"
                                   }
@@ -961,7 +1012,9 @@ const Experiment = (props: any) => {
                                     fontWeight: 500,
                                     padding: "2px 5px",
                                   }}
-                                  onClick={(event) => GenOrView(event, e.id, e.label)}
+                                  onClick={(event) =>
+                                    GenOrView(event, e.id, e.label)
+                                  }
                                 />
                               </Button>
                               <p
@@ -969,11 +1022,18 @@ const Experiment = (props: any) => {
                                   fontSize: 14,
                                   color: "#66a",
                                   textDecoration: "underline",
-                                }}>
+                                }}
+                              >
                                 {" "}
-                                {reports &&
-                                  reports[i] && (<a target="_blank" rel="noopener" href={reports[i].link}>{"View Report"}</a>)}
-
+                                {reports && reports[i] && (
+                                  <a
+                                    target="_blank"
+                                    rel="noopener"
+                                    href={reports[i].link}
+                                  >
+                                    {"View Report"}
+                                  </a>
+                                )}
                               </p>
                             </div>
                           </h3>
