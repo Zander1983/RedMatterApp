@@ -50,6 +50,7 @@ import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
+let updateTimeout: any = null;
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -182,6 +183,22 @@ const WorkspaceInnerComponent = (props: {
     })();
   }, []);
 
+  useEffect(() => {
+    updateArrows();
+  }, [workspace]);
+
+  const updateArrows = () => {
+    if (!workspaceLoading) {
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+
+      updateTimeout = setTimeout(() => {
+        updateXarrow();
+      }, 1000);
+    }
+  };
+
   const handleError = async (error: any) => {
     if (
       error?.name === "Error" ||
@@ -252,9 +269,9 @@ const WorkspaceInnerComponent = (props: {
     if (!workspaceLoading) {
       setWorkspaceLoading(false);
       try {
-          let fileIds = workspace.files.map((file) => file.id);
-          if (fileIds.length > 0) downloadAllEvents(fileIds).then();
-          fileIds = null;
+        let fileIds = workspace.files.map((file) => file.id);
+        if (fileIds.length > 0) downloadAllEvents(fileIds).then();
+        fileIds = null;
       } catch (e) {
         setPlotCallNeeded(false);
         snackbarService.showSnackbar(
@@ -272,20 +289,18 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
-  useEffect(() => {
-    updateXarrow();
-  }, [workspace]);
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
     if (!initState && plotCallNeeded && autosaveEnabled) {
       const timer = setTimeout(async () => {
         await saveWorkspace();
       }, 1000);
-      updateXarrow();
+
       return () => {
         if (timer !== null) clearTimeout(timer);
       };
     }
+    updateXarrow();
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -717,7 +732,10 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
-                  arrowFunc={updateXarrow}
+                  arrowFunc={() => {
+                    updateArrows();
+                    updateXarrow();
+                  }}
                 />
               ) : (
                 <Grid

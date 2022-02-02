@@ -228,6 +228,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
       }
     }
     WorkspaceDispatch.UpdatePlots(plotChanges);
+    this.props.arrowFunc();
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -411,9 +412,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               isDraggable={this.props.workspace.editWorkspace}
                               onLayoutChange={(layout: any) => {
                                 this.savePlotPosition(layout);
-                                setTimeout(() => {
-                                  this.props.arrowFunc();
-                                }, 150);
                               }}
                               onDrag={() => {
                                 this.props.arrowFunc();
