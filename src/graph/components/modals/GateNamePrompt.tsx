@@ -13,6 +13,7 @@ import {
   WorkspaceEvent,
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
+import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getGate, getPlot } from "graph/utils/workspace";
 import { createSubpopPlot } from "graph/resources/plots";
@@ -152,7 +153,8 @@ export default function GateNamePrompt() {
                 eventStacker(
                   `A gate with Name: ${name} is created on Plot:${plot.label}.`
                 );
-
+                WorkspaceDispatch.ClearOpenFiles();
+                deleteAllPlotsAndPopulationOfNonControlFile();
                 // re-rendering the plot again so that the percentage shows up
                 setPlot((prev: Plot) => {
                   return { ...prev, plotWidth: prev.plotWidth - 1 };

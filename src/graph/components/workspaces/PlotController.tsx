@@ -14,7 +14,6 @@ import {
   getWorkspace,
 } from "graph/utils/workspace";
 import {
-  FileID,
   Gate,
   Plot,
   PlotID,
@@ -24,6 +23,7 @@ import {
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
+import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
@@ -37,6 +37,7 @@ const classes = {
     border: "solid 0.5px #bbb",
     boxShadow: "1px 3px 4px #bbd",
     borderRadius: 5,
+    // minWidth: 370,
     paddingBottom: "2rem",
   },
   itemInnerDiv: {
@@ -125,7 +126,10 @@ export const resetPlotSizes = (id?: string) => {
   }
 };
 
-export const setCanvasSize = (save: boolean = false, isAsync: boolean = false) => {
+export const setCanvasSize = (
+  save: boolean = false,
+  isAsync: boolean = false
+) => {
   const plots = getWorkspace().plots;
   const updateList: Plot[] = [];
   for (let plot of plots) {
@@ -184,17 +188,16 @@ interface PlotControllerProps {
 interface IState {
   sortByChanged: boolean;
   sortBy: string;
-  isTableRenderCall: boolean
+  isTableRenderCall: boolean;
 }
 
 class PlotController extends React.Component<PlotControllerProps, IState> {
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
       sortByChanged: false,
       sortBy: "file",
-      isTableRenderCall: false
+      isTableRenderCall: false,
     };
   }
 
@@ -250,7 +253,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
     );
     resetPlotSizes();
     setCanvasSize(true);
-    setTimeout(()=> this.setState({isTableRenderCall:true}), 1000);
+    setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }
 
   getPlotRelevantResources(plot: Plot) {
@@ -296,25 +299,27 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
         });
       }
     }
-    //console.log(arr);
     return arr;
   };
 
   renderTable = () => {
-    if(this.props.workspace.selectedFile &&
-    this.props.workspace?.files[0]?.downloaded &&
-    this.state.sortBy === "file" && this.state.isTableRenderCall) {
+    if (
+      this.props.workspace.selectedFile &&
+      this.props.workspace?.files[0]?.downloaded &&
+      this.state.sortBy === "file" &&
+      this.state.isTableRenderCall
+    ) {
       return (
-          <PlotTable
-              workspace={this.props.workspace}
-              sharedWorkspace={this.props.sharedWorkspace}
-              experimentId={this.props.experimentId}
-              workspaceLoading={this.props.workspaceLoading}
-              customPlotRerender={this.props.customPlotRerender}
-              arrowFunc={this.props.arrowFunc}
-          />
-      )
-    }else return (null);
+        <PlotTable
+          workspace={this.props.workspace}
+          sharedWorkspace={this.props.sharedWorkspace}
+          experimentId={this.props.experimentId}
+          workspaceLoading={this.props.workspaceLoading}
+          customPlotRerender={this.props.customPlotRerender}
+          arrowFunc={this.props.arrowFunc}
+        />
+      );
+    } else return null;
   };
 
   render() {
@@ -346,6 +351,9 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     });
                     let value: any = e.target.value;
                     method = value;
+                    if (value === "file") {
+                      deleteAllPlotsAndPopulationOfNonControlFile();
+                    }
                     this.setState({
                       sortBy: value,
                     });
@@ -401,6 +409,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               rowHeight={30}
                               compactType={null}
                               isDraggable={this.props.workspace.editWorkspace}
+                              isResizable={false}
                               onLayoutChange={(layout: any) => {
                                 this.savePlotPosition(layout);
                                 setTimeout(() => {
@@ -416,12 +425,12 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               onDragStart={() => {
                                 this.props.arrowFunc();
                               }}
-                              onResize={(layout: any) => {
-                                setCanvasSize(false);
-                              }}
-                              onResizeStop={(layout: any) => {
-                                setCanvasSize(true, true);
-                              }}
+                              // onResize={(layout: any) => {
+                              //   setCanvasSize(false);
+                              // }}
+                              // onResizeStop={(layout: any) => {
+                              //   setCanvasSize(true, true);
+                              // }}
                             >
                               {
                                 //@ts-ignore
@@ -502,6 +511,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             rowHeight={30}
                             compactType={null}
                             isDraggable={this.props.workspace.editWorkspace}
+                            isResizable={false}
                             onLayoutChange={(layout: any) => {
                               this.savePlotPosition(layout);
                               setTimeout(() => {
@@ -517,12 +527,12 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                             onDragStart={() => {
                               this.props.arrowFunc();
                             }}
-                            onResize={(layout: any) => {
-                              setCanvasSize(false);
-                            }}
-                            onResizeStop={(layout: any) => {
-                              setCanvasSize(true);
-                            }}
+                            // onResize={(layout: any) => {
+                            //   setCanvasSize(false);
+                            // }}
+                            // onResizeStop={(layout: any) => {
+                            //   setCanvasSize(true);
+                            // }}
                           >
                             {
                               //@ts-ignore
@@ -573,26 +583,31 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                 );
               }
             })}
-            {!this.state.isTableRenderCall ?(
-                <Grid container
-                    style={{
-                      height:100,
-                      borderBottomLeftRadius: 10,
-                      borderBottomRightRadius: 10,
-                      textAlign: "center",
-                    }}
-                    justify="center"
-                    alignItems="center"
-                    alignContent="center">
-                  <CircularProgress style={{padding: "10px"}}  />
-                  <span>Wait Loading...</span>
-                </Grid>
-            ): this.renderTable()}
-            {this.state.isTableRenderCall && this.getArrowArray().map((obj, i) => {
-              return (
-                <Xarrow start={obj.start} end={obj.end} path={"straight"} />
-              );
-            })}
+            {!this.state.isTableRenderCall ? (
+              <Grid
+                container
+                style={{
+                  height: 100,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,
+                  textAlign: "center",
+                }}
+                justify="center"
+                alignItems="center"
+                alignContent="center"
+              >
+                <CircularProgress style={{ padding: "10px" }} />
+                <span>Wait Loading...</span>
+              </Grid>
+            ) : (
+              this.renderTable()
+            )}
+            {this.state.isTableRenderCall &&
+              this.getArrowArray().map((obj, i) => {
+                return (
+                  <Xarrow start={obj.start} end={obj.end} path={"straight"} />
+                );
+              })}
           </Xwrapper>
         </div>
       );

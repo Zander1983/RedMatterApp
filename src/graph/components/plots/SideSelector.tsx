@@ -41,13 +41,11 @@ function PlotComponent(props: {
     return e.workspace.files.filter((e) => e.id !== file.id);
   });
 
-  const xAxis = plot.xAxis;
-  const yAxis = plot.yAxis;
+  // const xAxis = plot.xAxis;
   const { axes, labels } = getFile(getPopulation(plot.population).file);
   const files = getAllFiles();
 
-  const yPlotType = plot.yPlotType;
-  const xPlotType = plot.xPlotType;
+  // const xPlotType = plot.xPlotType;
 
   const [oldAxis, setOldAxis] = React.useState({
     x: null,
@@ -57,8 +55,6 @@ function PlotComponent(props: {
   const [downloadedFiles, setDownloadedFiles] = React.useState([]);
   const [downloadingFiles, setDownloadingFiles] = React.useState([]);
   const [, setHistogramOverlayOpen] = React.useState(false);
-  const [xWidth, setXWidth] = React.useState(100);
-  const [yWidth, setYWidth] = React.useState(100);
   const [currentXIndex, setCurrentXIndex] = useState<number>(0);
   const [currentYIndex, setCurrentYIndex] = useState<number>(0);
 
@@ -70,7 +66,7 @@ function PlotComponent(props: {
 
   const setHistogram = (value: boolean) => {
     if (value) {
-      setOldAxis({ ...oldAxis, y: yAxis });
+      setOldAxis({ ...oldAxis, y: plot.yAxis });
       PlotResource.xAxisToHistogram(plot);
     } else {
       PlotResource.setYAxis(plot, oldAxis.x);
@@ -117,23 +113,17 @@ function PlotComponent(props: {
   }, [files]);
 
   useEffect(() => {
-    if (xAxis.length > 8) {
-      const newWidth = 100 + (xAxis.length - 8) * 10;
-      setXWidth(newWidth > 200 ? 200 : newWidth);
-    } else {
-      setXWidth(100);
-    }
-    if (xAxis) {
-      let index =
-        axes && axes.length > 0 && axes.findIndex((ele) => ele === xAxis);
-      setCurrentXIndex(index !== -1 ? index : 0);
-    }
-  }, [xAxis]);
+    setCurrentXIndex(axes.findIndex((ele) => ele === plot.xAxis));
+  }, [plot.xAxis]);
+
+  useEffect(() => {
+    setCurrentYIndex(axes.findIndex((ele) => ele === plot.yAxis));
+  }, [plot.yAxis]);
 
   useEffect(() => {
     const workspace = getWorkspace();
-    if(workspace) {
-      if (typeof workspace.files[0]?.downloaded !== 'undefined') {
+    if (workspace) {
+      if (typeof workspace.files[0]?.downloaded !== "undefined") {
         const plotsRerenderQueueItem: PlotsRerender = {
           id: "",
           used: false,
@@ -144,21 +134,6 @@ function PlotComponent(props: {
       }
     }
   }, [labels]);
-
-  useEffect(() => {
-    if (yAxis.length > 8) {
-      const newWidth = 100 + (yAxis.length - 8) * 10;
-      setYWidth(newWidth > 200 ? 200 : newWidth);
-    } else {
-      setYWidth(100);
-    }
-
-    if (yAxis) {
-      let index =
-        axes && axes.length > 0 && axes.findIndex((ele) => ele === yAxis);
-      setCurrentYIndex(index !== -1 ? index : 0);
-    }
-  }, [yAxis]);
 
   const isHistogramSelected = (
     plotId: string = "",
@@ -225,11 +200,12 @@ function PlotComponent(props: {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-      }}>
+      }}
+    >
       <div
         className="pc-y"
         style={{
-          marginTop: yWidth >= 200 ? 250 : yWidth,
+          marginTop: 100,
           marginRight: 20,
           transform: "rotate(270deg)",
           height: "min-content",
@@ -240,7 +216,7 @@ function PlotComponent(props: {
         <Select
           disabled={!props.editWorkspace}
           style={{
-            width: yWidth,
+            width: 80,
             marginRight: 15,
             flex: "1 1 auto",
           }}
@@ -259,7 +235,10 @@ function PlotComponent(props: {
           value={
             isPlotHistogram()
               ? "hist"
-              : (labels !== null && typeof labels[currentYIndex] !== 'undefined') ? labels[currentYIndex] : plot.yAxis}
+              : labels !== null && typeof labels[currentYIndex] !== "undefined"
+              ? labels[currentYIndex]
+              : plot.yAxis
+          }
         >
           {labels &&
             labels.length &&
@@ -277,11 +256,11 @@ function PlotComponent(props: {
         <Select
           disabled={!props.editWorkspace}
           style={{
-            width: 100,
+            width: 1000,
             marginRight: 15,
             flex: "1 1 auto",
           }}
-          value={yPlotType === "" ? "" : yPlotType}
+          value={plot.yPlotType === "" ? "" : plot.yPlotType}
           //@ts-ignore
           onChange={(e) => setPlotType("y", e.target.value)}
         >
@@ -366,7 +345,7 @@ function PlotComponent(props: {
                 <Select
                   disabled={!props.editWorkspace}
                   style={{
-                    width: xWidth,
+                    width: 100,
                     marginTop: "10px",
                     flex: "1 1 auto",
                   }}
@@ -377,7 +356,11 @@ function PlotComponent(props: {
                     setCurrentXIndex(index);
                     setAxis("x", axes[index]);
                   }}
-                  value={labels[currentXIndex] !== null ? labels[currentXIndex] : plot.xAxis}
+                  value={
+                    labels[currentXIndex] !== null
+                      ? labels[currentXIndex]
+                      : plot.xAxis
+                  }
                 >
                   {labels &&
                     labels.length &&
@@ -392,7 +375,7 @@ function PlotComponent(props: {
                     marginLeft: 10,
                     flex: "1 1 auto",
                   }}
-                  value={xPlotType === "" ? "" : xPlotType}
+                  value={plot.xPlotType === "" ? "" : plot.xPlotType}
                   //@ts-ignore
                   onChange={(e) => setPlotType("x", e.target.value)}
                 >

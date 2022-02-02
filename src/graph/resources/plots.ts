@@ -162,7 +162,7 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
   }
 
   return {
-    x: newX,
+    x: newX > 0 ? newX + 3 : newX,
     y: newy,
   };
 };
@@ -253,6 +253,7 @@ export const addOverlay = async (
     fromPlot?: PlotID;
   }
 ) => {
+  const plots: Plot[] = [];
   if (fromPlot) {
     throw Error("Plot overlays not implemented");
   } else if (fromFile) {
@@ -272,11 +273,37 @@ export const addOverlay = async (
       file: fromFile,
       population: population.id,
     };
-    plot.histogramOverlays.push(newHistogramOverlay);
+
+    const workspace = getWorkspace();
+    if (
+      getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+    ) {
+      let selectedFilePlotLength = 0;
+      workspace.plots.map((plot) => {
+        if (
+          getFile(getPopulation(plot.population).file).id ===
+          workspace.selectedFile
+        ) {
+          selectedFilePlotLength += 1;
+        }
+      });
+
+      const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+      for (
+        let i = index;
+        i < workspace.plots.length;
+        i += selectedFilePlotLength
+      ) {
+        if (fromFile === getPopulation(workspace.plots[i].population).file)
+          continue;
+        workspace.plots[i].histogramOverlays.push(newHistogramOverlay);
+        plots.push(workspace.plots[i]);
+      }
+    }
   } else {
     throw Error("No overlay source found");
   }
-  WorkspaceDispatch.UpdatePlot(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 // export const changeOverlayType = (
@@ -298,10 +325,39 @@ export const removeOverlay = (
   plot: Plot,
   histogramOverlay: HistogramOverlay
 ) => {
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].histogramOverlays = workspace.plots[
+        i
+      ].histogramOverlays.filter((e) => e.id !== histogramOverlay.id);
+
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.histogramOverlays = plot.histogramOverlays.filter(
     (e) => e.id !== histogramOverlay.id
   );
-  WorkspaceDispatch.UpdatePlot(plot);
+  plots.push(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const createNewPlotFromPlot = async (
@@ -380,44 +436,196 @@ export const setWidthAndHeight = (plot: Plot, w: number, h: number) => {
 };
 
 export const setXAxisPlotType = (plot: Plot, plotType: PlotType) => {
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].xPlotType = plotType;
+      workspace.plots[i].axisPlotTypes[plot.xAxis] = plotType;
+
+      plots.push(workspace.plots[i]);
+    }
+  }
+
   plot.gatingActive = "";
   plot.xPlotType = plotType;
   plot.axisPlotTypes[plot.xAxis] = plotType;
-  WorkspaceDispatch.UpdatePlot(plot);
+  plots.push(plot);
+
+  // updating the plot
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const setYAxisPlotType = (plot: Plot, plotType: PlotType) => {
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].yPlotType = plotType;
+      workspace.plots[i].axisPlotTypes[plot.yAxis] = plotType;
+
+      plots.push(workspace.plots[i]);
+    }
+  }
+
   plot.gatingActive = "";
   plot.yPlotType = plotType;
   plot.axisPlotTypes[plot.yAxis] = plotType;
-  WorkspaceDispatch.UpdatePlot(plot);
+  plots.push(plot);
+
+  // updating the plot
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const xAxisToHistogram = (plot: Plot) => {
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].yAxis = plot.xAxis;
+      workspace.plots[i].histogramAxis = "vertical";
+
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.gatingActive = "";
   plot.yAxis = plot.xAxis;
   plot.histogramAxis = "vertical";
-  WorkspaceDispatch.UpdatePlot(plot);
+  plots.push(plot);
+
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const setXAxis = (plot: Plot, xAxis: string) => {
   // setting up xAxis
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].xAxis = xAxis;
+      workspace.plots[i].xPlotType = workspace.plots[i].axisPlotTypes[xAxis];
+
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.gatingActive = "";
   plot.xAxis = xAxis;
   plot.xPlotType = plot.axisPlotTypes[xAxis];
+  plots.push(plot);
 
   // updating the plot
-  WorkspaceDispatch.UpdatePlot(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const setYAxis = (plot: Plot, yAxis: string) => {
   // setting up yAxis
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].yAxis = yAxis;
+      workspace.plots[i].yPlotType = workspace.plots[i].axisPlotTypes[yAxis];
+
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.gatingActive = "";
   plot.yAxis = yAxis;
   plot.yPlotType = plot.axisPlotTypes[yAxis];
+  plots.push(plot);
 
   // updating the plot
-  WorkspaceDispatch.UpdatePlot(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const setHistogramAxis = (
@@ -429,9 +637,36 @@ export const setHistogramAxis = (
 };
 
 export const disableHistogram = (plot: Plot) => {
+  const workspace = getWorkspace();
+  const plots: Plot[] = [];
+  if (
+    getFile(getPopulation(plot.population).file).id === workspace.selectedFile
+  ) {
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+
+    const index = workspace.plots.findIndex((plt) => plt.id === plot.id);
+    for (
+      let i = index;
+      i < workspace.plots.length;
+      i += selectedFilePlotLength
+    ) {
+      workspace.plots[i].gatingActive = "";
+      workspace.plots[i].histogramAxis = "";
+      plots.push(workspace.plots[i]);
+    }
+  }
   plot.gatingActive = "";
   plot.histogramAxis = "";
-  WorkspaceDispatch.UpdatePlot(plot);
+  plots.push(plot);
+  WorkspaceDispatch.UpdatePlots(plots);
 };
 
 export const getXAxisName = (plot: Plot) => {

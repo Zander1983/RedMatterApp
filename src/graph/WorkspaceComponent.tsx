@@ -40,6 +40,7 @@ import {
   WorkspaceEvent,
 } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
+import SideMenus from "./components/static/SideMenus";
 import XML from "xml-js";
 import { ParseFlowJoJson } from "services/FlowJoParser";
 import { Typography } from "antd";
@@ -151,6 +152,7 @@ const WorkspaceInnerComponent = (props: {
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
   const [initState, setInitState] = React.useState(true);
   const [isConnectivity, setConnectivity] = React.useState(true);
+  const [isReloadMessage, setReloadMessage] = React.useState("");
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -247,10 +249,14 @@ const WorkspaceInnerComponent = (props: {
             })
             .catch((err) => {
                 if(err.toString().indexOf("FILE-MISSING") === - 1) {
-                    setPlotCallNeeded(false);
-                    WorkspaceDispatch.DeleteNotification({id: eventNotificationId, message: null});
-                    eventDownloadNotification = null;
-                    snackbarService.showSnackbar("File downloading failed. due to retry completed", "error");
+                  setPlotCallNeeded(false);
+                  WorkspaceDispatch.DeleteNotification({id: eventNotificationId, message: null});
+                  eventDownloadNotification = null;
+                  snackbarService.showSnackbar("File downloading failed. due to retry completed", "error");
+                }else {
+                  WorkspaceDispatch.DeleteNotification({id: eventNotificationId, message: null});
+                  eventDownloadNotification = null;
+                  setReloadMessage("Your Action is Processing. please try after few later Or wait ");
                 }
             });
     }catch (e) {
@@ -264,11 +270,10 @@ const WorkspaceInnerComponent = (props: {
     if (!workspaceLoading) {
         setWorkspaceLoading(false);
       try {
-          let fileIds = workspace.files.map((file) => file.id);
-          if (fileIds.length > 0) {
-              downloadAllEvents(fileIds).then();
-          }
-          fileIds = null;
+        let fileIds = workspace.files.map((file) => file.id);
+        if (fileIds.length > 0) downloadAllEvents(fileIds).then();
+        fileIds = null;
+
       } catch (e) {
         setPlotCallNeeded(false);
         snackbarService.showSnackbar(
@@ -286,18 +291,20 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
+  useEffect(() => {
+    updateXarrow();
+  }, [workspace]);
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
-      if(!initState && plotCallNeeded && autosaveEnabled) {
-          const timer = setTimeout(async () => {
-              await saveWorkspace();
-          }, 1000);
-          updateXarrow();
-          return () => {
-              if (timer !== null) clearTimeout(timer);
-          };
-      }
-
+    if (!initState && plotCallNeeded && autosaveEnabled) {
+      const timer = setTimeout(async () => {
+        await saveWorkspace();
+      }, 1000);
+      updateXarrow();
+      return () => {
+        if (timer !== null) clearTimeout(timer);
+      };
+    }
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -429,9 +436,9 @@ const WorkspaceInnerComponent = (props: {
   };
 
   if (autosaveEnabled) {
-      if(!initState && plotCallNeeded) {
-          Debounce(() => saveWorkspace(), 5000)
-      }
+    if (!initState && plotCallNeeded) {
+      Debounce(() => saveWorkspace(), 5000);
+    }
   }
 
   return (
@@ -513,7 +520,7 @@ const WorkspaceInnerComponent = (props: {
       />
 
       {/* == STATIC ELEMENTS == */}
-      {/* <SideMenus workspace={workspace}></SideMenus> */}
+      <SideMenus workspace={workspace}></SideMenus>
       <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}
@@ -747,9 +754,15 @@ const WorkspaceInnerComponent = (props: {
                 >
                   {workspaceLoading && isConnectivity ? (
                     <CircularProgress />
+                  ) : isConnectivity ? (
+                    isReloadMessage ? isReloadMessage  : "Wait preparing......"
                   ) : (
-                    isConnectivity ? "Wait preparing......" : "Internet connection failed. Check your connection"
+                    "Internet connection failed. Check your connection"
                   )}
+                  {isReloadMessage && <a style={{marginLeft:'5px'}} onClick={(event) => {
+                    event.preventDefault();
+                    window.location.reload();
+                  }}>Reload...</a>}
                 </Grid>
               )}
             </Grid>

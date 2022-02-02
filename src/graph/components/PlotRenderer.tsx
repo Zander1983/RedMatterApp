@@ -309,7 +309,18 @@ const PlotRenderer = (props: {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
-
+  useEffect(() => {
+    if (plotter) {
+      setGating("polygon", true, scatterPlotter);
+      //@ts-ignore
+      setGating("polygon", false, scatterPlotter);
+      //@ts-ignore
+      setGating("histogram", true, histogramPlotter);
+      //@ts-ignore
+      setGating("histogram", false, histogramPlotter);
+    }
+    draw();
+  }, [plotter]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(draw, [props.plot, props.plotGates, props.population]);
   useEffect(() => {

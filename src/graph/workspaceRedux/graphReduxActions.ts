@@ -29,6 +29,7 @@ export const graphActions = {
   DELETE_GATE_ONLY: "workspace.DELETE_GATE_ONLY",
   DELETE_POPULATION: "workspace.DELETE_POPULATION",
   DELETE_PLOT: "workspace.DELETE_PLOT",
+  DELETE_PLOTS: "workspace.DELETE_PLOTS",
   DELETE_FILE: "workspace.DELETE_FILE",
   SET_WORKSPACE_SHARED: "workspace.SET_WORKSPACE_SHARED",
   ADD_NOTIFICATION: "workspace.ADD_NOTIFICATION",
@@ -38,6 +39,7 @@ export const graphActions = {
   ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
   DELETE_PLOTS_GATES_AND_POPULATIONS:
     "workspace.DELETE_PLOTS_GATES_AND_POPULATIONS",
+  CLEAR_OPEN_FILE: "workspace.CLEAR_OPEN_FILE",
 };
 
 export const initialState: Workspace = {
@@ -51,6 +53,7 @@ export const initialState: Workspace = {
   sharedWorkspace: false,
   editWorkspace: true,
   selectedFile: "",
+  clearOpenFiles: false,
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -88,7 +91,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.ADD_POPULATION:
       const newPop: Population = action.payload.population;
       if (state.populations.find((e) => e.id === newPop.id)) {
-       // console.error("[workspace.ADD_POPULATION] Population already in workspace");
+        // console.error("[workspace.ADD_POPULATION] Population already in workspace");
         return state;
       }
       return {
@@ -103,6 +106,15 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         plots: [...state.plots, ...plotArray],
         populations: [...state.populations, ...populationArray],
+      };
+
+    case graphActions.DELETE_PLOTS:
+      const delPlots: string[] = action.payload.plots;
+      state.plots = state.plots.filter((plot) => {
+        return !delPlots.includes(plot.id);
+      });
+      return {
+        ...state,
       };
 
     case graphActions.DELETE_PLOTS_GATES_AND_POPULATIONS:
@@ -224,7 +236,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
     case graphActions.UPDATE_GATE:
       const updateGate: Gate = action.payload.gate;
       if (!state.gates.find((e) => e.id === updateGate.id)) {
-       // console.error("[workspace.UPDATE_GATE] Gate does not exist");
+        // console.error("[workspace.UPDATE_GATE] Gate does not exist");
         return state;
       }
       state.gates = state.gates.map((e) => {
@@ -299,6 +311,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...state,
         sharedWorkspace: action.payload.sharedWorkspace,
+      };
+
+    case graphActions.CLEAR_OPEN_FILE:
+      return {
+        ...state,
+        clearOpenFiles: !state.clearOpenFiles,
       };
     case graphActions.SET_EDIT_WORKSPACE:
       return {
