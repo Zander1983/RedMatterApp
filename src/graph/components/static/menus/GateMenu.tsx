@@ -211,7 +211,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
           <TableBody>
             {props.gates.map((gate) => (
               <TableRow key={gate.id}>
-                <TableCell>
+                {/* <TableCell>
                   <Button
                     style={{
                       display: "inline-block",
@@ -223,7 +223,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
                   >
                     <Delete></Delete>
                   </Button>
-                </TableCell>
+                </TableCell> */}
                 {/* <TableCell>
                 <Button
                   style={{
@@ -236,7 +236,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
                   <FileCopy></FileCopy>
                 </Button>
               </TableCell> */}
-                {workspace.files.length > 1 ? (
+                {/* {workspace.files.length > 1 ? (
                   <TableCell>
                     <Button
                       style={{
@@ -253,7 +253,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
                       Apply to files
                     </Button>
                   </TableCell>
-                ) : null}
+                ) : null} */}
                 <TableCell>
                   <TextField
                     value={gate.name}

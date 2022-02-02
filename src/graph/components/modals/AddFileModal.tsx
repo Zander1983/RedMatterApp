@@ -374,6 +374,9 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+                              setTimeout(() => {
+                                props.closeCall.f(props.closeCall.ref);
+                              }, 400);
                             }}
                           >
                             {isDownloading ? (
@@ -409,6 +412,9 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+                              setTimeout(() => {
+                                props.closeCall.f(props.closeCall.ref);
+                              }, 400);
                             }}
                             disabled={isDownloading}
                           >
