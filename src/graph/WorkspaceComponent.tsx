@@ -256,7 +256,7 @@ const WorkspaceInnerComponent = (props: {
                 }else {
                   WorkspaceDispatch.DeleteNotification({id: eventNotificationId, message: null});
                   eventDownloadNotification = null;
-                  setReloadMessage("Your Action is Processing. please try after few later Or wait ");
+                  setReloadMessage("Your Action is Processing. please try after few later. Or wait ");
                 }
             });
     }catch (e) {
@@ -759,10 +759,10 @@ const WorkspaceInnerComponent = (props: {
                   ) : (
                     "Internet connection failed. Check your connection"
                   )}
-                  {isReloadMessage && <a style={{marginLeft:'5px'}} onClick={(event) => {
+                  {isReloadMessage && <a style={{marginLeft:'5px', cursor: 'pointer'}} onClick={(event) => {
                     event.preventDefault();
                     window.location.reload();
-                  }}>Reload...</a>}
+                  }}>Retry again...</a>}
                 </Grid>
               )}
             </Grid>
