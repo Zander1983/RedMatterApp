@@ -17,4 +17,4 @@ npm-debug.log
 build
 tslint
 .DS_Store
-debug
+debug.*
