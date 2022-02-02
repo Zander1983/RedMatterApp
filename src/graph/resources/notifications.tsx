@@ -59,8 +59,8 @@ export class Notification {
   id: string;
   message: string;
 
-  constructor(message: string, timeout?: number) {
-    const id = createID();
+  constructor(message: string, nid?: string, timeout?: number) {
+    const id = nid ?  nid :  createID();
     WorkspaceDispatch.AddNotification({
       id,
       message,
@@ -72,9 +72,9 @@ export class Notification {
     }
   }
 
-  killNotification() {
+  killNotification(nid?: string) {
     WorkspaceDispatch.DeleteNotification({
-      id: this.id,
+      id: this.id || nid,
       message: this.message,
     });
   }
