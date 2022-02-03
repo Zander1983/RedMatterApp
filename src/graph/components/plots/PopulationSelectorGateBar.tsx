@@ -37,6 +37,7 @@ const PopulationSelectorGateBar = React.memo(
     const population = getPopulation(plot.population);
     const populationGates = props.populationGates;
     const plotGates = props.plotGates;
+    const workspace = getWorkspace();
 
     const gateInPopulation = (gateId: GateID) => {
       return !!populationGates.find((e) => e.gate.id === gateId);
@@ -56,7 +57,6 @@ const PopulationSelectorGateBar = React.memo(
     };
 
     const setPopulation = (populationId: PopulationID | null) => {
-      const workspace = getWorkspace();
       if (populationId == null) {
         populationId = allPopulations.find(
           (x) => x.file == props.file && x.gates.length == 0
@@ -96,6 +96,7 @@ const PopulationSelectorGateBar = React.memo(
       }
       WorkspaceDispatch.UpdatePlots(plots);
     };
+
     return (
       <span
         style={{
@@ -110,34 +111,81 @@ const PopulationSelectorGateBar = React.memo(
             </React.Fragment>
           }
         >
-          <Select
-            disabled={!props.editWorkspace}
-            style={{
-              width: "100%",
-            }}
-            value={populationGates.length > 0 ? populationGates[0].gate.id : ""}
-            displayEmpty={true}
-            renderValue={(value: unknown) => {
-              //@ts-ignore
-              return value === null ? "All" : getGate(value)?.name;
-            }}
-            onChange={(e) => {
-              //@ts-ignore
-              setPopulation(e.target.value);
-            }}
-          >
-            <MenuItem value={null}>All</MenuItem>
-            {allPopulations
-              .filter((e) => e.file == props.file)
-              .map((e) => {
-                return (
-                  <MenuItem value={e.id} key={e.id}>
-                    {e.name}
-                    {e.label}
-                  </MenuItem>
-                );
-              })}
-          </Select>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                height: 15,
+                width: 15,
+                backgroundColor:
+                  populationGates.length > 0
+                    ? workspace.gates.find(
+                        (gate) => gate.id === populationGates[0].gate.id
+                      ).color
+                    : "#333",
+                marginRight: 5,
+              }}
+            ></div>
+
+            <Select
+              disabled={!props.editWorkspace}
+              style={{
+                width: "100%",
+              }}
+              value={
+                populationGates.length > 0 ? populationGates[0].gate.id : null
+              }
+              displayEmpty={true}
+              renderValue={(value: unknown) => {
+                //@ts-ignore
+                return value === null ? "All" : getGate(value)?.name;
+              }}
+              onChange={(e) => {
+                //@ts-ignore
+                setPopulation(e.target.value);
+              }}
+            >
+              <MenuItem value={null}>
+                <div
+                  style={{
+                    height: 15,
+                    width: 15,
+                    backgroundColor: "#333",
+                    marginRight: 5,
+                  }}
+                ></div>
+                All
+              </MenuItem>
+              {allPopulations
+                .filter((e) => e.file == props.file)
+                .map((e) => {
+                  const gateId =
+                    (e.gates.length > 0 && e.gates && e.gates[0].gate) ||
+                    undefined;
+                  const color =
+                    (gateId &&
+                      workspace.gates.find((gate) => gate.id === gateId)
+                        .color) ||
+                    undefined;
+
+                  return (
+                    <MenuItem value={e.id} key={e.id}>
+                      {color && (
+                        <div
+                          style={{
+                            height: 15,
+                            width: 15,
+                            backgroundColor: color || "#333",
+                            marginRight: 5,
+                          }}
+                        ></div>
+                      )}
+                      {e.name}
+                      {e.label}
+                    </MenuItem>
+                  );
+                })}
+            </Select>
+          </div>
         </Tooltip>
       </span>
     );
