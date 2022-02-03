@@ -58,8 +58,15 @@ const useStyles = makeStyles((theme) => ({
     padding: "5px !important",
   },
   view: {
-    textDecoration: "underline",
+    border: "none",
     cursor: "pointer",
+    color: "white",
+    fontWeight: 500,
+    padding: "2px 5px",
+    background: "#333333",
+    minWidth: 90,
+    margin: "0px 8px",
+    borderRadius: 5,
   },
   arrow: {
     height: 15,
@@ -574,9 +581,9 @@ const PlotTable = ({
                           }
                         }}
                       >
-                        <span className={classes.view}>
-                          {openFiles.includes(file.id) ? "Close" : "View"}
-                        </span>
+                        <button className={classes.view}>
+                          {openFiles.includes(file.id) ? "Close" : "View Plots"}
+                        </button>
                       </TableCell>
                     )
                   )}
