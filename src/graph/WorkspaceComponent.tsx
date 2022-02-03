@@ -51,6 +51,7 @@ import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
+let updateTimeout: any = null;
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -115,7 +116,6 @@ const WorkspaceInnerComponent = (props: {
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
-
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
@@ -150,10 +150,10 @@ const WorkspaceInnerComponent = (props: {
   );
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [lastSavedTime, setLastSavedTime] = React.useState(null);
-
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
   const [initState, setInitState] = React.useState(true);
   const [isConnectivity, setConnectivity] = React.useState(true);
+  const [isReloadMessage, setReloadMessage] = React.useState("");
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -168,7 +168,6 @@ const WorkspaceInnerComponent = (props: {
       if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
       WorkspaceDispatch.SetWorkspaceShared(props.shared);
       setSharedWorkspace(props.shared);
-      setAutosaveEnabled(false);
       try {
         await initializeWorkspace(props.shared, props.experimentId);
       } catch (e) {
@@ -182,6 +181,22 @@ const WorkspaceInnerComponent = (props: {
       };
     })();
   }, []);
+
+  useEffect(() => {
+    updateArrows();
+  }, [workspace]);
+
+  const updateArrows = () => {
+    if (!workspaceLoading) {
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+
+      updateTimeout = setTimeout(() => {
+        updateXarrow();
+      }, 1000);
+    }
+  };
 
   const handleError = async (error: any) => {
     if (
@@ -225,6 +240,8 @@ const WorkspaceInnerComponent = (props: {
     }
   };
 
+  let eventDownloadNotification: Notification = null;
+
   const downloadAllEvents = async (
     fileIds: any[],
     isInitTime: boolean = false
@@ -232,20 +249,58 @@ const WorkspaceInnerComponent = (props: {
     if (isInitTime && setPlotCallNeeded) return;
     setPlotCallNeeded(false);
     setAutosaveEnabled(false);
-    dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
-      .then((result) => {
-        if (result?.length > 0) {
-          setPlotCallNeeded(true);
-        }
-      })
-      .catch((err) => {
-        setPlotCallNeeded(false);
-        setAutosaveEnabled(false);
-        snackbarService.showSnackbar(
-          "File downloading failed. due to retry completed",
-          "error"
-        );
+    const eventNotificationId: string = "nid-12000";
+    const hasIndex = workspace.notifications.findIndex(
+      (notfication) => notfication.id === eventNotificationId
+    );
+    if (eventDownloadNotification == null && hasIndex === -1)
+      eventDownloadNotification = new Notification(
+        "Downloading files",
+        eventNotificationId
+      );
+    try {
+      dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds)
+        .then((result) => {
+          if (result?.length > 0) {
+            snackbarService.showSnackbar("Downloaded Successfully", "success");
+            setPlotCallNeeded(true);
+          }
+          WorkspaceDispatch.DeleteNotification({
+            id: eventNotificationId,
+            message: null,
+          });
+          eventDownloadNotification = null;
+        })
+        .catch((err) => {
+          if (err.toString().indexOf("FILE-MISSING") === -1) {
+            setPlotCallNeeded(false);
+            WorkspaceDispatch.DeleteNotification({
+              id: eventNotificationId,
+              message: null,
+            });
+            eventDownloadNotification = null;
+            snackbarService.showSnackbar(
+              "File downloading failed. due to retry completed",
+              "error"
+            );
+          } else {
+            WorkspaceDispatch.DeleteNotification({
+              id: eventNotificationId,
+              message: null,
+            });
+            eventDownloadNotification = null;
+            setReloadMessage(
+              "Your Action is Processing. please try after few later Or wait "
+            );
+          }
+        });
+    } catch (e) {
+      WorkspaceDispatch.DeleteNotification({
+        id: eventNotificationId,
+        message: null,
       });
+      eventDownloadNotification = null;
+    }
   };
 
   // Loading the files on creating the experiment
@@ -273,20 +328,18 @@ const WorkspaceInnerComponent = (props: {
     }
   }, [workspace.editWorkspace]);
 
-  useEffect(() => {
-    updateXarrow();
-  }, [workspace]);
   // saves the workSpace when a new plot is added or deleted
   useEffect(() => {
     if (!initState && plotCallNeeded && autosaveEnabled) {
       const timer = setTimeout(async () => {
         await saveWorkspace();
       }, 1000);
-      updateXarrow();
+
       return () => {
         if (timer !== null) clearTimeout(timer);
       };
     }
+    updateXarrow();
   }, [workspace.plots.length]);
 
   const initializeWorkspace = async (shared: boolean, experimentId: string) => {
@@ -306,8 +359,8 @@ const WorkspaceInnerComponent = (props: {
     if (!loadStatus.loaded && shared) {
     }
 
-    setAutosaveEnabled(!shared);
-    notification.killNotification();
+    //setAutosaveEnabled(!shared);
+    if (notification !== null) notification.killNotification();
     setWorkspaceLoading(false);
     await downloadFileMetadata(shared, experimentId);
     setInitState(false);
@@ -718,7 +771,10 @@ const WorkspaceInnerComponent = (props: {
                   workspace={workspace}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
-                  arrowFunc={updateXarrow}
+                  arrowFunc={() => {
+                    updateArrows();
+                    updateXarrow();
+                  }}
                 />
               ) : (
                 <Grid
@@ -737,9 +793,24 @@ const WorkspaceInnerComponent = (props: {
                   {workspaceLoading && isConnectivity ? (
                     <CircularProgress />
                   ) : isConnectivity ? (
-                    "Wait preparing......"
+                    isReloadMessage ? (
+                      isReloadMessage
+                    ) : (
+                      "Wait preparing......"
+                    )
                   ) : (
                     "Internet connection failed. Check your connection"
+                  )}
+                  {isReloadMessage && (
+                    <a
+                      style={{ marginLeft: "5px" }}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        window.location.reload();
+                      }}
+                    >
+                      Reload...
+                    </a>
                   )}
                 </Grid>
               )}
