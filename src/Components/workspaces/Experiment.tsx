@@ -28,6 +28,7 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
 import { useDispatch } from "react-redux";
+import {createButtonDisable} from "./UserAuthorizationRules";
 
 const styles = {
   input: {
@@ -98,12 +99,9 @@ const Experiment = (props: any) => {
 
   useEffect(() => {
     if (
-      fileTempIdMap &&
-      Object.keys(fileTempIdMap).length > 0 &&
-      uploadingFiles.length > 0
+      fileTempIdMap && Object.keys(fileTempIdMap).length > 0 && uploadingFiles.length > 0
     ) {
-      let keys = Object.keys(fileTempIdMap)
-        .map((x) => {
+      let keys = Object.keys(fileTempIdMap).map((x) => {
           if (fileTempIdMap[x]) {
             delete fileTempIdMap[x];
             return x;
@@ -136,8 +134,8 @@ const Experiment = (props: any) => {
             delete fileTempIdMap[key];
           }
         }
-
         setExperimentData(e.data);
+        setExperiment(e.data?.experimentDetails);
         let sizeSum = 0;
         for (const file of e.data.files) {
           sizeSum += file.fileSize;
@@ -152,6 +150,27 @@ const Experiment = (props: any) => {
           );
         userManager.logout();
       });
+  };
+
+  const reload = async () => {
+    try {
+      const fetchExperiments = ExperimentFilesApiFetchParamCreator({
+        accessToken: userManager.getToken(),
+      }).experimentFiles(userManager.getOrganiztionID(), props.id, userManager.getToken());
+
+      const response = await  axios.get(fetchExperiments.url, fetchExperiments.options);
+
+      if (response?.status) {
+        sessionStorage.setItem("experimentFiles", JSON.stringify({files: response.data}));
+        sessionStorage.setItem("activeOrg", props.id);
+        setExperimentData(response?.data);
+        setExperiment(response?.data?.experimentDetails);
+      } else {
+        await handleError({"message": "Information missing", saverity: "error"});
+      }
+    } catch (err) {
+      await handleError(err);
+    }
   };
 
   const updateExperimentName = (snack = true) => {
@@ -175,27 +194,28 @@ const Experiment = (props: any) => {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getExperiment = () => {
-    const experimentApiObj = ExperimentApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).getExperiment(userManager.getToken(), props.id);
-    axios
-      .post(
-        experimentApiObj.url,
-        {
-          experimentId: props.id,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      )
-      .then((e) => {
-        setExperiment(e.data);
-      })
-      .catch((e) => {});
-  };
+  // const getExperiment = () => {
+  //   const experimentApiObj = ExperimentApiFetchParamCreator({
+  //     accessToken: userManager.getToken(),
+  //   }).getExperiment(userManager.getToken(), props.id);
+  //   axios
+  //     .post(
+  //       experimentApiObj.url,
+  //       {
+  //         experimentId: props.id,
+  //       },
+  //       {
+  //         headers: {
+  //           token: userManager.getToken(),
+  //         },
+  //       }
+  //     )
+  //     .then((e) => {
+  //       console.log(e);
+  //       setExperiment(e.data);
+  //     })
+  //     .catch((e) => {});
+  // };
 
   function setContaineSet(superSet: Set<any>, set: Set<any>) {
     //@ts-ignore
@@ -340,8 +360,25 @@ const Experiment = (props: any) => {
   // };
 
   useEffect(() => {
-    fetchExperimentData();
-    getExperiment();
+    const activeOrg:string = sessionStorage.getItem("activeOrg");
+    if (activeOrg && activeOrg === props.id) {
+      const cacheData = sessionStorage.getItem("experimentFiles");
+      if (cacheData) {
+        const expFileInfo:any = JSON.parse(cacheData);
+        setExperimentData(expFileInfo?.files);
+        setExperiment(expFileInfo?.files?.experimentDetails);
+      } else {
+        (async () =>{
+          await reload()
+        })();
+      }
+    } else {
+      (async () =>{
+        await reload();
+      })();
+    }
+   // fetchExperimentData();
+    // getExperiment();
     //eslint-disable-next-line
   }, []);
 
@@ -485,6 +522,7 @@ const Experiment = (props: any) => {
     axios
       .put(updatFileName.url, { label }, updatFileName.options)
       .then((e) => {
+
         fetchExperimentData();
       })
       .catch((e) =>
