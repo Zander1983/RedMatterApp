@@ -5,6 +5,7 @@ import {
   Select,
   CircularProgress,
   FormControl,
+  Tooltip,
 } from "@material-ui/core";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import {
@@ -57,6 +58,7 @@ function PlotComponent(props: {
   const [, setHistogramOverlayOpen] = React.useState(false);
   const [currentXIndex, setCurrentXIndex] = useState<number>(0);
   const [currentYIndex, setCurrentYIndex] = useState<number>(0);
+  const [showTooltip, setShowTooltip] = useState<string>("Value");
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     axis === "x"
@@ -192,7 +194,6 @@ function PlotComponent(props: {
     }
     return "#fff";
   };
-
   return (
     <div
       className="plot-canvas"
@@ -213,46 +214,62 @@ function PlotComponent(props: {
           display: "flex",
         }}
       >
-        <Select
-          disabled={!props.editWorkspace}
-          style={{
-            width: 80,
-            marginRight: 15,
-            flex: "1 1 auto",
-          }}
-          onChange={(e) => {
-            if (e.target.value === "hist") {
-              setHistogram(!isPlotHistogram());
-            } else {
-              if (isPlotHistogram()) setHistogram(false);
-              //@ts-ignore
-              const value: string = e.target.value;
-              const index = labels.findIndex((ele) => ele === value);
-              setCurrentYIndex(index);
-              setAxis("y", axes[index]);
-            }
-          }}
-          value={
-            isPlotHistogram()
-              ? "hist"
-              : labels !== null && typeof labels[currentYIndex] !== "undefined"
-              ? labels[currentYIndex]
-              : plot.yAxis
+        <Tooltip
+          title={
+            showTooltip.length > 0
+              ? isPlotHistogram()
+                ? "hist"
+                : labels !== null &&
+                  typeof labels[currentYIndex] !== "undefined"
+                ? labels[currentYIndex]
+                : plot.yAxis
+              : showTooltip
           }
         >
-          {labels &&
-            labels.length &&
-            labels.map((e, index) => <MenuItem value={e}>{e}</MenuItem>)}
-          <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
-          <MenuItem
-            value={"hist"}
+          <Select
+            disabled={!props.editWorkspace}
             style={{
-              backgroundColor: isPlotHistogram() ? "#ddf" : "#fff",
+              width: 80,
+              marginRight: 15,
+              flex: "1 1 auto",
             }}
+            onOpen={() => setShowTooltip("")}
+            onClose={() => setShowTooltip("value")}
+            onChange={(e) => {
+              if (e.target.value === "hist") {
+                setHistogram(!isPlotHistogram());
+              } else {
+                if (isPlotHistogram()) setHistogram(false);
+                //@ts-ignore
+                const value: string = e.target.value;
+                const index = labels.findIndex((ele) => ele === value);
+                setCurrentYIndex(index);
+                setAxis("y", axes[index]);
+              }
+            }}
+            value={
+              isPlotHistogram()
+                ? "hist"
+                : labels !== null &&
+                  typeof labels[currentYIndex] !== "undefined"
+                ? labels[currentYIndex]
+                : plot.yAxis
+            }
           >
-            Histogram
-          </MenuItem>
-        </Select>
+            {labels &&
+              labels.length &&
+              labels.map((e, index) => <MenuItem value={e}>{e}</MenuItem>)}
+            <Divider style={{ marginTop: 0, marginBottom: 5 }}></Divider>
+            <MenuItem
+              value={"hist"}
+              style={{
+                backgroundColor: isPlotHistogram() ? "#ddf" : "#fff",
+              }}
+            >
+              Histogram
+            </MenuItem>
+          </Select>
+        </Tooltip>
         <Select
           disabled={!props.editWorkspace}
           style={{
@@ -337,11 +354,20 @@ function PlotComponent(props: {
             justifyContent: "space-between",
           }}
         >
-          <div>{/* Space between so that selectors are centralized */}</div>
+          {/* <div>Space between so that selectors are centralized</div> */}
 
-          <div>
-            {labels && labels.length && (
-              <>
+          {/* <div> */}
+          {labels && labels.length && (
+            <>
+              <Tooltip
+                title={
+                  showTooltip.length > 0
+                    ? labels[currentXIndex] !== null
+                      ? labels[currentXIndex]
+                      : plot.xAxis
+                    : showTooltip
+                }
+              >
                 <Select
                   disabled={!props.editWorkspace}
                   style={{
@@ -349,6 +375,8 @@ function PlotComponent(props: {
                     marginTop: "10px",
                     flex: "1 1 auto",
                   }}
+                  onOpen={() => setShowTooltip("")}
+                  onClose={() => setShowTooltip("value")}
                   onChange={(e) => {
                     //@ts-ignore
                     const value: string = e.target.value;
@@ -364,29 +392,31 @@ function PlotComponent(props: {
                 >
                   {labels &&
                     labels.length &&
-                    labels.map((e) => <MenuItem value={e}>{e} </MenuItem>)}
+                    labels.map((e) => <MenuItem value={e}>{e}</MenuItem>)}
                 </Select>
+              </Tooltip>
 
-                <Select
-                  disabled={!props.editWorkspace}
-                  style={{
-                    width: 100,
-                    marginTop: "10px",
-                    marginLeft: 10,
-                    flex: "1 1 auto",
-                  }}
-                  value={plot.xPlotType === "" ? "" : plot.xPlotType}
-                  //@ts-ignore
-                  onChange={(e) => setPlotType("x", e.target.value)}
-                >
-                  <MenuItem value={"lin"}>Linear</MenuItem>
-                  <MenuItem value={"bi"}>Logicle</MenuItem>
-                </Select>
-              </>
-            )}
-          </div>
+              <Select
+                disabled={!props.editWorkspace}
+                style={{
+                  width: 100,
+                  marginTop: "10px",
+                  marginLeft: 10,
+                  flex: "1 1 auto",
+                }}
+                value={plot.xPlotType === "" ? "" : plot.xPlotType}
+                //@ts-ignore
+                onChange={(e) => setPlotType("x", e.target.value)}
+              >
+                <MenuItem value={"lin"}>Linear</MenuItem>
+                <MenuItem value={"bi"}>Logicle</MenuItem>
+              </Select>
+            </>
+          )}
+          {/* </div> */}
 
-          <div style={{ paddingRight: 6, marginTop: -5 }}>
+          {/* Code for Histogram Overlays */}
+          {/* <div style={{ paddingRight: 6, marginTop: -5 }}>
             {isPlotHistogram() && workspaceFiles.length > 1 ? (
               <FormControl fullWidth style={{}}>
                 <div style={{ marginTop: 20 }}>
@@ -452,7 +482,7 @@ function PlotComponent(props: {
                 </Select>
               </FormControl>
             ) : null}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

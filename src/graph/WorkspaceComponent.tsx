@@ -633,7 +633,7 @@ const WorkspaceInnerComponent = (props: {
                       >
                         Plot sample
                       </Button>
-                      <Button
+                      {/* <Button
                         disabled={!plotCallNeeded}
                         variant="contained"
                         size="small"
@@ -661,7 +661,7 @@ const WorkspaceInnerComponent = (props: {
                           }}
                         />
                         Import FlowJo (experimental)
-                      </Button>
+                      </Button> */}
 
                       <Button
                         disabled={!plotCallNeeded}
