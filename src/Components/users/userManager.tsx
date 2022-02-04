@@ -55,17 +55,26 @@ class UserManager {
     return ret;
   }
 
-  logout() {
+  isAuthenticated(): boolean {
+    if (sessionStorage.getItem("cache_version") || sessionStorage.getItem("profileInfo"))
+      return (sessionStorage.getItem("profileInfo") && JSON.parse(sessionStorage.getItem("profileInfo")).token);
+  }
+
+ logout() {
     store.dispatch({
       type: "LOGOUT",
     });
   }
 
-  getToken() {
+  getToken(): string {
     if (!this.isLoggedIn()) {
       this.fail();
     }
     return this.state.user.profile.token;
+  }
+
+  getAccessToken(): string {
+    return JSON.parse(sessionStorage.getItem("profileInfo")).token;
   }
 
   getRefreshToken() {
@@ -128,10 +137,7 @@ class UserManager {
   }
 
   fail() {
-    snackbarService.showSnackbar(
-      "Session token expired, please login again",
-      "warning"
-    );
+    snackbarService.showSnackbar("Session token expired, please login again", "warning");
     this.logout();
     setTimeout(() => {
       window.location.href = "/login";
