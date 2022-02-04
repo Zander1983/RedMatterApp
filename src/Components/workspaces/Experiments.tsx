@@ -50,14 +50,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
   const [organizationExperiments, setExperiments] = useState([]);
   const [privateExperiments, setPrivateExperiments] = useState([]);
-  const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    useState<boolean>(false);
-  const [createExperimentModal, setCreateExperimentModal] =
-    useState<boolean>(false);
-  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    useState<boolean>(true);
-  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
-    useState<boolean>(false);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] = useState<boolean>(false);
+  const [createExperimentModal, setCreateExperimentModal] = useState<boolean>(false);
+  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] = useState<boolean>(true);
+  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] = useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const [oldExperiments, setOldExperiments] = useState([]);
@@ -124,13 +120,114 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     func(false);
   };
 
+  const handleError = async (error: any) => {
+        if (
+            error?.name === "Error" ||
+            error?.message.toString() === "Network Error"
+        ) {
+            showMessageBox({
+                message: "Connectivity Problem, please check your internet connection",
+                saverity: "error",
+            });
+        } else if (error?.response) {
+            if (error.response?.status == 401 || error.response.status == 419) {
+                setTimeout(() => {
+                    userManager.logout();
+                    history.replace("/login");
+                }, 3000);
+                showMessageBox({
+                    message: "Authentication Failed Or Session Time out",
+                    saverity: "error",
+                });
+            }
+        } else {
+            showMessageBox({
+                message: error?.message || "Request Failed. May be Time out",
+                saverity: error.saverity || "error",
+            });
+        }
+    };
+
+  const showMessageBox = (response: any) => {
+        switch (response.saverity) {
+            case "error":
+                snackbarService.showSnackbar(response?.message, "error");
+                break;
+            case "success":
+                snackbarService.showSnackbar(response?.message, "success");
+                break;
+            default:
+                break;
+        }
+    };
+
+  const reload = async () => {
+        try {
+            const fetchArgs = ExperimentApiFetchParamCreator({accessToken: userManager.getToken(),
+                }).getAllExperiments(userManager.getOrganiztionID(), userManager.getToken());
+            const response = await axios.get(fetchArgs.url, fetchArgs.options);
+
+            if (response?.status) {
+                sessionStorage.setItem("experimentData", JSON.stringify({experiments:response.data}));
+                sessionStorage.setItem("e_cache_version", ""+1);
+                setExperiments(response?.data?.organisationExperiments);
+                setPrivateExperiments(response?.data?.userExperiments);
+                setOldExperiments(response?.data?.oldExperiments);
+                setFetchExperimentsComplete(true);
+                setDisabled(createButtonDisable(
+                    response?.data?.userExperiments.length,
+                    rules?.experiment?.unLimitedPublic,
+                    rules?.experiment?.number
+                    )
+                );
+                const currentVersion = +sessionStorage.getItem("e_cache_version");
+                sessionStorage.setItem("e_cache_version", "" + (currentVersion + 1));
+            } else {
+                await handleError({"message":"Information Missing", saverity:"error"});
+            }
+        } catch (err) {
+            await handleError(err);
+        }
+    };
+
+
   React.useEffect(() => {
-    isAdmin ? fetchAllExperiments() : fetchExperiments();
-    if (props.backFromQuestions) {
-      snackbarService.showSnackbar("Experiment created", "success");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+        if (sessionStorage.getItem("e_cache_version")) {
+            const cacheData = sessionStorage.getItem("experimentData");
+            if (cacheData) {
+                const profileInfo:any = JSON.parse(cacheData);
+                setExperiments(profileInfo?.experiments?.organisationExperiments);
+                setPrivateExperiments(profileInfo?.experiments?.userExperiments);
+                setOldExperiments(profileInfo?.experiments?.oldExperiments);
+                setFetchExperimentsComplete(true);
+                setDisabled(
+                    createButtonDisable(
+                        profileInfo?.experiments?.userExperiments.length,
+                        rules?.experiment?.unLimitedPublic,
+                        rules?.experiment?.number
+                    )
+                );
+                const currentVersion = +sessionStorage.getItem("e_cache_version");
+                sessionStorage.setItem("e_cache_version", "" + (currentVersion + 1));
+            } else {
+                (async () =>{
+                    await reload()
+                })();
+            }
+        } else {
+            (async () =>{
+                await reload();
+            })();
+        }
+    }, []);
+
+  // React.useEffect(() => {
+  //   isAdmin ? fetchAllExperiments() : fetchExperiments();
+  //   if (props.backFromQuestions) {
+  //     snackbarService.showSnackbar("Experiment created", "success");
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   React.useEffect(() => {
     setExperimentsToBeDisplayed();
