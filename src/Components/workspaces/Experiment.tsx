@@ -28,8 +28,7 @@ import useGAEventTrackers from "hooks/useGAEvents";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
-import {useDispatch, useSelector} from "react-redux";
-import {Workspace as WorkspaceType} from "../../graph/resources/types";
+import {useDispatch} from "react-redux";
 
 const styles = {
   input: {
@@ -161,7 +160,6 @@ const Experiment = (props: any) => {
       const response = await  axios.get(fetchExperiments.url, fetchExperiments.options);
 
       if (response?.status) {
-          //WorkspaceDispatch.SetFiles(response.data);
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
         setTimeout(() => {
