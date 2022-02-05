@@ -30,7 +30,7 @@ import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
 import {useDispatch, useSelector} from "react-redux";
 import {Workspace as WorkspaceType} from "../../graph/resources/types";
-import WorkspaceDispatch from "../../graph/workspaceRedux/workspaceDispatchers";
+
 const styles = {
   input: {
     color: "white",
@@ -46,10 +46,7 @@ const styles = {
 const fileTempIdMap: any = {};
 
 const Experiment = (props: any) => {
-   let data:any = null;
   const dispatch = useDispatch();
-    //@ts-ignore
-  const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [editingFileName, setEditingFileName] = useState<null | string>(null);
