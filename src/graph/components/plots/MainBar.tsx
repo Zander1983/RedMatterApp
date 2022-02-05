@@ -132,7 +132,20 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   const workspace = getWorkspace();
 
   const deletePlot = () => {
-    deleteSpecificPlotsFromAllFiles(props.plot);
+    let selectedFilePlotLength = 0;
+    workspace.plots.map((plot) => {
+      if (
+        getFile(getPopulation(plot.population).file).id ===
+        workspace.selectedFile
+      ) {
+        selectedFilePlotLength += 1;
+      }
+    });
+    if (selectedFilePlotLength === 1) {
+      WorkspaceDispatch.ResetWorkspaceExceptFiles();
+    } else {
+      deleteSpecificPlotsFromAllFiles(props.plot);
+    }
   };
 
   const handleClose = (func: Function) => {
