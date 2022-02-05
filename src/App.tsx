@@ -245,33 +245,36 @@ const App = () => {
   }, [profile, dispatch]);
 
   useMemo(() => {
-    setLoading(true);
-    if (userManager.isLoggedIn() && userManager.getToken()) {
-      axios
-        .get("/api/getuserdetails", {
-          headers: {
-            token: userManager.getToken(),
-          },
-        })
-        .then((response) => {
-          let userDetails = response.data;
-          dispatch({
-            type: "UPDATE_SUBSCRIPTION_DETAILS",
-            payload: {
-              rules: userDetails?.rules,
-              subscriptionDetails:
-                userDetails?.userDetails?.subscriptionDetails,
-              subscriptionType: userDetails?.userDetails?.subscriptionType,
-            },
-          });
-          setLoading(false);
-        })
-        .catch((e) => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    setLoading(false);
+    // if (userManager.isLoggedIn() && userManager.getToken()) {
+    //   userManager.logout();
+    //   sessionCheckStarted = false;
+    //   history.replace("/login");
+    //   setLoading(false);
+    //   // axios.get("/api/getuserdetails", {
+    //   //     headers: {
+    //   //       token: userManager.getAccessToken(),
+    //   //     },
+    //   //   })
+    //   //   .then((response) => {
+    //   //     let userDetails = response.data;
+    //   //
+    //   //     dispatch({
+    //   //       type: "UPDATE_SUBSCRIPTION_DETAILS",
+    //   //       payload: {
+    //   //         rules: userDetails?.rules,
+    //   //         subscriptionDetails: userDetails?.userDetails?.subscriptionDetails,
+    //   //         subscriptionType: userDetails?.userDetails?.subscriptionType,
+    //   //       },
+    //   //     });
+    //   //     setLoading(false);
+    //   //   })
+    //   //   .catch((e) => {
+    //   //     setLoading(false);
+    //   //   });
+    // } else {
+    //   setLoading(false);
+    // }
   }, [dispatch]);
 
   useEffect(() => {

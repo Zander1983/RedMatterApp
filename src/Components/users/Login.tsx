@@ -12,7 +12,7 @@ import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 import useGAEventTrackers from "hooks/useGAEvents";
 
 import userManager from "./../users/userManager";
-
+import SecurityUtil from '../../utils/Security.js';
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -97,12 +97,19 @@ const Login = (props: any) => {
     isUserLoggedin && window.location.replace("/");
   }, []);
 
+  const enableCache = async (items:any) => {
+    sessionStorage.setItem("experimentData", SecurityUtil.encryptData(items, process.env.REACT_APP_DATA_SECRET_SOLD));
+    sessionStorage.setItem("e_cache_version", "1");
+  };
+
   const eventStacker = useGAEventTrackers("LogIn");
+
   const handleChange = (event: any) => {
     setFormData((prevData: any) => {
       return { ...prevData, [event.target.name]: event.target.value };
     });
   };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -113,7 +120,6 @@ const Login = (props: any) => {
           token: res.data.token,
         },
       });
-
       setLoading(false);
       const loginData = {
         subscriptionType: userDetails.data?.userDetails?.subscriptionType,
@@ -126,16 +132,9 @@ const Login = (props: any) => {
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
       };
-
-      dispatch({
-        type: "LOGIN",
-        payload: { user: { profile: loginData } },
-      });
-
-      eventStacker(
-        "A user has LoggedIn",
-        `User's subscription type is ${loginData.subscriptionType}.`
-      );
+      dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
+      await enableCache({experiments: userDetails.data?.data});
+      eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
         props.history.push("/analyse");
