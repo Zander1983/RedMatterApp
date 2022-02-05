@@ -39,7 +39,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
+
   const isAdmin = userManager.getUserAdminStatus();
+
   const gettingOrganizationId = () => {
     try {
       return userManager.getOrganiztionID();

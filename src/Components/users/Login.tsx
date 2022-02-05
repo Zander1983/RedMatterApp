@@ -12,7 +12,7 @@ import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 import useGAEventTrackers from "hooks/useGAEvents";
 
 import userManager from "./../users/userManager";
-
+import SecurityUtil from '../../utils/Security.js';
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -98,7 +98,7 @@ const Login = (props: any) => {
   }, []);
 
   const enableCache = async (items:any) => {
-    sessionStorage.setItem("experimentData", JSON.stringify(items));
+    sessionStorage.setItem("experimentData", SecurityUtil.encryptData(items, process.env.REACT_APP_DATA_SECRET_SOLD));
     sessionStorage.setItem("e_cache_version", "1");
   };
 

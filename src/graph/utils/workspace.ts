@@ -128,9 +128,7 @@ export const loadWorkspaceFromRemoteIfExists = async (
   let workspaceData;
   try {
     if (shared) {
-      workspaceData = await axios.post("/api/verifyWorkspace", {
-        experimentId: experimentId,
-      });
+      workspaceData = await axios.post("/api/verifyWorkspace", {experimentId: experimentId});
     } else {
       workspaceData = await axios.post(
         "/api/getWorkspace",

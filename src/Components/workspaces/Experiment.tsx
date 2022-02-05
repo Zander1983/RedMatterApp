@@ -191,7 +191,7 @@ const Experiment = (props: any) => {
                           updatedFile,
                           ...currentFiles.slice(index + 1),
                       ];
-                  setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+                  //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
                   sessionStorage.setItem("experimentFiles",
                       SecurityUtil.encryptData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}}, process.env.REACT_APP_DATA_SECRET_SOLD));
               }
@@ -619,11 +619,11 @@ const Experiment = (props: any) => {
   };
 
   const updateExperimentFileName = (id: string, label: string) => {
-    const updatFileName = ExperimentFilesApiFetchParamCreator({
+    const updateFileName = ExperimentFilesApiFetchParamCreator({
       apiKey: userManager.getToken(),
     }).editFiles(props.id, id, label, userManager.getToken());
     axios
-      .put(updatFileName.url, { label }, updatFileName.options)
+      .put(updateFileName.url, { label }, updateFileName.options)
       .then(async (e) => {
         await updateFileCache(id, label);
       })
@@ -931,7 +931,7 @@ const Experiment = (props: any) => {
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
-                ) : experimentData.files.length === 0 &&
+                ) : experimentData?.files?.length === 0 &&
                   uploadingFiles.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
                     There are no files in this experiment
