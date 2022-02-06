@@ -6,7 +6,7 @@ export const createButtonDisable = (
   if (unLimitedPublicExperiments) return false;
 
   try {
-    return experimentLength < parseInt(numberOfExperiments) ? false : true;
+    return experimentLength >= parseInt(numberOfExperiments);
   } catch (error) {
     return false;
   }

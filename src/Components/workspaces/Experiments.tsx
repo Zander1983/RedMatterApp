@@ -39,9 +39,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
-
-  const isAdmin = userManager.getUserAdminStatus();
-
+  
   const gettingOrganizationId = () => {
     try {
       return userManager.getOrganiztionID();
@@ -61,41 +59,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const [oldExperiments, setOldExperiments] = useState([]);
   const organizationId = gettingOrganizationId();
   let rules: any = userManager.getRules();
-
-  // const fetchExperiments = () => {
-  //   if (!isLoggedIn) return;
-  //   const fetchArgs = ExperimentApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).getAllExperiments(
-  //     userManager.getOrganiztionID(),
-  //     userManager.getToken()
-  //   );
-  //   axios
-  //     .get(fetchArgs.url, fetchArgs.options)
-  //     .then((response) => {
-  //       setExperiments(response.data.organisationExperiments);
-  //       setPrivateExperiments(response.data.userExperiments);
-  //       setOldExperiments(response.data.oldExperiments);
-  //       setFetchExperimentsComplete(true);
-  //       setDisabled(
-  //         createButtonDisable(
-  //           response.data.userExperiments.length,
-  //           rules?.experiment?.unLimitedPublic,
-  //           rules?.experiment?.number
-  //         )
-  //       );
-  //     })
-  //     .catch((e) => {
-  //       console.log(e);
-  //       setFetchExperimentsComplete(true);
-  //       snackbarService.showSnackbar(
-  //         "Failed to find experiment information or Session Expired",
-  //         "error"
-  //       );
-  //       // userManager.logout();
-  //       // history.replace("/login");
-  //     });
-  // };
 
   const updateExperiment = async (experimentId: any) => {
       const cacheData = SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
@@ -261,35 +224,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             })();
         }
     }, []);
-
-  // const fetchAllExperiments = async () => {
-  //       const data = await (
-  //           await axios.get(`/api/getAllExperiments`, {
-  //               headers: {
-  //                   token: userManager.getToken(),
-  //               },
-  //           })
-  //       ).data;
-  //       setExperiments(data.organisationExperiments);
-  //       setPrivateExperiments(data.userExperiments);
-  //       setOldExperiments(data.oldExperiments);
-  //       setFetchExperimentsComplete(true);
-  //       setDisabled(
-  //           createButtonDisable(
-  //               data.userExperiments.length,
-  //               rules?.experiment?.unLimitedPublic,
-  //               rules?.experiment?.number
-  //           )
-  //       );
-  //   };
-
-    // React.useEffect(() => {
-  //   isAdmin ? fetchAllExperiments() : fetchExperiments();
-  //   if (props.backFromQuestions) {
-  //     snackbarService.showSnackbar("Experiment created", "success");
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
 
   React.useEffect(() => {
     setExperimentsToBeDisplayed();
