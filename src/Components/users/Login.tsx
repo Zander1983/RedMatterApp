@@ -133,7 +133,9 @@ const Login = (props: any) => {
         rules: userDetails.data?.rules,
       };
       dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
-      await enableCache({experiments: userDetails.data?.data});
+      if(sessionStorage.getItem("experimentData")) {
+        await enableCache({experiments: userDetails.data?.data});
+      }
       eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
