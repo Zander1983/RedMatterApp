@@ -16,6 +16,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import About from "./Components/home/About";
 
 import Plots from "./graph/WorkspaceComponent";
+import WorkSpaceComponent from "./graph/NewWorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import ForgetPassword from "Components/users/ForgetPassword";
@@ -151,6 +152,12 @@ const router = [
     path: "/experiment/:experimentId/plots",
     component: ({ match }: any) => (
       <Plots experimentId={match.params.experimentId} shared={false} />
+    ),
+  },
+  {
+    path: "/workspace/:experimentId/plots",
+    component: ({ match }: any) => (
+        <WorkSpaceComponent experimentId={match.params.experimentId} shared={false} />
     ),
   },
   {
