@@ -114,43 +114,6 @@ const Experiment = (props: any) => {
     //eslint-disable-next-line
   }, [experimentData]);
 
-  // const fetchExperimentData = (snack = true, key: string = "") => {
-  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).experimentFiles(
-  //     userManager.getOrganiztionID(),
-  //     props.id,
-  //     userManager.getToken()
-  //   );
-  //
-  //   axios
-  //     .get(fetchExperiments.url, fetchExperiments.options)
-  //     .then((e) => {
-  //       if (key && fileTempIdMap && Object.keys(fileTempIdMap).length > 0) {
-  //         if (e.data.files) {
-  //           fileTempIdMap[key] = e.data.files[0].id;
-  //         } else {
-  //           delete fileTempIdMap[key];
-  //         }
-  //       }
-  //       setExperimentData(e.data);
-  //       setExperiment(e.data?.experimentDetails);
-  //       let sizeSum = 0;
-  //       for (const file of e.data.files) {
-  //         sizeSum += file.fileSize;
-  //       }
-  //       setExperimentSize(sizeSum);
-  //     })
-  //     .catch((e) => {
-  //       if (snack)
-  //         snackbarService.showSnackbar(
-  //           "Failed to find this experiment, reload the page to try again!",
-  //           "error"
-  //         );
-  //       userManager.logout();
-  //     });
-  // };
-
   const reload = async () => {
     try {
       const fetchExperiments = ExperimentFilesApiFetchParamCreator({
@@ -283,30 +246,6 @@ const Experiment = (props: any) => {
       });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // const getExperiment = () => {
-  //   const experimentApiObj = ExperimentApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).getExperiment(userManager.getToken(), props.id);
-  //   axios
-  //     .post(
-  //       experimentApiObj.url,
-  //       {
-  //         experimentId: props.id,
-  //       },
-  //       {
-  //         headers: {
-  //           token: userManager.getToken(),
-  //         },
-  //       }
-  //     )
-  //     .then((e) => {
-  //       console.log(e);
-  //       setExperiment(e.data);
-  //     })
-  //     .catch((e) => {});
-  // };
-
   function setContaineSet(superSet: Set<any>, set: Set<any>) {
     //@ts-ignore
     if (superSet.size !== set.size) return false;
@@ -422,31 +361,6 @@ const Experiment = (props: any) => {
     return experimentData.files[0].channels;
   };
 
-  // const deleteFile = (file: any) => {
-  //   alert(
-  //     "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
-  //   );
-  //   return;
-  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).deleteFile(props.id, file.id, userManager.getToken());
-
-  //   axios
-  //     .delete(fetchExperiments.url, fetchExperiments.options)
-  //     .then((e) => {
-  //       snackbarService.showSnackbar("File deleted!", "success");
-  //     })
-  //     .catch((e) => {
-  //       snackbarService.showSnackbar(
-  //         "Failed to delete file, try again.",
-  //         "error"
-  //       );
-  //     })
-  //     .finally(() => {
-  //       fetchExperimentData();
-  //     });
-  // };
-
   useEffect(() => {
     const activeOrg:string = sessionStorage.getItem("activeOrg");
     if (activeOrg && activeOrg === props.id) {
@@ -467,20 +381,6 @@ const Experiment = (props: any) => {
         await reload();
       })();
     }
-
-    // const onUnload = (e:any) => {
-    //     e.preventDefault();
-    //     console.log("====experimentData====");
-    //     console.log(experimentData);
-    //     console.log(data);
-    //     console.log(experimentData);
-    //     localStorage.setItem("reloadData", JSON.stringify(experimentData));
-    //   };
-    //   window.addEventListener("beforeunload", onUnload);
-    //   return () => window.removeEventListener("beforeunload", onUnload);
-   // fetchExperimentData();
-    // getExperiment();
-    //eslint-disable-next-line
   }, []);
 
   const handleClose = (func: Function) => {
