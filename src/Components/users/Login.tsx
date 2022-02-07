@@ -135,7 +135,6 @@ const Login = (props: any) => {
       dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
       if(sessionStorage.getItem("experimentData") === null
           || sessionStorage.getItem("experimentData") === undefined ) {
-        console.log("===== cache data =======");
         await enableCache({experiments: userDetails.data?.data});
       }
       eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
