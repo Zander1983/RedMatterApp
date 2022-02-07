@@ -194,7 +194,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
 
   React.useEffect(() => {
-        if (sessionStorage.getItem("e_cache_version")) {
+        if (sessionStorage.getItem("experimentData")) {
             const profileInfo= SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
             if (profileInfo) {
                 setExperiments(profileInfo?.experiments?.organisationExperiments);
