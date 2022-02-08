@@ -108,9 +108,7 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   const [data, setData] = useState([]);
-  const [openFiles, setOpenFiles] = useState<string[]>([
-    workspace.selectedFile,
-  ]);
+  const [openFiles, setOpenFiles] = useState<string[]>([]);
   const [headers, setHeaders] = useState<string[]>([
     "File Name",
     "Click to View",
@@ -129,7 +127,6 @@ const PlotTableComponent = ({
       WorkspaceDispatch.ClearOpenFiles();
     }
   }, [workspace]);
-
   const fillUpRows = (statistics: any[]) => {
     for (let i = 0; i < workspace.files.length; i++) {
       let raw = [workspace.files[i].id];
@@ -201,9 +198,8 @@ const PlotTableComponent = ({
               workspaceLoading={workspaceLoading}
               customPlotRerender={customPlotRerender}
               file={file}
-              data={data}
+              data={data[i]}
               headers={headers}
-              index={i}
               openFiles={openFiles}
               setOpenFiles={setOpenFiles}
             />

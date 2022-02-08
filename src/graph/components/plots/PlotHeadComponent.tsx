@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme) => ({
     width: "auto",
     color: "#333",
     border: "1px #333 solid",
-    textAlign: "center",
     padding: "5px !important",
   },
   view: {
@@ -242,7 +241,11 @@ const PlotHeadComponent = ({
     <TableHead>
       <TableRow>
         {headers.map((values, index) => (
-          <TableCell className={classes.tableCell} key={"top-" + index}>
+          <TableCell
+            className={classes.tableCell}
+            style={{ textAlign: "center" }}
+            key={"top-" + index}
+          >
             {values}
             {index !== 0 && index !== headers.length - 1 && (
               <>
@@ -264,7 +267,7 @@ const PlotHeadComponent = ({
                 />
                 <img
                   onClick={() => {
-                    setOpenFiles([workspace.selectedFile]);
+                    setOpenFiles([]);
                     deleteColumn(index - 1);
                   }}
                   src={deleteIcon}
