@@ -34,7 +34,8 @@ const workspaceReducers = (state: Workspace2 = initialState, action: any) => {
       } else {
         for (let i = 0; i < state.gatingSets.length; i++) {
           for (let j = 0; j < state.gatingSets[i].length; j++) {
-            if (newGate.parent === state.gatingSets[i][j].parent) {
+            if (newGate.parent === state.gatingSets[i][j].name) {
+              console.log("Hi....");
               state.gatingSets[i].push(newGate);
               break;
             }

@@ -479,7 +479,6 @@ const WorkspaceInnerComponent = (props: {
       Debounce(() => saveWorkspace(), 5000);
     }
   }
-
   return (
     <div
       style={{
@@ -495,7 +494,7 @@ const WorkspaceInnerComponent = (props: {
     >
       {/* == MODALS == */}
       <div>
-        <GateNamePrompt />
+        <GateNamePrompt selectedFile={workspace.selectedFile} />
 
         <AddFileModal
           open={addFileModalOpen}

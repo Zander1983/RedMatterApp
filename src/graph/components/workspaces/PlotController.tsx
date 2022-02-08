@@ -455,7 +455,13 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                           plotRelevantResources={this.getPlotRelevantResources(
                                             plot
                                           )}
-                                          plt={this.props.workspace2.plots}
+                                          plt={
+                                            this.props.workspace2.plots[
+                                              Object.keys(
+                                                this.props.workspace2.plots
+                                              )[i]
+                                            ]
+                                          }
                                           sharedWorkspace={
                                             this.props.sharedWorkspace
                                           }

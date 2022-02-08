@@ -6,7 +6,7 @@ import {
   Plot,
   Population,
   PlotID,
-  Plot2ObjectMap,
+  Plot2,
 } from "graph/resources/types";
 
 import CanvasComponent, {
@@ -67,7 +67,7 @@ const PlotRenderer = (props: {
   editWorkspace: boolean;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
-  plt?: Plot2ObjectMap;
+  plt?: Plot2;
 }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
@@ -75,6 +75,7 @@ const PlotRenderer = (props: {
   const [scatterPlotter, setScatterPlotter] = useState<ScatterPlotter | null>(
     null
   );
+
   const [histogramPlotter, setHistogramPlotter] =
     useState<HistogramPlotter | null>(null);
   const [lastGatingType, setLastGatingType] = useState<GateType>("");
@@ -217,7 +218,7 @@ const PlotRenderer = (props: {
     const ranges = PlotResource.getXandYRanges(plot);
     const plotterState = {
       plot: plot,
-      plot2: props.plt[Object.keys(props.plt)[0]] || null,
+      plot2: props.plt || null,
       xAxis: data[0],
       yAxis: data[1],
       xAxisName: plot.xAxis,

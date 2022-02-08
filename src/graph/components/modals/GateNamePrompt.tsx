@@ -17,15 +17,20 @@ import {
 } from "graph/resources/types";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import Workspace2Dispatch from "graph/workspaceRedux2/workspaceDispatcher";
 import { getGate, getPlot } from "graph/utils/workspace";
 import { getGate2 } from "graph/resources/gates2";
-import { getPlot2 } from "graph/resources/plots2";
+import { getPlot2, createPlot } from "graph/resources/plots2";
 import { createSubpopPlot } from "graph/resources/plots";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 import EventQueue2Dispatch from "graph/workspaceRedux2/eventQueue2Dispatcher";
 import useGAEventTrackers from "hooks/useGAEvents";
 
-export default function GateNamePrompt() {
+interface GateNamePromptProps {
+  selectedFile: string;
+}
+
+export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
   const [open, setOpen] = React.useState<boolean>(false);
   const [nameError, setNameError] = React.useState(false);
   const [newGateCreated, setNewGateCreated] = React.useState(false);
@@ -80,12 +85,16 @@ export default function GateNamePrompt() {
 
   const renameGate = async (newName: string) => {
     gate.name = newName;
+    gate2.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
+    Workspace2Dispatch.UpdateGateName(gate2);
     setOpen(false);
     try {
       instancePlot(plot, gate);
+      createPlot({ fileId: selectedFile, gateId: gate2.name });
     } catch {}
     EventQueueDispatch.DeleteQueueItem(event.id);
+    EventQueue2Dispatch.DeleteQueueItem(event2.id);
   };
 
   const quit = () => {

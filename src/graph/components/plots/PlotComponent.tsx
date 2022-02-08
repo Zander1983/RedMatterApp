@@ -7,7 +7,7 @@ import SideSelector from "./SideSelector";
 import {
   PlotSpecificWorkspaceData,
   PlotID,
-  Plot2ObjectMap,
+  Plot2,
 } from "graph/resources/types";
 
 import PlotRenderer from "graph/components/PlotRenderer";
@@ -50,7 +50,7 @@ const PlotComponent = React.memo(
     workspaceLoading: boolean;
     customPlotRerender: PlotID[];
     fileName: string;
-    plt?: Plot2ObjectMap;
+    plt?: Plot2;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
 
