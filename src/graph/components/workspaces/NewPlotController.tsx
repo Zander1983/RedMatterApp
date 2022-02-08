@@ -68,7 +68,9 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
         plotByFileMap[file.id] = [plot];
       }
     } catch {
-      console.error("[PlotController] Plot has not been rendered due to population not found");
+      console.error(
+        "[PlotController] Plot has not been rendered due to population not found"
+      );
     }
   }
 
@@ -310,12 +312,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.isTableRenderCall
     ) {
       return (
-          <PlotTableComponent
-              workspace={this.props.workspace}
-              sharedWorkspace={this.props.sharedWorkspace}
-              experimentId={this.props.experimentId}
-              workspaceLoading={this.props.workspaceLoading}
-              customPlotRerender={this.props.customPlotRerender}/>
+        <PlotTableComponent
+          workspace={this.props.workspace}
+          sharedWorkspace={this.props.sharedWorkspace}
+          experimentId={this.props.experimentId}
+          workspaceLoading={this.props.workspaceLoading}
+          customPlotRerender={this.props.customPlotRerender}
+        />
       );
     } else return null;
   };
@@ -369,215 +372,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               </div>
             ) : null}
 
-            <Divider />
-            {plotGroups.map((plotGroup: PlotGroup) => {
-              const name = plotGroup.name;
-              const plots = plotGroup.plots;
-              const id = plotGroup.id;
-              if (this.state.sortBy === "file") {
-                return (
-                  <div key={`plot-controller-${id}`}>
-                    {this.props.workspace.selectedFile === id &&
-                      this.props.workspace.files[0].downloaded && (
-                        <>
-                          <div
-                            style={{
-                              backgroundColor: "#6666AA",
-                              paddingLeft: 20,
-                              paddingBottom: 3,
-                              paddingTop: 3,
-                            }}
-                          >
-                            <h3 style={{ color: "white", marginBottom: 0 }}>
-                              {this.props.workspace.selectedFile === name && (
-                                <span style={{ fontWeight: "bolder" }}>
-                                  {" "}
-                                  Control Sample:{" "}
-                                </span>
-                              )}
-                              {name}
-                            </h3>
-                          </div>
-                          <div style={{ marginTop: 3, marginBottom: 10 }}>
-                            {/*<ResponsiveGridLayout*/}
-                            {/*  className="layout"*/}
-                            {/*  breakpoints={{ lg: 1200 }}*/}
-                            {/*  cols={{ lg: 36 }}*/}
-                            {/*  rows={{ lg: 30 }}*/}
-                            {/*  rowHeight={30}*/}
-                            {/*  compactType={null}*/}
-                            {/*  isDraggable={this.props.workspace.editWorkspace}*/}
-                            {/*  isResizable={false}*/}
-                            {/*  onLayoutChange={(layout: any) => {*/}
-                            {/*    this.savePlotPosition(layout);*/}
-                            {/*  }}*/}
-                            {/*  onDrag={() => {*/}
-                            {/*    //this.props.arrowFunc();*/}
-                            {/*  }}*/}
-                            {/*  onDragStop={() => {*/}
-                            {/*    //this.props.arrowFunc();*/}
-                            {/*  }}*/}
-                            {/*  onDragStart={() => {*/}
-                            {/*   // this.props.arrowFunc();*/}
-                            {/*  }}*/}
-                            {/*  // onResize={(layout: any) => {*/}
-                            {/*  //   setCanvasSize(false);*/}
-                            {/*  // }}*/}
-                            {/*  // onResizeStop={(layout: any) => {*/}
-                            {/*  //   setCanvasSize(true, true);*/}
-                            {/*  // }}*/}
-                            {/*>*/}
-                            {/*  {*/}
-                            {/*    //@ts-ignore*/}
-                            {/*    plots.map((plot, i) => {*/}
-                            {/*      return (*/}
-                            {/*        <div*/}
-                            {/*          key={plot.id}*/}
-                            {/*          style={classes.itemOuterDiv}*/}
-                            {/*          data-grid={standardGridPlotItem(*/}
-                            {/*            i,*/}
-                            {/*            plot,*/}
-                            {/*            plots,*/}
-                            {/*            this.props.workspace.editWorkspace*/}
-                            {/*          )}*/}
-                            {/*          id={`workspace-outter-${plot.id}`}*/}
-                            {/*        >*/}
-                            {/*          <div*/}
-                            {/*            id="inner"*/}
-                            {/*            style={classes.itemInnerDiv}*/}
-                            {/*          >*/}
-                            {/*            <PlotComponent*/}
-                            {/*              plotRelevantResources={this.getPlotRelevantResources(*/}
-                            {/*                plot*/}
-                            {/*              )}*/}
-                            {/*              sharedWorkspace={*/}
-                            {/*                this.props.sharedWorkspace*/}
-                            {/*              }*/}
-                            {/*              editWorkspace={*/}
-                            {/*                this.props.workspace.editWorkspace*/}
-                            {/*              }*/}
-                            {/*              workspaceLoading={this.getWorkspaceLoading()}*/}
-                            {/*              customPlotRerender={*/}
-                            {/*                this.props.customPlotRerender*/}
-                            {/*              }*/}
-                            {/*              experimentId={this.props.experimentId}*/}
-                            {/*              fileName={name}*/}
-                            {/*            />*/}
-                            {/*          </div>*/}
-                            {/*        </div>*/}
-                            {/*      );*/}
-                            {/*    })*/}
-                            {/*  }*/}
-                            {/*</ResponsiveGridLayout>*/}
-                          </div>
-                        </>
-                      )}
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={`plot-controller-${id}`}>
-                    {this.props.workspace.files[0].downloaded && (
-                      <>
-                        <div
-                          style={{
-                            backgroundColor: "#6666AA",
-                            paddingLeft: 20,
-                            paddingBottom: 3,
-                            paddingTop: 3,
-                          }}
-                        >
-                          <h3 style={{ color: "white", marginBottom: 0 }}>
-                            {this.props.workspace.selectedFile === name && (
-                              <span style={{ fontWeight: "bolder" }}>
-                                {" "}
-                                Control Sample:{" "}
-                              </span>
-                            )}
-                            {name}
-                          </h3>
-                        </div>
-                        <div style={{ marginTop: 3, marginBottom: 10 }}>
-                          {/*<ResponsiveGridLayout*/}
-                          {/*  className="layout"*/}
-                          {/*  breakpoints={{ lg: 1200 }}*/}
-                          {/*  cols={{ lg: 36 }}*/}
-                          {/*  rows={{ lg: 30 }}*/}
-                          {/*  rowHeight={30}*/}
-                          {/*  compactType={null}*/}
-                          {/*  isDraggable={this.props.workspace.editWorkspace}*/}
-                          {/*  isResizable={false}*/}
-                          {/*  onLayoutChange={(layout: any) => {*/}
-                          {/*    this.savePlotPosition(layout);*/}
-                          {/*    setTimeout(() => {*/}
-                          {/*      //this.props.arrowFunc();*/}
-                          {/*    }, 150);*/}
-                          {/*  }}*/}
-                          {/*  onDrag={() => {*/}
-                          {/*    //this.props.arrowFunc();*/}
-                          {/*  }}*/}
-                          {/*  onDragStop={() => {*/}
-                          {/*    //this.props.arrowFunc();*/}
-                          {/*  }}*/}
-                          {/*  onDragStart={() => {*/}
-                          {/*    //this.props.arrowFunc();*/}
-                          {/*  }}*/}
-                          {/*  // onResize={(layout: any) => {*/}
-                          {/*  //   setCanvasSize(false);*/}
-                          {/*  // }}*/}
-                          {/*  // onResizeStop={(layout: any) => {*/}
-                          {/*  //   setCanvasSize(true);*/}
-                          {/*  // }}*/}
-                          {/*>*/}
-                          {/*  {*/}
-                          {/*    //@ts-ignore*/}
-                          {/*    plots.map((plot, i) => {*/}
-                          {/*      return (*/}
-                          {/*        <div*/}
-                          {/*          key={plot.id}*/}
-                          {/*          style={classes.itemOuterDiv}*/}
-                          {/*          data-grid={standardGridPlotItem(*/}
-                          {/*            i,*/}
-                          {/*            plot,*/}
-                          {/*            plots,*/}
-                          {/*            this.props.workspace.editWorkspace*/}
-                          {/*          )}*/}
-                          {/*          id={`workspace-outter-${plot.id}`}*/}
-                          {/*        >*/}
-                          {/*          <div*/}
-                          {/*            id="inner"*/}
-                          {/*            style={classes.itemInnerDiv}*/}
-                          {/*          >*/}
-                          {/*            <PlotComponent*/}
-                          {/*              plotRelevantResources={this.getPlotRelevantResources(*/}
-                          {/*                plot*/}
-                          {/*              )}*/}
-                          {/*              sharedWorkspace={*/}
-                          {/*                this.props.sharedWorkspace*/}
-                          {/*              }*/}
-                          {/*              editWorkspace={*/}
-                          {/*                this.props.workspace.editWorkspace*/}
-                          {/*              }*/}
-                          {/*              workspaceLoading={this.getWorkspaceLoading()}*/}
-                          {/*              customPlotRerender={*/}
-                          {/*                this.props.customPlotRerender*/}
-                          {/*              }*/}
-                          {/*              experimentId={this.props.experimentId}*/}
-                          {/*              fileName={name}*/}
-                          {/*            />*/}
-                          {/*          </div>*/}
-                          {/*        </div>*/}
-                          {/*      );*/}
-                          {/*    })*/}
-                          {/*  }*/}
-                          {/*</ResponsiveGridLayout>*/}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              }
-            })}
+            {/* <Divider /> */}
+
             {!this.state.isTableRenderCall ? (
               <Grid
                 container
