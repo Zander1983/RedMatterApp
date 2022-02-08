@@ -174,11 +174,7 @@ export const downloadFileEvent = async (
 
 };
 
-export const dowloadAllFileEvents = async (
-  workspaceIsShared?: boolean,
-  experimentId?: string,
-  batch?: string[]
-) => {
+export const dowloadAllFileEvents = async (workspaceIsShared?: boolean, experimentId?: string, batch?: string[]) => {
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
@@ -200,6 +196,32 @@ export const dowloadAllFileEvents = async (
       return await downloadFileEvent(workspaceIsShared, files, experimentId);
   }catch (e) {
       throw e;
+  }
+
+};
+
+export const downloadEvents = async (workspaceIsShared?: boolean, experimentId?: string, batch?: string[]) => {
+  if (!workspaceIsShared) workspaceIsShared = false;
+  if (!experimentId)
+    experimentId = store.getState().user.experiment.experimentId;
+  let files: string[] = [];
+  const workspace = getWorkspace();
+  if(workspace.files.length === 0) throw Error("FILE-MISSING:Some pre-requirement data is not properly loaded");
+  if (batch) {
+    files = workspace.files
+        .filter((e) => !e.downloaded && batch.includes(e.id))
+        .map((e) => e.id);
+  } else {
+    const workspace = getWorkspace();
+    files = workspace.files
+        .filter((e) => !e.downloaded)
+        .map((e) => e.id);
+  }
+
+  try {
+    return await downloadFileEvent(workspaceIsShared, files, experimentId);
+  }catch (e) {
+    throw e;
   }
 
 };

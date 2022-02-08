@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
+import SecurityUtil from '../../utils/Security.js';
 
 import {
   Grid,
@@ -27,7 +28,7 @@ import useGAEventTrackers from "hooks/useGAEvents";
 import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
-import { useDispatch } from "react-redux";
+import {useDispatch} from "react-redux";
 
 const styles = {
   input: {
@@ -45,7 +46,6 @@ const fileTempIdMap: any = {};
 
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
-
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [editingFileName, setEditingFileName] = useState<null | string>(null);
@@ -98,12 +98,9 @@ const Experiment = (props: any) => {
 
   useEffect(() => {
     if (
-      fileTempIdMap &&
-      Object.keys(fileTempIdMap).length > 0 &&
-      uploadingFiles.length > 0
+      fileTempIdMap && Object.keys(fileTempIdMap).length > 0 && uploadingFiles.length > 0
     ) {
-      let keys = Object.keys(fileTempIdMap)
-        .map((x) => {
+      let keys = Object.keys(fileTempIdMap).map((x) => {
           if (fileTempIdMap[x]) {
             delete fileTempIdMap[x];
             return x;
@@ -117,41 +114,110 @@ const Experiment = (props: any) => {
     //eslint-disable-next-line
   }, [experimentData]);
 
-  const fetchExperimentData = (snack = true, key: string = "") => {
-    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      props.id,
-      userManager.getToken()
-    );
+  const reload = async () => {
+    try {
+      const fetchExperiments = ExperimentFilesApiFetchParamCreator({
+        accessToken: userManager.getToken(),
+      }).experimentFiles(userManager.getOrganiztionID(), props.id, userManager.getToken());
 
-    axios
-      .get(fetchExperiments.url, fetchExperiments.options)
-      .then((e) => {
-        if (key && fileTempIdMap && Object.keys(fileTempIdMap).length > 0) {
-          if (e.data.files) {
-            fileTempIdMap[key] = e.data.files[0].id;
-          } else {
-            delete fileTempIdMap[key];
+      const response = await  axios.get(fetchExperiments.url, fetchExperiments.options);
+
+      if (response?.status) {
+        setExperimentData(response?.data);
+        setExperiment(response?.data?.experimentDetails);
+        setTimeout(() => {
+          sessionStorage.setItem("experimentFiles", SecurityUtil.encryptData({files: response.data}, process.env.REACT_APP_DATA_SECRET_SOLD));
+          sessionStorage.setItem("activeOrg", props.id);
+        },0);
+      } else {
+        await handleError({"message": "Information missing", saverity: "error"});
+      }
+    } catch (err) {
+      await handleError(err);
+    }
+  };
+
+  const updateFileCache = async (fileId:any, fileLabel:any) => {
+        //link view code here
+      const activeOrg:string = sessionStorage.getItem("activeOrg");
+      if (activeOrg && activeOrg === props.id) {
+          const expFileInfo = SecurityUtil.decryptData(sessionStorage.getItem("experimentFiles"), process.env.REACT_APP_DATA_SECRET_SOLD);
+          if (expFileInfo) {
+              let index = expFileInfo?.files?.files?.findIndex((file: any) => file.id === fileId);
+              if (index > -1) {
+                  let currentFiles: any[] = expFileInfo?.files?.files?.slice();
+                  const updatedFile = {...currentFiles[index], ...{label: fileLabel}};
+                  const updatedFiles = [
+                          ...currentFiles.slice(0, index),
+                          updatedFile,
+                          ...currentFiles.slice(index + 1),
+                      ];
+                  //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+                  sessionStorage.setItem("experimentFiles",
+                      SecurityUtil.encryptData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}}, process.env.REACT_APP_DATA_SECRET_SOLD));
+              }
+          }else {
+            await reload();
           }
-        }
+      }else {
+        await reload();
+      }
+    };
 
-        setExperimentData(e.data);
-        let sizeSum = 0;
-        for (const file of e.data.files) {
-          sizeSum += file.fileSize;
+  const updateExperimentCache = async (data: any, expId:any) => {
+    let requiredUpdateExperiments:any[] = [];
+    let targetExperiment = "";
+    if (data?.experiments?.organisationExperiments.length > 0
+        && data?.experiments?.organisationExperiments.findIndex((e:any) => e.id === expId) > -1) {
+      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
+      targetExperiment = "org";
+    }else if (data?.experiments?.userExperiments.length > 0
+        && data?.experiments?.userExperiments.findIndex((e:any) => e.id === expId) > -1) {
+      requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
+      targetExperiment = "user";
+    }else {
+      requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
+      targetExperiment = "old";
+    }
+    let targetIndex = -1;
+    if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
+      targetIndex = requiredUpdateExperiments.findIndex((e:any) => e.id === expId);
+      if(targetIndex > -1) {
+       const updatedExperiments = [
+          ...requiredUpdateExperiments.slice(0, targetIndex),
+          {...requiredUpdateExperiments[targetIndex], ...experiment},
+          ...requiredUpdateExperiments.slice(targetIndex + 1),
+        ];
+        switch (targetExperiment) {
+          case "user":
+            let userData: any = {
+              oldExperiments: [...data?.experiments?.oldExperiments],
+              organisationExperiments: [...data?.experiments?.organisationExperiments],
+              userExperiments: [...updatedExperiments]
+            };
+            sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments: userData}, process.env.REACT_APP_DATA_SECRET_SOLD));
+            break;
+          case "org":
+            let orgData: any = {
+              oldExperiments: [...data?.experiments?.oldExperiments],
+              organisationExperiments: [...updatedExperiments],
+              userExperiments: [...data?.experiments?.userExperiments]
+            };
+            sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments: orgData}, process.env.REACT_APP_DATA_SECRET_SOLD));
+            break;
+          case "old":
+            let oldData: any = {
+              oldExperiments: [...updatedExperiments],
+              organisationExperiments: [...data?.experiments?.organisationExperiments],
+              userExperiments: [...data?.experiments?.userExperiments]
+            };
+            sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments: oldData}, process.env.REACT_APP_DATA_SECRET_SOLD));
+            break;
         }
-        setExperimentSize(sizeSum);
-      })
-      .catch((e) => {
-        if (snack)
-          snackbarService.showSnackbar(
-            "Failed to find this experiment, reload the page to try again!",
-            "error"
-          );
-        userManager.logout();
-      });
+      }else {
+        sessionStorage.removeItem("experimentData");
+      }
+    }
   };
 
   const updateExperimentName = (snack = true) => {
@@ -161,40 +227,23 @@ const Experiment = (props: any) => {
 
     axios
       .put(updateExperiment.url, {}, updateExperiment.options)
-      .then((e) => {
+      .then(async (e) => {
+        const cacheData = SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
+        if(cacheData){
+          await updateExperimentCache(cacheData, props.id);
+        }else {
+          sessionStorage.removeItem("experimentData");
+        }
         if (snack)
-          snackbarService.showSnackbar("Experiment updated", "success");
+          showMessageBox({message:"Experiment updated", saverity:"success"});
+
       })
       .catch((e) => {
         if (snack)
-          snackbarService.showSnackbar(
-            "Failed to update this experiment, reload the page to try again!",
-            "error"
-          );
+          showMessageBox({
+              message: "Failed to update this experiment, reload the page to try again!",
+              saverity:"error"});
       });
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getExperiment = () => {
-    const experimentApiObj = ExperimentApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).getExperiment(userManager.getToken(), props.id);
-    axios
-      .post(
-        experimentApiObj.url,
-        {
-          experimentId: props.id,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      )
-      .then((e) => {
-        setExperiment(e.data);
-      })
-      .catch((e) => {});
   };
 
   function setContaineSet(superSet: Set<any>, set: Set<any>) {
@@ -278,34 +327,32 @@ const Experiment = (props: any) => {
       }
     }
     setUploadingFiles(filesUpload);
+    let completedIds:any[] = [];
     for (const file of finalFileList) {
       oldBackFileUploader(
         userManager.getToken(),
         props.id,
         userManager.getOrganiztionID(),
         file.file
-      )
-        .then((e) => {
+      ).then(async (e) => {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
             `Uploaded file name is ${file.file.name}`
           );
-          snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
+          showMessageBox({message:"Uploaded " + file.file.name, saverity:"success"});
         })
         .catch((e) => {
-          snackbarService.showSnackbar(
-            "Error uploading file " +
-              file.file.name.substring(0, 20) +
-              (file.file.name.length > 20 ? ",,," : "") +
-              ", please try again",
-            "error"
-          );
+            showMessageBox({message:"Error uploading file " +file.file.name.substring(0, 20) +(file.file.name.length > 20 ? ",,," : "") +", please try again", saverity:"error"});
         })
         .finally(() => {
-          fetchExperimentData(false, file.tempId);
+            completedIds.push(file.tempId);
+            //fetchExperimentData(false, file.tempId);
         });
     }
 
+    if(completedIds.length > 0){
+        await reload();
+    }
     setFileUploadInputValue("");
   };
 
@@ -314,35 +361,26 @@ const Experiment = (props: any) => {
     return experimentData.files[0].channels;
   };
 
-  // const deleteFile = (file: any) => {
-  //   alert(
-  //     "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
-  //   );
-  //   return;
-  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).deleteFile(props.id, file.id, userManager.getToken());
-
-  //   axios
-  //     .delete(fetchExperiments.url, fetchExperiments.options)
-  //     .then((e) => {
-  //       snackbarService.showSnackbar("File deleted!", "success");
-  //     })
-  //     .catch((e) => {
-  //       snackbarService.showSnackbar(
-  //         "Failed to delete file, try again.",
-  //         "error"
-  //       );
-  //     })
-  //     .finally(() => {
-  //       fetchExperimentData();
-  //     });
-  // };
-
   useEffect(() => {
-    fetchExperimentData();
-    getExperiment();
-    //eslint-disable-next-line
+    const activeOrg:string = sessionStorage.getItem("activeOrg");
+    if (activeOrg && activeOrg === props.id) {
+      const expFileInfo = SecurityUtil.decryptData(sessionStorage.getItem("experimentFiles"), process.env.REACT_APP_DATA_SECRET_SOLD);
+      if (expFileInfo) {
+        setExperimentData(expFileInfo?.files);
+        setExperiment(expFileInfo?.files?.experimentDetails);
+      } else {
+        sessionStorage.removeItem("activeOrg");
+        (async () =>{
+          await reload()
+        })();
+      }
+    } else {
+      sessionStorage.removeItem("activeOrg");
+      sessionStorage.removeItem("experimentFiles");
+      (async () =>{
+        await reload();
+      })();
+    }
   }, []);
 
   const handleClose = (func: Function) => {
@@ -479,13 +517,13 @@ const Experiment = (props: any) => {
   };
 
   const updateExperimentFileName = (id: string, label: string) => {
-    const updatFileName = ExperimentFilesApiFetchParamCreator({
+    const updateFileName = ExperimentFilesApiFetchParamCreator({
       apiKey: userManager.getToken(),
     }).editFiles(props.id, id, label, userManager.getToken());
     axios
-      .put(updatFileName.url, { label }, updatFileName.options)
-      .then((e) => {
-        fetchExperimentData();
+      .put(updateFileName.url, { label }, updateFileName.options)
+      .then(async (e) => {
+        await updateFileCache(id, label);
       })
       .catch((e) =>
         snackbarService.showSnackbar(
@@ -504,8 +542,8 @@ const Experiment = (props: any) => {
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={() => {
-          fetchExperimentData(false);
+        added={async () => {
+          await reload();
         }}
         experiment={{
           ...experimentData,
@@ -565,9 +603,7 @@ const Experiment = (props: any) => {
               </Button>
               <div>
                 {experiment === null ? (
-                  <CircularProgress
-                    style={{ width: 20, height: 20, color: "white" }}
-                  />
+                  <CircularProgress style={{ width: 20, height: 20, color: "white" }}/>
                 ) : (
                   <Grid
                     container
@@ -576,8 +612,7 @@ const Experiment = (props: any) => {
                       color: "#fff",
                       fontWeight: 600,
                       fontSize: 20,
-                    }}
-                  >
+                    }}>
                     {editingName ? (
                       <TextField
                         InputProps={{
@@ -794,7 +829,7 @@ const Experiment = (props: any) => {
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
-                ) : experimentData.files.length === 0 &&
+                ) : experimentData?.files?.length === 0 &&
                   uploadingFiles.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
                     There are no files in this experiment
