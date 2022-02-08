@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
@@ -8,6 +7,7 @@ import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 import userManager from "Components/users/userManager";
 import SmallScreenNotice from "./SmallScreenNotice";
@@ -21,7 +21,11 @@ import { memResetDatasetCache } from "./resources/dataset";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-
+import IOSSwitch from "../Components/common/Switch";
+import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
+import {Workspace as WorkspaceType} from "./resources/types";
+import {useSelector} from "react-redux";
+import NewPlotController from "./components/workspaces/NewPlotController";
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -86,8 +90,8 @@ const NewWorkspaceInnerComponent = (props: {
 
   const classes = useStyles();
   const history = useHistory();
-
-  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [open, setOpen] = React.useState(true);
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
@@ -96,6 +100,14 @@ const NewWorkspaceInnerComponent = (props: {
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
 
+  const [editWorkspace, setEditWorkspace] = React.useState(workspace.editWorkspace);
+  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [lastSavedTime, setLastSavedTime] = React.useState(null);
+  const [savingWorkspace, setSavingWorkspace] = React.useState(false);
+  const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
+  const [clearModal, setClearModal] = React.useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(false);
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
   let pageLoaderSubscription:any = null;
 
@@ -141,9 +153,9 @@ const NewWorkspaceInnerComponent = (props: {
                               let result = await dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds);
                               if (result?.length > 0) {
                                   setReloadMessage("Workspace prepared successfully.");
-                                  setTimeout(() => {setPlotCallNeeded(true);} , 1500);
+                                  setTimeout(() => {setPlotCallNeeded(true);} , 2000);
                               }else {
-
+                                  setMessage("Your Action is Processing. please try after few later Or wait ");
                               }
                           }catch (err) {
                               setPlotCallNeeded(false);
@@ -164,7 +176,6 @@ const NewWorkspaceInnerComponent = (props: {
 
                   }
               }else {
-
               }
 
           })
@@ -214,7 +225,177 @@ const NewWorkspaceInnerComponent = (props: {
     }
   };
 
-  const _renderToolbar = () => {};
+  const handleOpen = (func: Function) => {
+      func(true);
+  };
+
+  const handleClose = (func: Function) => {
+      func(false);
+  };
+
+  const saveWorkspace = async (shared: boolean = false) => {
+      setSavingWorkspace(true);
+      setLastSavedTime(new Date().toLocaleString());
+      await saveWorkspaceToRemote(workspace, shared, props.experimentId);
+      setSavingWorkspace(false);
+  };
+
+  const onLinkShareClick = async () => {};
+
+  const _renderToolbar = () => {
+      return(
+          <Grid
+              style={{
+                  position: "fixed",
+                  zIndex: 100,
+                  top: 64,
+                  backgroundColor: "white",
+                  paddingTop: 4,
+                  paddingBottom: 6,
+                  WebkitBorderBottomLeftRadius: 0,
+                  WebkitBorderBottomRightRadius: 0,
+                  minHeight: "43px",
+              }}
+              container
+          >
+              <Grid container>
+                  {editWorkspace ? (
+                      <span
+                          style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              width: "100%",
+                              background: "white",
+                          }}
+                      >
+                    <div>
+                      <Button
+                          disabled={!plotCallNeeded}
+                          size="small"
+                          variant="contained"
+                          style={{
+                              backgroundColor: "#fafafa",
+                          }}
+                          className={classes.topButton}
+                          startIcon={
+                              <ArrowLeftOutlined style={{ fontSize: 15 }} />
+                          }
+                          onClick={() => {
+                              history.goBack();
+                          }}
+                      >
+                        Back
+                      </Button>
+
+                      <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleOpen(setAddFileModalOpen)}
+                          className={classes.topButton}
+                          style={{
+                              backgroundColor: "#fafafa",
+                          }}
+                          disabled={!!workspace.selectedFile || !plotCallNeeded}
+                      >
+                        Plot sample
+                      </Button>
+                      <Button
+                          disabled={!plotCallNeeded}
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleOpen(setClearModal)}
+                          className={classes.topButton}
+                          style={{
+                                backgroundColor: "#fafafa",
+                          }}
+                        >
+                        Clear
+                      </Button>
+                      <span>
+                        <Button
+                            disabled={!plotCallNeeded}
+                            variant="contained"
+                            size="small"
+                            onClick={() => saveWorkspace()}
+                            className={classes.topButton}
+                            style={{
+                                backgroundColor: "#fafafa",
+                                width: 137,
+                            }}
+                        >
+                          {savingWorkspace && plotCallNeeded ? (
+                              <CircularProgress
+                                  style={{ width: 20, height: 20 }}
+                              />
+                          ) : (
+                              <Typography>Save Workspace</Typography>
+                          )}
+                        </Button>
+                        <FormControlLabel
+                            style={{
+                                marginLeft: 0,
+                                height: 20,
+                                marginTop: 4,
+                                color: "#333",
+                            }}
+                            label={"Autosave"}
+                            control={
+                                <IOSSwitch
+                                    disabled={!plotCallNeeded}
+                                    checked={autoSaveEnabled}
+                                    onChange={() =>
+                                        setAutoSaveEnabled(!autoSaveEnabled)
+                                    }
+                                />
+                            }
+                        />
+                      </span>
+                        {lastSavedTime ? (
+                            <span
+                                style={{
+                                    height: "100%",
+                                    display: "inline-flex",
+                                }}
+                            >
+                          <span
+                              style={{
+                                  color: "#333",
+                                  fontStyle: "italic",
+                              }}
+                          >
+                            saved at {lastSavedTime}
+                          </span>
+                        </span>
+                        ) : null}
+                    </div>
+                    <div>
+                      <Button
+                          disabled={!plotCallNeeded}
+                          variant="contained"
+                          size="small"
+                          onClick={() => onLinkShareClick()}
+                          className={classes.topButton}
+                          style={{
+                              backgroundColor: "#fafafa",
+                              marginRight: 10,
+                          }}>
+                        <ShareIcon
+                            fontSize="small"
+                            style={{ marginRight: 10 }}
+                        />
+                        Share Workspace
+                      </Button>
+                    </div>
+                  </span>
+                  ) : (
+                      <span className={classes.sharedHeaderText}>
+                    Shared Workspace
+                  </span>
+                  )}
+              </Grid>
+          </Grid>
+      );
+  };
 
   const _renderPageMessage = () => {
       return(
@@ -229,13 +410,9 @@ const NewWorkspaceInnerComponent = (props: {
               }}
               justify="center"
               alignItems="center"
-              alignContent="center"
-          >
+              alignContent="center">
               {!isConnectivity && ("Internet connection failed. Check your connection")}
-
-
-              <Typography
-                  style={{
+              <Typography style={{
                       color: "#248e0d",
                       textAlign: "center",
                   }}> {isReloadMessage && (isReloadMessage) } </Typography>
@@ -286,12 +463,17 @@ const NewWorkspaceInnerComponent = (props: {
             boxShadow: "2px 3px 3px #ddd",
           }}>
           <div>
-            {_renderToolbar()}
+            {/*{_renderToolbar()}*/}
             <Grid style={{ marginTop: 43 }}>
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
               {plotCallNeeded ? (
-                <Typography>Plot Loaded here</Typography>
+                  <NewPlotController
+                      sharedWorkspace={sharedWorkspace}
+                      experimentId={props.experimentId}
+                      workspace={workspace}
+                      workspaceLoading={plotCallNeeded}
+                      customPlotRerender={customPlotRerender}/>
               ) : _renderPageMessage()}
             </Grid>
           </div>
