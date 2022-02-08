@@ -5,12 +5,17 @@ import GateMouseInteractor, {
 } from "./gateMouseInteractor";
 import ScatterPolygonGatePlotter from "../plotters/runtimePlugins/scatterPolygonGatePlotter";
 import ScatterPlotter from "../plotters/scatterPlotter";
-import { AxisName, Point, PolygonGate } from "graph/resources/types";
+import {
+  AxisName,
+  Point,
+  PolygonGate,
+  PolygonGate2,
+} from "graph/resources/types";
 import { getPopulation, getWorkspace } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
 import { createID } from "graph/utils/id";
 import { isPointInsideWithLogicle } from "graph/resources/dataset";
-import { getXandYRanges } from "graph/resources/plots";
+import { getXandYRanges, getXandYRangesFromFile } from "graph/resources/plots";
 
 export const selectPointDist = 15;
 
@@ -48,7 +53,6 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
   }
-
   private validateGateOnSpace(gate: PolygonGate) {
     return (
       gate.xAxis === this.plotter.plot.xAxis &&
@@ -171,6 +175,34 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
     }
   }
 
+  protected instanceGate2(): PolygonGate2 {
+    if (!this.started) return;
+
+    const originalRanges = getXandYRangesFromFile(this.plotter.plot2);
+    const newPoints: Point[] = [];
+    for (let i = 0; i < this.points.length; i++) {
+      let p = { x: this.points[i].x, y: this.points[i].y };
+      const a = this.plotter.transformer.toAbstractPoint(p);
+      const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
+      newPoints.push({ ...b });
+    }
+    const newGate: PolygonGate2 = {
+      id: createID(),
+      name: "New Gate",
+      parent: this.plotter.plot2.gateId,
+      points: [{ fileId: this.plotter.plot2.file, points: newPoints }],
+      gateType: "polygon",
+      color: generateColor(),
+      xAxis: this.plotter.plot2.xAxis,
+      xAxisOriginalRanges: originalRanges.x,
+      xAxisType: this.plotter.plot2.xPlotType,
+      yAxis: this.plotter.plot2.yAxis,
+      yAxisOriginalRanges: originalRanges.y,
+      yAxisType: this.plotter.plot2.xPlotType,
+    };
+    return newGate;
+  }
+
   protected instanceGate(): PolygonGate {
     if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
@@ -182,6 +214,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       const b = this.plotter.transformer.rawAbstractLogicleToLinear(a);
       newPoints.push({ ...b });
     }
+
     let population = getPopulation(this.plotter.plot.population);
     const newGate: PolygonGate = {
       points: [...newPoints].map((e) => {
@@ -250,6 +283,7 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       this.points = [...this.points, { ...point }];
     } else if (type === "mousedown") {
       this.createAndAddGate();
+      this.createAndAddGate2();
     }
   }
 

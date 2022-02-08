@@ -8,7 +8,6 @@ import * as PlotResource from "graph/resources/plots";
 
 interface ScatterPlotterState extends GraphPlotterState {}
 
-
 /*
   How to use plotters?
    1. Instance the plotter (no args)
@@ -42,8 +41,6 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
   static instaceIndex = 0;
   instance: number;
-
-
 
   /* This will also create and add to itself all gate plugins it supports, so
      it's never duplicated. Needless to say this is a bad idea and should be
@@ -137,7 +134,12 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   }
 
   public drawPoints() {
+    let i = 0;
     const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
+    // improved one...
+    // const { points, colors } = PlotResource.getXandYDataAndColorsFromPlot2(
+    //   this.plot2
+    // );
     let xData = points[0];
     let yData = points[1];
     const pointCount = xData.length;
@@ -177,10 +179,14 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
     // let lastDistance = 0;
     for (let i = 0; i < pointCount; i++) {
-      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges)) continue;
+      if (this.isOutOfRange({ x: xData[i], y: yData[i] }, customRanges))
+        continue;
       // if (this.isOutOfRange({ x: xData[i + 1], y: yData[i  + 1] }, customRanges)) continue;
 
-      const { x, y } = this.transformer.toConcretePoint({x: xData[i], y: yData[i]}, customRanges);
+      const { x, y } = this.transformer.toConcretePoint(
+        { x: xData[i], y: yData[i] },
+        customRanges
+      );
       // const { x: x2, y: y2 } = this.transformer.toConcretePoint({x: xData[i + 1], y: yData[i + 1]}, customRanges);
 
       // const xDiff: number = Math.abs(x - x2);
@@ -195,7 +201,6 @@ export default class ScatterPlotter extends PluginGraphPlotter {
       // }
     }
   }
-
 
   private isOutOfRange(
     p: { x: number; y: number },

@@ -10,6 +10,7 @@ import {
   AxisName,
   HistogramAxisType,
   PlotType,
+  PolygonGate2,
 } from "graph/resources/types";
 import { getPopulation } from "graph/utils/workspace";
 import { generateColor } from "graph/utils/color";
@@ -173,6 +174,23 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
     );
     scatterPlotterGate.points = gateState.points;
     this.gateUpdater(gateState);
+  }
+  // to be implemented
+  protected instanceGate2(): PolygonGate2 {
+    return {
+      color: "",
+      gateType: "",
+      id: "",
+      name: "",
+      parent: "",
+      points: [],
+      xAxis: "",
+      xAxisOriginalRanges: [],
+      xAxisType: "",
+      yAxis: "",
+      yAxisOriginalRanges: [],
+      yAxisType: "",
+    };
   }
 
   protected instanceGate(): HistogramGate {

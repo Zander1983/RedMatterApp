@@ -18,6 +18,7 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
   public abstract setGatingState(state: any): void;
 
   provisoryGateID: GateID | null = null;
+  provisoryGateID2: GateID | null = null;
 
   /* After draw is called in plotter, draw the gating/gate */
   public draw_AFTER() {

@@ -6,11 +6,13 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 import reducers from "./reducers";
 import graphReducers from "graph/workspaceRedux/graphReduxActions";
 import eventQueueReducers from "graph/workspaceRedux/eventQueueReduxActions";
+import workspaceReducers from "graph/workspaceRedux2/workspaceActions";
 
 const rootReducer = combineReducers({
   user: reducers,
   workspace: graphReducers,
   workspaceEventQueue: eventQueueReducers,
+  workspace2: workspaceReducers,
 });
 
 const persistConfig = {

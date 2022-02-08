@@ -15,6 +15,7 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
+import * as PlotResource2 from "graph/resources/plots2";
 import { getFile, getAllFiles } from "graph/utils/workspace";
 
 import { filterArrayAsPerInput } from "utils/searchFunction";
@@ -409,6 +410,9 @@ const AddFileModal = React.memo(
                               PlotResource.createNewPlotFromFile(
                                 getFile(fileMetadata.id)
                               );
+                              PlotResource2.createPlot({
+                                fileId: fileMetadata.id,
+                              });
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );

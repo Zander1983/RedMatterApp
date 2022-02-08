@@ -1,14 +1,18 @@
 import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlotterPlugin";
-import { Gate, Point, WorkspaceEventGateNaming } from "graph/resources/types";
+import {
+  Gate,
+  Point,
+  PolygonGate2,
+  WorkspaceEventGateNaming,
+} from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { getPopulation } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import WorkspaceDispatch2 from "graph/workspaceRedux2/workspaceDispatcher";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
-import { applyGateToAllFiles } from "graph/components/static/menus/GateMenu";
 export interface GateState {
   lastMousePos: Point;
 }
@@ -91,6 +95,8 @@ export default abstract class GateMouseInteractor {
   }
 
   protected abstract instanceGate(): Gate;
+
+  protected abstract instanceGate2(): PolygonGate2;
   abstract clearGateState(): void;
   protected abstract gateEvent(type: string, point: Point): void;
   protected abstract detectPointsClicked(mouse: Point): void;
@@ -117,6 +123,24 @@ export default abstract class GateMouseInteractor {
     };
     await EventQueueDispatch.AddQueueItem(eventGateName);
     this.end();
+  }
+
+  async createAndAddGate2() {
+    const gate: PolygonGate2 = this.instanceGate2();
+    if (gate.gateType === "polygon") {
+      gate.name = `polygonGate`;
+    } else if (gate.gateType === "histogram") {
+      gate.name = `${this.plotter.plot.xAxis} Subset`;
+    }
+    await WorkspaceDispatch2.AddGate(gate);
+    // let eventGateName: WorkspaceEventGateNaming = {
+    //   id: "",
+    //   plotID: this.plotter.plot2._id,
+    //   gateID: gate.id,
+    //   type: "gateNaming",
+    //   used: false,
+    // };
+    // await EventQueueDispatch.AddQueueItem(eventGateName);
   }
 
   async clonePlotWithSelectedGate(gate: Gate) {
@@ -148,6 +172,7 @@ export default abstract class GateMouseInteractor {
       this.plugin.provisoryGateID = null;
     }
     const p = { x, y };
+
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }

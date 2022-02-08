@@ -17,6 +17,7 @@ import PlotComponent from "graph/components/plots/PlotComponent";
 import { getFile, getGate, getPopulation } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 import {
   Gate,
@@ -150,6 +151,14 @@ const PlotTable = ({
     "Click to View",
   ]);
 
+  useWhyDidYouUpdate("PlotTable", {
+    workspace,
+    sharedWorkspace,
+    experimentId,
+    workspaceLoading,
+    customPlotRerender,
+    arrowFunc,
+  });
   const raws: any[] = [];
   const deletedPlots: string[] = [];
   const deletedPopulations: string[] = [];

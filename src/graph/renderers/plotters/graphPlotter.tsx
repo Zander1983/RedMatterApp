@@ -3,7 +3,7 @@ import GraphDrawer from "graph/renderers/drawers/graphDrawer";
 import GraphTransformer, {
   Label,
 } from "graph/renderers/transformers/graphTransformer";
-import { Gate, Plot } from "graph/resources/types";
+import { Gate, Plot, Plot2 } from "graph/resources/types";
 import { getFile, getPopulation, getWorkspace } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 
@@ -14,6 +14,7 @@ export const bottomPadding = 35;
 
 export interface GraphPlotterState extends PlotterState {
   plot: Plot;
+  plot2: Plot2;
 
   width: number;
   height: number;
@@ -52,6 +53,7 @@ export default class GraphPlotter extends Plotter {
   /* === DATA === */
 
   plot: Plot;
+  plot2: Plot2;
 
   width: number = 0;
   height: number = 0;
@@ -138,6 +140,7 @@ export default class GraphPlotter extends Plotter {
     super.setPlotterState(state);
 
     this.plot = state.plot;
+    this.plot2 = state.plot2;
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
     this.ranges = { x: state.xRange, y: state.yRange };
@@ -188,6 +191,7 @@ export default class GraphPlotter extends Plotter {
   public getPlotterState(): GraphPlotterState {
     return {
       plot: this.plot,
+      plot2: this.plot2,
       width: this.width,
       height: this.height,
       scale: this.scale,

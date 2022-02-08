@@ -12,6 +12,7 @@ import {
   HistogramOverlay,
   FileID,
   HistogramAxisType,
+  Plot2,
 } from "./types";
 import { createID } from "graph/utils/id";
 import {
@@ -696,6 +697,15 @@ export const getXandYRanges = (
   };
 };
 
+export const getXandYRangesFromFile = (plot: Plot2) => {
+  const { defaultRanges, defaultAxisPlotTypes } = getFile(plot.file);
+
+  return {
+    x: defaultRanges[`${plot.xAxis}-${defaultAxisPlotTypes[plot.xAxis]}`],
+    y: defaultRanges[`${plot.yAxis}-${defaultAxisPlotTypes[plot.yAxis]}`],
+  };
+};
+
 export const getHistogramBins = (
   plot: Plot,
   binCount: number,
@@ -763,6 +773,7 @@ export const getHistogramAxisData = (plot: Plot): Float32Array => {
   return filteredPoints[plot.xAxis];
 };
 
+// Old
 export const getXandYDataAndColors = (
   plot: Plot
 ): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
@@ -778,6 +789,18 @@ export const getXandYDataAndColors = (
   );
   return {
     points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
+    colors,
+  };
+};
+
+// New
+export const getXandYDataAndColorsFromPlot2 = (
+  plot: Plot2
+): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
+  const dataset = getDataset(plot.file);
+  const colors = getDatasetColors(dataset, [], [], "#000");
+  return {
+    points: [dataset[plot.xAxis], dataset[plot.yAxis]],
     colors,
   };
 };

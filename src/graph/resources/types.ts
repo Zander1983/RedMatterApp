@@ -52,6 +52,26 @@ export interface Gate {
   children: GateID[];
 }
 
+export interface PolygonGate2Points {
+  fileId: string;
+  points: Point2D[];
+}
+
+export interface PolygonGate2 {
+  id: string;
+  name: string;
+  parent: string;
+  color: string;
+  gateType: string;
+  points: PolygonGate2Points[];
+  xAxis: string;
+  xAxisType: string;
+  xAxisOriginalRanges: number[];
+  yAxis: string;
+  yAxisType: string;
+  yAxisOriginalRanges: number[];
+}
+
 export interface Gate1D extends Gate {
   axis: AxisName;
   axisType: PlotType;
@@ -149,6 +169,51 @@ export interface Plot {
   gatingActive: GateType;
 }
 
+export interface Plot2ObjectMap {
+  [index: string]: {
+    _id: string;
+    gateId: string;
+    gatingActive: string;
+    xAxis: string;
+    yAxis: string;
+    plotWidth: number;
+    plotHeight: number;
+    xPlotType: string;
+    yPlotType: string;
+    histogramAxis: string;
+    dimensions: {
+      h: number;
+      w: number;
+    };
+    positions: {
+      x: number;
+      y: number;
+    };
+    file: string;
+  };
+}
+export interface Plot2 {
+  _id: string;
+  gateId: string;
+  gatingActive: string;
+  xAxis: string;
+  yAxis: string;
+  plotWidth: number;
+  plotHeight: number;
+  xPlotType: string;
+  yPlotType: string;
+  histogramAxis: string;
+  dimensions: {
+    h: number;
+    w: number;
+  };
+  positions: {
+    x: number;
+    y: number;
+  };
+  file: string;
+}
+
 export interface Population {
   id: PopulationID;
   label: string;
@@ -169,6 +234,16 @@ export interface Workspace {
   editWorkspace: boolean;
   selectedFile: string;
   clearOpenFiles: boolean;
+}
+
+export interface Workspace2 {
+  experimentId: string;
+  isShared: boolean;
+  gatingSets: PolygonGate2[][]; // will work on it
+  plots: Plot2ObjectMap;
+  sharedWorkspace: boolean;
+  editWorkspace: boolean;
+  selectedFile: string;
 }
 
 export interface PlotSpecificWorkspaceData {

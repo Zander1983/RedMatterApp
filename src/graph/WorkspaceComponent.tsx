@@ -37,6 +37,7 @@ import {
 import {
   PlotsRerender,
   Workspace as WorkspaceType,
+  Workspace2,
   WorkspaceEvent,
 } from "./resources/types";
 import PlotController from "./components/workspaces/PlotController";
@@ -116,6 +117,9 @@ const WorkspaceInnerComponent = (props: {
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  //@ts-ignore
+  const workspace2: Workspace2 = useSelector((state) => state.workspace2);
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
@@ -769,6 +773,7 @@ const WorkspaceInnerComponent = (props: {
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   workspace={workspace}
+                  workspace2={workspace2}
                   workspaceLoading={workspaceLoading}
                   customPlotRerender={customPlotRerender}
                   arrowFunc={() => {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 
 import {
   Gate,
@@ -6,6 +6,7 @@ import {
   Plot,
   Population,
   PlotID,
+  Plot2ObjectMap,
 } from "graph/resources/types";
 
 import CanvasComponent, {
@@ -66,6 +67,7 @@ const PlotRenderer = (props: {
   editWorkspace: boolean;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
+  plt?: Plot2ObjectMap;
 }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
@@ -209,14 +211,13 @@ const PlotRenderer = (props: {
         start ? e.start() : e.end();
       });
   };
-
   const setPlotterState = (inpPlotter?: GraphPlotter) => {
     if (!inpPlotter) inpPlotter = plotter;
     const data = PlotResource.getXandYData(plot);
     const ranges = PlotResource.getXandYRanges(plot);
-
     const plotterState = {
       plot: plot,
+      plot2: props.plt[Object.keys(props.plt)[0]] || null,
       xAxis: data[0],
       yAxis: data[1],
       xAxisName: plot.xAxis,

@@ -19,6 +19,7 @@ import {
   PlotID,
   PlotSpecificWorkspaceData,
   Workspace,
+  Workspace2,
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
@@ -179,6 +180,7 @@ interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
   workspace: Workspace;
+  workspace2?: Workspace2;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
@@ -453,6 +455,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                                           plotRelevantResources={this.getPlotRelevantResources(
                                             plot
                                           )}
+                                          plt={this.props.workspace2.plots}
                                           sharedWorkspace={
                                             this.props.sharedWorkspace
                                           }
