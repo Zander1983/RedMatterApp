@@ -2,6 +2,7 @@ import { createID } from "graph/utils/id";
 import { MINH, MINW } from "graph/components/workspaces/PlotController";
 import WorkspaceDispatch from "graph/workspaceRedux2/workspaceDispatcher";
 import { Plot2 } from "./types";
+import { getWorkspace2 } from "graph/utils/workspace2";
 import { getFile } from "graph/utils/workspace";
 
 export const createPlot = ({
@@ -30,4 +31,9 @@ export const createPlot = ({
     yPlotType: "lin",
   };
   WorkspaceDispatch.AddPlot(plot);
+};
+
+export const getPlot2 = (plotId: string): Plot2 | undefined => {
+  const workspace = getWorkspace2();
+  return workspace.plots[plotId];
 };

@@ -7,12 +7,14 @@ import reducers from "./reducers";
 import graphReducers from "graph/workspaceRedux/graphReduxActions";
 import eventQueueReducers from "graph/workspaceRedux/eventQueueReduxActions";
 import workspaceReducers from "graph/workspaceRedux2/workspaceActions";
+import eventQueue2Reducers from "graph/workspaceRedux2/eventQueue2Actions";
 
 const rootReducer = combineReducers({
   user: reducers,
   workspace: graphReducers,
   workspaceEventQueue: eventQueueReducers,
   workspace2: workspaceReducers,
+  workspace2EventQueue: eventQueue2Reducers,
 });
 
 const persistConfig = {

@@ -13,6 +13,7 @@ import { getPopulation } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import WorkspaceDispatch2 from "graph/workspaceRedux2/workspaceDispatcher";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import EventQueue2Dispatch from "graph/workspaceRedux2/eventQueue2Dispatcher";
 export interface GateState {
   lastMousePos: Point;
 }
@@ -133,14 +134,14 @@ export default abstract class GateMouseInteractor {
       gate.name = `${this.plotter.plot.xAxis} Subset`;
     }
     await WorkspaceDispatch2.AddGate(gate);
-    // let eventGateName: WorkspaceEventGateNaming = {
-    //   id: "",
-    //   plotID: this.plotter.plot2._id,
-    //   gateID: gate.id,
-    //   type: "gateNaming",
-    //   used: false,
-    // };
-    // await EventQueueDispatch.AddQueueItem(eventGateName);
+    let eventGateName: WorkspaceEventGateNaming = {
+      id: "",
+      plotID: this.plotter.plot2._id,
+      gateID: gate.id,
+      type: "gateNaming",
+      used: false,
+    };
+    await EventQueue2Dispatch.AddQueueItem(eventGateName);
   }
 
   async clonePlotWithSelectedGate(gate: Gate) {

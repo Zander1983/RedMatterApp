@@ -9,15 +9,20 @@ import { useSelector } from "react-redux";
 import {
   Gate,
   Plot,
+  Plot2,
   PlotsRerender,
+  PolygonGate2,
   WorkspaceEvent,
   WorkspaceEventGateNaming,
 } from "graph/resources/types";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getGate, getPlot } from "graph/utils/workspace";
+import { getGate2 } from "graph/resources/gates2";
+import { getPlot2 } from "graph/resources/plots2";
 import { createSubpopPlot } from "graph/resources/plots";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import EventQueue2Dispatch from "graph/workspaceRedux2/eventQueue2Dispatcher";
 import useGAEventTrackers from "hooks/useGAEvents";
 
 export default function GateNamePrompt() {
@@ -28,6 +33,15 @@ export default function GateNamePrompt() {
   const [gate, setGate] = React.useState<Gate>();
   const [plot, setPlot] = React.useState<Plot>();
   const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
+
+  // for updated DS
+  const [open2, setOpen2] = React.useState<boolean>(false);
+  const [nameError2, setNameError2] = React.useState(false);
+  const [newGateCreated2, setNewGateCreated2] = React.useState(false);
+  const [name2, setName2] = React.useState("");
+  const [gate2, setGate2] = React.useState<PolygonGate2>();
+  const [plot2, setPlot2] = React.useState<Plot2>();
+  const [event2, setEvent2] = React.useState<WorkspaceEventGateNaming>();
 
   const eventStacker = useGAEventTrackers("Gate Created.");
   useSelector((e: any) => {
@@ -44,6 +58,23 @@ export default function GateNamePrompt() {
       setOpen(true);
       setEvent(event);
       EventQueueDispatch.UpdateUsed(event.id);
+    }
+  });
+  useSelector((e: any) => {
+    const eventQueue = e.workspace2EventQueue.queue;
+    let eventGateNamingArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
+    );
+    if (eventGateNamingArray.length > 0) {
+      let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      let gate = getGate2(event.gateID);
+      let plot = getPlot2(event.plotID);
+      setName2(gate.name);
+      setGate2(gate);
+      setPlot2(plot);
+      setOpen2(true);
+      setEvent2(event);
+      EventQueue2Dispatch.UpdateUsed(event.id);
     }
   });
 

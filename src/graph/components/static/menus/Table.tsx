@@ -151,14 +151,14 @@ const PlotTable = ({
     "Click to View",
   ]);
 
-  useWhyDidYouUpdate("PlotTable", {
-    workspace,
-    sharedWorkspace,
-    experimentId,
-    workspaceLoading,
-    customPlotRerender,
-    arrowFunc,
-  });
+  // useWhyDidYouUpdate("PlotTable", {
+  //   workspace,
+  //   sharedWorkspace,
+  //   experimentId,
+  //   workspaceLoading,
+  //   customPlotRerender,
+  //   arrowFunc,
+  // });
   const raws: any[] = [];
   const deletedPlots: string[] = [];
   const deletedPopulations: string[] = [];
