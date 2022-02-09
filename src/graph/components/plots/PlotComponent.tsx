@@ -79,7 +79,11 @@ const PlotComponent = React.memo(
                 ? props.fileName
                 : `${props.fileName.slice(0, 35)}...`}
             </div>
-            <MainBar plot={plot} editWorkspace={props.editWorkspace} />
+            <MainBar
+              plot={plot}
+              editWorkspace={props.editWorkspace}
+              plot2={props.plt}
+            />
             <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}

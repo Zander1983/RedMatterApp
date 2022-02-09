@@ -4,6 +4,7 @@ import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import useGAEventTrackers from "hooks/useGAEvents";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -20,29 +21,34 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 10,
   },
 }));
-
-function MessageModal(props: {
+interface MessageModalProps {
   open: boolean;
-  closeCall: { f: Function; ref: Function };
-  message: JSX.Element;
+  // closeCall: { f: Function; ref: Function };
+  close: React.Dispatch<React.SetStateAction<boolean>>;
+  // message: React.Component;
   noButtons?: boolean;
   options?: {
     yes(): void;
     no(): void;
   };
-}): JSX.Element {
-  const classes = useStyles();
+}
 
+function MessageModal(
+  props: React.PropsWithChildren<MessageModalProps>
+): JSX.Element {
+  const classes = useStyles();
+  // useWhyDidYouUpdate("Modal", props);
   const eventStacker = useGAEventTrackers("Plot Deleted.");
   return (
     <Modal
       open={props.open}
       onClose={() => {
-        props.closeCall.f(props.closeCall.ref);
+        props.close(false);
+        // props.closeCall.f(props.closeCall.ref);
       }}
     >
       <div className={classes.modal}>
-        {props.message}
+        {props.children}
         {props.noButtons ? null : (
           <div>
             <Divider style={{ marginTop: 10, marginBottom: 10 }}></Divider>
@@ -50,7 +56,10 @@ function MessageModal(props: {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => props.closeCall.f(props.closeCall.ref)}
+                onClick={() => {
+                  props.close(false);
+                  // props.closeCall.f(props.closeCall.ref)
+                }}
               >
                 Go back
               </Button>
@@ -62,7 +71,9 @@ function MessageModal(props: {
                   onClick={() => {
                     eventStacker("A plot was deleted.");
                     props.options?.yes();
-                    props.closeCall.f(props.closeCall.ref);
+                    props.close(false);
+
+                    // props.closeCall.f(props.closeCall.ref);
                   }}
                 >
                   Yes
@@ -76,7 +87,9 @@ function MessageModal(props: {
                   }}
                   onClick={() => {
                     props.options?.no();
-                    props.closeCall.f(props.closeCall.ref);
+                    props.close(false);
+
+                    // props.closeCall.f(props.closeCall.ref);
                   }}
                 >
                   No

@@ -30,6 +30,9 @@ const styles = {
     fontWeight: 500,
   },
 };
+const DeleteMessageComponent = () => {
+  return <h2>Are you sure you want to delete this experiment?</h2>;
+};
 
 export default function ExperimentCard(props: { data: any; update: Function }) {
   const getTimeCal = (date: string) => {
@@ -81,11 +84,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
     >
       <MessageModal
         open={deleteConfirmModal}
-        closeCall={{
-          f: handleClose,
-          ref: setDeleteConfirmModal,
-        }}
-        message={<h2>Are you sure you want to delete this experiment?</h2>}
+        close={setDeleteConfirmModal}
         options={{
           yes: () => {
             setDeleteConfirmModal(false);
@@ -95,7 +94,9 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
             setDeleteConfirmModal(false);
           },
         }}
-      />
+      >
+        <DeleteMessageComponent />
+      </MessageModal>
       <Grid item>
         <Card>
           <NavLink

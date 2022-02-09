@@ -8,16 +8,18 @@ import TouchAppIcon from "@material-ui/icons/TouchApp";
 import MessageModal from "../modals/MessageModal";
 import RangeResizeModal from "../modals/rangeResizeModal";
 import gate from "../../../assets/images/gate.png";
-import { Plot, PlotsRerender } from "graph/resources/types";
+import { Plot, Plot2, PlotsRerender } from "graph/resources/types";
 import {
   getFile,
   getGate,
   getPopulation,
   getWorkspace,
 } from "graph/utils/workspace";
+import { getWorkspace2 } from "graph/utils/workspace2";
 import * as PlotResource from "graph/resources/plots";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { CameraFilled } from "@ant-design/icons";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import Workspac2eDispatch from "graph/workspaceRedux2/workspaceDispatcher";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 const classes = {
@@ -114,7 +116,23 @@ export const deletePlotAndPopulationOfFile = (fileId: string) => {
   WorkspaceDispatch.DeletePlotsAndPopulations(plots, populations);
 };
 
-export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
+const DeletePanel = () => {
+  return <h2>Are you sure you want to delete this panel?</h2>;
+};
+
+const SubPopulation = () => {
+  return (
+    <h2 style={{ fontSize: 23, fontWeight: 400 }}>
+      You cannot create a subpopulation of a plot that is not gated!
+    </h2>
+  );
+};
+
+export default function MainBar(props: {
+  plot: Plot;
+  editWorkspace: boolean;
+  plot2: Plot2;
+}) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
   // const [ovalGating, setOvalGating] = React.useState(false);
@@ -129,7 +147,9 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
   const plot = props.plot;
+  const plot2 = props.plot2;
   const workspace = getWorkspace();
+  const workspace2 = getWorkspace2();
 
   const deletePlot = () => {
     let selectedFilePlotLength = 0;
@@ -146,6 +166,8 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
     } else {
       deleteSpecificPlotsFromAllFiles(props.plot);
     }
+    // Delete for new DS
+    Workspac2eDispatch.DeletePlot(plot2._id);
   };
 
   const handleClose = (func: Function) => {
@@ -250,11 +272,7 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
       />
       <MessageModal
         open={deleteModalOpen}
-        closeCall={{
-          f: handleClose,
-          ref: setDeleteModalOpen,
-        }}
-        message={<h2>Are you sure you want to delete this panel?</h2>}
+        close={setDeleteModalOpen}
         options={{
           yes: () => {
             deletePlot();
@@ -263,20 +281,13 @@ export default function MainBar(props: { plot: Plot; editWorkspace: boolean }) {
             handleClose(setDeleteModalOpen);
           },
         }}
-      />
+      >
+        <DeletePanel />
+      </MessageModal>
 
-      <MessageModal
-        open={emptySubpopModalOpen}
-        closeCall={{
-          f: handleClose,
-          ref: setEmptySubpopModalOpen,
-        }}
-        message={
-          <h2 style={{ fontSize: 23, fontWeight: 400 }}>
-            You cannot create a subpopulation of a plot that is not gated!
-          </h2>
-        }
-      />
+      <MessageModal open={emptySubpopModalOpen} close={setEmptySubpopModalOpen}>
+        <SubPopulation />
+      </MessageModal>
 
       <Grid
         container

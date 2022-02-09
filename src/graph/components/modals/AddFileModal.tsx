@@ -21,6 +21,7 @@ import { getFile, getAllFiles } from "graph/utils/workspace";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -64,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
 const AddFileModal = React.memo(
   (props: {
     open: boolean;
-    closeCall: { f: Function; ref: Function };
+    close: React.Dispatch<React.SetStateAction<boolean>>;
     isShared: boolean;
     experimentId: string;
     files: File[];
@@ -73,38 +74,40 @@ const AddFileModal = React.memo(
     const classes = useStyles();
 
     const filesMetadata = props.files;
-    const files = getAllFiles();
     const [onHover, setOnHover] = React.useState(-1);
 
-    const [downloading, setDowloading] = useState<FileID[]>([]);
+    // const [downloading, setDowloading] = useState<FileID[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
     const eventStacker = useGAEventTrackers("Plot Added.");
 
-    const downloadFile = async (fileId: string) => {
-      let file: File = getFile(fileId);
-      if (!file.downloaded) {
-        const newId = await downloadFileEvent(
-          props.isShared,
-          fileId,
-          props.experimentId
-        );
-        if (typeof newId !== "string") {
-          throw Error("wtf?");
-        }
-        file = getFile(newId);
-      }
-      await PlotResource.createNewPlotFromFile(file);
-      props.closeCall.f(props.closeCall.ref);
-    };
+    // const downloadFile = async (fileId: string) => {
+    //   let file: File = getFile(fileId);
+    //   if (!file.downloaded) {
+    //     const newId = await downloadFileEvent(
+    //       props.isShared,
+    //       fileId,
+    //       props.experimentId
+    //     );
+    //     if (typeof newId !== "string") {
+    //       throw Error("wtf?");
+    //     }
+    //     file = getFile(newId);
+    //   }
+    //   await PlotResource.createNewPlotFromFile(file);
+    //   props.close(false);
+    //   // props.closeCall.f(props.closeCall.ref);
+    // };
 
-    useEffect(() => {
-      let downloadingFiles: File[] = files.filter((x) => x.downloading);
-      let downloadingFileIds: string[] = [];
-      if (downloadingFiles && downloadingFiles.length > 0) {
-        downloadingFileIds = downloadingFiles.map((x) => x.id);
-      }
-      setDowloading(downloadingFileIds);
-    }, [props.files]);
+    // useWhyDidYouUpdate("Open Modal", props);
+
+    // useEffect(() => {
+    //   let downloadingFiles: File[] = files.filter((x) => x.downloading);
+    //   let downloadingFileIds: string[] = [];
+    //   if (downloadingFiles && downloadingFiles.length > 0) {
+    //     downloadingFileIds = downloadingFiles.map((x) => x.id);
+    //   }
+    //   setDowloading(downloadingFileIds);
+    // }, [props.files]);
 
     const everythingDownloaded = filesMetadata
       .map((e) => e.downloaded)
@@ -120,7 +123,8 @@ const AddFileModal = React.memo(
       <Modal
         open={props.open}
         onClose={() => {
-          props.closeCall.f(props.closeCall.ref);
+          props.close(false);
+          // props.closeCall.f(props.closeCall.ref);
         }}
       >
         <div className={classes.fileSelectModal}>
@@ -224,8 +228,8 @@ const AddFileModal = React.memo(
                     <Divider className={classes.fileSelectDivider} />
                   );
 
-                const isDownloading =
-                  downloading.filter((e) => e === fileMetadata.id).length > 0;
+                // const isDownloading =
+                //   downloading.filter((e) => e === fileMetadata.id).length > 0;
 
                 let isDownloaded = fileMetadata.downloaded;
 
@@ -332,9 +336,9 @@ const AddFileModal = React.memo(
                           <Grid style={{ display: "inline-block" }}>
                             {isDownloaded
                               ? "Loaded"
-                              : isDownloading
-                              ? "Loading..."
-                              : "Remote"}
+                              : // : isDownloading
+                                // ? "Loading..."
+                                "Remote"}
                           </Grid>
                           <Grid
                             style={{
@@ -351,14 +355,14 @@ const AddFileModal = React.memo(
                                 marginLeft: 10,
                                 backgroundColor: isDownloaded
                                   ? "green"
-                                  : isDownloading
-                                  ? "#66d"
-                                  : "#d66",
+                                  : // : isDownloading
+                                    // ? "#66d"
+                                    "#d66",
                               }}
                             />
                           </Grid>
                         </Grid>
-                        {isDownloaded === false ? (
+                        {/* {isDownloaded === false ? (
                           <Button
                             style={{
                               backgroundColor: "#66d",
@@ -366,7 +370,7 @@ const AddFileModal = React.memo(
                               fontSize: 13,
                               marginLeft: 20,
                             }}
-                            disabled={isDownloading}
+                            // disabled={isDownloading}
                             onClick={() => {
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
@@ -376,7 +380,8 @@ const AddFileModal = React.memo(
                                 fileMetadata.id
                               );
                               setTimeout(() => {
-                                props.closeCall.f(props.closeCall.ref);
+                                props.close(false);
+                                // props.closeCall.f(props.closeCall.ref);
                               }, 400);
                             }}
                           >
@@ -388,13 +393,13 @@ const AddFileModal = React.memo(
                                   height: 23,
                                 }}
                               />
-                            ) : props.selectedFile === fileMetadata.id ? (
-                              "Selected As Control"
-                            ) : (
-                              "Set As Control"
-                            )}
+                            ) : 
+                            {props.selectedFile === fileMetadata.id
+                              ? "Selected As Control"
+                              : "Set As Control"}
                           </Button>
-                        ) : null}
+                        ) : null} */}
+
                         {isDownloaded ? (
                           <Button
                             style={{
@@ -412,15 +417,17 @@ const AddFileModal = React.memo(
                               );
                               PlotResource2.createPlot({
                                 fileId: fileMetadata.id,
+                                updateSelectedFile: true,
                               });
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
                               setTimeout(() => {
-                                props.closeCall.f(props.closeCall.ref);
+                                props.close(false);
+                                // props.closeCall.f(props.closeCall.ref);
                               }, 400);
                             }}
-                            disabled={isDownloading}
+                            // disabled={isDownloading}
                           >
                             {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"

@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import axios from "axios";
 import { useHistory } from "react-router";
 
@@ -51,6 +51,7 @@ import NotificationsOverlay, { Notification } from "./resources/notifications";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import _ from "lodash";
 
 let updateTimeout: any = null;
 const useStyles = makeStyles((theme) => ({
@@ -106,6 +107,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 let i = 0;
+
+const LoadModalComponent = React.memo(() => {
+  return (
+    <div>
+      <h2>Loading workspace</h2>
+      <h4 style={{ color: "#777" }}>
+        Please wait, we are collecting your files from the servers...
+      </h4>
+      <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
+    </div>
+  );
+});
+
+const DeleteEntireWorkspaceCompoment = () => {
+  return (
+    <div>
+      <h2>Are you sure you want to delete the entire workspace?</h2>
+      <p style={{ marginLeft: 100, marginRight: 100 }}>
+        The links you've shared with "share workspace" will still work, if you
+        want to access this in the future, make sure to store them.
+      </p>
+    </div>
+  );
+};
 const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
@@ -119,6 +144,8 @@ const WorkspaceInnerComponent = (props: {
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   //@ts-ignore
   const workspace2: Workspace2 = useSelector((state) => state.workspace2);
+  //@ts-ignore
+  const files = useSelector((state) => state.files.files);
 
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
@@ -162,9 +189,9 @@ const WorkspaceInnerComponent = (props: {
   const handleOpen = (func: Function) => {
     func(true);
   };
-  const handleClose = (func: Function) => {
+  const handleClose = useCallback((func: Function) => {
     func(false);
-  };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -496,57 +523,44 @@ const WorkspaceInnerComponent = (props: {
       <div>
         <GateNamePrompt selectedFile={workspace.selectedFile} />
 
-        <AddFileModal
-          open={addFileModalOpen}
-          closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-          isShared={sharedWorkspace}
-          experimentId={props.experimentId}
-          files={workspace.files}
-          selectedFile={workspace.selectedFile}
-        />
+        {files.length > 0 && (
+          <AddFileModal
+            open={addFileModalOpen}
+            close={setAddFileModalOpen}
+            isShared={sharedWorkspace}
+            experimentId={props.experimentId}
+            files={files}
+            selectedFile={workspace.selectedFile}
+          />
+        )}
 
         <GenerateReportModal
           open={generateReportModalOpen}
-          closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
+          close={setGenerateReportModalOpen}
+          // closeCall={{ f: handleClose, ref: setGenerateReportModalOpen }}
         />
 
         <LinkShareModal
           open={linkShareModalOpen}
           workspaceId={newWorkspaceId}
-          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+          close={setLinkShareModalOpen}
+          // closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
         />
       </div>
 
       <MessageModal
         open={loadModal}
-        closeCall={{ f: handleClose, ref: setLoadModal }}
-        message={
-          <div>
-            <h2>Loading workspace</h2>
-            <h4 style={{ color: "#777" }}>
-              Please wait, we are collecting your files from the servers...
-            </h4>
-            <CircularProgress style={{ marginTop: 20, marginBottom: 20 }} />
-          </div>
-        }
+        close={setLoadModal}
+        // closeCall={{ f: handleClose, ref: setLoadModal }}
+        // message={}
         noButtons={true}
-      />
+      >
+        <LoadModalComponent />
+      </MessageModal>
 
       <MessageModal
         open={clearModal}
-        closeCall={{
-          f: handleClose,
-          ref: setClearModal,
-        }}
-        message={
-          <div>
-            <h2>Are you sure you want to delete the entire workspace?</h2>
-            <p style={{ marginLeft: 100, marginRight: 100 }}>
-              The links you've shared with "share workspace" will still work, if
-              you want to access this in the future, make sure to store them.
-            </p>
-          </div>
-        }
+        close={setClearModal}
         options={{
           yes: () => {
             WorkspaceDispatch.ResetWorkspaceExceptFiles();
@@ -555,7 +569,9 @@ const WorkspaceInnerComponent = (props: {
             handleClose(setClearModal);
           },
         }}
-      />
+      >
+        <DeleteEntireWorkspaceCompoment />
+      </MessageModal>
 
       {/* == STATIC ELEMENTS == */}
       <SideMenus workspace={workspace}></SideMenus>

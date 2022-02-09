@@ -87,7 +87,7 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
     gate.name = newName;
     gate2.name = newName;
     WorkspaceDispatch.UpdateGate(gate);
-    Workspace2Dispatch.UpdateGateName(gate2);
+    Workspace2Dispatch.UpdateGate(gate2);
     setOpen(false);
     try {
       instancePlot(plot, gate);

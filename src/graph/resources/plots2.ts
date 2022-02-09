@@ -8,9 +8,11 @@ import { getFile } from "graph/utils/workspace";
 export const createPlot = ({
   fileId,
   gateId,
+  updateSelectedFile,
 }: {
   fileId: string;
   gateId?: string;
+  updateSelectedFile?: boolean;
 }) => {
   const id = createID();
   const { axes } = getFile(fileId);
@@ -30,7 +32,13 @@ export const createPlot = ({
     xPlotType: "lin",
     yPlotType: "lin",
   };
-  WorkspaceDispatch.AddPlot(plot);
+  if (updateSelectedFile) {
+    // creates a plot and updates selected file
+    WorkspaceDispatch.AddPlot(plot, fileId);
+  } else {
+    // only creates a plot
+    WorkspaceDispatch.AddPlot(plot);
+  }
 };
 
 export const getPlot2 = (plotId: string): Plot2 | undefined => {

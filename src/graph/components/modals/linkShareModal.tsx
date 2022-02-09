@@ -12,6 +12,7 @@ import Divider from "@material-ui/core/Divider";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import LinkReconstructor from "graph/utils/linkReconstructor";
 import { getWorkspace } from "graph/utils/workspace";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -40,10 +41,13 @@ const useStyles = makeStyles((theme) => ({
 function LinkShareModal(props: {
   open: boolean;
   workspaceId: string;
-  closeCall: { f: Function; ref: Function };
+  close: React.Dispatch<React.SetStateAction<boolean>>;
+  // closeCall: { f: Function; ref: Function };
 }): JSX.Element {
   const classes = useStyles();
   const linkReconstructor = new LinkReconstructor();
+  // useWhyDidYouUpdate("Link Share Modal", props);
+
   let link = "";
   if (props.open) {
     link = linkReconstructor.store(getWorkspace(), props.workspaceId);
@@ -74,7 +78,8 @@ function LinkShareModal(props: {
     <Modal
       open={props.open}
       onClose={() => {
-        props.closeCall.f(props.closeCall.ref);
+        props.close(false);
+        // props.closeCall.f(props.closeCall.ref);
       }}
     >
       <div className={classes.modal}>

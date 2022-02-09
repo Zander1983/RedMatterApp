@@ -2,11 +2,17 @@ import { workspaceActions2 } from "./workspaceActions";
 import { store } from "redux/store";
 import { Plot2, PolygonGate2 } from "graph/resources/types";
 
-const WorkspaceDispatch = {
-  AddPlot: (plot: Plot2) => {
+const Workspace2Dispatch = {
+  AddPlot: (plot: Plot2, fileId?: string) => {
     return store.dispatch({
       type: workspaceActions2.ADD_PLOT,
-      payload: { plot },
+      payload: { plot, fileId },
+    });
+  },
+  DeletePlot: (plotId: string) => {
+    return store.dispatch({
+      type: workspaceActions2.DELETE_PLOT,
+      payload: { plotId },
     });
   },
   AddGate: (gate: PolygonGate2) => {
@@ -15,7 +21,7 @@ const WorkspaceDispatch = {
       payload: { gate },
     });
   },
-  UpdateGateName: (gate: PolygonGate2) => {
+  UpdateGate: (gate: PolygonGate2) => {
     return store.dispatch({
       type: workspaceActions2.UPDATE_GATE,
       payload: { gate },
@@ -23,4 +29,4 @@ const WorkspaceDispatch = {
   },
 };
 
-export default WorkspaceDispatch;
+export default Workspace2Dispatch;

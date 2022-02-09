@@ -6,6 +6,7 @@ import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import FilesDispatch from "graph/workspaceRedux2/filesDispatchers";
 
 const EVENTS_LIMIT = 4000;
 
@@ -32,6 +33,7 @@ export const downloadFileMetadata = async (
   const response = await axios.get(params.url, params.options);
 
   const files = response.data.files;
+  // console.log(files);
   const workspace: Workspace = store.getState().workspace;
   let newFilesIds: FileID[] = [];
   let allFiles: File[] = [];
@@ -53,7 +55,6 @@ export const downloadFileMetadata = async (
   }
   WorkspaceDispatch.SetFiles(allFiles);
   return newFilesIds;
-    //return  allFiles;
 };
 
 export const downloadFileEvent = async (
@@ -69,6 +70,7 @@ export const downloadFileEvent = async (
   // }
   try {
     let files: FileID[] = [];
+    const filesArray: File[] = [];
     if (typeof targetFiles === "string") {
       files = [targetFiles];
     } else {
@@ -121,7 +123,7 @@ export const downloadFileEvent = async (
     let headers = {};
     if (token) headers = { token };
 
-    response = await axios.post("/api/events", payload, {headers});
+    response = await axios.post("/api/events", payload, { headers });
 
     // if (showNotifications && notification !== null) notification.killNotification();
     // if(response?.data?.length <= 0) throw new Error("Missing Data");
@@ -144,9 +146,11 @@ export const downloadFileEvent = async (
       newFile = { ...newFile, ...getFile(file.id) };
       newFile.downloaded = true;
       newFile.downloading = false;
+      filesArray.push(newFile);
       WorkspaceDispatch.UpdateFile(newFile);
       killNoti = true;
     }
+    FilesDispatch.SetFiles(filesArray);
     if (typeof targetFiles === "string") {
       return targetFiles;
     } else {
@@ -157,71 +161,78 @@ export const downloadFileEvent = async (
     //   notification.killNotification();
     // }
     if (retry > 0) {
-        downloadFileEvent(
-                workspaceIsShared,
-                targetFiles,
-                experimentId,
-                (showNotifications = true),
-                retry - 1
-            );
+      downloadFileEvent(
+        workspaceIsShared,
+        targetFiles,
+        experimentId,
+        (showNotifications = true),
+        retry - 1
+      );
     } else {
       // if (showNotifications) {
       //   notification.killNotification();
       // }
-      throw err ;//Error("File was not downloaded");
+      throw err; //Error("File was not downloaded");
     }
   }
-
 };
 
-export const dowloadAllFileEvents = async (workspaceIsShared?: boolean, experimentId?: string, batch?: string[]) => {
-  if (!workspaceIsShared) workspaceIsShared = false;
-  if (!experimentId)
-    experimentId = store.getState().user.experiment.experimentId;
-  let files: string[] = [];
-    const workspace = getWorkspace();
-    if(workspace.files.length === 0) throw Error("FILE-MISSING:Some pre-requirement data is not properly loaded");
-  if (batch) {
-    files = workspace.files
-      .filter((e) => !e.downloaded && batch.includes(e.id))
-      .map((e) => e.id);
-  } else {
-      const workspace = getWorkspace();
-      files = workspace.files
-          .filter((e) => !e.downloaded)
-          .map((e) => e.id);
-  }
-
-  try {
-      return await downloadFileEvent(workspaceIsShared, files, experimentId);
-  }catch (e) {
-      throw e;
-  }
-
-};
-
-export const downloadEvents = async (workspaceIsShared?: boolean, experimentId?: string, batch?: string[]) => {
+export const dowloadAllFileEvents = async (
+  workspaceIsShared?: boolean,
+  experimentId?: string,
+  batch?: string[]
+) => {
   if (!workspaceIsShared) workspaceIsShared = false;
   if (!experimentId)
     experimentId = store.getState().user.experiment.experimentId;
   let files: string[] = [];
   const workspace = getWorkspace();
-  if(workspace.files.length === 0) throw Error("FILE-MISSING:Some pre-requirement data is not properly loaded");
+  if (workspace.files.length === 0)
+    throw Error(
+      "FILE-MISSING:Some pre-requirement data is not properly loaded"
+    );
   if (batch) {
     files = workspace.files
-        .filter((e) => !e.downloaded && batch.includes(e.id))
-        .map((e) => e.id);
+      .filter((e) => !e.downloaded && batch.includes(e.id))
+      .map((e) => e.id);
   } else {
     const workspace = getWorkspace();
-    files = workspace.files
-        .filter((e) => !e.downloaded)
-        .map((e) => e.id);
+    files = workspace.files.filter((e) => !e.downloaded).map((e) => e.id);
   }
 
   try {
     return await downloadFileEvent(workspaceIsShared, files, experimentId);
-  }catch (e) {
+  } catch (e) {
     throw e;
   }
+};
 
+export const downloadEvents = async (
+  workspaceIsShared?: boolean,
+  experimentId?: string,
+  batch?: string[]
+) => {
+  if (!workspaceIsShared) workspaceIsShared = false;
+  if (!experimentId)
+    experimentId = store.getState().user.experiment.experimentId;
+  let files: string[] = [];
+  const workspace = getWorkspace();
+  if (workspace.files.length === 0)
+    throw Error(
+      "FILE-MISSING:Some pre-requirement data is not properly loaded"
+    );
+  if (batch) {
+    files = workspace.files
+      .filter((e) => !e.downloaded && batch.includes(e.id))
+      .map((e) => e.id);
+  } else {
+    const workspace = getWorkspace();
+    files = workspace.files.filter((e) => !e.downloaded).map((e) => e.id);
+  }
+
+  try {
+    return await downloadFileEvent(workspaceIsShared, files, experimentId);
+  } catch (e) {
+    throw e;
+  }
 };

@@ -8,6 +8,7 @@ import graphReducers from "graph/workspaceRedux/graphReduxActions";
 import eventQueueReducers from "graph/workspaceRedux/eventQueueReduxActions";
 import workspaceReducers from "graph/workspaceRedux2/workspaceActions";
 import eventQueue2Reducers from "graph/workspaceRedux2/eventQueue2Actions";
+import filesReducers from "graph/workspaceRedux2/filesAction";
 
 const rootReducer = combineReducers({
   user: reducers,
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   workspaceEventQueue: eventQueueReducers,
   workspace2: workspaceReducers,
   workspace2EventQueue: eventQueue2Reducers,
+  files: filesReducers,
 });
 
 const persistConfig = {
