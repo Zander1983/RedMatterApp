@@ -28,10 +28,6 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
 import _ from "lodash";
-import {
-  deleteAllPlotsAndPopulationOfNonControlFile,
-  deletePlotAndPopulationOfFile,
-} from "graph/components/plots/MainBar";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
@@ -175,11 +171,11 @@ interface Props {
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
-  file: any;
+  file: File;
   headers: string[];
   data: any[];
-  index: number;
   openFiles: string[];
+  index:any,
   setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 const PlotRowComponent = ({
@@ -191,9 +187,9 @@ const PlotRowComponent = ({
   file,
   headers,
   data,
-  index,
   openFiles,
   setOpenFiles,
+    index
 }: Props) => {
   const classes = useStyles();
 
@@ -261,6 +257,27 @@ const PlotRowComponent = ({
     WorkspaceDispatch.UpdateFile(file);
   };
 
+  const updatePlot = () => {
+    const plots: Plot[] = [];
+    getTableRowPlots(file).map(({ plot }) => {
+      if (plot.plotWidth !== 319 || plot.plotHeight !== 204) {
+        plot.plotHeight = 204;
+        plot.plotWidth = 319;
+        plots.push(plot);
+      }
+    });
+    if (plots.length > 0) {
+      WorkspaceDispatch.UpdatePlots(plots);
+    } else {
+      const plotsRerenderQueueItem: PlotsRerender = {
+        id: "",
+        used: false,
+        type: "plotsRerender",
+        plotIDs: getTableRowPlots(file).map(({ plot }) => plot.id),
+      };
+      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    }
+  };
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
       let plots: PlotsAndFiles[] = [];
@@ -298,39 +315,20 @@ const PlotRowComponent = ({
   };
 
   useEffect(() => {
-    function handleUserMouseUp(event: any) {
-      _.debounce(() => {
-        resetPlotSizes();
-        setCanvasSize(true, true);
-      }, 100);
+    if (file.id === workspace.selectedFile) {
+      updatePlot();
+      generatePlots(file);
     }
-    function handleUserResize(event: any) {
-      _.debounce(() => {
-        resetPlotSizes();
-        setCanvasSize(true, false);
-      }, 300);
-    }
-
-    window.addEventListener("mouseup", handleUserMouseUp);
-    window.addEventListener("resize", handleUserResize);
-    resetPlotSizes();
-    setCanvasSize(true);
-    return () => {
-      window.removeEventListener("mouseup", handleUserMouseUp);
-      window.removeEventListener("resize", handleUserResize);
-    };
-    // setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }, []);
 
   return (
     <>
       <TableRow>
-        {index &&
-          headers &&
-          data &&
+        {headers &&
+          data !== undefined &&
           headers.length > 1 &&
           data.length > 0 &&
-          data[index]?.map((value: any, i: any) =>
+          data?.map((value: any, i: any) =>
             i === 0 ? (
               <TableCell
                 className={`${classes.tableCell}`}
@@ -338,7 +336,7 @@ const PlotRowComponent = ({
               >
                 {workspace.files?.find((f) => f.id === value).name}
               </TableCell>
-            ) : i !== data[index].length - 1 ? (
+            ) : i !== data.length - 1 ? (
               <TableCell
                 className={classes.tableCell}
                 key={"content-" + value + i}
@@ -350,52 +348,54 @@ const PlotRowComponent = ({
                 className={`${classes.tableCell}`}
                 key={"content-" + value + i}
                 onClick={() => {
-                  if (openFiles.includes(file.id)) {
-                    setOpenFiles((prev) => prev.filter((id) => id !== file.id));
-                    setTimeout(() => {
-                      generatePlots(file);
-                    }, 0);
-                  } else if (!file.view) {
-                    setOpenFiles((prev) => [...prev, file.id]);
-
-                    // taking care of plots showing up from saved workspace
-                    const plots: Plot[] = [];
-                    getTableRowPlots(file).map(({ plot }) => {
-                      if (plot.plotWidth < 50 && plot.plotHeight < 50) {
-                        plot.plotHeight = 204;
-                        plot.plotWidth = 319;
-                        plots.push(plot);
-                      }
-                    });
-                    if (plots.length > 0) {
-                      WorkspaceDispatch.UpdatePlots(plots);
-                    } else {
-                      const plotsRerenderQueueItem: PlotsRerender = {
-                        id: "",
-                        used: false,
-                        type: "plotsRerender",
-                        plotIDs: getTableRowPlots(file).map(
-                          ({ plot }) => plot.id
-                        ),
-                      };
-                      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+                  if (file.id !== workspace.selectedFile) {
+                    if (openFiles.includes(file.id)) {
+                      setOpenFiles((prev) =>
+                        prev.filter((id) => id !== file.id)
+                      );
+                      setTimeout(() => {
+                        generatePlots(file);
+                      }, 0);
+                    } else if (!file.view) {
+                      setOpenFiles((prev) => [...prev, file.id]);
+                      // taking care of plots showing up from saved workspace
+                      updatePlot();
+                      setTimeout(() => {
+                        generatePlots(file);
+                      }, 500);
                     }
-                    setTimeout(() => {
-                      generatePlots(file);
-                    }, 500);
                   }
                 }}
               >
-                <button className={classes.view}>
-                  {openFiles.includes(file.id) ? "Close" : "View Plots"}
+                <button
+                  className={classes.view}
+                  style={{
+                    cursor:
+                      file.id === workspace.selectedFile
+                        ? "default"
+                        : "pointer",
+                    backgroundColor:
+                      file.id === workspace.selectedFile ? "#FAFAFA" : "#333",
+                    color:
+                      file.id === workspace.selectedFile ? "black" : "whilte",
+                  }}
+                  disabled={file.id === workspace.selectedFile}
+                >
+                  {file.id === workspace.selectedFile
+                    ? "Selected File"
+                    : openFiles.includes(file.id)
+                    ? "Close"
+                    : "View Plots"}
                 </button>
               </TableCell>
             )
           )}
       </TableRow>
 
-      <TableRow
-        className={openFiles.includes(file.id) ? classes.show : classes.hide}>
+      <TableRow className={
+          file.id === workspace.selectedFile ? classes.show
+            : openFiles.includes(file.id) ? classes.show : classes.hide
+        }>
         {getTableRowPlots(file).length === 0 ? (
           <TableCell
             colSpan={headers.length}

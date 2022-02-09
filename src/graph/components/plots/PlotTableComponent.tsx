@@ -109,9 +109,7 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   const [data, setData] = useState([]);
-  const [openFiles, setOpenFiles] = useState<string[]>([
-    workspace.selectedFile,
-  ]);
+  const [openFiles, setOpenFiles] = useState<string[]>([]);
   const [headers, setHeaders] = useState<string[]>([
     "File Name",
     "Click to View",
@@ -130,7 +128,6 @@ const PlotTableComponent = ({
       WorkspaceDispatch.ClearOpenFiles();
     }
   }, [workspace]);
-
   const fillUpRows = (statistics: any[]) => {
     for (let i = 0; i < workspace.files.length; i++) {
       let raw = [workspace.files[i].id];
@@ -183,16 +180,16 @@ const PlotTableComponent = ({
     fillUpRows(stats);
   };
 
-    return (
-        <TableContainer component={Paper} className={classes.container}>
-          <Table style={{overflowY: "scroll"}}>
-            <PlotHeadComponent
-                workspace={workspace}
-                data={data}
-                headers={headers}
-                setData={setData}
-                setOpenFiles={setOpenFiles}
-            />
+  return (
+    <TableContainer component={Paper} className={classes.container}>
+      <Table style={{ overflowY: "scroll" }}>
+        <PlotHeadComponent
+          workspace={workspace}
+          data={data}
+          headers={headers}
+          setData={setData}
+          setOpenFiles={setOpenFiles}
+        />
             <TableBody>
               {workspace?.files?.map((file, i) => (
                   <PlotRowComponent
