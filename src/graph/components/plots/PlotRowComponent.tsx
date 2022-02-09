@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import {
   File,
   Gate,
@@ -197,11 +197,13 @@ const PlotRowComponent = ({
 }: Props) => {
   const classes = useStyles();
 
+  const [isOpenRow, setOpenRow] = useState(false);
+
   const generatePlots = (file: File) => {
     if (file.view) {
       file.view = !file.view;
       WorkspaceDispatch.UpdateFile(file);
-      deletePlotAndPopulationOfFile(file.id);
+      // deletePlotAndPopulationOfFile(file.id);
       return;
     }
 
@@ -393,8 +395,7 @@ const PlotRowComponent = ({
       </TableRow>
 
       <TableRow
-        className={openFiles.includes(file.id) ? classes.show : classes.hide}
-      >
+        className={openFiles.includes(file.id) ? classes.show : classes.hide}>
         {getTableRowPlots(file).length === 0 ? (
           <TableCell
             colSpan={headers.length}

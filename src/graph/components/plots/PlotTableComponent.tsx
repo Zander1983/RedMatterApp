@@ -13,6 +13,7 @@ import { Workspace } from "graph/resources/types";
 
 import PlotHeadComponent from "./PlotHeadComponent";
 import PlotRowComponent from "./PlotRowComponent";
+import {getPlotGroups} from "../workspaces/NewPlotController";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -182,35 +183,36 @@ const PlotTableComponent = ({
     fillUpRows(stats);
   };
 
-  return (
-    <TableContainer component={Paper} className={classes.container}>
-      <Table style={{ overflowY: "scroll" }}>
-        <PlotHeadComponent
-          workspace={workspace}
-          data={data}
-          headers={headers}
-          setData={setData}
-          setOpenFiles={setOpenFiles}
-        />
-        <TableBody>
-          {workspace?.files?.map((file, i) => (
-            <PlotRowComponent
-              sharedWorkspace={sharedWorkspace}
-              experimentId={experimentId}
-              workspace={workspace}
-              workspaceLoading={workspaceLoading}
-              customPlotRerender={customPlotRerender}
-              file={file}
-              data={data}
-              headers={headers}
-              index={i}
-              openFiles={openFiles}
-              setOpenFiles={setOpenFiles}
+    return (
+        <TableContainer component={Paper} className={classes.container}>
+          <Table style={{overflowY: "scroll"}}>
+            <PlotHeadComponent
+                workspace={workspace}
+                data={data}
+                headers={headers}
+                setData={setData}
+                setOpenFiles={setOpenFiles}
             />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+            <TableBody>
+              {workspace?.files?.map((file, i) => (
+                  <PlotRowComponent
+                      key={i}
+                      sharedWorkspace={sharedWorkspace}
+                      experimentId={experimentId}
+                      workspace={workspace}
+                      workspaceLoading={workspaceLoading}
+                      customPlotRerender={customPlotRerender}
+                      file={file}
+                      data={data}
+                      headers={headers}
+                      index={i}
+                      openFiles={openFiles}
+                      setOpenFiles={setOpenFiles}
+                  />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+    );
 };
 export default PlotTableComponent;

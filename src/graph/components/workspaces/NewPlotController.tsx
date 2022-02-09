@@ -193,6 +193,7 @@ interface IState {
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
+
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
@@ -373,6 +374,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             ) : null}
 
             {/* <Divider /> */}
+
+
 
             {!this.state.isTableRenderCall ? (
               <Grid

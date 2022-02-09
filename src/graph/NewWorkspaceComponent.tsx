@@ -26,6 +26,8 @@ import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import {Workspace as WorkspaceType} from "./resources/types";
 import {useSelector} from "react-redux";
 import NewPlotController from "./components/workspaces/NewPlotController";
+import MessageModal from "./components/modals/MessageModal";
+import AddFileModal from "./components/modals/AddFileModal";
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -95,7 +97,6 @@ const NewWorkspaceInnerComponent = (props: {
 
   const [open, setOpen] = React.useState(true);
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
-  const [initState, setInitState] = React.useState(true);
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
@@ -142,7 +143,7 @@ const NewWorkspaceInnerComponent = (props: {
       setReloadMessage("Loading...");
       loadWorkspaceFromRemoteIfExists(shared, experimentId)
           .then(async (response:any) => {
-              setReloadMessage("Done. wait preparing....");
+              setReloadMessage("Loading Done. wait preparing....");
               if(response.requestSuccess){
                   let files = SecurityUtil.decryptData(sessionStorage.getItem("experimentFiles"), process.env.REACT_APP_DATA_SECRET_SOLD);
                   if(files && files?.files?.files?.length > 0) {
@@ -443,7 +444,38 @@ const NewWorkspaceInnerComponent = (props: {
             <CircularProgress color="inherit" />
         </Backdrop>
       {/* == MODALS == */}
-
+        <AddFileModal
+            open={addFileModalOpen}
+            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+            isShared={sharedWorkspace}
+            experimentId={props.experimentId}
+            files={workspace.files}
+            selectedFile={workspace.selectedFile}
+        />
+        <MessageModal
+            open={clearModal}
+            closeCall={{
+                f: handleClose,
+                ref: setClearModal,
+            }}
+            message={
+                <div>
+                    <h2>Are you sure you want to delete the entire workspace?</h2>
+                    <p style={{ marginLeft: 100, marginRight: 100 }}>
+                        The links you've shared with "share workspace" will still work, if
+                        you want to access this in the future, make sure to store them.
+                    </p>
+                </div>
+            }
+            options={{
+                yes: () => {
+                    WorkspaceDispatch.ResetWorkspaceExceptFiles();
+                },
+                no: () => {
+                    handleClose(setClearModal);
+                },
+            }}
+        />
       {/* == MAIN PANEL == */}
       <Grid
         style={{
@@ -463,7 +495,7 @@ const NewWorkspaceInnerComponent = (props: {
             boxShadow: "2px 3px 3px #ddd",
           }}>
           <div>
-            {/*{_renderToolbar()}*/}
+            {_renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
