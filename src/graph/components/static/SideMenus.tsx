@@ -55,41 +55,42 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const statsProvider = new PlotStats();
+// const statsProvider = new PlotStats();
 
-export default function SideMenus(props: { workspace: Workspace }) {
+export default function SideMenus(props: { gates: Gate[] }) {
   const ref = React.useRef(null);
   const classes = useStyles();
+  // useWhyDidYouUpdate("SideMenus", props);
   // == General modal logic ==
 
-  const [fileMenuOpen, setFileMenuOpen] = React.useState(false);
+  // const [fileMenuOpen, setFileMenuOpen] = React.useState(false);
   const [gateMenuOpen, setGateMenuOpen] = React.useState(false);
-  const [plotMenuOpen, setPlotMenuOpen] = React.useState(false);
-  const [hierarchyOpen, setHierarchyOpen] = React.useState(false);
-  const [statsX, setStatsX] = React.useState(
-    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
-  );
-  const [statsY, setStatsY] = React.useState(
-    COMMON_CONSTANTS.DROPDOWNS.STATS.Median
-  );
+  // const [plotMenuOpen, setPlotMenuOpen] = React.useState(false);
+  // const [hierarchyOpen, setHierarchyOpen] = React.useState(false);
+  // const [statsX, setStatsX] = React.useState(
+  //   COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  // );
+  // const [statsY, setStatsY] = React.useState(
+  //   COMMON_CONSTANTS.DROPDOWNS.STATS.Median
+  // );
 
-  const headers = [
-    { label: "Type", key: "type" },
-    { label: "From file", key: "fromFile" },
-    { label: "Population", key: "polulation" },
-    { label: "X Axis", key: "xAxis" },
-    { label: "Y Axis", key: "yAxis" },
-    { label: "Sampled Event Count", key: "brute" },
-    { label: "Percentage", key: "percentage" },
-    { label: "Median X", key: "medianX" },
-    { label: "Median Y", key: "medianY" },
-    { label: "Mean X", key: "meanX" },
-    { label: "Mean Y", key: "meanY" },
-    { label: "Points outside", key: "pointsOutsideCount" },
-    { label: "% of Points outside", key: "pointsOutsidePercentage" },
-  ];
+  // const headers = [
+  //   { label: "Type", key: "type" },
+  //   { label: "From file", key: "fromFile" },
+  //   { label: "Population", key: "polulation" },
+  //   { label: "X Axis", key: "xAxis" },
+  //   { label: "Y Axis", key: "yAxis" },
+  //   { label: "Sampled Event Count", key: "brute" },
+  //   { label: "Percentage", key: "percentage" },
+  //   { label: "Median X", key: "medianX" },
+  //   { label: "Median Y", key: "medianY" },
+  //   { label: "Mean X", key: "meanX" },
+  //   { label: "Mean Y", key: "meanY" },
+  //   { label: "Points outside", key: "pointsOutsideCount" },
+  //   { label: "% of Points outside", key: "pointsOutsidePercentage" },
+  // ];
 
-  const [data, setData] = React.useState<any[]>([]);
+  // const [data, setData] = React.useState<any[]>([]);
 
   // useEffect(() => {
   //   const timer = setTimeout(() => downloadCsv(), 100);
@@ -166,22 +167,22 @@ export default function SideMenus(props: { workspace: Workspace }) {
 
   const click = (target: string | undefined) => {
     let p = [
-      { name: "files", var: fileMenuOpen, func: setFileMenuOpen },
+      // { name: "files", var: fileMenuOpen, func: setFileMenuOpen },
       {
         name: "gates",
         var: gateMenuOpen,
         func: setGateMenuOpen,
       },
-      {
-        name: "plots",
-        var: plotMenuOpen,
-        func: setPlotMenuOpen,
-      },
-      {
-        name: "hierarchy",
-        var: hierarchyOpen,
-        func: setHierarchyOpen,
-      },
+      // {
+      //   name: "plots",
+      //   var: plotMenuOpen,
+      //   func: setPlotMenuOpen,
+      // },
+      // {
+      //   name: "hierarchy",
+      //   var: hierarchyOpen,
+      //   func: setHierarchyOpen,
+      // },
     ];
     const r = p.filter((e) => e.name !== target);
     for (const e of r) {
@@ -263,7 +264,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
           </Button> */}
 
           {/* KeyboardBackspace */}
-          {(fileMenuOpen || gateMenuOpen || plotMenuOpen || hierarchyOpen) && (
+          {gateMenuOpen && (
             <Button
               className={classes.backBtn}
               onClick={() => click(undefined)}
@@ -311,7 +312,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
           />
         )} */}
         {/* GATES */}
-        {gateMenuOpen && <GateMenu gates={props.workspace.gates} />}
+        {gateMenuOpen && <GateMenu gates={props.gates} />}
         {/* FILES */}
         {/* {fileMenuOpen && <FileMenu files={props.workspace.files} />} */}
         {/* FILES HIERARCHY */}

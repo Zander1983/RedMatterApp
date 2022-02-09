@@ -4,7 +4,6 @@ import { Button } from "@material-ui/core";
 import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import useGAEventTrackers from "hooks/useGAEvents";
-import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -37,7 +36,6 @@ function MessageModal(
   props: React.PropsWithChildren<MessageModalProps>
 ): JSX.Element {
   const classes = useStyles();
-  // useWhyDidYouUpdate("Modal", props);
   const eventStacker = useGAEventTrackers("Plot Deleted.");
   return (
     <Modal

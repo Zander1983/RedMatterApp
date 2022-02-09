@@ -60,7 +60,7 @@ export class Notification {
   message: string;
 
   constructor(message: string, nid?: string, timeout?: number) {
-    const id = nid ?  nid :  createID();
+    const id = nid ? nid : createID();
     WorkspaceDispatch.AddNotification({
       id,
       message,

@@ -552,7 +552,7 @@ const WorkspaceInnerComponent = (props: {
         open={loadModal}
         close={setLoadModal}
         // closeCall={{ f: handleClose, ref: setLoadModal }}
-        // message={}
+
         noButtons={true}
       >
         <LoadModalComponent />
@@ -574,7 +574,7 @@ const WorkspaceInnerComponent = (props: {
       </MessageModal>
 
       {/* == STATIC ELEMENTS == */}
-      <SideMenus workspace={workspace}></SideMenus>
+      <SideMenus gates={workspace.gates}></SideMenus>
       <NotificationsOverlay />
 
       {/* == MAIN PANEL == */}
