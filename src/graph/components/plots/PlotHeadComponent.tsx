@@ -98,9 +98,8 @@ interface TableProps {
 
 const PlotHeadComponent = ({
   workspace,
-  headers,
-  data,
-  setData,
+  headers, data,
+  // setData,
   setOpenFiles,
 }: TableProps) => {
   const classes = useStyles();
@@ -157,7 +156,7 @@ const PlotHeadComponent = ({
       files.push(workspace.files.find((item) => item.id === array[i][0]));
     }
     WorkspaceDispatch.SetFiles(files);
-    setData(array);
+    // setData(array);
   };
 
   const deleteChildGate = (children: string[]) => {
