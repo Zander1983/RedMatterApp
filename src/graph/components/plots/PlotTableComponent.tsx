@@ -204,4 +204,5 @@ const PlotTableComponent = ({workspace, sharedWorkspace, experimentId, workspace
         </TableContainer>
     );
 };
+
 export default PlotTableComponent;
