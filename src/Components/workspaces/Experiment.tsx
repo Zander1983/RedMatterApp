@@ -376,33 +376,36 @@ const Experiment = (props: any) => {
       }
     }
     setUploadingFiles(filesUpload);
-    let completedCount:number = 0;
-    for (const file of finalFileList) {
-      try {
-        const response = await oldBackFileUploader(userManager.getToken(), props.id, userManager.getOrganiztionID(), file.file)
-        if (response?.status === 201) {
-          eventStacker(
-              `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
-              `Uploaded file name is ${file.file.name}`
-          );
-          showMessageBox({message: "Uploaded " + file.file.name, saverity: "success"});
-        }
-
-      } catch (err) {
-        showMessageBox({
-          message: "Error uploading file " + file.file.name.substring(0, 20) + (file.file.name.length > 20 ? ",,," : "") + ", please try again",
-          saverity: "error"
-        });
-      } finally {
-        ++completedCount;
-      }
-    }
+    const completedCount = await downloadFromServer(finalFileList);
     if(completedCount > 0){
         await updateExperimentFileCount(props.id, completedCount);
         await reload();
     }
     setFileUploadInputValue("");
     setUploadingFiles(null);
+  };
+  const downloadFromServer = async (finalFileList:any[]) => {
+      let completedCount:number = 0;
+      for (const file of finalFileList) {
+          try {
+              const response = await oldBackFileUploader(userManager.getToken(), props.id, userManager.getOrganiztionID(), file.file);
+              if (response?.status === 201) {
+                  eventStacker(
+                      `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
+                      `Uploaded file name is ${file.file.name}`
+                  );
+                  showMessageBox({message: "Uploaded " + file.file.name, saverity: "success"});
+              }
+          }catch (err) {
+              showMessageBox({
+                  message: "Error uploading file " + file.file.name.substring(0, 20) + (file.file.name.length > 20 ? ",,," : "") + ", please try again",
+                  saverity: "error"
+              });
+          }finally {
+              ++completedCount;
+          }
+      }
+      return completedCount;
   };
 
   const getExperimentChannels = (): string[] => {
@@ -1141,9 +1144,7 @@ const Experiment = (props: any) => {
                 {experimentData !== null &&
                 uploadingFiles?.length > 0 &&
                 experimentData.files.length > 0 ? (
-                  <Divider
-                    style={{ marginTop: 15, marginBottom: 15 }}
-                  ></Divider>
+                  <Divider style={{ marginTop: 15, marginBottom: 15 }}/>
                 ) : null}
                 {uploadingFiles?.map((e: any, i: number) => {
                   return (
