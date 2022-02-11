@@ -60,6 +60,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const organizationId = gettingOrganizationId();
   let rules: any = userManager.getRules();
 
+
   const updateExperiment = async (experimentId: any) => {
       const cacheData = SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
       if(cacheData){
@@ -69,21 +70,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   const doStaff = async (data: any, expId:any) => {
         //link view code here
-        let requiredUpdateExperiments:any[] = [];
-        let targetExperiment = "";
-        if (data?.experiments?.organisationExperiments.length > 0
-            && data?.experiments?.organisationExperiments.findIndex((e:any) => e.id === expId) > -1) {
-            requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
-            targetExperiment = "org";
-        }else if (data?.experiments?.userExperiments.length > 0
-            && data?.experiments?.userExperiments.findIndex((e:any) => e.id === expId) > -1) {
-            requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
-            targetExperiment = "user";
-        }else {
-            requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
-            targetExperiment = "old";
-        }
-
+        let {requiredUpdateExperiments, targetExperiment} = await getTargetExperiments(data, expId);
         if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
             const updatedExperiments = requiredUpdateExperiments.filter((experiment:any) => experiment.id !== expId);
             switch (targetExperiment) {
@@ -117,6 +104,24 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             }
         }
 
+    };
+
+  const getTargetExperiments = (data:any, expId:any) => {
+        let requiredUpdateExperiments:any[] = [];
+        let targetExperiment = "";
+        if (data?.experiments?.organisationExperiments.length > 0
+            && data?.experiments?.organisationExperiments.findIndex((e:any) => e.id === expId) > -1) {
+            requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
+            targetExperiment = "org";
+        }else if (data?.experiments?.userExperiments.length > 0
+            && data?.experiments?.userExperiments.findIndex((e:any) => e.id === expId) > -1) {
+            requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
+            targetExperiment = "user";
+        }else {
+            requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
+            targetExperiment = "old";
+        }
+        return {requiredUpdateExperiments, targetExperiment};
     };
 
   const handleClose = (func: Function) => {
