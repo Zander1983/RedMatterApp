@@ -29,6 +29,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import Grid from "@material-ui/core/Grid";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+let i = 0;
 
 const classes = {
   itemOuterDiv: {
@@ -324,6 +325,7 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
+    // console.log(++i);
     if (this.props.workspace.plots.length > 0) {
       const plotGroups = getPlotGroups(this.props.workspace.plots);
       return (

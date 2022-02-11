@@ -30,6 +30,7 @@ import PlotTableComponent from "../plots/PlotTableComponent";
 import PlotTable from "../static/menus/Table";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+let i = 0;
 
 const classes = {
   itemOuterDiv: {
@@ -193,7 +194,6 @@ interface IState {
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
@@ -314,7 +314,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ) {
       return (
         <PlotTableComponent
-          workspace={this.props.workspace}
+          files={this.props.workspace.files}
           sharedWorkspace={this.props.sharedWorkspace}
           experimentId={this.props.experimentId}
           workspaceLoading={this.props.workspaceLoading}
@@ -325,6 +325,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
+    // console.log(++i);
     if (this.props.workspace.plots.length > 0) {
       const plotGroups = getPlotGroups(this.props.workspace.plots);
       return (
@@ -374,8 +375,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             ) : null}
 
             {/* <Divider /> */}
-
-
 
             {!this.state.isTableRenderCall ? (
               <Grid

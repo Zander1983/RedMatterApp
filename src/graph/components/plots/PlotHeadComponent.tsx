@@ -98,8 +98,9 @@ interface TableProps {
 
 const PlotHeadComponent = ({
   workspace,
-  headers, data,
-  // setData,
+  headers,
+  data,
+  setData,
   setOpenFiles,
 }: TableProps) => {
   const classes = useStyles();
