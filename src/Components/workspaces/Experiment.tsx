@@ -335,11 +335,13 @@ const Experiment = (props: any) => {
       return;
     }
 
-    let filesUpload = uploadingFiles.concat(
+    let filesUpload = uploadingFiles ? uploadingFiles.concat(
       fileList.map((e) => {
-        return { name: e.file.name, id: e.tempId };
+        return { name: e.file.name, id: e.tempId};
       })
-    );
+    ) : fileList.map((e) => {
+        return { name: e.file.name, id: e.tempId};
+    });
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
@@ -384,7 +386,6 @@ const Experiment = (props: any) => {
     setFileUploadInputValue("");
     setUploadingFiles(null);
   };
-
 
   const downloadFromServer = async (finalFileList:any[]) => {
       let completedCount:number = 0;
@@ -1175,7 +1176,7 @@ const Experiment = (props: any) => {
                             file
                           </b>
                           {e.name}
-                          <CircularProgress
+                            <CircularProgress
                             style={{
                               height: 16,
                               width: 16,
