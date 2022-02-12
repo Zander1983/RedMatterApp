@@ -384,6 +384,8 @@ const Experiment = (props: any) => {
     setFileUploadInputValue("");
     setUploadingFiles(null);
   };
+
+
   const downloadFromServer = async (finalFileList:any[]) => {
       let completedCount:number = 0;
       for (const file of finalFileList) {
@@ -445,6 +447,7 @@ const Experiment = (props: any) => {
   const handleClose = (func: Function) => {
     func(false);
   };
+
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
   const GenOrView = async (event: any, fileId: any, name: string) => {
