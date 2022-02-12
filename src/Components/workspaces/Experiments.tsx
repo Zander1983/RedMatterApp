@@ -60,7 +60,6 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const organizationId = gettingOrganizationId();
   let rules: any = userManager.getRules();
 
-
   const updateExperiment = async (experimentId: any) => {
       const cacheData = SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
       if(cacheData){
