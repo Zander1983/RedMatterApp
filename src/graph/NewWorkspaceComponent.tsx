@@ -1,34 +1,29 @@
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button} from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-
 import userManager from "Components/users/userManager";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 
 import {dowloadAllFileEvents,} from "services/FileService";
-
 import {loadWorkspaceFromRemoteIfExists, saveWorkspaceToRemote} from "./utils/workspace";
+
 import { Typography } from "antd";
 import { memResetDatasetCache } from "./resources/dataset";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-import IOSSwitch from "../Components/common/Switch";
-import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import {Workspace as WorkspaceType} from "./resources/types";
 import {useSelector} from "react-redux";
 import NewPlotController from "./components/workspaces/NewPlotController";
-import MessageModal from "./components/modals/MessageModal";
 import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
-import AddFileModal from "./components/modals/AddFileModal";
+
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
