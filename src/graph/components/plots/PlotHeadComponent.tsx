@@ -4,8 +4,6 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { useEffect, useState } from "react";
-
 import { Workspace, File } from "graph/resources/types";
 
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
@@ -96,11 +94,13 @@ interface TableProps {
   setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const PlotHeadComponent = ({
-  workspace,
-  headers, data,
-  // setData,
-  setOpenFiles,
+const PlotHeadComponent = (
+    {
+      workspace,
+      headers,
+      data,
+      // setData,
+      setOpenFiles,
 }: TableProps) => {
   const classes = useStyles();
 
