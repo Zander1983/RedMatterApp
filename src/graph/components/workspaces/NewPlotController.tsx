@@ -203,36 +203,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     };
   }
 
-  savePlotPosition(layouts: any) {
-    let plots = this.props.workspace.plots;
-    let plotChanges = [];
-    for (let i = 0; i < layouts.length; i++) {
-      let layout = layouts[i];
-      let plotId = layouts[i].i;
-
-      let plot = plots.find((x) => x.id === plotId);
-      if (!plot) continue;
-      if (
-        plot.dimensions.h !== layout.h ||
-        plot.dimensions.w !== layout.w ||
-        plot.positions.x !== layout.x ||
-        plot.positions.y !== layout.y
-      ) {
-        plot.dimensions = {
-          h: layout.h,
-          w: layout.w,
-        };
-        plot.positions = {
-          x: layout.x,
-          y: layout.y,
-        };
-        plotChanges.push(plot);
-      }
-    }
-    WorkspaceDispatch.UpdatePlots(plotChanges);
-    //this.props.arrowFunc();
-  }
-
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
       setTimeout(() => setCanvasSize(true), 50);
@@ -241,44 +211,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   componentDidMount() {
-    window.addEventListener("mouseup", (event) => {
-      _.debounce(() => {
-        resetPlotSizes();
-        setCanvasSize(true, true);
-      }, 100);
-    });
-    window.addEventListener(
-      "resize",
-      _.debounce(() => {
-        resetPlotSizes();
-        setCanvasSize(true, false);
-      }, 300)
-    );
+    // window.addEventListener("mouseup", (event) => {
+    //   _.debounce(() => {
+    //     resetPlotSizes();
+    //     setCanvasSize(true, true);
+    //   }, 100);
+    // });
+    // window.addEventListener(
+    //   "resize",
+    //   _.debounce(() => {
+    //     resetPlotSizes();
+    //     setCanvasSize(true, false);
+    //   }, 300)
+    // );
     resetPlotSizes();
     setCanvasSize(true);
     setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }
 
-  getPlotRelevantResources(plot: Plot) {
-    const population = getPopulation(plot.population);
-    const file = getFile(population.file);
-    const gates: Gate[] = [
-      ...plot.gates.map((e) => getGate(e)).filter((x) => x),
-      ...population.gates.map((e) => getGate(e.gate)),
-    ];
-    const workspaceForPlot: PlotSpecificWorkspaceData = {
-      file,
-      gates,
-      plot,
-      population,
-      key: plot.id,
-    };
-    return workspaceForPlot;
-  }
-
-  getWorkspaceLoading() {
-    return this.props.workspaceLoading || this.state.sortByChanged;
-  }
 
   getArrowArray = () => {
     let arr: any[] = [];
@@ -375,8 +325,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
             {/* <Divider /> */}
 
-
-
             {!this.state.isTableRenderCall ? (
               <Grid
                 container
@@ -399,7 +347,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             {this.state.isTableRenderCall &&
               this.getArrowArray().map((obj, i) => {
                 return (
-                  <Xarrow start={obj.start} end={obj.end} path={"straight"} />
+                  <Xarrow key={i} start={obj.start} end={obj.end} path={"straight"} />
                 );
               })}
           </Xwrapper>
