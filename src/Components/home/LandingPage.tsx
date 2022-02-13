@@ -74,20 +74,22 @@ const AppLandingPage = () => {
       <div className={classes.topRightTriangleContainer}>
         <div className={classes.triangleTopRight}></div>
       </div>
-      <div className={classes.triangleTopLeft}></div>
+      <div className={classes.triangleTopLeft} />
       <Grid
+        item
         className={classes.contentContainer}
         container
         xs={12}
         md={9}
         lg={8}
+        component={"div"}
       >
         <TargetUsers />
-        <Divider></Divider>
+        <Divider />
         <Features />
-        <Divider></Divider>
-        <Partners />
-        <Divider></Divider>
+        <Divider />
+        {/* <Partners /> */}
+        <Divider />
         <Universities />
         {/* <Divider></Divider>
         <Plans /> */}
@@ -99,18 +101,19 @@ const AppLandingPage = () => {
         <DialogContent>
           <DialogContentText>
             This is the new version of red matter, which is a significant
-            up-gradation of the previous one.
+            upgrade of the previous one.
           </DialogContentText>
-          <DialogContentText>
+
+          <DialogContentText component={"p"}>
             We encourage you to use the new version currently. It does not hold
             the previous version data, but on-demand, we can make that happen.
           </DialogContentText>
-          <DialogContentText>
+          {/* <DialogContentText component={"p"}>
             Your old workspace is now available in a different domain, and you
             can access them with a click on the button below.
-          </DialogContentText>
+          </DialogContentText> */}
         </DialogContent>
-        <DialogActions>
+        {/* <DialogActions>
           <Button
             onClick={() => {
               window.open("https://old.redmatterapp.com", "_blank").focus();
@@ -119,7 +122,7 @@ const AppLandingPage = () => {
           >
             Load old redmatter
           </Button>
-        </DialogActions>
+        </DialogActions> */}
       </Grid>
     </Grid>
   );
