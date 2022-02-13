@@ -114,8 +114,53 @@ const WorkspaceTopBarComponent = ({
     const saveWorkspace = async (shared: boolean = false) => {
         setSavingWorkspace(true);
         setLastSavedTime(new Date().toLocaleString());
-        await saveWorkspaceToRemote(workspace, shared, experimentId);
+        try {
+            await saveWorkspaceToRemote(workspace, shared, experimentId);
+        }catch (err) {
+            await handleError(err);
+        }
         setSavingWorkspace(false);
+    };
+
+    const handleError = async (error: any) => {
+        if (
+            error?.name === "Error" ||
+            error?.message.toString() === "Network Error"
+        ) {
+            showMessageBox({
+                message: "Connectivity Problem, please check your internet connection",
+                saverity: "error",
+            });
+        } else if (error?.response) {
+            if (error.response?.status == 401 || error.response.status == 419) {
+                setTimeout(() => {
+                    userManager.logout();
+                    history.replace("/login");
+                }, 3000);
+                showMessageBox({
+                    message: "Authentication Failed Or Session Time out",
+                    saverity: "error",
+                });
+            }
+        } else {
+            showMessageBox({
+                message: error?.message || "Request Failed. May be Time out",
+                saverity: error.saverity || "error",
+            });
+        }
+    };
+
+    const showMessageBox = (response: any) => {
+        switch (response.saverity) {
+            case "error":
+                snackbarService.showSnackbar(response?.message, "error");
+                break;
+            case "success":
+                snackbarService.showSnackbar(response?.message, "success");
+                break;
+            default:
+                break;
+        }
     };
 
     var onLinkShareClick = async () => {
