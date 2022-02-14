@@ -692,7 +692,7 @@ const Experiment = (props: any) => {
                             updateExperimentName();
                           }
                         }}
-                      ></TextField>
+                      />
                     ) : (
                       experiment.name
                     )}
@@ -715,8 +715,26 @@ const Experiment = (props: any) => {
                   </Grid>
                 )}
               </div>
-
-              <Button
+                <Button key="new-workspace"
+                    variant="contained"
+                    style={{
+                        backgroundColor: "#fafafa",
+                        maxHeight: 50,
+                        visibility:
+                            experimentData?.files.length === 0 ? "hidden" : "visible",
+                    }}
+                    onClick={() => {
+                        if (props.poke === false) {
+                            history.push("/workspace/" + props.id + "/plots");
+                        } else {
+                            history.push("/workspace/" + props.id + "/plots/poke");
+                        }
+                    }}
+                    endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
+                >
+                    New Workspace
+                </Button>
+                <Button
                 variant="contained"
                 style={{
                   backgroundColor: "#fafafa",
@@ -968,7 +986,7 @@ const Experiment = (props: any) => {
                                       setEditingFileName(null);
                                     }
                                   }}
-                                ></TextField>
+                                />
 
                                 <button
                                   onClick={() => {
