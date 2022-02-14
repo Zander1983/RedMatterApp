@@ -4,7 +4,6 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import PlotStats from "graph/utils/stats";
 import { useEffect, useState } from "react";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
@@ -97,8 +96,6 @@ interface TableProps {
     // arrowFunc: Function;
 }
 
-const statsProvider = new PlotStats();
-
 const PlotTableComponent = ({workspace, sharedWorkspace, experimentId, workspaceLoading, customPlotRerender,}: TableProps) => {
     const classes = useStyles();
     const [data, setData] = useState([]);
@@ -108,10 +105,7 @@ const PlotTableComponent = ({workspace, sharedWorkspace, experimentId, workspace
         "Click to View",
     ]);
 
-    const raws: any[] = [];
-
     useEffect(() => {
-        updateStats();
         setHeaders([
             "File Name",
             ...workspace.gates.map((gate) => gate.name),
@@ -123,57 +117,6 @@ const PlotTableComponent = ({workspace, sharedWorkspace, experimentId, workspace
         }
     }, [workspace]);
 
-    const fillUpRows = (statistics: any[]) => {
-        for (let i = 0; i < workspace.files.length; i++) {
-            let raw = [workspace.files[i].id];
-            for (let j = 0; j < statistics.length; j += workspace.files.length) {
-                if (statistics[i + j]?.gatedFilePopulationPercentage) {
-                    raw.push(statistics[i + j]?.gatedFilePopulationPercentage);
-                }
-            }
-            raw.push(workspace.files[i].view ? "Close" : "View");
-
-            // Removing unnecessary extra values
-            if (raw.length < workspace.gates.length + 2) {
-                raw = [
-                    raw[0],
-                    ...raw.slice(1, workspace.gates.length),
-                    raw[raw.length - 1] === "View" || "Close"
-                        ? "--"
-                        : raw[raw.length - 2],
-                    raw[raw.length - 1],
-                ];
-            } else {
-                raw = [
-                    raw[0],
-                    ...raw.slice(1, 1 + workspace.gates.length),
-                    raw[raw.length - 1],
-                ];
-            }
-
-            if (!raw.includes(undefined)) {
-                raws.push(raw);
-            }
-        }
-        setData(raws);
-    };
-
-    const updateStats = () => {
-        let stats: any[] = [];
-        workspace.populations.map((population) => {
-            if (
-                population.gates.length > 0 &&
-                workspace.selectedFile === population.file
-            ) {
-                workspace.files.map((file) => {
-                    if (file.downloaded && !file.downloading) {
-                        stats.push(statsProvider.getPlotStatsWithFiles(file, population));
-                    }
-                });
-            }
-        });
-        fillUpRows(stats);
-    };
 
     return (
         <TableContainer component={Paper} className={classes.container}>
@@ -187,13 +130,14 @@ const PlotTableComponent = ({workspace, sharedWorkspace, experimentId, workspace
                 <TableBody>
                     {workspace?.files?.map((file, i) => (
                         <PlotRowComponent
+                            key={file?.id || i}
                             sharedWorkspace={sharedWorkspace}
                             experimentId={experimentId}
                             workspace={workspace}
                             workspaceLoading={workspaceLoading}
                             customPlotRerender={customPlotRerender}
                             file={file}
-                            data={data[i]}
+                            // data={data[i]}
                             headers={headers}
                             openFiles={openFiles}
                             setOpenFiles={setOpenFiles}
