@@ -159,34 +159,39 @@ const PlotStateComponent = ({workspace, file, headers, openFiles, onRowClick}: P
         updateStats();
     }, [workspace]);
 
-     return (
-         <TableRow>
-             {headers && data !== undefined && headers.length > 1 && data.length > 0 &&
-             data?.map((value: any, i: any) => i === 0 ? (
-                     <TableCell className={`${classes.tableCell}`} key={"content-" + value + i}>
-                         {workspace.files?.find((f) => f.id === value)?.name}
-                     </TableCell>
-                 ) : i !== data.length - 1 ? (
-                     <TableCell className={classes.tableCell} key={"content-" + value + i}>
-                         {value || "NA"}
-                     </TableCell>
-                 ) : (
-                     <TableCell
-                         className={`${classes.tableCell}`}
-                         key={"content-" + value + i}
-                         onClick={() => {onRowClick()}}>
-                         <button className={classes.view}
-                                 style={{cursor: file.id === workspace.selectedFile ? "default" : "pointer",
-                                     backgroundColor: file.id === workspace.selectedFile ? "#FAFAFA" : "#333",
-                                     color: file.id === workspace.selectedFile ? "black" : "whilte"}}
-                                 disabled={file.id === workspace.selectedFile}>
-                             {file.id === workspace.selectedFile ? "Selected File" : openFiles.includes(file.id) ? "Close": "View Plots"}
-                         </button>
-                     </TableCell>
-                 )
-             )}
-         </TableRow>
-     )
+    const renderStateRow = () => {
+        console.log("======Plot state======= :" + file.id);
+        return(
+            <TableRow>
+                {headers && data !== undefined && headers.length > 1 && data.length > 0 &&
+                data?.map((value: any, i: any) => i === 0 ? (
+                        <TableCell className={`${classes.tableCell}`} key={"content-" + value + i}>
+                            {workspace.files?.find((f) => f.id === value)?.name}
+                        </TableCell>
+                    ) : i !== data.length - 1 ? (
+                        <TableCell className={classes.tableCell} key={"content-" + value + i}>
+                            {value || "NA"}
+                        </TableCell>
+                    ) : (
+                        <TableCell
+                            className={`${classes.tableCell}`}
+                            key={"content-" + value + i}
+                            onClick={() => {onRowClick()}}>
+                            <button className={classes.view}
+                                    style={{cursor: file.id === workspace.selectedFile ? "default" : "pointer",
+                                        backgroundColor: file.id === workspace.selectedFile ? "#FAFAFA" : "#333",
+                                        color: file.id === workspace.selectedFile ? "black" : "whilte"}}
+                                    disabled={file.id === workspace.selectedFile}>
+                                {file.id === workspace.selectedFile ? "Selected File" : openFiles.includes(file.id) ? "Close": "View Plots"}
+                            </button>
+                        </TableCell>
+                    )
+                )}
+            </TableRow>
+        )
+    };
+
+    return (renderStateRow())
 };
 
 export default PlotStateComponent;

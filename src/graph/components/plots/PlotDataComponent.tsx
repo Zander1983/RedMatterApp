@@ -166,7 +166,7 @@ const PlotDataComponent = (
     };
 
     const renderUI = () => {
-        console.log(file.id);
+        console.log("==== Plot Data: ==== " + file.id);
         return(
             <TableRow
                 className={
