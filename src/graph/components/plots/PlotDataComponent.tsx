@@ -123,6 +123,16 @@ const PlotDataComponent = ({
   openFiles,
 }: Props) => {
   const classes = useStyles();
+  const [loader, setLoader] = React.useState(true);
+  React.useEffect(() => {
+    const timeout =
+      workspace.files.length < 30 ? 1 : workspace.files.length < 60 ? 3 : 4;
+    console.log(timeout);
+    const timer1 = setTimeout(() => setLoader(false), timeout);
+    return () => {
+      clearTimeout(timer1);
+    };
+  }, []);
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
       let plots: PlotsAndFiles[] = [];
@@ -161,85 +171,91 @@ const PlotDataComponent = ({
 
   const renderUI = () => {
     return (
-      <TableRow
-        className={
-          file.id === workspace.selectedFile
-            ? classes.show
-            : openFiles.includes(file.id)
-            ? classes.show
-            : classes.hide
-        }
-      >
-        {/* {file.id === workspace.selectedFile && (
+      <>
+        {loader && file.id !== workspace.selectedFile && (
           <TableCell
             colSpan={headers.length}
             className={classes.loaderContainerStyle}
           >
             <CircularProgress className={classes.loader} />
           </TableCell>
-        )} */}
-        <TableCell colSpan={headers.length}>
-          <div
-            className={classes.responsiveContainer}
-            style={{
-              opacity: file.view ? 1 : 0,
-              transition: `all ${
-                workspace.files.length < 30
-                  ? 1
-                  : workspace.files.length < 60
-                  ? 2
-                  : 3
-              }s`,
-            }}
+        )}
+        {(!loader || file.id === workspace.selectedFile) && (
+          <TableRow
+            className={
+              file.id === workspace.selectedFile
+                ? classes.show
+                : openFiles.includes(file.id)
+                ? classes.show
+                : classes.hide
+            }
           >
-            <ResponsiveGridLayout
-              className="layout"
-              breakpoints={{ lg: 1200 }}
-              cols={{ lg: 36 }}
-              rows={{ lg: 30 }}
-              rowHeight={30}
-              compactType={null}
-              isDraggable={workspace.editWorkspace}
-              isResizable={false}
-            >
-              {
-                //@ts-ignore
-                getTableRowPlots(file).map(({ plot, file: PlotFile }, i) => {
-                  if (PlotFile.id === file.id) {
-                    return (
-                      <div
-                        key={plot.id}
-                        className={classes.itemOuterDiv}
-                        data-grid={standardGridPlotItem(
-                          i,
-                          plot,
-                          workspace.plots,
-                          workspace.editWorkspace
-                        )}
-                        id={`workspace-outter-${plot.id}`}
-                      >
-                        <div id="inner" className={classes.itemInnerDiv}>
-                          <PlotComponent
-                            plotRelevantResources={getPlotRelevantResources(
-                              plot
-                            )}
-                            sharedWorkspace={sharedWorkspace}
-                            editWorkspace={workspace.editWorkspace}
-                            workspaceLoading={workspaceLoading}
-                            customPlotRerender={customPlotRerender}
-                            experimentId={experimentId}
-                            fileName={file.name}
-                          />
-                        </div>
-                      </div>
-                    );
+            <TableCell colSpan={headers.length}>
+              <div
+                className={classes.responsiveContainer}
+                style={{
+                  opacity: file.view ? 1 : 0,
+                  transition: `all ${
+                    workspace.files.length < 30
+                      ? 1
+                      : workspace.files.length < 60
+                      ? 2
+                      : 3
+                  }s`,
+                }}
+              >
+                <ResponsiveGridLayout
+                  className="layout"
+                  breakpoints={{ lg: 1200 }}
+                  cols={{ lg: 36 }}
+                  rows={{ lg: 30 }}
+                  rowHeight={30}
+                  compactType={null}
+                  isDraggable={workspace.editWorkspace}
+                  isResizable={false}
+                >
+                  {
+                    //@ts-ignore
+                    getTableRowPlots(file).map(
+                      ({ plot, file: PlotFile }, i) => {
+                        if (PlotFile.id === file.id) {
+                          return (
+                            <div
+                              key={plot.id}
+                              className={classes.itemOuterDiv}
+                              data-grid={standardGridPlotItem(
+                                i,
+                                plot,
+                                workspace.plots,
+                                workspace.editWorkspace
+                              )}
+                              id={`workspace-outter-${plot.id}`}
+                            >
+                              <div id="inner" className={classes.itemInnerDiv}>
+                                <PlotComponent
+                                  plotRelevantResources={getPlotRelevantResources(
+                                    plot
+                                  )}
+                                  sharedWorkspace={sharedWorkspace}
+                                  editWorkspace={workspace.editWorkspace}
+                                  workspaceLoading={workspaceLoading}
+                                  customPlotRerender={customPlotRerender}
+                                  experimentId={experimentId}
+                                  fileName={file.name}
+                                />
+                              </div>
+                            </div>
+                          );
+                        }
+                      }
+                    )
                   }
-                })
-              }
-            </ResponsiveGridLayout>
-          </div>
-        </TableCell>
-      </TableRow>
+                </ResponsiveGridLayout>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
+      </>
     );
   };
 

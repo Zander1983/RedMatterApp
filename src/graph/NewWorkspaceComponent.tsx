@@ -22,7 +22,7 @@ import { memResetDatasetCache } from "./resources/dataset";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-import { Workspace as WorkspaceType } from "./resources/types";
+import { Workspace as WorkspaceType, File } from "./resources/types";
 import { useSelector } from "react-redux";
 import NewPlotController from "./components/workspaces/NewPlotController";
 import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";

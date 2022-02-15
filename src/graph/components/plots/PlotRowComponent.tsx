@@ -198,7 +198,7 @@ const PlotRowComponent = ({
         openFiles={openFiles}
         onRowClick={onClick}
       />
-      {file.view && plotData()}
+      {openFiles.includes(file.id) && plotData()}
     </>
   );
 };

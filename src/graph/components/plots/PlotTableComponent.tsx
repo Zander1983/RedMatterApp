@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
-import { Workspace } from "graph/resources/types";
+import { Workspace, File } from "graph/resources/types";
 
 import PlotHeadComponent from "./PlotHeadComponent";
 import PlotRowComponent from "./PlotRowComponent";
@@ -105,11 +105,28 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   const [data, setData] = useState([]);
-  const [openFiles, setOpenFiles] = useState<string[]>([]);
+  const [openFiles, setOpenFiles] = useState<string[]>([
+    workspace.selectedFile,
+  ]);
   const [headers, setHeaders] = useState<string[]>([
     "File Name",
     "Click to View",
   ]);
+
+  useEffect(() => {
+    // making the selected file the first element of filesArray
+    if (workspace.selectedFile.length > 0 && workspace.files.length > 0) {
+      const filesInNewOrder: File[] = [];
+      for (let i = 0; i < workspace.files.length; i++) {
+        if (workspace.files[i].id === workspace.selectedFile) {
+          filesInNewOrder.unshift(workspace.files[i]);
+        } else {
+          filesInNewOrder.push(workspace.files[i]);
+        }
+      }
+      WorkspaceDispatch.SetFiles(filesInNewOrder);
+    }
+  }, []);
 
   useEffect(() => {
     setHeaders([
@@ -118,7 +135,7 @@ const PlotTableComponent = ({
       "Click to View",
     ]);
     if (workspace.clearOpenFiles) {
-      setOpenFiles([]);
+      setOpenFiles([workspace.selectedFile]);
       WorkspaceDispatch.ClearOpenFiles();
     }
   }, [workspace]);

@@ -265,7 +265,7 @@ const PlotHeadComponent = ({
                 />
                 <img
                   onClick={() => {
-                    setOpenFiles([]);
+                    setOpenFiles([workspace.selectedFile]);
                     deleteColumn(index - 1);
                   }}
                   src={deleteIcon}
