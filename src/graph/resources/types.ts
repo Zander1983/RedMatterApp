@@ -172,45 +172,35 @@ export interface Plot {
 export interface Plot2ObjectMap {
   [index: string]: {
     _id: string;
-    gateId: string;
-    gatingActive: string;
-    xAxis: string;
-    yAxis: string;
+    gateId: GateID;
+    gatingActive: GateType;
+    xAxis: AxisName;
+    yAxis: AxisName;
     plotWidth: number;
     plotHeight: number;
-    xPlotType: string;
-    yPlotType: string;
-    histogramAxis: string;
-    dimensions: {
-      h: number;
-      w: number;
-    };
-    positions: {
-      x: number;
-      y: number;
-    };
+    plotScale: number;
+    xPlotType: PlotType;
+    yPlotType: PlotType;
+    histogramAxis: HistogramAxisType;
+    dimensions: Dimension;
+    positions: Point2D;
     file: string;
   };
 }
 export interface Plot2 {
   _id: string;
-  gateId: string;
-  gatingActive: string;
-  xAxis: string;
-  yAxis: string;
+  gateId: GateID;
+  gatingActive: GateType;
+  xAxis: AxisName;
+  yAxis: AxisName;
   plotWidth: number;
   plotHeight: number;
-  xPlotType: string;
-  yPlotType: string;
-  histogramAxis: string;
-  dimensions: {
-    h: number;
-    w: number;
-  };
-  positions: {
-    x: number;
-    y: number;
-  };
+  plotScale: number;
+  xPlotType: PlotType;
+  yPlotType: PlotType;
+  histogramAxis: HistogramAxisType;
+  dimensions: Dimension;
+  positions: Point2D;
   file: string;
 }
 

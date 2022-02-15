@@ -35,19 +35,19 @@ export default abstract class GatePlotterPlugin extends PlotterPlugin {
 
     try {
       for (let gate of drawGates) {
-        if (
-          !this.plotter.plot.gates.find((e) => e === gate.id) &&
-          gate.id !== this.provisoryGateID
-        ) {
-          continue;
-        }
+        // if (
+        //   !this.plotter.plot.gates.find((e) => e === gate.id) &&
+        //   gate.id !== this.provisoryGateID
+        // ) {
+        //   continue;
+        // }
         const isGate1D = Object.keys(gate).includes("axis");
         const isGate2D = ["xAxis", "yAxis"]
           .map((e) => Object.keys(gate).includes(e))
           .every((e) => e);
         if (this.gaterType === "1D" && isGate1D) {
           const gate1d = gate as Gate1D;
-          const axisPlotType = this.plotter.plot.xPlotType;
+          const axisPlotType = this.plotter.plot2.xPlotType;
 
           if (
             this.plotter.xAxisName === gate1d.axis &&

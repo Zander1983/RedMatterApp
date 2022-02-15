@@ -754,6 +754,12 @@ export const getXandYData = (plot: Plot): [Float32Array, Float32Array] => {
   return [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]];
 };
 
+export const getXandYDataFromPlot2 = (plot: Plot2) => {
+  const dataset = getDataset(plot.file);
+  // filtered point yet to be implemented
+  return [dataset[plot.xAxis], dataset[plot.yAxis]];
+};
+
 export const getXandYDataWithFiles = (
   file: File,
   population: PopulationGateType[],
@@ -781,6 +787,7 @@ export const getXandYDataAndColors = (
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
+  console.log("alright");
   const colors = getDatasetColors(
     filteredPoints,
     population.gates,
@@ -799,6 +806,9 @@ export const getXandYDataAndColorsFromPlot2 = (
 ): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
   const dataset = getDataset(plot.file);
   const colors = getDatasetColors(dataset, [], [], "#000");
+  console.log("Okay.");
+  // filtered point yet to be implemented
+
   return {
     points: [dataset[plot.xAxis], dataset[plot.yAxis]],
     colors,
@@ -829,6 +839,10 @@ export const getPointColors = (plot: Plot) => {
   const populationGates = getPopulation(plot.population).gates;
   return getDatasetColors(dataset, populationGates, plotGates, "#000");
 };
+
+// export const getPointColor = (plot2: Plot) => {
+
+// }
 
 export const createNewPlotFromFile = async (file: File, clonePlot?: Plot) => {
   let population: Population;

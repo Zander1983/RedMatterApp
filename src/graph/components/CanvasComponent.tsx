@@ -127,7 +127,7 @@ const CanvasComponent = React.memo(
           canvas.setUseCanvasUsed(false);
         }
       };
-    }, [canvas,canvasRef.current]);
+    }, [canvas, canvasRef.current]);
 
     const id = `canvas-${props.plotID}`;
 

@@ -43,15 +43,15 @@ function propsAreEqual(prev: any, next: any) {
   } else if (
     next.customPlotRerender &&
     next.customPlotRerender.length > 0 &&
-    next.customPlotRerender.includes(next.plot.id)
+    next.customPlotRerender.includes(next.plot._id)
   ) {
     return false;
   }
   let previous: any = {};
-  if (propsStore && propsStore[next.plot.id]) {
-    previous = propsStore[next.plot.id];
+  if (propsStore && propsStore[next.plot._id]) {
+    previous = propsStore[next.plot._id];
   }
-  propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
+  propsStore[next.plot._id] = JSON.parse(JSON.stringify(next));
   return (
     isEqual(previous.plot, next.plot) &&
     isEqual(previous.plotGates, next.plotGates) &&
@@ -61,13 +61,13 @@ function propsAreEqual(prev: any, next: any) {
 }
 
 const PlotRenderer = (props: {
-  plot: Plot;
+  // plot: Plot;
   plotGates: Gate[];
   population: Population;
   editWorkspace: boolean;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
-  plt?: Plot2;
+  plot: Plot2;
 }) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
@@ -95,8 +95,9 @@ const PlotRenderer = (props: {
   };
 
   useEffect(() => {
-    if (props.customPlotRerender.includes(props.plot.id)) {
-      let interactor: GateMouseInteractor[] = mouseInteractorInstances[plot.id];
+    if (props.customPlotRerender.includes(props.plot._id)) {
+      let interactor: GateMouseInteractor[] =
+        mouseInteractorInstances[plot._id];
       if (interactor && interactor.length > 0) {
         if (interactor[0]) interactor[0].end();
         if (interactor[1]) interactor[1].end();
@@ -159,7 +160,7 @@ const PlotRenderer = (props: {
 
   const setCanvasState = () => {
     const canvasState = {
-      id: plot.id,
+      id: plot._id,
       width: plot.plotWidth,
       height: plot.plotHeight,
       scale: plot.plotScale,
@@ -168,8 +169,8 @@ const PlotRenderer = (props: {
   };
 
   const unsetGating = (type: "oval" | "histogram" | "polygon") => {
-    if (mouseInteractorInstances[plot.id])
-      mouseInteractorInstances[plot.id]
+    if (mouseInteractorInstances[plot._id])
+      mouseInteractorInstances[plot._id]
         //@ts-ignore
         .filter((e) => !(e instanceof typeToClassType[type]))
         .forEach((e) => e.unsetGating(true));
@@ -181,12 +182,12 @@ const PlotRenderer = (props: {
     inpPlotter?: GraphPlotter
   ) => {
     if (!inpPlotter) inpPlotter = plotter;
-    mouseInteractorInstances[plot.id]
+    mouseInteractorInstances[plot._id]
       .filter((e) => e instanceof typeToClassType[type])
       .forEach((e) => {
         if (e.plugin.gaterType === "1D") {
           (e as HistogramGateMouseInteractor).setMouseInteractorState({
-            plotID: plot.id,
+            plotID: plot._id,
             axis: plot.histogramAxis === "vertical" ? plot.xAxis : plot.yAxis,
             histogramDirection: plot.histogramAxis,
             axisPlotType:
@@ -199,7 +200,7 @@ const PlotRenderer = (props: {
           });
         } else if (e.plugin.gaterType === "2D") {
           (e as PolygonMouseInteractor).setMouseInteractorState({
-            plotID: plot.id,
+            plotID: plot._id,
             xAxis: plot.xAxis,
             yAxis: plot.yAxis,
             rerender: () => {
@@ -214,11 +215,12 @@ const PlotRenderer = (props: {
   };
   const setPlotterState = (inpPlotter?: GraphPlotter) => {
     if (!inpPlotter) inpPlotter = plotter;
-    const data = PlotResource.getXandYData(plot);
-    const ranges = PlotResource.getXandYRanges(plot);
+    const data = PlotResource.getXandYDataFromPlot2(plot);
+    // const ranges = PlotResource.getXandYRanges(plot);
+    const ranges = PlotResource.getXandYRangesFromFile(plot);
     const plotterState = {
-      plot: plot,
-      plot2: props.plt || null,
+      // plot: props.plot,
+      plot2: props.plot || null,
       xAxis: data[0],
       yAxis: data[1],
       xAxisName: plot.xAxis,
@@ -227,7 +229,7 @@ const PlotRenderer = (props: {
       height: plot.plotHeight,
       scale: plot.plotScale,
       direction: plot.histogramAxis,
-      gates: props.plot.gates.map((e) => getGate(e)),
+      // gates: props.plot.gates.map((e) => getGate(e)),
       xRange: ranges.x,
       yRange: ranges.y,
     };
@@ -236,9 +238,10 @@ const PlotRenderer = (props: {
 
   const setMouseEvent = useCallback(
     (type: string, x: number, y: number) => {
-      const cplot = getPlot(plot.id);
+      // const cplot = getPlot(plot._id);
+      const cplot = plot;
       setLoader(true);
-      mouseInteractorInstances[cplot.id].forEach((e) => {
+      mouseInteractorInstances[cplot._id].forEach((e) => {
         if (
           (cplot.xAxis === cplot.yAxis && e.gaterType === "1D") ||
           (cplot.xAxis !== cplot.yAxis && e.gaterType === "2D")
@@ -284,12 +287,12 @@ const PlotRenderer = (props: {
 
       scatterPlotter.update();
 
-      mouseInteractorInstances[plot.id] = [
+      mouseInteractorInstances[plot._id] = [
         new PolygonMouseInteractor(),
         new HistogramGateMouseInteractor(),
       ];
 
-      for (const mouseInteractor of mouseInteractorInstances[plot.id]) {
+      for (const mouseInteractor of mouseInteractorInstances[plot._id]) {
         if (mouseInteractor.gaterType === "1D") {
           //@ts-ignore
           mouseInteractor.setup(histogramPlotter);
@@ -327,14 +330,14 @@ const PlotRenderer = (props: {
   useEffect(draw, [props.plot, props.plotGates, props.population]);
   useEffect(() => {
     return () => {
-      if (propsStore && propsStore[props.plot.id])
-        delete propsStore[props.plot.id];
+      if (propsStore && propsStore[props.plot._id])
+        delete propsStore[props.plot._id];
     };
   }, []);
 
   return (
     <CanvasComponent
-      plotID={plot.id}
+      plotID={plot._id}
       width={plot.plotWidth}
       height={plot.plotHeight}
       setCanvas={(canvas) => {

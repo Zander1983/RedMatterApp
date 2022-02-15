@@ -39,8 +39,8 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
     //@ts-ignore
     const workspace: Workspace = getWorkspace();
     if (
-      gate.xAxisType !== this.plotter.plot.xPlotType ||
-      gate.yAxisType !== this.plotter.plot.yPlotType
+      gate.xAxisType !== this.plotter.plot2.xPlotType ||
+      gate.yAxisType !== this.plotter.plot2.yPlotType
     ) {
       return;
     }
@@ -76,16 +76,16 @@ export default class ScatterPolygonGatePlotter extends GatePlotterPlugin {
 
     // setting up the states
     let stats: any;
-    const plotPopulation = getPopulation(this.plotter.plot.population);
-    const plotFile = getFile(plotPopulation.file);
-    const gates = JSON.parse(JSON.stringify(plotPopulation.gates));
-    gates.push({ gate: gate.id, inverseGating: false });
+    // const plotPopulation = getPopulation(this.plotter.plot.population);
+    // const plotFile = getFile(plotPopulation.file);
+    // const gates = JSON.parse(JSON.stringify(plotPopulation.gates));
+    // gates.push({ gate: gate.id, inverseGating: false });
 
-    stats = statsProvider.getPlotStatsWithFiles(
-      plotFile,
-      plotPopulation,
-      gates
-    );
+    // stats = statsProvider.getPlotStatsWithFiles(
+    //   plotFile,
+    //   plotPopulation,
+    //   gates
+    // );
 
     // adding a rect for better visualization
     const rectY = y - 15;

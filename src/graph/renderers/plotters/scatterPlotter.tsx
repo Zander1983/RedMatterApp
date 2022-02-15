@@ -125,8 +125,8 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   @applyPlugin()
   public draw() {
     super.draw({
-      xAxisLabel: this.plot.xAxis,
-      yAxisLabel: this.plot.yAxis,
+      xAxisLabel: this.plot2.xAxis,
+      yAxisLabel: this.plot2.yAxis,
     });
     this.validateDraw();
 
@@ -135,11 +135,12 @@ export default class ScatterPlotter extends PluginGraphPlotter {
 
   public drawPoints() {
     let i = 0;
-    const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
+    // console.log(this.plot, this.plot2);
+    // const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
     // improved one...
-    // const { points, colors } = PlotResource.getXandYDataAndColorsFromPlot2(
-    //   this.plot2
-    // );
+    const { points, colors } = PlotResource.getXandYDataAndColorsFromPlot2(
+      this.plot2
+    );
     let xData = points[0];
     let yData = points[1];
     const pointCount = xData.length;
@@ -150,7 +151,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
       this.ranges.y,
     ];
 
-    if (this.plot.xPlotType === "bi") {
+    if (this.plot2.xPlotType === "bi") {
       const calc = fcsServices.logicleMarkTransformer(
         customRanges[0],
         customRanges[0][0],
@@ -163,7 +164,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
         this.ranges.x[1]
       );
     }
-    if (this.plot.yPlotType === "bi") {
+    if (this.plot2.yPlotType === "bi") {
       const calc = fcsServices.logicleMarkTransformer(
         customRanges[1],
         customRanges[1][0],
@@ -212,7 +213,7 @@ export default class ScatterPlotter extends PluginGraphPlotter {
     return p.x < x[0] || p.x > x[1] || p.y < y[0] || p.y > y[1];
   }
 
-  public getPointColors() {
-    return PlotResource.getPointColors(this.plot);
-  }
+  // public getPointColors() {
+  //   return PlotResource.getPointColors(this.plot);
+  // }
 }

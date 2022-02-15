@@ -5,6 +5,7 @@ import GraphTransformer, {
 } from "graph/renderers/transformers/graphTransformer";
 import { Gate, Plot, Plot2 } from "graph/resources/types";
 import { getFile, getPopulation, getWorkspace } from "graph/utils/workspace";
+import { getWorkspace2 } from "graph/utils/workspace2";
 import * as PlotResource from "graph/resources/plots";
 
 export const leftPadding = 55;
@@ -13,7 +14,7 @@ export const topPadding = 40;
 export const bottomPadding = 35;
 
 export interface GraphPlotterState extends PlotterState {
-  plot: Plot;
+  // plot: Plot;
   plot2: Plot2;
 
   width: number;
@@ -52,7 +53,7 @@ export interface GraphPlotterState extends PlotterState {
 export default class GraphPlotter extends Plotter {
   /* === DATA === */
 
-  plot: Plot;
+  // plot: Plot;
   plot2: Plot2;
 
   width: number = 0;
@@ -81,28 +82,33 @@ export default class GraphPlotter extends Plotter {
   binSize: number = 30;
 
   /* === METHODS === */
-  private drawHeader() {
-    const label = this.plot.label;
-    const filename = getFile(getPopulation(this.plot.population).file).name;
-    let text = label + " | " + filename;
-    if (label.length === 0) text = filename;
-    const maxLength = Math.round(
-      (this.width - leftPadding / 2 - rightPadding / 2 + 10) / 10
-    );
-    if (text.length > maxLength) {
-      text = text.substring(0, maxLength) + "...";
-    }
-    this.drawer.text({
-      x: leftPadding * this.scale,
-      y: ((topPadding * 2) / 3) * this.scale,
-      text,
-      font: "500 30px Quicksand",
-    });
-  }
+  // private drawHeader() {
+  //   const label = this.plot.label;
+  //   const filename = getFile(getPopulation(this.plot.population).file).name;
+  //   let text = label + " | " + filename;
+  //   if (label.length === 0) text = filename;
+  //   const maxLength = Math.round(
+  //     (this.width - leftPadding / 2 - rightPadding / 2 + 10) / 10
+  //   );
+  //   if (text.length > maxLength) {
+  //     text = text.substring(0, maxLength) + "...";
+  //   }
+  //   this.drawer.text({
+  //     x: leftPadding * this.scale,
+  //     y: ((topPadding * 2) / 3) * this.scale,
+  //     text,
+  //     font: "500 30px Quicksand",
+  //   });
+  // }
 
   public draw(drawPlotGraphParams?: any): void {
-    const workspace = getWorkspace();
-    let upatedPlot = workspace.plots.find((x) => x.id == this.plot.id);
+    // old
+    // const workspace = getWorkspace();
+    // let upatedPlot = workspace.plots.find((x) => x.id == this.plot.id);
+
+    // new
+    const workspace = getWorkspace2();
+    let upatedPlot = workspace.plots[this.plot2._id];
     if (upatedPlot) {
       this.width = upatedPlot.plotWidth;
       this.height = upatedPlot.plotHeight;
@@ -124,13 +130,15 @@ export default class GraphPlotter extends Plotter {
     const yRange = this.ranges.y;
 
     this.xLabels = this.transformer.getAxisLabels(
-      this.plot.xPlotType,
+      // this.plot.xPlotType,
+      this.plot2.xPlotType,
       xRange,
       this.horizontalBinCount
     );
 
     this.yLabels = this.transformer.getAxisLabels(
-      this.plot.yPlotType,
+      // this.plot.yPlotType,
+      this.plot2.yPlotType,
       yRange,
       this.verticalBinCount
     );
@@ -139,7 +147,7 @@ export default class GraphPlotter extends Plotter {
   public setPlotterState(state: GraphPlotterState): void {
     super.setPlotterState(state);
 
-    this.plot = state.plot;
+    // this.plot = state.plot;
     this.plot2 = state.plot2;
     this.xAxis = state.xAxis;
     this.yAxis = state.yAxis;
@@ -148,8 +156,8 @@ export default class GraphPlotter extends Plotter {
     this.yAxisName = state.yAxisName;
     this.width = state.width;
     this.height = state.height;
-    this.scale = state.scale;
-    this.gates = state.gates;
+    this.scale = 2;
+    // this.gates = state.gates;
     this.xLabels =
       state.xLabels === undefined
         ? undefined
@@ -190,7 +198,7 @@ export default class GraphPlotter extends Plotter {
 
   public getPlotterState(): GraphPlotterState {
     return {
-      plot: this.plot,
+      // plot: this.plot,
       plot2: this.plot2,
       width: this.width,
       height: this.height,
@@ -228,7 +236,8 @@ export default class GraphPlotter extends Plotter {
   }
 
   protected setTransformerState(): void {
-    const ranges = PlotResource.getXandYRanges(this.plot);
+    const ranges = PlotResource.getXandYRangesFromFile(this.plot2);
+    // const ranges = PlotResource.getXandYRanges(this.plot);
     this.transformer.setTransformerState({
       x1: leftPadding * this.scale,
       y1: topPadding * this.scale,
@@ -239,7 +248,8 @@ export default class GraphPlotter extends Plotter {
       iby: ranges.y[0],
       iey: ranges.y[1],
       scale: this.scale,
-      plot: this.plot,
+      // plot: this.plot,
+      plot2: this.plot2,
     });
   }
 
@@ -252,7 +262,8 @@ export default class GraphPlotter extends Plotter {
   }
 
   createRangeArray(axis: "x" | "y"): Array<string> {
-    const plotSize = axis === "x" ? this.plot.plotWidth : this.plot.plotHeight;
+    const plotSize =
+      axis === "x" ? this.plot2.plotWidth : this.plot2.plotHeight;
     const rangeSize =
       axis === "x"
         ? this.ranges.x[1] - this.ranges.x[0]

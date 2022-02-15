@@ -70,7 +70,7 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
     let color = "#f00";
 
     if (this.points.length === 0) {
-      const height = this.plotter.plot.plotHeight;
+      const height = this.plotter.plot2.plotHeight;
       this.plotter.drawer.segment({
         x1: this.lastMousePos.x * scale,
         y1: topPadding * scale,
@@ -94,7 +94,7 @@ export default class HistogramGatePlotter extends GatePlotterPlugin {
   protected drawH(p1: number, p2: number, color: Color, drawPos: number = 0.5) {
     const thickness = 3;
     const scale = this.plotter.scale;
-    const height = this.plotter.plot.plotHeight;
+    const height = this.plotter.plot2.plotHeight;
     this.plotter.drawer.segment({
       x1: p1 * scale,
       y1: topPadding * scale,

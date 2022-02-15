@@ -3,6 +3,7 @@ import { store } from "redux/store";
 import { Plot2, PolygonGate2 } from "graph/resources/types";
 
 const Workspace2Dispatch = {
+  // plots
   AddPlot: (plot: Plot2, fileId?: string) => {
     return store.dispatch({
       type: workspaceActions2.ADD_PLOT,
@@ -15,6 +16,13 @@ const Workspace2Dispatch = {
       payload: { plotId },
     });
   },
+  UpdatePlot: (plot: Plot2) => {
+    return store.dispatch({
+      type: workspaceActions2.UPDATE_PLOT,
+      payload: { plot },
+    });
+  },
+  // gates
   AddGate: (gate: PolygonGate2) => {
     return store.dispatch({
       type: workspaceActions2.ADD_GATE,

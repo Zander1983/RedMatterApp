@@ -3,6 +3,7 @@ import { Plot2, PolygonGate2, Workspace2 } from "graph/resources/types";
 export const workspaceActions2 = {
   RESET: "workspace2.RESET",
   ADD_PLOT: "workspace2.ADD_PLOT",
+  UPDATE_PLOT: "workspace2.UPDATE_PLOT",
   DELETE_PLOT: "workspace2.DELETE_PLOT",
   ADD_GATE: "workspace2.ADD_GATE",
   UPDATE_GATE: "workspace2.UPDATE_GATE",
@@ -54,6 +55,16 @@ const workspaceReducers = (state: Workspace2 = initialState, action: any) => {
           [newPlot._id]: newPlot,
         },
       };
+    case workspaceActions2.UPDATE_PLOT:
+      const updatedPlot: Plot2 = action.payload.plot;
+      return {
+        ...state,
+        plots: {
+          ...state.plots,
+          [updatedPlot._id]: updatedPlot,
+        },
+      };
+
     case workspaceActions2.DELETE_PLOT:
       delete state.plots[action.payload.plotId];
       if (Object.keys(state.plots).length === 0) {
@@ -93,7 +104,6 @@ const workspaceReducers = (state: Workspace2 = initialState, action: any) => {
       };
     case workspaceActions2.UPDATE_GATE:
       const updatedGate: PolygonGate2 = action.payload.gate;
-
       state.gatingSets = state.gatingSets.map((set) => {
         return set.map((gate) => {
           if (gate.id === updatedGate.id) {

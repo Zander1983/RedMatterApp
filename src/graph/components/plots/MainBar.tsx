@@ -262,14 +262,14 @@ export default function MainBar(props: {
 
   return (
     <Grid direction="row" style={classes.main} container component={"div"}>
-      <RangeResizeModal
+      {/* <RangeResizeModal
         open={openResize}
         closeCall={{
           f: handleClose,
           ref: setOpenResize,
         }}
         plot={props.plot}
-      />
+      /> */}
       <MessageModal
         open={deleteModalOpen}
         close={setDeleteModalOpen}

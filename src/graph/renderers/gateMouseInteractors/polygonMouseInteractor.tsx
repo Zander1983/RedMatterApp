@@ -55,10 +55,10 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   }
   private validateGateOnSpace(gate: PolygonGate) {
     return (
-      gate.xAxis === this.plotter.plot.xAxis &&
-      gate.yAxis === this.plotter.plot.yAxis &&
-      gate.xAxisType === this.plotter.plot.xPlotType &&
-      gate.yAxisType === this.plotter.plot.yPlotType
+      gate.xAxis === this.plotter.plot2.xAxis &&
+      gate.yAxis === this.plotter.plot2.yAxis &&
+      gate.xAxisType === this.plotter.plot2.xPlotType &&
+      gate.yAxisType === this.plotter.plot2.yPlotType
     );
   }
 
@@ -111,68 +111,68 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   protected gateMoveToMousePosition(mouse: Point) {
     const workspace = getWorkspace();
-    const plotPopulation = getPopulation(this.plotter.plot.population);
-    if (workspace.selectedFile === plotPopulation.file) {
-      const gatePivot = this.plotter.transformer.toConcretePoint(
-        {
-          ...this.gatePivot,
-        },
+    // const plotPopulation = getPopulation(this.plotter.plot.population);
+    // if (workspace.selectedFile === plotPopulation.file) {
+    const gatePivot = this.plotter.transformer.toConcretePoint(
+      {
+        ...this.gatePivot,
+      },
+      undefined,
+      true
+    );
+    let offset = {
+      x: mouse.x - gatePivot.x,
+      y: mouse.y - gatePivot.y,
+    };
+    this.gatePivot = this.plotter.transformer.toAbstractPoint(
+      {
+        ...mouse,
+      },
+      true
+    );
+    const gateState = this.targetEditGate;
+    for (let index = 0; index < gateState.points.length; index++) {
+      gateState.points[index] = { ...gateState.points[index] };
+      gateState.points[index] = this.plotter.transformer.toConcretePoint(
+        gateState.points[index],
         undefined,
         true
       );
-      let offset = {
-        x: mouse.x - gatePivot.x,
-        y: mouse.y - gatePivot.y,
+      gateState.points[index] = {
+        x: gateState.points[index].x + offset.x,
+        y: gateState.points[index].y + offset.y,
       };
-      this.gatePivot = this.plotter.transformer.toAbstractPoint(
-        {
-          ...mouse,
-        },
+      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+        gateState.points[index],
         true
       );
-      const gateState = this.targetEditGate;
-      for (let index = 0; index < gateState.points.length; index++) {
-        gateState.points[index] = { ...gateState.points[index] };
-        gateState.points[index] = this.plotter.transformer.toConcretePoint(
-          gateState.points[index],
-          undefined,
-          true
-        );
-        gateState.points[index] = {
-          x: gateState.points[index].x + offset.x,
-          y: gateState.points[index].y + offset.y,
-        };
-        gateState.points[index] = this.plotter.transformer.toAbstractPoint(
-          gateState.points[index],
-          true
-        );
-      }
-      let scatterPlotterGate: any = this.plotter.gates.find(
-        (x) => x.id == gateState.id
-      );
-      scatterPlotterGate.points = gateState.points;
-      this.gateUpdater(gateState);
     }
+    let scatterPlotterGate: any = this.plotter.gates.find(
+      (x) => x.id == gateState.id
+    );
+    scatterPlotterGate.points = gateState.points;
+    this.gateUpdater(gateState);
+    // }
   }
 
   protected pointMoveToMousePosition(mouse: Point) {
     const workspace = getWorkspace();
-    const plotPopulation = getPopulation(this.plotter.plot.population);
-    if (workspace.selectedFile === plotPopulation.file) {
-      const gateState = this.targetEditGate;
-      gateState.points[this.targetPointIndex] = {
-        ...gateState.points[this.targetPointIndex],
-      };
-      gateState.points[this.targetPointIndex] =
-        this.plotter.transformer.rawAbstractLogicleToLinear(
-          this.plotter.transformer.toAbstractPoint(mouse)
-        );
-      let scatterPlotterGate: any = this.plotter.gates.find(
-        (x) => x.id == gateState.id
+    // const plotPopulation = getPopulation(this.plotter.plot.population);
+    // if (workspace.selectedFile === plotPopulation.file) {
+    const gateState = this.targetEditGate;
+    gateState.points[this.targetPointIndex] = {
+      ...gateState.points[this.targetPointIndex],
+    };
+    gateState.points[this.targetPointIndex] =
+      this.plotter.transformer.rawAbstractLogicleToLinear(
+        this.plotter.transformer.toAbstractPoint(mouse)
       );
-      scatterPlotterGate.points = gateState.points;
-      this.gateUpdater(gateState);
-    }
+    let scatterPlotterGate: any = this.plotter.gates.find(
+      (x) => x.id == gateState.id
+    );
+    scatterPlotterGate.points = gateState.points;
+    this.gateUpdater(gateState);
+    // }
   }
 
   protected instanceGate2(): PolygonGate2 {
@@ -206,7 +206,8 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
   protected instanceGate(): PolygonGate {
     if (!this.started) return;
     const { points, xAxis, yAxis } = this.getGatingState();
-    let originalRanges = getXandYRanges(this.plotter.plot);
+    let originalRanges = getXandYRangesFromFile(this.plotter.plot2);
+    // let originalRanges = getXandYRanges(this.plotter.plot);
     const newPoints: Point[] = [];
     for (let i = 0; i < points.length; i++) {
       let p = { x: points[i].x, y: points[i].y };
@@ -215,21 +216,21 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
       newPoints.push({ ...b });
     }
 
-    let population = getPopulation(this.plotter.plot.population);
+    // let population = getPopulation(this.plotter.plot.population);
     const newGate: PolygonGate = {
       points: [...newPoints].map((e) => {
         return { ...e };
       }),
       xAxis: xAxis,
-      xAxisType: this.plotter.plot.xPlotType,
+      xAxisType: this.plotter.plot2.xPlotType,
       xAxisOriginalRanges: originalRanges.x,
       yAxis: yAxis,
-      yAxisType: this.plotter.plot.yPlotType,
+      yAxisType: this.plotter.plot2.yPlotType,
       yAxisOriginalRanges: originalRanges.y,
-      parents:
-        population && population.gates && population.gates.length > 0
-          ? [population.gates[0].gate]
-          : [],
+      parents: [],
+      // population && population.gates && population.gates.length > 0
+      //   ? [population.gates[0].gate]
+      //   : [],
       color: generateColor(),
       gateType: "polygon",
       id: createID(),

@@ -15,6 +15,7 @@ import {
   PlotSpecificWorkspaceData,
   PlotType,
   PlotsRerender,
+  Plot2,
 } from "graph/resources/types";
 import {
   getFile,
@@ -23,6 +24,7 @@ import {
   getWorkspace,
 } from "graph/utils/workspace";
 import * as PlotResource from "graph/resources/plots";
+import * as PlotResource2 from "graph/resources/plots2";
 import { File } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import { Typography } from "antd";
@@ -30,89 +32,99 @@ import { useSelector } from "react-redux";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
 function PlotComponent(props: {
-  plotRelevantResources: PlotSpecificWorkspaceData;
-  sharedWorkspace: boolean;
-  experimentId: string;
+  // plotRelevantResources: PlotSpecificWorkspaceData;
+  // sharedWorkspace: boolean;
+  // experimentId: string;
   canvasComponent: ReactNode;
   editWorkspace: boolean;
+  plot: Plot2;
 }) {
-  const { plot, file } = props.plotRelevantResources;
-  const workspaceFiles: File[] = useSelector((e) => {
-    //@ts-ignore
-    return e.workspace.files.filter((e) => e.id !== file.id);
-  });
+  const { plot } = props;
+  // const { plot, file } = props.plotRelevantResources;
+
+  // const workspaceFiles: File[] = useSelector((e) => {
+  //   //@ts-ignore
+  //   return e.workspace.files.filter((e) => e.id !== file.id);
+  // });
 
   // const xAxis = plot.xAxis;
-  const { axes, labels } = getFile(getPopulation(plot.population).file);
+  const { axes, labels } = getFile(plot.file);
   const files = getAllFiles();
 
   // const xPlotType = plot.xPlotType;
 
-  const [oldAxis, setOldAxis] = React.useState({
-    x: null,
-    y: null,
-  });
+  // const [oldAxis, setOldAxis] = React.useState({
+  //   x: null,
+  //   y: null,
+  // });
 
-  const [downloadedFiles, setDownloadedFiles] = React.useState([]);
-  const [downloadingFiles, setDownloadingFiles] = React.useState([]);
-  const [, setHistogramOverlayOpen] = React.useState(false);
+  // const [downloadedFiles, setDownloadedFiles] = React.useState([]);
+  // const [downloadingFiles, setDownloadingFiles] = React.useState([]);
+  // const [, setHistogramOverlayOpen] = React.useState(false);
   const [currentXIndex, setCurrentXIndex] = useState<number>(0);
   const [currentYIndex, setCurrentYIndex] = useState<number>(0);
   const [showTooltip, setShowTooltip] = useState<string>("Value");
 
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
-    axis === "x"
-      ? PlotResource.setXAxisPlotType(plot, value)
-      : PlotResource.setYAxisPlotType(plot, value);
+    // axis === "x"
+    // ? PlotResource.setXAxisPlotType(plot, value)
+    //   : PlotResource.setYAxisPlotType(plot, value);
   };
 
-  const setHistogram = (value: boolean) => {
-    if (value) {
-      setOldAxis({ ...oldAxis, y: plot.yAxis });
-      PlotResource.xAxisToHistogram(plot);
-    } else {
-      PlotResource.setYAxis(plot, oldAxis.x);
-      PlotResource.disableHistogram(plot);
-    }
+  const setHistogram = (value: boolean, axisName?: string) => {
+    // if (value) {
+    //   setOldAxis({ ...oldAxis, y: plot.yAxis });
+    //   PlotResource.xAxisToHistogram(plot);
+    // } else {
+    //   PlotResource.setYAxis(plot, oldAxis.x);
+    //   PlotResource.disableHistogram(plot);
+    // }
+
+    // For new DS
+    PlotResource2.updateHistogramAxis(plot, axisName);
   };
 
   const isPlotHistogram = () => {
     return plot.histogramAxis !== "";
   };
 
+  // Set XandYaxis except for Histograms
   const setAxis = (
     axis: "x" | "y",
     value: string,
     stopHist: boolean = false
   ) => {
-    if (isPlotHistogram() && !stopHist) {
-      PlotResource.setXAxis(plot, value);
-      PlotResource.setYAxis(plot, value);
-    } else {
-      axis === "x"
-        ? PlotResource.setXAxis(plot, value)
-        : PlotResource.setYAxis(plot, value);
-    }
+    // if (isPlotHistogram() && !stopHist) {
+    // PlotResource.setXAxis(plot, value);
+    //   PlotResource.setYAxis(plot, value);
+    // } else {
+    //   axis === "x"
+    //     ? PlotResource.setXAxis(plot, value)
+    //     : PlotResource.setYAxis(plot, value);
+    // }
+
+    // For new DS
+    PlotResource2.updateAxis(axis, value, plot);
   };
 
-  useEffect(() => {
-    let downloadedFiles = files.filter((x) => x.downloaded);
-    let downloadingFiles: File[] = files.filter((x) => x.downloading);
+  // useEffect(() => {
+  //   let downloadedFiles = files.filter((x) => x.downloaded);
+  //   let downloadingFiles: File[] = files.filter((x) => x.downloading);
 
-    let downloadedFileIds: string[] = [];
-    let downloadingFileIds: string[] = [];
+  //   let downloadedFileIds: string[] = [];
+  //   let downloadingFileIds: string[] = [];
 
-    if (downloadingFiles && downloadingFiles.length > 0) {
-      downloadingFileIds = downloadingFiles.map((x) => x.id);
-    }
+  //   if (downloadingFiles && downloadingFiles.length > 0) {
+  //     downloadingFileIds = downloadingFiles.map((x) => x.id);
+  //   }
 
-    if (downloadedFiles && downloadedFiles.length > 0) {
-      downloadedFileIds = downloadedFiles.map((x) => x.id);
-    }
+  //   if (downloadedFiles && downloadedFiles.length > 0) {
+  //     downloadedFileIds = downloadedFiles.map((x) => x.id);
+  //   }
 
-    setDownloadedFiles(downloadedFileIds);
-    setDownloadingFiles(downloadingFileIds);
-  }, [files]);
+  //   setDownloadedFiles(downloadedFileIds);
+  //   setDownloadingFiles(downloadingFileIds);
+  // }, [files]);
 
   useEffect(() => {
     setCurrentXIndex(axes.findIndex((ele) => ele === plot.xAxis));
@@ -137,63 +149,64 @@ function PlotComponent(props: {
     }
   }, [labels]);
 
-  const isHistogramSelected = (
-    plotId: string = "",
-    fileId: string = ""
-  ): HistogramOverlay | null => {
-    let overlayPlot = plot.histogramOverlays.find(
-      (x) => x.plot === plotId || x.file === fileId
-    );
-    return overlayPlot ? overlayPlot : null;
-  };
+  // const isHistogramSelected = (
+  //   plotId: string = "",
+  //   fileId: string = ""
+  // ): HistogramOverlay | null => {
+  //   let overlayPlot = plot.histogramOverlays.find(
+  //     (x) => x.plot === plotId || x.file === fileId
+  //   );
+  //   return overlayPlot ? overlayPlot : null;
+  // };
 
-  const isDownloaded = (fileId: FileID) => {
-    return downloadedFiles.find((x) => x === fileId);
-  };
+  // const isDownloaded = (fileId: FileID) => {
+  //   return downloadedFiles.find((x) => x === fileId);
+  // };
 
-  const isDownloading = (fileId: FileID) => {
-    return downloadingFiles.find((x) => x === fileId);
-  };
+  // const isDownloading = (fileId: FileID) => {
+  //   return downloadingFiles.find((x) => x === fileId);
+  // };
 
-  const handleMultiPlotHistogram = async (
-    dataSource: "file" | "plot",
-    addFile?: File,
-    addPlot?: Plot
-  ) => {
-    setHistogramOverlayOpen(false);
-    let histogramOverlay: HistogramOverlay;
-    if (dataSource === "file") {
-      if (!addFile) throw Error("File overlay of undefined file");
-      histogramOverlay = isHistogramSelected(plot.id, addFile.id);
-      if (histogramOverlay) {
-        PlotResource.removeOverlay(plot, histogramOverlay);
-      } else {
-        if (!isDownloaded(addFile.id))
-          await downloadFileEvent(
-            props.sharedWorkspace,
-            addFile.id,
-            props.experimentId
-          );
+  // const handleMultiPlotHistogram = async (
+  //   dataSource: "file" | "plot",
+  //   addFile?: File,
+  //   addPlot?: Plot
+  // ) => {
+  //   setHistogramOverlayOpen(false);
+  //   let histogramOverlay: HistogramOverlay;
+  //   if (dataSource === "file") {
+  //     if (!addFile) throw Error("File overlay of undefined file");
+  //     histogramOverlay = isHistogramSelected(plot.id, addFile.id);
+  //     if (histogramOverlay) {
+  //       PlotResource.removeOverlay(plot, histogramOverlay);
+  //     } else {
+  //       if (!isDownloaded(addFile.id))
+  //         await downloadFileEvent(
+  //           props.sharedWorkspace,
+  //           addFile.id,
+  //           props.experimentId
+  //         );
 
-        PlotResource.addOverlay(plot, {
-          fromFile: addFile.id,
-        });
-      }
-    } else {
-      throw Error("Plot overlays not implemented");
-    }
-  };
+  //       PlotResource.addOverlay(plot, {
+  //         fromFile: addFile.id,
+  //       });
+  //     }
+  //   } else {
+  //     throw Error("Plot overlays not implemented");
+  //   }
+  // };
 
-  const getHistogramSelectedColor = (
-    plotId: string,
-    fileId: string
-  ): string => {
-    let plot = isHistogramSelected(plotId, fileId);
-    if (plot) {
-      return plot.color;
-    }
-    return "#fff";
-  };
+  // const getHistogramSelectedColor = (
+  //   plotId: string,
+  //   fileId: string
+  // ): string => {
+  //   let plot = isHistogramSelected(plotId, fileId);
+  //   if (plot) {
+  //     return plot.color;
+  //   }
+  //   return "#fff";
+  // };
+
   return (
     <div
       className="plot-canvas"
@@ -239,10 +252,10 @@ function PlotComponent(props: {
               if (e.target.value === "hist") {
                 setHistogram(!isPlotHistogram());
               } else {
-                if (isPlotHistogram()) setHistogram(false);
                 //@ts-ignore
                 const value: string = e.target.value;
                 const index = labels.findIndex((ele) => ele === value);
+                if (isPlotHistogram()) setHistogram(false, value);
                 setCurrentYIndex(index);
                 setAxis("y", axes[index]);
               }

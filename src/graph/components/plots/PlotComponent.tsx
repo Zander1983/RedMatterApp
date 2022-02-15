@@ -103,16 +103,18 @@ const PlotComponent = React.memo(
         />
 
         <SideSelector
-          {...props}
+          // {...props}
+          editWorkspace={props.editWorkspace}
+          plot={props.plt}
           canvasComponent={
             <PlotRenderer
               workspaceLoading={props.workspaceLoading}
-              plot={plot}
+              // plot={plot}
               plotGates={gates}
               population={population}
               editWorkspace={props.editWorkspace}
               customPlotRerender={props.customPlotRerender}
-              plt={props.plt}
+              plot={props.plt}
             />
           }
         />

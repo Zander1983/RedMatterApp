@@ -8,6 +8,7 @@ import {
 import HistogramDrawer from "../drawers/histogramDrawer";
 import PluginGraphPlotter, { applyPlugin } from "./PluginGraphPlotter";
 import * as PlotResource from "graph/resources/plots";
+import * as PlotResource2 from "graph/resources/plots2";
 import { getGate, getPopulation } from "graph/utils/workspace";
 import HistogramGatePlotter from "./runtimePlugins/histogramGatePlotter";
 import { createEmptyPlot, createPlot } from "graph/resources/plots";
@@ -96,19 +97,15 @@ export default class HistogramPlotter extends PluginGraphPlotter {
     super.update();
     this.setBins();
 
-    this.histogramGatePlugin.setGates(
-      //@ts-ignore
-      this.gates.filter((e) => e.gateType === "histogram")
-    );
+    // this.histogramGatePlugin.setGates(
+    //   //@ts-ignore
+    //   this.gates.filter((e) => e.gateType === "histogram")
+    // );
 
     this.setBins();
 
     const axisName = this.xAxisName;
-    this.mainBins = PlotResource.getHistogramBins(
-      this.plot,
-      this.bins,
-      axisName
-    );
+    this.mainBins = PlotResource2.getHistogramBins(this.plot2, this.bins);
 
     const binCount =
       this.height === undefined
@@ -135,63 +132,64 @@ export default class HistogramPlotter extends PluginGraphPlotter {
 
     const axis = this.xAxisName;
     let globlMax = this.mainBins.max;
-    let range =
-      this.plot.ranges[PlotResource.getPlotAxisRangeString(this.plot, "x")];
+    // let range =
+    //   this.plot.ranges[PlotResource.getPlotAxisRangeString(this.plot, "x")];
 
-    const overlaysObj = this.plot.histogramOverlays;
-    const overlays = [];
+    // const overlaysObj = this.plot.histogramOverlays;
+    // const overlays = [];
 
-    this.rangeMin = range[0];
-    this.rangeMax = range[1];
+    // this.rangeMin = range[0];
+    // this.rangeMax = range[1];
 
-    for (const overlay of overlaysObj) {
-      if (!overlay) continue;
-      let newPlotData = createEmptyPlot();
-      newPlotData.axisPlotTypes = this.plot.axisPlotTypes;
-      switch (overlay.dataSource) {
-        case "file":
-          newPlotData = createPlot({
-            clonePlot: newPlotData,
-            population: getPopulation(overlay.population),
-          });
-          newPlotData.xAxis = this.plot.xAxis;
-          newPlotData.yAxis = this.plot.yAxis;
-          newPlotData.xPlotType = this.plot.xPlotType;
-          newPlotData.yPlotType = this.plot.yPlotType;
-          newPlotData.ranges = this.plot.ranges;
-          newPlotData.gates = this.plot.gates;
+    // for (const overlay of overlaysObj) {
+    //   if (!overlay) continue;
+    //   let newPlotData = createEmptyPlot();
+    //   newPlotData.axisPlotTypes = this.plot.axisPlotTypes;
+    //   switch (overlay.dataSource) {
+    //     case "file":
+    //       newPlotData = createPlot({
+    //         clonePlot: newPlotData,
+    //         population: getPopulation(overlay.population),
+    //       });
+    //       newPlotData.xAxis = this.plot.xAxis;
+    //       newPlotData.yAxis = this.plot.yAxis;
+    //       newPlotData.xPlotType = this.plot.xPlotType;
+    //       newPlotData.yPlotType = this.plot.yPlotType;
+    //       newPlotData.ranges = this.plot.ranges;
+    //       newPlotData.gates = this.plot.gates;
 
-          break;
-        default:
-          throw Error(
-            "Overlay data source type '" +
-              overlay.dataSource +
-              "' not supported"
-          );
-      }
+    //       break;
+    //     default:
+    //       throw Error(
+    //         "Overlay data source type '" +
+    //           overlay.dataSource +
+    //           "' not supported"
+    //       );
+    //   }
 
-      const overlayRes = PlotResource.getHistogramBins(
-        newPlotData,
-        this.bins / this.lineGraphBinSize,
-        axis
-      );
+    //   const overlayRes = PlotResource.getHistogramBins(
+    //     newPlotData,
+    //     this.bins / this.lineGraphBinSize,
+    //     axis
+    //   );
 
-      overlays.push({
-        ...overlayRes,
-        color: overlay.color,
-      });
-      const lastMax = overlayRes.max / this.lineGraphBinSize;
-      if (lastMax > globlMax) globlMax = lastMax;
-    }
+    //   overlays.push({
+    //     ...overlayRes,
+    //     color: overlay.color,
+    //   });
+    //   const lastMax = overlayRes.max / this.lineGraphBinSize;
+    //   if (lastMax > globlMax) globlMax = lastMax;
+    // }
 
     this.globalMax = globlMax;
     let binsArray = [];
     let parentBinsArray: any[] = [];
-    const population = getPopulation(this.plot.population);
-    let mainPlotColor =
-      population.gates.length > 0
-        ? getGate(population.gates[0].gate).color
-        : "";
+    // const population = getPopulation(this.plot.population);
+    // let mainPlotColor =
+    //   population.gates.length > 0
+    //     ? getGate(population.gates[0].gate).color
+    //     : "";
+    let mainPlotColor = "";
 
     for (let i = 0; i < this.bins; i++) {
       binsArray.push({
@@ -219,24 +217,24 @@ export default class HistogramPlotter extends PluginGraphPlotter {
       }
     }
 
-    for (const overlay of overlays) {
-      const curve = overlay.list
-        .map((e: any, i: number) => {
-          return this.drawer.getBinPos(
-            i,
-            e / this.lineGraphBinSize / globlMax,
-            Math.floor(this.bins) / this.lineGraphBinSize
-          );
-        })
-        .filter((e) => e.x !== undefined && e.y !== undefined)
-        .sort((a: any, b: any) => {
-          return a.x - b.x;
-        });
-      this.drawer.curve({
-        points: curve,
-        strokeColor: overlay.color,
-        lineWidth: 6,
-      });
-    }
+    // for (const overlay of overlays) {
+    //   const curve = overlay.list
+    //     .map((e: any, i: number) => {
+    //       return this.drawer.getBinPos(
+    //         i,
+    //         e / this.lineGraphBinSize / globlMax,
+    //         Math.floor(this.bins) / this.lineGraphBinSize
+    //       );
+    //     })
+    //     .filter((e) => e.x !== undefined && e.y !== undefined)
+    //     .sort((a: any, b: any) => {
+    //       return a.x - b.x;
+    //     });
+    //   this.drawer.curve({
+    //     points: curve,
+    //     strokeColor: overlay.color,
+    //     lineWidth: 6,
+    //   });
+    // }
   }
 }

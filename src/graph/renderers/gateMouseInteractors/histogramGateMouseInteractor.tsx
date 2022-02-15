@@ -18,7 +18,7 @@ import { createID } from "graph/utils/id";
 import { isPointInsideInterval } from "graph/resources/dataset";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import HistogramGatePlotter from "../plotters/runtimePlugins/histogramGatePlotter";
-import { getXandYRanges } from "graph/resources/plots";
+import { getXandYRanges, getXandYRangesFromFile } from "graph/resources/plots";
 
 export interface HistogramGateState extends GateState {
   axis: AxisName;
@@ -66,8 +66,8 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
 
   private validateGateOnSpace(gate: HistogramGate) {
     return (
-      gate.axis === this.plotter.plot.xAxis &&
-      gate.axisType === this.plotter.plot.xPlotType
+      gate.axis === this.plotter.plot2.xAxis &&
+      gate.axisType === this.plotter.plot2.xPlotType
     );
   }
 
@@ -196,7 +196,8 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
   protected instanceGate(): HistogramGate {
     if (!this.started) return;
     const { points, histogramDirection, plotType } = this.getGatingState();
-    let originalRange = getXandYRanges(this.plotter.plot).x;
+    let originalRange = getXandYRangesFromFile(this.plotter.plot2).x;
+    // let originalRange = getXandYRanges(this.plotter.plot).x;
 
     const newPoints: [number, number] = [...points] as [number, number];
 
@@ -213,17 +214,18 @@ export default class HistogramGateMouseInteractor extends GateMouseInteractor {
       newPoints[1] ^= newPoints[0];
       newPoints[0] ^= newPoints[1];
     }
-    let population = getPopulation(this.plotter.plot.population);
+    // let population = getPopulation(this.plotter.plot.population);
     const newGate: HistogramGate = {
       points: [...newPoints],
-      axis: this.plotter.plot.xAxis,
+      axis: this.plotter.plot2.xAxis,
       axisType: plotType,
       axisOriginalRanges: originalRange,
       histogramDirection,
-      parents:
-        population && population.gates && population.gates.length > 0
-          ? [population.gates[0].gate]
-          : [],
+      parents: [],
+      // parents:
+      //   population && population.gates && population.gates.length > 0
+      //     ? [population.gates[0].gate]
+      //     : [],
       color: generateColor(),
       gateType: "histogram",
       id: createID(),

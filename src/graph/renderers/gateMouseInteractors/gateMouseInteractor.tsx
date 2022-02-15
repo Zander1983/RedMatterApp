@@ -77,10 +77,10 @@ export default abstract class GateMouseInteractor {
 
   unsetGating(noDispatch: boolean = false) {
     this.started = false;
-    let plot = this.plotter.plot;
+    let plot = this.plotter.plot2;
     if (plot.gatingActive !== "" && !noDispatch) {
       plot.gatingActive = "";
-      WorkspaceDispatch.UpdatePlot(plot);
+      WorkspaceDispatch2.UpdatePlot(plot);
     }
   }
 
@@ -108,16 +108,16 @@ export default abstract class GateMouseInteractor {
   async createAndAddGate() {
     const gate = this.instanceGate();
     if (gate.gateType === "polygon") {
-      gate.name = `${this.plotter.plot.xAxis}, ${this.plotter.plot.yAxis} Subset`;
+      gate.name = `${this.plotter.plot2.xAxis}, ${this.plotter.plot2.yAxis} Subset`;
     } else if (gate.gateType === "histogram") {
-      gate.name = `${this.plotter.plot.xAxis} Subset`;
+      gate.name = `${this.plotter.plot2.xAxis} Subset`;
     }
 
     this.plugin.provisoryGateID = gate.id;
     await WorkspaceDispatch.AddGate({ ...gate });
     let eventGateName: WorkspaceEventGateNaming = {
       id: "",
-      plotID: this.plotter.plot.id,
+      plotID: this.plotter.plot2._id,
       gateID: gate.id,
       type: "gateNaming",
       used: false,
@@ -131,7 +131,7 @@ export default abstract class GateMouseInteractor {
     if (gate.gateType === "polygon") {
       gate.name = `polygonGate`;
     } else if (gate.gateType === "histogram") {
-      gate.name = `${this.plotter.plot.xAxis} Subset`;
+      gate.name = `${this.plotter.plot2.xAxis} Subset`;
     }
     await WorkspaceDispatch2.AddGate(gate);
     let eventGateName: WorkspaceEventGateNaming = {
@@ -143,25 +143,25 @@ export default abstract class GateMouseInteractor {
     };
     await EventQueue2Dispatch.AddQueueItem(eventGateName);
   }
-
-  async clonePlotWithSelectedGate(gate: Gate) {
-    const originPlot = this.plotter.plot;
-    let newPopulation = createPopulation({
-      clonePopulation: getPopulation(originPlot.population),
-      parentPopulationId: originPlot.parentPlotId,
-    });
-    newPopulation.gates = [
-      ...newPopulation.gates,
-      { gate: gate.id, inverseGating: false },
-    ];
-    await WorkspaceDispatch.AddPopulation(newPopulation);
-    let newPlot = PlotResource.createPlot({
-      clonePlot: originPlot,
-      population: newPopulation,
-    });
-    newPlot.gates = [];
-    WorkspaceDispatch.AddPlot(newPlot);
-  }
+  // to be implemented
+  // async clonePlotWithSelectedGate(gate: Gate) {
+  //   const originPlot = this.plotter.plot2;
+  //   let newPopulation = createPopulation({
+  //     clonePopulation: getPopulation(originPlot.population),
+  //     parentPopulationId: originPlot.parentPlotId,
+  //   });
+  //   newPopulation.gates = [
+  //     ...newPopulation.gates,
+  //     { gate: gate.id, inverseGating: false },
+  //   ];
+  //   await WorkspaceDispatch.AddPopulation(newPopulation);
+  //   let newPlot = PlotResource.createPlot({
+  //     clonePlot: originPlot,
+  //     population: newPopulation,
+  //   });
+  //   newPlot.gates = [];
+  //   WorkspaceDispatch.AddPlot(newPlot);
+  // }
 
   registerMouseEvent(type: string, x: number, y: number) {
     if (this.plugin === undefined || this.plugin.plotter === undefined) return;
@@ -204,7 +204,7 @@ export default abstract class GateMouseInteractor {
     const foundTarget = this.targetEditGate !== null;
     this.lastMousePos = this.plugin.lastMousePos = mouse;
     if (type === "mousedown" && foundTarget && withinDoubleClickBounds) {
-      this.clonePlotWithSelectedGate(this.targetEditGate);
+      // this.clonePlotWithSelectedGate(this.targetEditGate);
     } else if (
       !foundTarget &&
       type === "mousedown" &&
