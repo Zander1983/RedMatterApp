@@ -94,13 +94,12 @@ interface TableProps {
   setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const PlotHeadComponent = (
-    {
-      workspace,
-      headers,
-      data,
-      // setData,
-      setOpenFiles,
+const PlotHeadComponent = ({
+  workspace,
+  headers,
+  data,
+  // setData,
+  setOpenFiles,
 }: TableProps) => {
   const classes = useStyles();
 

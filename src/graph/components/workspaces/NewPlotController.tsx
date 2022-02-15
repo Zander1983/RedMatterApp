@@ -193,7 +193,6 @@ interface IState {
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
-
   constructor(props: PlotControllerProps) {
     super(props);
     this.state = {
@@ -228,7 +227,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     setCanvasSize(true);
     setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }
-
 
   getArrowArray = () => {
     let arr: any[] = [];
@@ -347,7 +345,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             {this.state.isTableRenderCall &&
               this.getArrowArray().map((obj, i) => {
                 return (
-                  <Xarrow key={i} start={obj.start} end={obj.end} path={"straight"} />
+                  <Xarrow
+                    key={i}
+                    start={obj.start}
+                    end={obj.end}
+                    path={"straight"}
+                  />
                 );
               })}
           </Xwrapper>
