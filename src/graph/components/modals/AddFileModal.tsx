@@ -379,6 +379,7 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+
                               setTimeout(() => {
                                 props.close(false);
                                 // props.closeCall.f(props.closeCall.ref);
@@ -422,6 +423,18 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+
+                              // making the selected file the first element of filesArray
+                              const filesInNewOrder: File[] = [];
+                              for (let i = 0; i < files.length; i++) {
+                                if (files[i].id === fileMetadata.id) {
+                                  filesInNewOrder.unshift(files[i]);
+                                } else {
+                                  filesInNewOrder.push(files[i]);
+                                }
+                              }
+                              WorkspaceDispatch.SetFiles(filesInNewOrder);
+
                               setTimeout(() => {
                                 props.close(false);
                                 // props.closeCall.f(props.closeCall.ref);

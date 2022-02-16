@@ -147,7 +147,7 @@ const footerData = [
           <ul>
             <li>
               <b>Mark Kelly</b>
-              <br /> Chief Executive Officer
+              <br /> Chief Executive Officer and software development consultant
               <br />
               <br />
             </li>
@@ -158,14 +158,26 @@ const footerData = [
               <br />
             </li>
             <li>
-              <b>Renato Britto Araujo</b>
-              <br /> Chief Technology Officer
+              <b>Dr. Alfonso Blanco</b>
+              <br /> Science Advisor
               <br />
               <br />
             </li>
             <li>
-              <b>Dr. Alfonso Blanco</b>
-              <br /> Science Advisor
+              <b>Keshav Agrawal</b>
+              <br /> Sr. Software Developer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Riyasaat Ahmed Rahul</b>
+              <br /> Sr.Front-end Software engineer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Md Eyasin</b>
+              <br /> Sr. Backend Software Engineer(Mentor)
               <br />
               <br />
             </li>

@@ -1,26 +1,31 @@
-
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
-
 import userManager from "Components/users/userManager";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 
-import {dowloadAllFileEvents,} from "services/FileService";
+import { dowloadAllFileEvents } from "services/FileService";
+import {
+  loadWorkspaceFromRemoteIfExists,
+  saveWorkspaceToRemote,
+} from "./utils/workspace";
 
-import {loadWorkspaceFromRemoteIfExists, saveWorkspaceToRemote} from "./utils/workspace";
 import { Typography } from "antd";
 import { memResetDatasetCache } from "./resources/dataset";
 import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
+import { Workspace as WorkspaceType, File } from "./resources/types";
+import { useSelector } from "react-redux";
+import NewPlotController from "./components/workspaces/NewPlotController";
+import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -73,31 +78,30 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 500,
     color: "white",
   },
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: "#fff",
-    },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: "#fff",
+  },
 }));
 
 const NewWorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
-
   const classes = useStyles();
   const history = useHistory();
-
-  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [open, setOpen] = React.useState(true);
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
-  const [initState, setInitState] = React.useState(true);
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
+  const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
-
-  let pageLoaderSubscription:any = null;
+  let pageLoaderSubscription: any = null;
 
   useEffect(() => {
     pageLoaderSubscription = setTimeout(function run() {
@@ -109,67 +113,79 @@ const NewWorkspaceInnerComponent = (props: {
     }, 12000);
 
     (async () => {
-        try {
-            await getAll(props.shared, props.experimentId);
-        } catch (e) {
-            await handleError(e);
-        }
+      try {
+        await getAll(props.shared, props.experimentId);
+      } catch (e) {
+        await handleError(e);
+      }
     })();
 
     return () => {
-        WorkspaceDispatch.ResetWorkspace();
-        memResetDatasetCache();
+      WorkspaceDispatch.ResetWorkspace();
+      memResetDatasetCache();
     };
   }, []);
 
-  const getAll = async (shared:boolean, experimentId:any) => {
-      WorkspaceDispatch.ResetWorkspace();
-      if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-      WorkspaceDispatch.SetWorkspaceShared(props.shared);
-      setSharedWorkspace(props.shared);
-      setReloadMessage("Loading...");
-      loadWorkspaceFromRemoteIfExists(shared, experimentId)
-          .then(async (response:any) => {
-              setReloadMessage("Done. wait preparing....");
-              if(response.requestSuccess){
-                  let files = SecurityUtil.decryptData(sessionStorage.getItem("experimentFiles"), process.env.REACT_APP_DATA_SECRET_SOLD);
-                  if(files && files?.files?.files?.length > 0) {
-                      let fileIds = files?.files?.files?.map((file:any) => file.id);
-                      if (fileIds.length > 0){
-                          WorkspaceDispatch.SetFiles(files?.files?.files);
-                          try {
-                              let result = await dowloadAllFileEvents(sharedWorkspace, props.experimentId, fileIds);
-                              if (result?.length > 0) {
-                                  setReloadMessage("Workspace prepared successfully.");
-                                  setTimeout(() => {setPlotCallNeeded(true);} , 1500);
-                              }else {
-
-                              }
-                          }catch (err) {
-                              setPlotCallNeeded(false);
-                              if (err.toString().indexOf("FILE-MISSING") === -1) {
-                                  await handleError({message:"File downloading failed. due to retry completed", saverity:"error"});
-                              } else {
-                                  setMessage("Your Action is Processing. please try after few later Or wait ");
-                              }
-                          } finally {
-                              if (pageLoaderSubscription) {
-                                  setOpen(false);
-                                  clearTimeout(pageLoaderSubscription);
-                                  pageLoaderSubscription = null;
-                              }
-                          }
-                      }
-                  }else {
-
-                  }
-              }else {
-
+  const getAll = async (shared: boolean, experimentId: any) => {
+    WorkspaceDispatch.ResetWorkspace();
+    if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+    WorkspaceDispatch.SetWorkspaceShared(props.shared);
+    setSharedWorkspace(props.shared);
+    setReloadMessage("Loading...");
+    loadWorkspaceFromRemoteIfExists(shared, experimentId)
+      .then(async (response: any) => {
+        setReloadMessage("Loading Done. wait preparing....");
+        if (response.requestSuccess) {
+          let files = SecurityUtil.decryptData(
+            sessionStorage.getItem("experimentFiles"),
+            process.env.REACT_APP_DATA_SECRET_SOLD
+          );
+          if (files && files?.files?.files?.length > 0) {
+            let fileIds = files?.files?.files?.map((file: any) => file.id);
+            if (fileIds.length > 0) {
+              WorkspaceDispatch.SetFiles(files?.files?.files);
+              try {
+                let result = await dowloadAllFileEvents(
+                  sharedWorkspace,
+                  props.experimentId,
+                  fileIds
+                );
+                if (result?.length > 0) {
+                  setReloadMessage("Workspace prepared successfully.");
+                  setTimeout(() => {
+                    setPlotCallNeeded(true);
+                  }, 2000);
+                } else {
+                  setMessage(
+                    "Your Action is Processing. please try after few later Or wait "
+                  );
+                }
+              } catch (err) {
+                setPlotCallNeeded(false);
+                if (err.toString().indexOf("FILE-MISSING") === -1) {
+                  await handleError({
+                    message: "File downloading failed. due to retry completed",
+                    saverity: "error",
+                  });
+                } else {
+                  setMessage(
+                    "Your Action is Processing. please try after few later Or wait "
+                  );
+                }
+              } finally {
+                if (pageLoaderSubscription) {
+                  setOpen(false);
+                  clearTimeout(pageLoaderSubscription);
+                  pageLoaderSubscription = null;
+                }
               }
-
-          })
-          .catch( e => {
-          });
+            }
+          } else {
+          }
+        } else {
+        }
+      })
+      .catch((e) => {});
   };
 
   const handleError = async (error: any) => {
@@ -214,60 +230,71 @@ const NewWorkspaceInnerComponent = (props: {
     }
   };
 
-  const _renderToolbar = () => {};
+  const _renderToolbar = () => {
+    return (
+      <WorkspaceTopBar
+        sharedWorkspace={sharedWorkspace}
+        workspace={workspace}
+        experimentId={props.experimentId}
+        plotCallNeeded={plotCallNeeded}
+      />
+    );
+  };
 
   const _renderPageMessage = () => {
-      return(
-          <Grid
-              container
-              style={{
-                  height: 400,
-                  backgroundColor: "#fff",
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                  textAlign: "center",
+    return (
+      <Grid
+        container
+        style={{
+          height: 400,
+          backgroundColor: "#fff",
+          borderBottomLeftRadius: 10,
+          borderBottomRightRadius: 10,
+          textAlign: "center",
+        }}
+        justify="center"
+        alignItems="center"
+        alignContent="center"
+      >
+        {!isConnectivity && "Internet connection failed. Check your connection"}
+        <Typography
+          style={{
+            color: "#248e0d",
+            textAlign: "center",
+          }}
+        >
+          {" "}
+          {isReloadMessage && isReloadMessage}{" "}
+        </Typography>
+
+        {isMessage && (
+          <>
+            {isMessage || ""}
+            <a
+              style={{ marginLeft: "5px" }}
+              onClick={(event) => {
+                event.preventDefault();
+                window.location.reload();
               }}
-              justify="center"
-              alignItems="center"
-              alignContent="center"
-          >
-              {!isConnectivity && ("Internet connection failed. Check your connection")}
-
-
-              <Typography
-                  style={{
-                      color: "#248e0d",
-                      textAlign: "center",
-                  }}> {isReloadMessage && (isReloadMessage) } </Typography>
-
-              {isMessage && (
-                  <>
-                      {isMessage || ""}
-                  <a
-                      style={{ marginLeft: "5px" }}
-                      onClick={(event) => {
-                          event.preventDefault();
-                          window.location.reload();
-                      }}>
-                      Reload...
-                  </a>
-                  </>
-              )}
-          </Grid>
-      )
+            >
+              Reload...
+            </a>
+          </>
+        )}
+      </Grid>
+    );
   };
 
   return (
-    <div style={{
+    <div
+      style={{
         height: "100%",
         padding: 0,
-      }}>
-        <Backdrop className={classes.backdrop} open={open}>
-            <CircularProgress color="inherit" />
-        </Backdrop>
-      {/* == MODALS == */}
-
-      {/* == MAIN PANEL == */}
+      }}
+    >
+      <Backdrop className={classes.backdrop} open={open}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Grid
         style={{
           marginTop: 0,
@@ -284,15 +311,24 @@ const NewWorkspaceInnerComponent = (props: {
             marginLeft: 0,
             marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
-          }}>
+          }}
+        >
           <div>
             {_renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
               {plotCallNeeded ? (
-                <Typography>Plot Loaded here</Typography>
-              ) : _renderPageMessage()}
+                <NewPlotController
+                  sharedWorkspace={sharedWorkspace}
+                  experimentId={props.experimentId}
+                  workspace={workspace}
+                  workspaceLoading={plotCallNeeded}
+                  customPlotRerender={customPlotRerender}
+                />
+              ) : (
+                _renderPageMessage()
+              )}
             </Grid>
           </div>
         </Grid>

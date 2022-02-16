@@ -101,7 +101,6 @@ const PlotComponent = React.memo(
         <Divider
           style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
         />
-
         <SideSelector
           // {...props}
           editWorkspace={props.editWorkspace}
