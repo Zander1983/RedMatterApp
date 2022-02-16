@@ -4,7 +4,7 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
@@ -295,10 +295,6 @@ const PlotTableComponent = ({
   const [openFiles, setOpenFiles] = useState<string[]>([
     workspace.selectedFile,
   ]);
-  const [headers, setHeaders] = useState<string[]>([
-    "File Name",
-    "Click to View",
-  ]);
 
   useEffect(() => {
     // making the selected file the first element of filesArray
@@ -315,12 +311,15 @@ const PlotTableComponent = ({
     }
   }, []);
 
-  useEffect(() => {
-    setHeaders([
+  const headers = useMemo(() => {
+    return [
       "File Name",
       ...workspace.gates.map((gate) => gate.name),
       "Click to View",
-    ]);
+    ];
+  }, [workspace.gates]);
+
+  useEffect(() => {
     if (workspace.clearOpenFiles) {
       setOpenFiles([workspace.selectedFile]);
       WorkspaceDispatch.ClearOpenFiles();
@@ -332,7 +331,6 @@ const PlotTableComponent = ({
       <Table style={{ overflowY: "scroll" }}>
         <PlotHeadComponent
           headers={headers}
-          selectedFile={workspace.selectedFile}
           setOpenFiles={setOpenFiles}
           sortByColumn={sortByColumn}
           deleteColumn={deleteColumn}

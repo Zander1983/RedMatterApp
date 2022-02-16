@@ -4,11 +4,11 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { Workspace, File } from "graph/resources/types";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import deleteIcon from "assets/images/delete.png";
+
+import { getWorkspace } from "graph/utils/workspace";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -85,7 +85,6 @@ const useStyles = makeStyles((theme) => ({
 
 interface TableProps {
   headers: string[];
-  selectedFile: string;
   setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
   sortByColumn: (colIndex: number, type: string) => void;
   deleteColumn: (index: number) => void;
@@ -93,12 +92,12 @@ interface TableProps {
 
 const PlotHeadComponent = ({
   headers,
-  selectedFile,
   setOpenFiles,
   sortByColumn,
   deleteColumn,
 }: TableProps) => {
   const classes = useStyles();
+
   return (
     <TableHead>
       <TableRow>
@@ -129,7 +128,7 @@ const PlotHeadComponent = ({
                 />
                 <img
                   onClick={() => {
-                    setOpenFiles([selectedFile]);
+                    setOpenFiles([getWorkspace().selectedFile]);
                     deleteColumn(index - 1);
                   }}
                   src={deleteIcon}
