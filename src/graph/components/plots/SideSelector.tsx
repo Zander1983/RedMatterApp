@@ -49,7 +49,7 @@ function PlotComponent(props: {
 
   // const xAxis = plot.xAxis;
   const { axes, labels } = getFile(plot.file);
-  const files = getAllFiles();
+  // const files = getAllFiles();
 
   // const xPlotType = plot.xPlotType;
 
@@ -68,7 +68,8 @@ function PlotComponent(props: {
   const setPlotType = (axis: "x" | "y", value: PlotType) => {
     // axis === "x"
     // ? PlotResource.setXAxisPlotType(plot, value)
-    //   : PlotResource.setYAxisPlotType(plot, value);
+    // : PlotResource.setYAxisPlotType(plot, value);
+    PlotResource2.setPlotType(axis, plot, value);
   };
 
   const setHistogram = (value: boolean, axisName?: string) => {
@@ -89,11 +90,7 @@ function PlotComponent(props: {
   };
 
   // Set XandYaxis except for Histograms
-  const setAxis = (
-    axis: "x" | "y",
-    value: string,
-    stopHist: boolean = false
-  ) => {
+  const setAxis = (axis: "x" | "y", value: string) => {
     // if (isPlotHistogram() && !stopHist) {
     // PlotResource.setXAxis(plot, value);
     //   PlotResource.setYAxis(plot, value);

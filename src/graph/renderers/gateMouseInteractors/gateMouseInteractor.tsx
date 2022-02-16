@@ -177,8 +177,9 @@ export default abstract class GateMouseInteractor {
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }
-
+    console.log("Baire...", this.started);
     if (this.started) {
+      console.log("vitore...", this.started);
       this.gateEvent(type, p);
       this.setPluginState();
       const now = new Date().getTime();

@@ -67,8 +67,11 @@ export const updateAxis = (axis: string, value: string, plot: Plot2) => {
 
 export const setPlotType = (axis: "x" | "y", plot: Plot2, value: PlotType) => {
   plot.gatingActive = "";
-  plot.xPlotType = value;
-  // plot.axisPlotTypes[plot.xAxis] = plotType;
+  if (axis === "x") {
+    plot.xPlotType = value;
+  } else {
+    plot.yPlotType = value;
+  }
 };
 
 // historam

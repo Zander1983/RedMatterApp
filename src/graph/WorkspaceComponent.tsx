@@ -108,7 +108,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 let i = 0;
 
-const LoadModalComponent = React.memo(() => {
+export const LoadModalComponent = React.memo(() => {
   return (
     <div>
       <h2>Loading workspace</h2>
@@ -120,7 +120,7 @@ const LoadModalComponent = React.memo(() => {
   );
 });
 
-const DeleteEntireWorkspaceCompoment = () => {
+export const DeleteEntireWorkspaceCompoment = () => {
   return (
     <div>
       <h2>Are you sure you want to delete the entire workspace?</h2>
@@ -131,6 +131,7 @@ const DeleteEntireWorkspaceCompoment = () => {
     </div>
   );
 };
+
 const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;

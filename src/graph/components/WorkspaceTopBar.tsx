@@ -21,6 +21,11 @@ import axios from "axios";
 import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
 import GateNamePrompt from "./modals/GateNamePrompt";
+import {
+  DeleteEntireWorkspaceCompoment,
+  LoadModalComponent,
+} from "./../WorkspaceComponent";
+
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -342,12 +347,12 @@ const WorkspaceTopBarComponent = ({
 
   return (
     <>
-      <GateNamePrompt />
+      <GateNamePrompt selectedFile={workspace.selectedFile} />
       {/* == MODALS == */}
       {workspace.files.length > 0 && (
         <AddFileModal
           open={addFileModalOpen}
-          closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+          close={setAddFileModalOpen}
           isShared={sharedWorkspace}
           experimentId={experimentId}
           files={workspace.files}
@@ -356,19 +361,7 @@ const WorkspaceTopBarComponent = ({
       )}
       <MessageModal
         open={clearModal}
-        closeCall={{
-          f: handleClose,
-          ref: setClearModal,
-        }}
-        message={
-          <div>
-            <h2>Are you sure you want to delete the entire workspace?</h2>
-            <p style={{ marginLeft: 100, marginRight: 100 }}>
-              The links you've shared with "share workspace" will still work, if
-              you want to access this in the future, make sure to store them.
-            </p>
-          </div>
-        }
+        close={setClearModal}
         options={{
           yes: () => {
             WorkspaceDispatch.ResetWorkspaceExceptFiles();
@@ -377,12 +370,14 @@ const WorkspaceTopBarComponent = ({
             handleClose(setClearModal);
           },
         }}
-      />
+      >
+        <DeleteEntireWorkspaceCompoment />
+      </MessageModal>
 
       <LinkShareModal
         open={linkShareModalOpen}
         workspaceId={newWorkspaceId}
-        closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+        close={setLinkShareModalOpen}
       />
       {/* == MAIN PANEL == */}
       {_renderToolbar()}

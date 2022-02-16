@@ -426,11 +426,11 @@ const AddFileModal = React.memo(
 
                               // making the selected file the first element of filesArray
                               const filesInNewOrder: File[] = [];
-                              for (let i = 0; i < files.length; i++) {
-                                if (files[i].id === fileMetadata.id) {
-                                  filesInNewOrder.unshift(files[i]);
+                              for (let i = 0; i < props.files.length; i++) {
+                                if (props.files[i].id === fileMetadata.id) {
+                                  filesInNewOrder.unshift(props.files[i]);
                                 } else {
-                                  filesInNewOrder.push(files[i]);
+                                  filesInNewOrder.push(props.files[i]);
                                 }
                               }
                               WorkspaceDispatch.SetFiles(filesInNewOrder);

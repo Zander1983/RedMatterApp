@@ -787,7 +787,6 @@ export const getXandYDataAndColors = (
   const dataset = getDataset(file.id);
   const population = getPopulation(plot.population);
   const filteredPoints = getDatasetFilteredPoints(dataset, population.gates);
-  console.log("alright");
   const colors = getDatasetColors(
     filteredPoints,
     population.gates,
@@ -806,7 +805,6 @@ export const getXandYDataAndColorsFromPlot2 = (
 ): { points: [Float32Array, Float32Array]; colors: ColorSchema } => {
   const dataset = getDataset(plot.file);
   const colors = getDatasetColors(dataset, [], [], "#000");
-  console.log("Okay.");
   // filtered point yet to be implemented
 
   return {
