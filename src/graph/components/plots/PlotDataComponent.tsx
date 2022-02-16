@@ -127,7 +127,6 @@ const PlotDataComponent = ({
   React.useEffect(() => {
     const timeout =
       workspace.files.length < 30 ? 1 : workspace.files.length < 60 ? 3 : 4;
-    console.log(timeout);
     const timer1 = setTimeout(() => setLoader(false), timeout);
     return () => {
       clearTimeout(timer1);
