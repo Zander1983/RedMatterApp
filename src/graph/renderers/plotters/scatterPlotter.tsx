@@ -134,8 +134,6 @@ export default class ScatterPlotter extends PluginGraphPlotter {
   }
 
   public drawPoints() {
-    let i = 0;
-    // console.log(this.plot, this.plot2);
     // const { points, colors } = PlotResource.getXandYDataAndColors(this.plot);
     // improved one...
     const { points, colors } = PlotResource.getXandYDataAndColorsFromPlot2(

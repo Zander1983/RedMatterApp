@@ -111,68 +111,66 @@ export default class PolygonMouseInteractor extends GateMouseInteractor {
 
   protected gateMoveToMousePosition(mouse: Point) {
     const workspace = getWorkspace();
-    // const plotPopulation = getPopulation(this.plotter.plot.population);
-    // if (workspace.selectedFile === plotPopulation.file) {
-    const gatePivot = this.plotter.transformer.toConcretePoint(
-      {
-        ...this.gatePivot,
-      },
-      undefined,
-      true
-    );
-    let offset = {
-      x: mouse.x - gatePivot.x,
-      y: mouse.y - gatePivot.y,
-    };
-    this.gatePivot = this.plotter.transformer.toAbstractPoint(
-      {
-        ...mouse,
-      },
-      true
-    );
-    const gateState = this.targetEditGate;
-    for (let index = 0; index < gateState.points.length; index++) {
-      gateState.points[index] = { ...gateState.points[index] };
-      gateState.points[index] = this.plotter.transformer.toConcretePoint(
-        gateState.points[index],
+    if (workspace.selectedFile === this.plotter.plot2.file) {
+      const gatePivot = this.plotter.transformer.toConcretePoint(
+        {
+          ...this.gatePivot,
+        },
         undefined,
         true
       );
-      gateState.points[index] = {
-        x: gateState.points[index].x + offset.x,
-        y: gateState.points[index].y + offset.y,
+      let offset = {
+        x: mouse.x - gatePivot.x,
+        y: mouse.y - gatePivot.y,
       };
-      gateState.points[index] = this.plotter.transformer.toAbstractPoint(
-        gateState.points[index],
+      this.gatePivot = this.plotter.transformer.toAbstractPoint(
+        {
+          ...mouse,
+        },
         true
       );
+      const gateState = this.targetEditGate;
+      for (let index = 0; index < gateState.points.length; index++) {
+        gateState.points[index] = { ...gateState.points[index] };
+        gateState.points[index] = this.plotter.transformer.toConcretePoint(
+          gateState.points[index],
+          undefined,
+          true
+        );
+        gateState.points[index] = {
+          x: gateState.points[index].x + offset.x,
+          y: gateState.points[index].y + offset.y,
+        };
+        gateState.points[index] = this.plotter.transformer.toAbstractPoint(
+          gateState.points[index],
+          true
+        );
+      }
+      let scatterPlotterGate: any = this.plotter.gates.find(
+        (x) => x.id == gateState.id
+      );
+      scatterPlotterGate.points = gateState.points;
+      this.gateUpdater(gateState);
     }
-    let scatterPlotterGate: any = this.plotter.gates.find(
-      (x) => x.id == gateState.id
-    );
-    scatterPlotterGate.points = gateState.points;
-    this.gateUpdater(gateState);
-    // }
   }
 
   protected pointMoveToMousePosition(mouse: Point) {
     const workspace = getWorkspace();
-    // const plotPopulation = getPopulation(this.plotter.plot.population);
-    // if (workspace.selectedFile === plotPopulation.file) {
-    const gateState = this.targetEditGate;
-    gateState.points[this.targetPointIndex] = {
-      ...gateState.points[this.targetPointIndex],
-    };
-    gateState.points[this.targetPointIndex] =
-      this.plotter.transformer.rawAbstractLogicleToLinear(
-        this.plotter.transformer.toAbstractPoint(mouse)
+    if (workspace.selectedFile === this.plotter.plot2.file) {
+      const gateState = this.targetEditGate;
+      gateState.points[this.targetPointIndex] = {
+        ...gateState.points[this.targetPointIndex],
+      };
+      gateState.points[this.targetPointIndex] =
+        this.plotter.transformer.rawAbstractLogicleToLinear(
+          this.plotter.transformer.toAbstractPoint(mouse)
+        );
+      let scatterPlotterGate: any = this.plotter.gates.find(
+        (x) => x.id == gateState.id
       );
-    let scatterPlotterGate: any = this.plotter.gates.find(
-      (x) => x.id == gateState.id
-    );
-    scatterPlotterGate.points = gateState.points;
-    this.gateUpdater(gateState);
-    // }
+      scatterPlotterGate.points = gateState.points;
+      this.gateUpdater(gateState);
+    }
   }
 
   protected instanceGate2(): PolygonGate2 {

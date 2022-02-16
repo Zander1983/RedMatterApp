@@ -80,9 +80,9 @@ const PlotComponent = React.memo(
                 : `${props.fileName.slice(0, 35)}...`}
             </div>
             <MainBar
-              plot={plot}
+              // plot={plot}
               editWorkspace={props.editWorkspace}
-              plot2={props.plt}
+              plot={props.plt}
             />
             <GateBar
               plotId={plot.id}

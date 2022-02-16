@@ -1,7 +1,8 @@
 import { createID } from "graph/utils/id";
 import { MINH, MINW } from "graph/components/workspaces/PlotController";
 import WorkspaceDispatch from "graph/workspaceRedux2/workspaceDispatcher";
-import { Plot2, File, PlotType } from "./types";
+import EventQueueDispatch from "graph/workspaceRedux2/eventQueue2Dispatcher";
+import { Plot2, File, PlotType, PlotsRerender } from "./types";
 import { getWorkspace2, getFileById2 } from "graph/utils/workspace2";
 import { getFile } from "graph/utils/workspace";
 import { getDataset } from "./dataset";
@@ -121,4 +122,20 @@ export const getHistogramAxisData = (plot: Plot2) => {
   const file: File = getFileById2(plot.file);
   const dataset = getDataset(file.id);
   return dataset[plot.xAxis];
+};
+
+export const updateGatingActive = (plot: Plot2) => {
+  if (plot.gatingActive) {
+    plot.gatingActive = "";
+    let plotsRerenderQueueItem: PlotsRerender = {
+      id: "",
+      used: false,
+      type: "plotsRerender",
+      plotIDs: [plot._id],
+    };
+    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+  } else {
+    plot.gatingActive = plot.histogramAxis ? "histogram" : "polygon";
+  }
+  WorkspaceDispatch.UpdatePlot(plot);
 };

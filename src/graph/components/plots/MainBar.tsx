@@ -16,7 +16,8 @@ import {
   getWorkspace,
 } from "graph/utils/workspace";
 import { getWorkspace2 } from "graph/utils/workspace2";
-import * as PlotResource from "graph/resources/plots";
+// import * as PlotResource from "graph/resources/plots";
+import * as PlotResource2 from "graph/resources/plots2";
 import { CameraFilled } from "@ant-design/icons";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import Workspac2eDispatch from "graph/workspaceRedux2/workspaceDispatcher";
@@ -131,9 +132,9 @@ const SubPopulation = () => {
 };
 
 export default function MainBar(props: {
-  plot: Plot;
+  // plot: Plot;
   editWorkspace: boolean;
-  plot2: Plot2;
+  plot: Plot2;
 }) {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [emptySubpopModalOpen, setEmptySubpopModalOpen] = React.useState(false);
@@ -149,27 +150,26 @@ export default function MainBar(props: {
   //cambie los min y max para que ahora reciban los parametros para X e Y
 
   const plot = props.plot;
-  const plot2 = props.plot2;
   const workspace = getWorkspace();
-  const workspace2 = getWorkspace2();
 
   const deletePlot = () => {
-    let selectedFilePlotLength = 0;
-    workspace.plots.map((plot) => {
-      if (
-        getFile(getPopulation(plot.population).file).id ===
-        workspace.selectedFile
-      ) {
-        selectedFilePlotLength += 1;
-      }
-    });
-    if (selectedFilePlotLength === 1) {
-      WorkspaceDispatch.ResetWorkspaceExceptFiles();
-    } else {
-      deleteSpecificPlotsFromAllFiles(props.plot);
-    }
-    // Delete for new DS
-    Workspac2eDispatch.DeletePlot(plot2._id);
+    // to be implemented
+    // let selectedFilePlotLength = 0;
+    // workspace.plots.map((plot) => {
+    //   if (
+    //     getFile(getPopulation(plot.population).file).id ===
+    //     workspace.selectedFile
+    //   ) {
+    //     selectedFilePlotLength += 1;
+    //   }
+    // });
+    // if (selectedFilePlotLength === 1) {
+    //   WorkspaceDispatch.ResetWorkspaceExceptFiles();
+    // } else {
+    //   deleteSpecificPlotsFromAllFiles(props.plot);
+    // }
+    // // Delete for new DS
+    // Workspac2eDispatch.DeletePlot(plot2._id);
   };
 
   const handleClose = (func: Function) => {
@@ -177,89 +177,69 @@ export default function MainBar(props: {
   };
 
   const gatingSetter = () => {
-    let plot = props.plot;
-    if (plot.gatingActive) {
-      plot.gatingActive = "";
-      let plotsRerenderQueueItem: PlotsRerender = {
-        id: "",
-        used: false,
-        type: "plotsRerender",
-        plotIDs: [plot.id],
-      };
-      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-    } else if (plot.histogramAxis === "") {
-      plot.gatingActive = "polygon";
-    } else {
-      plot.gatingActive = "histogram";
-    }
-    WorkspaceDispatch.UpdatePlot(plot);
+    PlotResource2.updateGatingActive(plot);
   };
 
   const downloadCanvasAsImage = () => {
-    let downloadLink = document.createElement("a");
-    const file = PlotResource.getPlotFile(props.plot);
-    const fileLabel = file.label.includes(".fcs")
-      ? file.label.split(".fcs")[0]
-      : file.label;
-    const population = getPopulation(props.plot.population);
-    const gateName =
-      population.gates.length > 0
-        ? getGate(population.gates[0].gate).name
-        : null;
-    const plotName = props.plot.label;
-    downloadLink.setAttribute(
-      "download",
-      `${
-        gateName ? gateName + "-" : plotName ? plotName + "-" : ""
-      }${fileLabel}.png`
-    );
-
-    // selecting the canvas from dom
-    const canvas: HTMLCanvasElement = document.getElementById(
-      `canvas-${props.plot.id}`
-    ) as HTMLCanvasElement;
-    const context: CanvasRenderingContext2D = canvas.getContext("2d");
-
-    // Adding x-axis
-    context.font = "16px Roboto black";
-    context.fillText(
-      `X-AxisName: ${props.plot.xAxis}`,
-      canvas.offsetWidth / 2 + 35,
-      canvas.offsetHeight * 2 - 10
-    );
-
-    // Adding y-axis
-    context.font = "16px Roboto black";
-    context.fillText(`Y-AxisName: ${props.plot.yAxis}`, 20, 20);
-
-    //@ts-ignore
-    let dataURL = canvas.toDataURL("image/png");
-    let url = dataURL.replace(
-      /^data:image\/png/,
-      "data:application/octet-stream"
-    );
-    downloadLink.setAttribute("href", url);
-    downloadLink.click();
-
-    // Clearing the X-Axis
-    context.clearRect(
-      canvas.offsetWidth / 2,
-      canvas.offsetHeight * 2 - 30,
-      canvas.offsetWidth,
-      32
-    );
-    context.fillStyle = "white";
-    context.fillRect(
-      canvas.offsetWidth / 2,
-      canvas.offsetHeight * 2 - 30,
-      canvas.offsetWidth,
-      32
-    );
-
-    // Clearing the Y-Axis
-    context.clearRect(0, 0, canvas.offsetWidth, 32);
-    context.fillStyle = "white";
-    context.fillRect(0, 0, canvas.offsetWidth, 32);
+    // to be implemented
+    // let downloadLink = document.createElement("a");
+    // const file = PlotResource.getPlotFile(props.plot);
+    // const fileLabel = file.label.includes(".fcs")
+    //   ? file.label.split(".fcs")[0]
+    //   : file.label;
+    // const population = getPopulation(props.plot.population);
+    // const gateName =
+    //   population.gates.length > 0
+    //     ? getGate(population.gates[0].gate).name
+    //     : null;
+    // const plotName = props.plot.label;
+    // downloadLink.setAttribute(
+    //   "download",
+    //   `${
+    //     gateName ? gateName + "-" : plotName ? plotName + "-" : ""
+    //   }${fileLabel}.png`
+    // );
+    // // selecting the canvas from dom
+    // const canvas: HTMLCanvasElement = document.getElementById(
+    //   `canvas-${props.plot.id}`
+    // ) as HTMLCanvasElement;
+    // const context: CanvasRenderingContext2D = canvas.getContext("2d");
+    // // Adding x-axis
+    // context.font = "16px Roboto black";
+    // context.fillText(
+    //   `X-AxisName: ${props.plot.xAxis}`,
+    //   canvas.offsetWidth / 2 + 35,
+    //   canvas.offsetHeight * 2 - 10
+    // );
+    // // Adding y-axis
+    // context.font = "16px Roboto black";
+    // context.fillText(`Y-AxisName: ${props.plot.yAxis}`, 20, 20);
+    // //@ts-ignore
+    // let dataURL = canvas.toDataURL("image/png");
+    // let url = dataURL.replace(
+    //   /^data:image\/png/,
+    //   "data:application/octet-stream"
+    // );
+    // downloadLink.setAttribute("href", url);
+    // downloadLink.click();
+    // // Clearing the X-Axis
+    // context.clearRect(
+    //   canvas.offsetWidth / 2,
+    //   canvas.offsetHeight * 2 - 30,
+    //   canvas.offsetWidth,
+    //   32
+    // );
+    // context.fillStyle = "white";
+    // context.fillRect(
+    //   canvas.offsetWidth / 2,
+    //   canvas.offsetHeight * 2 - 30,
+    //   canvas.offsetWidth,
+    //   32
+    // );
+    // // Clearing the Y-Axis
+    // context.clearRect(0, 0, canvas.offsetWidth, 32);
+    // context.fillStyle = "white";
+    // context.fillRect(0, 0, canvas.offsetWidth, 32);
   };
 
   return (
@@ -301,8 +281,7 @@ export default function MainBar(props: {
         }}
         direction="row"
       >
-        {workspace.selectedFile ===
-          getFile(getPopulation(plot.population).file).id && (
+        {workspace.selectedFile === plot.file && (
           <Button
             variant="contained"
             size="small"
@@ -324,8 +303,7 @@ export default function MainBar(props: {
         )}
 
         {/* Drawing Polygon Gate */}
-        {workspace.selectedFile ===
-          getFile(getPopulation(plot.population).file).id && (
+        {workspace.selectedFile === plot.file && (
           <Tooltip
             title={
               <React.Fragment>
@@ -466,16 +444,17 @@ export default function MainBar(props: {
             variant="contained"
             size="small"
             onClick={() => {
-              const axes = PlotResource.getXandYRanges(plot);
-              const rangesX = axes.x;
-              setRangeResizeModalTargetMinX(rangesX[0]);
-              setRangeResizeModalTargetMaxX(rangesX[1]);
-              const rangesY = axes.y;
-              setRangeResizeModalTargetMinY(rangesY[0]);
-              setRangeResizeModalTargetMaxY(rangesY[1]);
-              setRangeResizeModalAxisX(props.plot.xAxis);
-              setRangeResizeModalAxisY(props.plot.yAxis);
-              setOpenResize(true);
+              // to be implemented
+              // const axes = PlotResource.getXandYRanges(plot);
+              // const rangesX = axes.x;
+              // setRangeResizeModalTargetMinX(rangesX[0]);
+              // setRangeResizeModalTargetMaxX(rangesX[1]);
+              // const rangesY = axes.y;
+              // setRangeResizeModalTargetMinY(rangesY[0]);
+              // setRangeResizeModalTargetMaxY(rangesY[1]);
+              // setRangeResizeModalAxisX(props.plot.xAxis);
+              // setRangeResizeModalAxisY(props.plot.yAxis);
+              // setOpenResize(true);
             }}
             style={{
               flex: 1,

@@ -31,13 +31,13 @@ interface GateNamePromptProps {
 }
 
 export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
-  const [open, setOpen] = React.useState<boolean>(false);
-  const [nameError, setNameError] = React.useState(false);
-  const [newGateCreated, setNewGateCreated] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [gate, setGate] = React.useState<Gate>();
-  const [plot, setPlot] = React.useState<Plot>();
-  const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
+  // const [open, setOpen] = React.useState<boolean>(false);
+  // const [nameError, setNameError] = React.useState(false);
+  // const [newGateCreated, setNewGateCreated] = React.useState(false);
+  // const [name, setName] = React.useState("");
+  // const [gate, setGate] = React.useState<Gate>();
+  // const [plot, setPlot] = React.useState<Plot>();
+  // const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
 
   // for updated DS
   const [open2, setOpen2] = React.useState<boolean>(false);
@@ -49,22 +49,22 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
   const [event2, setEvent2] = React.useState<WorkspaceEventGateNaming>();
 
   const eventStacker = useGAEventTrackers("Gate Created.");
-  useSelector((e: any) => {
-    const eventQueue = e.workspaceEventQueue.queue;
-    let eventGateNamingArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
-    );
-    if (eventGateNamingArray.length > 0) {
-      let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
-      let gate = getGate(event.gateID);
-      setName(gate.name);
-      setGate(gate);
-      setPlot(getPlot(event.plotID));
-      setOpen(true);
-      setEvent(event);
-      EventQueueDispatch.UpdateUsed(event.id);
-    }
-  });
+  // useSelector((e: any) => {
+  //   const eventQueue = e.workspaceEventQueue.queue;
+  //   let eventGateNamingArray = eventQueue.filter(
+  //     (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
+  //   );
+  //   if (eventGateNamingArray.length > 0) {
+  //     let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+  //     let gate = getGate(event.gateID);
+  //     setName(gate.name);
+  //     setGate(gate);
+  //     setPlot(getPlot(event.plotID));
+  //     setOpen(true);
+  //     setEvent(event);
+  //     EventQueueDispatch.UpdateUsed(event.id);
+  //   }
+  // });
   useSelector((e: any) => {
     const eventQueue = e.workspace2EventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
@@ -84,30 +84,33 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
   });
 
   const renameGate = async (newName: string) => {
-    gate.name = newName;
+    // gate.name = newName;
     gate2.name = newName;
-    WorkspaceDispatch.UpdateGate(gate);
+    // WorkspaceDispatch.UpdateGate(gate);
     Workspace2Dispatch.UpdateGate(gate2);
-    setOpen(false);
+    // setOpen(false);
+    setOpen2(false);
     try {
-      instancePlot(plot, gate);
+      // instancePlot(plot, gate);
       createPlot({ fileId: selectedFile, gateId: gate2.name });
     } catch {}
-    EventQueueDispatch.DeleteQueueItem(event.id);
+    // EventQueueDispatch.DeleteQueueItem(event.id);
     EventQueue2Dispatch.DeleteQueueItem(event2.id);
   };
 
   const quit = () => {
-    setOpen(false);
-    WorkspaceDispatch.DeleteGate(gate);
-    EventQueueDispatch.DeleteQueueItem(event.id);
-    let plotsRerenderQueueItem: PlotsRerender = {
-      id: "",
-      used: false,
-      type: "plotsRerender",
-      plotIDs: [plot.id],
-    };
-    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    setOpen2(false);
+    // to be implemented
+
+    // WorkspaceDispatch.DeleteGate(gate);
+    // EventQueueDispatch.DeleteQueueItem(event.id);
+    // let plotsRerenderQueueItem: PlotsRerender = {
+    //   id: "",
+    //   used: false,
+    //   type: "plotsRerender",
+    //   plotIDs: [plot.id],
+    // };
+    // EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
@@ -133,7 +136,7 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
   };
 
   useEffect(() => {
-    if (open === true) {
+    if (open2 === true) {
       const inp = document.getElementById("gate-name-textinput");
       if (inp !== null) {
         inp.focus();
@@ -146,29 +149,30 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
         }, 50);
       }
     }
-  }, [open]);
+  }, [open2]);
 
   useEffect(() => {
-    if (newGateCreated) {
-      WorkspaceDispatch.UpdatePlot(plot);
-      setNewGateCreated(false);
+    if (newGateCreated2) {
+      Workspace2Dispatch.UpdatePlot(plot2);
+      // WorkspaceDispatch.UpdatePlot(plot);
+      setNewGateCreated2(false);
     }
-  }, [plot?.plotWidth]);
+  }, [plot2?.plotWidth]);
 
   return (
     <div
       onKeyDown={(e: any) => {
         if (e.code === "Enter") {
-          renameGate(name);
+          renameGate(name2);
         }
       }}
     >
-      <Dialog open={open} aria-labelledby="form-dialog-title">
+      <Dialog open={open2} aria-labelledby="form-dialog-title">
         <DialogTitle>Name Your Gate</DialogTitle>
         <DialogContent>
           <TextField
-            error={nameError}
-            value={name}
+            error={nameError2}
+            value={name2}
             helperText="This Field Is Required"
             autoFocus
             margin="dense"
@@ -176,7 +180,7 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
             label="Gate Name"
             type="email"
             onChange={(e: any) => {
-              setName(e.target.value);
+              setName2(e.target.value);
             }}
           />
         </DialogContent>
@@ -186,20 +190,20 @@ export default function GateNamePrompt({ selectedFile }: GateNamePromptProps) {
           </Button>
           <Button
             onClick={() => {
-              if (name === "" || name === null) {
-                setNameError(true);
+              if (name2 === "" || name2 === null) {
+                setNameError2(true);
               } else {
-                renameGate(name);
+                renameGate(name2);
                 eventStacker(
-                  `A gate with Name: ${name} is created on Plot:${plot.label}.`
+                  `A gate with Name: ${name2} is created on Plot:${plot2._id}.`
                 );
                 WorkspaceDispatch.ClearOpenFiles();
                 deleteAllPlotsAndPopulationOfNonControlFile();
                 // re-rendering the plot again so that the percentage shows up
-                setPlot((prev: Plot) => {
+                setPlot2((prev: Plot2) => {
                   return { ...prev, plotWidth: prev.plotWidth - 1 };
                 });
-                setNewGateCreated(true);
+                setNewGateCreated2(true);
               }
             }}
             color="primary"
