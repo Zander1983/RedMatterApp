@@ -41,16 +41,18 @@ interface Props {
     setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const PlotRowComponent = ({workspace,
-                              sharedWorkspace,
-                              customPlotRerender,
-                              experimentId,
-                              workspaceLoading,
-                              file,
-                              headers,
-                              openFiles,
-                              setOpenFiles,
-                          }: Props) => {
+const PlotRowComponent = (
+    {
+        workspace,
+        sharedWorkspace,
+        customPlotRerender,
+        experimentId,
+        workspaceLoading,
+        file,
+        headers,
+        openFiles,
+        setOpenFiles,
+    }: Props) => {
 
     const generatePlots = (file: File) => {
         if (file.view) {

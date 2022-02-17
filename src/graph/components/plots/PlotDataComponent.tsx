@@ -179,8 +179,7 @@ const PlotDataComponent = (
                 {getTableRowPlots(file).length === 0 ? (
                     <TableCell
                         colSpan={headers.length}
-                        className={classes.loaderContainerStyle}
-                    >
+                        className={classes.loaderContainerStyle}>
                         <CircularProgress className={classes.loader} />
                     </TableCell>
                 ) : (
