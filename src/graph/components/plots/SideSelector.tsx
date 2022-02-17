@@ -40,6 +40,7 @@ function PlotComponent(props: {
   plot: Plot2;
 }) {
   const { plot } = props;
+  // console.log(plot);
   // const { plot, file } = props.plotRelevantResources;
 
   // const workspaceFiles: File[] = useSelector((e) => {

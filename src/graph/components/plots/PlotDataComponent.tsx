@@ -225,13 +225,13 @@ const PlotDataComponent = ({
                               data-grid={standardGridPlotItem(
                                 i,
                                 plot,
-                                workspace.plots,
+                                // workspace.plots,
                                 workspace.editWorkspace
                               )}
                               id={`workspace-outter-${plot.id}`}
                             >
                               <div id="inner" className={classes.itemInnerDiv}>
-                                <PlotComponent
+                                {/* <PlotComponent
                                   plotRelevantResources={getPlotRelevantResources(
                                     plot
                                   )}
@@ -241,7 +241,7 @@ const PlotDataComponent = ({
                                   customPlotRerender={customPlotRerender}
                                   experimentId={experimentId}
                                   fileName={file.name}
-                                />
+                                /> */}
                               </div>
                             </div>
                           );

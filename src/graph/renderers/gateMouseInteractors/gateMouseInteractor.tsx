@@ -66,6 +66,7 @@ export default abstract class GateMouseInteractor {
 
   start() {
     this.started = true;
+    console.log("Shuru...");
   }
 
   end() {
@@ -177,6 +178,7 @@ export default abstract class GateMouseInteractor {
     if (this.plotter != null && this.plotter.gates.length > 0) {
       this.editGateEvent(type, p);
     }
+    console.log(this.started);
     if (this.started) {
       this.gateEvent(type, p);
       this.setPluginState();

@@ -670,7 +670,7 @@ const PlotTable = ({
                                       data-grid={standardGridPlotItem(
                                         i,
                                         plot,
-                                        workspace.plots,
+                                        // workspace.plots,
                                         workspace.editWorkspace
                                       )}
                                       id={`workspace-outter-${plot.id}`}
@@ -679,7 +679,7 @@ const PlotTable = ({
                                         id="inner"
                                         className={classes.itemInnerDiv}
                                       >
-                                        <PlotComponent
+                                        {/* <PlotComponent
                                           plotRelevantResources={getPlotRelevantResources(
                                             plot
                                           )}
@@ -693,7 +693,7 @@ const PlotTable = ({
                                           }
                                           experimentId={experimentId}
                                           fileName={file.name}
-                                        />
+                                        /> */}
                                       </div>
                                     </div>
                                   );

@@ -73,6 +73,7 @@ export const setPlotType = (axis: "x" | "y", plot: Plot2, value: PlotType) => {
   } else {
     plot.yPlotType = value;
   }
+  WorkspaceDispatch.UpdatePlot(plot);
 };
 
 // historam

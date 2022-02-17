@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 
-import {
-  Gate,
-  GateType,
-  Plot,
-  Population,
-  PlotID,
-  Plot2,
-} from "graph/resources/types";
+import { GateType, PlotID, Plot2 } from "graph/resources/types";
 
 import CanvasComponent, {
   CanvasManager,
@@ -22,7 +15,6 @@ import PolygonMouseInteractor from "graph/renderers/gateMouseInteractors/polygon
 import * as PlotResource from "graph/resources/plots";
 import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseInteractor";
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
-import { getGate, getPlot } from "graph/utils/workspace";
 import { snackbarService } from "uno-material-ui";
 import { isEqual } from "lodash";
 
@@ -61,9 +53,6 @@ function propsAreEqual(prev: any, next: any) {
 }
 
 const PlotRenderer = (props: {
-  // plot: Plot;
-  plotGates: Gate[];
-  population: Population;
   editWorkspace: boolean;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
@@ -106,6 +95,7 @@ const PlotRenderer = (props: {
   }, [props.customPlotRerender]);
 
   const draw = () => {
+    console.log("Draw Is Called");
     if (!validateReady()) return;
     setLoader(true);
     setCanvasState();
@@ -327,7 +317,9 @@ const PlotRenderer = (props: {
     draw();
   }, [plotter]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(draw, [props.plot, props.plotGates, props.population]);
+  useEffect(() => {
+    draw();
+  }, [props]);
   useEffect(() => {
     return () => {
       if (propsStore && propsStore[props.plot._id])
@@ -349,4 +341,5 @@ const PlotRenderer = (props: {
     />
   );
 };
-export default React.memo(PlotRenderer, propsAreEqual);
+export default PlotRenderer;
+// export default React.memo(PlotRenderer, propsAreEqual);

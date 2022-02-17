@@ -41,50 +41,41 @@ const classes = {
   },
 };
 
-const PlotComponent = React.memo(
-  (props: {
-    plotRelevantResources: PlotSpecificWorkspaceData;
-    sharedWorkspace: boolean;
-    experimentId: string;
-    editWorkspace: boolean;
-    workspaceLoading: boolean;
-    customPlotRerender: PlotID[];
-    fileName: string;
-    plt?: Plot2;
-  }) => {
-    const { plot, gates, population } = props.plotRelevantResources;
+const PlotComponent = (props: {
+  sharedWorkspace: boolean;
+  experimentId: string;
+  editWorkspace: boolean;
+  workspaceLoading: boolean;
+  customPlotRerender: PlotID[];
+  fileName: string;
+  plot: Plot2;
+}) => {
+  const plotId = props.plot._id;
+  const displayRef = useRef();
+  const barRef = useRef();
 
-    const plotId = plot.id;
-
-    const displayRef = useRef();
-    const barRef = useRef();
-
-    return (
-      <div
-        id={`display-ref-${plotId}`}
-        key={`display-ref-${plotId}`}
-        style={classes.mainContainer}
-        ref={displayRef}
-      >
-        <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
-          <Grid
-            container
-            direction="row"
-            style={{
-              gap: 5,
-            }}
-          >
-            <div>
-              {props.fileName.length < 35
-                ? props.fileName
-                : `${props.fileName.slice(0, 35)}...`}
-            </div>
-            <MainBar
-              // plot={plot}
-              editWorkspace={props.editWorkspace}
-              plot={props.plt}
-            />
-            <GateBar
+  return (
+    <div
+      id={`display-ref-${plotId}`}
+      key={`display-ref-${plotId}`}
+      style={classes.mainContainer}
+      ref={displayRef}
+    >
+      <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
+        <Grid
+          container
+          direction="row"
+          style={{
+            gap: 5,
+          }}
+        >
+          <div>
+            {props.fileName.length < 35
+              ? props.fileName
+              : `${props.fileName.slice(0, 35)}...`}
+          </div>
+          <MainBar editWorkspace={props.editWorkspace} plot={props.plot} />
+          {/* <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}
               file={population.file}
@@ -95,29 +86,26 @@ const PlotComponent = React.memo(
                 };
               })}
               editWorkspace={props.editWorkspace}
-            />
-          </Grid>
-        </div>
-        <Divider
-          style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
-        />
-        <SideSelector
-          editWorkspace={props.editWorkspace}
-          plot={props.plt}
-          canvasComponent={
-            <PlotRenderer
-              workspaceLoading={props.workspaceLoading}
-              plotGates={gates}
-              population={population}
-              editWorkspace={props.editWorkspace}
-              customPlotRerender={props.customPlotRerender}
-              plot={props.plt}
-            />
-          }
-        />
+            /> */}
+        </Grid>
       </div>
-    );
-  }
-);
+      <Divider
+        style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
+      />
+      <SideSelector
+        editWorkspace={props.editWorkspace}
+        plot={props.plot}
+        canvasComponent={
+          <PlotRenderer
+            workspaceLoading={props.workspaceLoading}
+            editWorkspace={props.editWorkspace}
+            customPlotRerender={props.customPlotRerender}
+            plot={props.plot}
+          />
+        }
+      />
+    </div>
+  );
+};
 
 export default PlotComponent;

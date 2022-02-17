@@ -485,7 +485,6 @@ const WorkspaceInnerComponent = (props: {
       }, 4000);
     }
   };
-
   const initiateParseFlowJo = async (flowJoJson: any, files: any) => {
     try {
       await ParseFlowJoJson(flowJoJson, files);
