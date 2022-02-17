@@ -30,10 +30,11 @@ export default function GateNamePrompt() {
   const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
 
   const eventStacker = useGAEventTrackers("Gate Created.");
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
+      (x: WorkspaceEvent) => x.type == "gateNaming" && !x.used
     );
     if (eventGateNamingArray.length > 0) {
       let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
@@ -93,7 +94,7 @@ export default function GateNamePrompt() {
   };
 
   useEffect(() => {
-    if (open === true) {
+    if (open) {
       const inp = document.getElementById("gate-name-textinput");
       if (inp !== null) {
         inp.focus();
