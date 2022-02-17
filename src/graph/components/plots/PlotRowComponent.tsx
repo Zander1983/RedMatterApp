@@ -185,6 +185,7 @@ const PlotRowComponent = ({
                 file={file}
                 headers={headers}
                 openFiles={openFiles}
+                onRowClick={onClick}
             />
         );
     };
