@@ -295,10 +295,13 @@ const PlotTableComponent = ({
   const [openFiles, setOpenFiles] = useState<string[]>([
     workspace.selectedFile,
   ]);
-
   useEffect(() => {
     // making the selected file the first element of filesArray
-    if (workspace.selectedFile.length > 0 && workspace.files.length > 0) {
+    if (
+      workspace.selectedFile.length > 0 &&
+      workspace.files.length > 0 &&
+      workspace.selectedFile !== workspace.files[0].id
+    ) {
       const filesInNewOrder: File[] = [];
       for (let i = 0; i < workspace.files.length; i++) {
         if (workspace.files[i].id === workspace.selectedFile) {
