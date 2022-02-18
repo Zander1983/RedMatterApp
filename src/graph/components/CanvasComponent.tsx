@@ -116,6 +116,8 @@ const CanvasComponent = React.memo(
       if (!canvas && canvasRef.current) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         const newCanvas = new CanvasManager(props.setMouseEvent, canvasRef);
+        console.log(newCanvas);
+
         setCanvas(newCanvas);
         // eslint-disable-next-line react-hooks/exhaustive-deps
         newCanvas.setUseCanvasUsed(true);
