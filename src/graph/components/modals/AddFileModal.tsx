@@ -418,6 +418,7 @@ const AddFileModal = React.memo(
                               const filesInNewOrder: File[] = [];
                               for (let i = 0; i < files.length; i++) {
                                 if (files[i].id === fileMetadata.id) {
+                                  files[i].view = false;
                                   filesInNewOrder.unshift(files[i]);
                                 } else {
                                   filesInNewOrder.push(files[i]);
