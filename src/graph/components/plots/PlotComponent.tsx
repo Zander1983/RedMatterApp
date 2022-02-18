@@ -12,6 +12,7 @@ import {
 
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const classes = {
   itemOuterDiv: {
@@ -40,8 +41,7 @@ const classes = {
     flexGrow: 1,
   },
 };
-
-const PlotComponent = (props: {
+interface PlotComponentProps {
   sharedWorkspace: boolean;
   experimentId: string;
   editWorkspace: boolean;
@@ -49,8 +49,17 @@ const PlotComponent = (props: {
   customPlotRerender: PlotID[];
   fileName: string;
   plot: Plot2;
-}) => {
-  const plotId = props.plot._id;
+}
+const PlotComponent = ({
+  sharedWorkspace,
+  experimentId,
+  editWorkspace,
+  workspaceLoading,
+  customPlotRerender,
+  fileName,
+  plot,
+}: PlotComponentProps) => {
+  const plotId = plot._id;
   const displayRef = useRef();
   const barRef = useRef();
 
@@ -70,11 +79,9 @@ const PlotComponent = (props: {
           }}
         >
           <div>
-            {props.fileName.length < 35
-              ? props.fileName
-              : `${props.fileName.slice(0, 35)}...`}
+            {fileName?.length < 35 ? fileName : `${fileName?.slice(0, 35)}...`}
           </div>
-          <MainBar editWorkspace={props.editWorkspace} plot={props.plot} />
+          <MainBar editWorkspace={editWorkspace} plot={plot} />
           {/* <GateBar
               plotId={plot.id}
               plotGates={plot.gates.map((e) => getGate(e))}
@@ -85,7 +92,7 @@ const PlotComponent = (props: {
                   inverseGating: e.inverseGating,
                 };
               })}
-              editWorkspace={props.editWorkspace}
+              editWorkspace={editWorkspace}
             /> */}
         </Grid>
       </div>
@@ -93,14 +100,14 @@ const PlotComponent = (props: {
         style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
       />
       <SideSelector
-        editWorkspace={props.editWorkspace}
-        plot={props.plot}
+        editWorkspace={editWorkspace}
+        plot={plot}
         canvasComponent={
           <PlotRenderer
-            workspaceLoading={props.workspaceLoading}
-            editWorkspace={props.editWorkspace}
-            customPlotRerender={props.customPlotRerender}
-            plot={props.plot}
+            workspaceLoading={workspaceLoading}
+            editWorkspace={editWorkspace}
+            customPlotRerender={customPlotRerender}
+            plot={plot}
           />
         }
       />

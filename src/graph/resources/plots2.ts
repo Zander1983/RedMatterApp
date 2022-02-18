@@ -19,6 +19,7 @@ export const createPlot = ({
 }) => {
   const id = createID();
   const { axes } = getFile(fileId);
+  const plotNumber = Object.keys(getWorkspace2().plots).length;
 
   const plot: Plot2 = {
     _id: id,
@@ -36,12 +37,34 @@ export const createPlot = ({
     xPlotType: "lin",
     yPlotType: "lin",
   };
+  plot.positions = standardGridPlotItem(plotNumber, plot);
+
   if (updateSelectedFile) {
     // creates a plot and updates selected file
     WorkspaceDispatch.AddPlot(plot, fileId);
   } else {
     // only creates a plot
     WorkspaceDispatch.AddPlot(plot);
+  }
+};
+
+const standardGridPlotItem = (plotNumber: number, newPlot: Plot2) => {
+  const arrowWidth: number = 3 * (plotNumber % 3);
+  const arrowHeight: number = plotNumber / 3;
+
+  if (plotNumber % 3 === 0) {
+    const height: number = newPlot.dimensions.h * (plotNumber / 3);
+    return {
+      x: newPlot.positions.x,
+      y: height === 0 ? height : height + arrowHeight,
+    };
+  } else {
+    const width: number = newPlot.dimensions.w * (plotNumber % 3);
+    const height: number = newPlot.dimensions.h * Math.floor(plotNumber / 3);
+    return {
+      x: width + arrowWidth,
+      y: height === 0 ? height : height + arrowHeight,
+    };
   }
 };
 

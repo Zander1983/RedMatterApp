@@ -11,10 +11,14 @@ import {
   HistogramGate,
   Point,
   PolygonGate,
+  PolygonGate2,
   PopulationGateType,
 } from "./types";
-
-import { pointInsidePolygon } from "graph/utils/euclidianPlane";
+import { getWorkspace2 } from "graph/utils/workspace2";
+import {
+  pointInsidePolygon,
+  pointInsidePolygon2,
+} from "graph/utils/euclidianPlane";
 import FCSServices from "services/FCSServices/FCSServices";
 import { ColorSchema } from "graph/utils/color";
 
@@ -139,6 +143,29 @@ export const isPointInside = (
   return pointInside ? !gate.inverseGating : gate.inverseGating;
 };
 
+export const isPointInside2 = (
+  gate: PolygonGate2,
+  point: number[]
+): boolean => {
+  console.log("I'm called");
+  let pointInside = false;
+  if (gate.gateType === "polygon") {
+    const p = {
+      x: point[axesLookup[gate.xAxis]],
+      y: point[axesLookup[gate.yAxis]],
+    };
+    pointInside = pointInsidePolygon2(p, gate.points[0].points);
+  }
+  // else if (gate.gate.gateType === "histogram") {
+  //   const cGate = gate.gate as HistogramGate;
+  //   const p = point[axesLookup[cGate.axis]];
+  //   pointInside = p >= cGate.points[0] && p <= cGate.points[1];
+  // } else {
+  //   throw Error("gate type not supported");
+  // }
+  return pointInside;
+};
+
 const gateDFS = (
   point: number[],
   gate: PopulationGateType,
@@ -208,27 +235,96 @@ export const getDatasetColors = (
 const getDatasetFilteredPointsCache = new Map<
   {
     dataset: Dataset;
-    targets: PopulationGateType[];
+    gateName: string;
   },
   Dataset
 >();
 const resetGetDatasetFilteredPointsCache = () => gate2BiConverterCache.clear();
 
+export const getFilteredPointsFromDataset = (
+  dataset: Dataset,
+  gateName: string
+) => {
+  if (
+    getDatasetFilteredPointsCache.has({
+      dataset,
+      gateName,
+    })
+  ) {
+    console.log("PeyeGesi");
+    return getDatasetFilteredPointsCache.get({
+      dataset,
+      gateName,
+    });
+  }
+  const gatingSets = getWorkspace2().gatingSets;
+  let gate: PolygonGate2;
+  for (let i = 0; i < gatingSets.length; i++) {
+    for (let j = 0; j < gatingSets[i].length; j++) {
+      if (gatingSets[i][j].name === gateName) {
+        gate = gatingSets[i][j];
+      }
+    }
+  }
+  if (!gate) return dataset;
+  const axes = Object.keys(dataset);
+  axesLookup = {};
+  axes.forEach((e, i) => (axesLookup[e] = i));
+  const size = dataset[axes[0]].length;
+  for (const axis of Object.keys(dataset)) {
+    if (dataset[axis].length !== size)
+      throw Error("Axes of different size were found");
+  }
+  const transformedDataset: Dataset = {};
+  const addIndexes: number[] = [];
+  let dontAdd = false;
+  console.log(size, gateName);
+  for (let i = 0; i < size; i++) {
+    dontAdd = false;
+    const x: number[] = [];
+    for (const axis of axes) {
+      x.push(dataset[axis][i]);
+    }
+
+    let newX = point2BiConverter2(x, gate);
+
+    const inside = isPointInside2(gate, newX);
+    if (!inside) {
+      dontAdd = true;
+      break;
+    }
+
+    if (dontAdd) continue;
+    addIndexes.push(i);
+  }
+
+  for (const axis of axes)
+    transformedDataset[axis] = new Float32Array(addIndexes.length);
+
+  for (let i = 0; i < addIndexes.length; i++)
+    for (const axis of axes)
+      transformedDataset[axis][i] = dataset[axis][addIndexes[i]];
+
+  getDatasetFilteredPointsCache.set({ dataset, gateName }, transformedDataset);
+
+  return transformedDataset;
+};
+
 export const getDatasetFilteredPoints = (
   dataset: Dataset,
   targets: PopulationGateType[]
 ): Dataset => {
-  if (
-    getDatasetFilteredPointsCache.has({
-      dataset,
-      targets,
-    })
-  ) {
-    return getDatasetFilteredPointsCache.get({
-      dataset,
-      targets,
-    });
-  }
+  // if (
+  //   getDatasetFilteredPointsCache.has({
+  //     dataset,
+  //     targets,
+  //   })
+  // ) {
+  //   return getDatasetFilteredPointsCache.get({
+  //     dataset,
+  //     targets,
+  //   });
+  // }
   resetGate2BiConverterCache();
   const gates = targets.map((e) => gate2BiConverter(e));
   const axes = Object.keys(dataset);
@@ -267,7 +363,7 @@ export const getDatasetFilteredPoints = (
     for (const axis of axes)
       transformedDataset[axis][i] = dataset[axis][addIndexes[i]];
 
-  getDatasetFilteredPointsCache.set({ dataset, targets }, transformedDataset);
+  // getDatasetFilteredPointsCache.set({ dataset, targets }, transformedDataset);
   return transformedDataset;
 };
 
@@ -461,5 +557,38 @@ const point2BiConverter = (
     }
     return newX;
   }
+  throw new Error("Gate type not found");
+};
+
+const point2BiConverter2 = (x: number[], gate: PolygonGate2) => {
+  const newX = [...x];
+  if (gate.gateType === "polygon") {
+    if (gate.xAxisType === "bi") {
+      newX[axesLookup[gate.xAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[gate.xAxis]]],
+        gate.xAxisOriginalRanges[0],
+        gate.xAxisOriginalRanges[1]
+      )[0];
+    }
+    if (gate.yAxisType === "bi") {
+      newX[axesLookup[gate.yAxis]] = fcsServices.logicleMarkTransformer(
+        [newX[axesLookup[gate.yAxis]]],
+        gate.yAxisOriginalRanges[0],
+        gate.yAxisOriginalRanges[1]
+      )[0];
+    }
+    return newX;
+  }
+  // if (gate.gate.gateType === "histogram") {
+  //   const cGate = gate.gate as HistogramGate;
+  //   if (cGate.axisType === "bi") {
+  //     newX[axesLookup[cGate.axis]] = fcsServices.logicleMarkTransformer(
+  //       [newX[axesLookup[cGate.axis]]],
+  //       cGate.axisOriginalRanges[0],
+  //       cGate.axisOriginalRanges[1]
+  //     )[0];
+  //   }
+  //   return newX;
+  // }
   throw new Error("Gate type not found");
 };

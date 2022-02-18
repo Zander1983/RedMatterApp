@@ -26,6 +26,7 @@ import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
+import { getFileById2 } from "graph/utils/workspace2";
 import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
@@ -383,15 +384,15 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     paddingTop: 3,
                   }}
                 >
-                  <h3 style={{ color: "white", marginBottom: 0 }}>
-                    {this.props.workspace.selectedFile === "name" && (
+                  {/* <h3 style={{ color: "white", marginBottom: 0 }}>
+                    {this.props.workspace.selectedFile ===   (
                       <span style={{ fontWeight: "bolder" }}>
                         {" "}
                         Control Sample:{" "}
                       </span>
                     )}
-                    {"name"}
-                  </h3>
+                    {file?.name}
+                  </h3> */}
                 </div>
                 <div style={{ marginTop: 3, marginBottom: 10 }}>
                   <ResponsiveGridLayout
@@ -423,13 +424,6 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                     // }}
                   >
                     {Object.keys(this.props.workspace2.plots).map((key, i) => {
-                      console.log(
-                        standardGridPlotItem(
-                          i,
-                          this.props.workspace2.plots[key],
-                          this.props.workspace.editWorkspace
-                        )
-                      );
                       return (
                         <div
                           key={this.props.workspace2.plots[key]._id}
@@ -449,7 +443,11 @@ class PlotController extends React.Component<PlotControllerProps, IState> {
                               workspaceLoading={this.getWorkspaceLoading()}
                               customPlotRerender={this.props.customPlotRerender}
                               experimentId={this.props.experimentId}
-                              fileName={"name"}
+                              fileName={
+                                getFileById2(
+                                  this.props.workspace2.plots[key].file
+                                ).name
+                              }
                             />
                           </div>
                         </div>

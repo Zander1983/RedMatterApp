@@ -1,3 +1,5 @@
+import { PolygonGate2Points } from "graph/resources/types";
+
 interface Point2D {
   x: number;
   y: number;
@@ -163,6 +165,87 @@ const pointInsidePolygon = ({ x, y }: Point2D, polygon: Point2D[]): boolean => {
   if (hits & 1) return true;
   return false;
 };
+const pointInsidePolygon2 = (
+  { x, y }: Point2D,
+  polygon: Point2D[]
+): boolean => {
+  const onSegment = (p: Point2D, q: Point2D, r: Point2D): boolean => {
+    if (
+      q.x <= Math.max(p.x, r.x) &&
+      q.x >= Math.min(p.x, r.x) &&
+      q.y <= Math.max(p.y, r.y) &&
+      q.y >= Math.min(p.y, r.y)
+    )
+      return true;
+    return false;
+  };
+
+  const orientation = (p: Point2D, q: Point2D, r: Point2D): 0 | 1 | 2 => {
+    let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+
+    if (val === 0) return 0; // colinear
+
+    return val > 0 ? 1 : 2; // clock or counterclock wise
+  };
+
+  const segmentIntersection = (
+    p1: Point2D,
+    p2: Point2D,
+    q1: Point2D,
+    q2: Point2D
+  ): boolean => {
+    let o1 = orientation(p1, q1, p2);
+    let o2 = orientation(p1, q1, q2);
+    let o3 = orientation(p2, q2, p1);
+    let o4 = orientation(p2, q2, q1);
+
+    // General case
+    if (o1 !== o2 && o3 !== o4) return true;
+
+    // Special Cases
+    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
+    if (o1 === 0 && onSegment(p1, p2, q1)) return true;
+
+    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
+    if (o2 === 0 && onSegment(p1, q2, q1)) return true;
+
+    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+    if (o3 === 0 && onSegment(p2, p1, q2)) return true;
+
+    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+    if (o4 === 0 && onSegment(p2, q1, q2)) return true;
+
+    return false; // Doesn't fall in any of the above cases
+  };
+  const p1 = {
+    x: 1e30,
+    y: y,
+  };
+  const q1 = {
+    x: x,
+    y: y,
+  };
+  let hits = 0;
+  const pl = polygon.length;
+  for (let i = 0; i < pl; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % pl];
+    const p2 = {
+      x: a.x,
+      y: a.y,
+    };
+    const q2 = {
+      x: b.x,
+      y: b.y,
+    };
+    if (segmentIntersection(p1, p2, q1, q2)) {
+      if (orientation(p2, q1, q2) === 0) return onSegment(p2, q1, q2);
+      hits++;
+    }
+  }
+  if (hits & 1) return true;
+  return false;
+};
 
 export {
   euclidianDistance2D,
@@ -172,5 +255,6 @@ export {
   rotateVector2D,
   pointInsideEllipse,
   pointInsidePolygon,
+  pointInsidePolygon2,
   rotatePointOverTarget,
 };

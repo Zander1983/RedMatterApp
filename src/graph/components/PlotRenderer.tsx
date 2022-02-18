@@ -17,6 +17,7 @@ import GateMouseInteractor from "graph/renderers/gateMouseInteractors/gateMouseI
 import HistogramGateMouseInteractor from "graph/renderers/gateMouseInteractors/histogramGateMouseInteractor";
 import { snackbarService } from "uno-material-ui";
 import { isEqual } from "lodash";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const plotterFactory = new PlotterFactory();
 
@@ -52,12 +53,19 @@ function propsAreEqual(prev: any, next: any) {
   );
 }
 
-const PlotRenderer = (props: {
+interface PlotRenderProps {
   editWorkspace: boolean;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plot: Plot2;
-}) => {
+}
+
+const PlotRenderer = ({
+  editWorkspace,
+  workspaceLoading,
+  customPlotRerender,
+  plot,
+}: PlotRenderProps) => {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
   const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
@@ -69,7 +77,7 @@ const PlotRenderer = (props: {
     useState<HistogramPlotter | null>(null);
   const [lastGatingType, setLastGatingType] = useState<GateType>("");
   const [, setLoader] = useState(false);
-  const plot = props.plot;
+  // const plot = props.plot;
   const validateReady = (): boolean => {
     if (
       plot.plotWidth !== 0 &&
@@ -84,7 +92,7 @@ const PlotRenderer = (props: {
   };
 
   useEffect(() => {
-    if (props.customPlotRerender.includes(props.plot._id)) {
+    if (customPlotRerender.includes(plot._id)) {
       let interactor: GateMouseInteractor[] =
         mouseInteractorInstances[plot._id];
       if (interactor && interactor.length > 0) {
@@ -92,10 +100,9 @@ const PlotRenderer = (props: {
         if (interactor[1]) interactor[1].end();
       }
     }
-  }, [props.customPlotRerender]);
+  }, [customPlotRerender]);
 
   const draw = () => {
-    console.log("Draw Is Called");
     if (!validateReady()) return;
     setLoader(true);
     setCanvasState();
@@ -210,7 +217,7 @@ const PlotRenderer = (props: {
     const ranges = PlotResource.getXandYRangesFromFile(plot);
     const plotterState = {
       // plot: props.plot,
-      plot2: props.plot || null,
+      plot2: plot || null,
       xAxis: data[0],
       yAxis: data[1],
       xAxisName: plot.xAxis,
@@ -247,7 +254,7 @@ const PlotRenderer = (props: {
         }
       });
     },
-    [props]
+    [editWorkspace, workspaceLoading, customPlotRerender, plot]
   );
 
   useEffect(() => {
@@ -319,11 +326,17 @@ const PlotRenderer = (props: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     draw();
-  }, [props]);
+  }, [
+    plot.gatingActive,
+    plot.histogramAxis,
+    plot.xAxis,
+    plot.xPlotType,
+    plot.yAxis,
+    plot.yPlotType,
+  ]);
   useEffect(() => {
     return () => {
-      if (propsStore && propsStore[props.plot._id])
-        delete propsStore[props.plot._id];
+      if (propsStore && propsStore[plot._id]) delete propsStore[plot._id];
     };
   }, []);
 
@@ -336,7 +349,7 @@ const PlotRenderer = (props: {
         setCanvas(canvas);
       }}
       setMouseEvent={(type, x, y) => {
-        if (props.editWorkspace) setMouseEvent(type, x, y);
+        if (editWorkspace) setMouseEvent(type, x, y);
       }}
     />
   );

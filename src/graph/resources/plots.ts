@@ -30,6 +30,7 @@ import {
   getDataset,
   getDatasetColors,
   getDatasetFilteredPoints,
+  getFilteredPointsFromDataset,
 } from "./dataset";
 import {
   MINH,
@@ -806,9 +807,11 @@ export const getXandYDataAndColorsFromPlot2 = (
   const dataset = getDataset(plot.file);
   const colors = getDatasetColors(dataset, [], [], "#000");
   // filtered point yet to be implemented
+  const filteredPoints = getFilteredPointsFromDataset(dataset, plot.gateId);
+  // console.log(filteredPoints);
 
   return {
-    points: [dataset[plot.xAxis], dataset[plot.yAxis]],
+    points: [filteredPoints[plot.xAxis], filteredPoints[plot.yAxis]],
     colors,
   };
 };
