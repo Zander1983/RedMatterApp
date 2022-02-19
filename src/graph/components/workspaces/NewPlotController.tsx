@@ -179,7 +179,7 @@ export const standardGridPlotItem = (
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
- // workspace: Workspace;
+  // workspace: Workspace;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
@@ -264,8 +264,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   renderTable = () => {
     console.log("==== table ===");
     if (
-        getWorkspace().selectedFile &&
-        getWorkspace()?.files[0]?.downloaded &&
+      getWorkspace().selectedFile &&
+      getWorkspace().plots.length > 0 &&
+      getWorkspace()?.files[0]?.downloaded &&
       this.state.sortBy === "file" &&
       this.state.isTableRenderCall
     ) {
@@ -349,7 +350,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 <span>Wait Loading...</span>
               </Grid>
             ) : (
-              this.renderTable()
+              getWorkspace().selectedFile !== "" && this.renderTable()
             )}
             {/*{this.state.isTableRenderCall &&*/}
             {/*  this.getArrowArray().map((obj, i) => {*/}

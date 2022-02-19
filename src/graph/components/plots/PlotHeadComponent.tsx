@@ -9,6 +9,8 @@ import downArrow from "assets/images/down_arrow.png";
 import deleteIcon from "assets/images/delete.png";
 
 import { getWorkspace } from "graph/utils/workspace";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -84,19 +86,28 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface TableProps {
-  headers: string[];
-  setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
+  // headers: string[];
+  // setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
   sortByColumn: (colIndex: number, type: string) => void;
   deleteColumn: (index: number) => void;
 }
 
-const PlotHeadComponent = ({
-  headers,
-  setOpenFiles,
-  sortByColumn,
-  deleteColumn,
-}: TableProps) => {
+const PlotHeadComponent = ({ sortByColumn, deleteColumn }: TableProps) => {
   const classes = useStyles();
+  const [headers, setHeaders] = useState(["File Name", "Click to View"]);
+  //@ts-ignore
+  const gates = useSelector((state) => state.workspace.gates);
+  //@ts-ignore
+  const plotLength = useSelector((state) => state.workspace.plots.length);
+  useEffect(() => {
+    plotLength > 0
+      ? setHeaders([
+          "File Name",
+          ...gates.map((gate: any) => gate.name),
+          "Click to View",
+        ])
+      : setHeaders([]);
+  }, [gates]);
 
   return (
     <TableHead>
@@ -128,7 +139,7 @@ const PlotHeadComponent = ({
                 />
                 <img
                   onClick={() => {
-                    setOpenFiles([getWorkspace().selectedFile]);
+                    // setOpenFiles([getWorkspace().selectedFile]);
                     deleteColumn(index - 1);
                   }}
                   src={deleteIcon}

@@ -21,7 +21,7 @@ import axios from "axios";
 import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
 import GateNamePrompt from "./modals/GateNamePrompt";
-import {getWorkspace } from "graph/utils/workspace";
+import { getWorkspace } from "graph/utils/workspace";
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -195,7 +195,7 @@ const WorkspaceTopBarComponent = ({
   const _renderToolbar = () => {
     console.log("==== render toolbar =====");
     return (
-        <Grid
+      <Grid
         style={{
           position: "fixed",
           zIndex: 100,
@@ -217,7 +217,8 @@ const WorkspaceTopBarComponent = ({
                 justifyContent: "space-between",
                 width: "100%",
                 background: "white",
-              }}>
+              }}
+            >
               <div>
                 <Button
                   disabled={!plotCallNeeded}
@@ -322,7 +323,8 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                     marginRight: 10,
-                  }}>
+                  }}
+                >
                   <ShareIcon fontSize="small" style={{ marginRight: 10 }} />
                   Share Workspace
                 </Button>
@@ -333,8 +335,7 @@ const WorkspaceTopBarComponent = ({
           )}
         </Grid>
       </Grid>
-    )
-
+    );
   };
 
   if (autoSaveEnabled) {
@@ -344,63 +345,64 @@ const WorkspaceTopBarComponent = ({
   }
 
   const renderModal = () => {
-    return(
-        <>
-          <GateNamePrompt />
-          {workspace.files.length > 0 && (
-              <AddFileModal
-                  open={addFileModalOpen}
-                  closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-                  isShared={sharedWorkspace}
-                  experimentId={experimentId}
-                  files={workspace.files}
-                  selectedFile={workspace.selectedFile}
-              />
-          )}
-          <MessageModal
-              open={clearModal}
-              closeCall={{
-                f: handleClose,
-                ref: setClearModal,
-              }}
-              message={
-                <div>
-                  <h2>Are you sure you want to delete the entire workspace?</h2>
-                  <p style={{ marginLeft: 100, marginRight: 100 }}>
-                    The links you've shared with "share workspace" will still work, if
-                    you want to access this in the future, make sure to store them.
-                  </p>
-                </div>
-              }
-              options={{
-                yes: () => {
-                  WorkspaceDispatch.ResetWorkspaceExceptFiles();
-                },
-                no: () => {
-                  handleClose(setClearModal);
-                },
-              }}
+    return (
+      <>
+        <GateNamePrompt />
+        {workspace.files.length > 0 && (
+          <AddFileModal
+            open={addFileModalOpen}
+            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+            isShared={sharedWorkspace}
+            experimentId={experimentId}
+            files={workspace.files}
+            selectedFile={workspace.selectedFile}
           />
+        )}
+        <MessageModal
+          open={clearModal}
+          closeCall={{
+            f: handleClose,
+            ref: setClearModal,
+          }}
+          message={
+            <div>
+              <h2>Are you sure you want to delete the entire workspace?</h2>
+              <p style={{ marginLeft: 100, marginRight: 100 }}>
+                The links you've shared with "share workspace" will still work,
+                if you want to access this in the future, make sure to store
+                them.
+              </p>
+            </div>
+          }
+          options={{
+            yes: () => {
+              WorkspaceDispatch.ResetWorkspaceExceptFiles();
+            },
+            no: () => {
+              handleClose(setClearModal);
+            },
+          }}
+        />
 
-          <LinkShareModal
-              open={linkShareModalOpen}
-              workspaceId={newWorkspaceId}
-              closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-          />
-        </>
-    )
+        <LinkShareModal
+          open={linkShareModalOpen}
+          workspaceId={newWorkspaceId}
+          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+        />
+      </>
+    );
   };
 
   const renderToolBarUI = () => {
     return (
-        <>
-          {/* == MODALS == */}
-          {renderModal()}
-          {/* == MAIN PANEL == */}
-          { _renderToolbar()}
-        </>
+      <>
+        {/* == MODALS == */}
+        {renderModal()}
+        {/* == MAIN PANEL == */}
+        {_renderToolbar()}
+      </>
     );
-  }
+  };
 
   return renderToolBarUI();
 };
