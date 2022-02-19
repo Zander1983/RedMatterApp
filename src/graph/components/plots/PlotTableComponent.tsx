@@ -4,7 +4,7 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { Workspace, File } from "graph/resources/types";
@@ -292,65 +292,55 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   //@ts-ignore
-  const [openFiles, setOpenFiles] = useState<string[]>([ getWorkspace().selectedFile]);
+  // const [openFiles, setOpenFiles] = useState<string[]>([ getWorkspace().selectedFile]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // making the selected file the first element of filesArray
-    if (
-        getWorkspace().selectedFile.length > 0 &&
-        getWorkspace().files.length > 0 &&
-        getWorkspace().selectedFile !== getWorkspace().files[0].id
-    ) {
-      const workspace = getWorkspace();
-      const filesInNewOrder: File[] = [];
-      for (let i = 0; i < workspace.files.length; i++) {
-        if (workspace.files[i].id === workspace.selectedFile) {
-          filesInNewOrder.unshift(workspace.files[i]);
-        } else {
-          filesInNewOrder.push(workspace.files[i]);
-        }
+    const workspace = getWorkspace();
+    const filesInNewOrder: File[] = [];
+    for (let i = 0; i < workspace.files.length; i++) {
+      if (workspace.files[i].id === workspace.selectedFile) {
+        filesInNewOrder.unshift(workspace.files[i]);
+      } else {
+        filesInNewOrder.push(workspace.files[i]);
       }
-      WorkspaceDispatch.SetFiles(filesInNewOrder);
     }
+    WorkspaceDispatch.SetFiles(filesInNewOrder);
   }, []);
 
   const headers = useMemo(() => {
     return [
       "File Name",
-      ...getWorkspace().gates.map((gate:any) => gate.name),
+      ...getWorkspace().gates.map((gate: any) => gate.name),
       "Click to View",
     ];
   }, [getWorkspace().gates]);
 
-  useEffect(() => {
-    if (getWorkspace().clearOpenFiles) {
-      setOpenFiles([getWorkspace().selectedFile]);
-      WorkspaceDispatch.ClearOpenFiles();
-    }
-  }, [getWorkspace()]);
+  // useEffect(() => {
+  //   if (getWorkspace().clearOpenFiles) {
+  //     // setOpenFiles([getWorkspace().selectedFile]);
+  //     WorkspaceDispatch.ClearOpenFiles();
+  //   }
+  // }, [getWorkspace().clearOpenFiles]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
       <Table style={{ overflowY: "scroll" }}>
         <PlotHeadComponent
-          headers={headers}
-          setOpenFiles={setOpenFiles}
+          // headers={headers}
           sortByColumn={sortByColumn}
           deleteColumn={deleteColumn}
         />
         <TableBody>
-          {getWorkspace()?.files?.map((file:any, i:number) => (
+          {getWorkspace()?.files?.map((file: any, i: number) => (
             <PlotRowComponent
               key={file?.id || i}
               sharedWorkspace={sharedWorkspace}
               experimentId={experimentId}
-              // workspace={workspace}
               workspaceLoading={workspaceLoading}
               customPlotRerender={customPlotRerender}
               file={file}
-              headers={headers}
-              openFiles={openFiles}
-              setOpenFiles={setOpenFiles}
+              // headers={headers}
             />
           ))}
         </TableBody>
