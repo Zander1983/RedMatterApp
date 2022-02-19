@@ -17,6 +17,7 @@ import PlotDataComponent from "./PlotDataComponent";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import { deletePlotAndPopulationOfFile } from "./MainBar";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -48,7 +49,7 @@ const PlotRowComponent = ({
   setOpenFiles,
 }: Props) => {
   const generatePlots = (file: File) => {
-    if (file.view) {
+    if (file.view && file.id !== workspace.selectedFile) {
       file.view = !file.view;
       WorkspaceDispatch.UpdateFile(file);
       return;
@@ -104,7 +105,7 @@ const PlotRowComponent = ({
       WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
     }
 
-    file.view = !file.view;
+    file.view = file.id !== workspace.selectedFile ? !file.view : true;
     WorkspaceDispatch.UpdateFile(file);
   };
 
@@ -160,6 +161,7 @@ const PlotRowComponent = ({
     if (file.id !== workspace.selectedFile) {
       if (openFiles.includes(file.id)) {
         setOpenFiles((prev) => prev.filter((id) => id !== file.id));
+        deletePlotAndPopulationOfFile(file.id);
         setTimeout(() => {
           generatePlots(file);
         }, 0);
