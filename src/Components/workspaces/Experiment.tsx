@@ -726,6 +726,16 @@ const Experiment = (props: any) => {
                     onClick={() => {
                         if (props.poke === false) {
                             history.push("/workspace/" + props.id + "/plots");
+                            // var w =1000;
+                            // var h = 100;
+                            // var left = (window.screen.width - w) + 1350;
+                            // var top = (window.screen.height - h) / 10;
+                            // var workSpaceWindow = window.open("/workspace/" + props.id + "/plots", props.id,'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', left=' + left +', top=' + top);
+                            // if(workSpaceWindow){
+                            //     workSpaceWindow.oncontextmenu = function (event:any) {
+                            //         return false;
+                            //     }
+                            // }
                         } else {
                             history.push("/workspace/" + props.id + "/plots/poke");
                         }

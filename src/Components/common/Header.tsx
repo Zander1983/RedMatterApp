@@ -51,6 +51,7 @@ const AppHeader = (props: any) => {
         return {};
       })
     ).length !== 0;
+
   const classes = useStyles();
 
   const onLogout = () => {
@@ -62,85 +63,90 @@ const AppHeader = (props: any) => {
     ReactGA.pageview(location.pathname);
   }, [location.pathname]);
 
-  return (
-    <div>
-      <AppBar className={classes.toolbar} position="fixed">
-        <Toolbar>
-          <Typography className={classes.headertitle}>
-            <NavLink style={{ color: "#fafafa" }} to="/">
-              <img
-                src={icon}
-                alt="Logo"
-                height="23"
-                style={{
-                  marginRight: 7,
-                  marginTop: -6,
-                }}
-              />
-              <b
-                style={{
-                  fontFamily: "quicksand",
-                  fontWeight: 400,
-                  fontSize: 25,
-                }}
-              >
-                {window.outerWidth > 500 ? "RED MATTER" : "RM"}
-              </b>
-              <b
-                style={{
-                  fontFamily: "quicksand",
-                  marginLeft: 5,
-                  color: "#bbb",
-                  fontWeight: 300,
-                  fontSize: 15,
-                }}
-              >
-                {process.env.REACT_APP_CURRENT_APP_VERSION || "v2"}
-              </b>
-            </NavLink>
-          </Typography>
-
-          {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
-            <NavLink className={classes.topBarLink} to="/analyse">
-              Start Analysing
-            </NavLink>
-          ) : null}
-
-          {isLoggedIn ? (
-            <>
-              {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <NavLink className={classes.topBarLink} to="/experiments">
-                  Experiments
-                </NavLink>
-              )}
-              <NavLink className={classes.topBarLink} to="/plans">
-                Plans
-              </NavLink>
-              <NavLink className={classes.topBarLink} to="/user-profile">
-                Profile
-              </NavLink>
-              {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
+  const renderHeader = () => {
+      return(
+          <div>
+              <AppBar className={classes.toolbar} position="fixed">
+                  <Toolbar>
+                      <Typography className={classes.headertitle}>
+                          <NavLink style={{ color: "#fafafa" }} to="/">
+                              <img
+                                  src={icon}
+                                  alt="Logo"
+                                  height="23"
+                                  style={{
+                                      marginRight: 7,
+                                      marginTop: -6,
+                                  }}
+                              />
+                              <b
+                                  style={{
+                                      fontFamily: "quicksand",
+                                      fontWeight: 400,
+                                      fontSize: 25,
+                                  }}
+                              >
+                                  {window.outerWidth > 500 ? "RED MATTER" : "RM"}
+                              </b>
+                              <b
+                                  style={{
+                                      fontFamily: "quicksand",
+                                      marginLeft: 5,
+                                      color: "#bbb",
+                                      fontWeight: 300,
+                                      fontSize: 15,
+                                  }}
+                              >
+                                  {process.env.REACT_APP_CURRENT_APP_VERSION || "v2"}
+                              </b>
+                          </NavLink>
+                      </Typography>
+                      {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
+                          <NavLink className={classes.topBarLink} to="/analyse">
+                              Start Analysing
+                          </NavLink>
+                      ) : null}
+                      {isLoggedIn ? (
+                              <>
+                                  {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                                      <NavLink className={classes.topBarLink} to="/experiments">
+                                          Experiments
+                                      </NavLink>
+                                  )}
+                                  <NavLink className={classes.topBarLink} to="/plans">
+                                      Plans
+                                  </NavLink>
+                                  <NavLink className={classes.topBarLink} to="/user-profile">
+                                      Profile
+                                  </NavLink>
+                                  {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
                 Browse
               </NavLink> */}
-              <a className={classes.topBarLink} onClick={onLogout} href="/">
-                Logout
-              </a>
-            </>
-          ) : (
-            <>
-              <NavLink className={classes.topBarLink} to="/login">
-                Login
-              </NavLink>
-              <NavLink className={classes.topBarLink} to="/register">
-                Register
-              </NavLink>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Toolbar />
-    </div>
-  );
+                                  <a className={classes.topBarLink} onClick={onLogout} href="/">
+                                      Logout
+                                  </a>
+                              </>
+                          ) : (
+                              <>
+                                  <NavLink className={classes.topBarLink} to="/login">
+                                      Login
+                                  </NavLink>
+                                  <NavLink className={classes.topBarLink} to="/register">
+                                      Register
+                                  </NavLink>
+                              </>
+                          )
+                      }
+                  </Toolbar>
+              </AppBar>
+              <Toolbar />
+          </div>
+      )
+  };
+
+  // !location.pathname.includes("/workspace") &&
+  return  renderHeader();
+
 };
 
 export default AppHeader;

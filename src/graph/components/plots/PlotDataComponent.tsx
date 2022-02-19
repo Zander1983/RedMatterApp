@@ -5,7 +5,7 @@ import {
   Plot,
   PlotID,
   PlotSpecificWorkspaceData,
-  Population,
+  Population, Workspace as WorkspaceType,
   Workspace,
 } from "../../resources/types";
 
@@ -15,11 +15,12 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import { standardGridPlotItem } from "../workspaces/PlotController";
 import PlotComponent from "./PlotComponent";
 import { makeStyles } from "@material-ui/core";
-import { getFile, getGate, getPopulation } from "../../utils/workspace";
+import {getFile, getGate, getPopulation, getWorkspace} from "../../utils/workspace";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import Grid from "@material-ui/core/Grid";
 import { Typography } from "antd";
+import {useSelector} from "react-redux";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -104,7 +105,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspace: Workspace;
+  // workspace: Workspace;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
@@ -116,7 +117,7 @@ interface Props {
 }
 
 const PlotDataComponent = ({
-  workspace,
+  // workspace,
   sharedWorkspace,
   customPlotRerender,
   experimentId,
@@ -130,6 +131,9 @@ const PlotDataComponent = ({
   const [loader, setLoader] = React.useState(true);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
+
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
@@ -218,8 +222,7 @@ const PlotDataComponent = ({
     return (
       <TableCell
         colSpan={headers.length}
-        className={classes.loaderContainerStyle}
-      >
+        className={classes.loaderContainerStyle}>
         {isError && message && (
           <>
             {message || " "}
@@ -233,100 +236,100 @@ const PlotDataComponent = ({
   };
 
   const renderUI = () => {
+    console.log("== Plot data ====");
     return (
-      <>
-        {loader && file.id !== workspace.selectedFile ? (
-          <TableCell
-            colSpan={headers.length}
-            className={classes.loaderContainerStyle}
-          >
-            <CircularProgress
-              className={classes.loader}
-              style={{ padding: "10px" }}
-            />
-          </TableCell>
-        ) : !isError ? (
-          <TableRow
-            className={
-              file.id === workspace.selectedFile
-                ? classes.show
-                : openFiles.includes(file.id)
-                ? classes.show
-                : classes.hide
-            }
-          >
-            <TableCell colSpan={headers.length}>
-              <div
-                className={classes.responsiveContainer}
-                style={{
-                  opacity: file.view ? 1 : 0,
-                  transition: `all ${
-                    workspace.files.length < 30
-                      ? 1
-                      : workspace.files.length < 60
-                      ? 2
-                      : 3
-                  }s`,
-                }}
-              >
-                <ResponsiveGridLayout
-                  className="layout"
-                  breakpoints={{ lg: 1200 }}
-                  cols={{ lg: 36 }}
-                  rows={{ lg: 30 }}
-                  rowHeight={30}
-                  compactType={null}
-                  isDraggable={workspace.editWorkspace}
-                  isResizable={false}
-                >
-                  {
-                    //@ts-ignore
-                    getTableRowPlots(file).map(
-                      ({ plot, file: PlotFile }, i) => {
-                        if (PlotFile.id === file.id) {
-                          return (
-                            <div
-                              key={plot.id}
-                              className={classes.itemOuterDiv}
-                              data-grid={standardGridPlotItem(
-                                i,
-                                plot,
-                                workspace.plots,
-                                workspace.editWorkspace
-                              )}
-                              id={`workspace-outter-${plot.id}`}
-                            >
-                              <div id="inner" className={classes.itemInnerDiv}>
-                                <PlotComponent
-                                  plotRelevantResources={getPlotRelevantResources(
-                                    plot
-                                  )}
-                                  sharedWorkspace={sharedWorkspace}
-                                  editWorkspace={workspace.editWorkspace}
-                                  workspaceLoading={workspaceLoading}
-                                  customPlotRerender={customPlotRerender}
-                                  experimentId={experimentId}
-                                  fileName={file.name}
-                                />
-                              </div>
-                            </div>
-                          );
+        <>
+            {loader && file.id !== workspace.selectedFile ? (
+                <TableCell
+                    colSpan={headers.length}
+                    className={classes.loaderContainerStyle}>
+                  <CircularProgress
+                      className={classes.loader}
+                      style={{padding: "10px"}}
+                  />
+                </TableCell>
+            ) : !isError ? (
+                <TableRow
+                    className={
+                      file.id === workspace.selectedFile
+                          ? classes.show
+                          : openFiles.includes(file.id)
+                          ? classes.show
+                          : classes.hide
+                    }>
+                  <TableCell colSpan={headers.length}>
+                    <div
+                        className={classes.responsiveContainer}
+                        style={{
+                          opacity: file.view ? 1 : 0,
+                          transition: `all ${
+                              workspace.files.length < 30
+                                  ? 1
+                                  : workspace.files.length < 60
+                                  ? 2
+                                  : 3
+                              }s`,
+                        }}
+                    >
+                      <ResponsiveGridLayout
+                          className="layout"
+                          breakpoints={{lg: 1200}}
+                          cols={{lg: 36}}
+                          rows={{lg: 30}}
+                          rowHeight={30}
+                          compactType={null}
+                          isDraggable={workspace.editWorkspace}
+                          isResizable={false}
+                      >
+                        {
+                          //@ts-ignore
+                          getTableRowPlots(file).map(
+                              ({plot, file: PlotFile}, i) => {
+                                if (PlotFile.id === file.id) {
+                                  return (
+                                      <div
+                                          key={plot.id}
+                                          className={classes.itemOuterDiv}
+                                          data-grid={standardGridPlotItem(
+                                              i,
+                                              plot,
+                                              workspace.plots,
+                                              workspace.editWorkspace
+                                          )}
+                                          id={`workspace-outter-${plot.id}`}
+                                      >
+                                        <div id="inner" className={classes.itemInnerDiv}>
+                                          <PlotComponent
+                                              plotRelevantResources={getPlotRelevantResources(
+                                                  plot
+                                              )}
+                                              sharedWorkspace={sharedWorkspace}
+                                              editWorkspace={workspace.editWorkspace}
+                                              workspaceLoading={workspaceLoading}
+                                              customPlotRerender={customPlotRerender}
+                                              experimentId={experimentId}
+                                              fileName={file.name}
+                                          />
+                                        </div>
+                                      </div>
+                                  );
+                                }
+                              }
+                          )
                         }
-                      }
-                    )
-                  }
-                </ResponsiveGridLayout>
-              </div>
-            </TableCell>
-          </TableRow>
-        ) : (
-          _renderPageMessage()
-        )}
-      </>
+                      </ResponsiveGridLayout>
+                    </div>
+                  </TableCell>
+                </TableRow>
+            ) : (
+                _renderPageMessage()
+            )}
+          </>
     );
-  };
 
-  return openFiles.includes(file.id) && renderUI();
+  };
+  return  openFiles.includes(file.id) && renderUI();
+
 };
 
 export default PlotDataComponent;

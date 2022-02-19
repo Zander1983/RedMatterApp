@@ -42,7 +42,7 @@ import userManager, { UserProfile } from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 import { updateUserStripeDetails } from "services/StripeService";
-
+import SecurityUtil from './utils/Security.js';
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
@@ -332,6 +332,7 @@ const App = () => {
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
+
         <AppHeader />
 
         {loading ? (

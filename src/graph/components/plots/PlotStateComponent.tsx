@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { File, Workspace } from "../../resources/types";
+import {File, Workspace as WorkspaceType, Workspace} from "../../resources/types";
 
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell/TableCell";
 import { makeStyles } from "@material-ui/core";
 import PlotStats from "graph/utils/stats";
+import {useSelector} from "react-redux";
 const statsProvider = new PlotStats();
 
 const useStyles = makeStyles((theme) => ({
@@ -82,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  workspace: Workspace;
+  // workspace: Workspace;
   onRowClick: Function;
   file: File;
   headers: string[];
@@ -90,13 +91,16 @@ interface Props {
 }
 
 const PlotStateComponent = ({
-  workspace,
+  // workspace,
   file,
   headers,
   openFiles,
   onRowClick,
 }: Props) => {
   const classes = useStyles();
+
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [data, setData] = useState([]);
 

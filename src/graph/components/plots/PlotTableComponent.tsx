@@ -7,7 +7,6 @@ import TableContainer from "@material-ui/core/TableContainer";
 import { useEffect, useMemo, useState } from "react";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-
 import { Workspace, File } from "graph/resources/types";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
@@ -276,7 +275,7 @@ const deleteChildGate = (children: string[]) => {
 };
 
 interface TableProps {
-  workspace: Workspace;
+  // workspace: Workspace;
   sharedWorkspace: boolean;
   experimentId: string;
   workspaceLoading: boolean;
@@ -285,23 +284,24 @@ interface TableProps {
 }
 
 const PlotTableComponent = ({
-  workspace,
+  // workspace,
   sharedWorkspace,
   experimentId,
   workspaceLoading,
   customPlotRerender,
 }: TableProps) => {
   const classes = useStyles();
-  const [openFiles, setOpenFiles] = useState<string[]>([
-    workspace.selectedFile,
-  ]);
+  //@ts-ignore
+  const [openFiles, setOpenFiles] = useState<string[]>([ getWorkspace().selectedFile]);
+
   useEffect(() => {
     // making the selected file the first element of filesArray
     if (
-      workspace.selectedFile.length > 0 &&
-      workspace.files.length > 0 &&
-      workspace.selectedFile !== workspace.files[0].id
+        getWorkspace().selectedFile.length > 0 &&
+        getWorkspace().files.length > 0 &&
+        getWorkspace().selectedFile !== getWorkspace().files[0].id
     ) {
+      const workspace = getWorkspace();
       const filesInNewOrder: File[] = [];
       for (let i = 0; i < workspace.files.length; i++) {
         if (workspace.files[i].id === workspace.selectedFile) {
@@ -317,17 +317,17 @@ const PlotTableComponent = ({
   const headers = useMemo(() => {
     return [
       "File Name",
-      ...workspace.gates.map((gate) => gate.name),
+      ...getWorkspace().gates.map((gate:any) => gate.name),
       "Click to View",
     ];
-  }, [workspace.gates]);
+  }, [getWorkspace().gates]);
 
   useEffect(() => {
-    if (workspace.clearOpenFiles) {
-      setOpenFiles([workspace.selectedFile]);
+    if (getWorkspace().clearOpenFiles) {
+      setOpenFiles([getWorkspace().selectedFile]);
       WorkspaceDispatch.ClearOpenFiles();
     }
-  }, [workspace]);
+  }, [getWorkspace()]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
@@ -339,12 +339,12 @@ const PlotTableComponent = ({
           deleteColumn={deleteColumn}
         />
         <TableBody>
-          {workspace?.files?.map((file, i) => (
+          {getWorkspace()?.files?.map((file:any, i:number) => (
             <PlotRowComponent
               key={file?.id || i}
               sharedWorkspace={sharedWorkspace}
               experimentId={experimentId}
-              workspace={workspace}
+              // workspace={workspace}
               workspaceLoading={workspaceLoading}
               customPlotRerender={customPlotRerender}
               file={file}

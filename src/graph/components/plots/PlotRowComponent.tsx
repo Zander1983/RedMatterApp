@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   File,
   Plot,
   PlotID,
   Population,
-  Workspace,
   PlotsRerender,
 } from "../../resources/types";
 
@@ -17,6 +16,9 @@ import PlotDataComponent from "./PlotDataComponent";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
+import { Workspace as WorkspaceType} from "../../resources/types";
+import {useSelector} from "react-redux";
+import { getWorkspace } from "graph/utils/workspace";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -26,7 +28,7 @@ interface PlotsAndFiles {
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspace: Workspace;
+  // workspace: Workspace;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
@@ -37,7 +39,7 @@ interface Props {
 }
 
 const PlotRowComponent = ({
-  workspace,
+  // workspace,
   sharedWorkspace,
   customPlotRerender,
   experimentId,
@@ -47,13 +49,16 @@ const PlotRowComponent = ({
   openFiles,
   setOpenFiles,
 }: Props) => {
+  //@ts-ignore
+  // const workspace: WorkspaceType = useSelector((state) => state.workspace);
+
   const generatePlots = (file: File) => {
     if (file.view) {
       file.view = !file.view;
       WorkspaceDispatch.UpdateFile(file);
       return;
     }
-
+    const workspace = getWorkspace();
     const newPlots: Plot[] = [];
     let populations: Population[] = [];
     populations = workspace.populations.filter(
@@ -132,6 +137,7 @@ const PlotRowComponent = ({
 
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
+      const workspace = getWorkspace();
       let plots: PlotsAndFiles[] = [];
       let populations: Population[] = [];
       populations = workspace.populations.filter(
@@ -150,14 +156,14 @@ const PlotRowComponent = ({
   };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
+    if (file.id === getWorkspace().selectedFile) {
       updatePlot();
       generatePlots(file);
     }
   }, []);
 
   const onClick = () => {
-    if (file.id !== workspace.selectedFile) {
+    if (file.id !== getWorkspace().selectedFile) {
       if (openFiles.includes(file.id)) {
         setOpenFiles((prev) => prev.filter((id) => id !== file.id));
         setTimeout(() => {
@@ -179,7 +185,7 @@ const PlotRowComponent = ({
       <PlotDataComponent
         sharedWorkspace={sharedWorkspace}
         experimentId={experimentId}
-        workspace={workspace}
+        // workspace={workspace}
         workspaceLoading={workspaceLoading}
         customPlotRerender={customPlotRerender}
         file={file}
@@ -193,7 +199,7 @@ const PlotRowComponent = ({
   return (
     <>
       <PlotStateComponent
-        workspace={workspace}
+        // workspace={workspace}
         file={file}
         headers={headers}
         openFiles={openFiles}
