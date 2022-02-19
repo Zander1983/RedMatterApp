@@ -200,13 +200,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       sortBy: "file",
       isTableRenderCall: false
     };
-    this.callTable = this.callTable.bind(this);
-  }
-
-  callTable() {
-    this.setState(prevState => ({
-      isTableRenderCall: true
-    }));
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -271,7 +264,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.isTableRenderCall
     ) {
       return (
-        <PlotTableComponent isRenderTable = {this.renderTable}
+        <PlotTableComponent
           // workspace={getWorkspace()}
           sharedWorkspace={this.props.sharedWorkspace}
           experimentId={this.props.experimentId}

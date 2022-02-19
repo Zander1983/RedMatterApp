@@ -281,7 +281,6 @@ interface TableProps {
   workspaceLoading: boolean;
   customPlotRerender: string[];
   // arrowFunc: Function;
-  isRenderTable: Function;
 }
 
 const PlotTableComponent = ({
@@ -290,7 +289,6 @@ const PlotTableComponent = ({
   experimentId,
   workspaceLoading,
   customPlotRerender,
-  isRenderTable
 }: TableProps) => {
   const classes = useStyles();
   //@ts-ignore
