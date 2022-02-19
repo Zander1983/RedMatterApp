@@ -198,12 +198,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.state = {
       sortByChanged: false,
       sortBy: "file",
-      isTableRenderCall: false,
+      isTableRenderCall: false
     };
+    this.callTable = this.callTable.bind(this);
+  }
+
+  callTable() {
+    this.setState(prevState => ({
+      isTableRenderCall: true
+    }));
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (nextProps.workspace.plots.length > getWorkspace().plots.length) {
+    if (getWorkspace().plots.length > getWorkspace().plots.length) {
       setTimeout(() => setCanvasSize(true), 50);
     }
     // this.setState(nextProps);
@@ -263,7 +270,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.isTableRenderCall
     ) {
       return (
-        <PlotTableComponent
+        <PlotTableComponent isRenderTable = {this.renderTable}
           // workspace={getWorkspace()}
           sharedWorkspace={this.props.sharedWorkspace}
           experimentId={this.props.experimentId}
