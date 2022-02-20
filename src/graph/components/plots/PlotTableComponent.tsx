@@ -291,8 +291,6 @@ const PlotTableComponent = ({
   const classes = useStyles();
   //@ts-ignore
   // const files = useSelector((state) => state.workspace.files);
-  console.log("==== table ===");
-
   useLayoutEffect(() => {
     // making the selected file the first element of filesArray
     const workspace = getWorkspace();

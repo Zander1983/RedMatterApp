@@ -117,8 +117,7 @@ const PlotHeadComponent = ({ sortByColumn, deleteColumn }: TableProps) => {
           <TableCell
             className={classes.tableCell}
             style={{ textAlign: "center" }}
-            key={"top-" + index}
-          >
+            key={"top-" + index}>
             {values}
             {index !== 0 && index !== headers.length - 1 && (
               <>

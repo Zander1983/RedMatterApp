@@ -43,14 +43,13 @@ function LinkShareModal(props: {
   closeCall: { f: Function; ref: Function };
 }): JSX.Element {
   const classes = useStyles();
-  const linkReconstructor = new LinkReconstructor();
   let link = "";
-  if (props.open) {
-    link = linkReconstructor.store(getWorkspace(), props.workspaceId);
+  if (props.open && !(getWorkspace() === null || getWorkspace() === undefined)) {
+    link = LinkReconstructor.store(props.workspaceId);
   }
 
   function copyToClipBoard() {
-    if (navigator.clipboard) {
+    if (navigator.clipboard && link) {
       navigator.clipboard.writeText(link).then(
         function () {
           snackbarService.showSnackbar("Copied to clipboard.", "success");

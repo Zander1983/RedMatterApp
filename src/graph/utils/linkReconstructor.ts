@@ -2,8 +2,7 @@ import { Workspace } from "graph/resources/types";
 import { createID } from "./id";
 
 export default class LinkReconstructor {
-  store(workspace: Workspace, newWorkSpaceId: string): string {
-    if (workspace === null || workspace === undefined) return "";
+  static store(newWorkSpaceId: string): string {
     let currentHost = window.location.href;
     if (currentHost.includes("?")) {
       currentHost = currentHost.split("?")[0];
@@ -47,7 +46,7 @@ export default class LinkReconstructor {
     return dict;
   }
 
-  private saveToCloud(workspaceJSON: string): string {
+  private static saveToCloud(workspaceJSON: string): string {
     return "";
     // const newURLID = createID().substr(0, 10);
     // firebase.saveToCloud("linkshortening", {

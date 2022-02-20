@@ -200,7 +200,6 @@ const WorkspaceTopBarComponent = ({
   };
 
   const _renderToolbar = () => {
-    console.log("==== render toolbar =====");
     return (
       <Grid
         style={{
@@ -277,8 +276,7 @@ const WorkspaceTopBarComponent = ({
                     style={{
                       backgroundColor: "#fafafa",
                       width: 137,
-                    }}
-                  >
+                    }}>
                     {savingWorkspace ? (
                       <CircularProgress style={{ width: 20, height: 20 }} />
                     ) : (

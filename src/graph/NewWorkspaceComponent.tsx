@@ -175,7 +175,7 @@ const NewWorkspaceInnerComponent = (props: {
     }
   };
 
-    const handleSharedWorkspace = async (shared:boolean, experimentId:any) => {
+  const handleSharedWorkspace = async (shared:boolean, experimentId:any) => {
       try {
         await downloadFileMetadata(shared, experimentId);
         let fileIds = getWorkspace().files.map((file) => file.id);
@@ -331,8 +331,7 @@ const NewWorkspaceInnerComponent = (props: {
       style={{
         height: "100%",
         padding: 0,
-      }}
-    >
+      }}>
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
