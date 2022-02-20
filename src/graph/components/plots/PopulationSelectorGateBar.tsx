@@ -102,8 +102,7 @@ const PopulationSelectorGateBar = React.memo(
         style={{
           flex: 1,
           flexGrow: 1,
-        }}
-      >
+        }}>
         <Tooltip
           title={
             <React.Fragment>

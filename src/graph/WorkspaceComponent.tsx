@@ -375,9 +375,12 @@ const WorkspaceInnerComponent = (props: {
   };
 
   var onLinkShareClick = async () => {
+    console.log(sharedWorkspace);
     if (isLoggedIn) {
       saveWorkspace(true);
+      console.log(sharedWorkspace);
     } else if (sharedWorkspace) {
+      console.log(sharedWorkspace);
       let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {

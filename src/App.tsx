@@ -166,6 +166,12 @@ const router = [
       <Plots experimentId={match.params.experimentId} shared={true} />
     ),
   },
+  {
+    path: "/workspace/:experimentId/plots/public",
+    component: ({ match }: any) => (
+        <WorkSpaceComponent experimentId={match.params.experimentId} shared={true} />
+    ),
+  },
   { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
