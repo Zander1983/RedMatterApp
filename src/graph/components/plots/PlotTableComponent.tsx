@@ -9,7 +9,6 @@ import { useSelector } from "react-redux";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { File } from "graph/resources/types";
-import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
 import PlotHeadComponent from "./PlotHeadComponent";
 import PlotRowComponent from "./PlotRowComponent";
@@ -197,7 +196,6 @@ const sortByColumn = (colIndex: number, type: string) => {
 
 const deleteColumn = (index: number) => {
   const workspace = getWorkspace();
-  deleteAllPlotsAndPopulationOfNonControlFile();
   workspace.populations.map((pop) => {
     if (pop.gates && pop.gates.length > 0) {
       if (pop.gates[0].gate === workspace.gates[index].id) {
@@ -290,7 +288,8 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   //@ts-ignore
-  // const files = useSelector((state) => state.workspace.files);
+  const files = useSelector((state) => state.workspace.files);
+
   useLayoutEffect(() => {
     // making the selected file the first element of filesArray
     const workspace = getWorkspace();
@@ -313,7 +312,7 @@ const PlotTableComponent = ({
           deleteColumn={deleteColumn}
         />
         <TableBody>
-          {getWorkspace().files?.map((file: any, i: number) => (
+          {files?.map((file: any, i: number) => (
             <PlotRowComponent
               key={file?.id || i}
               sharedWorkspace={sharedWorkspace}

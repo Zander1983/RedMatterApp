@@ -369,7 +369,7 @@ const WorkspaceInnerComponent = (props: {
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
-    await saveWorkspaceToRemote(workspace, shared, props.experimentId);
+    await saveWorkspaceToRemote(shared, props.experimentId);
     setSavingWorkspace(false);
     updateXarrow();
   };
@@ -887,7 +887,6 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
             onClick={async () => {
               snackbarService.showSnackbar("Clearing workspace...", "info");
               await saveWorkspaceToRemote(
-                initialState,
                 this.props.shared,
                 this.props.experimentId
               );

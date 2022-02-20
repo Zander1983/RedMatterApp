@@ -88,12 +88,9 @@ export const downloadFileEvent = async (
     }
 
     let downloadingFiles: File[] = files.map((e) => getFile(e));
-    const halfNewFiles: File[] = [];
     downloadingFiles.forEach((e) => {
       e.downloading = true;
-      halfNewFiles.push(e);
     });
-    WorkspaceDispatch.SetFiles(halfNewFiles);
 
     let response;
     let payload: {

@@ -16,7 +16,6 @@ import IOSSwitch from "../../Components/common/Switch";
 import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
-import { Workspace } from "../resources/types";
 import axios from "axios";
 import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
@@ -26,7 +25,6 @@ const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
   },
-  title: {},
   fileSelectModal: {
     backgroundColor: "#efefef",
     boxShadow: theme.shadows[6],
@@ -80,19 +78,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  // workspace: Workspace;
   experimentId: string;
   sharedWorkspace: boolean;
-  // shared: boolean;
   plotCallNeeded: boolean;
+  renderPlotController: boolean;
   setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
+  setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const WorkspaceTopBarComponent = ({
   sharedWorkspace,
   experimentId,
-  // workspace,
   plotCallNeeded,
+  renderPlotController,
   setRenderPlotController,
+  setPlotCallNeeded,
 }: Props) => {
   const classes = useStyles();
   const history = useHistory();
@@ -116,7 +115,16 @@ const WorkspaceTopBarComponent = ({
   };
 
   const handleCloseAndMakePlotControllerTrue = (func: Function) => {
-    setRenderPlotController(true);
+    if (!renderPlotController) {
+      setRenderPlotController(true);
+    }
+    if (renderPlotController) {
+      setPlotCallNeeded(true);
+    }
+    func(false);
+  };
+
+  const handleCloseClearWorkspace = (func: Function) => {
     func(false);
   };
 
@@ -124,7 +132,7 @@ const WorkspaceTopBarComponent = ({
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
-      await saveWorkspaceToRemote(workspace, shared, experimentId);
+      await saveWorkspaceToRemote(shared, experimentId);
     } catch (err) {
       await handleError(err);
     }
@@ -227,7 +235,7 @@ const WorkspaceTopBarComponent = ({
             >
               <div>
                 <Button
-                  disabled={!plotCallNeeded}
+                  disabled={!plotCallNeeded && !renderPlotController}
                   size="small"
                   variant="contained"
                   style={{
@@ -255,7 +263,7 @@ const WorkspaceTopBarComponent = ({
                   Plot sample
                 </Button>
                 <Button
-                  disabled={!plotCallNeeded}
+                  disabled={!plotCallNeeded && !renderPlotController}
                   variant="contained"
                   size="small"
                   onClick={() => handleOpen(setClearModal)}
@@ -268,7 +276,7 @@ const WorkspaceTopBarComponent = ({
                 </Button>
                 <span>
                   <Button
-                    disabled={!plotCallNeeded}
+                    disabled={!plotCallNeeded && !renderPlotController}
                     variant="contained"
                     size="small"
                     onClick={() => saveWorkspace()}
@@ -280,7 +288,16 @@ const WorkspaceTopBarComponent = ({
                     {savingWorkspace ? (
                       <CircularProgress style={{ width: 20, height: 20 }} />
                     ) : (
-                      <Typography>Save Workspace</Typography>
+                      <Typography
+                        style={{
+                          color:
+                            !plotCallNeeded && !renderPlotController
+                              ? "rgba(0, 0, 0, 0.26)"
+                              : "black",
+                        }}
+                      >
+                        Save Workspace
+                      </Typography>
                     )}
                   </Button>
                   <FormControlLabel
@@ -293,7 +310,7 @@ const WorkspaceTopBarComponent = ({
                     label={"Autosave"}
                     control={
                       <IOSSwitch
-                        disabled={!plotCallNeeded}
+                        disabled={!plotCallNeeded && !renderPlotController}
                         checked={autoSaveEnabled}
                         onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}
                       />
@@ -369,7 +386,7 @@ const WorkspaceTopBarComponent = ({
         <MessageModal
           open={clearModal}
           closeCall={{
-            f: handleClose,
+            f: handleCloseClearWorkspace,
             ref: setClearModal,
           }}
           message={
@@ -385,6 +402,8 @@ const WorkspaceTopBarComponent = ({
           options={{
             yes: () => {
               WorkspaceDispatch.ResetWorkspaceExceptFiles();
+              setRenderPlotController(true);
+              setPlotCallNeeded(false);
             },
             no: () => {
               handleClose(setClearModal);

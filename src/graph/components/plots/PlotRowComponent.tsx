@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   File,
   Plot,
@@ -8,15 +8,13 @@ import {
 } from "../../resources/types";
 
 import { getFile } from "../../utils/workspace";
-//@ts-ignore
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
 import PlotStateComponent from "./PlotStateComponent";
 import PlotDataComponent from "./PlotDataComponent";
-
+import { deletePlotAndPopulationOfFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
-import { Workspace as WorkspaceType } from "../../resources/types";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
 
@@ -42,7 +40,15 @@ const PlotRowComponent = ({
   file,
 }: Props) => {
   // console.log("==Plot Raw==", file.name);
+  //@ts-ignore
+  const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (clearOpenFiles && isOpen) {
+      setIsopen(false);
+    }
+  }, [clearOpenFiles]);
   const generatePlots = (file: File) => {
     const workspace = getWorkspace();
     const newPlots: Plot[] = [];
@@ -148,9 +154,7 @@ const PlotRowComponent = ({
   const onClick = () => {
     if (file.id !== getWorkspace().selectedFile) {
       if (isOpen) {
-        setTimeout(() => {
-          generatePlots(file);
-        }, 0);
+        deletePlotAndPopulationOfFile(file.id);
       } else {
         // taking care of plots showing up from saved workspace
         updatePlot();
