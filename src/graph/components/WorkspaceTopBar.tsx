@@ -85,12 +85,14 @@ interface Props {
   sharedWorkspace: boolean;
   // shared: boolean;
   plotCallNeeded: boolean;
+  setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const WorkspaceTopBarComponent = ({
   sharedWorkspace,
   experimentId,
   // workspace,
   plotCallNeeded,
+  setRenderPlotController,
 }: Props) => {
   const classes = useStyles();
   const history = useHistory();
@@ -110,6 +112,11 @@ const WorkspaceTopBarComponent = ({
   };
 
   const handleClose = (func: Function) => {
+    func(false);
+  };
+
+  const handleCloseAndMakePlotControllerTrue = (func: Function) => {
+    setRenderPlotController(true);
     func(false);
   };
 
@@ -351,7 +358,10 @@ const WorkspaceTopBarComponent = ({
         {workspace.files.length > 0 && (
           <AddFileModal
             open={addFileModalOpen}
-            closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
+            closeCall={{
+              f: handleCloseAndMakePlotControllerTrue,
+              ref: setAddFileModalOpen,
+            }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
             files={workspace.files}

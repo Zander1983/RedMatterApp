@@ -98,6 +98,8 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
+  const [renderPlotController, setRenderPlotController] =
+    React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
@@ -233,10 +235,11 @@ const NewWorkspaceInnerComponent = (props: {
   const _renderToolbar = () => {
     return (
       <WorkspaceTopBar
-          sharedWorkspace={sharedWorkspace}
-          // workspace={workspace}
-          experimentId={props.experimentId}
-          plotCallNeeded={plotCallNeeded}/>
+        sharedWorkspace={sharedWorkspace}
+        experimentId={props.experimentId}
+        plotCallNeeded={plotCallNeeded}
+        setRenderPlotController={setRenderPlotController}
+      />
     );
   };
 
@@ -310,21 +313,22 @@ const NewWorkspaceInnerComponent = (props: {
             marginLeft: 0,
             marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
-          }}>
+          }}
+        >
           <div>
-            {plotCallNeeded && _renderToolbar()}
+            {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
               <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
-              {plotCallNeeded ? (
-                  <NewPlotController
-                      sharedWorkspace={sharedWorkspace}
-                      experimentId={props.experimentId}
-                      //workspace={workspace}
-                      workspaceLoading={plotCallNeeded}
-                      customPlotRerender={customPlotRerender}
-                  />
-              ): (
+              {plotCallNeeded || renderPlotController ? (
+                <NewPlotController
+                  sharedWorkspace={sharedWorkspace}
+                  experimentId={props.experimentId}
+                  //workspace={workspace}
+                  workspaceLoading={plotCallNeeded}
+                  customPlotRerender={customPlotRerender}
+                />
+              ) : (
                 _renderPageMessage()
               )}
             </Grid>

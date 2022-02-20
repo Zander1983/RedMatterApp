@@ -28,29 +28,19 @@ interface PlotsAndFiles {
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  // workspace: Workspace;
   workspaceLoading: boolean;
   customPlotRerender: PlotID[];
   plotMoving?: boolean;
   file: File;
-  // headers: string[];
-  // openFiles: string[];
-  // setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const PlotRowComponent = ({
-  // workspace,
   sharedWorkspace,
   customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
-}: // headers,
-// openFiles,
-// setOpenFiles,
-Props) => {
-  //@ts-ignore
-  // const workspace: WorkspaceType = useSelector((state) => state.workspace);
+}: Props) => {
   // console.log("==Plot Raw==", file.name);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
   const generatePlots = (file: File) => {

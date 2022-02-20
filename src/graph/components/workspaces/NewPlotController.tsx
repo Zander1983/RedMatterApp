@@ -198,7 +198,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.state = {
       sortByChanged: false,
       sortBy: "file",
-      isTableRenderCall: false
+      isTableRenderCall: false,
     };
   }
 
@@ -255,7 +255,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   renderTable = () => {
-    console.log("==== table ===");
     if (
       getWorkspace().selectedFile &&
       getWorkspace().plots.length > 0 &&
@@ -276,8 +275,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
+    console.log("==Plot Controller==");
     if (getWorkspace().plots.length > 0) {
-      const plotGroups = getPlotGroups(getWorkspace().plots);
+      // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
         <div>
           <Xwrapper>

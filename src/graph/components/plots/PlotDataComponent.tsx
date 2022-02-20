@@ -245,7 +245,7 @@ const PlotDataComponent = ({
     );
   };
 
-  // console.log("== Plot data ==", file.name);
+  console.log("== Plot data ==", file.name);
   const renderUI = () => {
     return (
       <>

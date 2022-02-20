@@ -108,6 +108,7 @@ const PlotHeadComponent = ({ sortByColumn, deleteColumn }: TableProps) => {
         ])
       : setHeaders([]);
   }, [gates]);
+  // console.log("==Table Header==");
 
   return (
     <TableHead>

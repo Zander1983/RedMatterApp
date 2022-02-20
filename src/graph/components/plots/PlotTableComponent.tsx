@@ -4,10 +4,11 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect } from "react";
+import { useSelector } from "react-redux";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import { Workspace, File } from "graph/resources/types";
+import { File } from "graph/resources/types";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
 
 import PlotHeadComponent from "./PlotHeadComponent";
@@ -275,16 +276,13 @@ const deleteChildGate = (children: string[]) => {
 };
 
 interface TableProps {
-  // workspace: Workspace;
   sharedWorkspace: boolean;
   experimentId: string;
   workspaceLoading: boolean;
   customPlotRerender: string[];
-  // arrowFunc: Function;
 }
 
 const PlotTableComponent = ({
-  // workspace,
   sharedWorkspace,
   experimentId,
   workspaceLoading,
@@ -292,7 +290,8 @@ const PlotTableComponent = ({
 }: TableProps) => {
   const classes = useStyles();
   //@ts-ignore
-  // const [openFiles, setOpenFiles] = useState<string[]>([ getWorkspace().selectedFile]);
+  // const files = useSelector((state) => state.workspace.files);
+  console.log("==== table ===");
 
   useLayoutEffect(() => {
     // making the selected file the first element of filesArray
@@ -308,31 +307,15 @@ const PlotTableComponent = ({
     WorkspaceDispatch.SetFiles(filesInNewOrder);
   }, []);
 
-  const headers = useMemo(() => {
-    return [
-      "File Name",
-      ...getWorkspace().gates.map((gate: any) => gate.name),
-      "Click to View",
-    ];
-  }, [getWorkspace().gates]);
-
-  // useEffect(() => {
-  //   if (getWorkspace().clearOpenFiles) {
-  //     // setOpenFiles([getWorkspace().selectedFile]);
-  //     WorkspaceDispatch.ClearOpenFiles();
-  //   }
-  // }, [getWorkspace().clearOpenFiles]);
-
   return (
     <TableContainer component={Paper} className={classes.container}>
       <Table style={{ overflowY: "scroll" }}>
         <PlotHeadComponent
-          // headers={headers}
           sortByColumn={sortByColumn}
           deleteColumn={deleteColumn}
         />
         <TableBody>
-          {getWorkspace()?.files?.map((file: any, i: number) => (
+          {getWorkspace().files?.map((file: any, i: number) => (
             <PlotRowComponent
               key={file?.id || i}
               sharedWorkspace={sharedWorkspace}
@@ -340,7 +323,6 @@ const PlotTableComponent = ({
               workspaceLoading={workspaceLoading}
               customPlotRerender={customPlotRerender}
               file={file}
-              // headers={headers}
             />
           ))}
         </TableBody>
