@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, FormControlLabel } from "@material-ui/core";
@@ -7,7 +7,6 @@ import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-
 import userManager from "Components/users/userManager";
 import { saveWorkspaceToRemote } from "../utils/workspace";
 import { Typography } from "antd";
@@ -21,6 +20,9 @@ import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
 import GateNamePrompt from "./modals/GateNamePrompt";
 import { getWorkspace } from "graph/utils/workspace";
+import { useSelector } from "react-redux";
+import useDidMount from "hooks/useDidMount";
+
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
@@ -102,9 +104,18 @@ const WorkspaceTopBarComponent = ({
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(false);
-  const [initState, setInitState] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const didMount = useDidMount();
+
+  //@ts-ignore
+  const plotLength = useSelector((state) => state.workspace.plots.length);
+
+  useEffect(() => {
+    if (didMount && plotLength === 0) {
+      setRenderPlotController(true);
+    }
+  }, [plotLength]);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -381,8 +392,8 @@ const WorkspaceTopBarComponent = ({
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
-            files={workspace.files}
-            selectedFile={workspace.selectedFile}
+            files={getWorkspace().files}
+            selectedFile={getWorkspace().selectedFile}
           />
         )}
         <MessageModal

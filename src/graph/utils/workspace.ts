@@ -94,8 +94,8 @@ export const saveWorkspaceToRemote = async (
   experimentId: string
 ): Promise<boolean> => {
   const workspace = getWorkspace();
-  workspace.files = [];
-  let stateJson = JSON.stringify(workspace);
+  const { files, ...rest } = workspace;
+  let stateJson = JSON.stringify(rest);
 
   const updateWorkSpace = WorkspacesApiFetchParamCreator({
     accessToken: userManager.getToken(),
