@@ -90,11 +90,13 @@ export const getGate = (gateID: GateID): Gate => {
 };
 
 export const saveWorkspaceToRemote = async (
-  workspace: Workspace,
   shared: boolean,
   experimentId: string
 ): Promise<boolean> => {
+  const workspace = getWorkspace();
+  workspace.files = [];
   let stateJson = JSON.stringify(workspace);
+
   const updateWorkSpace = WorkspacesApiFetchParamCreator({
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
@@ -109,7 +111,7 @@ export const saveWorkspaceToRemote = async (
       updateWorkSpace.options
     );
     return true;
-  } catch(err) {
+  } catch (err) {
     snackbarService.showSnackbar(
       "Could not save the workspace, reload the page and try again!",
       "error"
@@ -128,7 +130,9 @@ export const loadWorkspaceFromRemoteIfExists = async (
   let workspaceData;
   try {
     if (shared) {
-      workspaceData = await axios.post("/api/verifyWorkspace", {experimentId: experimentId});
+      workspaceData = await axios.post("/api/verifyWorkspace", {
+        experimentId: experimentId,
+      });
     } else {
       workspaceData = await axios.post(
         "/api/getWorkspace",

@@ -11,7 +11,10 @@ import userManager from "Components/users/userManager";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 
-import {dowloadAllFileEvents, downloadFileMetadata} from "services/FileService";
+import {
+  dowloadAllFileEvents,
+  downloadFileMetadata,
+} from "services/FileService";
 import {
   getWorkspace,
   loadWorkspaceFromRemoteIfExists,
@@ -104,6 +107,7 @@ const NewWorkspaceInnerComponent = (props: {
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
+  console.log(renderPlotController, plotCallNeeded);
   let pageLoaderSubscription: any = null;
 
   useEffect(() => {
@@ -129,11 +133,10 @@ const NewWorkspaceInnerComponent = (props: {
     };
   }, []);
 
-
   const handlePrivateWorkspace = async () => {
     let files = SecurityUtil.decryptData(
-        sessionStorage.getItem("experimentFiles"),
-        process.env.REACT_APP_DATA_SECRET_SOLD
+      sessionStorage.getItem("experimentFiles"),
+      process.env.REACT_APP_DATA_SECRET_SOLD
     );
     if (files && files?.files?.files?.length > 0) {
       let fileIds = files?.files?.files?.map((file: any) => file.id);
@@ -141,7 +144,10 @@ const NewWorkspaceInnerComponent = (props: {
         WorkspaceDispatch.SetFiles(files?.files?.files);
         try {
           let result = await dowloadAllFileEvents(
-              props.shared, props.experimentId, fileIds);
+            props.shared,
+            props.experimentId,
+            fileIds
+          );
           if (result?.length > 0) {
             setReloadMessage("Workspace prepared successfully.");
             setTimeout(() => {
@@ -149,7 +155,7 @@ const NewWorkspaceInnerComponent = (props: {
             }, 1000);
           } else {
             setMessage(
-                "Your Action is Processing. please try after few later Or wait "
+              "Your Action is Processing. please try after few later Or wait "
             );
           }
         } catch (err) {
@@ -161,7 +167,7 @@ const NewWorkspaceInnerComponent = (props: {
             });
           } else {
             setMessage(
-                "Your Action is Processing. please try after few later Or wait "
+              "Your Action is Processing. please try after few later Or wait "
             );
           }
         } finally {
@@ -175,41 +181,44 @@ const NewWorkspaceInnerComponent = (props: {
     }
   };
 
-    const handleSharedWorkspace = async (shared:boolean, experimentId:any) => {
-      try {
-        await downloadFileMetadata(shared, experimentId);
-        let fileIds = getWorkspace().files.map((file) => file.id);
-        let result = await dowloadAllFileEvents(
-            props.shared, props.experimentId, fileIds);
-        if (result?.length > 0) {
-          setReloadMessage("Workspace prepared successfully.");
-          setTimeout(() => {
-            setPlotCallNeeded(true);
-          }, 1000);
-        } else {
-          setMessage(
-              "Your Action is Processing. please try after few later Or wait "
-          );
-        }
-      } catch (err) {
-        setPlotCallNeeded(false);
-        if (err.toString().indexOf("FILE-MISSING") === -1) {
-          await handleError({
-            message: "File downloading failed. due to retry completed",
-            saverity: "error",
-          });
-        } else {
-          setMessage(
-              "Your Action is Processing. please try after few later Or wait "
-          );
-        }
-      } finally {
-        if (pageLoaderSubscription) {
-          setOpen(false);
-          clearTimeout(pageLoaderSubscription);
-          pageLoaderSubscription = null;
-        }
+  const handleSharedWorkspace = async (shared: boolean, experimentId: any) => {
+    try {
+      await downloadFileMetadata(shared, experimentId);
+      let fileIds = getWorkspace().files.map((file) => file.id);
+      let result = await dowloadAllFileEvents(
+        props.shared,
+        props.experimentId,
+        fileIds
+      );
+      if (result?.length > 0) {
+        setReloadMessage("Workspace prepared successfully.");
+        setTimeout(() => {
+          setPlotCallNeeded(true);
+        }, 1000);
+      } else {
+        setMessage(
+          "Your Action is Processing. please try after few later Or wait "
+        );
       }
+    } catch (err) {
+      setPlotCallNeeded(false);
+      if (err.toString().indexOf("FILE-MISSING") === -1) {
+        await handleError({
+          message: "File downloading failed. due to retry completed",
+          saverity: "error",
+        });
+      } else {
+        setMessage(
+          "Your Action is Processing. please try after few later Or wait "
+        );
+      }
+    } finally {
+      if (pageLoaderSubscription) {
+        setOpen(false);
+        clearTimeout(pageLoaderSubscription);
+        pageLoaderSubscription = null;
+      }
+    }
   };
 
   const getAll = async (shared: boolean, experimentId: any) => {
@@ -226,7 +235,8 @@ const NewWorkspaceInnerComponent = (props: {
         } else {
           await handleSharedWorkspace(shared, experimentId);
         }
-      }).catch((e) => {});
+      })
+      .catch((e) => {});
   };
 
   const handleError = async (error: any) => {
@@ -277,7 +287,9 @@ const NewWorkspaceInnerComponent = (props: {
         sharedWorkspace={sharedWorkspace}
         experimentId={props.experimentId}
         plotCallNeeded={plotCallNeeded}
+        renderPlotController={renderPlotController}
         setRenderPlotController={setRenderPlotController}
+        setPlotCallNeeded={setPlotCallNeeded}
       />
     );
   };
@@ -440,7 +452,6 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
             onClick={async () => {
               snackbarService.showSnackbar("Clearing workspace...", "info");
               await saveWorkspaceToRemote(
-                initialState,
                 this.props.shared,
                 this.props.experimentId
               );

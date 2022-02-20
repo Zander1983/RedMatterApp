@@ -121,6 +121,8 @@ export default function GateNamePrompt() {
       onKeyDown={(e: any) => {
         if (e.code === "Enter") {
           renameGate(name);
+          WorkspaceDispatch.ClearOpenFiles();
+          setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
         }
       }}
     >
@@ -160,6 +162,7 @@ export default function GateNamePrompt() {
                 setPlot((prev: Plot) => {
                   return { ...prev, plotWidth: prev.plotWidth - 1 };
                 });
+                setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
                 setNewGateCreated(true);
               }
             }}

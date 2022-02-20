@@ -8,9 +8,10 @@ import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import deleteIcon from "assets/images/delete.png";
 
-import { getWorkspace } from "graph/utils/workspace";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -86,8 +87,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface TableProps {
-  // headers: string[];
-  // setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
   sortByColumn: (colIndex: number, type: string) => void;
   deleteColumn: (index: number) => void;
 }
@@ -107,7 +106,7 @@ const PlotHeadComponent = ({ sortByColumn, deleteColumn }: TableProps) => {
           "Click to View",
         ])
       : setHeaders([]);
-  }, [gates]);
+  }, [gates, plotLength]);
   // console.log("==Table Header==");
 
   return (
