@@ -65,10 +65,16 @@ export default class ScatterPlotter extends PluginGraphPlotter {
     //   //@ts-ignore
     //   this.gates.filter((e) => e.gateType === "oval")
     // );
-    this.polygonGatePlugin.setGates(
+    // console.log(this.gates);
+    if( this.gates && this.gates.length > 0) {
       //@ts-ignore
-      this.gates.filter((e) => e.gateType === "polygon")
-    );
+      this.polygonGatePlugin.setGates(this.gates.filter((e) => e !== null && e.gateType === "polygon"));
+
+      // const gates = this.gates.filter((e) => e && e?.gateType === "polygon");
+      // console.log(gates);
+      //@ts-ignore
+      // if(gates !== null) this.polygonGatePlugin.setGates(this.gates.filter((e) => e && e?.gateType === "polygon"));
+    }
   }
 
   public setPlotterState(state: ScatterPlotterState) {

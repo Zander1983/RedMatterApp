@@ -145,7 +145,7 @@ const AppHeader = (props: any) => {
   };
 
   // !location.pathname.includes("/workspace") &&
-  return  renderHeader();
+  return renderHeader();
 
 };
 

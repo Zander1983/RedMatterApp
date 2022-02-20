@@ -730,11 +730,17 @@ const Experiment = (props: any) => {
                             // var h = 100;
                             // var left = (window.screen.width - w) + 1350;
                             // var top = (window.screen.height - h) / 10;
-                            // var workSpaceWindow = window.open("/workspace/" + props.id + "/plots", props.id,'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', left=' + left +', top=' + top);
+                            // var workSpaceWindow = window.open(
+                            //     "/workspace/" + props.id + "/plots", props.id,
+                            //     'location=0,menubar=0,status=0,scrollbars=0,disable_window_open_feature=false, menubar=no,resizable=no copyhistory=no, width=' + window.screen.width + ', height=' + window.screen.height + ', left=' + left +', top=' + top);
                             // if(workSpaceWindow){
                             //     workSpaceWindow.oncontextmenu = function (event:any) {
                             //         return false;
                             //     }
+                            //     workSpaceWindow.opener.document.oncontextmenu = function (event:any) {
+                            //         return false;
+                            //     }
+                            //     workSpaceWindow.opener.body.onpaste = new Function('return false');
                             // }
                         } else {
                             history.push("/workspace/" + props.id + "/plots/poke");
