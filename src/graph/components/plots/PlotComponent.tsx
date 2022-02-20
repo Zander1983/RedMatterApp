@@ -53,7 +53,7 @@ const PlotComponent = React.memo(
 
     const displayRef = useRef();
     const barRef = useRef();
-    // console.log("===Plot Component==");
+    console.log("===Plot Component==");
     return (
       <div
         id={`display-ref-${plotId}`}

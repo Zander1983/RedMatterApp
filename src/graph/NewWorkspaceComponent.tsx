@@ -107,7 +107,6 @@ const NewWorkspaceInnerComponent = (props: {
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
-  console.log(renderPlotController, plotCallNeeded);
   let pageLoaderSubscription: any = null;
 
   useEffect(() => {

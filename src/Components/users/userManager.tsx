@@ -56,11 +56,18 @@ class UserManager {
   }
 
   isAuthenticated(): boolean {
-    if (sessionStorage.getItem("cache_version") || sessionStorage.getItem("profileInfo"))
-      return (sessionStorage.getItem("profileInfo") && JSON.parse(sessionStorage.getItem("profileInfo")).token);
+    if (
+      sessionStorage.getItem("cache_version") ||
+      sessionStorage.getItem("profileInfo")
+    )
+      return (
+        sessionStorage.getItem("profileInfo") &&
+        JSON.parse(sessionStorage.getItem("profileInfo")).token
+      );
   }
 
- logout() {
+  logout() {
+    sessionStorage.clear();
     store.dispatch({
       type: "LOGOUT",
     });
@@ -137,7 +144,10 @@ class UserManager {
   }
 
   fail() {
-    snackbarService.showSnackbar("Session token expired, please login again", "warning");
+    snackbarService.showSnackbar(
+      "Session token expired, please login again",
+      "warning"
+    );
     this.logout();
     setTimeout(() => {
       window.location.href = "/login";
