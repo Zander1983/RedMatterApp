@@ -47,7 +47,7 @@ export default function GateNamePrompt() {
       setOpen(true);
       setEvent(event);
       EventQueueDispatch.UpdateUsed(event.id);
-      }
+    }
   });
 
   const renameGate = async (newName: string) => {
@@ -64,13 +64,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
-    let plotsRerenderQueueItem: PlotsRerender = {
-      id: "",
-      used: false,
-      type: "plotsRerender",
-      plotIDs: [plot.id],
-    };
-    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    // let plotsRerenderQueueItem: PlotsRerender = {
+    //   id: "",
+    //   used: false,
+    //   type: "plotsRerender",
+    //   plotIDs: [plot.id],
+    // };
+    // EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {

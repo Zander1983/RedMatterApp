@@ -169,6 +169,7 @@ export interface Workspace {
   editWorkspace: boolean;
   selectedFile: string;
   clearOpenFiles: boolean;
+  updateType: string;
 }
 
 export interface PlotSpecificWorkspaceData {
