@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import {
-  File,
-  Plot,
-  PlotID,
-  Population,
-  PlotsRerender,
+    File,
+    Plot,
+    PlotID,
+    Population,
+    PlotsRerender, WorkspaceEvent,
 } from "../../resources/types";
 
 import { getFile } from "../../utils/workspace";
@@ -27,14 +27,14 @@ interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   file: File;
 }
 
 const PlotRowComponent = ({
   sharedWorkspace,
-  customPlotRerender,
+  // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
@@ -44,11 +44,14 @@ const PlotRowComponent = ({
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
 
+  console.log(file.id);
+
   useEffect(() => {
     if (clearOpenFiles && isOpen) {
       setIsopen(false);
     }
   }, [clearOpenFiles]);
+
   const generatePlots = (file: File) => {
     const workspace = getWorkspace();
     const newPlots: Plot[] = [];
@@ -172,7 +175,7 @@ const PlotRowComponent = ({
         sharedWorkspace={sharedWorkspace}
         experimentId={experimentId}
         workspaceLoading={workspaceLoading}
-        customPlotRerender={customPlotRerender}
+        // customPlotRerender={customPlotRerender}
         file={file}
         onRowClick={onClick}
         isOpen={isOpen}

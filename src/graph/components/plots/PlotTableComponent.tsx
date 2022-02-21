@@ -277,14 +277,14 @@ interface TableProps {
   sharedWorkspace: boolean;
   experimentId: string;
   workspaceLoading: boolean;
-  customPlotRerender: string[];
+  // customPlotRerender: string[];
 }
 
 const PlotTableComponent = ({
   sharedWorkspace,
   experimentId,
   workspaceLoading,
-  customPlotRerender,
+  // customPlotRerender,
 }: TableProps) => {
   const classes = useStyles();
   //@ts-ignore
@@ -318,7 +318,7 @@ const PlotTableComponent = ({
               sharedWorkspace={sharedWorkspace}
               experimentId={experimentId}
               workspaceLoading={workspaceLoading}
-              customPlotRerender={customPlotRerender}
+              // customPlotRerender={customPlotRerender}
               file={file}
             />
           ))}

@@ -4,10 +4,10 @@ import {
   Gate,
   Plot,
   PlotID,
-  PlotSpecificWorkspaceData,
+  PlotSpecificWorkspaceData, PlotsRerender,
   Population,
   Workspace as WorkspaceType,
-  Workspace,
+  Workspace, WorkspaceEvent,
 } from "../../resources/types";
 
 import TableRow from "@material-ui/core/TableRow";
@@ -15,6 +15,7 @@ import TableCell from "@material-ui/core/TableCell/TableCell";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import { standardGridPlotItem } from "../workspaces/PlotController";
 import PlotComponent from "./PlotComponent";
+// import PlotComponent from "./SinglePlotDataComponent";
 import { makeStyles } from "@material-ui/core";
 import {
   getFile,
@@ -28,6 +29,7 @@ import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 import Grid from "@material-ui/core/Grid";
 import { Typography } from "antd";
 import { useSelector } from "react-redux";
+import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -114,7 +116,7 @@ interface Props {
   experimentId: string;
   // workspace: Workspace;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
   file: File;
@@ -127,7 +129,7 @@ interface Props {
 const PlotDataComponent = ({
   // workspace,
   sharedWorkspace,
-  customPlotRerender,
+  // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
@@ -143,6 +145,27 @@ const PlotDataComponent = ({
 
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
+
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventPlotsRerenderArray = eventQueue.filter(
+        (x: WorkspaceEvent) => x.type === "plotsRerender"
+    );
+    if (eventPlotsRerenderArray.length > 0) {
+      console.log(eventPlotsRerenderArray[0]);
+      let event: PlotsRerender = eventPlotsRerenderArray[0];
+      setCustomPlotRerender(event.plotIDs);
+      let plots = getTableRowPlots(file) ?.filter(({ plot, file: PlotFile }, i) => plot.id === event.plotIDs[0]);
+      if(plots && plots.length > 0) {
+        EventQueueDispatch.DeleteQueueItem(event.id);
+        setTimeout(() => {
+          setCustomPlotRerender([]);
+        }, 0);
+      }
+    }
+  });
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
@@ -245,7 +268,8 @@ const PlotDataComponent = ({
     );
   };
 
-  // console.log("== Plot data ==", file.name);
+  console.log("== Plot data ==", file.name);
+
   const renderUI = () => {
     return (
       <>
@@ -267,8 +291,7 @@ const PlotDataComponent = ({
                 : isOpen
                 ? classes.show
                 : classes.hide
-            }
-          >
+            }>
             <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
@@ -292,8 +315,7 @@ const PlotDataComponent = ({
                   rowHeight={30}
                   compactType={null}
                   isDraggable={workspace.editWorkspace}
-                  isResizable={false}
-                >
+                  isResizable={false}>
                   {
                     //@ts-ignore
                     getTableRowPlots(file).map(
@@ -309,19 +331,18 @@ const PlotDataComponent = ({
                                 workspace.plots,
                                 workspace.editWorkspace
                               )}
-                              id={`workspace-outter-${plot.id}`}
-                            >
+                              id={`workspace-outter-${plot.id}`}>
                               <div id="inner" className={classes.itemInnerDiv}>
                                 <PlotComponent
-                                  plotRelevantResources={getPlotRelevantResources(
-                                    plot
-                                  )}
-                                  sharedWorkspace={sharedWorkspace}
-                                  editWorkspace={workspace.editWorkspace}
-                                  workspaceLoading={workspaceLoading}
-                                  customPlotRerender={customPlotRerender}
-                                  experimentId={experimentId}
-                                  fileName={file.name}
+                                    plotRelevantResources={getPlotRelevantResources(plot)}
+                                    sharedWorkspace={sharedWorkspace}
+                                    editWorkspace={workspace.editWorkspace}
+                                    workspaceLoading={workspaceLoading}
+                                    customPlotRerender={customPlotRerender}
+                                    experimentId={experimentId}
+                                    fileName={file.name}
+                                  // plot={plot}
+                                  //plotId={plot.id}
                                 />
                               </div>
                             </div>

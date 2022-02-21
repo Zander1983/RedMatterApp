@@ -38,14 +38,16 @@ export default function GateNamePrompt() {
     );
     if (eventGateNamingArray.length > 0) {
       let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      //console.log(event);
       let gate = getGate(event.gateID);
+      //console.log(gate);
       setName(gate.name);
       setGate(gate);
       setPlot(getPlot(event.plotID));
       setOpen(true);
       setEvent(event);
       EventQueueDispatch.UpdateUsed(event.id);
-    }
+      }
   });
 
   const renameGate = async (newName: string) => {

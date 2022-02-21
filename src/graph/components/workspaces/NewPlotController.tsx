@@ -181,7 +181,7 @@ interface PlotControllerProps {
   experimentId: string;
   // workspace: Workspace;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
 }
@@ -268,7 +268,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           sharedWorkspace={this.props.sharedWorkspace}
           experimentId={this.props.experimentId}
           workspaceLoading={this.props.workspaceLoading}
-          customPlotRerender={this.props.customPlotRerender}
+          // customPlotRerender={this.props.customPlotRerender}
         />
       );
     } else return null;

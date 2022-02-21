@@ -116,6 +116,7 @@ const WorkspaceInnerComponent = (props: {
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(

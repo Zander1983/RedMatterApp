@@ -376,7 +376,7 @@ const NewWorkspaceInnerComponent = (props: {
                   experimentId={props.experimentId}
                   //workspace={workspace}
                   workspaceLoading={plotCallNeeded}
-                  customPlotRerender={customPlotRerender}
+                  // customPlotRerender={customPlotRerender}
                 />
               ) : (
                 _renderPageMessage()
