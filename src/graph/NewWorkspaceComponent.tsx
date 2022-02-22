@@ -23,11 +23,8 @@ import {
 
 import { Typography } from "antd";
 import { memResetDatasetCache } from "./resources/dataset";
-import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-import { Workspace as WorkspaceType, File } from "./resources/types";
-import { useSelector } from "react-redux";
 import NewPlotController from "./components/workspaces/NewPlotController";
 import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
 
@@ -94,18 +91,14 @@ const NewWorkspaceInnerComponent = (props: {
 }) => {
   const classes = useStyles();
   const history = useHistory();
-  //@ts-ignore
-  //const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [open, setOpen] = React.useState(true);
   const [plotCallNeeded, setPlotCallNeeded] = React.useState(false);
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] =
-    React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
-  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
 
   let pageLoaderSubscription: any = null;
 
@@ -306,15 +299,13 @@ const NewWorkspaceInnerComponent = (props: {
         }}
         justify="center"
         alignItems="center"
-        alignContent="center"
-      >
+        alignContent="center">
         {!isConnectivity && "Internet connection failed. Check your connection"}
         <Typography
           style={{
             color: "#248e0d",
             textAlign: "center",
-          }}
-        >
+          }}>
           {" "}
           {isReloadMessage && isReloadMessage}{" "}
         </Typography>
@@ -322,13 +313,11 @@ const NewWorkspaceInnerComponent = (props: {
         {isMessage && (
           <>
             {isMessage || ""}
-            <a
-              style={{ marginLeft: "5px" }}
+            <a style={{ marginLeft: "5px" }}
               onClick={(event) => {
                 event.preventDefault();
                 window.location.reload();
-              }}
-            >
+              }}>
               Reload...
             </a>
           </>
@@ -342,8 +331,7 @@ const NewWorkspaceInnerComponent = (props: {
       style={{
         height: "100%",
         padding: 0,
-      }}
-    >
+      }}>
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -363,8 +351,7 @@ const NewWorkspaceInnerComponent = (props: {
             marginLeft: 0,
             marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
-          }}
-        >
+          }}>
           <div>
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 43 }}>

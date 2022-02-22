@@ -233,8 +233,7 @@ const WorkspaceTopBarComponent = ({
           WebkitBorderBottomRightRadius: 0,
           minHeight: "43px",
         }}
-        container
-      >
+        container>
         <Grid container>
           {workspace.editWorkspace ? (
             <span
@@ -446,4 +445,5 @@ const WorkspaceTopBarComponent = ({
 
   return renderToolBarUI();
 };
+
 export default WorkspaceTopBarComponent;

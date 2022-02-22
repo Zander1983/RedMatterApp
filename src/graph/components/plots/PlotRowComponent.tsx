@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import {
     File,
     Plot,
-    PlotID,
     Population,
-    PlotsRerender, WorkspaceEvent,
+    PlotsRerender,
 } from "../../resources/types";
 
 import { getFile } from "../../utils/workspace";
@@ -39,12 +38,10 @@ const PlotRowComponent = ({
   workspaceLoading,
   file,
 }: Props) => {
-  // console.log("==Plot Raw==", file.name);
+
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
-
-  console.log(file.id);
 
   useEffect(() => {
     if (clearOpenFiles && isOpen) {
