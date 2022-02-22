@@ -38,7 +38,9 @@ export default function GateNamePrompt() {
     );
     if (eventGateNamingArray.length > 0) {
       let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      //console.log(event);
       let gate = getGate(event.gateID);
+      //console.log(gate);
       setName(gate.name);
       setGate(gate);
       setPlot(getPlot(event.plotID));
@@ -62,13 +64,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
-    let plotsRerenderQueueItem: PlotsRerender = {
-      id: "",
-      used: false,
-      type: "plotsRerender",
-      plotIDs: [plot.id],
-    };
-    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    // let plotsRerenderQueueItem: PlotsRerender = {
+    //   id: "",
+    //   used: false,
+    //   type: "plotsRerender",
+    //   plotIDs: [plot.id],
+    // };
+    // EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
@@ -121,6 +123,8 @@ export default function GateNamePrompt() {
       onKeyDown={(e: any) => {
         if (e.code === "Enter") {
           renameGate(name);
+          WorkspaceDispatch.ClearOpenFiles();
+          setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
         }
       }}
     >
@@ -160,6 +164,7 @@ export default function GateNamePrompt() {
                 setPlot((prev: Plot) => {
                   return { ...prev, plotWidth: prev.plotWidth - 1 };
                 });
+                setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
                 setNewGateCreated(true);
               }
             }}

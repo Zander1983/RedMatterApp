@@ -377,7 +377,7 @@ const AddFileModal = React.memo(
 
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
-                              }, 400);
+                              }, 10);
                             }}
                           >
                             {isDownloading ? (
@@ -428,7 +428,7 @@ const AddFileModal = React.memo(
 
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
-                              }, 400);
+                              }, 10);
                             }}
                             disabled={isDownloading}
                           >

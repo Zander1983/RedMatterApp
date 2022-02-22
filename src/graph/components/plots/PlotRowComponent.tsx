@@ -1,60 +1,56 @@
 import React, { useEffect } from "react";
 import {
-  File,
-  Plot,
-  PlotID,
-  Population,
-  Workspace,
-  PlotsRerender,
+    File,
+    Plot,
+    Population,
+    PlotsRerender
 } from "../../resources/types";
 
 import { getFile } from "../../utils/workspace";
-//@ts-ignore
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
 import PlotStateComponent from "./PlotStateComponent";
 import PlotDataComponent from "./PlotDataComponent";
-
+import { deletePlotAndPopulationOfFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
-import { deletePlotAndPopulationOfFile } from "./MainBar";
+import { useSelector } from "react-redux";
+import { getWorkspace } from "graph/utils/workspace";
 
-interface PlotsAndFiles {
-  plot: Plot;
-  file: File;
-}
+// interface PlotsAndFiles {
+//   plot: Plot;
+//   file: File;
+// }
 
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspace: Workspace;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   file: File;
-  headers: string[];
-  openFiles: string[];
-  setOpenFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const PlotRowComponent = ({
-  workspace,
   sharedWorkspace,
-  customPlotRerender,
+  // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
-  headers,
-  openFiles,
-  setOpenFiles,
 }: Props) => {
-  const generatePlots = (file: File) => {
-    if (file.view && file.id !== workspace.selectedFile) {
-      file.view = !file.view;
-      WorkspaceDispatch.UpdateFile(file);
-      return;
-    }
 
+  //@ts-ignore
+  const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
+  const [isOpen, setIsopen] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (clearOpenFiles && isOpen) {
+      setIsopen(false);
+    }
+  }, [clearOpenFiles]);
+
+  const generatePlots = (file: File) => {
+    const workspace = getWorkspace();
     const newPlots: Plot[] = [];
     let populations: Population[] = [];
     populations = workspace.populations.filter(
@@ -104,75 +100,71 @@ const PlotRowComponent = ({
       }
       WorkspaceDispatch.AddPlotsAndPopulations(newPlots, newPopulations);
     }
-
-    file.view = file.id !== workspace.selectedFile ? !file.view : true;
-    WorkspaceDispatch.UpdateFile(file);
   };
 
-  const updatePlot = () => {
-    const plots: Plot[] = [];
-    getTableRowPlots(file).map(({ plot }) => {
-      if (plot.plotWidth !== 319 || plot.plotHeight !== 204) {
-        plot.plotHeight = 204;
-        plot.plotWidth = 319;
-        plots.push(plot);
-      }
-    });
-    if (plots.length > 0) {
-      WorkspaceDispatch.UpdatePlots(plots);
-    } else {
-      const plotsRerenderQueueItem: PlotsRerender = {
-        id: "",
-        used: false,
-        type: "plotsRerender",
-        plotIDs: getTableRowPlots(file).map(({ plot }) => plot.id),
-      };
-      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-    }
-  };
+  // const updatePlot = () => {
+  // const plots: Plot[] = [];
+  // getTableRowPlots(file).map(({ plot }) => {
+  //   if (plot.plotWidth !== 319 || plot.plotHeight !== 204) {
+  //     plot.plotHeight = 204;
+  //     plot.plotWidth = 319;
+  //     plots.push(plot);
+  //   }
+  // });
+  // if (plots.length > 0) {
+  //   WorkspaceDispatch.UpdatePlots(plots);
+  // } else {
+  //   const plotsRerenderQueueItem: PlotsRerender = {
+  //     id: "",
+  //     used: false,
+  //     type: "plotsRerender",
+  //     plotIDs: getTableRowPlots(file).map(({ plot }) => plot.id),
+  //   };
+  //   EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+  // }
+  // };
 
-  const getTableRowPlots = (file: File) => {
-    if (file !== null) {
-      let plots: PlotsAndFiles[] = [];
-      let populations: Population[] = [];
-      populations = workspace.populations.filter(
-        (population) => population.file === file.id
-      );
+  // const getTableRowPlots = (file: File) => {
+  //   if (file !== null) {
+  //     const workspace = getWorkspace();
+  //     let plots: PlotsAndFiles[] = [];
+  //     let populations: Population[] = [];
+  //     populations = workspace.populations.filter(
+  //       (population) => population.file === file.id
+  //     );
 
-      workspace.plots.map((plot) => {
-        populations.map((population) => {
-          if (population.id === plot.population) {
-            plots.push({ plot, file: getFile(population.file) });
-          }
-        });
-      });
-      return plots;
-    }
-  };
+  //     workspace.plots.map((plot) => {
+  //       populations.map((population) => {
+  //         if (population.id === plot.population) {
+  //           plots.push({ plot, file: getFile(population.file) });
+  //         }
+  //       });
+  //     });
+  //     return plots;
+  //   }
+  // };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
-      updatePlot();
+    if (file.id === getWorkspace().selectedFile) {
+      // updatePlot();
       generatePlots(file);
     }
   }, []);
 
   const onClick = () => {
-    if (file.id !== workspace.selectedFile) {
-      if (openFiles.includes(file.id)) {
-        setOpenFiles((prev) => prev.filter((id) => id !== file.id));
-        deletePlotAndPopulationOfFile(file.id);
-        setTimeout(() => {
-          generatePlots(file);
-        }, 0);
-      } else if (!file.view) {
-        setOpenFiles((prev) => [...prev, file.id]);
+    if (file.id !== getWorkspace().selectedFile) {
+      if (isOpen) {
+        // deletePlotAndPopulationOfFile(file.id);
+      } else {
         // taking care of plots showing up from saved workspace
-        updatePlot();
+        // updatePlot();
+        // WorkspaceDispatch.ChangeUpdateType("");
+        // WorkspaceDispatch.ChangeUpdateType(`ROW_OPEN---${file.id}`);
         setTimeout(() => {
           generatePlots(file);
         }, 0);
       }
+      setIsopen((prev) => !prev);
     }
   };
 
@@ -181,27 +173,19 @@ const PlotRowComponent = ({
       <PlotDataComponent
         sharedWorkspace={sharedWorkspace}
         experimentId={experimentId}
-        workspace={workspace}
         workspaceLoading={workspaceLoading}
-        customPlotRerender={customPlotRerender}
+        // customPlotRerender={customPlotRerender}
         file={file}
-        headers={headers}
-        openFiles={openFiles}
         onRowClick={onClick}
+        isOpen={isOpen}
       />
     );
   };
-
+  // console.log("==TableRow===");
   return (
     <>
-      <PlotStateComponent
-        workspace={workspace}
-        file={file}
-        headers={headers}
-        openFiles={openFiles}
-        onRowClick={onClick}
-      />
-      {openFiles.includes(file.id) && plotData()}
+      <PlotStateComponent file={file} onRowClick={onClick} isOpen={isOpen} />
+      {(isOpen || file.id === getWorkspace().selectedFile) && plotData()}
     </>
   );
 };

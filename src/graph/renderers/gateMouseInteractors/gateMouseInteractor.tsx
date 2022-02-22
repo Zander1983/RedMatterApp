@@ -2,13 +2,13 @@ import GatePlotterPlugin from "graph/renderers/plotters/runtimePlugins/gatePlott
 import { Gate, Point, WorkspaceEventGateNaming } from "graph/resources/types";
 import ScatterPlotter from "../plotters/scatterPlotter";
 import * as PlotResource from "graph/resources/plots";
-import { store } from "redux/store";
 import HistogramPlotter from "../plotters/histogramPlotter";
 import { createPopulation } from "graph/resources/populations";
-import { getGate, getPopulation } from "graph/utils/workspace";
+import { getPopulation, getWorkspace } from "graph/utils/workspace";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
-import { applyGateToAllFiles } from "graph/components/static/menus/GateMenu";
+import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
+
 export interface GateState {
   lastMousePos: Point;
 }
@@ -178,7 +178,15 @@ export default abstract class GateMouseInteractor {
     const foundTarget = this.targetEditGate !== null;
     this.lastMousePos = this.plugin.lastMousePos = mouse;
     if (type === "mousedown" && foundTarget && withinDoubleClickBounds) {
-      this.clonePlotWithSelectedGate(this.targetEditGate);
+      if (
+        getPopulation(this.plotter.plot.population).file ===
+        getWorkspace().selectedFile
+      ) {
+        WorkspaceDispatch.ClearOpenFiles();
+        deleteAllPlotsAndPopulationOfNonControlFile();
+        this.clonePlotWithSelectedGate(this.targetEditGate);
+        setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
+      }
     } else if (
       !foundTarget &&
       type === "mousedown" &&
@@ -238,25 +246,26 @@ export default abstract class GateMouseInteractor {
   }
 
   protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
+    // if (fromTimout) this.currentInterval = null;
+    // if (
+    //   this.lastGateUpdate.getTime() + this.updateInterval >
+    //   new Date().getTime()
+    // ) {
+    //   if (this.currentInterval === null) {
+    //     const waitUntilCurrentCycleTimesOut =
+    //       this.lastGateUpdate.getTime() +
+    //       this.updateInterval -
+    //       new Date().getTime() +
+    //       1;
+    //     this.currentInterval = setTimeout(
+    //       () => this.gateUpdater(this.latest, true),
+    //       waitUntilCurrentCycleTimesOut
+    //     );
+    //   } else {
+    //     this.latest = gate;
+    //   }
+    // }
+    if (gate !== null) {
       this.rerender();
       this.updateGate = gate;
       this.lastGateUpdate = new Date();

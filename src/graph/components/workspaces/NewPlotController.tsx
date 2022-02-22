@@ -179,9 +179,9 @@ export const standardGridPlotItem = (
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspace: Workspace;
+  // workspace: Workspace;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
 }
@@ -203,7 +203,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (nextProps.workspace.plots.length > this.props.workspace.plots.length) {
+    if (getWorkspace().plots.length > getWorkspace().plots.length) {
       setTimeout(() => setCanvasSize(true), 50);
     }
     // this.setState(nextProps);
@@ -230,14 +230,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   getArrowArray = () => {
     let arr: any[] = [];
-    let plots = this.props.workspace.plots;
+    let workspace = getWorkspace();
+    let plots = workspace.plots;
     for (let i = 0; i < plots.length; i++) {
       let plot = plots[i];
       let populationId = plot.population;
-      let childPopulationIds = this.props.workspace.populations
+      let childPopulationIds = workspace.populations
         .filter((x) => x.parentPopulationId == populationId)
         .map((x) => x.id);
-      let childPlots = this.props.workspace.plots.filter((x) =>
+      let childPlots = workspace.plots.filter((x) =>
         childPopulationIds.includes(x.population)
       );
 
@@ -255,30 +256,31 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   renderTable = () => {
     if (
-      this.props.workspace.selectedFile &&
-      this.props.workspace?.files[0]?.downloaded &&
+      getWorkspace().selectedFile &&
+      getWorkspace().plots.length > 0 &&
+      getWorkspace()?.files[0]?.downloaded &&
       this.state.sortBy === "file" &&
       this.state.isTableRenderCall
     ) {
       return (
         <PlotTableComponent
-          workspace={this.props.workspace}
+          // workspace={getWorkspace()}
           sharedWorkspace={this.props.sharedWorkspace}
           experimentId={this.props.experimentId}
           workspaceLoading={this.props.workspaceLoading}
-          customPlotRerender={this.props.customPlotRerender}
+          // customPlotRerender={this.props.customPlotRerender}
         />
       );
     } else return null;
   };
 
   render() {
-    if (this.props.workspace.plots.length > 0) {
-      const plotGroups = getPlotGroups(this.props.workspace.plots);
+    if (getWorkspace().plots.length > 0) {
+      // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
         <div>
           <Xwrapper>
-            {this.props.workspace.editWorkspace ? (
+            {getWorkspace().editWorkspace ? (
               <div
                 style={{
                   position: "fixed",
@@ -340,19 +342,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 <span>Wait Loading...</span>
               </Grid>
             ) : (
-              this.renderTable()
+              getWorkspace().selectedFile !== "" && this.renderTable()
             )}
-            {this.state.isTableRenderCall &&
-              this.getArrowArray().map((obj, i) => {
-                return (
-                  <Xarrow
-                    key={i}
-                    start={obj.start}
-                    end={obj.end}
-                    path={"straight"}
-                  />
-                );
-              })}
+            {/*{this.state.isTableRenderCall &&*/}
+            {/*  this.getArrowArray().map((obj, i) => {*/}
+            {/*    return (*/}
+            {/*      <Xarrow*/}
+            {/*        key={i}*/}
+            {/*        start={obj.start}*/}
+            {/*        end={obj.end}*/}
+            {/*        path={"straight"}*/}
+            {/*      />*/}
+            {/*    );*/}
+            {/*  })}*/}
           </Xwrapper>
         </div>
       );

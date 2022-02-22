@@ -181,6 +181,13 @@ const WorkspaceDispatch = {
       payload: {},
     });
   },
+  ChangeUpdateType: (type: string) => {
+    console.log(type);
+    return store.dispatch({
+      type: graphActions.UPDATE_TYPE,
+      payload: { type },
+    });
+  },
 };
 
 export default WorkspaceDispatch;

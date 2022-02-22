@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { File, Workspace } from "../../resources/types";
+import {
+  File,
+  Workspace as WorkspaceType,
+  Workspace,
+} from "../../resources/types";
 
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell/TableCell";
 import { makeStyles } from "@material-ui/core";
 import PlotStats from "graph/utils/stats";
+import { useSelector } from "react-redux";
+import { getWorkspace } from "graph/utils/workspace";
 const statsProvider = new PlotStats();
 
 const useStyles = makeStyles((theme) => ({
@@ -82,21 +88,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  workspace: Workspace;
   onRowClick: Function;
   file: File;
-  headers: string[];
-  openFiles: string[];
+  isOpen: boolean;
 }
 
-const PlotStateComponent = ({
-  workspace,
-  file,
-  headers,
-  openFiles,
-  onRowClick,
-}: Props) => {
+const PlotStateComponent = ({ file, onRowClick, isOpen }: Props) => {
   const classes = useStyles();
+
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
 
   const [data, setData] = useState([]);
 
@@ -153,12 +154,12 @@ const PlotStateComponent = ({
     updateStats();
   }, [workspace]);
 
+  // console.log("== Plot state ==", file.name);
   const renderStateRow = () => {
     return (
       <TableRow>
-        {headers &&
-          data !== undefined &&
-          headers.length > 1 &&
+        {data !== undefined &&
+          // headers.length > 1 &&
           data.length > 0 &&
           data?.map((value: any, i: any) =>
             i === 0 ? (
@@ -166,7 +167,7 @@ const PlotStateComponent = ({
                 className={`${classes.tableCell}`}
                 key={"content-" + value + i}
               >
-                {workspace.files?.find((f) => f.id === value)?.name}
+                {file?.name}
               </TableCell>
             ) : i !== data.length - 1 ? (
               <TableCell
@@ -199,7 +200,7 @@ const PlotStateComponent = ({
                 >
                   {file.id === workspace.selectedFile
                     ? "Selected File"
-                    : openFiles.includes(file.id)
+                    : isOpen
                     ? "Close"
                     : "View Plots"}
                 </button>
@@ -210,7 +211,7 @@ const PlotStateComponent = ({
     );
   };
 
-  return renderStateRow();
+  return workspace.plots.length > 0 && renderStateRow();
 };
 
 export default PlotStateComponent;

@@ -60,9 +60,7 @@ const Experiment = (props: any) => {
   const [reportStatus, setReportStatus] = useState(false);
 
   const [experimentSize, setExperimentSize] = useState(0);
-  const maxExperimentSize = parseInt(
-    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
-  );
+  const maxExperimentSize = parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES);
   const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
 
   const { classes } = props;
@@ -79,10 +77,7 @@ const Experiment = (props: any) => {
 
   const allowedInThisExperiment = userManager.canAccessExperiment(props.id);
   if (!allowedInThisExperiment) {
-    snackbarService.showSnackbar(
-      "You are not allowed in this experiment",
-      "warning"
-    );
+    snackbarService.showSnackbar("You are not allowed in this experiment", "warning");
     history.replace("/experiments");
   }
 
@@ -598,7 +593,6 @@ const Experiment = (props: any) => {
 
   return (
     <>
-      {}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{
@@ -622,8 +616,7 @@ const Experiment = (props: any) => {
           marginRight: "auto",
           padding: "0 4em",
         }}
-        container
-      >
+        container>
         <Grid
           style={{
             backgroundColor: "#fafafa",
@@ -632,8 +625,7 @@ const Experiment = (props: any) => {
             marginRight: 40,
             boxShadow: "2px 3px 3px #ddd",
             width: "75%",
-          }}
-        >
+          }}>
           <Grid style={{ borderRadius: 5 }}>
             <Grid
               container
@@ -644,8 +636,7 @@ const Experiment = (props: any) => {
                 padding: 20,
                 display: "flex",
                 justifyContent: "space-between",
-              }}
-            >
+              }}>
               <Button
                 variant="contained"
                 style={{
@@ -660,8 +651,7 @@ const Experiment = (props: any) => {
                   } else {
                     history.push("/browse-experiments");
                   }
-                }}
-              >
+                }}>
                 Back
               </Button>
               <div>
@@ -699,8 +689,7 @@ const Experiment = (props: any) => {
                     {props.poke === true ? null : (
                       <Button
                         style={{ fontSize: 20, marginLeft: 20 }}
-                        onClick={() => setEditingName(!editingName)}
-                      >
+                        onClick={() => setEditingName(!editingName)}>
                         <EditOutlined
                           style={{
                             color: "white",
@@ -726,12 +715,21 @@ const Experiment = (props: any) => {
                     onClick={() => {
                         if (props.poke === false) {
                             history.push("/workspace/" + props.id + "/plots");
+                            // var w =1000;
+                            // var h = 100;
+                            // var left = (window.screen.width - w) + 1350;
+                            // var top = (window.screen.height - h) / 10;
+                            // var workSpaceWindow = window.open("/workspace/" + props.id + "/plots", props.id,'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', left=' + left +', top=' + top);
+                            // if(workSpaceWindow){
+                            //     workSpaceWindow.oncontextmenu = function (event:any) {
+                            //         return false;
+                            //     }
+                            // }
                         } else {
                             history.push("/workspace/" + props.id + "/plots/poke");
                         }
                     }}
-                    endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
-                >
+                    endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>
                     New Workspace
                 </Button>
                 <Button
@@ -749,8 +747,7 @@ const Experiment = (props: any) => {
                     history.push("/experiment/" + props.id + "/plots/poke");
                   }
                 }}
-                endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
-              >
+                endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>
                 Workspace
               </Button>
             </Grid>
@@ -778,8 +775,7 @@ const Experiment = (props: any) => {
               onDragLeave={(e) => {
                 e.preventDefault();
                 setOnDropZone(false);
-              }}
-            >
+              }}>
               <Grid style={{ textAlign: "center" }}>
                 File size limit: <b>{maxFileSize / 1e6}MB</b>
                 <br />
@@ -792,8 +788,7 @@ const Experiment = (props: any) => {
                   height: 22,
                   borderRadius: 10,
                   marginBottom: 10,
-                }}
-              >
+                }}>
                 <Grid
                   style={{
                     backgroundColor:
@@ -811,8 +806,7 @@ const Experiment = (props: any) => {
                     borderRadius: 10,
                     textAlign: "center",
                     color: "white",
-                  }}
-                >
+                  }}>
                   {experimentSize > 0.1 * maxExperimentSize
                     ? (experimentSize / 1e6).toFixed(2) + "MB"
                     : ""}
@@ -830,8 +824,7 @@ const Experiment = (props: any) => {
                     direction="row"
                     style={{
                       justifyContent: "space-between",
-                    }}
-                  >
+                    }}>
                     <div style={{ textAlign: "left" }}>
                       <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
                         Experiment Files

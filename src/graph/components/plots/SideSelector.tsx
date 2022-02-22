@@ -122,20 +122,20 @@ function PlotComponent(props: {
     setCurrentYIndex(axes.findIndex((ele) => ele === plot.yAxis));
   }, [plot.yAxis]);
 
-  useEffect(() => {
-    const workspace = getWorkspace();
-    if (workspace) {
-      if (typeof workspace.files[0]?.downloaded !== "undefined") {
-        const plotsRerenderQueueItem: PlotsRerender = {
-          id: "",
-          used: false,
-          type: "plotsRerender",
-          plotIDs: workspace.plots.map((plot) => plot.id),
-        };
-        EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-      }
-    }
-  }, [labels]);
+  // useEffect(() => {
+  //   const workspace = getWorkspace();
+  //   if (workspace) {
+  //     // if (typeof workspace.files[0]?.downloaded !== "undefined") {
+  //     //   const plotsRerenderQueueItem: PlotsRerender = {
+  //     //     id: "",
+  //     //     used: false,
+  //     //     type: "plotsRerender",
+  //     //     plotIDs: workspace.plots.map((plot) => plot.id),
+  //     //   };
+  //     //   EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+  //     // }
+  //   }
+  // }, [labels]);
 
   const isHistogramSelected = (
     plotId: string = "",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, FormControlLabel } from "@material-ui/core";
@@ -7,7 +7,6 @@ import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-
 import userManager from "Components/users/userManager";
 import { saveWorkspaceToRemote } from "../utils/workspace";
 import { Typography } from "antd";
@@ -16,16 +15,18 @@ import IOSSwitch from "../../Components/common/Switch";
 import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
-import { Workspace } from "../resources/types";
 import axios from "axios";
 import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
 import GateNamePrompt from "./modals/GateNamePrompt";
+import { getWorkspace } from "graph/utils/workspace";
+import { useSelector } from "react-redux";
+import useDidMount from "hooks/useDidMount";
+
 const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: "center",
   },
-  title: {},
   fileSelectModal: {
     backgroundColor: "#efefef",
     boxShadow: theme.shadows[6],
@@ -79,20 +80,24 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  workspace: Workspace;
   experimentId: string;
   sharedWorkspace: boolean;
-  // shared: boolean;
   plotCallNeeded: boolean;
+  renderPlotController: boolean;
+  setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
+  setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const WorkspaceTopBarComponent = ({
   sharedWorkspace,
   experimentId,
-  workspace,
   plotCallNeeded,
+  renderPlotController,
+  setRenderPlotController,
+  setPlotCallNeeded,
 }: Props) => {
   const classes = useStyles();
   const history = useHistory();
+  const workspace = getWorkspace();
   const isLoggedIn = userManager.isLoggedIn();
   const [lastSavedTime, setLastSavedTime] = React.useState(null);
   const [savingWorkspace, setSavingWorkspace] = React.useState(false);
@@ -101,6 +106,16 @@ const WorkspaceTopBarComponent = ({
   const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const didMount = useDidMount();
+
+  //@ts-ignore
+  const plotLength = useSelector((state) => state.workspace.plots.length);
+
+  useEffect(() => {
+    if (didMount && plotLength === 0) {
+      setRenderPlotController(true);
+    }
+  }, [plotLength]);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -110,11 +125,25 @@ const WorkspaceTopBarComponent = ({
     func(false);
   };
 
+  const handleCloseAndMakePlotControllerTrue = (func: Function) => {
+    if (!renderPlotController) {
+      setRenderPlotController(true);
+    }
+    if (renderPlotController) {
+      setPlotCallNeeded(true);
+    }
+    func(false);
+  };
+
+  const handleCloseClearWorkspace = (func: Function) => {
+    func(false);
+  };
+
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
-      await saveWorkspaceToRemote(workspace, shared, experimentId);
+      await saveWorkspaceToRemote(shared, experimentId);
     } catch (err) {
       await handleError(err);
     }
@@ -190,6 +219,7 @@ const WorkspaceTopBarComponent = ({
   };
 
   const _renderToolbar = () => {
+    // console.log("==== render toolbar =====");
     return (
       <Grid
         style={{
@@ -203,8 +233,7 @@ const WorkspaceTopBarComponent = ({
           WebkitBorderBottomRightRadius: 0,
           minHeight: "43px",
         }}
-        container
-      >
+        container>
         <Grid container>
           {workspace.editWorkspace ? (
             <span
@@ -217,7 +246,7 @@ const WorkspaceTopBarComponent = ({
             >
               <div>
                 <Button
-                  disabled={!plotCallNeeded}
+                  disabled={!plotCallNeeded && !renderPlotController}
                   size="small"
                   variant="contained"
                   style={{
@@ -240,12 +269,12 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                   }}
-                  disabled={!!workspace.selectedFile || !plotCallNeeded}
+                  disabled={!!workspace.selectedFile}
                 >
                   Plot sample
                 </Button>
                 <Button
-                  disabled={!plotCallNeeded}
+                  disabled={!plotCallNeeded && !renderPlotController}
                   variant="contained"
                   size="small"
                   onClick={() => handleOpen(setClearModal)}
@@ -258,7 +287,7 @@ const WorkspaceTopBarComponent = ({
                 </Button>
                 <span>
                   <Button
-                    disabled={!plotCallNeeded}
+                    disabled={!plotCallNeeded && !renderPlotController}
                     variant="contained"
                     size="small"
                     onClick={() => saveWorkspace()}
@@ -268,28 +297,37 @@ const WorkspaceTopBarComponent = ({
                       width: 137,
                     }}
                   >
-                    {savingWorkspace && plotCallNeeded ? (
+                    {savingWorkspace ? (
                       <CircularProgress style={{ width: 20, height: 20 }} />
                     ) : (
-                      <Typography>Save Workspace</Typography>
+                      <Typography
+                        style={{
+                          color:
+                            !plotCallNeeded && !renderPlotController
+                              ? "rgba(0, 0, 0, 0.26)"
+                              : "black",
+                        }}
+                      >
+                        Save Workspace
+                      </Typography>
                     )}
                   </Button>
-                  <FormControlLabel
-                    style={{
-                      marginLeft: 0,
-                      height: 20,
-                      marginTop: 4,
-                      color: "#333",
-                    }}
-                    label={"Autosave"}
-                    control={
-                      <IOSSwitch
-                        disabled={!plotCallNeeded}
-                        checked={autoSaveEnabled}
-                        onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}
-                      />
-                    }
-                  />
+                  {/*<FormControlLabel*/}
+                  {/*  style={{*/}
+                  {/*    marginLeft: 0,*/}
+                  {/*    height: 20,*/}
+                  {/*    marginTop: 4,*/}
+                  {/*    color: "#333",*/}
+                  {/*  }}*/}
+                  {/*  label={"Autosave"}*/}
+                  {/*  control={*/}
+                  {/*    <IOSSwitch*/}
+                  {/*      disabled={!plotCallNeeded && !renderPlotController}*/}
+                  {/*      checked={autoSaveEnabled}*/}
+                  {/*      onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}*/}
+                  {/*    />*/}
+                  {/*  }*/}
+                  {/*/>*/}
                 </span>
                 {lastSavedTime ? (
                   <span
@@ -340,53 +378,72 @@ const WorkspaceTopBarComponent = ({
     }
   }
 
-  return (
-    <>
-      <GateNamePrompt />
-      {/* == MODALS == */}
-      {workspace.files.length > 0 && (
-        <AddFileModal
-          open={addFileModalOpen}
-          closeCall={{ f: handleClose, ref: setAddFileModalOpen }}
-          isShared={sharedWorkspace}
-          experimentId={experimentId}
-          files={workspace.files}
-          selectedFile={workspace.selectedFile}
+  const renderModal = () => {
+    return (
+      <>
+        <GateNamePrompt />
+        {workspace.files.length > 0 && (
+          <AddFileModal
+            open={addFileModalOpen}
+            closeCall={{
+              f: handleCloseAndMakePlotControllerTrue,
+              ref: setAddFileModalOpen,
+            }}
+            isShared={sharedWorkspace}
+            experimentId={experimentId}
+            files={getWorkspace().files}
+            selectedFile={getWorkspace().selectedFile}
+          />
+        )}
+        <MessageModal
+          open={clearModal}
+          closeCall={{
+            f: handleCloseClearWorkspace,
+            ref: setClearModal,
+          }}
+          message={
+            <div>
+              <h2>Are you sure you want to delete the entire workspace?</h2>
+              <p style={{ marginLeft: 100, marginRight: 100 }}>
+                The links you've shared with "share workspace" will still work,
+                if you want to access this in the future, make sure to store
+                them.
+              </p>
+            </div>
+          }
+          options={{
+            yes: () => {
+              WorkspaceDispatch.ResetWorkspaceExceptFiles();
+              setRenderPlotController(true);
+              setPlotCallNeeded(false);
+            },
+            no: () => {
+              handleClose(setClearModal);
+            },
+          }}
         />
-      )}
-      <MessageModal
-        open={clearModal}
-        closeCall={{
-          f: handleClose,
-          ref: setClearModal,
-        }}
-        message={
-          <div>
-            <h2>Are you sure you want to delete the entire workspace?</h2>
-            <p style={{ marginLeft: 100, marginRight: 100 }}>
-              The links you've shared with "share workspace" will still work, if
-              you want to access this in the future, make sure to store them.
-            </p>
-          </div>
-        }
-        options={{
-          yes: () => {
-            WorkspaceDispatch.ResetWorkspaceExceptFiles();
-          },
-          no: () => {
-            handleClose(setClearModal);
-          },
-        }}
-      />
 
-      <LinkShareModal
-        open={linkShareModalOpen}
-        workspaceId={newWorkspaceId}
-        closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-      />
-      {/* == MAIN PANEL == */}
-      {_renderToolbar()}
-    </>
-  );
+        <LinkShareModal
+          open={linkShareModalOpen}
+          workspaceId={newWorkspaceId}
+          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
+        />
+      </>
+    );
+  };
+
+  const renderToolBarUI = () => {
+    return (
+      <>
+        {/* == MODALS == */}
+        {renderModal()}
+        {/* == MAIN PANEL == */}
+        {_renderToolbar()}
+      </>
+    );
+  };
+
+  return renderToolBarUI();
 };
+
 export default WorkspaceTopBarComponent;

@@ -4,12 +4,11 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import { useEffect, useMemo, useState } from "react";
+import { useLayoutEffect } from "react";
+import { useSelector } from "react-redux";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-
-import { Workspace, File } from "graph/resources/types";
-import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
+import { File } from "graph/resources/types";
 
 import PlotHeadComponent from "./PlotHeadComponent";
 import PlotRowComponent from "./PlotRowComponent";
@@ -197,7 +196,6 @@ const sortByColumn = (colIndex: number, type: string) => {
 
 const deleteColumn = (index: number) => {
   const workspace = getWorkspace();
-  deleteAllPlotsAndPopulationOfNonControlFile();
   workspace.populations.map((pop) => {
     if (pop.gates && pop.gates.length > 0) {
       if (pop.gates[0].gate === workspace.gates[index].id) {
@@ -276,81 +274,51 @@ const deleteChildGate = (children: string[]) => {
 };
 
 interface TableProps {
-  workspace: Workspace;
   sharedWorkspace: boolean;
   experimentId: string;
   workspaceLoading: boolean;
-  customPlotRerender: string[];
-  // arrowFunc: Function;
+  // customPlotRerender: string[];
 }
 
 const PlotTableComponent = ({
-  workspace,
   sharedWorkspace,
   experimentId,
   workspaceLoading,
-  customPlotRerender,
-}: TableProps) => {
+}: // customPlotRerender,
+TableProps) => {
   const classes = useStyles();
-  const [openFiles, setOpenFiles] = useState<string[]>([
-    workspace.selectedFile,
-  ]);
-  useEffect(() => {
+  //@ts-ignore
+  const files = useSelector((state) => state.workspace.files);
+  useLayoutEffect(() => {
     // making the selected file the first element of filesArray
-    if (
-      workspace.selectedFile.length > 0 &&
-      workspace.files.length > 0 &&
-      workspace.selectedFile !== workspace.files[0].id
-    ) {
-      const filesInNewOrder: File[] = [];
-      for (let i = 0; i < workspace.files.length; i++) {
-        if (workspace.files[i].id === workspace.selectedFile) {
-          filesInNewOrder.unshift(workspace.files[i]);
-        } else {
-          filesInNewOrder.push(workspace.files[i]);
-        }
+    const workspace = getWorkspace();
+    const filesInNewOrder: File[] = [];
+    for (let i = 0; i < workspace.files.length; i++) {
+      if (workspace.files[i].id === workspace.selectedFile) {
+        filesInNewOrder.unshift(workspace.files[i]);
+      } else {
+        filesInNewOrder.push(workspace.files[i]);
       }
-      WorkspaceDispatch.SetFiles(filesInNewOrder);
     }
+    WorkspaceDispatch.SetFiles(filesInNewOrder);
   }, []);
-
-  const headers = useMemo(() => {
-    return [
-      "File Name",
-      ...workspace.gates.map((gate) => gate.name),
-      "Click to View",
-    ];
-  }, [workspace.gates]);
-
-  useEffect(() => {
-    if (workspace.clearOpenFiles) {
-      setOpenFiles([workspace.selectedFile]);
-      WorkspaceDispatch.ClearOpenFiles();
-    }
-  }, [workspace]);
 
   return (
     <TableContainer component={Paper} className={classes.container}>
       <Table style={{ overflowY: "scroll" }}>
         <PlotHeadComponent
-          headers={headers}
-          setOpenFiles={setOpenFiles}
           sortByColumn={sortByColumn}
           deleteColumn={deleteColumn}
         />
         <TableBody>
-          {workspace?.files?.map((file, i) => (
+          {files?.map((file: any, i: number) => (
             <PlotRowComponent
               key={file?.id || i}
               sharedWorkspace={sharedWorkspace}
               experimentId={experimentId}
-              workspace={workspace}
               workspaceLoading={workspaceLoading}
-              customPlotRerender={customPlotRerender}
+              // customPlotRerender={customPlotRerender}
               file={file}
-              headers={headers}
-              openFiles={openFiles}
-              setOpenFiles={setOpenFiles}
             />
           ))}
         </TableBody>

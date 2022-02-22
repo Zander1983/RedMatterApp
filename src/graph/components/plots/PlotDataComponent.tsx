@@ -5,8 +5,11 @@ import {
   Plot,
   PlotID,
   PlotSpecificWorkspaceData,
+  PlotsRerender,
   Population,
+  Workspace as WorkspaceType,
   Workspace,
+  WorkspaceEvent,
 } from "../../resources/types";
 
 import TableRow from "@material-ui/core/TableRow";
@@ -14,12 +17,21 @@ import TableCell from "@material-ui/core/TableCell/TableCell";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import { standardGridPlotItem } from "../workspaces/PlotController";
 import PlotComponent from "./PlotComponent";
+// import PlotComponent from "./SinglePlotDataComponent";
 import { makeStyles } from "@material-ui/core";
-import { getFile, getGate, getPopulation } from "../../utils/workspace";
+import {
+  getFile,
+  getGate,
+  getPopulation,
+  getWorkspace,
+} from "../../utils/workspace";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
+import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
 import Grid from "@material-ui/core/Grid";
 import { Typography } from "antd";
+import { useSelector } from "react-redux";
+import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -104,32 +116,84 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  workspace: Workspace;
+  // workspace: Workspace;
   workspaceLoading: boolean;
-  customPlotRerender: PlotID[];
+  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
   file: File;
-  headers: string[];
-  openFiles: string[];
+  // headers: string[];
+  // openFiles: string[];
   onRowClick: Function;
+  isOpen: boolean;
 }
 
 const PlotDataComponent = ({
-  workspace,
+  // workspace,
   sharedWorkspace,
-  customPlotRerender,
+  // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
-  headers,
-  openFiles,
+  // headers,
+  // openFiles,
   onRowClick,
+  isOpen,
 }: Props) => {
   const classes = useStyles();
   const [loader, setLoader] = React.useState(true);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
+
+  //@ts-ignore
+  const workspace: WorkspaceType = useSelector((state) => state.workspace);
+  const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
+
+  // const [changeType, setChangeType] = React.useState(
+  //   workspace.updateType.split("---")[0] || ""
+  // );
+  // const [render, setRender] = React.useState(false);
+
+  // React.useEffect(() => {
+  //   if (changeType === "ROW_OPEN") {
+  //     workspace.updateType.split("---")[1] === file.id && setRender(true);
+  //   }
+  // }, [workspace.updateType]);
+
+  const getTableRowPlots = (file: File) => {
+    if (file !== null) {
+      let plots: PlotsAndFiles[] = [];
+      let populations: Population[] = [];
+      populations = workspace.populations.filter(
+        (population) => population.file === file.id
+      );
+
+      workspace.plots.map((plot) => {
+        populations.map((population) => {
+          if (population.id === plot.population) {
+            plots.push({ plot, file: getFile(population.file) });
+          }
+        });
+      });
+      return plots;
+    }
+  };
+
+  useSelector((e: any) => {
+    const eventQueue = e.workspaceEventQueue.queue;
+    let eventPlotsRerenderArray = eventQueue.filter(
+      (x: WorkspaceEvent) => x.type === "plotsRerender"
+    );
+    if (eventPlotsRerenderArray.length > 0) {
+      let event: PlotsRerender = eventPlotsRerenderArray[0];
+      setCustomPlotRerender(event.plotIDs);
+
+      EventQueueDispatch.DeleteQueueItem(event.id);
+      setTimeout(() => {
+        setCustomPlotRerender([]);
+      }, 0);
+    }
+  });
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
@@ -158,25 +222,6 @@ const PlotDataComponent = ({
         (population) => population.file === file.id
       );
     else return null;
-  };
-
-  const getTableRowPlots = (file: File) => {
-    if (file !== null) {
-      let plots: PlotsAndFiles[] = [];
-      let populations: Population[] = [];
-      populations = workspace.populations.filter(
-        (population) => population.file === file.id
-      );
-
-      workspace.plots.map((plot) => {
-        populations.map((population) => {
-          if (population.id === plot.population) {
-            plots.push({ plot, file: getFile(population.file) });
-          }
-        });
-      });
-      return plots;
-    }
   };
 
   const getPlotRelevantResources = (plot: Plot) => {
@@ -217,7 +262,7 @@ const PlotDataComponent = ({
   const _renderPageMessage = () => {
     return (
       <TableCell
-        colSpan={headers.length}
+        colSpan={workspace.gates.length + 2}
         className={classes.loaderContainerStyle}
       >
         {isError && message && (
@@ -237,7 +282,7 @@ const PlotDataComponent = ({
       <>
         {loader && file.id !== workspace.selectedFile ? (
           <TableCell
-            colSpan={headers.length}
+            colSpan={workspace.gates.length + 2}
             className={classes.loaderContainerStyle}
           >
             <CircularProgress
@@ -250,16 +295,17 @@ const PlotDataComponent = ({
             className={
               file.id === workspace.selectedFile
                 ? classes.show
-                : openFiles.includes(file.id)
+                : isOpen
                 ? classes.show
                 : classes.hide
             }
           >
-            <TableCell colSpan={headers.length}>
+            <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
                 style={{
-                  opacity: file.view ? 1 : 0,
+                  opacity:
+                    file.id === workspace.selectedFile ? 1 : isOpen ? 1 : 0,
                   transition: `all ${
                     workspace.files.length < 30
                       ? 1
@@ -307,6 +353,8 @@ const PlotDataComponent = ({
                                   customPlotRerender={customPlotRerender}
                                   experimentId={experimentId}
                                   fileName={file.name}
+                                  // plot={plot}
+                                  //plotId={plot.id}
                                 />
                               </div>
                             </div>
@@ -325,8 +373,10 @@ const PlotDataComponent = ({
       </>
     );
   };
-
-  return openFiles.includes(file.id) && renderUI();
+  return (
+    // (isOpen || file.id === getWorkspace().selectedFile) &&
+    getTableRowPlots(file).length > 0 && renderUI()
+  );
 };
 
 export default PlotDataComponent;
