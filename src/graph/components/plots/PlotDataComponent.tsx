@@ -29,7 +29,8 @@ import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 import Xarrow, { useXarrow }  from "react-xarrows";
 
-import {MINH, MINW} from "../workspaces/PlotController";
+export const MINW = 9;
+export const MINH = 10;
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -204,7 +205,6 @@ const PlotDataComponent = ({
       EventQueueDispatch.DeleteQueueItem(event.id);
       setTimeout(() => {
         setCustomPlotRerender([]);
-        //setLoader(false);
       }, 0);
     }
   });
@@ -232,7 +232,6 @@ const PlotDataComponent = ({
       setTimeout(() => {
         setLoader(false);
         setRenderArrow(true);
-        updateArrows();
         updateXarrow();
       }, 1000);
     }
@@ -281,15 +280,6 @@ const PlotDataComponent = ({
     });
   };
 
-  // if (isOpen && !renderArrow) {
-  //     if (updateTimeout) {
-  //       clearTimeout(updateTimeout);
-  //     }
-  //     updateTimeout = setTimeout(() => {
-  //       updateXarrow();
-  //     }, 1000);
-  // }
-
   const _renderPageMessage = () => {
     return (
       <TableCell
@@ -309,14 +299,15 @@ const PlotDataComponent = ({
   };
 
   const updateArrows = () => {
-    if (!workspaceLoading) {
+    if (!loader && isOpen) {
       if (updateTimeout) {
         clearTimeout(updateTimeout);
       }
       updateTimeout = setTimeout(() => {
+        setLoader(false);
+        setRenderArrow(true);
         updateXarrow();
-        //setRenderArrow(true);
-      }, 1000);
+      }, 100);
     }
   };
 
@@ -456,6 +447,9 @@ const PlotDataComponent = ({
                   rows={{ lg: 30 }}
                   rowHeight={30}
                   compactType={null}
+                  //onLayoutChange={(layout: any) => {
+                  //   updateArrows();
+                  // }}
                   isDraggable={workspace.editWorkspace}
                   onDragStop={() => {
                     updateArrows();
