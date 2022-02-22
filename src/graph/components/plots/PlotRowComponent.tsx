@@ -13,6 +13,8 @@ import PlotDataComponent from "./PlotDataComponent";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
+import {useXarrow, Xwrapper} from "react-xarrows";
+import TableBody from "@material-ui/core/TableBody";
 
 // interface PlotsAndFiles {
 //   plot: Plot;
@@ -27,7 +29,7 @@ interface Props {
   plotMoving?: boolean;
   file: File;
 }
-
+let updateTimeout: any = null;
 const PlotRowComponent = ({
   sharedWorkspace,
   // customPlotRerender,
@@ -35,7 +37,7 @@ const PlotRowComponent = ({
   workspaceLoading,
   file,
 }: Props) => {
-
+  const updateXarrow = useXarrow();
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
@@ -45,6 +47,17 @@ const PlotRowComponent = ({
       setIsopen(false);
     }
   }, [clearOpenFiles]);
+
+  const updateArrows = () => {
+    // if (!isOpen) {
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+      updateTimeout = setTimeout(() => {
+        updateXarrow();
+      }, 1000);
+    // }
+  };
 
   const generatePlots = (file: File) => {
     const workspace = getWorkspace();
@@ -145,12 +158,14 @@ const PlotRowComponent = ({
     if (file.id === getWorkspace().selectedFile) {
       // updatePlot();
       generatePlots(file);
+      updateArrows()
     }
   }, []);
 
   const onClick = () => {
     if (file.id !== getWorkspace().selectedFile) {
       if (isOpen) {
+        updateArrows();
         // deletePlotAndPopulationOfFile(file.id);
       } else {
         // taking care of plots showing up from saved workspace
@@ -159,6 +174,7 @@ const PlotRowComponent = ({
         // WorkspaceDispatch.ChangeUpdateType(`ROW_OPEN---${file.id}`);
         setTimeout(() => {
           generatePlots(file);
+          updateArrows();
         }, 0);
       }
       setIsopen((prev) => !prev);
@@ -167,6 +183,7 @@ const PlotRowComponent = ({
 
   const plotData = () => {
     return (
+        <Xwrapper>
       <PlotDataComponent
         sharedWorkspace={sharedWorkspace}
         experimentId={experimentId}
@@ -176,6 +193,7 @@ const PlotRowComponent = ({
         onRowClick={onClick}
         isOpen={isOpen}
       />
+        </Xwrapper>
     );
   };
   // console.log("==TableRow===");

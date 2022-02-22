@@ -3,7 +3,6 @@ import React from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
 import _ from "lodash";
-
 import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
   getFile,
@@ -22,7 +21,7 @@ import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
 import * as PlotResource from "graph/resources/plots";
 import { deleteAllPlotsAndPopulationOfNonControlFile } from "graph/components/plots/MainBar";
-import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
+import {Xwrapper } from "react-xarrows";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "../plots/PlotTableComponent";
@@ -243,13 +242,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.isTableRenderCall
     ) {
       return (
-        <PlotTableComponent
-          // workspace={getWorkspace()}
-          sharedWorkspace={this.props.sharedWorkspace}
-          experimentId={this.props.experimentId}
-          workspaceLoading={this.props.workspaceLoading}
-          // customPlotRerender={this.props.customPlotRerender}
-        />
+            <PlotTableComponent
+              // workspace={getWorkspace()}
+              sharedWorkspace={this.props.sharedWorkspace}
+              experimentId={this.props.experimentId}
+              workspaceLoading={this.props.workspaceLoading}
+              // customPlotRerender={this.props.customPlotRerender}
+            />
       );
     } else return null;
   };

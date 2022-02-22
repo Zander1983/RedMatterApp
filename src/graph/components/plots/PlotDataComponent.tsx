@@ -15,7 +15,7 @@ import {
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell/TableCell";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
-import { standardGridPlotItem } from "../workspaces/PlotController";
+// import { standardGridPlotItem } from "../workspaces/PlotController";
 import PlotComponent from "./PlotComponent";
 // import PlotComponent from "./SinglePlotDataComponent";
 import { makeStyles } from "@material-ui/core";
@@ -29,6 +29,8 @@ import {
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
+import Xarrow, {useXarrow} from "react-xarrows";
+import {MINH, MINW} from "../workspaces/PlotController";
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -110,6 +112,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
+export const standardGridPlotItem = (
+    index: number,
+    plotData: any,
+    plots: Plot[],
+    editWorkspace: boolean
+) => {
+  return {
+    x: plotData.positions.x,
+    y: plotData.positions.y,
+    w: plotData.dimensions.w,
+    h: plotData.dimensions.h,
+    minW: MINW,
+    minH: MINH,
+    static: !editWorkspace,
+  };
+};
+
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
@@ -139,13 +158,14 @@ const PlotDataComponent = ({
 }: Props) => {
   const classes = useStyles();
   const [loader, setLoader] = React.useState(true);
+  const [renderArrow, setRenderArrow] = React.useState(false);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
-
+  let updateTimeout: any = null;
   // const [changeType, setChangeType] = React.useState(
   //   workspace.updateType.split("---")[0] || ""
   // );
@@ -188,6 +208,7 @@ const PlotDataComponent = ({
       EventQueueDispatch.DeleteQueueItem(event.id);
       setTimeout(() => {
         setCustomPlotRerender([]);
+        //setLoader(false);
       }, 0);
     }
   });
@@ -199,6 +220,7 @@ const PlotDataComponent = ({
           if (response?.status) {
             setLoader(false);
             setError(false);
+            setTimeout(() => setRenderArrow(true), 100);
           } else {
             setLoader(false);
             setError(true);
@@ -212,6 +234,8 @@ const PlotDataComponent = ({
         });
     }
   }, []);
+
+
 
   const isPopulationAvailForPlots = (file: File) => {
     if (file !== null)
@@ -273,6 +297,36 @@ const PlotDataComponent = ({
       </TableCell>
     );
   };
+
+
+  const getArrowArray = () => {
+    let arr: any[] = [];
+    let plots = getTableRowPlots(file);
+    for (let i = 0; i < plots.length; i++) {
+      let plot = plots[i].plot;
+      let populationId = plot.population;
+      const population = getPopulation(plot.population);
+      console.log(population);
+
+      let childPopulationIds = workspace.populations
+          .filter((x) => x.parentPopulationId == populationId)
+          .map((x) => x.id);
+
+      let childPlots = workspace.plots.filter((x) =>
+          childPopulationIds.includes(x.population)
+      );
+      let plotId = plot.id;
+
+      for (let j = 0; j < childPlots.length; j++) {
+        arr.push({
+          start: `workspace-outter-${plotId}`,
+          end: `workspace-outter-${childPlots[j].id}`,
+        });
+      }
+    }
+    return arr;
+  };
+
 
   const renderUI = () => {
     return (
@@ -363,6 +417,7 @@ const PlotDataComponent = ({
                 </ResponsiveGridLayout>
               </div>
             </TableCell>
+            {renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
           </TableRow>
         ) : (
           _renderPageMessage()
