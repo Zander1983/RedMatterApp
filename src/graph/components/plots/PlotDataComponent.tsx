@@ -3,12 +3,12 @@ import {
   File,
   Gate,
   Plot,
-  PlotID,
+  // PlotID,
   PlotSpecificWorkspaceData,
   PlotsRerender,
   Population,
   Workspace as WorkspaceType,
-  Workspace,
+  // Workspace,
   WorkspaceEvent,
 } from "../../resources/types";
 
@@ -23,13 +23,10 @@ import {
   getFile,
   getGate,
   getPopulation,
-  getWorkspace,
+  // getWorkspace,
 } from "../../utils/workspace";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
-import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
-import Grid from "@material-ui/core/Grid";
-import { Typography } from "antd";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 
