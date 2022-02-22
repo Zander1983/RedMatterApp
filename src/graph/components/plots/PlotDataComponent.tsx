@@ -27,7 +27,7 @@ import {
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
-import Xarrow, {useXarrow} from "react-xarrows";
+import Xarrow from "react-xarrows";
 import {MINH, MINW} from "../workspaces/PlotController";
 
 interface PlotsAndFiles {
@@ -227,6 +227,8 @@ const PlotDataComponent = ({
           setError(true);
           setMessage(response?.message);
         });
+    }else {
+      setTimeout(() => {setLoader(false); setRenderArrow(true)}, 1000);
     }
   }, []);
 
@@ -310,14 +312,14 @@ const PlotDataComponent = ({
           .filter((x) => x.parentPopulationId == populationId)
           .map((x) => x.id);
 
-      let childPlots = workspace.plots.filter((x) =>
-          childPopulationIds.includes(x.population)
+      let childPlots = plots.filter((x) =>
+          childPopulationIds.includes(x.plot.population)
       );
       let plotId = plot.id;
       for (let j = 0; j < childPlots.length; j++) {
         arr.push({
           start: `workspace-outter-${plotId}`,
-          end: `workspace-outter-${childPlots[j].id}`,
+          end: `workspace-outter-${childPlots[j].plot.id}`,
         });
       }
     }
@@ -437,8 +439,7 @@ const PlotDataComponent = ({
                   rowHeight={30}
                   compactType={null}
                   isDraggable={workspace.editWorkspace}
-                  isResizable={false}
-                >
+                  isResizable={false}>
                   {
                     //@ts-ignore
                     getTableRowPlots(file).map(
@@ -480,7 +481,6 @@ const PlotDataComponent = ({
                 </ResponsiveGridLayout>
               </div>
             </TableCell>
-            {renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
           </TableRow>
         ) : (
           _renderPageMessage()
@@ -491,8 +491,9 @@ const PlotDataComponent = ({
   return (
     // (isOpen || file.id === getWorkspace().selectedFile) &&
     <>
-      {noSorting && renderForNoSorting()}
+      { noSorting && renderForNoSorting()}
       {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
+      { renderArrow && !loader && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
     </>
   );
 };
