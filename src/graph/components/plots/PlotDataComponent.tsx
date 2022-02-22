@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
   File,
   Gate,
@@ -27,7 +27,8 @@ import {
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
-import Xarrow from "react-xarrows";
+import Xarrow, { useXarrow }  from "react-xarrows";
+
 import {MINH, MINW} from "../workspaces/PlotController";
 
 interface PlotsAndFiles {
@@ -149,7 +150,7 @@ const PlotDataComponent = ({
   noSorting,
 }: Props) => {
   const classes = useStyles();
-  //const updateXarrow = useXarrow();
+  const updateXarrow = useXarrow();
   const [loader, setLoader] = React.useState(true);
   const [renderArrow, setRenderArrow] = React.useState(false);
   const [isError, setError] = React.useState(false);
@@ -228,7 +229,12 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     }else {
-      setTimeout(() => {setLoader(false); setRenderArrow(true)}, 1000);
+      setTimeout(() => {
+        setLoader(false);
+        setRenderArrow(true);
+        updateArrows();
+        updateXarrow();
+      }, 1000);
     }
   }, []);
 
@@ -300,6 +306,18 @@ const PlotDataComponent = ({
         )}
       </TableCell>
     );
+  };
+
+  const updateArrows = () => {
+    if (!workspaceLoading) {
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+      updateTimeout = setTimeout(() => {
+        updateXarrow();
+        //setRenderArrow(true);
+      }, 1000);
+    }
   };
 
   const getArrowArray = () => {
@@ -439,6 +457,10 @@ const PlotDataComponent = ({
                   rowHeight={30}
                   compactType={null}
                   isDraggable={workspace.editWorkspace}
+                  onDragStop={() => {
+                    updateArrows();
+                    updateXarrow();
+                  }}
                   isResizable={false}>
                   {
                     //@ts-ignore
