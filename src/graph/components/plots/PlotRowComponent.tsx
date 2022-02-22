@@ -8,7 +8,7 @@ import PlotDataComponent from "./PlotDataComponent";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
-import {useXarrow, Xwrapper} from "react-xarrows";
+import {Xwrapper} from "react-xarrows";
 // import TableBody from "@material-ui/core/TableBody";
 
 // interface PlotsAndFiles {
@@ -25,7 +25,7 @@ interface Props {
   noSorting?: boolean;
   file: File;
 }
-let updateTimeout: any = null;
+
 const PlotRowComponent = ({
   sharedWorkspace,
   // customPlotRerender,
@@ -34,7 +34,7 @@ const PlotRowComponent = ({
   file,
   noSorting,
 }: Props) => {
-  // const updateXarrow = useXarrow();
+
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);

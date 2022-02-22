@@ -47,7 +47,7 @@ import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
-import { initialState } from "./workspaceRedux/graphReduxActions";
+// import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
@@ -109,6 +109,7 @@ const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
+
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();

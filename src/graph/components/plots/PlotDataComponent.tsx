@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   File,
   Gate,
@@ -27,8 +27,10 @@ import {
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
-import Xarrow, {useXarrow} from "react-xarrows";
-import {MINH, MINW} from "../workspaces/PlotController";
+import Xarrow, { useXarrow } from "react-xarrows";
+
+export const MINW = 9;
+export const MINH = 10;
 
 interface PlotsAndFiles {
   plot: Plot;
@@ -111,10 +113,10 @@ const useStyles = makeStyles((theme) => ({
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const standardGridPlotItem = (
-    index: number,
-    plotData: any,
-    plots: Plot[],
-    editWorkspace: boolean
+  index: number,
+  plotData: any,
+  plots: Plot[],
+  editWorkspace: boolean
 ) => {
   return {
     x: plotData.positions.x,
@@ -151,7 +153,7 @@ const PlotDataComponent = ({
   const classes = useStyles();
   const updateXarrow = useXarrow();
   const [loader, setLoader] = React.useState(true);
-  // const [renderArrow, setRenderArrow] = React.useState(false);
+  const [renderArrow, setRenderArrow] = React.useState(false);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
@@ -159,18 +161,6 @@ const PlotDataComponent = ({
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   let updateTimeout: any = null;
-
-  // const [changeType, setChangeType] = React.useState(
-  //   workspace.updateType.split("---")[0] || ""
-  // );
-  // const [render, setRender] = React.useState(false);
-
-  // React.useEffect(() => {
-  //   if (changeType === "ROW_OPEN") {
-  //     workspace.updateType.split("---")[1] === file.id && setRender(true);
-  //   }
-  // }, [workspace.updateType]);
-
 
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
@@ -191,6 +181,19 @@ const PlotDataComponent = ({
     }
   };
 
+  useEffect(() => {
+    if (file.id === workspace.selectedFile) {
+      if (
+        getTableRowPlots(file).length > 0 &&
+        getTableRowPlots(file).length % 4 === 0 &&
+        renderArrow
+      ) {
+        setRenderArrow(false);
+        setTimeout(() => setRenderArrow(true), 1000);
+      }
+    }
+  }, [getTableRowPlots(file).length]);
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
@@ -203,7 +206,6 @@ const PlotDataComponent = ({
       EventQueueDispatch.DeleteQueueItem(event.id);
       setTimeout(() => {
         setCustomPlotRerender([]);
-        //setLoader(false);
       }, 0);
     }
   });
@@ -215,7 +217,7 @@ const PlotDataComponent = ({
           if (response?.status) {
             setLoader(false);
             setError(false);
-            // setTimeout(() => setRenderArrow(true), 100);
+            setTimeout(() => setRenderArrow(true), 1000);
           } else {
             setLoader(false);
             setError(true);
@@ -227,6 +229,12 @@ const PlotDataComponent = ({
           setError(true);
           setMessage(response?.message);
         });
+    } else {
+      setTimeout(() => {
+        setLoader(false);
+        setRenderArrow(true);
+        updateXarrow();
+      }, 1000);
     }
   }, []);
 
@@ -273,17 +281,6 @@ const PlotDataComponent = ({
     });
   };
 
-
-  // if (isOpen && !renderArrow) {
-  //     if (updateTimeout) {
-  //       clearTimeout(updateTimeout);
-  //     }
-  //     updateTimeout = setTimeout(() => {
-  //       updateXarrow();
-  //     }, 1000);
-  // }
-
-
   const _renderPageMessage = () => {
     return (
       <TableCell
@@ -302,6 +299,19 @@ const PlotDataComponent = ({
     );
   };
 
+  const updateArrows = () => {
+    if (!loader && isOpen) {
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+      }
+      updateTimeout = setTimeout(() => {
+        setLoader(false);
+        setRenderArrow(true);
+        updateXarrow();
+      }, 10);
+    }
+  };
+
   const getArrowArray = () => {
     let arr: any[] = [];
     let plots = getTableRowPlots(file);
@@ -309,17 +319,17 @@ const PlotDataComponent = ({
       let plot = plots[i].plot;
       let populationId = plot.population;
       let childPopulationIds = workspace.populations
-          .filter((x) => x.parentPopulationId == populationId)
-          .map((x) => x.id);
+        .filter((x) => x.parentPopulationId == populationId)
+        .map((x) => x.id);
 
-      let childPlots = workspace.plots.filter((x) =>
-          childPopulationIds.includes(x.population)
+      let childPlots = plots.filter((x) =>
+        childPopulationIds.includes(x.plot.population)
       );
       let plotId = plot.id;
       for (let j = 0; j < childPlots.length; j++) {
         arr.push({
           start: `workspace-outter-${plotId}`,
-          end: `workspace-outter-${childPlots[j].id}`,
+          end: `workspace-outter-${childPlots[j].plot.id}`,
         });
       }
     }
@@ -438,7 +448,14 @@ const PlotDataComponent = ({
                   rows={{ lg: 30 }}
                   rowHeight={30}
                   compactType={null}
+                  //onLayoutChange={(layout: any) => {
+                  //   updateArrows();
+                  // }}
                   isDraggable={workspace.editWorkspace}
+                  onDragStop={() => {
+                    updateArrows();
+                    updateXarrow();
+                  }}
                   isResizable={false}
                 >
                   {
@@ -482,7 +499,6 @@ const PlotDataComponent = ({
                 </ResponsiveGridLayout>
               </div>
             </TableCell>
-            {/*{renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}*/}
           </TableRow>
         ) : (
           _renderPageMessage()
@@ -495,6 +511,11 @@ const PlotDataComponent = ({
     <>
       {noSorting && renderForNoSorting()}
       {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
+      {(renderArrow || isOpen) &&
+        !loader &&
+        getArrowArray().map((obj: any, i: number) => (
+          <Xarrow start={obj.start} end={obj.end} path={"straight"} />
+        ))}
     </>
   );
 };
