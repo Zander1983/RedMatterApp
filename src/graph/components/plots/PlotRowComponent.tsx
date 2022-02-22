@@ -34,7 +34,7 @@ const PlotRowComponent = ({
   file,
   noSorting,
 }: Props) => {
-  const updateXarrow = useXarrow();
+  // const updateXarrow = useXarrow();
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
@@ -44,17 +44,6 @@ const PlotRowComponent = ({
       setIsopen(false);
     }
   }, [clearOpenFiles]);
-
-  const updateArrows = () => {
-    // if (!isOpen) {
-      if (updateTimeout) {
-        clearTimeout(updateTimeout);
-      }
-      updateTimeout = setTimeout(() => {
-        updateXarrow();
-      }, 1000);
-    // }
-  };
 
   const generatePlots = (file: File) => {
     const workspace = getWorkspace();
@@ -155,14 +144,12 @@ const PlotRowComponent = ({
     if (file.id === getWorkspace().selectedFile) {
       // updatePlot();
       generatePlots(file);
-      updateArrows()
     }
   }, []);
 
   const onClick = () => {
     if (file.id !== getWorkspace().selectedFile) {
       if (isOpen) {
-        updateArrows();
         // deletePlotAndPopulationOfFile(file.id);
       } else {
         // taking care of plots showing up from saved workspace
@@ -171,7 +158,6 @@ const PlotRowComponent = ({
         // WorkspaceDispatch.ChangeUpdateType(`ROW_OPEN---${file.id}`);
         setTimeout(() => {
           generatePlots(file);
-          updateArrows();
         }, 0);
       }
       setIsopen((prev) => !prev);

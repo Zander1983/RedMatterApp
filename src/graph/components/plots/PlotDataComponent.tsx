@@ -15,9 +15,7 @@ import {
 import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell/TableCell";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
-// import { standardGridPlotItem } from "../workspaces/PlotController";
 import PlotComponent from "./PlotComponent";
-// import PlotComponent from "./SinglePlotDataComponent";
 import { makeStyles } from "@material-ui/core";
 import {
   getFile,
@@ -151,8 +149,9 @@ const PlotDataComponent = ({
   noSorting,
 }: Props) => {
   const classes = useStyles();
+  const updateXarrow = useXarrow();
   const [loader, setLoader] = React.useState(true);
-  const [renderArrow, setRenderArrow] = React.useState(false);
+  // const [renderArrow, setRenderArrow] = React.useState(false);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
@@ -216,7 +215,7 @@ const PlotDataComponent = ({
           if (response?.status) {
             setLoader(false);
             setError(false);
-            setTimeout(() => setRenderArrow(true), 100);
+            // setTimeout(() => setRenderArrow(true), 100);
           } else {
             setLoader(false);
             setError(true);
@@ -274,6 +273,17 @@ const PlotDataComponent = ({
     });
   };
 
+
+  // if (isOpen && !renderArrow) {
+  //     if (updateTimeout) {
+  //       clearTimeout(updateTimeout);
+  //     }
+  //     updateTimeout = setTimeout(() => {
+  //       updateXarrow();
+  //     }, 1000);
+  // }
+
+
   const _renderPageMessage = () => {
     return (
       <TableCell
@@ -298,9 +308,6 @@ const PlotDataComponent = ({
     for (let i = 0; i < plots.length; i++) {
       let plot = plots[i].plot;
       let populationId = plot.population;
-      const population = getPopulation(plot.population);
-      console.log(population);
-
       let childPopulationIds = workspace.populations
           .filter((x) => x.parentPopulationId == populationId)
           .map((x) => x.id);
@@ -309,7 +316,6 @@ const PlotDataComponent = ({
           childPopulationIds.includes(x.population)
       );
       let plotId = plot.id;
-
       for (let j = 0; j < childPlots.length; j++) {
         arr.push({
           start: `workspace-outter-${plotId}`,
@@ -476,7 +482,7 @@ const PlotDataComponent = ({
                 </ResponsiveGridLayout>
               </div>
             </TableCell>
-            {renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
+            {/*{renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}*/}
           </TableRow>
         ) : (
           _renderPageMessage()
