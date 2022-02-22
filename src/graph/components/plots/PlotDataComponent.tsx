@@ -278,7 +278,6 @@ const PlotDataComponent = ({
   };
 
   const renderUI = () => {
-    console.log("== Plot data ==", file.name);
     return (
       <>
         {loader && file.id !== workspace.selectedFile ? (

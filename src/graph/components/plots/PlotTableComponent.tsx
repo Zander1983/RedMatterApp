@@ -289,7 +289,6 @@ TableProps) => {
   const classes = useStyles();
   //@ts-ignore
   const files = useSelector((state) => state.workspace.files);
-  console.log("====Plot table ===");
   useLayoutEffect(() => {
     // making the selected file the first element of filesArray
     const workspace = getWorkspace();
