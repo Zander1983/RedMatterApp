@@ -28,6 +28,7 @@ import { createPlot } from "graph/resources/plots";
 import { createPopulation } from "graph/resources/populations";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import ApplyGateToFilesModal from "graph/components/modals/applyGateToFilesModal";
+import { useSelector } from "react-redux";
 
 const classes = {
   table: {},
@@ -85,6 +86,9 @@ export default function GateMenu(props: { gates: Gate[] }) {
   const [filesMetadata, setFilesMetadata] = useState([]);
   const [gatePopulation, setGatePopulation] = useState(null);
   const [gateSelectedId, setGateSelectedId] = useState("");
+
+  //@ts-ignore
+  const workspaceGates: Gate[] = useSelector((state) => state.workspace.gates);
 
   const setGateColor = (gate: Gate, color: any) => {
     gate.color = color.hex;
@@ -209,7 +213,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {props.gates.map((gate) => (
+            {workspaceGates.map((gate: Gate) => (
               <TableRow key={gate.id}>
                 {/* <TableCell>
                   <Button

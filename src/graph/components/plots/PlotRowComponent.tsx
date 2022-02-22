@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-    File,
-    Plot,
-    Population,
-    PlotsRerender
-} from "../../resources/types";
+import { File, Plot, Population } from "../../resources/types";
 
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
@@ -13,6 +8,8 @@ import PlotDataComponent from "./PlotDataComponent";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
+import {useXarrow, Xwrapper} from "react-xarrows";
+// import TableBody from "@material-ui/core/TableBody";
 
 // interface PlotsAndFiles {
 //   plot: Plot;
@@ -25,17 +22,19 @@ interface Props {
   workspaceLoading: boolean;
   // customPlotRerender: PlotID[];
   plotMoving?: boolean;
+  noSorting?: boolean;
   file: File;
 }
-
+let updateTimeout: any = null;
 const PlotRowComponent = ({
   sharedWorkspace,
   // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
+  noSorting,
 }: Props) => {
-
+  // const updateXarrow = useXarrow();
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
@@ -167,22 +166,44 @@ const PlotRowComponent = ({
 
   const plotData = () => {
     return (
-      <PlotDataComponent
-        sharedWorkspace={sharedWorkspace}
-        experimentId={experimentId}
-        workspaceLoading={workspaceLoading}
-        // customPlotRerender={customPlotRerender}
-        file={file}
-        onRowClick={onClick}
-        isOpen={isOpen}
-      />
+        <Xwrapper>
+          <PlotDataComponent
+            sharedWorkspace={sharedWorkspace}
+            experimentId={experimentId}
+            workspaceLoading={workspaceLoading}
+            // customPlotRerender={customPlotRerender}
+            file={file}
+            onRowClick={onClick}
+            isOpen={isOpen}
+            noSorting={noSorting}
+          />
+        </Xwrapper>
     );
   };
   // console.log("==TableRow===");
   return (
     <>
-      <PlotStateComponent file={file} onRowClick={onClick} isOpen={isOpen} />
-      {(isOpen || file.id === getWorkspace().selectedFile) && plotData()}
+      {!noSorting ? (
+        <>
+          <PlotStateComponent
+            file={file}
+            onRowClick={onClick}
+            isOpen={isOpen}
+          />
+          {(isOpen || file.id === getWorkspace().selectedFile) && plotData()}
+        </>
+      ) : (
+        getWorkspace().populations.find((pop) => pop.file === file.id) && (
+          <>
+            <h1
+              style={{ backgroundColor: "#6666AA", color: "white", padding: 5 }}
+            >
+              {file.name}
+            </h1>
+            {plotData()}
+          </>
+        )
+      )}
     </>
   );
 };
