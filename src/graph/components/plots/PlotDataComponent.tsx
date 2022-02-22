@@ -308,7 +308,7 @@ const PlotDataComponent = ({
         setLoader(false);
         setRenderArrow(true);
         updateXarrow();
-      }, 10);
+      }, 100);
     }
   };
 
