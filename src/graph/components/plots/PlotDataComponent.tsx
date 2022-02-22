@@ -493,7 +493,7 @@ const PlotDataComponent = ({
     <>
       { noSorting && renderForNoSorting()}
       {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
-      { renderArrow && !loader && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
+      { (renderArrow || isOpen) && !loader && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
     </>
   );
 };
