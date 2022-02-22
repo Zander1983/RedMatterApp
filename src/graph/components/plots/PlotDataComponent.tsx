@@ -149,9 +149,9 @@ const PlotDataComponent = ({
   noSorting,
 }: Props) => {
   const classes = useStyles();
-  const updateXarrow = useXarrow();
+  //const updateXarrow = useXarrow();
   const [loader, setLoader] = React.useState(true);
-  // const [renderArrow, setRenderArrow] = React.useState(false);
+  const [renderArrow, setRenderArrow] = React.useState(false);
   const [isError, setError] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
@@ -215,7 +215,7 @@ const PlotDataComponent = ({
           if (response?.status) {
             setLoader(false);
             setError(false);
-            // setTimeout(() => setRenderArrow(true), 100);
+            setTimeout(() => setRenderArrow(true), 1000);
           } else {
             setLoader(false);
             setError(true);
@@ -273,7 +273,6 @@ const PlotDataComponent = ({
     });
   };
 
-
   // if (isOpen && !renderArrow) {
   //     if (updateTimeout) {
   //       clearTimeout(updateTimeout);
@@ -282,7 +281,6 @@ const PlotDataComponent = ({
   //       updateXarrow();
   //     }, 1000);
   // }
-
 
   const _renderPageMessage = () => {
     return (
@@ -482,7 +480,7 @@ const PlotDataComponent = ({
                 </ResponsiveGridLayout>
               </div>
             </TableCell>
-            {/*{renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}*/}
+            {renderArrow && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
           </TableRow>
         ) : (
           _renderPageMessage()
