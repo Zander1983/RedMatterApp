@@ -312,22 +312,22 @@ const WorkspaceTopBarComponent = ({
                       </Typography>
                     )}
                   </Button>
-                  <FormControlLabel
-                    style={{
-                      marginLeft: 0,
-                      height: 20,
-                      marginTop: 4,
-                      color: "#333",
-                    }}
-                    label={"Autosave"}
-                    control={
-                      <IOSSwitch
-                        disabled={!plotCallNeeded && !renderPlotController}
-                        checked={autoSaveEnabled}
-                        onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}
-                      />
-                    }
-                  />
+                  {/*<FormControlLabel*/}
+                  {/*  style={{*/}
+                  {/*    marginLeft: 0,*/}
+                  {/*    height: 20,*/}
+                  {/*    marginTop: 4,*/}
+                  {/*    color: "#333",*/}
+                  {/*  }}*/}
+                  {/*  label={"Autosave"}*/}
+                  {/*  control={*/}
+                  {/*    <IOSSwitch*/}
+                  {/*      disabled={!plotCallNeeded && !renderPlotController}*/}
+                  {/*      checked={autoSaveEnabled}*/}
+                  {/*      onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}*/}
+                  {/*    />*/}
+                  {/*  }*/}
+                  {/*/>*/}
                 </span>
                 {lastSavedTime ? (
                   <span
