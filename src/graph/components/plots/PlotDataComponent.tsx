@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   File,
   Gate,
@@ -27,7 +27,7 @@ import {
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { useSelector } from "react-redux";
 import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
-import Xarrow, { useXarrow }  from "react-xarrows";
+import Xarrow, { useXarrow } from "react-xarrows";
 
 export const MINW = 9;
 export const MINH = 10;
@@ -113,10 +113,10 @@ const useStyles = makeStyles((theme) => ({
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const standardGridPlotItem = (
-    index: number,
-    plotData: any,
-    plots: Plot[],
-    editWorkspace: boolean
+  index: number,
+  plotData: any,
+  plots: Plot[],
+  editWorkspace: boolean
 ) => {
   return {
     x: plotData.positions.x,
@@ -162,18 +162,6 @@ const PlotDataComponent = ({
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
   let updateTimeout: any = null;
 
-  // const [changeType, setChangeType] = React.useState(
-  //   workspace.updateType.split("---")[0] || ""
-  // );
-  // const [render, setRender] = React.useState(false);
-
-  // React.useEffect(() => {
-  //   if (changeType === "ROW_OPEN") {
-  //     workspace.updateType.split("---")[1] === file.id && setRender(true);
-  //   }
-  // }, [workspace.updateType]);
-
-
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
       let plots: PlotsAndFiles[] = [];
@@ -192,6 +180,19 @@ const PlotDataComponent = ({
       return plots;
     }
   };
+
+  useEffect(() => {
+    if (file.id === workspace.selectedFile) {
+      if (
+        getTableRowPlots(file).length > 0 &&
+        getTableRowPlots(file).length % 4 === 0 &&
+        renderArrow
+      ) {
+        setRenderArrow(false);
+        setTimeout(() => setRenderArrow(true), 1000);
+      }
+    }
+  }, [getTableRowPlots(file).length]);
 
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
@@ -228,7 +229,7 @@ const PlotDataComponent = ({
           setError(true);
           setMessage(response?.message);
         });
-    }else {
+    } else {
       setTimeout(() => {
         setLoader(false);
         setRenderArrow(true);
@@ -318,11 +319,11 @@ const PlotDataComponent = ({
       let plot = plots[i].plot;
       let populationId = plot.population;
       let childPopulationIds = workspace.populations
-          .filter((x) => x.parentPopulationId == populationId)
-          .map((x) => x.id);
+        .filter((x) => x.parentPopulationId == populationId)
+        .map((x) => x.id);
 
       let childPlots = plots.filter((x) =>
-          childPopulationIds.includes(x.plot.population)
+        childPopulationIds.includes(x.plot.population)
       );
       let plotId = plot.id;
       for (let j = 0; j < childPlots.length; j++) {
@@ -455,7 +456,8 @@ const PlotDataComponent = ({
                     updateArrows();
                     updateXarrow();
                   }}
-                  isResizable={false}>
+                  isResizable={false}
+                >
                   {
                     //@ts-ignore
                     getTableRowPlots(file).map(
@@ -507,9 +509,13 @@ const PlotDataComponent = ({
   return (
     // (isOpen || file.id === getWorkspace().selectedFile) &&
     <>
-      { noSorting && renderForNoSorting()}
+      {noSorting && renderForNoSorting()}
       {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
-      { (renderArrow || isOpen) && !loader && getArrowArray().map( (obj:any, i:number) =>  <Xarrow start={obj.start} end={obj.end} path={"straight"}/>)}
+      {(renderArrow || isOpen) &&
+        !loader &&
+        getArrowArray().map((obj: any, i: number) => (
+          <Xarrow start={obj.start} end={obj.end} path={"straight"} />
+        ))}
     </>
   );
 };
