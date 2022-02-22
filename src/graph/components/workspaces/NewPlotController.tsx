@@ -2,22 +2,21 @@ import React from "react";
 //@ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "./react-grid-layout-styles.css";
-import PlotComponent from "../plots/PlotComponent";
 import _ from "lodash";
 
 import { Divider, MenuItem, Select } from "@material-ui/core";
 import {
   getFile,
-  getGate,
+  // getGate,
   getPopulation,
   getWorkspace,
 } from "graph/utils/workspace";
 import {
-  Gate,
+  // Gate,
   Plot,
-  PlotID,
-  PlotSpecificWorkspaceData,
-  Workspace,
+  // PlotID,
+  // PlotSpecificWorkspaceData,
+  // Workspace,
 } from "graph/resources/types";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { getPlotFile } from "graph/resources/plots";
@@ -27,25 +26,6 @@ import Xarrow, { useXarrow, Xwrapper } from "react-xarrows";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "../plots/PlotTableComponent";
-import PlotTable from "../static/menus/Table";
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
-const classes = {
-  itemOuterDiv: {
-    flex: 1,
-    backgroundColor: "#eef",
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: 5,
-    // minWidth: 370,
-    paddingBottom: "2rem",
-  },
-  itemInnerDiv: {
-    width: "100%",
-    height: "100%",
-  },
-};
 
 let method = "file"; // TODO: sorry for this will be fixed later
 
@@ -85,28 +65,28 @@ export const getPlotGroups = (plots: Plot[]): PlotGroup[] => {
   return plotGroups;
 };
 
-export const getTargetLayoutPlots = (protoPlot: any): Plot[] => {
-  let plotGroups: PlotGroup[] = getPlotGroups(getWorkspace().plots);
-  try {
-    const pop = getPopulation(protoPlot.population);
-    switch (method) {
-      case "file":
-        const file = getFile(pop.file);
-        return plotGroups.find((e) => e.name === file.name).plots;
-      case "gate":
-        let group = "No gates";
-        //@ts-ignore
-        if (pop.gates.length > 0) group = pop.gates[0].id;
-        return plotGroups.find((e) => e.name === group).plots;
-      case "all":
-        return plotGroups[0].plots;
-      default:
-        throw Error("wtf?");
-    }
-  } catch {
-    return [];
-  }
-};
+// export const getTargetLayoutPlots = (protoPlot: any): Plot[] => {
+//   let plotGroups: PlotGroup[] = getPlotGroups(getWorkspace().plots);
+//   try {
+//     const pop = getPopulation(protoPlot.population);
+//     switch (method) {
+//       case "file":
+//         const file = getFile(pop.file);
+//         return plotGroups.find((e) => e.name === file.name).plots;
+//       case "gate":
+//         let group = "No gates";
+//         //@ts-ignore
+//         if (pop.gates.length > 0) group = pop.gates[0].id;
+//         return plotGroups.find((e) => e.name === group).plots;
+//       case "all":
+//         return plotGroups[0].plots;
+//       default:
+//         throw Error("wtf?");
+//     }
+//   } catch {
+//     return [];
+//   }
+// };
 
 export const MINW = 9;
 export const MINH = 10;
@@ -159,22 +139,22 @@ export const setCanvasSize = (
   }
 };
 
-export const standardGridPlotItem = (
-  index: number,
-  plotData: any,
-  plots: Plot[],
-  editWorkspace: boolean
-) => {
-  return {
-    x: plotData.positions.x,
-    y: plotData.positions.y,
-    w: plotData.dimensions.w,
-    h: plotData.dimensions.h,
-    minW: MINW,
-    minH: MINH,
-    static: !editWorkspace,
-  };
-};
+// export const standardGridPlotItem = (
+//   index: number,
+//   plotData: any,
+//   plots: Plot[],
+//   editWorkspace: boolean
+// ) => {
+//   return {
+//     x: plotData.positions.x,
+//     y: plotData.positions.y,
+//     w: plotData.dimensions.w,
+//     h: plotData.dimensions.h,
+//     minW: MINW,
+//     minH: MINH,
+//     static: !editWorkspace,
+//   };
+// };
 
 interface PlotControllerProps {
   sharedWorkspace: boolean;
@@ -228,31 +208,31 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
   }
 
-  getArrowArray = () => {
-    let arr: any[] = [];
-    let workspace = getWorkspace();
-    let plots = workspace.plots;
-    for (let i = 0; i < plots.length; i++) {
-      let plot = plots[i];
-      let populationId = plot.population;
-      let childPopulationIds = workspace.populations
-        .filter((x) => x.parentPopulationId == populationId)
-        .map((x) => x.id);
-      let childPlots = workspace.plots.filter((x) =>
-        childPopulationIds.includes(x.population)
-      );
-
-      let plotId = plot.id;
-
-      for (let j = 0; j < childPlots.length; j++) {
-        arr.push({
-          start: `workspace-outter-${plotId}`,
-          end: `workspace-outter-${childPlots[j].id}`,
-        });
-      }
-    }
-    return arr;
-  };
+  // getArrowArray = () => {
+  //   let arr: any[] = [];
+  //   let workspace = getWorkspace();
+  //   let plots = workspace.plots;
+  //   for (let i = 0; i < plots.length; i++) {
+  //     let plot = plots[i];
+  //     let populationId = plot.population;
+  //     let childPopulationIds = workspace.populations
+  //       .filter((x) => x.parentPopulationId == populationId)
+  //       .map((x) => x.id);
+  //     let childPlots = workspace.plots.filter((x) =>
+  //       childPopulationIds.includes(x.population)
+  //     );
+  //
+  //     let plotId = plot.id;
+  //
+  //     for (let j = 0; j < childPlots.length; j++) {
+  //       arr.push({
+  //         start: `workspace-outter-${plotId}`,
+  //         end: `workspace-outter-${childPlots[j].id}`,
+  //       });
+  //     }
+  //   }
+  //   return arr;
+  // };
 
   renderTable = () => {
     if (

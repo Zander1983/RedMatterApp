@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -11,7 +11,7 @@ import userManager from "Components/users/userManager";
 import { saveWorkspaceToRemote } from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
-import IOSSwitch from "../../Components/common/Switch";
+// import IOSSwitch from "../../Components/common/Switch";
 import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";

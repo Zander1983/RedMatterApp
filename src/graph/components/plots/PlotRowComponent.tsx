@@ -6,14 +6,11 @@ import {
     PlotsRerender
 } from "../../resources/types";
 
-import { getFile } from "../../utils/workspace";
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
 import PlotStateComponent from "./PlotStateComponent";
 import PlotDataComponent from "./PlotDataComponent";
-import { deletePlotAndPopulationOfFile } from "graph/components/plots/MainBar";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
 
