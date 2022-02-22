@@ -10,6 +10,7 @@ import { green } from "@material-ui/core/colors";
 import userManager from "Components/users/userManager";
 import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
+import SideMenus from "./components/static/SideMenus";
 
 import {
   dowloadAllFileEvents,
@@ -97,7 +98,8 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] = React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] =
+    React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
@@ -299,13 +301,15 @@ const NewWorkspaceInnerComponent = (props: {
         }}
         justify="center"
         alignItems="center"
-        alignContent="center">
+        alignContent="center"
+      >
         {!isConnectivity && "Internet connection failed. Check your connection"}
         <Typography
           style={{
             color: "#248e0d",
             textAlign: "center",
-          }}>
+          }}
+        >
           {" "}
           {isReloadMessage && isReloadMessage}{" "}
         </Typography>
@@ -313,11 +317,13 @@ const NewWorkspaceInnerComponent = (props: {
         {isMessage && (
           <>
             {isMessage || ""}
-            <a style={{ marginLeft: "5px" }}
+            <a
+              style={{ marginLeft: "5px" }}
               onClick={(event) => {
                 event.preventDefault();
                 window.location.reload();
-              }}>
+              }}
+            >
               Reload...
             </a>
           </>
@@ -331,10 +337,12 @@ const NewWorkspaceInnerComponent = (props: {
       style={{
         height: "100%",
         padding: 0,
-      }}>
+      }}
+    >
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
+      <SideMenus workspace={getWorkspace()}></SideMenus>
       <Grid
         style={{
           marginTop: 0,
@@ -351,7 +359,8 @@ const NewWorkspaceInnerComponent = (props: {
             marginLeft: 0,
             marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
-          }}>
+          }}
+        >
           <div>
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
