@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-    File,
-    Plot,
-    Population,
-    PlotsRerender
-} from "../../resources/types";
+import { File, Plot, Population } from "../../resources/types";
 
 import * as PlotResource from "graph/resources/plots";
 import * as PopulationResource from "graph/resources/populations";
@@ -25,6 +20,7 @@ interface Props {
   workspaceLoading: boolean;
   // customPlotRerender: PlotID[];
   plotMoving?: boolean;
+  noSorting?: boolean;
   file: File;
 }
 
@@ -34,8 +30,8 @@ const PlotRowComponent = ({
   experimentId,
   workspaceLoading,
   file,
+  noSorting,
 }: Props) => {
-
   //@ts-ignore
   const clearOpenFiles = useSelector((state) => state.workspace.clearOpenFiles);
   const [isOpen, setIsopen] = React.useState<boolean>(false);
@@ -175,14 +171,34 @@ const PlotRowComponent = ({
         file={file}
         onRowClick={onClick}
         isOpen={isOpen}
+        noSorting={noSorting}
       />
     );
   };
   // console.log("==TableRow===");
   return (
     <>
-      <PlotStateComponent file={file} onRowClick={onClick} isOpen={isOpen} />
-      {(isOpen || file.id === getWorkspace().selectedFile) && plotData()}
+      {!noSorting ? (
+        <>
+          <PlotStateComponent
+            file={file}
+            onRowClick={onClick}
+            isOpen={isOpen}
+          />
+          {(isOpen || file.id === getWorkspace().selectedFile) && plotData()}
+        </>
+      ) : (
+        getWorkspace().populations.find((pop) => pop.file === file.id) && (
+          <>
+            <h1
+              style={{ backgroundColor: "#6666AA", color: "white", padding: 5 }}
+            >
+              {file.name}
+            </h1>
+            {plotData()}
+          </>
+        )
+      )}
     </>
   );
 };

@@ -113,29 +113,23 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 interface Props {
   sharedWorkspace: boolean;
   experimentId: string;
-  // workspace: Workspace;
   workspaceLoading: boolean;
-  // customPlotRerender: PlotID[];
   plotMoving?: boolean;
   // arrowFunc: Function;
   file: File;
-  // headers: string[];
-  // openFiles: string[];
   onRowClick: Function;
-  isOpen: boolean;
+  isOpen?: boolean;
+  noSorting?: boolean;
 }
 
 const PlotDataComponent = ({
-  // workspace,
   sharedWorkspace,
-  // customPlotRerender,
   experimentId,
   workspaceLoading,
   file,
-  // headers,
-  // openFiles,
   onRowClick,
   isOpen,
+  noSorting,
 }: Props) => {
   const classes = useStyles();
   const [loader, setLoader] = React.useState(true);
@@ -145,17 +139,6 @@ const PlotDataComponent = ({
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
-
-  // const [changeType, setChangeType] = React.useState(
-  //   workspace.updateType.split("---")[0] || ""
-  // );
-  // const [render, setRender] = React.useState(false);
-
-  // React.useEffect(() => {
-  //   if (changeType === "ROW_OPEN") {
-  //     workspace.updateType.split("---")[1] === file.id && setRender(true);
-  //   }
-  // }, [workspace.updateType]);
 
   const getTableRowPlots = (file: File) => {
     if (file !== null) {
@@ -273,11 +256,76 @@ const PlotDataComponent = ({
       </TableCell>
     );
   };
-
+  const renderForNoSorting = () => {
+    return (
+      <TableRow className={classes.show}>
+        <TableCell colSpan={workspace.gates.length + 2}>
+          <div
+            className={classes.responsiveContainer}
+            style={{
+              transition: `all ${
+                workspace.files.length < 30
+                  ? 1
+                  : workspace.files.length < 60
+                  ? 2
+                  : 3
+              }s`,
+            }}
+          >
+            <ResponsiveGridLayout
+              className="layout"
+              breakpoints={{ lg: 1200 }}
+              cols={{ lg: 36 }}
+              rows={{ lg: 30 }}
+              rowHeight={30}
+              compactType={null}
+              isDraggable={workspace.editWorkspace}
+              isResizable={false}
+            >
+              {
+                //@ts-ignore
+                getTableRowPlots(file).map(({ plot, file: PlotFile }, i) => {
+                  if (PlotFile.id === file.id) {
+                    return (
+                      <div
+                        key={plot.id}
+                        className={classes.itemOuterDiv}
+                        data-grid={standardGridPlotItem(
+                          i,
+                          plot,
+                          workspace.plots,
+                          workspace.editWorkspace
+                        )}
+                        id={`workspace-outter-${plot.id}`}
+                      >
+                        <div id="inner" className={classes.itemInnerDiv}>
+                          <PlotComponent
+                            plotRelevantResources={getPlotRelevantResources(
+                              plot
+                            )}
+                            sharedWorkspace={sharedWorkspace}
+                            editWorkspace={workspace.editWorkspace}
+                            workspaceLoading={workspaceLoading}
+                            customPlotRerender={customPlotRerender}
+                            experimentId={experimentId}
+                            fileName={file.name}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                })
+              }
+            </ResponsiveGridLayout>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
   const renderUI = () => {
     return (
       <>
-        {loader && file.id !== workspace.selectedFile ? (
+        {!noSorting && loader && file.id !== workspace.selectedFile ? (
           <TableCell
             colSpan={workspace.gates.length + 2}
             className={classes.loaderContainerStyle}
@@ -372,7 +420,10 @@ const PlotDataComponent = ({
   };
   return (
     // (isOpen || file.id === getWorkspace().selectedFile) &&
-    getTableRowPlots(file).length > 0 && renderUI()
+    <>
+      {noSorting && renderForNoSorting()}
+      {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
+    </>
   );
 };
 
