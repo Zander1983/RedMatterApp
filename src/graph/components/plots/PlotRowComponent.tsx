@@ -3,7 +3,7 @@ import {
     File,
     Plot,
     Population,
-    PlotsRerender,
+    PlotsRerender
 } from "../../resources/types";
 
 import { getFile } from "../../utils/workspace";
@@ -17,10 +17,10 @@ import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 import { useSelector } from "react-redux";
 import { getWorkspace } from "graph/utils/workspace";
 
-interface PlotsAndFiles {
-  plot: Plot;
-  file: File;
-}
+// interface PlotsAndFiles {
+//   plot: Plot;
+//   file: File;
+// }
 
 interface Props {
   sharedWorkspace: boolean;
@@ -102,51 +102,51 @@ const PlotRowComponent = ({
     }
   };
 
-  const updatePlot = () => {
-    const plots: Plot[] = [];
-    getTableRowPlots(file).map(({ plot }) => {
-      if (plot.plotWidth !== 319 || plot.plotHeight !== 204) {
-        plot.plotHeight = 204;
-        plot.plotWidth = 319;
-        plots.push(plot);
-      }
-    });
-    if (plots.length > 0) {
-      WorkspaceDispatch.UpdatePlots(plots);
-    } else {
-      const plotsRerenderQueueItem: PlotsRerender = {
-        id: "",
-        used: false,
-        type: "plotsRerender",
-        plotIDs: getTableRowPlots(file).map(({ plot }) => plot.id),
-      };
-      EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
-    }
-  };
+  // const updatePlot = () => {
+  // const plots: Plot[] = [];
+  // getTableRowPlots(file).map(({ plot }) => {
+  //   if (plot.plotWidth !== 319 || plot.plotHeight !== 204) {
+  //     plot.plotHeight = 204;
+  //     plot.plotWidth = 319;
+  //     plots.push(plot);
+  //   }
+  // });
+  // if (plots.length > 0) {
+  //   WorkspaceDispatch.UpdatePlots(plots);
+  // } else {
+  //   const plotsRerenderQueueItem: PlotsRerender = {
+  //     id: "",
+  //     used: false,
+  //     type: "plotsRerender",
+  //     plotIDs: getTableRowPlots(file).map(({ plot }) => plot.id),
+  //   };
+  //   EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+  // }
+  // };
 
-  const getTableRowPlots = (file: File) => {
-    if (file !== null) {
-      const workspace = getWorkspace();
-      let plots: PlotsAndFiles[] = [];
-      let populations: Population[] = [];
-      populations = workspace.populations.filter(
-        (population) => population.file === file.id
-      );
+  // const getTableRowPlots = (file: File) => {
+  //   if (file !== null) {
+  //     const workspace = getWorkspace();
+  //     let plots: PlotsAndFiles[] = [];
+  //     let populations: Population[] = [];
+  //     populations = workspace.populations.filter(
+  //       (population) => population.file === file.id
+  //     );
 
-      workspace.plots.map((plot) => {
-        populations.map((population) => {
-          if (population.id === plot.population) {
-            plots.push({ plot, file: getFile(population.file) });
-          }
-        });
-      });
-      return plots;
-    }
-  };
+  //     workspace.plots.map((plot) => {
+  //       populations.map((population) => {
+  //         if (population.id === plot.population) {
+  //           plots.push({ plot, file: getFile(population.file) });
+  //         }
+  //       });
+  //     });
+  //     return plots;
+  //   }
+  // };
 
   useEffect(() => {
     if (file.id === getWorkspace().selectedFile) {
-      updatePlot();
+      // updatePlot();
       generatePlots(file);
     }
   }, []);
@@ -154,10 +154,12 @@ const PlotRowComponent = ({
   const onClick = () => {
     if (file.id !== getWorkspace().selectedFile) {
       if (isOpen) {
-        deletePlotAndPopulationOfFile(file.id);
+        // deletePlotAndPopulationOfFile(file.id);
       } else {
         // taking care of plots showing up from saved workspace
-        updatePlot();
+        // updatePlot();
+        // WorkspaceDispatch.ChangeUpdateType("");
+        // WorkspaceDispatch.ChangeUpdateType(`ROW_OPEN---${file.id}`);
         setTimeout(() => {
           generatePlots(file);
         }, 0);
@@ -179,6 +181,7 @@ const PlotRowComponent = ({
       />
     );
   };
+  // console.log("==TableRow===");
   return (
     <>
       <PlotStateComponent file={file} onRowClick={onClick} isOpen={isOpen} />

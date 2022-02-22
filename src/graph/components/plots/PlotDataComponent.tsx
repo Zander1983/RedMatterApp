@@ -4,10 +4,12 @@ import {
   Gate,
   Plot,
   PlotID,
-  PlotSpecificWorkspaceData, PlotsRerender,
+  PlotSpecificWorkspaceData,
+  PlotsRerender,
   Population,
   Workspace as WorkspaceType,
-  Workspace, WorkspaceEvent,
+  Workspace,
+  WorkspaceEvent,
 } from "../../resources/types";
 
 import TableRow from "@material-ui/core/TableRow";
@@ -145,25 +147,51 @@ const PlotDataComponent = ({
 
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
-
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
+
+  // const [changeType, setChangeType] = React.useState(
+  //   workspace.updateType.split("---")[0] || ""
+  // );
+  // const [render, setRender] = React.useState(false);
+
+  // React.useEffect(() => {
+  //   if (changeType === "ROW_OPEN") {
+  //     workspace.updateType.split("---")[1] === file.id && setRender(true);
+  //   }
+  // }, [workspace.updateType]);
+
+  const getTableRowPlots = (file: File) => {
+    if (file !== null) {
+      let plots: PlotsAndFiles[] = [];
+      let populations: Population[] = [];
+      populations = workspace.populations.filter(
+        (population) => population.file === file.id
+      );
+
+      workspace.plots.map((plot) => {
+        populations.map((population) => {
+          if (population.id === plot.population) {
+            plots.push({ plot, file: getFile(population.file) });
+          }
+        });
+      });
+      return plots;
+    }
+  };
 
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
-        (x: WorkspaceEvent) => x.type === "plotsRerender"
+      (x: WorkspaceEvent) => x.type === "plotsRerender"
     );
     if (eventPlotsRerenderArray.length > 0) {
-      console.log(eventPlotsRerenderArray[0]);
       let event: PlotsRerender = eventPlotsRerenderArray[0];
       setCustomPlotRerender(event.plotIDs);
-      let plots = getTableRowPlots(file) ?.filter(({ plot, file: PlotFile }, i) => plot.id === event.plotIDs[0]);
-      if(plots && plots.length > 0) {
-        EventQueueDispatch.DeleteQueueItem(event.id);
-        setTimeout(() => {
-          setCustomPlotRerender([]);
-        }, 0);
-      }
+
+      EventQueueDispatch.DeleteQueueItem(event.id);
+      setTimeout(() => {
+        setCustomPlotRerender([]);
+      }, 0);
     }
   });
 
@@ -194,25 +222,6 @@ const PlotDataComponent = ({
         (population) => population.file === file.id
       );
     else return null;
-  };
-
-  const getTableRowPlots = (file: File) => {
-    if (file !== null) {
-      let plots: PlotsAndFiles[] = [];
-      let populations: Population[] = [];
-      populations = workspace.populations.filter(
-        (population) => population.file === file.id
-      );
-
-      workspace.plots.map((plot) => {
-        populations.map((population) => {
-          if (population.id === plot.population) {
-            plots.push({ plot, file: getFile(population.file) });
-          }
-        });
-      });
-      return plots;
-    }
   };
 
   const getPlotRelevantResources = (plot: Plot) => {
@@ -268,9 +277,8 @@ const PlotDataComponent = ({
     );
   };
 
-  console.log("== Plot data ==", file.name);
-
   const renderUI = () => {
+    console.log("== Plot data ==", file.name);
     return (
       <>
         {loader && file.id !== workspace.selectedFile ? (
@@ -291,7 +299,8 @@ const PlotDataComponent = ({
                 : isOpen
                 ? classes.show
                 : classes.hide
-            }>
+            }
+          >
             <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
@@ -315,7 +324,8 @@ const PlotDataComponent = ({
                   rowHeight={30}
                   compactType={null}
                   isDraggable={workspace.editWorkspace}
-                  isResizable={false}>
+                  isResizable={false}
+                >
                   {
                     //@ts-ignore
                     getTableRowPlots(file).map(
@@ -331,16 +341,19 @@ const PlotDataComponent = ({
                                 workspace.plots,
                                 workspace.editWorkspace
                               )}
-                              id={`workspace-outter-${plot.id}`}>
+                              id={`workspace-outter-${plot.id}`}
+                            >
                               <div id="inner" className={classes.itemInnerDiv}>
                                 <PlotComponent
-                                    plotRelevantResources={getPlotRelevantResources(plot)}
-                                    sharedWorkspace={sharedWorkspace}
-                                    editWorkspace={workspace.editWorkspace}
-                                    workspaceLoading={workspaceLoading}
-                                    customPlotRerender={customPlotRerender}
-                                    experimentId={experimentId}
-                                    fileName={file.name}
+                                  plotRelevantResources={getPlotRelevantResources(
+                                    plot
+                                  )}
+                                  sharedWorkspace={sharedWorkspace}
+                                  editWorkspace={workspace.editWorkspace}
+                                  workspaceLoading={workspaceLoading}
+                                  customPlotRerender={customPlotRerender}
+                                  experimentId={experimentId}
+                                  fileName={file.name}
                                   // plot={plot}
                                   //plotId={plot.id}
                                 />
@@ -361,7 +374,10 @@ const PlotDataComponent = ({
       </>
     );
   };
-  return (isOpen || file.id === getWorkspace().selectedFile) && renderUI();
+  return (
+    // (isOpen || file.id === getWorkspace().selectedFile) &&
+    getTableRowPlots(file).length > 0 && renderUI()
+  );
 };
 
 export default PlotDataComponent;

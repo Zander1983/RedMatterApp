@@ -40,6 +40,7 @@ export const graphActions = {
   DELETE_PLOTS_GATES_AND_POPULATIONS:
     "workspace.DELETE_PLOTS_GATES_AND_POPULATIONS",
   CLEAR_OPEN_FILE: "workspace.CLEAR_OPEN_FILE",
+  UPDATE_TYPE: "workspace.UPDATE_TYPE",
 };
 
 export const initialState: Workspace = {
@@ -54,6 +55,7 @@ export const initialState: Workspace = {
   editWorkspace: true,
   selectedFile: "",
   clearOpenFiles: false,
+  updateType: "",
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -65,6 +67,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...initialState,
         files: state.files,
+      };
+
+    case graphActions.UPDATE_TYPE:
+      const type = action.payload.type;
+      return {
+        ...state,
+        updateType: type,
       };
 
     case graphActions.LOAD_WORKSPACE:

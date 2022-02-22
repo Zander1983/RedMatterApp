@@ -275,8 +275,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-    console.log("==Plot Controller==");
     if (getWorkspace().plots.length > 0) {
+      console.log("==Plot Controller==");
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
         <div>

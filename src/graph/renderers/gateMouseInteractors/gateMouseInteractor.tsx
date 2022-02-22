@@ -246,25 +246,26 @@ export default abstract class GateMouseInteractor {
   }
 
   protected gateUpdater(gate: Gate, fromTimout: boolean = false) {
-    if (fromTimout) this.currentInterval = null;
-    if (
-      this.lastGateUpdate.getTime() + this.updateInterval >
-      new Date().getTime()
-    ) {
-      if (this.currentInterval === null) {
-        const waitUntilCurrentCycleTimesOut =
-          this.lastGateUpdate.getTime() +
-          this.updateInterval -
-          new Date().getTime() +
-          1;
-        this.currentInterval = setTimeout(
-          () => this.gateUpdater(this.latest, true),
-          waitUntilCurrentCycleTimesOut
-        );
-      } else {
-        this.latest = gate;
-      }
-    } else if (gate !== null) {
+    // if (fromTimout) this.currentInterval = null;
+    // if (
+    //   this.lastGateUpdate.getTime() + this.updateInterval >
+    //   new Date().getTime()
+    // ) {
+    //   if (this.currentInterval === null) {
+    //     const waitUntilCurrentCycleTimesOut =
+    //       this.lastGateUpdate.getTime() +
+    //       this.updateInterval -
+    //       new Date().getTime() +
+    //       1;
+    //     this.currentInterval = setTimeout(
+    //       () => this.gateUpdater(this.latest, true),
+    //       waitUntilCurrentCycleTimesOut
+    //     );
+    //   } else {
+    //     this.latest = gate;
+    //   }
+    // }
+    if (gate !== null) {
       this.rerender();
       this.updateGate = gate;
       this.lastGateUpdate = new Date();
