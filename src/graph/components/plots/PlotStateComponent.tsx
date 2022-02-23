@@ -169,10 +169,13 @@ const PlotStateComponent = ({ file, onRowClick, isOpen }: Props) => {
                 className={`${classes.tableCell}`}
                 key={"content-" + value + i}
               >
-                {file.id === workspace.selectedFile && "Selected File: "}
+                {file.id === workspace.selectedFile && (
+                  <span style={{ fontSize: 18 }}> {"Control File: "} </span>
+                )}
                 <span
                   style={{
                     fontWeight: file.id === workspace.selectedFile && 500,
+                    fontSize: file.id === workspace.selectedFile && 18,
                   }}
                 >
                   {file?.name}
