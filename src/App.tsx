@@ -16,6 +16,7 @@ import Experiment from "./Components/workspaces/Experiment";
 import About from "./Components/home/About";
 
 import Plots from "./graph/WorkspaceComponent";
+import WorkSpaceComponent from "./graph/NewWorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import ForgetPassword from "Components/users/ForgetPassword";
@@ -41,7 +42,7 @@ import userManager, { UserProfile } from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 import { updateUserStripeDetails } from "services/StripeService";
-
+import SecurityUtil from './utils/Security.js';
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
@@ -154,9 +155,21 @@ const router = [
     ),
   },
   {
+    path: "/workspace/:experimentId/plots",
+    component: ({ match }: any) => (
+        <WorkSpaceComponent experimentId={match.params.experimentId} shared={false} />
+    ),
+  },
+  {
     path: "/experiment/:experimentId/plots/public",
     component: ({ match }: any) => (
       <Plots experimentId={match.params.experimentId} shared={true} />
+    ),
+  },
+  {
+    path: "/workspace/:experimentId/plots/public",
+    component: ({ match }: any) => (
+        <WorkSpaceComponent experimentId={match.params.experimentId} shared={true} />
     ),
   },
   { path: "/experiments", component: Experiments },
@@ -245,33 +258,36 @@ const App = () => {
   }, [profile, dispatch]);
 
   useMemo(() => {
-    setLoading(true);
-    if (userManager.isLoggedIn() && userManager.getToken()) {
-      axios
-        .get("/api/getuserdetails", {
-          headers: {
-            token: userManager.getToken(),
-          },
-        })
-        .then((response) => {
-          let userDetails = response.data;
-          dispatch({
-            type: "UPDATE_SUBSCRIPTION_DETAILS",
-            payload: {
-              rules: userDetails?.rules,
-              subscriptionDetails:
-                userDetails?.userDetails?.subscriptionDetails,
-              subscriptionType: userDetails?.userDetails?.subscriptionType,
-            },
-          });
-          setLoading(false);
-        })
-        .catch((e) => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    setLoading(false);
+    // if (userManager.isLoggedIn() && userManager.getToken()) {
+    //   userManager.logout();
+    //   sessionCheckStarted = false;
+    //   history.replace("/login");
+    //   setLoading(false);
+    //   // axios.get("/api/getuserdetails", {
+    //   //     headers: {
+    //   //       token: userManager.getAccessToken(),
+    //   //     },
+    //   //   })
+    //   //   .then((response) => {
+    //   //     let userDetails = response.data;
+    //   //
+    //   //     dispatch({
+    //   //       type: "UPDATE_SUBSCRIPTION_DETAILS",
+    //   //       payload: {
+    //   //         rules: userDetails?.rules,
+    //   //         subscriptionDetails: userDetails?.userDetails?.subscriptionDetails,
+    //   //         subscriptionType: userDetails?.userDetails?.subscriptionType,
+    //   //       },
+    //   //     });
+    //   //     setLoading(false);
+    //   //   })
+    //   //   .catch((e) => {
+    //   //     setLoading(false);
+    //   //   });
+    // } else {
+    //   setLoading(false);
+    // }
   }, [dispatch]);
 
   useEffect(() => {
@@ -322,6 +338,7 @@ const App = () => {
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
       <ThemeProvider theme={theme}>
         <SnackbarContainer />
+
         <AppHeader />
 
         {loading ? (

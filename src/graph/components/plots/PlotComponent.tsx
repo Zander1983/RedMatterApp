@@ -4,10 +4,17 @@ import { Divider, Grid } from "@material-ui/core";
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
-import { PlotSpecificWorkspaceData, PlotID } from "graph/resources/types";
+import {
+  PlotSpecificWorkspaceData,
+  PlotID,
+  WorkspaceEvent,
+  PlotsRerender,
+} from "graph/resources/types";
 
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
+import { useSelector } from "react-redux";
+import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 
 const classes = {
   itemOuterDiv: {
@@ -48,11 +55,11 @@ const PlotComponent = React.memo(
     fileName: string;
   }) => {
     const { plot, gates, population } = props.plotRelevantResources;
-
     const plotId = plot.id;
 
     const displayRef = useRef();
     const barRef = useRef();
+    // console.log("===Plot Component==");
 
     return (
       <div
@@ -92,7 +99,6 @@ const PlotComponent = React.memo(
         <Divider
           style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
         />
-
         <SideSelector
           {...props}
           canvasComponent={

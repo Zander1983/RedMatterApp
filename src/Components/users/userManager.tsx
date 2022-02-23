@@ -55,17 +55,33 @@ class UserManager {
     return ret;
   }
 
+  isAuthenticated(): boolean {
+    if (
+      sessionStorage.getItem("cache_version") ||
+      sessionStorage.getItem("profileInfo")
+    )
+      return (
+        sessionStorage.getItem("profileInfo") &&
+        JSON.parse(sessionStorage.getItem("profileInfo")).token
+      );
+  }
+
   logout() {
+    sessionStorage.clear();
     store.dispatch({
       type: "LOGOUT",
     });
   }
 
-  getToken() {
+  getToken(): string {
     if (!this.isLoggedIn()) {
       this.fail();
     }
     return this.state.user.profile.token;
+  }
+
+  getAccessToken(): string {
+    return JSON.parse(sessionStorage.getItem("profileInfo")).token;
   }
 
   getRefreshToken() {

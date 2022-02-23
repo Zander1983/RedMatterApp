@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import BrokenImageIcon from "@material-ui/icons/BrokenImage";
-import { Button} from "@material-ui/core";
+import { Button } from "@material-ui/core";
 // import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 
 const ErrorComponent = (props: any) => {
   const [mainScreenError, setMainScreenError] = useState(false);
-  const [,setAppScreenError] = useState(false);
+  const [, setAppScreenError] = useState(false);
 
   useEffect(() => {
     let mainScreenError = false;

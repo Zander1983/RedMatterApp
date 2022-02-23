@@ -70,11 +70,8 @@ const PlotRenderer = (props: {
   const [canvas, setCanvas] = useState<CanvasManager | null>(null);
   const [configured, setConfigured] = useState<boolean>(false);
   const [plotter, setPlotter] = useState<GraphPlotter | null>(null);
-  const [scatterPlotter, setScatterPlotter] = useState<ScatterPlotter | null>(
-    null
-  );
-  const [histogramPlotter, setHistogramPlotter] =
-    useState<HistogramPlotter | null>(null);
+  const [scatterPlotter, setScatterPlotter] = useState<ScatterPlotter | null>(null);
+  const [histogramPlotter, setHistogramPlotter] = useState<HistogramPlotter | null>(null);
   const [lastGatingType, setLastGatingType] = useState<GateType>("");
   const [, setLoader] = useState(false);
   const plot = props.plot;
@@ -309,6 +306,7 @@ const PlotRenderer = (props: {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas]);
+
   useEffect(() => {
     if (plotter) {
       setGating("polygon", true, scatterPlotter);
@@ -321,6 +319,7 @@ const PlotRenderer = (props: {
     }
     draw();
   }, [plotter]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(draw, [props.plot, props.plotGates, props.population]);
   useEffect(() => {

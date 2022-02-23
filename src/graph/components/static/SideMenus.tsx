@@ -11,7 +11,7 @@ import FileMenu from "./menus/FileMenu";
 import PlotMenu from "./menus/PlotMenu";
 
 import PlotStats from "graph/utils/stats";
-import { getFile, getGate } from "graph/utils/workspace";
+import { getFile, getGate, getWorkspace } from "graph/utils/workspace";
 import { Workspace, Gate } from "graph/resources/types";
 
 import { COMMON_CONSTANTS } from "assets/constants/commonConstants";
@@ -311,7 +311,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
           />
         )} */}
         {/* GATES */}
-        {gateMenuOpen && <GateMenu gates={props.workspace.gates} />}
+        {gateMenuOpen && <GateMenu gates={getWorkspace().gates} />}
         {/* FILES */}
         {/* {fileMenuOpen && <FileMenu files={props.workspace.files} />} */}
         {/* FILES HIERARCHY */}

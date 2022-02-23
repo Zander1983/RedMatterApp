@@ -45,8 +45,10 @@ const classes = {
 export const deleteAllPlotsAndPopulationOfNonControlFile = () => {
   const workspace = getWorkspace();
   workspace.files.map((file) => {
-    file.view = false;
-    WorkspaceDispatch.UpdateFile(file);
+    if (file.id !== workspace.selectedFile) {
+      file.view = false;
+      WorkspaceDispatch.UpdateFile(file);
+    }
   });
   const plots: string[] = [];
   const populations: string[] = [];

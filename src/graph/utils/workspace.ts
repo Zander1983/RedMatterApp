@@ -90,11 +90,13 @@ export const getGate = (gateID: GateID): Gate => {
 };
 
 export const saveWorkspaceToRemote = async (
-  workspace: Workspace,
   shared: boolean,
   experimentId: string
 ): Promise<boolean> => {
-  let stateJson = JSON.stringify(workspace);
+  const workspace = getWorkspace();
+  const { files, ...rest } = workspace;
+  let stateJson = JSON.stringify(rest);
+
   const updateWorkSpace = WorkspacesApiFetchParamCreator({
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
@@ -109,7 +111,7 @@ export const saveWorkspaceToRemote = async (
       updateWorkSpace.options
     );
     return true;
-  } catch(err) {
+  } catch (err) {
     snackbarService.showSnackbar(
       "Could not save the workspace, reload the page and try again!",
       "error"
@@ -150,8 +152,8 @@ export const loadWorkspaceFromRemoteIfExists = async (
       await loadSavedWorkspace(workspace, shared, experimentId);
       return { loaded: true, requestSuccess: true };
     }
-  } catch {
-    return { loaded: false, requestSuccess: false };
+  } catch (err) {
+    throw err;
   }
   return { loaded: false, requestSuccess: true };
 };

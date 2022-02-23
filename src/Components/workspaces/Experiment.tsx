@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
+import SecurityUtil from "../../utils/Security.js";
 
 import {
   Grid,
@@ -45,7 +46,6 @@ const fileTempIdMap: any = {};
 
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
-
   const [experimentData, setExperimentData] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [editingFileName, setEditingFileName] = useState<null | string>(null);
@@ -118,41 +118,263 @@ const Experiment = (props: any) => {
     //eslint-disable-next-line
   }, [experimentData]);
 
-  const fetchExperimentData = (snack = true, key: string = "") => {
-    const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).experimentFiles(
-      userManager.getOrganiztionID(),
-      props.id,
-      userManager.getToken()
-    );
+  const reload = async () => {
+    try {
+      const fetchExperiments = ExperimentFilesApiFetchParamCreator({
+        accessToken: userManager.getToken(),
+      }).experimentFiles(
+        userManager.getOrganiztionID(),
+        props.id,
+        userManager.getToken()
+      );
 
-    axios
-      .get(fetchExperiments.url, fetchExperiments.options)
-      .then((e) => {
-        if (key && fileTempIdMap && Object.keys(fileTempIdMap).length > 0) {
-          if (e.data.files) {
-            fileTempIdMap[key] = e.data.files[0].id;
-          } else {
-            delete fileTempIdMap[key];
-          }
-        }
+      const response = await axios.get(
+        fetchExperiments.url,
+        fetchExperiments.options
+      );
 
-        setExperimentData(e.data);
-        let sizeSum = 0;
-        for (const file of e.data.files) {
-          sizeSum += file.fileSize;
-        }
-        setExperimentSize(sizeSum);
-      })
-      .catch((e) => {
-        if (snack)
-          snackbarService.showSnackbar(
-            "Failed to find this experiment, reload the page to try again!",
-            "error"
+      if (response?.status) {
+        setExperimentData(response?.data);
+        setExperiment(response?.data?.experimentDetails);
+        setTimeout(() => {
+          sessionStorage.setItem(
+            "experimentFiles",
+            SecurityUtil.encryptData(
+              { files: response.data },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
           );
-        userManager.logout();
-      });
+          sessionStorage.setItem("activeOrg", props.id);
+        }, 0);
+      } else {
+        await handleError({
+          message: "Information missing",
+          saverity: "error",
+        });
+      }
+    } catch (err) {
+      await handleError(err);
+    }
+  };
+
+  const updateFileCache = async (fileId: any, fileLabel: any) => {
+    //link view code here
+    const activeOrg: string = sessionStorage.getItem("activeOrg");
+    if (activeOrg && activeOrg === props.id) {
+      const expFileInfo = SecurityUtil.decryptData(
+        sessionStorage.getItem("experimentFiles"),
+        process.env.REACT_APP_DATA_SECRET_SOLD
+      );
+      if (expFileInfo) {
+        let index = expFileInfo?.files?.files?.findIndex(
+          (file: any) => file.id === fileId
+        );
+        if (index > -1) {
+          let currentFiles: any[] = expFileInfo?.files?.files?.slice();
+          const updatedFile = {
+            ...currentFiles[index],
+            ...{ label: fileLabel },
+          };
+          const updatedFiles = [
+            ...currentFiles.slice(0, index),
+            updatedFile,
+            ...currentFiles.slice(index + 1),
+          ];
+          //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+          sessionStorage.setItem(
+            "experimentFiles",
+            SecurityUtil.encryptData(
+              {
+                files: {
+                  ...expFileInfo.files,
+                  ...{ files: [...updatedFiles] },
+                },
+              },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+        }
+      } else {
+        await reload();
+      }
+    } else {
+      await reload();
+    }
+  };
+
+  const updateFileExperimentDetails = async (expId: any, name: any) => {
+    //link view code here
+    const activeOrg: string = sessionStorage.getItem("activeOrg");
+    if (activeOrg && activeOrg === props.id) {
+      const expFileInfo = SecurityUtil.decryptData(
+        sessionStorage.getItem("experimentFiles"),
+        process.env.REACT_APP_DATA_SECRET_SOLD
+      );
+      if (expFileInfo) {
+        if (expFileInfo?.files?.experimentDetails?.id === expId) {
+          const updatedExpInFile = {
+            ...expFileInfo?.files?.experimentDetails,
+            ...{ name: name },
+          };
+          sessionStorage.setItem(
+            "experimentFiles",
+            SecurityUtil.encryptData(
+              {
+                files: {
+                  ...expFileInfo.files,
+                  ...{ experimentDetails: { ...updatedExpInFile } },
+                },
+              },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+        }
+      }
+    }
+  };
+
+  const getTargetExperiments = (data: any, expId: any) => {
+    let requiredUpdateExperiments: any[] = [];
+    let targetExperiment = "";
+    if (
+      data?.experiments?.organisationExperiments.length > 0 &&
+      data?.experiments?.organisationExperiments.findIndex(
+        (e: any) => e.id === expId
+      ) > -1
+    ) {
+      requiredUpdateExperiments =
+        data?.experiments?.organisationExperiments?.slice();
+      targetExperiment = "org";
+    } else if (
+      data?.experiments?.userExperiments.length > 0 &&
+      data?.experiments?.userExperiments.findIndex((e: any) => e.id === expId) >
+        -1
+    ) {
+      requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
+      targetExperiment = "user";
+    } else {
+      requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
+      targetExperiment = "old";
+    }
+    return { requiredUpdateExperiments, targetExperiment };
+  };
+
+  const updateExperiments = async (
+    data: any,
+    updatedExperiments: any[],
+    targetExperiment: any
+  ) => {
+    switch (targetExperiment) {
+      case "user":
+        let userData: any = {
+          oldExperiments: [...data?.experiments?.oldExperiments],
+          organisationExperiments: [
+            ...data?.experiments?.organisationExperiments,
+          ],
+          userExperiments: [...updatedExperiments],
+        };
+        sessionStorage.setItem(
+          "experimentData",
+          SecurityUtil.encryptData(
+            { experiments: userData },
+            process.env.REACT_APP_DATA_SECRET_SOLD
+          )
+        );
+        break;
+      case "org":
+        let orgData: any = {
+          oldExperiments: [...data?.experiments?.oldExperiments],
+          organisationExperiments: [...updatedExperiments],
+          userExperiments: [...data?.experiments?.userExperiments],
+        };
+        sessionStorage.setItem(
+          "experimentData",
+          SecurityUtil.encryptData(
+            { experiments: orgData },
+            process.env.REACT_APP_DATA_SECRET_SOLD
+          )
+        );
+        break;
+      case "old":
+        let oldData: any = {
+          oldExperiments: [...updatedExperiments],
+          organisationExperiments: [
+            ...data?.experiments?.organisationExperiments,
+          ],
+          userExperiments: [...data?.experiments?.userExperiments],
+        };
+        sessionStorage.setItem(
+          "experimentData",
+          SecurityUtil.encryptData(
+            { experiments: oldData },
+            process.env.REACT_APP_DATA_SECRET_SOLD
+          )
+        );
+        break;
+      default:
+        console.log("not found");
+        break;
+    }
+  };
+
+  const updateExperimentCache = async (expId: any, name: any) => {
+    const data = SecurityUtil.decryptData(
+      sessionStorage.getItem("experimentData"),
+      process.env.REACT_APP_DATA_SECRET_SOLD
+    );
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
+    let targetIndex = -1;
+    if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
+      targetIndex = requiredUpdateExperiments.findIndex(
+        (e: any) => e.id === expId
+      );
+      if (targetIndex > -1) {
+        const updatedExperiments = [
+          ...requiredUpdateExperiments.slice(0, targetIndex),
+          { ...requiredUpdateExperiments[targetIndex], ...{ name: name } },
+          ...requiredUpdateExperiments.slice(targetIndex + 1),
+        ];
+        await updateExperiments(data, updatedExperiments, targetExperiment);
+        await updateFileExperimentDetails(expId, name);
+      } else {
+        sessionStorage.removeItem("experimentData");
+      }
+    }
+  };
+
+  const updateExperimentFileCount = async (expId: any, fileCount: any) => {
+    const data = SecurityUtil.decryptData(
+      sessionStorage.getItem("experimentData"),
+      process.env.REACT_APP_DATA_SECRET_SOLD
+    );
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
+    let targetIndex = -1;
+    if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
+      targetIndex = requiredUpdateExperiments.findIndex(
+        (e: any) => e.id === expId
+      );
+      if (targetIndex > -1) {
+        const currentExperiment = requiredUpdateExperiments[targetIndex];
+        const updatedExperiments = [
+          ...requiredUpdateExperiments.slice(0, targetIndex),
+          {
+            ...currentExperiment,
+            ...{
+              fileCount:
+                currentExperiment?.fileCount > 0
+                  ? currentExperiment?.fileCount + fileCount
+                  : fileCount,
+            },
+          },
+          ...requiredUpdateExperiments.slice(targetIndex + 1),
+        ];
+        await updateExperiments(data, updatedExperiments, targetExperiment);
+      } else {
+        sessionStorage.removeItem("experimentData");
+      }
+    }
   };
 
   const updateExperimentName = (snack = true) => {
@@ -162,40 +384,29 @@ const Experiment = (props: any) => {
 
     axios
       .put(updateExperiment.url, {}, updateExperiment.options)
-      .then((e) => {
+      .then(async (e) => {
+        if (
+          sessionStorage.getItem("experimentData") !== null ||
+          sessionStorage.getItem("experimentData") !== undefined
+        ) {
+          await updateExperimentCache(props.id, experiment.name);
+        } else {
+          sessionStorage.removeItem("experimentData");
+        }
         if (snack)
-          snackbarService.showSnackbar("Experiment updated", "success");
+          showMessageBox({
+            message: "Experiment updated",
+            saverity: "success",
+          });
       })
       .catch((e) => {
         if (snack)
-          snackbarService.showSnackbar(
-            "Failed to update this experiment, reload the page to try again!",
-            "error"
-          );
+          showMessageBox({
+            message:
+              "Failed to update this experiment, reload the page to try again!",
+            saverity: "error",
+          });
       });
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getExperiment = () => {
-    const experimentApiObj = ExperimentApiFetchParamCreator({
-      accessToken: userManager.getToken(),
-    }).getExperiment(userManager.getToken(), props.id);
-    axios
-      .post(
-        experimentApiObj.url,
-        {
-          experimentId: props.id,
-        },
-        {
-          headers: {
-            token: userManager.getToken(),
-          },
-        }
-      )
-      .then((e) => {
-        setExperiment(e.data);
-      })
-      .catch((e) => {});
   };
 
   function setContaineSet(superSet: Set<any>, set: Set<any>) {
@@ -248,11 +459,15 @@ const Experiment = (props: any) => {
       return;
     }
 
-    let filesUpload = uploadingFiles.concat(
-      fileList.map((e) => {
-        return { name: e.file.name, id: e.tempId };
-      })
-    );
+    let filesUpload = uploadingFiles
+      ? uploadingFiles.concat(
+          fileList.map((e) => {
+            return { name: e.file.name, id: e.tempId };
+          })
+        )
+      : fileList.map((e) => {
+          return { name: e.file.name, id: e.tempId };
+        });
     setUploadingFiles(filesUpload);
     const fcsservice = new FCSServices();
     let channelSet = new Set();
@@ -289,35 +504,49 @@ const Experiment = (props: any) => {
       }
     }
     setUploadingFiles(filesUpload);
+    const completedCount = await downloadFromServer(finalFileList);
+    if (completedCount > 0) {
+      await updateExperimentFileCount(props.id, completedCount);
+      await reload();
+    }
+    setFileUploadInputValue("");
+    setUploadingFiles(null);
+  };
+
+  const downloadFromServer = async (finalFileList: any[]) => {
+    let completedCount: number = 0;
     for (const file of finalFileList) {
-      oldBackFileUploader(
-        userManager.getToken(),
-        props.id,
-        userManager.getOrganiztionID(),
-        file.file
-      )
-        .then((e) => {
+      try {
+        const response = await oldBackFileUploader(
+          userManager.getToken(),
+          props.id,
+          userManager.getOrganiztionID(),
+          file.file
+        );
+        if (response?.status === 201) {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
             `Uploaded file name is ${file.file.name}`
           );
-          snackbarService.showSnackbar("Uploaded " + file.file.name, "success");
-        })
-        .catch((e) => {
-          snackbarService.showSnackbar(
+          showMessageBox({
+            message: "Uploaded " + file.file.name,
+            saverity: "success",
+          });
+        }
+      } catch (err) {
+        showMessageBox({
+          message:
             "Error uploading file " +
-              file.file.name.substring(0, 20) +
-              (file.file.name.length > 20 ? ",,," : "") +
-              ", please try again",
-            "error"
-          );
-        })
-        .finally(() => {
-          fetchExperimentData(false, file.tempId);
+            file.file.name.substring(0, 20) +
+            (file.file.name.length > 20 ? ",,," : "") +
+            ", please try again",
+          saverity: "error",
         });
+      } finally {
+        ++completedCount;
+      }
     }
-
-    setFileUploadInputValue("");
+    return completedCount;
   };
 
   const getExperimentChannels = (): string[] => {
@@ -325,40 +554,44 @@ const Experiment = (props: any) => {
     return experimentData.files[0].channels;
   };
 
-  // const deleteFile = (file: any) => {
-  //   alert(
-  //     "Due to technical issues, this version of the app doesn't allow for file deletion within an experiment"
-  //   );
-  //   return;
-  //   const fetchExperiments = ExperimentFilesApiFetchParamCreator({
-  //     accessToken: userManager.getToken(),
-  //   }).deleteFile(props.id, file.id, userManager.getToken());
-
-  //   axios
-  //     .delete(fetchExperiments.url, fetchExperiments.options)
-  //     .then((e) => {
-  //       snackbarService.showSnackbar("File deleted!", "success");
-  //     })
-  //     .catch((e) => {
-  //       snackbarService.showSnackbar(
-  //         "Failed to delete file, try again.",
-  //         "error"
-  //       );
-  //     })
-  //     .finally(() => {
-  //       fetchExperimentData();
-  //     });
-  // };
-
   useEffect(() => {
-    fetchExperimentData();
-    getExperiment();
-    //eslint-disable-next-line
+    if (
+      sessionStorage.getItem("experimentFiles") !== null ||
+      sessionStorage.getItem("experimentFiles") !== undefined
+    ) {
+      const activeOrg: string = sessionStorage.getItem("activeOrg");
+      if (activeOrg && activeOrg === props.id) {
+        const expFileInfo = SecurityUtil.decryptData(
+          sessionStorage.getItem("experimentFiles"),
+          process.env.REACT_APP_DATA_SECRET_SOLD
+        );
+        if (expFileInfo) {
+          setExperimentData(expFileInfo?.files);
+          setExperiment(expFileInfo?.files?.experimentDetails);
+        } else {
+          sessionStorage.removeItem("activeOrg");
+          (async () => {
+            await reload();
+          })();
+        }
+      } else {
+        sessionStorage.removeItem("activeOrg");
+        sessionStorage.removeItem("experimentFiles");
+        (async () => {
+          await reload();
+        })();
+      }
+    } else {
+      (async () => {
+        await reload();
+      })();
+    }
   }, []);
 
   const handleClose = (func: Function) => {
     func(false);
   };
+
   const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
   const GenOrView = async (event: any, fileId: any, name: string) => {
@@ -490,13 +723,13 @@ const Experiment = (props: any) => {
   };
 
   const updateExperimentFileName = (id: string, label: string) => {
-    const updatFileName = ExperimentFilesApiFetchParamCreator({
+    const updateFileName = ExperimentFilesApiFetchParamCreator({
       apiKey: userManager.getToken(),
     }).editFiles(props.id, id, label, userManager.getToken());
     axios
-      .put(updatFileName.url, { label }, updatFileName.options)
-      .then((e) => {
-        fetchExperimentData();
+      .put(updateFileName.url, { label }, updateFileName.options)
+      .then(async (e) => {
+        await updateFileCache(id, label);
       })
       .catch((e) =>
         snackbarService.showSnackbar(
@@ -508,15 +741,14 @@ const Experiment = (props: any) => {
 
   return (
     <>
-      {}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={() => {
-          fetchExperimentData(false);
+        added={async () => {
+          await reload();
         }}
         experiment={{
           ...experimentData,
@@ -605,7 +837,7 @@ const Experiment = (props: any) => {
                             updateExperimentName();
                           }
                         }}
-                      ></TextField>
+                      />
                     ) : (
                       experiment.name
                     )}
@@ -628,8 +860,8 @@ const Experiment = (props: any) => {
                   </Grid>
                 )}
               </div>
-
               <Button
+                key="new-workspace"
                 variant="contained"
                 style={{
                   backgroundColor: "#fafafa",
@@ -639,15 +871,43 @@ const Experiment = (props: any) => {
                 }}
                 onClick={() => {
                   if (props.poke === false) {
-                    history.push("/experiment/" + props.id + "/plots");
+                    history.push("/workspace/" + props.id + "/plots");
+                    // var w =1000;
+                    // var h = 100;
+                    // var left = (window.screen.width - w) + 1350;
+                    // var top = (window.screen.height - h) / 10;
+                    // var workSpaceWindow = window.open("/workspace/" + props.id + "/plots", props.id,'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', left=' + left +', top=' + top);
+                    // if(workSpaceWindow){
+                    //     workSpaceWindow.oncontextmenu = function (event:any) {
+                    //         return false;
+                    //     }
+                    // }
                   } else {
-                    history.push("/experiment/" + props.id + "/plots/poke");
+                    history.push("/workspace/" + props.id + "/plots/poke");
                   }
                 }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
                 Workspace
               </Button>
+              {/*  <Button*/}
+              {/*  variant="contained"*/}
+              {/*  style={{*/}
+              {/*    backgroundColor: "#fafafa",*/}
+              {/*    maxHeight: 50,*/}
+              {/*    visibility:*/}
+              {/*      experimentData?.files.length === 0 ? "hidden" : "visible",*/}
+              {/*  }}*/}
+              {/*  onClick={() => {*/}
+              {/*    if (props.poke === false) {*/}
+              {/*      history.push("/experiment/" + props.id + "/plots");*/}
+              {/*    } else {*/}
+              {/*      history.push("/experiment/" + props.id + "/plots/poke");*/}
+              {/*    }*/}
+              {/*  }}*/}
+              {/*  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>*/}
+              {/*  Workspace*/}
+              {/*</Button>*/}
             </Grid>
             <Grid
               style={{
@@ -805,8 +1065,8 @@ const Experiment = (props: any) => {
                 <Divider style={{ marginBottom: 10 }}></Divider>
                 {experimentData === null ? (
                   <CircularProgress />
-                ) : experimentData.files.length === 0 &&
-                  uploadingFiles.length === 0 ? (
+                ) : experimentData?.files?.length === 0 &&
+                  uploadingFiles?.length === 0 ? (
                   <h3 style={{ color: "#777" }}>
                     There are no files in this experiment
                   </h3>
@@ -881,7 +1141,7 @@ const Experiment = (props: any) => {
                                       setEditingFileName(null);
                                     }
                                   }}
-                                ></TextField>
+                                />
 
                                 <button
                                   onClick={() => {
@@ -1059,13 +1319,11 @@ const Experiment = (props: any) => {
                   })
                 )}
                 {experimentData !== null &&
-                uploadingFiles.length > 0 &&
+                uploadingFiles?.length > 0 &&
                 experimentData.files.length > 0 ? (
-                  <Divider
-                    style={{ marginTop: 15, marginBottom: 15 }}
-                  ></Divider>
+                  <Divider style={{ marginTop: 15, marginBottom: 15 }} />
                 ) : null}
-                {uploadingFiles.map((e: any, i: number) => {
+                {uploadingFiles?.map((e: any, i: number) => {
                   return (
                     <>
                       <Grid
@@ -1098,10 +1356,10 @@ const Experiment = (props: any) => {
                               marginLeft: 20,
                               marginBottom: -3,
                             }}
-                          ></CircularProgress>
+                          />
                         </h3>
                       </Grid>
-                      {i !== uploadingFiles.length - 1 ? (
+                      {i !== uploadingFiles?.length - 1 ? (
                         <Divider
                           style={{ marginTop: 15, marginBottom: 15 }}
                         ></Divider>

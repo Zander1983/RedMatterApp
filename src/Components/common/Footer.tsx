@@ -6,7 +6,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import Button from "@material-ui/core/Button";
-import { useHistory } from "react-router";
+import { useHistory, useLocation } from "react-router";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import useForceUpdate from "hooks/forceUpdate";
@@ -49,7 +49,9 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeader: {
     backgroundColor:
-      theme.palette.type === "light" ? theme.palette.grey[200] : theme.palette.grey[700],
+      theme.palette.type === "light"
+        ? theme.palette.grey[200]
+        : theme.palette.grey[700],
   },
   cardPricing: {
     display: "flex",
@@ -77,64 +79,10 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     left: 0,
     right: 0,
-    background: "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
+    background:
+      "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
   },
 }));
-
-export default function Footer(props: any) {
-  const forceUpdate = useForceUpdate();
-  const classes = useStyles();
-  const history = useHistory();
-
-  const [footers, setFooters] = React.useState(footerData);
-
-  return (
-    <div className={classes.footerMain}>
-      <Grid item xs={12} md={8} component="footer" className={classes.footer}>
-        <Grid container spacing={4} justify="space-evenly">
-          {footers.map((footer, i) => (
-            <Grid key={footer.title} item xs={12} md={4} style={{ textAlign: "left" }}>
-              <Typography variant="h6" color="textPrimary" gutterBottom>
-                {footer.title}
-              </Typography>
-              <ul>
-                {footer.description.map((item, j) => (
-                  <li key={item.name} style={{ textAlign: "left" }}>
-                    {item.open !== undefined ? (
-                      <>
-                        <Button
-                          onClick={() => {
-                            let newFooter = footers;
-                            newFooter[i].description[j].open = !item.open;
-                            setFooters(newFooter);
-                            forceUpdate();
-                          }}
-                        >
-                          {item.name}
-                          {item.open ? (
-                            <ArrowDropDownIcon></ArrowDropDownIcon>
-                          ) : (
-                            <ArrowRightIcon></ArrowRightIcon>
-                          )}
-                        </Button>
-                        <Collapse in={item.open} children={item.description} />
-                      </>
-                    ) : (
-                      <Button onClick={() => history.push(item.path)}>{item.name}</Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </Grid>
-          ))}
-          <Box mt={1}>
-            <Copyright />
-          </Box>
-        </Grid>
-      </Grid>
-    </div>
-  );
-}
 
 const footerData = [
   {
@@ -147,7 +95,7 @@ const footerData = [
           <ul>
             <li>
               <b>Mark Kelly</b>
-              <br /> Chief Executive Officer
+              <br /> Chief Executive Officer and software development consultant
               <br />
               <br />
             </li>
@@ -158,14 +106,26 @@ const footerData = [
               <br />
             </li>
             <li>
-              <b>Renato Britto Araujo</b>
-              <br /> Chief Technology Officer
+              <b>Dr. Alfonso Blanco</b>
+              <br /> Science Advisor
               <br />
               <br />
             </li>
             <li>
-              <b>Dr. Alfonso Blanco</b>
-              <br /> Science Advisor
+              <b>Keshav Agrawal</b>
+              <br /> Sr. Software Developer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Riyasaat Ahmed Rahul</b>
+              <br /> Sr.Front-end Software engineer
+              <br />
+              <br />
+            </li>
+            <li>
+              <b>Md Eyasin</b>
+              <br /> Sr. Backend Software Engineer(Mentor)
               <br />
               <br />
             </li>
@@ -177,10 +137,11 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It was built in
-            conjunction with a local hospital who wanted to be able to access FCS tools remotely and
-            from mobile devices. Red Matter is now used by users in over 2,000 institutes and in
-            over 100 countries.
+            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It
+            was built in conjunction with a local hospital who wanted to be able
+            to access FCS tools remotely and from mobile devices. Red Matter is
+            now used by users in over 2,000 institutes and in over 100
+            countries.
           </div>
         ),
       },
@@ -194,9 +155,10 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Any FCS data uploaded to Red Matter may be used by Red Matter in an anonymised form. Red
-            Matter defines anonymised FCS data as data that excludes any file metadata, labels, or
-            any other infromation that would identify the FCS file or its source.
+            Any FCS data uploaded to Red Matter may be used by Red Matter in an
+            anonymised form. Red Matter defines anonymised FCS data as data that
+            excludes any file metadata, labels, or any other infromation that
+            would identify the FCS file or its source.
           </div>
         ),
       },
@@ -225,3 +187,73 @@ const footerData = [
     ],
   },
 ];
+export default function Footer(props: any) {
+  const forceUpdate = useForceUpdate();
+  const classes = useStyles();
+  const history = useHistory();
+  const location = useLocation();
+
+  const [footers, setFooters] = React.useState(footerData);
+
+  const renderFooter = () => {
+    return (
+      <div className={classes.footerMain}>
+        <Grid item xs={12} md={8} component="footer" className={classes.footer}>
+          <Grid container spacing={4} justify="space-evenly">
+            {footers.map((footer, i) => (
+              <Grid
+                key={footer.title}
+                item
+                xs={12}
+                md={4}
+                style={{ textAlign: "left" }}
+              >
+                <Typography variant="h6" color="textPrimary" gutterBottom>
+                  {footer.title}
+                </Typography>
+                <ul>
+                  {footer.description.map((item, j) => (
+                    <li key={item.name} style={{ textAlign: "left" }}>
+                      {item.open !== undefined ? (
+                        <>
+                          <Button
+                            onClick={() => {
+                              let newFooter = footers;
+                              newFooter[i].description[j].open = !item.open;
+                              setFooters(newFooter);
+                              forceUpdate();
+                            }}
+                          >
+                            {item.name}
+                            {item.open ? (
+                              <ArrowDropDownIcon></ArrowDropDownIcon>
+                            ) : (
+                              <ArrowRightIcon></ArrowRightIcon>
+                            )}
+                          </Button>
+                          <Collapse
+                            in={item.open}
+                            children={item.description}
+                          />
+                        </>
+                      ) : (
+                        <Button onClick={() => history.push(item.path)}>
+                          {item.name}
+                        </Button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </Grid>
+            ))}
+            <Box mt={1}>
+              <Copyright />
+            </Box>
+          </Grid>
+        </Grid>
+      </div>
+    );
+  };
+  // !location.pathname.includes("/workspace") &&
+  return renderFooter();
+}

@@ -374,9 +374,10 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
-                              }, 400);
+                              }, 10);
                             }}
                           >
                             {isDownloading ? (
@@ -412,9 +413,22 @@ const AddFileModal = React.memo(
                               WorkspaceDispatch.UpdateSelectedFile(
                                 fileMetadata.id
                               );
+
+                              // making the selected file the first element of filesArray
+                              const filesInNewOrder: File[] = [];
+                              for (let i = 0; i < files.length; i++) {
+                                if (files[i].id === fileMetadata.id) {
+                                  files[i].view = false;
+                                  filesInNewOrder.unshift(files[i]);
+                                } else {
+                                  filesInNewOrder.push(files[i]);
+                                }
+                              }
+                              WorkspaceDispatch.SetFiles(filesInNewOrder);
+
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
-                              }, 400);
+                              }, 10);
                             }}
                             disabled={isDownloading}
                           >

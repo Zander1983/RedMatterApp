@@ -35,6 +35,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
+
   const deleteExperiment = () => {
     const fetchArgs = ExperimentApiFetchParamCreator({
       accessToken: userManager.getToken(),
@@ -42,8 +43,8 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
     axios
       .delete(fetchArgs.url, fetchArgs.options)
       .then((e) => {
+        props.update(props.data.id);
         snackbarService.showSnackbar("Experiment deleted", "success");
-        props.update();
       })
       .catch((e) => {
         snackbarService.showSnackbar(

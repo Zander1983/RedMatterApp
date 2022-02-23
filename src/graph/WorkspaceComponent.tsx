@@ -47,7 +47,7 @@ import { Typography } from "antd";
 import IOSSwitch from "Components/common/Switch";
 import { memResetDatasetCache } from "./resources/dataset";
 import NotificationsOverlay, { Notification } from "./resources/notifications";
-import { initialState } from "./workspaceRedux/graphReduxActions";
+// import { initialState } from "./workspaceRedux/graphReduxActions";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import EventQueueDispatch from "graph/workspaceRedux/eventQueueDispatchers";
 
@@ -109,6 +109,7 @@ const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
+
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -116,6 +117,7 @@ const WorkspaceInnerComponent = (props: {
   // TODO ONLY UPDATE WHEN STATE IS CHANGED!!!
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventPlotsRerenderArray = eventQueue.filter(
@@ -369,15 +371,18 @@ const WorkspaceInnerComponent = (props: {
   const saveWorkspace = async (shared: boolean = false) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
-    await saveWorkspaceToRemote(workspace, shared, props.experimentId);
+    await saveWorkspaceToRemote(shared, props.experimentId);
     setSavingWorkspace(false);
     updateXarrow();
   };
 
   var onLinkShareClick = async () => {
+    console.log(sharedWorkspace);
     if (isLoggedIn) {
       saveWorkspace(true);
+      console.log(sharedWorkspace);
     } else if (sharedWorkspace) {
+      console.log(sharedWorkspace);
       let stateJson = JSON.stringify(workspace);
       let newWorkspaceDB;
       try {
@@ -884,7 +889,6 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
             onClick={async () => {
               snackbarService.showSnackbar("Clearing workspace...", "info");
               await saveWorkspaceToRemote(
-                initialState,
                 this.props.shared,
                 this.props.experimentId
               );

@@ -30,14 +30,17 @@ export default function GateNamePrompt() {
   const [event, setEvent] = React.useState<WorkspaceEventGateNaming>();
 
   const eventStacker = useGAEventTrackers("Gate Created.");
+
   useSelector((e: any) => {
     const eventQueue = e.workspaceEventQueue.queue;
     let eventGateNamingArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type == "gateNaming" && x.used === false
+      (x: WorkspaceEvent) => x.type == "gateNaming" && !x.used
     );
     if (eventGateNamingArray.length > 0) {
       let event: WorkspaceEventGateNaming = eventGateNamingArray[0];
+      //console.log(event);
       let gate = getGate(event.gateID);
+      //console.log(gate);
       setName(gate.name);
       setGate(gate);
       setPlot(getPlot(event.plotID));
@@ -61,13 +64,13 @@ export default function GateNamePrompt() {
     setOpen(false);
     WorkspaceDispatch.DeleteGate(gate);
     EventQueueDispatch.DeleteQueueItem(event.id);
-    let plotsRerenderQueueItem: PlotsRerender = {
-      id: "",
-      used: false,
-      type: "plotsRerender",
-      plotIDs: [plot.id],
-    };
-    EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
+    // let plotsRerenderQueueItem: PlotsRerender = {
+    //   id: "",
+    //   used: false,
+    //   type: "plotsRerender",
+    //   plotIDs: [plot.id],
+    // };
+    // EventQueueDispatch.AddQueueItem(plotsRerenderQueueItem);
   };
 
   const instancePlot = async (plot: Plot, gate: Gate) => {
@@ -93,7 +96,7 @@ export default function GateNamePrompt() {
   };
 
   useEffect(() => {
-    if (open === true) {
+    if (open) {
       const inp = document.getElementById("gate-name-textinput");
       if (inp !== null) {
         inp.focus();
@@ -120,6 +123,8 @@ export default function GateNamePrompt() {
       onKeyDown={(e: any) => {
         if (e.code === "Enter") {
           renameGate(name);
+          WorkspaceDispatch.ClearOpenFiles();
+          setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
         }
       }}
     >
@@ -159,6 +164,7 @@ export default function GateNamePrompt() {
                 setPlot((prev: Plot) => {
                   return { ...prev, plotWidth: prev.plotWidth - 1 };
                 });
+                setTimeout(() => WorkspaceDispatch.ClearOpenFiles(), 1000);
                 setNewGateCreated(true);
               }
             }}
