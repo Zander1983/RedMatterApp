@@ -160,6 +160,7 @@ const PlotDataComponent = ({
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
+
   let updateTimeout: any = null;
 
   const getTableRowPlots = (file: File) => {
@@ -182,14 +183,16 @@ const PlotDataComponent = ({
   };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
+    if (file.id === workspace.selectedFile && workspaceLoading) {
       if (
         getTableRowPlots(file).length > 0 &&
         getTableRowPlots(file).length % 4 === 0 &&
         renderArrow
       ) {
-        setRenderArrow(false);
-        setTimeout(() => setRenderArrow(true), 10);
+        setTimeout(() => {
+          setRenderArrow(true);
+          // updateXarrow();
+        }, 100);
       }
     }
   }, [getTableRowPlots(file).length]);
@@ -233,6 +236,7 @@ const PlotDataComponent = ({
       setTimeout(() => {
         setLoader(false);
         setRenderArrow(true);
+        updateXarrow();
         updateXarrow();
       }, 1000);
     }
@@ -448,8 +452,9 @@ const PlotDataComponent = ({
                   rows={{ lg: 30 }}
                   rowHeight={30}
                   compactType={null}
-                  //onLayoutChange={(layout: any) => {
-                  //   updateArrows();
+                  // onLayoutChange={(layout: any) => {
+                  //     console.log(" lay out changed ===");
+                  //    if(isOpen) updateArrows();
                   // }}
                   isDraggable={workspace.editWorkspace}
                   onDragStop={() => {
@@ -460,7 +465,7 @@ const PlotDataComponent = ({
                 >
                   {
                     //@ts-ignore
-                    getTableRowPlots(file).map(
+                    getTableRowPlots(file)?.map(
                       ({ plot, file: PlotFile }, i) => {
                         if (PlotFile.id === file.id) {
                           return (

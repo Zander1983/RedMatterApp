@@ -4,7 +4,7 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableContainer from "@material-ui/core/TableContainer";
 
-import React, { useLayoutEffect } from "react";
+import React, {useLayoutEffect} from "react";
 import { useSelector } from "react-redux";
 
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
@@ -14,7 +14,6 @@ import PlotHeadComponent from "./PlotHeadComponent";
 import PlotRowComponent from "./PlotRowComponent";
 import { getWorkspace } from "graph/utils/workspace";
 import PlotStats from "graph/utils/stats";
-import {Xwrapper} from "react-xarrows";
 
 const statsProvider = new PlotStats();
 const deletedPlots: string[] = [];
