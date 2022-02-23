@@ -80,10 +80,10 @@ export const downloadFileEvent = async (
     for (const fileId of files) {
       const fileQuery = workspace.files.filter((e) => e.id === fileId);
       if (fileQuery.length > 1) {
-        throw Error("Multiple files with the same ID present in workspace");
+        throw Error("DUPLICATE-FILE:Multiple files with the same ID present in workspace");
       }
       if (fileQuery.length > 0 && fileQuery[0].downloaded) {
-        throw Error("File already downloaded");
+        throw Error("DOWNLOADED-FILE:File already downloaded");
       }
     }
 
@@ -153,10 +153,12 @@ export const downloadFileEvent = async (
     } else {
       return files;
     }
-  } catch (err) {
+  } catch (err:any){
     // if (showNotifications) {
     //   notification.killNotification();
     // }
+    if (err && err?.name === "Error" || err?.message.toString() === "Network Error") throw err;
+
     if (retry > 0) {
       downloadFileEvent(
         workspaceIsShared,
@@ -169,7 +171,7 @@ export const downloadFileEvent = async (
       // if (showNotifications) {
       //   notification.killNotification();
       // }
-      throw err; //Error("File was not downloaded");
+      throw Error("RETRY-FAILED:File was not downloaded");
     }
   }
 };

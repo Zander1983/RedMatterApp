@@ -127,6 +127,38 @@ const NewWorkspaceInnerComponent = (props: {
     };
   }, []);
 
+  const handleRequestError = async (err:any) => {
+    setPlotCallNeeded(false);
+    setReloadMessage("");
+    if (err.toString().indexOf("FILE-MISSING") !== -1) {
+      await handleError({
+        message: "File downloading failed. due to file missing",
+        saverity: "error",
+      });
+      setMessage("File downloading failed. due to file missing");
+    } else if (err.toString().indexOf("RETRY-FAILED") !== -1) {
+      await handleError({
+        message: "File downloading failed. due to re try completed",
+        saverity: "error",
+      });
+      setMessage("Your Action is Processing. please try after few later Or wait ");
+    } else if (err.toString().indexOf("DUPLICATE-FILE") !== -1) {
+      await handleError({
+        message: "File downloading failed. due to multiple files with the same ID present in workspace",
+        saverity: "error",
+      });
+      setMessage("Your Action is Processing. please try after few later Or wait ");
+    }else if (err.toString().indexOf("DOWNLOADED-FILE") !== -1) {
+      await handleError({
+        message: "File downloading failed. due to File already downloaded",
+        saverity: "error",
+      });
+      setMessage("Your Action is Processing. please try after few later Or wait ");
+    }
+    else
+      throw err;
+  };
+
   const handlePrivateWorkspace = async () => {
     let files = SecurityUtil.decryptData(
       sessionStorage.getItem("experimentFiles"),
@@ -153,23 +185,8 @@ const NewWorkspaceInnerComponent = (props: {
             );
           }
         } catch (err) {
-          setPlotCallNeeded(false);
-          if (err.toString().indexOf("FILE-MISSING") === -1) {
-            await handleError({
-              message: "File downloading failed. due to retry completed",
-              saverity: "error",
-            });
-          } else {
-            setMessage(
-              "Your Action is Processing. please try after few later Or wait "
-            );
-          }
-        } finally {
-          if (pageLoaderSubscription) {
-            setOpen(false);
-            clearTimeout(pageLoaderSubscription);
-            pageLoaderSubscription = null;
-          }
+          console.log(err);
+          await handleRequestError(err);
         }
       }
     }
@@ -194,24 +211,8 @@ const NewWorkspaceInnerComponent = (props: {
           "Your Action is Processing. please try after few later Or wait "
         );
       }
-    } catch (err) {
-      setPlotCallNeeded(false);
-      if (err.toString().indexOf("FILE-MISSING") === -1) {
-        await handleError({
-          message: "File downloading failed. due to retry completed",
-          saverity: "error",
-        });
-      } else {
-        setMessage(
-          "Your Action is Processing. please try after few later Or wait "
-        );
-      }
-    } finally {
-      if (pageLoaderSubscription) {
-        setOpen(false);
-        clearTimeout(pageLoaderSubscription);
-        pageLoaderSubscription = null;
-      }
+    } catch (err:any) {
+      await handleRequestError(err);
     }
   };
 
@@ -226,11 +227,25 @@ const NewWorkspaceInnerComponent = (props: {
         setReloadMessage("Loading Done. wait preparing....");
         if (response.requestSuccess && !props.shared) {
           await handlePrivateWorkspace();
-        } else {
+        } else if (response.requestSuccess && props.shared) {
           await handleSharedWorkspace(shared, experimentId);
+        }else {
+          await handleError({
+            message: "Workspace Loading Failed.Due to Invalid Request. try again",
+            saverity: "error",
+          });
         }
       })
-      .catch((e) => {});
+      .catch(async (err) => {
+        setPlotCallNeeded(false);
+        await handleError(err);
+      }).finally(() => {
+        if (pageLoaderSubscription) {
+          setOpen(false);
+          clearTimeout(pageLoaderSubscription);
+          pageLoaderSubscription = null;
+        }
+    });
   };
 
   const handleError = async (error: any) => {
@@ -238,11 +253,12 @@ const NewWorkspaceInnerComponent = (props: {
       error?.name === "Error" ||
       error?.message.toString() === "Network Error"
     ) {
-      setConnectivity(false);
       showMessageBox({
         message: "Connectivity Problem, please check your internet connection",
         saverity: "error",
       });
+      setConnectivity(false);
+      setReloadMessage("");
     } else if (error?.response) {
       if (error.response?.status == 401 || error.response.status == 419) {
         setTimeout(() => {
@@ -256,7 +272,7 @@ const NewWorkspaceInnerComponent = (props: {
       }
     } else {
       showMessageBox({
-        message: error?.message || "Request Failed. May be Time out",
+        message: error?.message || "Request Failed. May be Time out Or Invalid",
         saverity: error.saverity || "error",
       });
     }

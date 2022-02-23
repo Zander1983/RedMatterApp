@@ -160,6 +160,7 @@ const PlotDataComponent = ({
   //@ts-ignore
   const workspace: WorkspaceType = useSelector((state) => state.workspace);
   const [customPlotRerender, setCustomPlotRerender] = React.useState([]);
+
   let updateTimeout: any = null;
 
   const getTableRowPlots = (file: File) => {
@@ -182,14 +183,17 @@ const PlotDataComponent = ({
   };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
+    if (file.id === workspace.selectedFile && workspaceLoading) {
       if (
         getTableRowPlots(file).length > 0 &&
         getTableRowPlots(file).length % 4 === 0 &&
         renderArrow
       ) {
         setRenderArrow(false);
-        setTimeout(() => setRenderArrow(true), 1000);
+        setTimeout(() =>{
+            setRenderArrow(true);
+            // updateXarrow();
+        }, 1000);
       }
     }
   }, [getTableRowPlots(file).length]);
@@ -230,11 +234,11 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     } else {
-      setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-      }, 1000);
+        setTimeout(() => {
+            setLoader(false);
+            setRenderArrow(true);
+            updateXarrow();
+        }, 1500);
     }
   }, []);
 
@@ -444,8 +448,9 @@ const PlotDataComponent = ({
                   rows={{ lg: 30 }}
                   rowHeight={30}
                   compactType={null}
-                  //onLayoutChange={(layout: any) => {
-                  //   updateArrows();
+                  // onLayoutChange={(layout: any) => {
+                  //     console.log(" lay out changed ===");
+                  //    if(isOpen) updateArrows();
                   // }}
                   isDraggable={workspace.editWorkspace}
                   onDragStop={() => {
@@ -455,7 +460,7 @@ const PlotDataComponent = ({
                   isResizable={false}>
                   {
                     //@ts-ignore
-                    getTableRowPlots(file).map(
+                    getTableRowPlots(file)?.map(
                       ({ plot, file: PlotFile }, i) => {
                         if (PlotFile.id === file.id) {
                           return (
