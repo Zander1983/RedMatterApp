@@ -10,7 +10,9 @@ import TableCell from "@material-ui/core/TableCell/TableCell";
 import { makeStyles } from "@material-ui/core";
 import PlotStats from "graph/utils/stats";
 import { useSelector } from "react-redux";
+import infoIcon from "assets/images/info.png";
 import { getWorkspace } from "graph/utils/workspace";
+import { Tooltip } from "@material-ui/core";
 const statsProvider = new PlotStats();
 
 const useStyles = makeStyles((theme) => ({
@@ -167,7 +169,27 @@ const PlotStateComponent = ({ file, onRowClick, isOpen }: Props) => {
                 className={`${classes.tableCell}`}
                 key={"content-" + value + i}
               >
-                {file?.name}
+                {file.id === workspace.selectedFile && "Selected File: "}
+                <span
+                  style={{
+                    fontWeight: file.id === workspace.selectedFile && 500,
+                  }}
+                >
+                  {file?.name}
+                </span>
+                {file.id !== workspace.selectedFile && (
+                  <Tooltip
+                    title={
+                      "Non Control files, gates can be adjusted if you have a membership of one of our paid plans"
+                    }
+                  >
+                    <img
+                      src={infoIcon}
+                      alt={`icon-${value}-${i}`}
+                      style={{ width: 15, height: 15, marginLeft: 5 }}
+                    />
+                  </Tooltip>
+                )}
               </TableCell>
             ) : i !== data.length - 1 ? (
               <TableCell
