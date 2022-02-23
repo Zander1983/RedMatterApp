@@ -358,7 +358,7 @@ const NewWorkspaceInnerComponent = (props: {
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <SideMenus workspace={getWorkspace()}></SideMenus>
+      <SideMenus workspace={getWorkspace()}/>
       <Grid
         style={{
           marginTop: 0,

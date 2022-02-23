@@ -363,8 +363,7 @@ const PlotDataComponent = ({
               compactType={null}
               isDraggable={workspace.editWorkspace}
               isResizable={false}
-              onBreakpointChange={() => console.log("changes")}
-            >
+              onBreakpointChange={() => console.log("changes")}>
               {
                 //@ts-ignore
                 getTableRowPlots(file).map(({ plot, file: PlotFile }, i) => {
@@ -455,6 +454,7 @@ const PlotDataComponent = ({
                   //     console.log(" lay out changed ===");
                   //    if(isOpen) updateArrows();
                   // }}
+                  // onBreakpointChange={() => console.log("changes")}
                   isDraggable={workspace.editWorkspace}
                   onDragStop={() => {
                     updateArrows();
