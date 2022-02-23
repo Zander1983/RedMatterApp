@@ -238,7 +238,8 @@ const PlotDataComponent = ({
             setLoader(false);
             setRenderArrow(true);
             updateXarrow();
-        }, 1500);
+            updateXarrow();
+        }, 1000);
     }
   }, []);
 
