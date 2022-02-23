@@ -350,8 +350,7 @@ const PlotDataComponent = ({
                   ? 2
                   : 3
               }s`,
-            }}
-          >
+            }}>
             <ResponsiveGridLayout
               className="layout"
               breakpoints={{ lg: 1200 }}
@@ -360,8 +359,7 @@ const PlotDataComponent = ({
               rowHeight={30}
               compactType={null}
               isDraggable={workspace.editWorkspace}
-              isResizable={false}
-            >
+              isResizable={false}>
               {
                 //@ts-ignore
                 getTableRowPlots(file).map(({ plot, file: PlotFile }, i) => {
@@ -424,8 +422,7 @@ const PlotDataComponent = ({
                 : isOpen
                 ? classes.show
                 : classes.hide
-            }
-          >
+            }>
             <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
@@ -439,8 +436,7 @@ const PlotDataComponent = ({
                       ? 2
                       : 3
                   }s`,
-                }}
-              >
+                }}>
                 <ResponsiveGridLayout
                   className="layout"
                   breakpoints={{ lg: 1200 }}
@@ -456,8 +452,7 @@ const PlotDataComponent = ({
                     updateArrows();
                     updateXarrow();
                   }}
-                  isResizable={false}
-                >
+                  isResizable={false}>
                   {
                     //@ts-ignore
                     getTableRowPlots(file).map(
@@ -473,8 +468,7 @@ const PlotDataComponent = ({
                                 workspace.plots,
                                 workspace.editWorkspace
                               )}
-                              id={`workspace-outter-${plot.id}`}
-                            >
+                              id={`workspace-outter-${plot.id}`}>
                               <div id="inner" className={classes.itemInnerDiv}>
                                 <PlotComponent
                                   plotRelevantResources={getPlotRelevantResources(
@@ -506,6 +500,7 @@ const PlotDataComponent = ({
       </>
     );
   };
+
   return (
     // (isOpen || file.id === getWorkspace().selectedFile) &&
     <>
