@@ -152,8 +152,8 @@ export const loadWorkspaceFromRemoteIfExists = async (
       await loadSavedWorkspace(workspace, shared, experimentId);
       return { loaded: true, requestSuccess: true };
     }
-  } catch {
-    return { loaded: false, requestSuccess: false };
+  } catch (err) {
+    throw err;
   }
   return { loaded: false, requestSuccess: true };
 };
