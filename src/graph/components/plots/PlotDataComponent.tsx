@@ -183,15 +183,16 @@ const PlotDataComponent = ({
   };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
-      if (
-        getTableRowPlots(file).length > 0 &&
-        getTableRowPlots(file).length % 4 === 0 &&
-        renderArrow
-      ) {
-        setRenderArrow(false);
-        setTimeout(() => setRenderArrow(true), 1000);
-      }
+    const plots = getTableRowPlots(file);
+    if (
+      plots.length > 1 &&
+      file.id === workspace.selectedFile &&
+      (plots[plots.length - 2].plot.positions.y !==
+        plots[plots.length - 1].plot.positions.y ||
+        plots.length % 3 === 0)
+    ) {
+      setRenderArrow(false);
+      setTimeout(() => setRenderArrow(true), 2000);
     }
   }, [getTableRowPlots(file).length]);
 
@@ -363,7 +364,6 @@ const PlotDataComponent = ({
               compactType={null}
               isDraggable={workspace.editWorkspace}
               isResizable={false}
-              onBreakpointChange={() => console.log("changes")}
             >
               {
                 //@ts-ignore
