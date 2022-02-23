@@ -18,7 +18,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { snackbarService } from "uno-material-ui";
 import IOSSwitch from "Components/common/Switch";
 import { createButtonDisable } from "./UserAuthorizationRules";
-import SecurityUtil from '../../utils/Security.js';
+import SecurityUtil from "../../utils/Security.js";
 interface RemoteExperiment {
   id: string;
   details: {
@@ -39,7 +39,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
     history.replace("/login");
   }
-  
+
   const gettingOrganizationId = () => {
     try {
       return userManager.getOrganiztionID();
@@ -50,10 +50,14 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
   const [organizationExperiments, setExperiments] = useState([]);
   const [privateExperiments, setPrivateExperiments] = useState([]);
-  const [fetchExperimentsComplete, setFetchExperimentsComplete] = useState<boolean>(false);
-  const [createExperimentModal, setCreateExperimentModal] = useState<boolean>(false);
-  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] = useState<boolean>(true);
-  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] = useState<boolean>(false);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] =
+    useState<boolean>(false);
+  const [createExperimentModal, setCreateExperimentModal] =
+    useState<boolean>(false);
+  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
+    useState<boolean>(true);
+  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
+    useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const [oldExperiments, setOldExperiments] = useState([]);
@@ -61,173 +65,225 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   let rules: any = userManager.getRules();
 
   const updateExperiment = async (experimentId: any) => {
-      const cacheData = SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
-      if(cacheData){
-          await doStaff(cacheData, experimentId);
-      }
+    const cacheData = SecurityUtil.decryptData(
+      sessionStorage.getItem("experimentData"),
+      process.env.REACT_APP_DATA_SECRET_SOLD
+    );
+    if (cacheData) {
+      await doStaff(cacheData, experimentId);
+    }
   };
 
-  const doStaff = async (data: any, expId:any) => {
-        //link view code here
-        let {requiredUpdateExperiments, targetExperiment} = await getTargetExperiments(data, expId);
-        if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
-            const updatedExperiments = requiredUpdateExperiments.filter((experiment:any) => experiment.id !== expId);
-            switch (targetExperiment) {
-                case "user":
-                    setPrivateExperiments(updatedExperiments);
-                    let userData: any = {
-                        oldExperiments: [...data?.experiments?.oldExperiments],
-                        organisationExperiments: [...data?.experiments?.organisationExperiments],
-                        userExperiments: [...updatedExperiments]
-                    };
-                    sessionStorage.setItem("experimentData",SecurityUtil.encryptData({experiments: userData}, process.env.REACT_APP_DATA_SECRET_SOLD));
-                    break;
-                case "org":
-                    setExperiments(updatedExperiments);
-                    let orgData:any = {
-                        oldExperiments: [...data?.experiments?.oldExperiments],
-                        organisationExperiments: [...updatedExperiments],
-                        userExperiments:[...data?.experiments?.userExperiments]
-                    };
-                    sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments:orgData},process.env.REACT_APP_DATA_SECRET_SOLD));
-                    break;
-                case "old":
-                    setOldExperiments(updatedExperiments);
-                    let oldData:any = {
-                        oldExperiments: [...updatedExperiments],
-                        organisationExperiments: [...data?.experiments?.organisationExperiments],
-                        userExperiments:[...data?.experiments?.userExperiments]
-                    };
-                    sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments:oldData},process.env.REACT_APP_DATA_SECRET_SOLD));
-                    break;
-            }
-        }
+  const doStaff = async (data: any, expId: any) => {
+    //link view code here
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
+    if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
+      const updatedExperiments = requiredUpdateExperiments.filter(
+        (experiment: any) => experiment.id !== expId
+      );
+      switch (targetExperiment) {
+        case "user":
+          setPrivateExperiments(updatedExperiments);
+          let userData: any = {
+            oldExperiments: [...data?.experiments?.oldExperiments],
+            organisationExperiments: [
+              ...data?.experiments?.organisationExperiments,
+            ],
+            userExperiments: [...updatedExperiments],
+          };
+          sessionStorage.setItem(
+            "experimentData",
+            SecurityUtil.encryptData(
+              { experiments: userData },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+          break;
+        case "org":
+          setExperiments(updatedExperiments);
+          let orgData: any = {
+            oldExperiments: [...data?.experiments?.oldExperiments],
+            organisationExperiments: [...updatedExperiments],
+            userExperiments: [...data?.experiments?.userExperiments],
+          };
+          sessionStorage.setItem(
+            "experimentData",
+            SecurityUtil.encryptData(
+              { experiments: orgData },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+          break;
+        case "old":
+          setOldExperiments(updatedExperiments);
+          let oldData: any = {
+            oldExperiments: [...updatedExperiments],
+            organisationExperiments: [
+              ...data?.experiments?.organisationExperiments,
+            ],
+            userExperiments: [...data?.experiments?.userExperiments],
+          };
+          sessionStorage.setItem(
+            "experimentData",
+            SecurityUtil.encryptData(
+              { experiments: oldData },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+          break;
+      }
+    }
+  };
 
-    };
-
-  const getTargetExperiments = (data:any, expId:any) => {
-        let requiredUpdateExperiments:any[] = [];
-        let targetExperiment = "";
-        if (data?.experiments?.organisationExperiments.length > 0
-            && data?.experiments?.organisationExperiments.findIndex((e:any) => e.id === expId) > -1) {
-            requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
-            targetExperiment = "org";
-        }else if (data?.experiments?.userExperiments.length > 0
-            && data?.experiments?.userExperiments.findIndex((e:any) => e.id === expId) > -1) {
-            requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
-            targetExperiment = "user";
-        }else {
-            requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
-            targetExperiment = "old";
-        }
-        return {requiredUpdateExperiments, targetExperiment};
-    };
+  const getTargetExperiments = (data: any, expId: any) => {
+    let requiredUpdateExperiments: any[] = [];
+    let targetExperiment = "";
+    if (
+      data?.experiments?.organisationExperiments.length > 0 &&
+      data?.experiments?.organisationExperiments.findIndex(
+        (e: any) => e.id === expId
+      ) > -1
+    ) {
+      requiredUpdateExperiments =
+        data?.experiments?.organisationExperiments?.slice();
+      targetExperiment = "org";
+    } else if (
+      data?.experiments?.userExperiments.length > 0 &&
+      data?.experiments?.userExperiments.findIndex((e: any) => e.id === expId) >
+        -1
+    ) {
+      requiredUpdateExperiments = data?.experiments?.userExperiments?.slice();
+      targetExperiment = "user";
+    } else {
+      requiredUpdateExperiments = data?.experiments?.oldExperiments?.slice();
+      targetExperiment = "old";
+    }
+    return { requiredUpdateExperiments, targetExperiment };
+  };
 
   const handleClose = (func: Function) => {
     func(false);
   };
 
   const handleError = async (error: any) => {
-        if (
-            error?.name === "Error" ||
-            error?.message.toString() === "Network Error"
-        ) {
-            showMessageBox({
-                message: "Connectivity Problem, please check your internet connection",
-                saverity: "error",
-            });
-        } else if (error?.response) {
-            if (error.response?.status == 401 || error.response.status == 419) {
-                setTimeout(() => {
-                    userManager.logout();
-                    history.replace("/login");
-                }, 3000);
-                showMessageBox({
-                    message: "Authentication Failed Or Session Time out",
-                    saverity: "error",
-                });
-            }
-        } else {
-            showMessageBox({
-                message: error?.message || "Request Failed. May be Time out",
-                saverity: error.saverity || "error",
-            });
-        }
-    };
+    if (
+      error?.name === "Error" ||
+      error?.message.toString() === "Network Error"
+    ) {
+      showMessageBox({
+        message: "Connectivity Problem, please check your internet connection",
+        saverity: "error",
+      });
+    } else if (error?.response) {
+      if (error.response?.status == 401 || error.response.status == 419) {
+        setTimeout(() => {
+          userManager.logout();
+          history.replace("/login");
+        }, 3000);
+        showMessageBox({
+          message: "Authentication Failed Or Session Time out",
+          saverity: "error",
+        });
+      }
+    } else {
+      showMessageBox({
+        message: error?.message || "Request Failed. May be Time out",
+        saverity: error.saverity || "error",
+      });
+    }
+  };
 
   const showMessageBox = (response: any) => {
-        switch (response.saverity) {
-            case "error":
-                snackbarService.showSnackbar(response?.message, "error");
-                break;
-            case "success":
-                snackbarService.showSnackbar(response?.message, "success");
-                break;
-            default:
-                break;
-        }
-    };
+    switch (response.saverity) {
+      case "error":
+        snackbarService.showSnackbar(response?.message, "error");
+        break;
+      case "success":
+        snackbarService.showSnackbar(response?.message, "success");
+        break;
+      default:
+        break;
+    }
+  };
 
   const reload = async () => {
-      if (!isLoggedIn) return;
-        try {
-            const fetchArgs = ExperimentApiFetchParamCreator({
-                accessToken: userManager.getToken()}).getAllExperiments(userManager.getOrganiztionID(), userManager.getToken());
-            const response = await axios.get(fetchArgs.url, fetchArgs.options);
-            if (response?.status) {
-                setExperiments(response?.data?.organisationExperiments);
-                setPrivateExperiments(response?.data?.userExperiments);
-                setOldExperiments(response?.data?.oldExperiments);
-                setDisabled(createButtonDisable(
-                    response?.data?.userExperiments.length,
-                    rules?.experiment?.unLimitedPublic,
-                    rules?.experiment?.number
-                    )
-                );
-                setTimeout(() =>{
-                    sessionStorage.setItem("experimentData", SecurityUtil.encryptData({experiments:response.data}, process.env.REACT_APP_DATA_SECRET_SOLD));
-                    sessionStorage.setItem("e_cache_version", ""+1);
-                    setFetchExperimentsComplete(true)
-                }, 0);
-            } else {
-                await handleError({"message":"Information Missing", saverity:"error"});
-            }
-        } catch (err) {
-            await handleError(err);
-        }
+    if (!isLoggedIn) return;
+    try {
+      const fetchArgs = ExperimentApiFetchParamCreator({
+        accessToken: userManager.getToken(),
+      }).getAllExperiments(
+        userManager.getOrganiztionID(),
+        userManager.getToken()
+      );
+      const response = await axios.get(fetchArgs.url, fetchArgs.options);
+      if (response?.status) {
+        setExperiments(response?.data?.organisationExperiments);
+        setPrivateExperiments(response?.data?.userExperiments);
+        setOldExperiments(response?.data?.oldExperiments);
+        setDisabled(
+          createButtonDisable(
+            response?.data?.userExperiments.length,
+            rules?.experiment?.unLimitedPublic,
+            rules?.experiment?.number
+          )
+        );
+        setTimeout(() => {
+          sessionStorage.setItem(
+            "experimentData",
+            SecurityUtil.encryptData(
+              { experiments: response.data },
+              process.env.REACT_APP_DATA_SECRET_SOLD
+            )
+          );
+          sessionStorage.setItem("e_cache_version", "" + 1);
+          setFetchExperimentsComplete(true);
+        }, 0);
+      } else {
+        await handleError({
+          message: "Information Missing",
+          saverity: "error",
+        });
+      }
+    } catch (err) {
+      await handleError(err);
+    }
   };
 
   React.useEffect(() => {
-        if (sessionStorage.getItem("experimentData")) {
-            const profileInfo= SecurityUtil.decryptData(sessionStorage.getItem("experimentData"),process.env.REACT_APP_DATA_SECRET_SOLD);
-            if (profileInfo) {
-                setExperiments(profileInfo?.experiments?.organisationExperiments);
-                setPrivateExperiments(profileInfo?.experiments?.userExperiments);
-                setOldExperiments(profileInfo?.experiments?.oldExperiments);
-                setFetchExperimentsComplete(true);
-                setDisabled(
-                    createButtonDisable(
-                        profileInfo?.experiments?.userExperiments.length,
-                        rules?.experiment?.unLimitedPublic,
-                        rules?.experiment?.number
-                    )
-                );
-                const currentVersion = +sessionStorage.getItem("e_cache_version");
-                sessionStorage.setItem("e_cache_version", "" + (currentVersion + 1));
-            } else {
-                sessionStorage.removeItem("e_cache_version");
-                (async () =>{
-                    await reload()
-                })();
-            }
-        } else {
-            sessionStorage.removeItem("e_cache_version");
-            sessionStorage.removeItem("experimentData");
-            (async () =>{
-                await reload();
-            })();
-        }
-    }, []);
+    if (sessionStorage.getItem("experimentData")) {
+      const profileInfo = SecurityUtil.decryptData(
+        sessionStorage.getItem("experimentData"),
+        process.env.REACT_APP_DATA_SECRET_SOLD
+      );
+      if (profileInfo) {
+        setExperiments(profileInfo?.experiments?.organisationExperiments);
+        setPrivateExperiments(profileInfo?.experiments?.userExperiments);
+        setOldExperiments(profileInfo?.experiments?.oldExperiments);
+        setFetchExperimentsComplete(true);
+        setDisabled(
+          createButtonDisable(
+            profileInfo?.experiments?.userExperiments.length,
+            rules?.experiment?.unLimitedPublic,
+            rules?.experiment?.number
+          )
+        );
+        const currentVersion = +sessionStorage.getItem("e_cache_version");
+        sessionStorage.setItem("e_cache_version", "" + (currentVersion + 1));
+      } else {
+        sessionStorage.removeItem("e_cache_version");
+        (async () => {
+          await reload();
+        })();
+      }
+    } else {
+      sessionStorage.removeItem("e_cache_version");
+      sessionStorage.removeItem("experimentData");
+      (async () => {
+        await reload();
+      })();
+    }
+  }, []);
 
   React.useEffect(() => {
     setExperimentsToBeDisplayed();
@@ -268,7 +324,9 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
           f: handleClose,
           ref: setCreateExperimentModal,
         }}
-        created={(experimentID: string) => { reload()}}
+        created={(experimentID: string) => {
+          reload();
+        }}
         userExperimentName={privateExperiments.map((e) => e.name)}
         organizationId={organizationId}
       />
@@ -380,8 +438,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
               {displayExperiments.length > 0 ? (
                 displayExperiments.map((experiment: any, index: number) => {
                   return (
-                    <ExperimentCard key={`pvt${index}`} data={experiment}
-                      update={ () => updateExperiment(experiment.id)}
+                    <ExperimentCard
+                      key={`pvt${index}`}
+                      data={experiment}
+                      update={() => updateExperiment(experiment.id)}
                     />
                   );
                 })
@@ -410,8 +470,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     Experiments from old version
                   </div>
                   <div style={{ color: "#fff", fontSize: 14 }}>
-                    You may send us email at support@redmatterapp.com to recover
-                    these experiments
+                    You may send us email at mark.kelly@redmatterapp.com to
+                    recover these experiments
                   </div>
                 </div>
                 <Grid

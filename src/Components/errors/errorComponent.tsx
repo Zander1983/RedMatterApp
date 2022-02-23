@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import BrokenImageIcon from "@material-ui/icons/BrokenImage";
-import { Button} from "@material-ui/core";
+import { Button } from "@material-ui/core";
 // import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 
 const ErrorComponent = (props: any) => {
   const [mainScreenError, setMainScreenError] = useState(false);
-  const [,setAppScreenError] = useState(false);
+  const [, setAppScreenError] = useState(false);
 
   useEffect(() => {
     let mainScreenError = false;
@@ -42,7 +42,9 @@ const ErrorComponent = (props: any) => {
             </div>
             <div style={{ fontSize: 20, color: "#736464", fontWeight: 600 }}>
               <div>Server is down. We will be live shortly.</div>
-              <div>For more information contact support@redmatterapp.com</div>
+              <div>
+                For more information contact mark.kelly@redmatterapp.com
+              </div>
             </div>
           </div>
         ) : (
@@ -56,7 +58,7 @@ const ErrorComponent = (props: any) => {
               <div>Something went wrong.</div>
               <div>
                 please reload the page, if it persists email us at
-                support@redmatterapp.com
+                mark.kelly@redmatterapp.com
               </div>
             </div>
             <Button
