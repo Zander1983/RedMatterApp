@@ -304,8 +304,8 @@ function CreateExperimentModal({
                     {deviceNotFound && (
                       <div className={classes.notFoundContainer}>
                         Send us an email at{" "}
-                        <a href="mailto:mark.kelly@redmatterapp.com">
-                          <b>mark.kelly@redmatterapp.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your device and we will add it to
@@ -477,8 +477,8 @@ function CreateExperimentModal({
                         }}
                       >
                         Send us an email at{" "}
-                        <a href="mailto:mark.kelly@redmatterapp.com">
-                          <b>mark.kelly@redmatterapp.com</b>
+                        <a href="mailto:support@redmatterapp.com">
+                          <b>support@redmatterapp.com</b>
                         </a>
                         <p style={{ fontSize: 10, marginBottom: 30 }}>
                           Provide the name of your fluorophores and we will add

@@ -108,7 +108,7 @@ const VerifyEmail = (props: any) => {
                   <h4>
                     This is an error on our end.
                     <br /> Please send an email to{" "}
-                    <b>mark.kelly@redmatterapp.com</b> so we can help you!
+                    <b>support@redmatterapp.com</b> so we can help you!
                   </h4>
                 </>
               ) : loading ? (

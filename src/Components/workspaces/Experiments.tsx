@@ -470,8 +470,8 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     Experiments from old version
                   </div>
                   <div style={{ color: "#fff", fontSize: 14 }}>
-                    You may send us email at mark.kelly@redmatterapp.com to
-                    recover these experiments
+                    You may send us email at support@redmatterapp.com to recover
+                    these experiments
                   </div>
                 </div>
                 <Grid

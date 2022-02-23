@@ -20,8 +20,8 @@ const PrototypeNotice = (props: { experimentId: string }) => {
         and easy.
         <br />
         You can help us improve or learn more by sending an email to{" "}
-        <a href="mailto:mark.kelly@redmatterapp.com">
-          <b>mark.kelly@redmatterapp.com</b>
+        <a href="mailto:support@redmatterapp.com">
+          <b>support@redmatterapp.com</b>
         </a>
         .
       </p>

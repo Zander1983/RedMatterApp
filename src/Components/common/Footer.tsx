@@ -176,7 +176,7 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Send us an email at <b>mark.kelly@redmatterapp.com</b>
+            Send us an email at <b>support@redmatterapp.com</b>
           </div>
         ),
       },
