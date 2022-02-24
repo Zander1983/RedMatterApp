@@ -193,7 +193,7 @@ const PlotDataComponent = ({
         plots.length % 3 === 0)
     ) {
       setRenderArrow(false);
-      setTimeout(() => setRenderArrow(true), plots.length < 3 ? 1000 : 3000);
+      setTimeout(() => setRenderArrow(true), plots.length < 4 ? 1200 : 2000);
     }
   }, [getTableRowPlots(file).length]);
 
@@ -215,19 +215,13 @@ const PlotDataComponent = ({
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
+      const len = getTableRowPlots(file)?.length;
       processGraph()
         .then((response: any) => {
           if (response?.status) {
             setLoader(false);
             setError(false);
-            setTimeout(
-              () => setRenderArrow(true),
-              workspace.files.length < 20
-                ? 1000
-                : workspace.files.length < 50
-                ? 2000
-                : 3000
-            );
+            setTimeout(() => setRenderArrow(true), 1200);
           } else {
             setLoader(false);
             setError(true);
@@ -240,6 +234,7 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     } else {
+      const len = getTableRowPlots(file)?.length;
       setTimeout(
         () => {
           setLoader(false);
@@ -247,11 +242,7 @@ const PlotDataComponent = ({
           updateXarrow();
           updateXarrow();
         },
-        workspace.files.length < 20
-          ? 1000
-          : workspace.files.length < 50
-          ? 2000
-          : 3000
+          len < 4 ? 2500 : 3000
       );
     }
   }, []);
@@ -327,12 +318,7 @@ const PlotDataComponent = ({
           setLoader(false);
           setRenderArrow(true);
           updateXarrow();
-        },
-        workspace.files.length < 20
-          ? 1000
-          : workspace.files.length < 50
-          ? 2000
-          : 3000
+          }, 1200
       );
     }
   };
