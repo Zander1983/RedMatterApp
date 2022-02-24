@@ -4,17 +4,9 @@ import { Divider, Grid } from "@material-ui/core";
 import GateBar from "./GateBar";
 import MainBar from "./MainBar";
 import SideSelector from "./SideSelector";
-import {
-  PlotSpecificWorkspaceData,
-  PlotID,
-  WorkspaceEvent,
-  PlotsRerender,
-} from "graph/resources/types";
 
 import PlotRenderer from "graph/components/PlotRenderer";
 import { getGate } from "graph/utils/workspace";
-import { useSelector } from "react-redux";
-import EventQueueDispatch from "../../workspaceRedux/eventQueueDispatchers";
 
 const classes = {
   itemOuterDiv: {
@@ -44,17 +36,16 @@ const classes = {
   },
 };
 
-const PlotComponent = React.memo(
-  (props: {
-    plotRelevantResources: PlotSpecificWorkspaceData;
-    sharedWorkspace: boolean;
-    experimentId: string;
-    editWorkspace: boolean;
-    workspaceLoading: boolean;
-    customPlotRerender: PlotID[];
-    fileName: string;
-  }) => {
-    const { plot, gates, population } = props.plotRelevantResources;
+const PlotComponent =  ({
+    plotRelevantResources,
+    sharedWorkspace,
+    experimentId,
+    editWorkspace,
+    workspaceLoading,
+    customPlotRerender,
+    fileName,
+  }:any) => {
+    const { plot, gates, population } = plotRelevantResources;
     const plotId = plot.id;
 
     const displayRef = useRef();
@@ -66,8 +57,7 @@ const PlotComponent = React.memo(
         id={`display-ref-${plotId}`}
         key={`display-ref-${plotId}`}
         style={classes.mainContainer}
-        ref={displayRef}
-      >
+        ref={displayRef}>
         <div id={`bar-ref-${plotId}`} style={classes.utilityBar} ref={barRef}>
           <Grid
             container
@@ -77,22 +67,22 @@ const PlotComponent = React.memo(
             }}
           >
             <div>
-              {props.fileName.length < 35
-                ? props.fileName
-                : `${props.fileName.slice(0, 35)}...`}
+              {fileName.length < 35
+                ? fileName
+                : `${fileName.slice(0, 35)}...`}
             </div>
-            <MainBar plot={plot} editWorkspace={props.editWorkspace} />
+            <MainBar plot={plot} editWorkspace={editWorkspace} />
             <GateBar
               plotId={plot.id}
-              plotGates={plot.gates.map((e) => getGate(e))}
+              plotGates={plot.gates.map((e:any) => getGate(e))}
               file={population.file}
-              populationGates={population.gates.map((e) => {
+              populationGates={population.gates.map((e:any) => {
                 return {
                   gate: getGate(e.gate),
                   inverseGating: e.inverseGating,
                 };
               })}
-              editWorkspace={props.editWorkspace}
+              editWorkspace={editWorkspace}
             />
           </Grid>
         </div>
@@ -100,21 +90,26 @@ const PlotComponent = React.memo(
           style={{ marginBottom: 10, marginLeft: -10, marginRight: -10 }}
         />
         <SideSelector
-          {...props}
+          { ...{plotRelevantResources,
+            sharedWorkspace,
+            experimentId,
+            editWorkspace,
+            workspaceLoading,
+            customPlotRerender,
+            fileName}}
           canvasComponent={
             <PlotRenderer
-              workspaceLoading={props.workspaceLoading}
+              workspaceLoading={workspaceLoading}
               plot={plot}
               plotGates={gates}
               population={population}
-              editWorkspace={props.editWorkspace}
-              customPlotRerender={props.customPlotRerender}
+              editWorkspace={editWorkspace}
+              customPlotRerender={customPlotRerender}
             />
           }
         />
       </div>
     );
-  }
-);
+  };
 
 export default PlotComponent;
