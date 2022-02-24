@@ -21,6 +21,7 @@ import {
   getFile,
   getGate,
   getPopulation,
+  getWorkspace,
   // getWorkspace,
 } from "../../utils/workspace";
 //@ts-ignore
@@ -192,7 +193,7 @@ const PlotDataComponent = ({
         plots.length % 3 === 0)
     ) {
       setRenderArrow(false);
-      setTimeout(() => setRenderArrow(true), 2000);
+      setTimeout(() => setRenderArrow(true), plots.length < 3 ? 1000 : 3000);
     }
   }, [getTableRowPlots(file).length]);
 
@@ -219,7 +220,14 @@ const PlotDataComponent = ({
           if (response?.status) {
             setLoader(false);
             setError(false);
-            setTimeout(() => setRenderArrow(true), 1000);
+            setTimeout(
+              () => setRenderArrow(true),
+              workspace.files.length < 20
+                ? 1000
+                : workspace.files.length < 50
+                ? 2000
+                : 3000
+            );
           } else {
             setLoader(false);
             setError(true);
@@ -232,12 +240,19 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     } else {
-      setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-        updateXarrow();
-      }, 1000);
+      setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+          updateXarrow();
+        },
+        workspace.files.length < 20
+          ? 1000
+          : workspace.files.length < 50
+          ? 2000
+          : 3000
+      );
     }
   }, []);
 
@@ -307,11 +322,18 @@ const PlotDataComponent = ({
       if (updateTimeout) {
         clearTimeout(updateTimeout);
       }
-      updateTimeout = setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-      }, 100);
+      updateTimeout = setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+        },
+        workspace.files.length < 20
+          ? 1000
+          : workspace.files.length < 50
+          ? 2000
+          : 3000
+      );
     }
   };
 
