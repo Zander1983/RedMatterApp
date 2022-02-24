@@ -21,6 +21,7 @@ import {
   getFile,
   getGate,
   getPopulation,
+  getWorkspace,
   // getWorkspace,
 } from "../../utils/workspace";
 //@ts-ignore
@@ -192,7 +193,7 @@ const PlotDataComponent = ({
         plots.length % 3 === 0)
     ) {
       setRenderArrow(false);
-      setTimeout(() => setRenderArrow(true), 2000);
+      setTimeout(() => setRenderArrow(true), plots.length < 4 ? 1200 : 2000);
     }
   }, [getTableRowPlots(file).length]);
 
@@ -214,12 +215,13 @@ const PlotDataComponent = ({
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
+      const len = getTableRowPlots(file)?.length;
       processGraph()
         .then((response: any) => {
           if (response?.status) {
             setLoader(false);
             setError(false);
-            setTimeout(() => setRenderArrow(true), 1000);
+            setTimeout(() => setRenderArrow(true), 1200);
           } else {
             setLoader(false);
             setError(true);
@@ -232,12 +234,16 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     } else {
-      setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-        updateXarrow();
-      }, 1000);
+      const len = getTableRowPlots(file)?.length;
+      setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+          updateXarrow();
+        },
+          len < 4 ? 2500 : 3000
+      );
     }
   }, []);
 
@@ -307,11 +313,13 @@ const PlotDataComponent = ({
       if (updateTimeout) {
         clearTimeout(updateTimeout);
       }
-      updateTimeout = setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-      }, 100);
+      updateTimeout = setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+          }, 1200
+      );
     }
   };
 
