@@ -212,7 +212,7 @@ const PlotDataComponent = ({
         EventQueueDispatch.DeleteQueueItem(event.id);
         setTimeout(() => {
           setCustomPlotRerender([]);
-        }, 0);
+        }, 1);
       }
   });
 
@@ -470,8 +470,7 @@ const PlotDataComponent = ({
                     updateArrows();
                     updateXarrow();
                   }}
-                  isResizable={false}
-                >
+                  isResizable={false}>
                   {
                     //@ts-ignore
                     getTableRowPlots(file)?.map(
