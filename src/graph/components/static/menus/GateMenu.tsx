@@ -200,10 +200,10 @@ export default function GateMenu(props: { gates: Gate[] }) {
 
       <TableContainer component={Paper}>
         <Table style={classes.table}>
-          <TableHead>
+          {/* <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              {/* <TableCell></TableCell> */}
+              <TableCell></TableCell>
               {workspace.files.length > 1 ? <TableCell></TableCell> : null}
               <TableCell>Name</TableCell>
               <TableCell>Color</TableCell>
@@ -211,7 +211,7 @@ export default function GateMenu(props: { gates: Gate[] }) {
               <TableCell>X Axis</TableCell>
               <TableCell>Y Axis</TableCell>
             </TableRow>
-          </TableHead>
+          </TableHead> */}
           <TableBody>
             {workspaceGates.map((gate: Gate) => (
               <TableRow key={gate.id}>
@@ -283,9 +283,9 @@ export default function GateMenu(props: { gates: Gate[] }) {
                     }}
                   />
                 </TableCell>
-                <TableCell>{gate.gateType}</TableCell>
+                {/* <TableCell>{gate.gateType}</TableCell>
                 <TableCell>{(gate as PolygonGate).xAxis}</TableCell>
-                <TableCell>{(gate as PolygonGate).yAxis}</TableCell>
+                <TableCell>{(gate as PolygonGate).yAxis}</TableCell> */}
               </TableRow>
             ))}
           </TableBody>
