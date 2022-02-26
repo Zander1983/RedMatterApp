@@ -102,6 +102,7 @@ export default class GraphPlotter extends Plotter {
     const workspace = getWorkspace();
     let upatedPlot = workspace.plots.find((x) => x.id == this.plot.id);
     if (upatedPlot) {
+      this.plot = upatedPlot;
       this.width = upatedPlot.plotWidth;
       this.height = upatedPlot.plotHeight;
     }
