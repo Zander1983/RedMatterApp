@@ -231,7 +231,7 @@ export default function SideMenus(props: { workspace: Workspace }) {
               color: gateMenuOpen ? "#fff" : "#000",
             }}
           >
-            Gates
+            Change Gate Color
           </Button>
 
           {/* Files */}
