@@ -198,25 +198,28 @@ const PlotDataComponent = ({
   }, [getTableRowPlots(file).length]);
 
   useSelector((e: any) => {
-    const eventQueue = e.workspaceEventQueue.queue;
-    let eventPlotsRerenderArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type === "plotsRerender"
-    );
-    if (eventPlotsRerenderArray.length > 0) {
-      let event: PlotsRerender = eventPlotsRerenderArray[0];
-      setCustomPlotRerender(event.plotIDs);
+      // console.log("call plot data====");
+      const eventQueue = e.workspaceEventQueue.queue;
+      // console.log(eventQueue);
+      let eventPlotsRerenderArray = eventQueue.filter(
+          (x: WorkspaceEvent) => x.type === "plotsRerender"
+      );
 
-      EventQueueDispatch.DeleteQueueItem(event.id);
-      setTimeout(() => {
-        setCustomPlotRerender([]);
-      }, 0);
-    }
+      if (eventPlotsRerenderArray.length > 0) {
+        let event: PlotsRerender = eventPlotsRerenderArray[0];
+        setCustomPlotRerender(event.plotIDs);
+
+        EventQueueDispatch.DeleteQueueItem(event.id);
+        setTimeout(() => {
+          setCustomPlotRerender([]);
+        }, 0);
+      }
   });
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
-      const len = getTableRowPlots(file)?.length;
-      processGraph()
+        setLoader(true);
+        processGraph()
         .then((response: any) => {
           if (response?.status) {
             setLoader(false);
@@ -273,7 +276,6 @@ const PlotDataComponent = ({
   };
 
   const processGraph = async () => {
-    setLoader(true);
     return new Promise(async (resolve, reject) => {
       const isAvailable = isPopulationAvailForPlots(file);
       if (isAvailable) {
@@ -285,7 +287,7 @@ const PlotDataComponent = ({
         setTimeout(
           () =>
             reject({ message: "Load Failed  ", status: false, isError: true }),
-          100
+          1000
         );
     });
   };
@@ -414,6 +416,7 @@ const PlotDataComponent = ({
   };
 
   const renderUI = () => {
+    // console.log("=== render call ====");
     return (
       <>
         {!noSorting && loader && file.id !== workspace.selectedFile ? (
@@ -434,8 +437,7 @@ const PlotDataComponent = ({
                 : isOpen
                 ? classes.show
                 : classes.hide
-            }
-          >
+            }>
             <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
@@ -523,7 +525,7 @@ const PlotDataComponent = ({
     // (isOpen || file.id === getWorkspace().selectedFile) &&
     <>
       {noSorting && renderForNoSorting()}
-      {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
+      {((!noSorting && isOpen) || workspace.selectedFile === file.id) && getTableRowPlots(file).length > 0 && renderUI()}
       {(renderArrow || isOpen) &&
         !loader &&
         getArrowArray().map((obj: any, i: number) => (
