@@ -11,8 +11,6 @@ import deleteIcon from "assets/images/delete.png";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-import useWhyDidYouUpdate from "hooks/useWhyDidYouUpdate";
-
 const useStyles = makeStyles((theme) => ({
   container: {
     backgroundColor: "#FAFAFA",
