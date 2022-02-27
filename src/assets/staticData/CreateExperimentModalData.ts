@@ -38,6 +38,7 @@ export const deviceData = [
   "Beckman Coulter DxFLEX",
   "Beckman Coulter Navios Ex",
   "Beckman Coulter Navios / Gallios",
+  "BD FACSCelesta",
   "Bio-Rad S3e 2 laser (B/R) 4 color",
   "Bio-Rad S3e 2 laser (B/Y) 4 color",
   "Bio-Rad S3e 3 laser (B/Y/R) 4 color",
