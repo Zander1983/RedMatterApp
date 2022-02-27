@@ -17,6 +17,7 @@ export const deviceData = [
   "BD Calibur 4 color",
   "BD FACSCanto",
   "BD FACSCanto 2",
+  "BD FACSCelesta",
   "BD FACSJazz",
   "BD FACS Lyric",
   "BD FACS Symphony A5",
