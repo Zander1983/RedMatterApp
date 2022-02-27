@@ -737,9 +737,6 @@ const Experiment = (props: any) => {
         )
       );
   };
-  // const handleCloseClearWorkspace = (func: Function) => {
-  //   func(false);
-  // };
 
   return (
     <>
