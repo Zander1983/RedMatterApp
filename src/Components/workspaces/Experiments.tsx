@@ -298,14 +298,14 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   const setExperimentsToBeDisplayed = () => {
     let toDisplay: RemoteExperiment[] = [];
     if (privateExperimentsSwitch) {
-      toDisplay = toDisplay.concat(
+      toDisplay = toDisplay?.concat(
         privateExperiments.map((e) => {
           return { ...e, source: "personal" };
         })
       );
     }
     if (organizationExperimentsSwitch) {
-      toDisplay = toDisplay.concat(
+      toDisplay = toDisplay?.concat(
         organizationExperiments.map((e) => {
           return { ...e, source: "organization" };
         })
@@ -327,7 +327,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         created={(experimentID: string) => {
           reload();
         }}
-        userExperimentName={privateExperiments.map((e) => e.name)}
+        userExperimentName={privateExperiments?.map((e) => e.name)}
         organizationId={organizationId}
       />
       <Grid
@@ -366,7 +366,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
             >
               <div style={{ color: "#fff", fontWeight: 600, fontSize: 20 }}>
                 <FormControlLabel
-                  label={"My Experiments (" + privateExperiments.length + ")"}
+                  label={"My Experiments (" + privateExperiments?.length + ")"}
                   control={
                     <IOSSwitch
                       checked={privateExperimentsSwitch}
@@ -435,7 +435,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 width: "100%",
               }}
             >
-              {displayExperiments.length > 0 ? (
+              {displayExperiments?.length > 0 ? (
                 displayExperiments.map((experiment: any, index: number) => {
                   return (
                     <ExperimentCard
@@ -457,7 +457,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                 </div>
               )}
             </Grid>
-            {oldExperiments.length > 0 ? (
+            {oldExperiments?.length > 0 ? (
               <div>
                 <div
                   style={{
@@ -482,7 +482,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     width: "100%",
                   }}
                 >
-                  {oldExperiments.map((data: any, index: number) => {
+                  {oldExperiments?.map((data: any, index: number) => {
                     return (
                       <Grid
                         item
