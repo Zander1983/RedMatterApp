@@ -299,14 +299,14 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
     let toDisplay: RemoteExperiment[] = [];
     if (privateExperimentsSwitch) {
       toDisplay = toDisplay?.concat(
-        privateExperiments.map((e) => {
+        privateExperiments?.map((e) => {
           return { ...e, source: "personal" };
         })
       );
     }
     if (organizationExperimentsSwitch) {
       toDisplay = toDisplay?.concat(
-        organizationExperiments.map((e) => {
+        organizationExperiments?.map((e) => {
           return { ...e, source: "organization" };
         })
       );

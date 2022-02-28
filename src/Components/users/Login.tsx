@@ -13,6 +13,7 @@ import useGAEventTrackers from "hooks/useGAEvents";
 
 import userManager from "./../users/userManager";
 import SecurityUtil from '../../utils/Security.js';
+
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
     padding: "10px",
@@ -132,11 +133,9 @@ const Login = (props: any) => {
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
       };
+      console.log(userDetails.data?.data);
+      await enableCache({experiments: userDetails.data?.data});
       dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
-      if(sessionStorage.getItem("experimentData") === null
-          || sessionStorage.getItem("experimentData") === undefined ) {
-        await enableCache({experiments: userDetails.data?.data});
-      }
       eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
