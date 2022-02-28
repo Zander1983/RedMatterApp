@@ -133,8 +133,10 @@ const Login = (props: any) => {
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
       };
-      console.log(userDetails.data?.data);
-      await enableCache({experiments: userDetails.data?.data});
+      if(sessionStorage.getItem("experimentData") === null
+          || sessionStorage.getItem("experimentData") === undefined ) {
+        await enableCache({experiments: userDetails.data?.data});
+      }
       dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
       eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
       snackbarService.showSnackbar("Logged in!", "success");

@@ -608,7 +608,6 @@ const Experiment = (props: any) => {
           token: userManager.getToken(),
         },
       });
-      console.log(response);
       if (response.status === 200) await handleResponse(response.data, true);
       else
         await handleError({
