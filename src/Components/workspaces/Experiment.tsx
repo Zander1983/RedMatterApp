@@ -1245,8 +1245,7 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            {/* Generate Report Code starts here */}
-                            {/* <div
+                            <div
                               style={{
                                 display: "flex",
                                 flexDirection: "column",
@@ -1307,8 +1306,7 @@ const Experiment = (props: any) => {
                                   </a>
                                 )}
                               </p>
-                            </div> */}
-                            {/* Generate Report Code ends here */}
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
