@@ -36,28 +36,28 @@ const typeToClassType = {
 let mouseInteractorInstances: { [index: string]: GateMouseInteractor[] } = {};
 let propsStore: any = {};
 
-function propsAreEqual(prev: any, next: any) {
-  if (next && next.workspaceLoading) {
-    return false;
-  } else if (
-    next.customPlotRerender &&
-    next.customPlotRerender.length > 0 &&
-    next.customPlotRerender.includes(next.plot.id)
-  ) {
-    return false;
-  }
-  let previous: any = {};
-  if (propsStore && propsStore[next.plot.id]) {
-    previous = propsStore[next.plot.id];
-  }
-  propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
-  return (
-    isEqual(previous.plot, next.plot) &&
-    isEqual(previous.plotGates, next.plotGates) &&
-    isEqual(previous.population, next.population) &&
-    isEqual(previous.editWorkspace, next.editWorkspace)
-  );
-}
+// function propsAreEqual(prev: any, next: any) {
+//   if (next && next.workspaceLoading) {
+//     return false;
+//   } else if (
+//     next.customPlotRerender &&
+//     next.customPlotRerender.length > 0 &&
+//     next.customPlotRerender.includes(next.plot.id)
+//   ) {
+//     return false;
+//   }
+//   let previous: any = {};
+//   if (propsStore && propsStore[next.plot.id]) {
+//     previous = propsStore[next.plot.id];
+//   }
+//   propsStore[next.plot.id] = JSON.parse(JSON.stringify(next));
+//   return (
+//     isEqual(previous.plot, next.plot) &&
+//     isEqual(previous.plotGates, next.plotGates) &&
+//     isEqual(previous.population, next.population) &&
+//     isEqual(previous.editWorkspace, next.editWorkspace)
+//   );
+// }
 
 const PlotRenderer = (props: {
   plot: Plot;
@@ -75,6 +75,7 @@ const PlotRenderer = (props: {
   const [lastGatingType, setLastGatingType] = useState<GateType>("");
   const [, setLoader] = useState(false);
   const plot = props.plot;
+
   const validateReady = (): boolean => {
     if (
       plot.plotWidth !== 0 &&
@@ -343,4 +344,4 @@ const PlotRenderer = (props: {
     />
   );
 };
-export default React.memo(PlotRenderer, propsAreEqual);
+export default PlotRenderer;

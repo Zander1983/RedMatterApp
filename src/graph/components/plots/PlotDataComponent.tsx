@@ -21,6 +21,7 @@ import {
   getFile,
   getGate,
   getPopulation,
+  getWorkspace,
   // getWorkspace,
 } from "../../utils/workspace";
 //@ts-ignore
@@ -183,42 +184,47 @@ const PlotDataComponent = ({
   };
 
   useEffect(() => {
-    if (file.id === workspace.selectedFile) {
-      if (
-        getTableRowPlots(file).length > 0 &&
-        getTableRowPlots(file).length % 4 === 0 &&
-        renderArrow
-      ) {
-        setRenderArrow(false);
-        setTimeout(() => setRenderArrow(true), 1000);
-      }
+    const plots = getTableRowPlots(file);
+    if (
+      plots.length > 1 &&
+      file.id === workspace.selectedFile &&
+      (plots[plots.length - 2].plot.positions.y !==
+        plots[plots.length - 1].plot.positions.y ||
+        plots.length % 3 === 0)
+    ) {
+      setRenderArrow(false);
+      setTimeout(() => setRenderArrow(true), plots.length < 4 ? 1200 : 2000);
     }
   }, [getTableRowPlots(file).length]);
 
   useSelector((e: any) => {
-    const eventQueue = e.workspaceEventQueue.queue;
-    let eventPlotsRerenderArray = eventQueue.filter(
-      (x: WorkspaceEvent) => x.type === "plotsRerender"
-    );
-    if (eventPlotsRerenderArray.length > 0) {
-      let event: PlotsRerender = eventPlotsRerenderArray[0];
-      setCustomPlotRerender(event.plotIDs);
+      // console.log("call plot data====");
+      const eventQueue = e.workspaceEventQueue.queue;
+      // console.log(eventQueue);
+      let eventPlotsRerenderArray = eventQueue.filter(
+          (x: WorkspaceEvent) => x.type === "plotsRerender"
+      );
 
-      EventQueueDispatch.DeleteQueueItem(event.id);
-      setTimeout(() => {
-        setCustomPlotRerender([]);
-      }, 0);
-    }
+      if (eventPlotsRerenderArray.length > 0) {
+        let event: PlotsRerender = eventPlotsRerenderArray[0];
+        setCustomPlotRerender(event.plotIDs);
+
+        EventQueueDispatch.DeleteQueueItem(event.id);
+        setTimeout(() => {
+          setCustomPlotRerender([]);
+        }, 1);
+      }
   });
 
   React.useEffect(() => {
     if (file.id !== workspace.selectedFile) {
-      processGraph()
+        setLoader(true);
+        processGraph()
         .then((response: any) => {
           if (response?.status) {
             setLoader(false);
             setError(false);
-            setTimeout(() => setRenderArrow(true), 1000);
+            setTimeout(() => setRenderArrow(true), 1200);
           } else {
             setLoader(false);
             setError(true);
@@ -231,12 +237,16 @@ const PlotDataComponent = ({
           setMessage(response?.message);
         });
     } else {
-      setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-        updateXarrow();
-      }, 1000);
+      const len = getTableRowPlots(file)?.length;
+      setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+          updateXarrow();
+        },
+          len < 4 ? 2500 : 3000
+      );
     }
   }, []);
 
@@ -266,7 +276,6 @@ const PlotDataComponent = ({
   };
 
   const processGraph = async () => {
-    setLoader(true);
     return new Promise(async (resolve, reject) => {
       const isAvailable = isPopulationAvailForPlots(file);
       if (isAvailable) {
@@ -278,7 +287,7 @@ const PlotDataComponent = ({
         setTimeout(
           () =>
             reject({ message: "Load Failed  ", status: false, isError: true }),
-          100
+          1000
         );
     });
   };
@@ -306,11 +315,13 @@ const PlotDataComponent = ({
       if (updateTimeout) {
         clearTimeout(updateTimeout);
       }
-      updateTimeout = setTimeout(() => {
-        setLoader(false);
-        setRenderArrow(true);
-        updateXarrow();
-      }, 100);
+      updateTimeout = setTimeout(
+        () => {
+          setLoader(false);
+          setRenderArrow(true);
+          updateXarrow();
+          }, 1200
+      );
     }
   };
 
@@ -362,9 +373,7 @@ const PlotDataComponent = ({
               rowHeight={30}
               compactType={null}
               isDraggable={workspace.editWorkspace}
-              isResizable={false}
-              onBreakpointChange={() => console.log("changes")}
-            >
+              isResizable={false}>
               {
                 //@ts-ignore
                 getTableRowPlots(file).map(({ plot, file: PlotFile }, i) => {
@@ -407,6 +416,7 @@ const PlotDataComponent = ({
   };
 
   const renderUI = () => {
+    // console.log("=== render call ====");
     return (
       <>
         {!noSorting && loader && file.id !== workspace.selectedFile ? (
@@ -427,8 +437,7 @@ const PlotDataComponent = ({
                 : isOpen
                 ? classes.show
                 : classes.hide
-            }
-          >
+            }>
             <TableCell colSpan={workspace.gates.length + 2}>
               <div
                 className={classes.responsiveContainer}
@@ -455,13 +464,13 @@ const PlotDataComponent = ({
                   //     console.log(" lay out changed ===");
                   //    if(isOpen) updateArrows();
                   // }}
+                  // onBreakpointChange={() => console.log("changes")}
                   isDraggable={workspace.editWorkspace}
                   onDragStop={() => {
                     updateArrows();
                     updateXarrow();
                   }}
-                  isResizable={false}
-                >
+                  isResizable={false}>
                   {
                     //@ts-ignore
                     getTableRowPlots(file)?.map(
@@ -515,7 +524,7 @@ const PlotDataComponent = ({
     // (isOpen || file.id === getWorkspace().selectedFile) &&
     <>
       {noSorting && renderForNoSorting()}
-      {!noSorting && getTableRowPlots(file).length > 0 && renderUI()}
+      {((!noSorting && isOpen) || workspace.selectedFile === file.id) && getTableRowPlots(file).length > 0 && renderUI()}
       {(renderArrow || isOpen) &&
         !loader &&
         getArrowArray().map((obj: any, i: number) => (

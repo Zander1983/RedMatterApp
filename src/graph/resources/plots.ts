@@ -73,8 +73,28 @@ export const createPlot = ({
   if (plots.length > 0) {
     newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
   }
+  // let plots = getTargetLayoutPlots(newPlot);
+  // if (plots.length > 0) {
+  // if (getWorkspace().selectedFile === population.file) {
+  //   const fileLength = getWorkspace().populations.filter(
+  //     (pop) => pop.file === getFile(getPopulation(newPlot.population).file).id
+  //   ).length;
+  //   newPlot.positions = standardGridPlotItem2(fileLength);
+  // }
+  // newPlot.positions = standardGridPlotItem(plots.length, newPlot, plots);
+  // }
 
   return setupPlot(newPlot, population);
+};
+
+const standardGridPlotItem2 = (plotNumber: number) => {
+  const widthMultiplier = (plotNumber - 1) % 3;
+  const heightMultiplier =
+    plotNumber % 3 === 0 ? plotNumber / 3 - 1 : Math.floor(plotNumber / 3);
+  return {
+    x: widthMultiplier * 13,
+    y: heightMultiplier * 11,
+  };
 };
 
 export const updatePositions = () => {
@@ -163,7 +183,7 @@ const standardGridPlotItem = (index: number, plotData: any, plots: Plot[]) => {
 
   return {
     x: newX > 0 ? newX + 3 : newX,
-    y: newy,
+    y: newy === 0 ? newy : newy + 1,
   };
 };
 

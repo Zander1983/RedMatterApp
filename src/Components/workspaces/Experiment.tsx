@@ -44,6 +44,11 @@ const styles = {
 
 const fileTempIdMap: any = {};
 
+interface ReportType {
+  fileId: string;
+  link: string;
+}
+
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
   const [experimentData, setExperimentData] = useState(null);
@@ -56,7 +61,7 @@ const Experiment = (props: any) => {
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
 
-  const [reports, setReport] = useState([]);
+  const [reports, setReport] = useState<ReportType[]>([]);
   const [reportStatus, setReportStatus] = useState(false);
 
   const [experimentSize, setExperimentSize] = useState(0);
@@ -632,6 +637,7 @@ const Experiment = (props: any) => {
     let availableReports = reports.slice();
     if (availableReports && availableReports.length <= 0) {
       availableReports.push({ fileId: data.fileId, link: data.link });
+      console.log("availableReports", availableReports);
       setTimeout(() => {
         setReport(availableReports);
       }, 50);
@@ -650,11 +656,13 @@ const Experiment = (props: any) => {
           ...availableReports.slice(index + 1),
         ];
         setTimeout(() => {
+          console.log("updatedReports", updatedReports);
           setReport(updatedReports);
         }, 50);
       } else {
         availableReports.push({ fileId: data.fileId, link: data.link });
         setTimeout(() => {
+          console.log("availableReports", availableReports);
           setReport(availableReports);
         }, 50);
       }
@@ -738,6 +746,7 @@ const Experiment = (props: any) => {
         )
       );
   };
+  console.log(reports);
 
   return (
     <>
@@ -1295,16 +1304,23 @@ const Experiment = (props: any) => {
                                   textDecoration: "underline",
                                 }}
                               >
-                                {" "}
-                                {reports && reports[i] && (
-                                  <a
-                                    target="_blank"
-                                    rel="noopener"
-                                    href={reports[i].link}
-                                  >
-                                    {"View Report"}
-                                  </a>
-                                )}
+                                {reports &&
+                                  reports.length > 0 &&
+                                  reports.find(
+                                    (report) => report.fileId === e.id
+                                  ) && (
+                                    <a
+                                      target="_blank"
+                                      rel="noopener"
+                                      href={
+                                        reports.find(
+                                          (report) => report.fileId === e.id
+                                        ).link
+                                      }
+                                    >
+                                      {"View Report"}
+                                    </a>
+                                  )}
                               </p>
                             </div>
                           </h3>
