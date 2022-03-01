@@ -17,6 +17,7 @@ import About from "./Components/home/About";
 
 import Plots from "./graph/WorkspaceComponent";
 import WorkSpaceComponent from "./graph/NewWorkspaceComponent";
+import GraphWorkspaceComponent from "./graph/GraphWorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
 import ForgetPassword from "Components/users/ForgetPassword";
@@ -161,6 +162,12 @@ const router = [
     ),
   },
   {
+    path: "/graph-workspace/:experimentId/plots",
+    component: ({ match }: any) => (
+        <GraphWorkspaceComponent experimentId={match.params.experimentId} shared={false} />
+    ),
+  },
+  {
     path: "/experiment/:experimentId/plots/public",
     component: ({ match }: any) => (
       <Plots experimentId={match.params.experimentId} shared={true} />
@@ -170,6 +177,12 @@ const router = [
     path: "/workspace/:experimentId/plots/public",
     component: ({ match }: any) => (
         <WorkSpaceComponent experimentId={match.params.experimentId} shared={true} />
+    ),
+  },
+  {
+    path: "/graph-workspace/:experimentId/plots/public",
+    component: ({ match }: any) => (
+        <GraphWorkspaceComponent experimentId={match.params.experimentId} shared={true} />
     ),
   },
   { path: "/experiments", component: Experiments },

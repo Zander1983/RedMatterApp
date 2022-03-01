@@ -860,6 +860,24 @@ const Experiment = (props: any) => {
                 )}
               </div>
               <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fafafa",
+                    maxHeight: 50,
+                    visibility:
+                        experimentData?.files.length === 0 ? "hidden" : "visible",
+                  }}
+                  onClick={() => {
+                    if (props.poke === false) {
+                      history.push("/graph-workspace/" + props.id + "/plots");
+                    } else {
+                      history.push("/graph-workspace/" + props.id + "/plots/poke");
+                    }
+                  }}
+                  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>
+                New Workspace
+              </Button>
+              <Button
                 key="new-workspace"
                 variant="contained"
                 style={{
@@ -889,24 +907,6 @@ const Experiment = (props: any) => {
               >
                 Workspace
               </Button>
-              {/*  <Button*/}
-              {/*  variant="contained"*/}
-              {/*  style={{*/}
-              {/*    backgroundColor: "#fafafa",*/}
-              {/*    maxHeight: 50,*/}
-              {/*    visibility:*/}
-              {/*      experimentData?.files.length === 0 ? "hidden" : "visible",*/}
-              {/*  }}*/}
-              {/*  onClick={() => {*/}
-              {/*    if (props.poke === false) {*/}
-              {/*      history.push("/experiment/" + props.id + "/plots");*/}
-              {/*    } else {*/}
-              {/*      history.push("/experiment/" + props.id + "/plots/poke");*/}
-              {/*    }*/}
-              {/*  }}*/}
-              {/*  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>*/}
-              {/*  Workspace*/}
-              {/*</Button>*/}
             </Grid>
             <Grid
               style={{

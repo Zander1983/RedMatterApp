@@ -1,0 +1,191 @@
+import MarkLogicle from "./logicleMark";
+
+export const superAlgorithm = (Files, WorkspaceState) => {
+  // event 1 is not in any gate, it will have color black
+  // event 2 is in both gate, it will have the color of the last gate
+  // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
+
+  let logicle = new MarkLogicle(0, 262144);
+  for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    for (
+      let eventIndex = 0;
+      eventIndex < Files[fileIndex].events.length;
+      eventIndex++
+    ) {
+      let event = Files[fileIndex].events[eventIndex];
+
+      for (
+        let plotIndex = 0;
+        plotIndex < WorkspaceState.plots.length;
+        plotIndex++
+      ) {
+        let isInGate;
+        let plot = WorkspaceState.plots[plotIndex];
+        if (!event["color"]) {
+          event["color"] = "#000";
+        }
+
+        if (plot.gate) {
+          let gate = plot.gate;
+
+          let pointX = event[gate["xAxisIndex"]];
+          let pointY = event[gate["yAxisIndex"]];
+          let tranformedPoints = [];
+
+          // if a gate was made on an axis with the scale logicle, we need to convert it with logicle transform
+          // same for the event point
+          // a gate can be created on a linear scale on 1 axis, and logicle on the other
+          if (gate["xScaleType"] === "bi") {
+            pointX = logicle.scale(pointX);
+            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
+            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+            tranformedPoints = gate.points.map((point) => {
+              return [logicle.scale(point[0]), point[1]];
+            });
+          } else {
+            tranformedPoints = gate.points.map((point) => {
+              return [point[0], point[1]];
+            });
+          }
+
+          if (gate["yScaleType"] === "bi") {
+            pointY = logicle.scale(pointY);
+            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
+            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+            tranformedPoints = tranformedPoints.map((point) => {
+              return [point[0], logicle.scale(point[1])];
+            });
+          }
+
+          tranformedPoints = tranformedPoints.map((point) => {
+            return { x: point[0], y: point[1] };
+          });
+
+          // console.log("gate.name is ", gate.name);
+          // console.log("isInGate is ", isInGate);
+          // console.log("gate is ", gate);
+
+          isInGate = pointInsidePolygon(
+            {
+              x: pointX,
+              y: pointY,
+            },
+            tranformedPoints
+          );
+
+          if (isInGate) {
+            event["color"] = gate["color"];
+            event["isInGate" + gate.name] = true;
+          }
+        }
+
+        if (!isInGate) {
+          break;
+        }
+      }
+    }
+  }
+
+  return Files;
+};
+
+export function isPointInPolygon(latitude, longitude, polygon) {
+  if (typeof latitude !== "number" || typeof longitude !== "number") {
+    throw new TypeError("Invalid latitude or longitude. Numbers are expected");
+  } else if (!polygon || !Array.isArray(polygon)) {
+    throw new TypeError("Invalid polygon. Array with locations expected");
+  } else if (polygon.length === 0) {
+    throw new TypeError("Invalid polygon. Non-empty Array expected");
+  }
+
+  const x = latitude;
+  const y = longitude;
+
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0];
+    const yi = polygon[i][1];
+    const xj = polygon[j][0];
+    const yj = polygon[j][1];
+
+    const intersect =
+      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+export const pointInsidePolygon = ({ x, y }, polygon) => {
+  const onSegment = (p, q, r) => {
+    if (
+      q.x <= Math.max(p.x, r.x) &&
+      q.x >= Math.min(p.x, r.x) &&
+      q.y <= Math.max(p.y, r.y) &&
+      q.y >= Math.min(p.y, r.y)
+    )
+      return true;
+    return false;
+  };
+
+  const orientation = (p, q, r) => {
+    let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+
+    if (val === 0) return 0; // colinear
+
+    return val > 0 ? 1 : 2; // clock or counterclock wise
+  };
+
+  const segmentIntersection = (p1, p2, q1, q2) => {
+    let o1 = orientation(p1, q1, p2);
+    let o2 = orientation(p1, q1, q2);
+    let o3 = orientation(p2, q2, p1);
+    let o4 = orientation(p2, q2, q1);
+
+    // General case
+    if (o1 !== o2 && o3 !== o4) return true;
+
+    // Special Cases
+    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
+    if (o1 === 0 && onSegment(p1, p2, q1)) return true;
+
+    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
+    if (o2 === 0 && onSegment(p1, q2, q1)) return true;
+
+    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+    if (o3 === 0 && onSegment(p2, p1, q2)) return true;
+
+    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+    if (o4 === 0 && onSegment(p2, q1, q2)) return true;
+
+    return false; // Doesn't fall in any of the above cases
+  };
+  const p1 = {
+    x: 1e30,
+    y: y,
+  };
+  const q1 = {
+    x: x,
+    y: y,
+  };
+  let hits = 0;
+  const pl = polygon.length;
+  for (let i = 0; i < pl; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % pl];
+    const p2 = {
+      x: a.x,
+      y: a.y,
+    };
+    const q2 = {
+      x: b.x,
+      y: b.y,
+    };
+    if (segmentIntersection(p1, p2, q1, q2)) {
+      if (orientation(p2, q1, q2) === 0) return onSegment(p2, q1, q2);
+      hits++;
+    }
+  }
+  if (hits & 1) return true;
+  return false;
+};
