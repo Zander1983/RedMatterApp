@@ -105,6 +105,8 @@ export default class GraphPlotter extends Plotter {
       this.plot = upatedPlot;
       this.width = upatedPlot.plotWidth;
       this.height = upatedPlot.plotHeight;
+      this.xAxisName = upatedPlot.xAxis;
+      this.yAxisName = upatedPlot.yAxis;
     }
     this.update();
     this.drawer.drawPlotGraph({
