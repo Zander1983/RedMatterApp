@@ -1,11 +1,11 @@
 import React from "react";
 // import "./react-grid-layout-styles.css";
-import {getWorkspace} from "graph/utils/workspace";
+import { getWorkspace } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
-
 import Files50 from "./Files50.json";
+import SmallFiles from "./SmallFiles.json";
 import workspaceState from "./WorkspaceState.json";
 import { superAlgorithm } from "./Helper";
 import MarkLogicle from "./logicleMark";
@@ -24,23 +24,22 @@ interface IState {
   sortByChanged: boolean;
   sortBy: string;
   isTableRenderCall: boolean;
-  enrichedFiles:any[],
-  workspaceState:any
-  enrichedEvents:any[]
+  enrichedFiles: any[];
+  workspaceState: any;
+  enrichedEvents: any[];
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
-
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles:any[] = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
     console.log("===== state 50 files======");
     console.log(copyOfFiles);
     // let copyOfFiles:any[] = getWorkspace().files;
     console.log("=== current file in server ===== ");
     console.log(getWorkspace().files);
-    let enrichedFiles:any[] = superAlgorithm(copyOfFiles, workspaceState);
+    let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
     console.log("==== current plot workspace =====");
     console.log(getWorkspace().plots);
     console.log("====== state plots =====");
@@ -55,7 +54,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       isTableRenderCall: false,
       enrichedFiles: enrichedFiles,
       workspaceState: workspaceState,
-      enrichedEvents: []
+      enrichedEvents: [],
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -64,129 +63,113 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-        let copyOfFiles = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
 
-        let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
+    let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
 
-        enrichedEvents = enrichedEvents.map(( events:any[]) => {
-            return events;
-        });
+    enrichedEvents = enrichedEvents.map((events: any[]) => {
+      return events;
+    });
 
-        return enrichedEvents;
+    return enrichedEvents;
   };
 
-  formatEnrichedFiles = (enrichedFiles:any[]) => {
-        return enrichedFiles.map((file) => {
-            let logicles = file.channels.map((channel:any) => {
-                return new MarkLogicle(
-                    channel.biexponentialMinimum,
-                    channel.biexponentialMaximum
-                );
-            });
-            console.log("logicles are ", logicles);
-            let channels = file.channels.map((channel:any) => {
-                return {
-                    minimum: channel.biexponentialMinimum,
-                    maximum: channel.biexponentialMaximum,
-                    name: channel.value,
-                };
-            });
-
-            console.log("channels are ", channels);
-            return {
-                enrichedEvents: file.events,
-                channels: channels,
-                logicles: logicles,
-            };
-        });
-  };
-
-  onAddGate = (change:any) => {
-        console.log("adding gate, change is ", change);
-
-        let gatedPlot = JSON.parse(JSON.stringify(change.plot));
-        let newPlot = JSON.parse(JSON.stringify(change.plot));
-
-        const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-
-        let gate = {
-            color: "#" + randomColor,
-            gateType: "polygon",
-            // need to ask for gate name
-            name: "population10",
-            points: change.points,
-            xAxis: gatedPlot.xAxisIndex,
-            yAxis: gatedPlot.yAxis,
-            xScaleType: gatedPlot.xScaleType,
-            yScaleType: gatedPlot.yScaleType,
-            xAxisIndex: gatedPlot.xAxisIndex,
-            yAxisIndex: gatedPlot.yAxisIndex,
-            xAxisOriginalRanges: [0, 262144],
-            yAxisOriginalRanges: [0, 262144],
-            parent: gatedPlot.population,
+  formatEnrichedFiles = (enrichedFiles: any[]) => {
+    return enrichedFiles.map((file) => {
+      let logicles = file.channels.map((channel: any) => {
+        return new MarkLogicle(
+          channel.biexponentialMinimum,
+          channel.biexponentialMaximum
+        );
+      });
+      console.log("logicles are ", logicles);
+      let channels = file.channels.map((channel: any) => {
+        return {
+          minimum: channel.biexponentialMinimum,
+          maximum: channel.biexponentialMaximum,
+          name: channel.value,
         };
+      });
 
-        newPlot.population = gate.name;
-
-        gatedPlot.gate = gate;
-        this.state.workspaceState.plots[
-        this.state.workspaceState.plots.length - 1
-            ] = gatedPlot;
-        this.state.workspaceState.plots.push(newPlot);
-
-        console.log("this.state.workspaceState is ", this.state.workspaceState);
-
-        let copyOfFiles = JSON.parse(JSON.stringify(Files50));
-        let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
-        enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
-
-        this.setState({
-            enrichedFiles: enrichedFiles,
-            workspaceState: this.state.workspaceState,
-        });
+      console.log("channels are ", channels);
+      return {
+        enrichedEvents: file.events,
+        channels: channels,
+        logicles: logicles,
+      };
+    });
   };
 
-  onEditGate = (change:any) => {
-        console.log("in edit gate");
-        this.state.workspaceState.plots[change.plotIndex].gate.points = [
-            {
-                x: 10000,
-                y: 10000,
-            },
-            {
-                x: 60000,
-                y: 10000,
-            },
-            {
-                x: 60000,
-                y: 60000,
-            },
-            {
-                x: 10000,
-                y: 60000,
-            },
-        ];
+  onAddGate = (change: any) => {
+    console.log("adding gate, change is ", change);
 
-        // this.state.enrichedEvents = this.getEnrichedEvents();
-        const enrichedEvents:any[] = this.getEnrichedEvents();
-        // this.setState({enrichedEvents: enrichedEvents});
-        this.setState({
-            enrichedEvents: enrichedEvents,
-            workspaceState: this.state.workspaceState,
-        });
+    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
+    let newPlot = JSON.parse(JSON.stringify(change.plot));
+
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+
+    let gate = {
+      color: "#" + randomColor,
+      gateType: "polygon",
+      // need to ask for gate name
+      name: "population10",
+      points: change.points,
+      xAxis: gatedPlot.xAxisIndex,
+      yAxis: gatedPlot.yAxis,
+      xScaleType: gatedPlot.xScaleType,
+      yScaleType: gatedPlot.yScaleType,
+      xAxisIndex: gatedPlot.xAxisIndex,
+      yAxisIndex: gatedPlot.yAxisIndex,
+      xAxisOriginalRanges: [0, 262144],
+      yAxisOriginalRanges: [0, 262144],
+      parent: gatedPlot.population,
     };
 
-  onChangeChannel = (change:any) => {
-        if (change.channel == "x") {
-            this.state.workspaceState.plots[change.plotIndex].xAxisIndex =
-                change.value;
-        } else {
-            this.state.workspaceState.plots[change.plotIndex].yAxisIndex =
-                change.value;
-        }
+    newPlot.population = gate.name;
 
-        console.log("2. updating parent state component");
-        this.setState({ workspaceState: this.state.workspaceState });
+    gatedPlot.gate = gate;
+    this.state.workspaceState.plots[
+      this.state.workspaceState.plots.length - 1
+    ] = gatedPlot;
+    this.state.workspaceState.plots.push(newPlot);
+
+    console.log("this.state.workspaceState is ", this.state.workspaceState);
+
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
+
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: this.state.workspaceState,
+    });
+  };
+
+  onEditGate = (change: any) => {
+    console.log("in edit gate and change is ", change);
+    this.state.workspaceState.plots[change.plotIndex] = change.plot;
+
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
+
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: this.state.workspaceState,
+    });
+  };
+
+  onChangeChannel = (change: any) => {
+    if (change.channel == "x") {
+      this.state.workspaceState.plots[change.plotIndex].xAxisIndex =
+        change.value;
+    } else {
+      this.state.workspaceState.plots[change.plotIndex].yAxisIndex =
+        change.value;
+    }
+
+    console.log("2. updating parent state component");
+    this.setState({ workspaceState: this.state.workspaceState });
   };
 
   componentDidMount() {
@@ -202,14 +185,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.isTableRenderCall
     ) {
       return (
-            <PlotTableComponent
-                enrichedFiles={this.state.enrichedFiles}
-                workspaceState={this.state.workspaceState}
-                className="workspace"
-                onChangeChannel={this.onChangeChannel}
-                onAddGate={this.onAddGate}
-                onEditGate={this.onEditGate}
-            />
+        <PlotTableComponent
+          enrichedFiles={this.state.enrichedFiles}
+          workspaceState={this.state.workspaceState}
+          className="workspace"
+          onChangeChannel={this.onChangeChannel}
+          onAddGate={this.onAddGate}
+          onEditGate={this.onEditGate}
+        />
       );
     } else return null;
   };
@@ -219,33 +202,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
         <div>
-            {!this.state.isTableRenderCall ? (
-              <Grid
-                container
-                style={{
-                  height: 100,
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                  textAlign: "center",
-                }}
-                justify="center"
-                alignItems="center"
-                alignContent="center"
-              >
-                <CircularProgress style={{ padding: "10px" }} />
-                <span>Wait Loading...</span>
-              </Grid>
-            ) : (
-              getWorkspace().selectedFile !== "" && this.renderTable()
-            )}
+          {!this.state.isTableRenderCall ? (
+            <Grid
+              container
+              style={{
+                height: 100,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+                textAlign: "center",
+              }}
+              justify="center"
+              alignItems="center"
+              alignContent="center"
+            >
+              <CircularProgress style={{ padding: "10px" }} />
+              <span>Wait Loading...</span>
+            </Grid>
+          ) : (
+            getWorkspace().selectedFile !== "" && this.renderTable()
+          )}
         </div>
-      )
+      );
     } else {
       return (
         <div
           style={{
             textAlign: "center",
-          }}>
+          }}
+        >
           {this.props.sharedWorkspace ? (
             <span>
               <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>

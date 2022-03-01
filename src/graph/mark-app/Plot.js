@@ -32,6 +32,7 @@ function Plot(props) {
   console.log("PLot >> props is ", props);
 
   useEffect(() => {
+    console.log("in UseEffecy of plots.....");
     const { context } = getContext(props.plot, props.plotIndex);
     // props.workspaceState.plots.map((plot, plotIndex) => {
     // console.log( props.enrichedFile);
@@ -49,8 +50,7 @@ function Plot(props) {
     if (props.plot.gate && shouldDrawGate(props.plot)) {
       drawGateLine(context, props.plot);
     }
-
-  },[]);
+  });
 
   const getRealXAxisValueFromCanvasPointOnLogicleScale = (
     plot,
@@ -221,15 +221,57 @@ function Plot(props) {
     props.onAddGate(change);
   };
 
-  const onEditGate = (option) => {
-    console.log("1. send the change back to the parent");
+  const onEditGate = (plot, plotIndex) => {
+    console.log(
+      "1. send the change back to the parent, plot, plotIndex is ",
+      plot,
+      plotIndex
+    );
+
+    //let points = plot.gate.points;
+
+    let newPoints = getRandomPointsOnCanvas(plot.width, plot.height, 1)[0];
+
+    console.log("newPoints are : ", newPoints);
+
+    // the scale the gate is created on is important hear - linear very different to logicle
+    if (props.plot.xScaleType === "lin") {
+      // if linear, convert to the "real" value
+      newPoints[0] = getRealXAxisValueFromCanvasPointOnLinearScale(
+        plot,
+        newPoints[0]
+      );
+    } else {
+      // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
+      newPoints[0] = getRealXAxisValueFromCanvasPointOnLogicleScale(
+        plot,
+        newPoints[0]
+      );
+    }
+
+    if (plot.yScaleType === "lin") {
+      newPoints[1] = getRealYAxisValueFromCanvasPointOnLinearScale(
+        plot,
+        newPoints[1]
+      );
+    } else {
+      newPoints[1] = getRealYAxisValueFromCanvasPointOnLogicleScale(
+        plot,
+        newPoints[1]
+      );
+    }
+
+    console.log("newPoints are NOW: ", newPoints);
+
+    console.log("plot.gate.points is ", plot.gate.points);
+
+    plot.gate.points[1] = newPoints;
 
     let change = {
       type: "EditGate",
-      // TODO need to get the plot here
-      plotIndex: 0,
-      // channel: "y",
-      value: option.value,
+      plot: plot,
+      plotIndex: plotIndex,
+      points: [],
     };
 
     props.onEditGate(change);
@@ -259,10 +301,14 @@ function Plot(props) {
           width={props.plot.width}
           height={props.plot.height}
         />
-        <button onClick={onEditGate}>Edit Gate</button>
+        <button
+          onClick={() => onEditGate(props.plot, props.plotIndex.split("-")[1])}
+        >
+          Edit Gate
+        </button>
         <button
           disabled={props.plot.gate}
-          onClick={() => onAddGate(props.plot)}
+          onClick={() => onAddGate(props.plot, props.plotIndex.split("-")[1])}
         >
           New Gate
         </button>

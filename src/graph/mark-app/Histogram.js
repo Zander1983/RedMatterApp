@@ -44,12 +44,17 @@ const linspace = (a, b, n) => {
   return ret;
 };
 
-const paintHist = (context, hists, plot, minimum, color) => {
+const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
   let maxCount = 0;
 
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
-  const ratio = getAxisRatio(0, 262144, plot.width, plot.xScaleType);
+  const ratio = getAxisRatio(
+    enrichedFile.channels[plot.xAxisIndex].minimum,
+    enrichedFile.channels[plot.xAxisIndex].maximum,
+    plot.width,
+    plot.xScaleType
+  );
 
   let countYMinMax = getMultiArrayMinMax(hists, "y");
 
@@ -88,14 +93,7 @@ const paintHist = (context, hists, plot, minimum, color) => {
       "x"
     );
 
-    pointY = getPointOnCanvas(
-      hist.y,
-      plot.xScaleType,
-      ratioY,
-      0,
-      plot.height,
-      "y"
-    );
+    pointY = getPointOnCanvas(hist.y, "lin", ratioY, 0, plot.height, "y");
 
     context.lineTo(pointX, pointY);
   });
@@ -138,22 +136,42 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
-  console.log("props is ", props);
+  console.log("histogram props is ", props);
 
   useEffect(() => {
     let { context } = getContext(props.plot, props.plotIndex);
+    let color = "#000";
 
-    let data = props.enrichedFile.enrichedEvents.map((enrichedEvent, index) => {
-      // need to deal with logicle() here
-      return enrichedEvent[props.plot.xAxisIndex];
-    });
+    let data = props.enrichedFile.enrichedEvents.flatMap(
+      (enrichedEvent, index) => {
+        if (
+          props.plot.population == "All" ||
+          enrichedEvent["isInGate" + props.plot.population]
+        ) {
+          // TODO no need to keep setting the color like this
+          color = enrichedEvent["color"];
+
+          if (props.plot.xScaleType == "lin") {
+            return enrichedEvent[props.plot.xAxisIndex];
+          } else {
+            let logicle = props.enrichedFile.logicles[props.plot.xAxisIndex];
+            return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
+          }
+        } else {
+          return [];
+        }
+      }
+    );
 
     let bins;
     if (props.plot.xScaleType === "bi") {
       bins = linspace(0, 1, props.plot.width);
     } else {
-      // TODO replace with real min max
-      bins = linspace(0, 262144, props.plot.width);
+      bins = linspace(
+        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        props.plot.width
+      );
     }
 
     const hists = histogram({
@@ -161,22 +179,28 @@ function Histogram(props) {
       bins: bins,
     });
 
-    // TODO replace 0 with minimum
-    // correctly get the color
-    paintHist(context, hists, props.plot, 0, "#d5b34b");
+    paintHist(
+      context,
+      hists,
+      props.enrichedFile,
+      props.plot,
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      color
+    );
   });
 
   return (
     <>
       {" "}
       <div>
-        in histogram
+        channel selector goes here
         <canvas
           className="canvas"
           id={`canvas-${props.plotIndex}`}
           width={props.plot.width}
           height={props.plot.height}
         />
+        {props.plot.xAxis} | {props.plot.xScaleType}
       </div>
     </>
   );
