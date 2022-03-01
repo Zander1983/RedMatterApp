@@ -1,0 +1,144 @@
+{
+  "experimentId": "61f98c2ddf76230e13f6c585",
+
+  "plots": [
+    {
+      "population": "All",
+      "plotType": "scatter",
+      "width": 200,
+      "height": 200,
+      "xAxis": "FSC-A",
+      "yAxis": "SSC-A",
+      "xAxisIndex": 0,
+      "yAxisIndex": 1,
+      "plotScale": 2,
+      "xScaleType": "lin",
+      "yScaleType": "lin",
+      "histogramAxis": "",
+      "label": "",
+      "dimensions": {
+        "w": 9,
+        "h": 10
+      },
+      "positions": {
+        "x": 0,
+        "y": 0
+      },
+      "parentPlotId": "",
+      "gatingActive": "",
+      "gate": {
+        "color": "#d5b34b",
+        "gateType": "polygon",
+        "name": "population1",
+        "points": [
+          [146714.33744855967, 116721.05109489051],
+          [184471.7037037037, 21048.058394160587],
+          [67963.25925925926, 3826.9197080291924],
+          [98169.15226337449, 86105.69343065695]
+        ],
+        "xAxis": "FSC-A",
+        "yAxis": "SSC-A",
+        "xScaleType": "lin",
+        "yScaleType": "lin",
+        "xAxisIndex": 0,
+        "yAxisIndex": 1,
+        "xAxisOriginalRanges": [0, 262144],
+        "yAxisOriginalRanges": [0, 262144],
+        "parent": "All"
+      }
+    },
+    {
+      "population": "population1",
+      "plotType": "scatter",
+      "width": 200,
+      "height": 200,
+      "plotScale": 2,
+      "xAxis": "APA-A",
+      "yAxis": "FITC-A",
+      "xAxisIndex": 4,
+      "yAxisIndex": 2,
+      "xScaleType": "bi",
+      "yScaleType": "bi",
+      "histogramAxis": "",
+      "label": "",
+      "dimensions": {
+        "h": 10,
+        "w": 9
+      },
+      "positions": {
+        "x": 10,
+        "y": 0
+      },
+      "gate": {
+        "name": "population2",
+        "points": [
+          [70, 200000],
+          [110, 100],
+          [10000, 400],
+          [11000, 105000]
+        ],
+        "xAxis": "APA-A",
+        "yAxis": "FITC-A",
+        "xAxisIndex": 4,
+        "yAxisIndex": 2,
+        "xScaleType": "bi",
+        "yScaleType": "bi",
+        "xAxisOriginalRanges": [0, 262144],
+        "yAxisOriginalRanges": [0, 262144],
+        "parents": [],
+        "color": "#dd688f",
+        "gateType": "polygon",
+        "id": "79b4fd10-651e-47ce-ba7b-5caa054293f5"
+      }
+    },
+    {
+      "population": "population2",
+      "plotType": "scatter",
+      "xAxis": "FSC-A",
+      "yAxis": "SSC-A",
+      "xAxisIndex": 0,
+      "yAxisIndex": 1,
+      "width": 200,
+      "height": 200,
+      "plotScale": 2,
+      "xScaleType": "lin",
+      "yScaleType": "lin",
+      "label": "",
+      "dimensions": {
+        "h": 10,
+        "w": 9
+      },
+      "positions": {
+        "x": 20,
+        "y": 0
+      }
+    },
+    {
+      "population": "population2",
+      "plotType": "histogram",
+      "xAxis": "APA-A",
+      "yAxis": "FITC-A",
+      "xAxisIndex": 4,
+      "yAxisIndex": 2,
+      "width": 200,
+      "height": 200,
+      "plotScale": 2,
+      "xScaleType": "bi",
+      "yScaleType": "bi",
+      "label": "",
+      "dimensions": {
+        "h": 10,
+        "w": 9
+      },
+      "positions": {
+        "x": 20,
+        "y": 0
+      }
+    }
+  ],
+  "sharedWorkspace": "false",
+  "editWorkspace": "true",
+  "selectedFile": "9008c670-8396-11ec-a459-0dc7b0553594",
+  "clearOpenFiles": "false",
+  "isShared": "false"
+}
