@@ -34,11 +34,11 @@ let isMouseDown = false;
 let startPoints;
 
 function Plot(props) {
-  console.log("PLot >> props is ", props);
-
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   useEffect(() => {
+    // console.log('in useEffect, ');
+
     const { context } = getContext(localPlot, props.plotIndex);
     // props.workspaceState.plots.map((plot, plotIndex) => {
     // console.log( props.enrichedFile);
@@ -47,7 +47,7 @@ function Plot(props) {
         getFormattedEvents(enrichedEvent, localPlot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
-            context.fillRect(formattedEvent[0], formattedEvent[1], 2, 2);
+            context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
           }
         );
       }
@@ -56,7 +56,7 @@ function Plot(props) {
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
     }
-  }, [localPlot]);
+  }, [localPlot, props.plot, props.enrichedFile]);
 
   // points are an array like [100, 150]
   const getRealPointFromCanvasPoints = (plot, points) => {
@@ -348,7 +348,7 @@ function Plot(props) {
       plot: localPlot,
       // TODO get correctly
       plotIndex: 0,
-      points: localPlot.gate.points,
+      points: JSON.parse(JSON.stringify(localPlot.gate.points)),
     };
 
     props.onEditGate(change);

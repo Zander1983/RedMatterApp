@@ -136,8 +136,6 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
-  console.log("histogram props is ", props);
-
   useEffect(() => {
     let { context } = getContext(props.plot, props.plotIndex);
     let color = "#000";

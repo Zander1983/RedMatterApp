@@ -33,7 +33,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files50));
     console.log("===== state 50 files======");
     console.log(copyOfFiles);
     // let copyOfFiles:any[] = getWorkspace().files;
@@ -63,7 +63,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
 
@@ -135,7 +135,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     console.log("this.state.workspaceState is ", this.state.workspaceState);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
@@ -149,7 +149,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     console.log("in edit gate and change is ", change);
     this.state.workspaceState.plots[change.plotIndex] = change.plot;
 
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
