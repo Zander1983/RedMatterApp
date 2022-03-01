@@ -29,7 +29,6 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
 import { useDispatch } from "react-redux";
-import deleteIcon from "assets/images/delete.png";
 
 const styles = {
   input: {
@@ -69,7 +68,8 @@ const Experiment = (props: any) => {
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
-  const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
+  const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
+  // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
 
   const { classes } = props;
   const history = useHistory();
@@ -444,11 +444,21 @@ const Experiment = (props: any) => {
       const id = Math.random().toString(36).substring(7);
       fileList.push({ tempId: id, file });
     }
+    // if the filesize exceed the limit
     if (listSize + experimentSize > maxExperimentSize) {
       snackbarService.showSnackbar(
         "Files passed go above experiment size limit, total size would be " +
           ((listSize + experimentSize) / 1e6).toFixed(2) +
           "MB",
+        "error"
+      );
+      return;
+    }
+    // if the fileCount exceed the limit
+    if (experimentData.files.length + files.length > maxFileCount) {
+      snackbarService.showSnackbar(
+        "Files passed go above experiment file limit, total file number would not be greater than " +
+          maxFileCount,
         "error"
       );
       return;
@@ -860,6 +870,24 @@ const Experiment = (props: any) => {
                 )}
               </div>
               <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fafafa",
+                    maxHeight: 50,
+                    visibility:
+                        experimentData?.files.length === 0 ? "hidden" : "visible",
+                  }}
+                  onClick={() => {
+                    if (props.poke === false) {
+                      history.push("/graph-workspace/" + props.id + "/plots");
+                    } else {
+                      history.push("/graph-workspace/" + props.id + "/plots/poke");
+                    }
+                  }}
+                  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>
+                New Workspace
+              </Button>
+              <Button
                 key="new-workspace"
                 variant="contained"
                 style={{
@@ -889,24 +917,6 @@ const Experiment = (props: any) => {
               >
                 Workspace
               </Button>
-              {/*  <Button*/}
-              {/*  variant="contained"*/}
-              {/*  style={{*/}
-              {/*    backgroundColor: "#fafafa",*/}
-              {/*    maxHeight: 50,*/}
-              {/*    visibility:*/}
-              {/*      experimentData?.files.length === 0 ? "hidden" : "visible",*/}
-              {/*  }}*/}
-              {/*  onClick={() => {*/}
-              {/*    if (props.poke === false) {*/}
-              {/*      history.push("/experiment/" + props.id + "/plots");*/}
-              {/*    } else {*/}
-              {/*      history.push("/experiment/" + props.id + "/plots/poke");*/}
-              {/*    }*/}
-              {/*  }}*/}
-              {/*  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>*/}
-              {/*  Workspace*/}
-              {/*</Button>*/}
             </Grid>
             <Grid
               style={{
@@ -935,7 +945,7 @@ const Experiment = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                File size limit: <b>{maxFileSize / 1e6}MB</b>
+                File number limit: <b>{maxFileCount}</b>
                 <br />
                 Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>

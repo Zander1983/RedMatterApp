@@ -217,7 +217,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         userManager.getToken()
       );
       const response = await axios.get(fetchArgs.url, fetchArgs.options);
-      if (response?.status) {
+      if (response?.status === 200) {
         setExperiments(response?.data?.organisationExperiments);
         setPrivateExperiments(response?.data?.userExperiments);
         setOldExperiments(response?.data?.oldExperiments);
