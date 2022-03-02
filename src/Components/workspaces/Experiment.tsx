@@ -29,7 +29,8 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
 import { useDispatch } from "react-redux";
-
+import deleteIcon from "assets/images/delete.png";
+import MessageModal from "./../../graph/components/modals/MessageModal";
 const styles = {
   input: {
     color: "white",
@@ -39,6 +40,12 @@ const styles = {
   fileEditInput: {
     borderBottom: "solid 1px white",
     height: 30,
+  },
+  delete: {
+    height: 20,
+    width: 20,
+    marginRight: 10,
+    cursor: "pointer",
   },
 };
 
@@ -60,14 +67,13 @@ const Experiment = (props: any) => {
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
-
+  const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
   const [reports, setReport] = useState<ReportType[]>([]);
   const [reportStatus, setReportStatus] = useState(false);
-
+  const [deleteFileModal, setDeleteFileModal] = useState<boolean>(false);
+  const [deleteFileId, setDeleteFileId] = useState<string>("");
   const [experimentSize, setExperimentSize] = useState(0);
-  const maxExperimentSize = parseInt(
-    process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
-  );
+  const maxExperimentSize = parseInt(process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES);
   const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
   // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
 
@@ -348,7 +354,7 @@ const Experiment = (props: any) => {
     }
   };
 
-  const updateExperimentFileCount = async (expId: any, fileCount: any) => {
+  const updateExperimentFileCount = async (expId: any, fileCount: any, isOverwrite= false) => {
     const data = SecurityUtil.decryptData(
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
@@ -367,8 +373,7 @@ const Experiment = (props: any) => {
           {
             ...currentExperiment,
             ...{
-              fileCount:
-                currentExperiment?.fileCount > 0
+              fileCount: !isOverwrite && currentExperiment?.fileCount > 0
                   ? currentExperiment?.fileCount + fileCount
                   : fileCount,
             },
@@ -597,8 +602,6 @@ const Experiment = (props: any) => {
     func(false);
   };
 
-  const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
-
   const GenOrView = async (event: any, fileId: any, name: string) => {
     setReportName(name);
     event.preventDefault();
@@ -669,7 +672,32 @@ const Experiment = (props: any) => {
     }
   };
 
-  const handleResponse = async (response: any, isMsgShow = false) => {
+  const deleteFromCache = async (fileId: any) => {
+    const activeOrg: string = sessionStorage.getItem("activeOrg");
+    if (activeOrg && activeOrg === props.id) {
+      const expFileInfo = SecurityUtil.decryptData(sessionStorage.getItem("experimentFiles"), process.env.REACT_APP_DATA_SECRET_SOLD);
+      if (expFileInfo) {
+        let updatedFiles = expFileInfo?.files?.files?.filter((file: any) => file.id !== fileId);
+          //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+        if(updatedFiles) {
+          const newFiles = {...expFileInfo.files, ...{files: [...updatedFiles]}};
+          setExperimentData(newFiles);
+          setExperiment(expFileInfo?.files?.experimentDetails);
+
+          sessionStorage.setItem("experimentFiles", SecurityUtil.encryptData({files: newFiles}, process.env.REACT_APP_DATA_SECRET_SOLD));
+
+          await updateExperimentFileCount(props.id, updatedFiles?.length, true);
+
+        }else await reload();
+
+      }else {
+        await reload();
+      }
+    }else
+      await reload();
+  };
+
+  const handleResponse = async (response: any, isMsgShow = false, isCacheUpdate = false) => {
     if (response?.level === "success") {
       if (isMsgShow) {
         showMessageBox({
@@ -678,7 +706,9 @@ const Experiment = (props: any) => {
           saverity: "success",
         });
       }
-      await doStaff(response);
+      if(!isCacheUpdate) await doStaff(response);
+      else
+        await deleteFromCache(response?.fileId);
     } else if (response?.level === "danger") {
       showMessageBox({
         message: response?.message || "Request Not Completed",
@@ -746,10 +776,65 @@ const Experiment = (props: any) => {
         )
       );
   };
-  console.log(reports);
 
-  return (
+  const deleteFileFromServer = async (experimentId: any, fileId: any) => {
+      const URL = `${process.env.REACT_APP_API_URL}api/file-delete/${experimentId}/${fileId}`;
+      try {
+          const response = await axios.delete(URL, {
+                headers: {"Content-Type": "application/json", token: userManager.getToken()},
+            });
+            if (response.status === 200) {
+              await handleResponse({...response.data, fileId:fileId}, true, true);
+            } else
+                await handleError({
+                    message: response?.data?.message || "Request not completed. Due to Time out Or Unable To Allocation",
+                    saverity: "error",
+                });
+        } catch (error) {
+            await handleError(error);
+        }
+    };
+
+    return (
     <>
+      {deleteFileModal && (
+          <MessageModal
+              open={deleteFileModal}
+              closeCall={{
+                f: handleClose,
+                ref: setDeleteFileModal,
+              }}
+              message={
+                <div>
+                  <h2>
+                    Are you sure you want to delete this file from the experiment
+                    permanently?
+                  </h2>
+                </div>
+              }
+              options={{
+                yes:  () => {
+                  if (!deleteFileId) {
+                    snackbarService.showSnackbar("Please try again, Invalid File.", "error");
+                    return;
+                  }
+                  if (!experimentData?.experimentDetails?.id) {
+                    snackbarService.showSnackbar("Please try again, The ExperimentId can't be fetched.", "error");
+                    return;
+                  }
+
+                  (async () => {
+                    // backend call will be here...
+                    console.log(deleteFileId, experimentData?.experimentDetails?.id);
+                    await deleteFileFromServer(props.id, deleteFileId);
+                  })();
+                },
+                no: () => {
+                  handleClose(setDeleteFileModal);
+                },
+              }}
+          />
+      )}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{
@@ -1255,14 +1340,26 @@ const Experiment = (props: any) => {
                               {e.eventCount + " events"}
                             </b>
                             <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                float: "right",
-                                alignItems: "flex-end",
-                                marginTop: -15,
-                              }}
+                                style={{
+                                  display: "flex",
+                                  // flexDirection: "column",
+                                  float: "right",
+                                  alignItems: "center",
+                                  marginTop: -5,
+                                  // justifyItems: "center",
+                                }}
                             >
+                              <img
+                                  onClick={() => {
+                                    setDeleteFileId(e.id);
+                                    setDeleteFileModal(true);
+                                    // setOpenFiles([getWorkspace().selectedFile]);
+                                    // deleteColumn(index - 1);
+                                  }}
+                                  src={deleteIcon}
+                                  alt={`${e.id}-delete-icon`}
+                                  className={classes.delete}
+                              />
                               <Button
                                 disabled={reportStatus}
                                 variant="contained"
