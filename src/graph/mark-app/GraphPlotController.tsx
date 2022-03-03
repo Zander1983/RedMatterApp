@@ -5,6 +5,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
 import Files50 from "./Files50.json";
+import Files from "./Files.json";
 import SmallFiles from "./SmallFiles.json";
 import workspaceState from "./WorkspaceState.json";
 import { superAlgorithm } from "./Helper";
@@ -91,7 +92,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         };
       });
 
-      console.log("channels are ", channels);
       return {
         enrichedEvents: file.events,
         channels: channels,
@@ -133,8 +133,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ] = gatedPlot;
     this.state.workspaceState.plots.push(newPlot);
 
-    console.log("this.state.workspaceState is ", this.state.workspaceState);
-
     let copyOfFiles = JSON.parse(JSON.stringify(Files50));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
@@ -149,8 +147,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     console.log("in edit gate and change is ", change);
     this.state.workspaceState.plots[change.plotIndex] = change.plot;
 
+    console.log("this.state.workspaceState is ", this.state.workspaceState);
+
+    this.state.workspaceState.plots = this.state.workspaceState.plots.map(
+      (plot2: any) => {
+        return plot2;
+      }
+    );
+
     let copyOfFiles = JSON.parse(JSON.stringify(Files50));
-    let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
+    let enrichedFiles = superAlgorithm(copyOfFiles, this.state.workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
     this.setState({
