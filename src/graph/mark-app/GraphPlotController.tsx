@@ -28,26 +28,16 @@ interface IState {
   enrichedFiles: any[];
   workspaceState: any;
   enrichedEvents: any[];
+  testParam: string;
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files50));
-    console.log("===== state 50 files======");
-    console.log(copyOfFiles);
-    // let copyOfFiles:any[] = getWorkspace().files;
-    console.log("=== current file in server ===== ");
-    console.log(getWorkspace().files);
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
-    console.log("==== current plot workspace =====");
-    console.log(getWorkspace().plots);
-    console.log("====== state plots =====");
-    console.log(workspaceState);
-    // let enrichedFiles:any[] = superAlgorithm(copyOfFiles, );
 
-    console.log("agfter super, enrichedFiles is ", enrichedFiles);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
     this.state = {
       sortByChanged: false,
@@ -56,6 +46,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       enrichedFiles: enrichedFiles,
       workspaceState: workspaceState,
       enrichedEvents: [],
+      testParam: "some value",
+    };
+
+    this.state = {
+      sortByChanged: false,
+      sortBy: "file",
+      isTableRenderCall: false,
+      enrichedFiles: enrichedFiles,
+      workspaceState: workspaceState,
+      enrichedEvents: [],
+      testParam: "some value",
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -64,7 +65,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
 
@@ -83,7 +84,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           channel.biexponentialMaximum
         );
       });
-      console.log("logicles are ", logicles);
+
       let channels = file.channels.map((channel: any) => {
         return {
           minimum: channel.biexponentialMinimum,
@@ -103,51 +104,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onAddGate = (change: any) => {
     console.log("adding gate, change is ", change);
 
-    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
+    // create a new plot from the plot that has just been gated, but remove
+    // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
+    delete newPlot.gate;
+    newPlot.population = change.plot.gate.name;
 
-    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+    // set the passed up plot to be in the state
+    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
 
-    let gate = {
-      color: "#" + randomColor,
-      gateType: "polygon",
-      // need to ask for gate name
-      name: "population10",
-      points: change.points,
-      xAxis: gatedPlot.xAxisIndex,
-      yAxis: gatedPlot.yAxis,
-      xScaleType: gatedPlot.xScaleType,
-      yScaleType: gatedPlot.yScaleType,
-      xAxisIndex: gatedPlot.xAxisIndex,
-      yAxisIndex: gatedPlot.yAxisIndex,
-      xAxisOriginalRanges: [0, 262144],
-      yAxisOriginalRanges: [0, 262144],
-      parent: gatedPlot.population,
-    };
-
-    newPlot.population = gate.name;
-
-    gatedPlot.gate = gate;
+    //gatedPlot.gate = gate;
     this.state.workspaceState.plots[
       this.state.workspaceState.plots.length - 1
     ] = gatedPlot;
     this.state.workspaceState.plots.push(newPlot);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: this.state.workspaceState,
+      testParam: "A completely different value",
     });
   };
 
   onEditGate = (change: any) => {
-    console.log("in edit gate and change is ", change);
     this.state.workspaceState.plots[change.plotIndex] = change.plot;
-
-    console.log("this.state.workspaceState is ", this.state.workspaceState);
 
     this.state.workspaceState.plots = this.state.workspaceState.plots.map(
       (plot2: any) => {
@@ -155,7 +139,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     );
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
     let enrichedFiles = superAlgorithm(copyOfFiles, this.state.workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
@@ -168,13 +152,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onChangeChannel = (change: any) => {
     if (change.channel == "x") {
       this.state.workspaceState.plots[change.plotIndex].xAxisIndex =
-        change.value;
+        change.axisIndex;
     } else {
       this.state.workspaceState.plots[change.plotIndex].yAxisIndex =
-        change.value;
+        change.axisIndex;
     }
 
-    console.log("2. updating parent state component");
     this.setState({ workspaceState: this.state.workspaceState });
   };
 
@@ -198,6 +181,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           onChangeChannel={this.onChangeChannel}
           onAddGate={this.onAddGate}
           onEditGate={this.onEditGate}
+          testParam={this.state.testParam}
         />
       );
     } else return null;

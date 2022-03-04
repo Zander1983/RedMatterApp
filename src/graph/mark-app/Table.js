@@ -24,6 +24,7 @@ function Table(props) {
                             onEditGate={props.onEditGate}
                             onChangeChannel={props.onChangeChannel}
                             plotIndex={`${fileIndex}-${plotIindex}`}
+                            testParam={props.testParam}
                           />
                         );
                       } else if (plot.plotType === "histogram") {

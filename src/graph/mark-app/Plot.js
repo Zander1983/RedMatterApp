@@ -1,19 +1,20 @@
 import { getRandomPointsOnCanvas, getSetLinearPoints } from "./PlotHelper";
 import Dropdown from "react-dropdown";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useReducer } from "react";
 import ReactDOM from "react-dom";
 import { isPointInPolygon } from "./Helper";
 import { ConstantNodeDependencies } from "mathjs";
+import Modal from "react-modal";
+import { height } from "@amcharts/amcharts4/.internal/core/utils/Utils";
 
-const getContext = (plot, plotIndex) => {
+const getContext = (plotIndex) => {
   const canvas = document.getElementById("canvas-" + plotIndex);
   if (canvas) {
     const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "white";
-    return { context };
+
+    return context;
   } else {
-    return {};
+    return null;
   }
 };
 
@@ -32,17 +33,35 @@ const shouldDrawGate = (plot) => {
 
 let isMouseDown = false;
 let startPointsReal;
+let newGatePointsCanvas = [];
+let polygonComplete = false;
+let origPlot = {};
 
 function Plot(props) {
+  console.log(
+    "******************************************" +
+      props.plotIndex +
+      " function Plot() props is ",
+    props
+  );
+
+  origPlot = JSON.parse(JSON.stringify(props.plot));
+
   const [localPlot, setLocalPlot] = useState(props.plot);
 
-  useEffect(() => {
-    console.log("in useEffect, props.plotIndex is ", props.plotIndex);
-    console.log("in useEffect, localPlot is now ", localPlot);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [gateName, setGateName] = useState("");
+  const [localTestParam, setLocalTestParam] = useState(props.testParam);
 
-    const { context } = getContext(localPlot, props.plotIndex);
-    // props.workspaceState.plots.map((plot, plotIndex) => {
-    // console.log( props.enrichedFile);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  useEffect(() => {
+    setLocalPlot(props.plot);
+
+    const context = getContext(props.plotIndex);
+    context.clearRect(0, 0, localPlot.width, localPlot.height);
+    context.fillStyle = "white";
+
     props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
       if (context) {
         getFormattedEvents(enrichedEvent, localPlot).forEach(
@@ -55,7 +74,6 @@ function Plot(props) {
     });
 
     if (localPlot.gate && shouldDrawGate(localPlot)) {
-      console.log("DRAWING GATE  WHICH IS ", localPlot.gate);
       drawGateLine(context, localPlot);
     }
   }, [localPlot, props.plot, props.enrichedFile]);
@@ -164,6 +182,7 @@ function Plot(props) {
 
   const drawGateLine = (context, plot) => {
     context.strokeStyle = "red";
+    context.lineWidth = 1;
     context.beginPath();
 
     let pointsOnCanvas = plot.gate.points.map((point) => {
@@ -203,21 +222,27 @@ function Plot(props) {
     return events;
   };
 
-  const onChangeChannel = (event) => {
-    console.log("1. send the change back to the parent", event);
+  const onChangeChannel = (e, axis, plotIndex) => {
+    console.log(
+      "1. send the change e, axis, plotIndex is ",
+      e,
+      axis,
+      plotIndex
+    );
 
     let change = {
       type: "ChannelIndexChange",
-      // TODO need to get the plot here
-      plotIndex: 0,
-      channel: "x",
-      value: event.value,
+      plotIndex: plotIndex,
+      channel: axis,
+      axisIndex: e.value,
     };
     props.onChangeChannel(change);
   };
 
+  const onClickGateButton = (plot, plotIndex) => {};
+
   const onAddGate = (plot, plotIndex) => {
-    let points = getRandomPointsOnCanvas(plot.width, plot.height, 4);
+    let points = newGatePointsCanvas;
 
     // Here im generating a random gate, which is a triangle
     points.forEach((point) => {
@@ -256,7 +281,29 @@ function Plot(props) {
       plot: plot,
       plotIndex: plotIndex,
       points: points,
+      gateName: gateName,
     };
+
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+
+    let gate = {
+      color: "#" + randomColor,
+      gateType: "polygon",
+      // need to ask for gate name
+      name: gateName,
+      points: points,
+      xAxis: plot.xAxisIndex,
+      yAxis: plot.yAxis,
+      xScaleType: plot.xScaleType,
+      yScaleType: plot.yScaleType,
+      xAxisIndex: plot.xAxisIndex,
+      yAxisIndex: plot.yAxisIndex,
+      xAxisOriginalRanges: [0, 262144],
+      yAxisOriginalRanges: [0, 262144],
+      parent: plot.population,
+    };
+
+    plot.gate = gate;
 
     props.onAddGate(change);
   };
@@ -281,17 +328,8 @@ function Plot(props) {
   };
 
   const channelOptions = props.enrichedFile.channels.map((channel, index) => {
-    return channel.name;
+    return { value: index, label: channel.name };
   });
-
-  const handleMouseDown = (event) => {
-    isMouseDown = true;
-
-    startPointsReal = getRealPointFromCanvasPoints(localPlot, [
-      event.offsetX,
-      event.offsetY,
-    ]);
-  };
 
   const getMoveValue = (
     startValueReal,
@@ -359,8 +397,115 @@ function Plot(props) {
     }
   };
 
+  const hasGate = () => {
+    return !!props.plot.gate;
+  };
+
+  const redraw = () => {
+    drawPolygon();
+    drawPoints();
+  };
+
+  const drawPolygon = () => {
+    let context = getContext(props.plotIndex);
+    //context.fillStyle = "rgba(100,100,100,0.5)";
+    context.strokeStyle = "#df4b26";
+    context.lineWidth = 1;
+
+    context.beginPath();
+    context.moveTo(newGatePointsCanvas[0][0], newGatePointsCanvas[0][1]);
+    for (var i = 1; i < newGatePointsCanvas.length; i++) {
+      context.lineTo(newGatePointsCanvas[i][0], newGatePointsCanvas[i][1]);
+    }
+    if (polygonComplete) {
+      context.closePath();
+    }
+    context.stroke();
+  };
+
+  const drawPoints = () => {
+    let context = getContext(props.plotIndex);
+
+    context.strokeStyle = "#df4b26";
+    context.lineJoin = "round";
+    context.lineWidth = 5;
+
+    for (var i = 0; i < newGatePointsCanvas.length; i++) {
+      context.beginPath();
+      context.arc(
+        newGatePointsCanvas[i][0],
+        newGatePointsCanvas[i][1],
+        3,
+        0,
+        2 * Math.PI,
+        false
+      );
+      context.fillStyle = "#000";
+      context.fill();
+      context.lineWidth = 5;
+      context.stroke();
+    }
+  };
+
+  const inRange = (x, min, max) => {
+    return (x - min) * (x - max) <= 0;
+  };
+
+  const handleMouseDown = (event) => {
+    isMouseDown = true;
+
+    if (hasGate()) {
+      startPointsReal = getRealPointFromCanvasPoints(localPlot, [
+        event.offsetX,
+        event.offsetY,
+      ]);
+    } else {
+    }
+  };
+
+  const handleMouseUp = (event) => {
+    isMouseDown = false;
+    // TODO
+    if (hasGate()) {
+      let change = {
+        type: "EditGate",
+        plot: localPlot,
+        plotIndex: props.plotIndex.split("-")[1],
+        points: JSON.parse(JSON.stringify(localPlot.gate.points)),
+      };
+
+      props.onEditGate(change);
+    } else {
+      // so its a new gate
+
+      newGatePointsCanvas.forEach((newGatePointCanvas) => {
+        if (
+          inRange(
+            event.offsetX,
+            newGatePointCanvas[0] - 10,
+            newGatePointCanvas[0] + 10
+          ) &&
+          inRange(
+            event.offsetY,
+            newGatePointCanvas[1] - 10,
+            newGatePointCanvas[1] + 10
+          )
+        ) {
+          setModalIsOpen(true);
+          polygonComplete = true;
+        }
+      });
+
+      if (!polygonComplete) {
+        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      }
+
+      redraw();
+    }
+  };
+
   const handleMouseMove = (event) => {
-    if (isMouseDown) {
+    if (isMouseDown && hasGate()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(localPlot, [
@@ -410,32 +555,56 @@ function Plot(props) {
           return [newGateValueRealX, newGateValueRealY];
         });
 
+        // IMPORTANT - reste start points
+        startPointsReal = getRealPointFromCanvasPoints(localPlot, [
+          event.offsetX,
+          event.offsetY,
+        ]);
+
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
     }
   };
 
-  const handleMouseUp = (event) => {
-    isMouseDown = false;
+  const onSetGateName = () => {
+    onAddGate(localPlot, props.plotIndex);
+    setModalIsOpen(false);
+  };
 
-    let change = {
-      type: "EditGate",
-      plot: localPlot,
-      plotIndex: props.plotIndex.split("-")[1],
-      points: JSON.parse(JSON.stringify(localPlot.gate.points)),
-    };
+  const onCancelGateName = () => {
+    setModalIsOpen(false);
+  };
 
-    props.onEditGate(change);
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      backgroundColor: "#F0AA89",
+    },
   };
 
   return (
     <>
       {" "}
       <div key={props.plotIndex}>
+        <Modal isOpen={modalIsOpen} style={customStyles}>
+          <label>
+            Gate Name:
+            <input type="text" onChange={(e) => setGateName(e.target.value)} />
+          </label>
+          <button onClick={() => onSetGateName()}>Ok</button>
+          <button onClick={() => onCancelGateName()}>Cancel</button>
+        </Modal>
         {localPlot.xAxis} | {localPlot.xScaleType}
         <Dropdown
           options={channelOptions}
-          onChange={onChangeChannel}
+          onChange={(e) =>
+            onChangeChannel(e, "y", props.plotIndex.split("-")[1])
+          }
           placeholder="Select a new Y channel"
         />
         <canvas
@@ -471,7 +640,8 @@ function Plot(props) {
         {props.yAxis} | {localPlot.yScaleType}
         <Dropdown
           options={channelOptions}
-          onChange={onChangeChannel}
+          // onChange={() => onChangeChannel("x", props.plotIndex.split("-")[1])}
+          onChange={() => onChangeChannel()}
           placeholder="Select a new X channel"
         />
       </div>
