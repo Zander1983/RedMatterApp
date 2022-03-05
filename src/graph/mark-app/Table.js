@@ -39,6 +39,7 @@ const classes = {
 
 function Table(props) {
   console.log(">> table props is ", props);
+
   return (
     <table className="workspace">
       <tbody>
@@ -73,6 +74,13 @@ function Table(props) {
             /> */}
                         </Grid>
                       </div>
+                      {plot.population != "All"
+                        ? `Stats: ${
+                            enrichedFile.gateStats[
+                              plot.population + "_percentage"
+                            ]
+                          }%`
+                        : ""}
                       {(() => {
                         if (plot.plotType === "scatter") {
                           return (
