@@ -111,18 +111,8 @@ function Plot(props) {
     xAxisPointOnCanvas
   ) => {
     const logicle = props.enrichedFile.logicles[plot.xAxisIndex];
-    console.log(
-      ">>>xAxisPointOnCanvas is ",
-      xAxisPointOnCanvas,
-      ", plot.width is ",
-      plot.width
-    );
     xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
-
-    let inverse = logicle.inverse(xAxisPointOnCanvas);
-
-    console.log("inverse for X axis is ", inverse);
-    return inverse;
+    return logicle.inverse(xAxisPointOnCanvas);
   };
 
   const getRealYAxisValueFromCanvasPointOnLogicleScale = (
@@ -486,8 +476,6 @@ function Plot(props) {
       let moveX = event.offsetX - resizeStartPoints[0];
       let moveY = event.offsetY - resizeStartPoints[1];
 
-      console.log("in handleResizeMouseMove, moveX, moveY is ", moveX, moveY);
-
       localPlot.width = localPlot.width + moveX;
       localPlot.height = localPlot.height + moveY;
 
@@ -552,27 +540,19 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    console.log("in handleMouseMove");
     if (isMouseDown && hasGate()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
-      console.log("newPointsCanvas is ", newPointsCanvas);
       let newPointsReal = getRealPointFromCanvasPoints(localPlot, [
         event.offsetX,
         event.offsetY,
       ]);
-
-      console.log("newPointsReal is ", newPointsReal);
 
       let isInside = isPointInPolygon(
         newPointsReal[0],
         newPointsReal[1],
         localPlot.gate.points
       );
-
-      console.log("localPlot.gate.points is ", localPlot.gate.points);
-
-      console.log("isInside is ", isInside);
       if (isInside) {
         let moveX = getMoveValue(
           startPointsReal[0],
