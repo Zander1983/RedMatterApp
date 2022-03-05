@@ -4,6 +4,7 @@ import React from "react";
 
 function Table(props) {
   console.log(">> table props is ", props);
+
   return (
     <table className="workspace">
       <tbody>
@@ -13,6 +14,13 @@ function Table(props) {
               {props.workspaceState.plots.map((plot, plotIindex) => {
                 return (
                   <td key={`td-${plotIindex}`}>
+                    {plot.population != "All"
+                      ? `Stats: ${
+                          enrichedFile.gateStats[
+                            plot.population + "_percentage"
+                          ]
+                        }%`
+                      : ""}
                     {(() => {
                       if (plot.plotType === "scatter") {
                         return (

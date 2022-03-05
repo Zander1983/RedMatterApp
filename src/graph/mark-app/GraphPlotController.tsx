@@ -35,9 +35,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
     console.log("copyOfFiles is ", copyOfFiles);
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+
+    console.log("after superAlgorithm: " + enrichedFiles);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
     this.state = {
@@ -67,7 +69,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
 
@@ -96,10 +98,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         };
       });
 
+      console.log(">>>>>file is ", file);
       return {
         enrichedEvents: file.events,
         channels: channels,
         logicles: logicles,
+        gateStats: file.gateStats,
       };
     });
   };
@@ -122,7 +126,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ] = gatedPlot;
     this.state.workspaceState.plots.push(newPlot);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
@@ -142,7 +146,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     );
 
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
     let enrichedFiles = superAlgorithm(copyOfFiles, this.state.workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 

@@ -5,8 +5,12 @@ export const superAlgorithm = (Files, WorkspaceState) => {
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
+  // TODO logicle here needs to be got correctly
   let logicle = new MarkLogicle(0, 262144);
+
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    let gateStats = {};
+
     for (
       let eventIndex = 0;
       eventIndex < Files[fileIndex].events.length;
@@ -76,14 +80,26 @@ export const superAlgorithm = (Files, WorkspaceState) => {
           if (isInGate) {
             event["color"] = gate["color"];
             event["isInGate" + gate.name] = true;
+            !gateStats[gate.name + "_count"]
+              ? (gateStats[gate.name + "_count"] = 1)
+              : gateStats[gate.name + "_count"]++;
           }
         }
-
         if (!isInGate) {
           break;
         }
       }
     }
+
+    const gateCounts = Object.keys(gateStats);
+    gateCounts.forEach((gateCount, index) => {
+      gateStats[gateCount.replace("_count", "_percentage")] = (
+        (gateStats[gateCount] * 100) /
+        Files[fileIndex].events.length
+      ).toFixed(2);
+    });
+
+    Files[fileIndex].gateStats = gateStats;
   }
 
   return Files;
