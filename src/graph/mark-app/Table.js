@@ -101,6 +101,7 @@ function Table(props) {
                             <Histogram
                               key={`plot-${plotIindex}`}
                               plot={plot}
+                              onChangeChannel={props.onChangeChannel}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex}-${plotIindex}`}
                             />
