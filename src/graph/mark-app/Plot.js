@@ -76,12 +76,12 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
-  // console.log(
-  //   "******************************************" +
-  //     props.plotIndex +
-  //     " function Plot() props is ",
-  //   props
-  // );
+  console.log(
+    "******************************************" +
+      props.plotIndex +
+      " function Plot() props is ",
+    props
+  );
 
   const [localPlot, setLocalPlot] = useState(props.plot);
 
@@ -289,6 +289,7 @@ function Plot(props) {
       axisIndex: channeIndex,
       axisLabel: channelLabel,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
+      fileId: props.enrichedFile.fileId,
     };
 
     props.onChangeChannel(change);
