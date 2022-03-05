@@ -6,6 +6,44 @@ import { isPointInPolygon } from "./Helper";
 import { ConstantNodeDependencies } from "mathjs";
 import Modal from "react-modal";
 import { height } from "@amcharts/amcharts4/.internal/core/utils/Utils";
+import GateBar from "../components/plots/GateBar";
+import MainBar from "../components/plots/GateBar";
+import SideSelector from "./PlotEntities/SideSelector";
+import { Divider, Grid } from "@material-ui/core";
+
+const classes = {
+  itemOuterDiv: {
+    flex: 1,
+    backgroundColor: "#eef",
+    border: "solid 0.5px #bbb",
+    boxShadow: "1px 3px 4px #bbd",
+    borderRadius: 5,
+  },
+  itemInnerDiv: {
+    width: "100%",
+    height: "100%",
+  },
+  mainContainer: {
+    width: "100%",
+    height: "100%",
+    padding: "8px 10px 10px 10px",
+    flex: 1,
+    border: "solid 0.5px #bbb",
+    boxShadow: "1px 3px 4px #bbd",
+    borderRadius: "5px",
+    paddingBottom: "8px",
+    backgroundColor: "rgb(238, 238, 255)",
+  },
+  utilityBar: {
+    width: "100%",
+  },
+  canvasDisplay: {
+    borderRadius: 5,
+    boxShadow: "1px 3px 4px #bbd",
+    backgroundColor: "#dfd",
+    flexGrow: 1,
+  },
+};
 
 const getContext = (plotIndex) => {
   const canvas = document.getElementById("canvas-" + plotIndex);
@@ -220,9 +258,30 @@ function Plot(props) {
     return events;
   };
 
+  const onChangeScale = (e, axis, plotIndex) => {
+    let channeIndex = localPlot.xAxisIndex;
+    let channelLabel = localPlot.xAxisLabel;
+    let channelScale = e.scale;
+    if (axis == "y") {
+      channeIndex = localPlot.yAxisIndex;
+      channelLabel = localPlot.yAxisLabel;
+    }
+
+    let change = {
+      type: "ChannelIndexChange",
+      plotIndex: plotIndex,
+      axis: axis,
+      axisIndex: channeIndex,
+      axisLabel: channelLabel,
+      scaleType: channelScale,
+    };
+
+    props.onChangeChannel(change);
+  };
+
   const onChangeChannel = (e, axis, plotIndex) => {
     let channeIndex = e.value;
-    let channelLabel = e.label;
+    let channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
 
     let change = {
       type: "ChannelIndexChange",
@@ -633,32 +692,38 @@ function Plot(props) {
           <button onClick={() => onSetGateName()}>Ok</button>
           <button onClick={() => onCancelGateName()}>Cancel</button>
         </Modal>
-        {localPlot.xAxisLabel} | {localPlot.xScaleType}
-        <Dropdown
+        <SideSelector
           options={channelOptions}
-          onChange={(e) =>
-            onChangeChannel(e, "y", props.plotIndex.split("-")[1])
+          onChange={onChangeChannel}
+          onChangeScale={onChangeScale}
+          xScaleType={localPlot.xScaleType}
+          yAxisLabel={localPlot.yAxisLabel}
+          xAxisIndex={localPlot.xAxisIndex}
+          yAxisIndex={localPlot.yAxisIndex}
+          yScaleType={localPlot.yScaleType}
+          xAxisLabel={localPlot.xAxisLabel}
+          plotIndex={props.plotIndex}
+          canvasComponent={
+            <canvas
+              style={{ border: "thick solid #32a1ce" }}
+              className="canvas"
+              id={`canvas-${props.plotIndex}`}
+              width={localPlot.width}
+              height={localPlot.height}
+              onMouseDown={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseDown(nativeEvent);
+              }}
+              onMouseMove={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseMove(nativeEvent);
+              }}
+              onMouseUp={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseUp(nativeEvent);
+              }}
+            />
           }
-          placeholder="Select a new Y channel"
-        />
-        <canvas
-          style={{ border: "thick solid #32a1ce" }}
-          className="canvas"
-          id={`canvas-${props.plotIndex}`}
-          width={localPlot.width}
-          height={localPlot.height}
-          onMouseDown={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleMouseDown(nativeEvent);
-          }}
-          onMouseMove={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleMouseMove(nativeEvent);
-          }}
-          onMouseUp={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleMouseUp(nativeEvent);
-          }}
         />
         <div
           style={{ width: "25", backgroundColor: "green" }}
@@ -677,14 +742,6 @@ function Plot(props) {
         >
           RESIZE
         </div>
-        {props.yAxisLabel} | {localPlot.yScaleType}
-        <Dropdown
-          options={channelOptions}
-          onChange={(e) =>
-            onChangeChannel(e, "x", props.plotIndex.split("-")[1])
-          }
-          placeholder="Select a new X channel"
-        />
       </div>
     </>
   );
