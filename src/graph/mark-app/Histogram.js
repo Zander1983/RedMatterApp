@@ -1,5 +1,6 @@
 import { histogram } from "./HistogramHelper";
 import { useEffect } from "react";
+import SideSelector from "./PlotEntities/SideSelector";
 
 const getContext = (plot, plotIndex) => {
   // const findBy = "canvas-" + plot.plotIndex
@@ -187,16 +188,74 @@ function Histogram(props) {
     );
   });
 
+  const onChangeScale = (e, axis, plotIndex) => {
+    let channeIndex = props.plot.xAxisIndex;
+    let channelLabel = props.plot.xAxisLabel;
+    let channelScale = e.scale;
+    if (axis == "y") {
+      channeIndex = props.plot.yAxisIndex;
+      channelLabel = props.plot.yAxisLabel;
+    }
+
+    let change = {
+      type: "ChannelIndexChange",
+      plotIndex: plotIndex,
+      axis: axis,
+      axisIndex: channeIndex,
+      axisLabel: channelLabel,
+      scaleType: channelScale,
+    };
+
+    props.onChangeChannel(change);
+  };
+
+  const onChangeChannel = (e, axis, plotIndex) => {
+    let channeIndex = e.value;
+    let channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+
+    let change = {
+      type: "ChannelIndexChange",
+      plotIndex: plotIndex,
+      axis: axis,
+      axisIndex: channeIndex,
+      axisLabel: channelLabel,
+      scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
+    };
+
+    props.onChangeChannel(change);
+  };
+
+  const channelOptions = props.enrichedFile.channels.map((channel, index) => {
+    return {
+      value: index,
+      label: channel.name,
+      defaultScale: channel.defaultScale,
+    };
+  });
+
   return (
     <>
       {" "}
       <div>
-        channel selector goes here
-        <canvas
-          className="canvas"
-          id={`canvas-${props.plotIndex}`}
-          width={props.plot.width}
-          height={props.plot.height}
+        <SideSelector
+          options={channelOptions}
+          onChange={onChangeChannel}
+          onChangeScale={onChangeScale}
+          xScaleType={props.plot.xScaleType}
+          yAxisLabel={props.plot.yAxisLabel}
+          xAxisIndex={props.plot.xAxisIndex}
+          yAxisIndex={props.plot.yAxisIndex}
+          yScaleType={props.plot.yScaleType}
+          xAxisLabel={props.plot.xAxisLabel}
+          plotIndex={props.plotIndex}
+          canvasComponent={
+            <canvas
+              className="canvas"
+              id={`canvas-${props.plotIndex}`}
+              width={props.plot.width}
+              height={props.plot.height}
+            />
+          }
         />
         {props.plot.xAxis} | {props.plot.xScaleType}
       </div>
