@@ -22,6 +22,7 @@ function Table(props) {
                             enrichedFile={enrichedFile}
                             onAddGate={props.onAddGate}
                             onEditGate={props.onEditGate}
+                            onResize={props.onResize}
                             onChangeChannel={props.onChangeChannel}
                             plotIndex={`${fileIndex}-${plotIindex}`}
                             testParam={props.testParam}

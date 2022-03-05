@@ -36,6 +36,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     super(props);
 
     let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
+    console.log("copyOfFiles is ", copyOfFiles);
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
@@ -62,6 +63,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
+    this.onResize = this.onResize.bind(this);
   }
 
   getEnrichedEvents = () => {
@@ -90,6 +92,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           minimum: channel.biexponentialMinimum,
           maximum: channel.biexponentialMaximum,
           name: channel.value,
+          defaultScale: channel.display,
         };
       });
 
@@ -119,7 +122,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ] = gatedPlot;
     this.state.workspaceState.plots.push(newPlot);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files50));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles);
 
@@ -150,15 +153,36 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onChangeChannel = (change: any) => {
-    if (change.channel == "x") {
+    if (change.axis == "x") {
+      console.log("in x!!!!!");
       this.state.workspaceState.plots[change.plotIndex].xAxisIndex =
         change.axisIndex;
+      this.state.workspaceState.plots[change.plotIndex].xAxisLabel =
+        change.axisLabel;
+      this.state.workspaceState.plots[change.plotIndex].xScaleType =
+        change.scaleType;
     } else {
       this.state.workspaceState.plots[change.plotIndex].yAxisIndex =
         change.axisIndex;
+      this.state.workspaceState.plots[change.plotIndex].yAxisLabel =
+        change.axisLabel;
+      this.state.workspaceState.plots[change.plotIndex].yScaleType =
+        change.scaleType;
     }
 
-    this.setState({ workspaceState: this.state.workspaceState });
+    this.setState({
+      workspaceState: JSON.parse(JSON.stringify(this.state.workspaceState)),
+    });
+  };
+
+  onResize = (change: any) => {
+    console.log("in resize, change is ", change);
+    this.state.workspaceState.plots[change.plotIndex].width = change.width;
+    this.state.workspaceState.plots[change.plotIndex].height = change.height;
+
+    this.setState({
+      workspaceState: JSON.parse(JSON.stringify(this.state.workspaceState)),
+    });
   };
 
   componentDidMount() {
@@ -181,6 +205,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           onChangeChannel={this.onChangeChannel}
           onAddGate={this.onAddGate}
           onEditGate={this.onEditGate}
+          onResize={this.onResize}
           testParam={this.state.testParam}
         />
       );

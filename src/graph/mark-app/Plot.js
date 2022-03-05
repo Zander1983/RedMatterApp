@@ -35,7 +35,7 @@ let isMouseDown = false;
 let startPointsReal;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
-let origPlot = {};
+let resizeStartPoints;
 
 function Plot(props) {
   console.log(
@@ -44,8 +44,6 @@ function Plot(props) {
       " function Plot() props is ",
     props
   );
-
-  origPlot = JSON.parse(JSON.stringify(props.plot));
 
   const [localPlot, setLocalPlot] = useState(props.plot);
 
@@ -92,6 +90,7 @@ function Plot(props) {
     } else {
       // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
       x = getRealXAxisValueFromCanvasPointOnLogicleScale(plot, x);
+      console.log("....so x is ", x);
     }
 
     if (plot.yScaleType === "lin") {
@@ -112,9 +111,18 @@ function Plot(props) {
     xAxisPointOnCanvas
   ) => {
     const logicle = props.enrichedFile.logicles[plot.xAxisIndex];
-    xAxisPointOnCanvas = xAxisPointOnCanvas / plot.height;
+    console.log(
+      ">>>xAxisPointOnCanvas is ",
+      xAxisPointOnCanvas,
+      ", plot.width is ",
+      plot.width
+    );
+    xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
 
-    return logicle.inverse(xAxisPointOnCanvas);
+    let inverse = logicle.inverse(xAxisPointOnCanvas);
+
+    console.log("inverse for X axis is ", inverse);
+    return inverse;
   };
 
   const getRealYAxisValueFromCanvasPointOnLogicleScale = (
@@ -223,19 +231,18 @@ function Plot(props) {
   };
 
   const onChangeChannel = (e, axis, plotIndex) => {
-    console.log(
-      "1. send the change e, axis, plotIndex is ",
-      e,
-      axis,
-      plotIndex
-    );
+    let channeIndex = e.value;
+    let channelLabel = e.label;
 
     let change = {
       type: "ChannelIndexChange",
       plotIndex: plotIndex,
-      channel: axis,
-      axisIndex: e.value,
+      axis: axis,
+      axisIndex: channeIndex,
+      axisLabel: channelLabel,
+      scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
     };
+
     props.onChangeChannel(change);
   };
 
@@ -292,8 +299,8 @@ function Plot(props) {
       // need to ask for gate name
       name: gateName,
       points: points,
-      xAxis: plot.xAxisIndex,
-      yAxis: plot.yAxis,
+      xAxisLabel: plot.xAxisIndex,
+      yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
       yScaleType: plot.yScaleType,
       xAxisIndex: plot.xAxisIndex,
@@ -328,7 +335,11 @@ function Plot(props) {
   };
 
   const channelOptions = props.enrichedFile.channels.map((channel, index) => {
-    return { value: index, label: channel.name };
+    return {
+      value: index,
+      label: channel.name,
+      defaultScale: channel.defaultScale,
+    };
   });
 
   const getMoveValue = (
@@ -451,6 +462,42 @@ function Plot(props) {
     return (x - min) * (x - max) <= 0;
   };
 
+  /*********************MOUSE EVENTS FOR RESIZING********************************/
+  const handleResizeMouseDown = (event) => {
+    isMouseDown = true;
+
+    resizeStartPoints = [event.offsetX, event.offsetY];
+  };
+
+  const handleResizeMouseUp = (event) => {
+    isMouseDown = false;
+
+    let change = {
+      height: localPlot.height,
+      width: localPlot.width,
+      plotIndex: props.plotIndex.split("-")[1],
+    };
+
+    props.onResize(change);
+  };
+
+  const handleResizeMouseMove = (event) => {
+    if (isMouseDown) {
+      let moveX = event.offsetX - resizeStartPoints[0];
+      let moveY = event.offsetY - resizeStartPoints[1];
+
+      console.log("in handleResizeMouseMove, moveX, moveY is ", moveX, moveY);
+
+      localPlot.width = localPlot.width + moveX;
+      localPlot.height = localPlot.height + moveY;
+
+      resizeStartPoints = [event.offsetX, event.offsetY];
+
+      setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
+    }
+  };
+
+  /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
 
@@ -505,13 +552,17 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
+    console.log("in handleMouseMove");
     if (isMouseDown && hasGate()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
+      console.log("newPointsCanvas is ", newPointsCanvas);
       let newPointsReal = getRealPointFromCanvasPoints(localPlot, [
         event.offsetX,
         event.offsetY,
       ]);
+
+      console.log("newPointsReal is ", newPointsReal);
 
       let isInside = isPointInPolygon(
         newPointsReal[0],
@@ -519,6 +570,9 @@ function Plot(props) {
         localPlot.gate.points
       );
 
+      console.log("localPlot.gate.points is ", localPlot.gate.points);
+
+      console.log("isInside is ", isInside);
       if (isInside) {
         let moveX = getMoveValue(
           startPointsReal[0],
@@ -599,7 +653,7 @@ function Plot(props) {
           <button onClick={() => onSetGateName()}>Ok</button>
           <button onClick={() => onCancelGateName()}>Cancel</button>
         </Modal>
-        {localPlot.xAxis} | {localPlot.xScaleType}
+        {localPlot.xAxisLabel} | {localPlot.xScaleType}
         <Dropdown
           options={channelOptions}
           onChange={(e) =>
@@ -626,22 +680,29 @@ function Plot(props) {
             handleMouseUp(nativeEvent);
           }}
         />
-        <button
-          onClick={() => onEditGate(localPlot, props.plotIndex.split("-")[1])}
+        <div
+          style={{ width: "25", backgroundColor: "green" }}
+          onMouseDown={(e) => {
+            let nativeEvent = e.nativeEvent;
+            handleResizeMouseDown(nativeEvent);
+          }}
+          onMouseMove={(e) => {
+            let nativeEvent = e.nativeEvent;
+            handleResizeMouseMove(nativeEvent);
+          }}
+          onMouseUp={(e) => {
+            let nativeEvent = e.nativeEvent;
+            handleResizeMouseUp(nativeEvent);
+          }}
         >
-          Edit Gate
-        </button>
-        <button
-          disabled={localPlot.gate}
-          onClick={() => onAddGate(localPlot, props.plotIndex.split("-")[1])}
-        >
-          New Gate
-        </button>
-        {props.yAxis} | {localPlot.yScaleType}
+          RESIZE
+        </div>
+        {props.yAxisLabel} | {localPlot.yScaleType}
         <Dropdown
           options={channelOptions}
-          // onChange={() => onChangeChannel("x", props.plotIndex.split("-")[1])}
-          onChange={() => onChangeChannel()}
+          onChange={(e) =>
+            onChangeChannel(e, "x", props.plotIndex.split("-")[1])
+          }
           placeholder="Select a new X channel"
         />
       </div>
