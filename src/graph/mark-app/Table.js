@@ -11,7 +11,7 @@ function Table(props) {
         {props.enrichedFiles.map((enrichedFile, fileIndex) => {
           return (
             <tr key={`tr-${fileIndex}`}>
-              {props.workspaceState.plots.map((plot, plotIindex) => {
+              {enrichedFile.plots.map((plot, plotIindex) => {
                 return (
                   <td key={`td-${plotIindex}`}>
                     {plot.population != "All"

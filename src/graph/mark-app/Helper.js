@@ -7,8 +7,10 @@ export const superAlgorithm = (Files, WorkspaceState) => {
 
   // TODO logicle here needs to be got correctly
   let logicle = new MarkLogicle(0, 262144);
+  let controlFile = WorkspaceState.controlFile;
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    let file = Files[fileIndex];
     let gateStats = {};
 
     for (
@@ -18,13 +20,14 @@ export const superAlgorithm = (Files, WorkspaceState) => {
     ) {
       let event = Files[fileIndex].events[eventIndex];
 
-      for (
-        let plotIndex = 0;
-        plotIndex < WorkspaceState.plots.length;
-        plotIndex++
-      ) {
+      // if the file has its own plots, use that, otherwise use control file plots
+      let plots = WorkspaceState.files[file.id]
+        ? WorkspaceState.files[file.id].plots
+        : WorkspaceState.files[controlFile].plots;
+
+      for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
         let isInGate;
-        let plot = WorkspaceState.plots[plotIndex];
+        let plot = plots[plotIndex];
         if (!event["color"]) {
           event["color"] = "#000";
         }

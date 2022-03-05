@@ -38,12 +38,12 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
-  console.log(
-    "******************************************" +
-      props.plotIndex +
-      " function Plot() props is ",
-    props
-  );
+  // console.log(
+  //   "******************************************" +
+  //     props.plotIndex +
+  //     " function Plot() props is ",
+  //   props
+  // );
 
   const [localPlot, setLocalPlot] = useState(props.plot);
 
@@ -90,7 +90,6 @@ function Plot(props) {
     } else {
       // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
       x = getRealXAxisValueFromCanvasPointOnLogicleScale(plot, x);
-      console.log("....so x is ", x);
     }
 
     if (plot.yScaleType === "lin") {
@@ -305,25 +304,6 @@ function Plot(props) {
     props.onAddGate(change);
   };
 
-  const onEditGate = (plot, plotIndex) => {
-    //let points = plot.gate.points;
-
-    let newPoints = getRandomPointsOnCanvas(plot.width, plot.height, 1)[0];
-
-    newPoints = getRealPointFromCanvasPoints(newPoints, plot);
-
-    plot.gate.points[1] = newPoints;
-
-    let change = {
-      type: "EditGate",
-      plot: plot,
-      plotIndex: plotIndex,
-      points: [],
-    };
-
-    props.onEditGate(change);
-  };
-
   const channelOptions = props.enrichedFile.channels.map((channel, index) => {
     return {
       value: index,
@@ -507,6 +487,7 @@ function Plot(props) {
         plot: localPlot,
         plotIndex: props.plotIndex.split("-")[1],
         points: JSON.parse(JSON.stringify(localPlot.gate.points)),
+        fileId: props.enrichedFile.fileId,
       };
 
       props.onEditGate(change);
