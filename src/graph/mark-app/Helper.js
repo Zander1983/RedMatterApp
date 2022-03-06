@@ -1,5 +1,7 @@
 import MarkLogicle from "./logicleMark";
+import numeral from "numeral";
 
+const minLabelPadding = 30;
 export const superAlgorithm = (Files, WorkspaceState) => {
   // event 1 is not in any gate, it will have color black
   // event 2 is in both gate, it will have the color of the last gate
@@ -207,4 +209,218 @@ export const pointInsidePolygon = ({ x, y }, polygon) => {
   }
   if (hits & 1) return true;
   return false;
+};
+
+export const graphLine = (params, ctx) => {
+  let xpts = Math.round(
+    (Math.max(params.x1, params.x2) - Math.min(params.x1, params.x2)) /
+      params.bins
+  );
+
+  let ypts = Math.round(
+    (Math.max(params.y1, params.y2) - Math.min(params.y1, params.y2)) /
+      params.bins
+  );
+
+  drawSegment(
+    {
+      x1: params.x1,
+      y1: params.y1,
+      x2: params.x2,
+      y2: params.y2,
+      lineWidth: 2,
+    },
+    ctx
+  );
+
+  if (params.x1 !== params.x2 && params.y1 !== params.y2) {
+    throw new Error("Plot line is not vertical nor horizontal");
+  }
+
+  const orientation = params.x1 === params.x2 ? "v" : "h";
+  const bins =
+    params.bins !== undefined ? params.bins : orientation === "v" ? ypts : xpts;
+  const p1 = orientation === "v" ? params.y1 : params.x1;
+  const p2 = orientation === "v" ? params.y2 : params.x2;
+  const op1 = orientation === "v" ? params.x1 : params.y1;
+  const op2 = orientation === "v" ? params.x2 : params.y2;
+
+  let counter = bins;
+  let interval = Math.max(p1, p2) - Math.min(p1, p2);
+
+  if (params.labels !== undefined) {
+    let min = orientation === "h" ? params.ib : params.ib;
+    let max = orientation === "h" ? params.ie : params.ie;
+    let lastLabelPos = null;
+
+    if (orientation === "v") {
+      for (const label of params.labels) {
+        let pos = (label.pos - min) / (max - min);
+        const y = Math.abs(p1 - p2) * (1 - pos) + Math.min(p1, p2);
+        if (lastLabelPos !== null && lastLabelPos < y) {
+          continue;
+        }
+        drawSegment(
+          {
+            x1: op1 - 14,
+            y1: y,
+            x2: op1 + 14,
+            y2: y,
+            lineWidth: 1,
+          },
+          ctx
+        );
+        drawText(
+          {
+            x: op1 - 90,
+            y: y + 8,
+            text: label.name,
+            font: "20px Arial",
+            fillColor: "black",
+          },
+          ctx
+        );
+        lastLabelPos = y - minLabelPadding;
+      }
+    } else {
+      for (const label of params.labels) {
+        let pos = (label.pos - min) / (max - min);
+        const x = Math.abs(p1 - p2) * pos + Math.min(p1, p2);
+        if (lastLabelPos !== null && lastLabelPos > x) {
+          continue;
+        }
+        drawSegment(
+          {
+            x1: x,
+            y1: op2 - 14,
+            x2: x,
+            y2: op2 + 14,
+            lineWidth: 1,
+          },
+          ctx
+        );
+        drawText(
+          {
+            font: "20px Arial",
+            fillColor: "black",
+            text: label.name,
+            x: x - 24,
+            y: op2 + 40,
+          },
+          ctx
+        );
+        lastLabelPos = x + minLabelPadding;
+      }
+    }
+    return;
+  }
+
+  if (bins === 0 || bins === null || bins === undefined) {
+    throw Error("Bins are unset or set as an invalid amount");
+  }
+
+  interval /= bins;
+
+  if (interval === 0) {
+    throw Error("Width and height are unset");
+  }
+
+  if (orientation === "v") {
+    for (let y = Math.min(p1, p2); y <= Math.max(p1, p2); y += interval) {
+      drawSegment(
+        {
+          x1: op1 - 14,
+          y1: y,
+          x2: op1 + 14,
+          y2: y,
+          lineWidth: 1,
+        },
+        ctx
+      );
+
+      let textWrite = numToLabelText(
+        (Math.abs(params.ie - params.ib) / ypts) * counter + params.ib
+      );
+
+      drawText(
+        {
+          x: op1 - 90,
+          y: y + 8,
+          text: textWrite,
+          font: "20px Arial",
+          fillColor: "black",
+        },
+        ctx
+      );
+      counter--;
+    }
+  } else {
+    for (let x = Math.max(p1, p2); x >= Math.min(p1, p2); x -= interval) {
+      drawSegment(
+        {
+          x1: x,
+          y1: op2 - 14,
+          x2: x,
+          y2: op2 + 14,
+          lineWidth: 1,
+        },
+        ctx
+      );
+      let textWrite = numToLabelText(
+        (Math.abs(params.ie - params.ib) / xpts) * counter + params.ib
+      );
+
+      drawText(
+        {
+          font: "20px Arial",
+          fillColor: "black",
+          text: textWrite,
+          x: x - 24,
+          y: op2 + 40,
+        },
+        ctx
+      );
+      counter--;
+    }
+  }
+};
+
+const numToLabelText = (num) => {
+  let snum = "";
+  if (num < 2) {
+    snum = numeral(num.toFixed(2)).format("0.0a");
+  } else {
+    snum = num.toFixed(2);
+    snum = numeral(snum).format("0a");
+  }
+  return snum;
+};
+
+const drawSegment = (params, ctx) => {
+  ctx.strokeStyle = params.strokeColor;
+  ctx.lineWidth = params.lineWidth;
+
+  ctx.beginPath();
+  ctx.moveTo(params.x1, params.y1);
+  ctx.lineTo(params.x2, params.y2);
+  ctx.stroke();
+};
+
+const drawText = (params, ctx) => {
+  ctx.fillStyle = params.fillColor;
+  if (params.font !== undefined) {
+    ctx.font = params.font;
+  }
+  if (params.rotate !== undefined) {
+    ctx.rotate(params.rotate);
+    const bx = params.x;
+    const by = params.y;
+    params.x = -bx * Math.cos(params.rotate) + by * Math.sin(params.rotate);
+    params.y = -bx * Math.sin(params.rotate) - by * Math.cos(params.rotate);
+  }
+  ctx.fillText(params.text, params.x, params.y);
+  ctx.font = "Arial";
+  if (params.rotate !== undefined) {
+    ctx.rotate(-params.rotate);
+  }
 };

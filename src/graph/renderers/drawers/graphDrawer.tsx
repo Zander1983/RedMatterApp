@@ -37,7 +37,6 @@ export default class GraphDrawer extends Drawer {
 
   update() {
     super.update();
-
     if (this.xpts === undefined) {
       this.xpts = Math.round(
         (Math.max(this.x1, this.x2) - Math.min(this.x1, this.x2)) / binSize

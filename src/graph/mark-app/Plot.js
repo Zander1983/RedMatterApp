@@ -2,7 +2,7 @@ import { getRandomPointsOnCanvas, getSetLinearPoints } from "./PlotHelper";
 import Dropdown from "react-dropdown";
 import { useEffect, useState, useReducer } from "react";
 import ReactDOM from "react-dom";
-import { isPointInPolygon } from "./Helper";
+import { isPointInPolygon, graphLine } from "./Helper";
 import { ConstantNodeDependencies } from "mathjs";
 import Modal from "react-modal";
 import { height } from "@amcharts/amcharts4/.internal/core/utils/Utils";
@@ -10,40 +10,14 @@ import GateBar from "../components/plots/GateBar";
 import MainBar from "../components/plots/GateBar";
 import SideSelector from "./PlotEntities/SideSelector";
 import { Divider, Grid } from "@material-ui/core";
+import numeral from "numeral";
 
-const classes = {
-  itemOuterDiv: {
-    flex: 1,
-    backgroundColor: "#eef",
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: 5,
-  },
-  itemInnerDiv: {
-    width: "100%",
-    height: "100%",
-  },
-  mainContainer: {
-    width: "100%",
-    height: "100%",
-    padding: "8px 10px 10px 10px",
-    flex: 1,
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: "5px",
-    paddingBottom: "8px",
-    backgroundColor: "rgb(238, 238, 255)",
-  },
-  utilityBar: {
-    width: "100%",
-  },
-  canvasDisplay: {
-    borderRadius: 5,
-    boxShadow: "1px 3px 4px #bbd",
-    backgroundColor: "#dfd",
-    flexGrow: 1,
-  },
-};
+export const leftPadding = 55;
+export const rightPadding = 20;
+export const topPadding = 40;
+export const bottomPadding = 5;
+
+const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
 const getContext = (plotIndex) => {
   const canvas = document.getElementById("canvas-" + plotIndex);
@@ -93,7 +67,6 @@ function Plot(props) {
 
   useEffect(() => {
     setLocalPlot(props.plot);
-
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -108,6 +81,8 @@ function Plot(props) {
         );
       }
     });
+
+    //drawLabel();
 
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
@@ -444,6 +419,7 @@ function Plot(props) {
 
   const redraw = () => {
     drawPolygon();
+
     drawPoints();
   };
 
@@ -464,7 +440,179 @@ function Plot(props) {
     context.stroke();
   };
 
+  const drawLabel = () => {
+    let context = getContext(props.plotIndex);
+
+    let xRange = [
+      props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
+      props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
+    ];
+    let yRange = [
+      props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
+      props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
+    ];
+
+    let [horizontalBinCount, verticalBinCount] = getBins(
+      localPlot.width,
+      localPlot.height,
+      localPlot.plotScale
+    );
+
+    let xLabels = getAxisLabels(
+      localPlot.xScaleType,
+      xRange,
+      props.enrichedFile.logicles[localPlot.xAxisIndex],
+      horizontalBinCount
+    );
+
+    let yLabels = getAxisLabels(
+      localPlot.yScaleType,
+      yRange,
+      props.enrichedFile.logicles[localPlot.yAxisIndex],
+      verticalBinCount
+    );
+    debugger;
+    graphLine(
+      {
+        x1: leftPadding * localPlot.plotScale,
+        y1: topPadding * localPlot.plotScale,
+        x2: leftPadding * localPlot.plotScale,
+        y2: (localPlot.height - bottomPadding) * localPlot.plotScale,
+        ib: yRange[0],
+        ie: yRange[1],
+        bins: verticalBinCount,
+        labels: yLabels,
+      },
+      context
+    );
+
+    graphLine(
+      {
+        x1: leftPadding * localPlot.plotScale,
+        y1: topPadding * localPlot.plotScale,
+        x2: (localPlot.width - rightPadding) * localPlot.plotScale,
+        y2: topPadding * localPlot.plotScale,
+        ib: xRange[0],
+        ie: xRange[1],
+        bins: horizontalBinCount,
+        labels: xLabels,
+      },
+      context
+    );
+
+    debugger;
+  };
+
+  const linLabel = (num) => {
+    let snum = "";
+    if (num < 2) {
+      snum = numeral(num.toFixed(2)).format("0.0a");
+    } else {
+      snum = num.toFixed(2);
+      snum = numeral(snum).format("0a");
+    }
+    return snum;
+  };
+
+  const pot10Label = (pot10Indx) => {
+    let ev = "";
+    for (const l of Math.abs(pot10Indx).toString()) ev += EXP_NUMS[parseInt(l)];
+    let name = "10" + ev;
+    if (!name.includes("-") && pot10Indx < 0) name = "-" + name;
+    return name;
+  };
+
+  const getAxisLabels = (format, linRange, logicle, binsCount) => {
+    let labels = [];
+    if (format === "lin") {
+      const binSize = (linRange[1] - linRange[0]) / binsCount;
+
+      for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
+        labels.push({
+          pos: i,
+          name: linLabel(i),
+        });
+    }
+    if (format === "bi") {
+      const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
+      let pot10 = 1;
+      let pot10Exp = 0;
+      const fow = () => {
+        pot10 *= 10;
+        pot10Exp++;
+      };
+      const back = () => {
+        pot10 /= 10;
+        pot10Exp--;
+      };
+      const add = (x, p) => {
+        if (
+          (x >= linRange[0] && x <= linRange[1]) ||
+          (x <= linRange[0] && x >= linRange[1])
+        ) {
+          labels.push({
+            pos: x,
+            name: pot10Label(p),
+          });
+        }
+      };
+      while (pot10 <= baseline) fow();
+      while (pot10 >= 1) {
+        add(pot10, pot10Exp);
+        add(-pot10, -pot10Exp);
+        back();
+      }
+
+      let newPos = labels.map((e) => logicle.scale(e.pos));
+
+      newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
+      labels = labels.map((e, i) => {
+        e.pos = newPos[i];
+        return e;
+      });
+      labels = labels.sort((a, b) => a.pos - b.pos);
+
+      const distTolerance = 0.03;
+      let lastAdded = null;
+      labels = labels.filter((e, i) => {
+        if (i === 0) {
+          lastAdded = i;
+          return true;
+        }
+        if (
+          (e.pos - labels[lastAdded].pos) /
+            (Math.max(linRange[0], linRange[1]) -
+              Math.min(linRange[0], linRange[1])) >=
+          distTolerance
+        ) {
+          lastAdded = i;
+          return true;
+        }
+        return false;
+      });
+    }
+    return labels;
+  };
+
+  const getBins = (width, height, scale) => {
+    let verticalBinCount = 1;
+    let horizontalBinCount = 1;
+
+    if (scale === 0 || width === 0) {
+      verticalBinCount = 1;
+      horizontalBinCount = 1;
+      return;
+    }
+    horizontalBinCount = width === undefined ? 2 : Math.round(width / 60);
+    verticalBinCount = height === undefined ? 2 : Math.round(height / 60);
+    horizontalBinCount = Math.max(2, horizontalBinCount);
+    verticalBinCount = Math.max(2, verticalBinCount);
+
+    return [verticalBinCount, horizontalBinCount];
+  };
+
   const drawPoints = () => {
+    debugger;
     let context = getContext(props.plotIndex);
 
     context.strokeStyle = "#df4b26";
