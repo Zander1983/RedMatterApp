@@ -1,12 +1,4 @@
-import React, { ReactNode, useEffect, useState } from "react";
-import {
-  Divider,
-  MenuItem,
-  Select,
-  CircularProgress,
-  FormControl,
-  Tooltip,
-} from "@material-ui/core";
+import { MenuItem, Select } from "@material-ui/core";
 
 function SideSelector(props) {
   return (
@@ -14,6 +6,7 @@ function SideSelector(props) {
       style={{
         display: "flex",
         alignItems: "center",
+        padding: 15,
       }}
     >
       <div>
@@ -22,15 +15,16 @@ function SideSelector(props) {
           style={{
             marginRight: "20px",
             transform: "rotate(270deg)",
-            marginLeft: "-70px",
-            marginRight: "-45px",
+            marginLeft: "-53px",
+            marginRight: "-60px",
             width: "min-content",
             display: "flex",
           }}
         >
           <Select
+            disableUnderline
             style={{
-              maxWidth: 100,
+              // maxWidth: 100,
               marginTop: "10px",
               flex: "1 1 auto",
             }}
@@ -47,7 +41,7 @@ function SideSelector(props) {
               <MenuItem value={e.value}>{e.label}</MenuItem>
             ))}
           </Select>
-          <Select
+          {/* <Select
             style={{
               marginTop: "10px",
               marginLeft: 10,
@@ -64,7 +58,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select>
+          </Select> */}
         </div>
       </div>
       <div
@@ -84,6 +78,7 @@ function SideSelector(props) {
           }}
         >
           <Select
+            disableUnderline
             style={{
               maxWidth: 100,
               marginTop: "10px",
@@ -104,7 +99,7 @@ function SideSelector(props) {
               </MenuItem>
             ))}
           </Select>
-          <Select
+          {/* <Select
             style={{
               marginTop: "10px",
               marginLeft: 10,
@@ -121,7 +116,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select>
+          </Select> */}
         </div>
       </div>
     </div>

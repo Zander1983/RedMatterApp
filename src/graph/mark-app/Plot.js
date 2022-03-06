@@ -1,16 +1,10 @@
-import { getRandomPointsOnCanvas, getSetLinearPoints } from "./PlotHelper";
-import Dropdown from "react-dropdown";
-import { useEffect, useState, useReducer } from "react";
-import ReactDOM from "react-dom";
+import { useEffect, useState, useCallback, useReducer, React } from "react";
 import { isPointInPolygon, graphLine } from "./Helper";
-import { ConstantNodeDependencies } from "mathjs";
 import Modal from "react-modal";
-import { height } from "@amcharts/amcharts4/.internal/core/utils/Utils";
-import GateBar from "../components/plots/GateBar";
-import MainBar from "../components/plots/GateBar";
 import SideSelector from "./PlotEntities/SideSelector";
-import { Divider, Grid } from "@material-ui/core";
 import numeral from "numeral";
+import ResizeObserver from "react-resize-detector";
+import { useResizeDetector } from "react-resize-detector";
 
 export const leftPadding = 55;
 export const rightPadding = 20;
@@ -50,23 +44,28 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
-  console.log(
-    "******************************************" +
-      props.plotIndex +
-      " function Plot() props is ",
-    props
-  );
+  console.log(props.plotIndex + " function Plot() props is ", props);
 
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState("");
-  const [localTestParam, setLocalTestParam] = useState(props.testParam);
 
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  // const onResize = useCallback(
+  //   (w, h) => {
+  //     // on resize logic
+  //     console.log("in onResize, w, h is ", w, h);
+  //   },
+  //   [localPlot, props.plot, props.enrichedFile]
+  // );
+
+  // const { width, height, ref } = useResizeDetector({
+  //   onResize,
+  // });
 
   useEffect(() => {
     setLocalPlot(props.plot);
+
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -813,7 +812,12 @@ function Plot(props) {
   return (
     <>
       {" "}
-      <div key={props.plotIndex}>
+      <div
+        key={props.plotIndex}
+        style={{
+          padding: "20px",
+        }}
+      >
         <Modal isOpen={modalIsOpen} style={customStyles}>
           <label>
             Gate Name:
@@ -833,45 +837,37 @@ function Plot(props) {
           yScaleType={localPlot.yScaleType}
           xAxisLabel={localPlot.xAxisLabel}
           plotIndex={props.plotIndex}
+          handleResizeMouseDown={handleResizeMouseDown}
+          handleResizeMouseMove={handleResizeMouseMove}
+          handleResizeMouseUp={handleResizeMouseUp}
           canvasComponent={
-            <canvas
-              style={{ border: "thick solid #32a1ce" }}
-              className="canvas"
-              id={`canvas-${props.plotIndex}`}
-              width={localPlot.width}
-              height={localPlot.height}
-              onMouseDown={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleMouseDown(nativeEvent);
+            <div
+              style={{
+                border: "1px solid #32a1ce",
               }}
-              onMouseMove={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleMouseMove(nativeEvent);
-              }}
-              onMouseUp={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleMouseUp(nativeEvent);
-              }}
-            />
+              // ref={ref}
+            >
+              <canvas
+                className="canvas"
+                id={`canvas-${props.plotIndex}`}
+                width={localPlot.width}
+                height={localPlot.height}
+                onMouseDown={(e) => {
+                  let nativeEvent = e.nativeEvent;
+                  handleMouseDown(nativeEvent);
+                }}
+                onMouseMove={(e) => {
+                  let nativeEvent = e.nativeEvent;
+                  handleMouseMove(nativeEvent);
+                }}
+                onMouseUp={(e) => {
+                  let nativeEvent = e.nativeEvent;
+                  handleMouseUp(nativeEvent);
+                }}
+              />
+            </div>
           }
         />
-        <div
-          style={{ width: "25", backgroundColor: "green" }}
-          onMouseDown={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleResizeMouseDown(nativeEvent);
-          }}
-          onMouseMove={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleResizeMouseMove(nativeEvent);
-          }}
-          onMouseUp={(e) => {
-            let nativeEvent = e.nativeEvent;
-            handleResizeMouseUp(nativeEvent);
-          }}
-        >
-          RESIZE
-        </div>
       </div>
     </>
   );
