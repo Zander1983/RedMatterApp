@@ -14,7 +14,6 @@ import { green } from "@material-ui/core/colors";
 
 import userManager from "Components/users/userManager";
 import { Debounce } from "services/Dbouncer";
-import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 import MessageModal from "./components/modals/MessageModal";
 import AddFileModal from "./components/modals/AddFileModal";
@@ -109,7 +108,6 @@ const WorkspaceInnerComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
-
   const classes = useStyles();
   const history = useHistory();
   const isLoggedIn = userManager.isLoggedIn();
@@ -143,8 +141,9 @@ const WorkspaceInnerComponent = (props: {
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] =
-    React.useState(false);
+  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
+    false
+  );
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const [editWorkspace, setEditWorkspace] = React.useState(
@@ -766,7 +765,6 @@ const WorkspaceInnerComponent = (props: {
             </Grid>
 
             <Grid style={{ marginTop: 43 }}>
-              <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
 
               {plotCallNeeded && !initState ? (

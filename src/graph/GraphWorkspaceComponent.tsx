@@ -8,7 +8,6 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
 import userManager from "Components/users/userManager";
-import SmallScreenNotice from "./SmallScreenNotice";
 import PrototypeNotice from "./PrototypeNotice";
 import SideMenus from "./components/static/SideMenus";
 
@@ -98,8 +97,9 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] =
-    React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<
+    boolean
+  >(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
@@ -127,7 +127,7 @@ const NewWorkspaceInnerComponent = (props: {
     };
   }, []);
 
-  const handleRequestError = async (err:any) => {
+  const handleRequestError = async (err: any) => {
     setPlotCallNeeded(false);
     setReloadMessage("");
     if (err.toString().indexOf("FILE-MISSING") !== -1) {
@@ -141,22 +141,27 @@ const NewWorkspaceInnerComponent = (props: {
         message: "File downloading failed. due to re try completed",
         saverity: "error",
       });
-      setMessage("Your Action is Processing. please try after few later Or wait ");
+      setMessage(
+        "Your Action is Processing. please try after few later Or wait "
+      );
     } else if (err.toString().indexOf("DUPLICATE-FILE") !== -1) {
       await handleError({
-        message: "File downloading failed. due to multiple files with the same ID present in workspace",
+        message:
+          "File downloading failed. due to multiple files with the same ID present in workspace",
         saverity: "error",
       });
-      setMessage("Your Action is Processing. please try after few later Or wait ");
-    }else if (err.toString().indexOf("DOWNLOADED-FILE") !== -1) {
+      setMessage(
+        "Your Action is Processing. please try after few later Or wait "
+      );
+    } else if (err.toString().indexOf("DOWNLOADED-FILE") !== -1) {
       await handleError({
         message: "File downloading failed. due to File already downloaded",
         saverity: "error",
       });
-      setMessage("Your Action is Processing. please try after few later Or wait ");
-    }
-    else
-      throw err;
+      setMessage(
+        "Your Action is Processing. please try after few later Or wait "
+      );
+    } else throw err;
   };
 
   const handlePrivateWorkspace = async () => {
@@ -211,7 +216,7 @@ const NewWorkspaceInnerComponent = (props: {
           "Your Action is Processing. please try after few later Or wait "
         );
       }
-    } catch (err:any) {
+    } catch (err: any) {
       await handleRequestError(err);
     }
   };
@@ -229,9 +234,10 @@ const NewWorkspaceInnerComponent = (props: {
           await handlePrivateWorkspace();
         } else if (response.requestSuccess && props.shared) {
           await handleSharedWorkspace(shared, experimentId);
-        }else {
+        } else {
           await handleError({
-            message: "Workspace Loading Failed.Due to Invalid Request. try again",
+            message:
+              "Workspace Loading Failed.Due to Invalid Request. try again",
             saverity: "error",
           });
         }
@@ -239,13 +245,14 @@ const NewWorkspaceInnerComponent = (props: {
       .catch(async (err) => {
         setPlotCallNeeded(false);
         await handleError(err);
-      }).finally(() => {
+      })
+      .finally(() => {
         if (pageLoaderSubscription) {
           setOpen(false);
           clearTimeout(pageLoaderSubscription);
           pageLoaderSubscription = null;
         }
-    });
+      });
   };
 
   const handleError = async (error: any) => {
@@ -358,7 +365,7 @@ const NewWorkspaceInnerComponent = (props: {
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <SideMenus workspace={getWorkspace()}/>
+      <SideMenus workspace={getWorkspace()} />
       <Grid
         style={{
           marginTop: 0,
@@ -375,11 +382,11 @@ const NewWorkspaceInnerComponent = (props: {
             marginLeft: 0,
             marginRight: 0,
             boxShadow: "2px 3px 3px #ddd",
-          }}>
+          }}
+        >
           <div>
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
-              <SmallScreenNotice />
               <PrototypeNotice experimentId={props.experimentId} />
               {plotCallNeeded || renderPlotController ? (
                 <NewPlotController

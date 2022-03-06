@@ -13,7 +13,7 @@ export const superAlgorithm = (Files, WorkspaceState) => {
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
-    let gateStats = {};
+    let gateStatsObj = {};
 
     for (
       let eventIndex = 0;
@@ -85,9 +85,9 @@ export const superAlgorithm = (Files, WorkspaceState) => {
           if (isInGate) {
             event["color"] = gate["color"];
             event["isInGate" + gate.name] = true;
-            !gateStats[gate.name + "_count"]
-              ? (gateStats[gate.name + "_count"] = 1)
-              : gateStats[gate.name + "_count"]++;
+            !gateStatsObj[gate.name + "_count"]
+              ? (gateStatsObj[gate.name + "_count"] = 1)
+              : gateStatsObj[gate.name + "_count"]++;
           }
         }
         if (!isInGate) {
@@ -96,12 +96,29 @@ export const superAlgorithm = (Files, WorkspaceState) => {
       }
     }
 
-    const gateCounts = Object.keys(gateStats);
-    gateCounts.forEach((gateCount, index) => {
-      gateStats[gateCount.replace("_count", "_percentage")] = (
-        (gateStats[gateCount] * 100) /
+    console.log(">>>>> gateStatsObj ", gateStatsObj);
+    // const gateCounts = Object.keys(gateStats);
+    // gateCounts.forEach((gateCount, index) => {
+    //   gateStats[gateCount.replace("_count", "_percentage")] = (
+    //     (gateStats[gateCount] * 100) /
+    //     Files[fileIndex].events.length
+    //   ).toFixed(2);
+    // });
+    const gateKeys = Object.keys(gateStatsObj);
+    let gateStats = [];
+    gateKeys.forEach((gateKey, index) => {
+      const gateName = gateKey.replace("_count", "");
+
+      let percentage = (
+        (gateStatsObj[gateKey] * 100) /
         Files[fileIndex].events.length
       ).toFixed(2);
+
+      gateStats.push({
+        gateName: gateName,
+        count: gateStatsObj[gateKey],
+        percentage: percentage,
+      });
     });
 
     Files[fileIndex].gateStats = gateStats;

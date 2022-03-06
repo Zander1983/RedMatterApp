@@ -36,11 +36,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     super(props);
 
     let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
-    console.log("copyOfFiles is ", copyOfFiles);
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
-
-    console.log("after superAlgorithm: " + enrichedFiles);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
     this.state = {
@@ -114,8 +111,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
-    console.log("adding gate, change is ", change);
-
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
@@ -141,6 +136,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       enrichedFiles: enrichedFiles,
       // workspaceState: this.state.workspaceState,
+    });
+  };
+
+  setPlotsOfAllFilesToBeSameAsControl = (plotIndex: any) => {
+    let controlEnrichedFile = this.state.enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+    console.log(">>> controlEnrichedFile is ", controlEnrichedFile);
+    const filesIds = Object.keys((workspaceState as any).files);
+    filesIds.forEach((fileId, index) => {
+      (workspaceState as any).files[fileId].plots[plotIndex] = JSON.parse(
+        JSON.stringify(controlEnrichedFile.plots[plotIndex])
+      );
     });
   };
 
@@ -183,8 +191,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   onChangeChannel = (change: any) => {
     let fileKey = change.fileId;
+
+    if (!(workspaceState as any)[fileKey]) {
+      // so its a non-control gate being edited, copy plots from control
+      (workspaceState as any).files[fileKey] = {
+        plots: JSON.parse(
+          JSON.stringify(
+            (workspaceState as any).files[workspaceState.controlFile].plots
+          )
+        ),
+      };
+    }
+
     if (change.axis == "x") {
-      console.log("in x!!!!!");
       (workspaceState as any).files[fileKey].plots[
         change.plotIndex
       ].xAxisIndex = change.axisIndex;
@@ -206,10 +225,67 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       ].yScaleType = change.scaleType;
     }
 
+    // if its control file - change for all
+    if (fileKey == workspaceState.controlFile) {
+      const filesIds = Object.keys((workspaceState as any).files);
+      filesIds.forEach((fileId, index) => {
+        (workspaceState as any).files[fileId].plots[
+          change.plotIndex
+        ] = JSON.parse(
+          JSON.stringify(
+            (workspaceState as any).files[fileKey].plots[change.plotIndex]
+          )
+        );
+      });
+    }
+
     let copyOfFiles = JSON.parse(JSON.stringify(Files));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+
+    this.setState({
+      enrichedFiles: enrichedFiles,
+    });
+  };
+
+  sortByGate = (gateName: any, sortType: any) => {
+    let enrichedFiles = this.state.enrichedFiles;
+
+    let controlEnrichedFile = enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+
+    let gateStats = controlEnrichedFile.gateStats;
+
+    enrichedFiles.sort((enrichedFile1: any, enrichedFile2: any) => {
+      const gateStat1 = enrichedFile1.gateStats.find(
+        (gateStat: any) => gateStat.gateName == gateName
+      );
+
+      const gateStat2 = enrichedFile2.gateStats.find(
+        (gateStat: any) => gateStat.gateName == gateName
+      );
+
+      if (sortType == "asc") {
+        if (gateStat1.percentage > gateStat2.percentage) {
+          return 1;
+        } else if (gateStat1.percentage < gateStat2.percentage) {
+          return -1;
+        } else {
+          return 0;
+        }
+      } else {
+        // do desc
+        if (gateStat1.percentage < gateStat2.percentage) {
+          return 1;
+        } else if (gateStat1.percentage > gateStat2.percentage) {
+          return -1;
+        } else {
+          return 0;
+        }
+      }
+    });
 
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -237,10 +313,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.state.sortBy === "file" &&
       this.state.isTableRenderCall
     ) {
-      console.log(
-        ">>>>>>>>>>>> this.state.enrichedFiles is ",
-        this.state.enrichedFiles
-      );
       return (
         <PlotTableComponent
           enrichedFiles={this.state.enrichedFiles}
@@ -250,6 +322,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           onAddGate={this.onAddGate}
           onEditGate={this.onEditGate}
           onResize={this.onResize}
+          sortByGate={this.sortByGate}
           testParam={this.state.testParam}
         />
       );

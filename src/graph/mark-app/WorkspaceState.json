@@ -137,7 +137,8 @@
             "y": 0
           }
         }
-      ]
+      ],
+      "open": true
     }
   },
   "sharedWorkspace": "false",

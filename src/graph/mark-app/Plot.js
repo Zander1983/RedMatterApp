@@ -814,9 +814,11 @@ function Plot(props) {
       {" "}
       <div
         key={props.plotIndex}
-        style={{
-          padding: "20px",
-        }}
+        style={
+          {
+            // padding: "20px",
+          }
+        }
       >
         <Modal isOpen={modalIsOpen} style={customStyles}>
           <label>

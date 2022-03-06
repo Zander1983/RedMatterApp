@@ -2,6 +2,8 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import React from "react";
 import { Divider, Grid } from "@material-ui/core";
+import upArrow from "assets/images/up_arrow.png";
+import downArrow from "assets/images/down_arrow.png";
 
 const classes = {
   itemOuterDiv: {
@@ -115,32 +117,82 @@ function Table(props) {
             OTHER FILES
           </th>
         </tr>
+        {/* THE SORTING ROW */}
+        <tr
+          style={{
+            border: "1px solid #32a1ce",
+          }}
+        >
+          {controlEnrichedFile.plots.map((plot, plotIindex) => {
+            return (
+              <td
+                key={`td-population-sorter-${plotIindex}`}
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
+                {plot.population}
+                <img
+                  onClick={() => {
+                    props.sortByGate(plot.population, "asc");
+                  }}
+                  src={downArrow}
+                  alt="down-arrow"
+                  style={{
+                    width: 10,
+                    marginLeft: 5,
+                    cursor: "pointer",
+                  }}
+                />
+                <img
+                  onClick={() => {
+                    props.sortByGate(plot.population, "dsc");
+                  }}
+                  src={upArrow}
+                  alt="up-arrow"
+                  style={{
+                    width: 10,
+                    marginLeft: 5,
+                    cursor: "pointer",
+                  }}
+                />
+              </td>
+            );
+          })}
+        </tr>
         {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
-          console.log(">>>>> NON CONTROL enrichedFile IS ", enrichedFile);
+          // LOOPING THROUGH NON-CONTROL FILES
           return (
-            <tr key={`tr-${fileIndex}`}>
+            <tr
+              key={`tr-${fileIndex}`}
+              style={{
+                border: "4px solid #32a1ce",
+              }}
+            >
               {enrichedFile.plots.map((plot, plotIindex) => {
                 return (
                   <td key={`td-${plotIindex + 1}`}>
-                    {/* <div key={props.plotIndex} style={classes.mainContainer}>
-                      <div style={classes.utilityBar}>
-                        <Grid
-                          container
-                          direction="row"
-                          style={{
-                            gap: 3,
-                          }}
-                        >
-                          <div>File name</div>
-                        </Grid>
-                      </div> */}
-                    {plot.population != "All"
-                      ? `Stats: ${
-                          enrichedFile.gateStats[
-                            plot.population + "_percentage"
-                          ]
-                        }%`
-                      : ""}
+                    <div
+                      style={{
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {plot.population != "All"
+                        ? `${enrichedFile.gateStats
+                            .filter((gateStat) => {
+                              return gateStat.gateName == plot.population;
+                            })
+                            .map((gateStat) => {
+                              console.log(
+                                ">>>>>>>>>>>>>>>>> gateStat is ",
+                                gateStat
+                              );
+                              return gateStat.percentage;
+                            })}%`
+                        : ""}
+                    </div>
                     {(() => {
                       if (plot.plotType === "scatter") {
                         return (
@@ -168,7 +220,6 @@ function Table(props) {
                         );
                       }
                     })()}
-                    {/* </div> */}
                   </td>
                 );
               })}

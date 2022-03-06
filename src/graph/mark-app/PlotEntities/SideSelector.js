@@ -1,9 +1,6 @@
 import { MenuItem, Select } from "@material-ui/core";
 
 function SideSelector(props) {
-  console.log(props.plotIndex + "in SideSelector props.plot is ", props.plot);
-
-  console.log("!!!!!!!!!!!!!!!! props.plot.plotType is ", props.plot.plotType);
   return (
     <div
       style={{
