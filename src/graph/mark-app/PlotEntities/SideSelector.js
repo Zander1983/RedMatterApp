@@ -1,51 +1,66 @@
 import { MenuItem, Select } from "@material-ui/core";
-import resizeIcon from "../../../assets/images/resize-icon.png";
 
 function SideSelector(props) {
   return (
     <div
       style={{
         display: "flex",
+        alignItems: "center",
+        padding: 15,
       }}
-      key={Math.random()}
     >
-      <div
-        className="pc-y"
-        style={{
-          marginRight: "20px",
-          transform: "rotate(270deg)",
-          marginLeft: "-70px",
-          marginRight: "-45px",
-          width: "min-content",
-          display: "flex",
-          width: 147,
-        }}
-        key={Math.random()}
-      >
-        <Select
-          disableUnderline
+      <div>
+        <div
+          className="pc-y"
           style={{
-            maxWidth: 100,
-            marginTop: "10px",
-            flex: "1 1 auto",
+            marginRight: "20px",
+            transform: "rotate(270deg)",
+            marginLeft: "-53px",
+            marginRight: "-60px",
+            width: "min-content",
+            display: "flex",
           }}
-          onChange={(e) => {
-            props.onChange(
-              { value: e.target.value },
-              "y",
-              props.plotIndex.split("-")[1]
-            );
-          }}
-          value={props.yAxisIndex}
         >
-          {props.options.map((e) => (
-            <MenuItem key={e.value} value={e.value}>
-              {e.label}
-            </MenuItem>
-          ))}
-        </Select>
+          <Select
+            disableUnderline
+            style={{
+              // maxWidth: 100,
+              marginTop: "10px",
+              flex: "1 1 auto",
+            }}
+            onChange={(e) => {
+              props.onChange(
+                { value: e.target.value },
+                "y",
+                props.plotIndex.split("-")[1]
+              );
+            }}
+            value={props.yAxisIndex}
+          >
+            {props.options.map((e) => (
+              <MenuItem value={e.value}>{e.label}</MenuItem>
+            ))}
+          </Select>
+          {/* <Select
+            style={{
+              marginTop: "10px",
+              marginLeft: 10,
+              flex: "1 1 auto",
+            }}
+            value={props.yScaleType}
+            onChange={(e) =>
+              props.onChangeScale(
+                { scale: e.target.value },
+                "y",
+                props.plotIndex.split("-")[1]
+              )
+            }
+          >
+            <MenuItem value={"lin"}>Linear</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
+          </Select> */}
+        </div>
       </div>
-
       <div
         className="pc-x"
         style={{
@@ -55,7 +70,6 @@ function SideSelector(props) {
           alignItems: "center",
           paddingRight: 0,
         }}
-        key={Math.random()}
       >
         {props.canvasComponent}
         <div
@@ -64,11 +78,12 @@ function SideSelector(props) {
           }}
         >
           <Select
+            disableUnderline
             style={{
               maxWidth: 100,
+              marginTop: "10px",
               flex: "1 1 auto",
             }}
-            disableUnderline
             onChange={(e) => {
               props.onChange(
                 { value: e.target.value },
@@ -79,53 +94,30 @@ function SideSelector(props) {
             value={props.xAxisIndex}
           >
             {props.options.map((e) => (
-              <MenuItem key={e.value} name={e.label} value={e.value}>
+              <MenuItem name={e.label} value={e.value}>
                 {e.label}
               </MenuItem>
             ))}
           </Select>
+          {/* <Select
+            style={{
+              marginTop: "10px",
+              marginLeft: 10,
+              flex: "1 1 auto",
+            }}
+            value={props.xScaleType}
+            onChange={(e) =>
+              props.onChangeScale(
+                { scale: e.target.value },
+                "x",
+                props.plotIndex.split("-")[1]
+              )
+            }
+          >
+            <MenuItem value={"lin"}>Linear</MenuItem>
+            <MenuItem value={"bi"}>Logicle</MenuItem>
+          </Select> */}
         </div>
-      </div>
-
-      <div
-      // style={{
-      //   display: "flex",
-      //   alignItems: "flex-end",
-      // }}
-      // onMouseDown={(e) => {
-      //   let nativeEvent = e.nativeEvent;
-      //   props.handleResizeMouseDown(nativeEvent);
-      // }}
-      // onMouseMove={(e) => {
-      //   let nativeEvent = e.nativeEvent;
-      //   props.handleResizeMouseMove(nativeEvent);
-      // }}
-      // onMouseUp={(e) => {
-      //   let nativeEvent = e.nativeEvent;
-      //   props.handleResizeMouseUp(nativeEvent);
-      // }}
-      >
-        {/* <img
-          src={resizeIcon}
-          alt="Logo"
-          height="23"
-          // style={{
-          //   marginRight: 7,
-          //   marginTop: -6,
-          // }}
-          onMouseDown={(e) => {
-            let nativeEvent = e.nativeEvent;
-            props.handleResizeMouseDown(nativeEvent);
-          }}
-          onMouseMove={(e) => {
-            let nativeEvent = e.nativeEvent;
-            props.handleResizeMouseMove(nativeEvent);
-          }}
-          onMouseUp={(e) => {
-            let nativeEvent = e.nativeEvent;
-            props.handleResizeMouseUp(nativeEvent);
-          }}
-        /> */}
       </div>
     </div>
   );
