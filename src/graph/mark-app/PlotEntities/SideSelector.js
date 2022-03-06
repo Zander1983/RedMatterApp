@@ -1,6 +1,9 @@
 import { MenuItem, Select } from "@material-ui/core";
 
 function SideSelector(props) {
+  console.log(props.plotIndex + "in SideSelector props.plot is ", props.plot);
+
+  console.log("!!!!!!!!!!!!!!!! props.plot.plotType is ", props.plot.plotType);
   return (
     <div
       style={{
@@ -22,6 +25,7 @@ function SideSelector(props) {
           }}
         >
           <Select
+            disabled={props.plot.plotType == "histogram"}
             disableUnderline
             style={{
               // maxWidth: 100,
@@ -35,10 +39,12 @@ function SideSelector(props) {
                 props.plotIndex.split("-")[1]
               );
             }}
-            value={props.yAxisIndex}
+            value={props.plot.yAxisIndex}
           >
-            {props.options.map((e) => (
-              <MenuItem value={e.value}>{e.label}</MenuItem>
+            {props.channelOptions.map((e) => (
+              <MenuItem key={e.value} value={e.value}>
+                {e.label}
+              </MenuItem>
             ))}
           </Select>
           {/* <Select
@@ -91,10 +97,10 @@ function SideSelector(props) {
                 props.plotIndex.split("-")[1]
               );
             }}
-            value={props.xAxisIndex}
+            value={props.plot.xAxisIndex}
           >
-            {props.options.map((e) => (
-              <MenuItem name={e.label} value={e.value}>
+            {props.channelOptions.map((e) => (
+              <MenuItem key={e.value} name={e.label} value={e.value}>
                 {e.label}
               </MenuItem>
             ))}

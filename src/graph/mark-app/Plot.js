@@ -827,15 +827,10 @@ function Plot(props) {
           <button onClick={() => onCancelGateName()}>Cancel</button>
         </Modal>
         <SideSelector
-          options={channelOptions}
+          channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
-          xScaleType={localPlot.xScaleType}
-          yAxisLabel={localPlot.yAxisLabel}
-          xAxisIndex={localPlot.xAxisIndex}
-          yAxisIndex={localPlot.yAxisIndex}
-          yScaleType={localPlot.yScaleType}
-          xAxisLabel={localPlot.xAxisLabel}
+          plot={localPlot}
           plotIndex={props.plotIndex}
           handleResizeMouseDown={handleResizeMouseDown}
           handleResizeMouseMove={handleResizeMouseMove}

@@ -220,6 +220,7 @@ function Histogram(props) {
       axisIndex: channeIndex,
       axisLabel: channelLabel,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
+      fileId: props.enrichedFile.fileId,
     };
 
     props.onChangeChannel(change);
@@ -238,15 +239,10 @@ function Histogram(props) {
       {" "}
       <div>
         <SideSelector
-          options={channelOptions}
+          channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
-          xScaleType={props.plot.xScaleType}
-          yAxisLabel={props.plot.yAxisLabel}
-          xAxisIndex={props.plot.xAxisIndex}
-          yAxisIndex={props.plot.yAxisIndex}
-          yScaleType={props.plot.yScaleType}
-          xAxisLabel={props.plot.xAxisLabel}
+          plot={props.plot}
           plotIndex={props.plotIndex}
           canvasComponent={
             <canvas
@@ -257,7 +253,6 @@ function Histogram(props) {
             />
           }
         />
-        {props.plot.xAxis} | {props.plot.xScaleType}
       </div>
     </>
   );
