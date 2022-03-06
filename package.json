@@ -64,6 +64,7 @@
     "react-resizable": "^1.11.0",
     "react-resizable-box": "^2.1.0",
     "react-resizable-component": "^1.1.0",
+    "react-resize-detector": "^7.0.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.2",
     "react-scroll": "^1.8.1",
