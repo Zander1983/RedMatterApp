@@ -18,6 +18,8 @@ interface PlotControllerProps {
   workspaceLoading: boolean;
   // customPlotRerender: PlotID[];
   plotMoving?: boolean;
+  fileEvents: any[];
+  selectedFileId: any;
   // arrowFunc: Function;
 }
 
@@ -30,14 +32,26 @@ interface IState {
   enrichedEvents: any[];
   testParam: string;
 }
-
+let FileEvents = {};
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(props.fileEvents));
     console.log("copyOfFiles is ", copyOfFiles);
+    FileEvents = copyOfFiles;
+    //@ts-ignore
+    let tempFiles = workspaceState.files[workspaceState.controlFile];
 
+    //@ts-ignore
+    workspaceState.files[props.selectedFileId] = JSON.parse(
+      JSON.stringify(tempFiles)
+    );
+
+    //@ts-ignore
+    delete workspaceState.files[workspaceState.controlFile];
+
+    workspaceState.controlFile = props.selectedFileId;
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
     console.log("after superAlgorithm: " + enrichedFiles);
@@ -66,7 +80,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(FileEvents));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -134,7 +148,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     //workspaceState[controlFile].plots.push(newPlot);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(FileEvents));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -165,13 +179,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (fileKey == workspaceState.controlFile) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[
-          change.plotIndex
-        ] = JSON.parse(JSON.stringify(change.plot));
+        (workspaceState as any).files[fileId].plots[change.plotIndex] =
+          JSON.parse(JSON.stringify(change.plot));
       });
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(FileEvents));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -206,7 +219,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       ].yScaleType = change.scaleType;
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(FileEvents));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);

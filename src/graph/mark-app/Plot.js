@@ -471,7 +471,7 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.yAxisIndex],
       verticalBinCount
     );
-    debugger;
+
     graphLine(
       {
         x1: leftPadding * localPlot.plotScale,
@@ -499,8 +499,6 @@ function Plot(props) {
       },
       context
     );
-
-    debugger;
   };
 
   const linLabel = (num) => {
@@ -612,7 +610,6 @@ function Plot(props) {
   };
 
   const drawPoints = () => {
-    debugger;
     let context = getContext(props.plotIndex);
 
     context.strokeStyle = "#df4b26";

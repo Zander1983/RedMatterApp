@@ -80,7 +80,9 @@ export const downloadFileEvent = async (
     for (const fileId of files) {
       const fileQuery = workspace.files.filter((e) => e.id === fileId);
       if (fileQuery.length > 1) {
-        throw Error("DUPLICATE-FILE:Multiple files with the same ID present in workspace");
+        throw Error(
+          "DUPLICATE-FILE:Multiple files with the same ID present in workspace"
+        );
       }
       if (fileQuery.length > 0 && fileQuery[0].downloaded) {
         throw Error("DOWNLOADED-FILE:File already downloaded");
@@ -124,7 +126,7 @@ export const downloadFileEvent = async (
 
     // if (showNotifications && notification !== null) notification.killNotification();
     // if(response?.data?.length <= 0) throw new Error("Missing Data");
-
+    let returnEventsData = JSON.parse(JSON.stringify(response.data));
     response.data = response.data.map((e: any) => {
       if (e.events.length > EVENTS_LIMIT) {
         e.events = e.events.slice(0, EVENTS_LIMIT);
@@ -149,15 +151,19 @@ export const downloadFileEvent = async (
     }
     WorkspaceDispatch.SetFiles(newFileArray);
     if (typeof targetFiles === "string") {
-      return targetFiles;
+      return returnEventsData;
     } else {
-      return files;
+      return returnEventsData;
     }
-  } catch (err:any){
+  } catch (err: any) {
     // if (showNotifications) {
     //   notification.killNotification();
     // }
-    if (err && err?.name === "Error" || err?.message.toString() === "Network Error") throw err;
+    if (
+      (err && err?.name === "Error") ||
+      err?.message.toString() === "Network Error"
+    )
+      throw err;
 
     if (retry > 0) {
       downloadFileEvent(
