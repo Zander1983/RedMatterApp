@@ -57,182 +57,186 @@ function Table(props) {
   console.log(nonControlEnrichedFiles);
 
   return (
-    <table style={{ width: "100%" }} className="workspace">
-      <tbody>
-        <tr>
-          <th
-            colSpan={controlEnrichedFile.plots.length + 1}
+    <div>
+      <div
+        style={{
+          color: "#fff",
+          backgroundColor: "#66ccff",
+          textAlign: "center",
+          fontWeight: "bold",
+        }}
+      >
+        CONTROL FILE
+      </div>
+
+      <table className="workspace">
+        <tbody style={{ width: "100%" }}>
+          <tr>
+            {controlEnrichedFile.plots.map((plot, plotIindex) => {
+              return (
+                <th key={`td-${plotIindex}`}>
+                  {(() => {
+                    if (plot.plotType === "scatter") {
+                      return (
+                        <Plot
+                          key={`plot-${plotIindex}`}
+                          plot={plot}
+                          enrichedFile={controlEnrichedFile}
+                          onAddGate={props.onAddGate}
+                          onEditGate={props.onEditGate}
+                          onResize={props.onResize}
+                          onChangeChannel={props.onChangeChannel}
+                          plotIndex={`0-${plotIindex}`}
+                          testParam={props.testParam}
+                        />
+                      );
+                    } else if (plot.plotType === "histogram") {
+                      return (
+                        <Histogram
+                          key={`plot-${plotIindex}`}
+                          plot={plot}
+                          onChangeChannel={props.onChangeChannel}
+                          enrichedFile={controlEnrichedFile}
+                          plotIndex={`0-${plotIindex}`}
+                        />
+                      );
+                    }
+                  })()}
+                </th>
+              );
+            })}
+          </tr>
+        </tbody>
+      </table>
+      <div
+        style={{
+          color: "#000",
+          backgroundColor: "#ffff99",
+          border: "1px solid #000",
+          textAlign: "center",
+          fontWeight: "bold",
+        }}
+      >
+        OTHER FILES
+      </div>
+      <table>
+        <tbody>
+          <tr
             style={{
-              color: "#fff",
-              backgroundColor: "#66ccff",
+              border: "1px solid #32a1ce",
             }}
           >
-            CONTROL FILE
-          </th>
-        </tr>
-        <tr>
-          {controlEnrichedFile.plots.map((plot, plotIindex) => {
+            {controlEnrichedFile.plots.map((plot, plotIindex) => {
+              return (
+                <td
+                  key={`td-population-sorter-${plotIindex}`}
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {plot.population}
+                  <img
+                    onClick={() => {
+                      props.sortByGate(plot.population, "asc");
+                    }}
+                    src={downArrow}
+                    alt="down-arrow"
+                    style={{
+                      width: 10,
+                      marginLeft: 5,
+                      cursor: "pointer",
+                    }}
+                  />
+                  <img
+                    onClick={() => {
+                      props.sortByGate(plot.population, "dsc");
+                    }}
+                    src={upArrow}
+                    alt="up-arrow"
+                    style={{
+                      width: 10,
+                      marginLeft: 5,
+                      cursor: "pointer",
+                    }}
+                  />
+                </td>
+              );
+            })}
+          </tr>
+          {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
+            // LOOPING THROUGH NON-CONTROL FILES
             return (
-              <th key={`td-${plotIindex}`}>
-                {(() => {
-                  if (plot.plotType === "scatter") {
-                    return (
-                      <Plot
-                        key={`plot-${plotIindex}`}
-                        plot={plot}
-                        enrichedFile={controlEnrichedFile}
-                        onAddGate={props.onAddGate}
-                        onEditGate={props.onEditGate}
-                        onResize={props.onResize}
-                        onChangeChannel={props.onChangeChannel}
-                        plotIndex={`0-${plotIindex}`}
-                        testParam={props.testParam}
-                      />
-                    );
-                  } else if (plot.plotType === "histogram") {
-                    return (
-                      <Histogram
-                        key={`plot-${plotIindex}`}
-                        plot={plot}
-                        onChangeChannel={props.onChangeChannel}
-                        enrichedFile={controlEnrichedFile}
-                        plotIndex={`0-${plotIindex}`}
-                      />
-                    );
-                  }
-                })()}
-              </th>
-            );
-          })}
-        </tr>
-        <tr>
-          <th
-            colSpan={controlEnrichedFile.plots.length + 1}
-            style={{
-              color: "#000",
-              backgroundColor: "#ffff99",
-              border: "1px solid #000",
-            }}
-          >
-            OTHER FILES
-          </th>
-        </tr>
-        {/* THE SORTING ROW */}
-        <tr
-          style={{
-            border: "1px solid #32a1ce",
-          }}
-        >
-          {controlEnrichedFile.plots.map((plot, plotIindex) => {
-            return (
-              <td
-                key={`td-population-sorter-${plotIindex}`}
+              <tr
+                key={`tr-${fileIndex}`}
                 style={{
-                  textAlign: "center",
-                  fontWeight: "bold",
+                  border: "4px solid #32a1ce",
                 }}
               >
-                {plot.population}
-                <img
-                  onClick={() => {
-                    props.sortByGate(plot.population, "asc");
-                  }}
-                  src={downArrow}
-                  alt="down-arrow"
-                  style={{
-                    width: 10,
-                    marginLeft: 5,
-                    cursor: "pointer",
-                  }}
-                />
-                <img
-                  onClick={() => {
-                    props.sortByGate(plot.population, "dsc");
-                  }}
-                  src={upArrow}
-                  alt="up-arrow"
-                  style={{
-                    width: 10,
-                    marginLeft: 5,
-                    cursor: "pointer",
-                  }}
-                />
-              </td>
+                {enrichedFile.plots.map((plot, plotIindex) => {
+                  return (
+                    <td
+                      style={{
+                        paddingLeft: 15,
+                      }}
+                      key={`td-${plotIindex + 1}`}
+                    >
+                      <div
+                        style={{
+                          textAlign: "center",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {plot.population != "All"
+                          ? `${enrichedFile.gateStats
+                              .filter((gateStat) => {
+                                return gateStat.gateName == plot.population;
+                              })
+                              .map((gateStat) => {
+                                console.log(
+                                  ">>>>>>>>>>>>>>>>> gateStat is ",
+                                  gateStat
+                                );
+                                return gateStat.percentage;
+                              })}%`
+                          : "100%"}
+                      </div>
+                      {(() => {
+                        if (plot.plotType === "scatter") {
+                          return (
+                            <Plot
+                              key={`plot-${plotIindex + 1}`}
+                              plot={plot}
+                              enrichedFile={enrichedFile}
+                              onAddGate={props.onAddGate}
+                              onEditGate={props.onEditGate}
+                              onResize={props.onResize}
+                              onChangeChannel={props.onChangeChannel}
+                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                              testParam={props.testParam}
+                            />
+                          );
+                        } else if (plot.plotType === "histogram") {
+                          return (
+                            <Histogram
+                              key={`plot-${plotIindex + 1}`}
+                              plot={plot}
+                              onChangeChannel={props.onChangeChannel}
+                              enrichedFile={enrichedFile}
+                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                            />
+                          );
+                        }
+                      })()}
+                    </td>
+                  );
+                })}
+              </tr>
             );
           })}
-        </tr>
-        {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
-          // LOOPING THROUGH NON-CONTROL FILES
-          return (
-            <tr
-              key={`tr-${fileIndex}`}
-              style={{
-                border: "4px solid #32a1ce",
-              }}
-            >
-              {enrichedFile.plots.map((plot, plotIindex) => {
-                return (
-                  <td
-                    style={{
-                      paddingLeft: 15,
-                    }}
-                    key={`td-${plotIindex + 1}`}
-                  >
-                    <div
-                      style={{
-                        textAlign: "center",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {plot.population != "All"
-                        ? `${enrichedFile.gateStats
-                            .filter((gateStat) => {
-                              return gateStat.gateName == plot.population;
-                            })
-                            .map((gateStat) => {
-                              console.log(
-                                ">>>>>>>>>>>>>>>>> gateStat is ",
-                                gateStat
-                              );
-                              return gateStat.percentage;
-                            })}%`
-                        : "100%"}
-                    </div>
-                    {(() => {
-                      if (plot.plotType === "scatter") {
-                        return (
-                          <Plot
-                            key={`plot-${plotIindex + 1}`}
-                            plot={plot}
-                            enrichedFile={enrichedFile}
-                            onAddGate={props.onAddGate}
-                            onEditGate={props.onEditGate}
-                            onResize={props.onResize}
-                            onChangeChannel={props.onChangeChannel}
-                            plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                            testParam={props.testParam}
-                          />
-                        );
-                      } else if (plot.plotType === "histogram") {
-                        return (
-                          <Histogram
-                            key={`plot-${plotIindex + 1}`}
-                            plot={plot}
-                            onChangeChannel={props.onChangeChannel}
-                            enrichedFile={enrichedFile}
-                            plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                          />
-                        );
-                      }
-                    })()}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   );
 }
 
