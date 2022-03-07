@@ -290,6 +290,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         (gateStat: any) => gateStat.gateName == gateName
       );
 
+      // TODO sometimes gateStat1 or gateStat2 are null - why?
+      if (!gateStat1) {
+        return 1;
+      }
+
+      if (!gateStat2) {
+        return 0;
+      }
+
       if (sortType == "asc") {
         if (gateStat1.percentage > gateStat2.percentage) {
           return 1;

@@ -201,7 +201,7 @@ function Table(props) {
                                 return gateStat.gateName == plot.population;
                               })
                               .map((gateStat) => {
-                                return gateStat.percentage;
+                                return gateStat && gateStat.percentage;
                               })}%`
                           : enrichedFile.label}
                       </div>
