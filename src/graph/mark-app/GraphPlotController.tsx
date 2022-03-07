@@ -206,6 +206,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           };
         }
 
+        //@ts-ignore
+        workspaceState.files[fileKey].plots[plotIndex].plotType =
+          change.plotType;
+
         if (change.axis == "x") {
           (workspaceState as any).files[fileKey].plots[
             change.plotIndex

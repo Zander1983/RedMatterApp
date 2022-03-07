@@ -262,6 +262,7 @@ function Plot(props) {
         axis: axis,
         axisIndex: channeIndex,
         axisLabel: channelLabel,
+        plotType: "scatter",
         scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
         fileId: props.enrichedFile.fileId,
       };

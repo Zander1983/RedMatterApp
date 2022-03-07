@@ -235,6 +235,7 @@ function Histogram(props) {
         axisIndex: channeIndex,
         axisLabel: channelLabel,
         scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
+        plotType: "scatter",
         fileId: props.enrichedFile.fileId,
       };
     }
