@@ -173,9 +173,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (fileKey == workspaceState.controlFile) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[
-          change.plotIndex
-        ] = JSON.parse(JSON.stringify(change.plot));
+        (workspaceState as any).files[fileId].plots[change.plotIndex] =
+          JSON.parse(JSON.stringify(change.plot));
       });
     }
 
@@ -190,53 +189,63 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onChangeChannel = (change: any) => {
+    console.log(workspaceState);
+    let type = change.type;
     let fileKey = change.fileId;
+    let plotIndex = change.plotIndex;
+    switch (type) {
+      case "ChannelIndexChange":
+        if (!(workspaceState as any)[fileKey]) {
+          // so its a non-control gate being edited, copy plots from control
+          (workspaceState as any).files[fileKey] = {
+            plots: JSON.parse(
+              JSON.stringify(
+                (workspaceState as any).files[workspaceState.controlFile].plots
+              )
+            ),
+          };
+        }
 
-    if (!(workspaceState as any)[fileKey]) {
-      // so its a non-control gate being edited, copy plots from control
-      (workspaceState as any).files[fileKey] = {
-        plots: JSON.parse(
-          JSON.stringify(
-            (workspaceState as any).files[workspaceState.controlFile].plots
-          )
-        ),
-      };
-    }
+        if (change.axis == "x") {
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].xAxisIndex = change.axisIndex;
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].xAxisLabel = change.axisLabel;
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].xScaleType = change.scaleType;
+        } else {
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].yAxisIndex = change.axisIndex;
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].yAxisLabel = change.axisLabel;
+          (workspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].yScaleType = change.scaleType;
+        }
 
-    if (change.axis == "x") {
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].xAxisIndex = change.axisIndex;
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].xAxisLabel = change.axisLabel;
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].xScaleType = change.scaleType;
-    } else {
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].yAxisIndex = change.axisIndex;
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].yAxisLabel = change.axisLabel;
-      (workspaceState as any).files[fileKey].plots[
-        change.plotIndex
-      ].yScaleType = change.scaleType;
-    }
-
-    // if its control file - change for all
-    if (fileKey == workspaceState.controlFile) {
-      const filesIds = Object.keys((workspaceState as any).files);
-      filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[
-          change.plotIndex
-        ] = JSON.parse(
-          JSON.stringify(
-            (workspaceState as any).files[fileKey].plots[change.plotIndex]
-          )
-        );
-      });
+        // if its control file - change for all
+        if (fileKey == workspaceState.controlFile) {
+          const filesIds = Object.keys((workspaceState as any).files);
+          filesIds.forEach((fileId, index) => {
+            (workspaceState as any).files[fileId].plots[change.plotIndex] =
+              JSON.parse(
+                JSON.stringify(
+                  (workspaceState as any).files[fileKey].plots[change.plotIndex]
+                )
+              );
+          });
+        }
+        break;
+      case "ChangePlotType":
+        //@ts-ignore
+        workspaceState.files[fileKey].plots[plotIndex].plotType =
+          change.plotType;
+        break;
     }
 
     let copyOfFiles = JSON.parse(JSON.stringify(Files));
@@ -333,7 +342,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (getWorkspace().plots.length > 0) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
-        <div>
+        <div
+          style={{
+            padding: 20,
+          }}
+        >
           {!this.state.isTableRenderCall ? (
             <Grid
               container

@@ -6,6 +6,7 @@ function SideSelector(props) {
       style={{
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
         padding: 15,
       }}
     >
@@ -22,7 +23,6 @@ function SideSelector(props) {
           }}
         >
           <Select
-            disabled={props.plot.plotType == "histogram"}
             disableUnderline
             style={{
               // maxWidth: 100,
@@ -43,6 +43,19 @@ function SideSelector(props) {
                 {e.label}
               </MenuItem>
             ))}
+            <MenuItem
+              style={{
+                backgroundColor: `${
+                  props.plot.plotType == "histogram"
+                    ? "rgb(236 235 235)"
+                    : "unset"
+                }`,
+              }}
+              key={`${props.plotIndex}-hist`}
+              value="histogram"
+            >
+              Histogram{" "}
+            </MenuItem>
           </Select>
           {/* <Select
             style={{

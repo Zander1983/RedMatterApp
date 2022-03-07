@@ -57,7 +57,7 @@ function Table(props) {
   console.log(nonControlEnrichedFiles);
 
   return (
-    <table className="workspace">
+    <table style={{ width: "100%" }} className="workspace">
       <tbody>
         <tr>
           <th
@@ -172,7 +172,12 @@ function Table(props) {
             >
               {enrichedFile.plots.map((plot, plotIindex) => {
                 return (
-                  <td key={`td-${plotIindex + 1}`}>
+                  <td
+                    style={{
+                      paddingLeft: 15,
+                    }}
+                    key={`td-${plotIindex + 1}`}
+                  >
                     <div
                       style={{
                         textAlign: "center",
@@ -191,7 +196,7 @@ function Table(props) {
                               );
                               return gateStat.percentage;
                             })}%`
-                        : ""}
+                        : "100%"}
                     </div>
                     {(() => {
                       if (plot.plotType === "scatter") {
