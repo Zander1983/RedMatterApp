@@ -44,24 +44,10 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
-  console.log(props.plotIndex + " function Plot() props is ", props);
-
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState("");
-
-  // const onResize = useCallback(
-  //   (w, h) => {
-  //     // on resize logic
-  //     console.log("in onResize, w, h is ", w, h);
-  //   },
-  //   [localPlot, props.plot, props.enrichedFile]
-  // );
-
-  // const { width, height, ref } = useResizeDetector({
-  //   onResize,
-  // });
 
   useEffect(() => {
     setLocalPlot(props.plot);
@@ -470,7 +456,7 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.yAxisIndex],
       verticalBinCount
     );
-    debugger;
+
     graphLine(
       {
         x1: leftPadding * localPlot.plotScale,
@@ -498,8 +484,6 @@ function Plot(props) {
       },
       context
     );
-
-    debugger;
   };
 
   const linLabel = (num) => {
@@ -611,7 +595,6 @@ function Plot(props) {
   };
 
   const drawPoints = () => {
-    debugger;
     let context = getContext(props.plotIndex);
 
     context.strokeStyle = "#df4b26";
@@ -687,7 +670,6 @@ function Plot(props) {
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
-    // TODO
     if (hasGate()) {
       let change = {
         type: "EditGate",
@@ -791,10 +773,14 @@ function Plot(props) {
   const onSetGateName = () => {
     onAddGate(localPlot, props.plotIndex);
     setModalIsOpen(false);
+    newGatePointsCanvas = [];
+    polygonComplete = false;
   };
 
   const onCancelGateName = () => {
     setModalIsOpen(false);
+    newGatePointsCanvas = [];
+    polygonComplete = false;
   };
 
   const customStyles = {

@@ -127,7 +127,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       (workspaceState as any).files[controlFile].plots.length - 1
     ] = gatedPlot;
 
-    //workspaceState[controlFile].plots.push(newPlot);
+    (workspaceState as any).files[controlFile].plots.push(newPlot);
 
     let copyOfFiles = JSON.parse(JSON.stringify(Files));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
