@@ -96,7 +96,6 @@ export const superAlgorithm = (Files, WorkspaceState) => {
       }
     }
 
-    console.log(">>>>> gateStatsObj ", gateStatsObj);
     // const gateCounts = Object.keys(gateStats);
     // gateCounts.forEach((gateCount, index) => {
     //   gateStats[gateCount.replace("_count", "_percentage")] = (

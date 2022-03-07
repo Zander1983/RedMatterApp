@@ -75,6 +75,14 @@ function Table(props) {
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
               return (
                 <th key={`td-${plotIindex}`}>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {controlEnrichedFile.label}
+                  </div>
                   {(() => {
                     if (plot.plotType === "scatter") {
                       return (
@@ -193,13 +201,9 @@ function Table(props) {
                                 return gateStat.gateName == plot.population;
                               })
                               .map((gateStat) => {
-                                console.log(
-                                  ">>>>>>>>>>>>>>>>> gateStat is ",
-                                  gateStat
-                                );
                                 return gateStat.percentage;
                               })}%`
-                          : "100%"}
+                          : enrichedFile.label}
                       </div>
                       {(() => {
                         if (plot.plotType === "scatter") {

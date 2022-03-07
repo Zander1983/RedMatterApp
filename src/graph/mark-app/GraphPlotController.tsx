@@ -4,7 +4,8 @@ import { getWorkspace } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
-import Files50 from "./Files50.json";
+import Files51 from "./Files51.json";
+import Files90 from "./Files90.json";
 import Files from "./Files.json";
 import SmallFiles from "./SmallFiles.json";
 import workspaceState from "./WorkspaceState.json";
@@ -35,7 +36,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files51));
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -63,7 +64,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -106,6 +107,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         plots: plots,
         fileId: file.id,
         isControlFile: file.id == controlFile ? 1 : 0,
+        label: file.label,
       };
     });
   };
@@ -129,9 +131,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     (workspaceState as any).files[controlFile].plots.push(newPlot);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    console.log("in add gate, workspaceState is now ", workspaceState);
+
+    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+
+    console.log("in add gate, enrichedFiles is now ", enrichedFiles);
 
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -173,12 +179,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (fileKey == workspaceState.controlFile) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[change.plotIndex] =
-          JSON.parse(JSON.stringify(change.plot));
+        (workspaceState as any).files[fileId].plots[
+          change.plotIndex
+        ] = JSON.parse(JSON.stringify(change.plot));
       });
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -236,12 +243,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         if (fileKey == workspaceState.controlFile) {
           const filesIds = Object.keys((workspaceState as any).files);
           filesIds.forEach((fileId, index) => {
-            (workspaceState as any).files[fileId].plots[change.plotIndex] =
-              JSON.parse(
-                JSON.stringify(
-                  (workspaceState as any).files[fileKey].plots[change.plotIndex]
-                )
-              );
+            (workspaceState as any).files[fileId].plots[
+              change.plotIndex
+            ] = JSON.parse(
+              JSON.stringify(
+                (workspaceState as any).files[fileKey].plots[change.plotIndex]
+              )
+            );
           });
         }
         break;
@@ -252,7 +260,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         break;
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -268,6 +276,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let controlEnrichedFile = enrichedFiles.find(
       (enrichedFile) => enrichedFile.isControlFile
     );
+
+    console.log("in sortByGate, control file is ", controlEnrichedFile);
 
     let gateStats = controlEnrichedFile.gateStats;
 
