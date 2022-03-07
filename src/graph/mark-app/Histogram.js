@@ -210,15 +210,30 @@ function Histogram(props) {
   };
 
   const onChangeChannel = (e, axis, plotIndex) => {
+    let change = {};
+    let newPlotType = props.plot.plotType;
+    let channelLabel = "";
     let channeIndex = e.value;
-    let channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+    if (axis == "y") {
+      if (e.value == "histogram") {
+        newPlotType = "histogram";
+        channelLabel = props.plot.yAxisLabel;
+        channeIndex = props.plot.yAxisIndex;
+      } else {
+        channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+        newPlotType = "scatter";
+      }
+    } else {
+      channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+    }
 
-    let change = {
+    change = {
       type: "ChannelIndexChange",
       plotIndex: plotIndex,
       axis: axis,
       axisIndex: channeIndex,
       axisLabel: channelLabel,
+      plotType: newPlotType,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
       fileId: props.enrichedFile.fileId,
     };

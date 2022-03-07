@@ -239,15 +239,30 @@ function Plot(props) {
   };
 
   const onChangeChannel = (e, axis, plotIndex) => {
+    let change = {};
+    let newPlotType = localPlot.plotType;
+    let channelLabel = "";
     let channeIndex = e.value;
-    let channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+    if (axis == "y") {
+      if (e.value == "histogram") {
+        newPlotType = "histogram";
+        channelLabel = localPlot.yAxisLabel;
+        channeIndex = localPlot.yAxisIndex;
+      } else {
+        channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+        newPlotType = "scatter";
+      }
+    } else {
+      channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
+    }
 
-    let change = {
+    change = {
       type: "ChannelIndexChange",
       plotIndex: plotIndex,
       axis: axis,
       axisIndex: channeIndex,
       axisLabel: channelLabel,
+      plotType: newPlotType,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
       fileId: props.enrichedFile.fileId,
     };
@@ -827,6 +842,8 @@ function Plot(props) {
             <div
               style={{
                 border: "1px solid #32a1ce",
+                width: `${localPlot.width}px`,
+                height: `${localPlot.height}px`,
               }}
               // ref={ref}
             >

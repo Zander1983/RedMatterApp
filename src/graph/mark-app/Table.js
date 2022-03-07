@@ -70,7 +70,7 @@ function Table(props) {
       </div>
 
       <table className="workspace">
-        <tbody>
+        <tbody style={{ width: "100%" }}>
           <tr>
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
               return (
@@ -175,7 +175,12 @@ function Table(props) {
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
-                    <td key={`td-${plotIindex + 1}`}>
+                    <td
+                      style={{
+                        paddingLeft: 15,
+                      }}
+                      key={`td-${plotIindex + 1}`}
+                    >
                       <div
                         style={{
                           textAlign: "center",
@@ -194,7 +199,7 @@ function Table(props) {
                                 );
                                 return gateStat.percentage;
                               })}%`
-                          : ""}
+                          : "100%"}
                       </div>
                       {(() => {
                         if (plot.plotType === "scatter") {
