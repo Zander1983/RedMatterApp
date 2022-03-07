@@ -29,16 +29,17 @@
           "parentPlotId": "",
           "gatingActive": "",
           "gate": {
-            "color": "#d5b34b",
+            "color": "#68ffa4",
             "gateType": "polygon",
-            "name": "population1",
+            "name": "singlets",
             "points": [
-              [10000, 10000],
-              [170000, 10000],
-              [170000, 170000],
-              [10000, 170000]
+              [128450.56, 64225.28],
+              [163840, 56360.96],
+              [155975.68, 35389.44],
+              [108789.76, 13107.2],
+              [79953.92, 22282.24]
             ],
-            "xAxisLabel": "FSC-A",
+            "xAxisLabel": 0,
             "yAxisLabel": "SSC-A",
             "xScaleType": "lin",
             "yScaleType": "lin",
@@ -50,95 +51,122 @@
           }
         },
         {
-          "population": "population1",
+          "population": "singlets",
           "plotType": "scatter",
           "width": 200,
           "height": 200,
-          "plotScale": 2,
-          "xAxisLabel": "APA-A",
-          "yAxisLabel": "FITC-A",
+          "xAxisLabel": "Comp-APC-A - CD45",
+          "yAxisLabel": "SSC-A",
           "xAxisIndex": 4,
-          "yAxisIndex": 2,
+          "yAxisIndex": 1,
+          "plotScale": 2,
           "xScaleType": "bi",
-          "yScaleType": "bi",
+          "yScaleType": "lin",
           "histogramAxis": "",
           "label": "",
           "dimensions": {
-            "h": 10,
-            "w": 9
+            "w": 9,
+            "h": 10
           },
           "positions": {
-            "x": 10,
+            "x": 0,
             "y": 0
           },
+          "parentPlotId": "",
+          "gatingActive": "",
           "gate": {
-            "name": "population2",
+            "color": "#bd471c",
+            "gateType": "polygon",
+            "name": "mono",
             "points": [
-              [100, 100],
-              [200000, 100],
-              [200000, 200000],
-              [100, 200000]
+              [1206.3551914814193, 64225.28],
+              [209.64615071252206, 38010.88],
+              [382.5152598351647, 14417.92],
+              [3119.4892776916968, 19660.8],
+              [6047.93026294089, 44564.48]
             ],
-            "xAxisLabel": "APA-A",
-            "yAxisLabel": "FITC-A",
-            "xAxisIndex": 4,
-            "yAxisIndex": 2,
+            "xAxisLabel": 4,
+            "yAxisLabel": "SSC-A",
             "xScaleType": "bi",
-            "yScaleType": "bi",
+            "yScaleType": "lin",
+            "xAxisIndex": 4,
+            "yAxisIndex": 1,
             "xAxisOriginalRanges": [0, 262144],
             "yAxisOriginalRanges": [0, 262144],
-            "parents": [],
-            "color": "#dd688f",
-            "gateType": "polygon",
-            "id": "79b4fd10-651e-47ce-ba7b-5caa054293f5"
+            "parent": "singlets"
           }
         },
         {
-          "population": "population2",
+          "population": "mono",
           "plotType": "scatter",
-          "xAxisLabel": "FSC-A",
-          "yAxisLabel": "SSC-A",
-          "xAxisIndex": 0,
-          "yAxisIndex": 1,
           "width": 200,
           "height": 200,
-          "plotScale": 2,
-          "xScaleType": "lin",
-          "yScaleType": "lin",
-          "label": "",
-          "dimensions": {
-            "h": 10,
-            "w": 9
-          },
-          "positions": {
-            "x": 20,
-            "y": 0
-          }
-        },
-        {
-          "population": "population2",
-          "plotType": "histogram",
-          "xAxisLabel": "APA-A",
-          "yAxisLabel": "FITC-A",
-          "xAxisIndex": 4,
-          "yAxisIndex": 2,
-          "width": 200,
-          "height": 200,
+          "xAxisLabel": "Comp-FITC-A - HLA DR",
+          "yAxisLabel": "FSC-A",
+          "xAxisIndex": 2,
+          "yAxisIndex": 0,
           "plotScale": 2,
           "xScaleType": "bi",
-          "yScaleType": "bi",
+          "yScaleType": "lin",
+          "histogramAxis": "",
           "label": "",
           "dimensions": {
-            "h": 10,
-            "w": 9
+            "w": 9,
+            "h": 10
           },
           "positions": {
-            "x": 20,
+            "x": 0,
             "y": 0
+          },
+          "parentPlotId": "",
+          "gatingActive": "",
+          "gate": {
+            "color": "#d1ba27",
+            "gateType": "polygon",
+            "name": "doublets",
+            "points": [
+              [17755.677116830597, 161218.56],
+              [3409.981425485993, 112721.92],
+              [11151.495696372676, 89128.96],
+              [28282.76676721806, 112721.92]
+            ],
+            "xAxisLabel": 2,
+            "yAxisLabel": "FSC-A",
+            "xScaleType": "bi",
+            "yScaleType": "lin",
+            "xAxisIndex": 2,
+            "yAxisIndex": 0,
+            "xAxisOriginalRanges": [0, 262144],
+            "yAxisOriginalRanges": [0, 262144],
+            "parent": "mono"
           }
+        },
+        {
+          "population": "doublets",
+          "plotType": "histogram",
+          "width": 200,
+          "height": 200,
+          "xAxisLabel": "Comp-FITC-A - HLA DR",
+          "yAxisLabel": "FSC-A",
+          "xAxisIndex": 2,
+          "yAxisIndex": 0,
+          "plotScale": 2,
+          "xScaleType": "bi",
+          "yScaleType": "lin",
+          "histogramAxis": "",
+          "label": "",
+          "dimensions": {
+            "w": 9,
+            "h": 10
+          },
+          "positions": {
+            "x": 0,
+            "y": 0
+          },
+          "parentPlotId": "",
+          "gatingActive": ""
         }
-      ],
-      "open": true
+      ]
     }
   },
   "sharedWorkspace": "false",
