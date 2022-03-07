@@ -1,6 +1,13 @@
 import { MenuItem, Select } from "@material-ui/core";
 
 function SideSelector(props) {
+  const getYAxisValue = () => {
+    if (props.plot.plotType == "histogram") {
+      return "histogram";
+    }
+    return props.plot.yAxisIndex;
+  };
+
   return (
     <div
       style={{
@@ -36,7 +43,7 @@ function SideSelector(props) {
                 props.plotIndex.split("-")[1]
               );
             }}
-            value={props.plot.yAxisIndex}
+            value={getYAxisValue()}
           >
             {props.channelOptions.map((e) => (
               <MenuItem key={e.value} value={e.value}>

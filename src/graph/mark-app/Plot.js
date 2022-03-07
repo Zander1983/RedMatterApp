@@ -240,33 +240,33 @@ function Plot(props) {
 
   const onChangeChannel = (e, axis, plotIndex) => {
     let change = {};
-    if (e.value == "histogram") {
-      let newPlotType = "histogram";
-      if (localPlot.plotType == "histogram") {
+    let newPlotType = localPlot.plotType;
+    let channelLabel = "";
+    let channeIndex = e.value;
+    if (axis == "y") {
+      if (e.value == "histogram") {
+        newPlotType = "histogram";
+        channelLabel = localPlot.yAxisLabel;
+        channeIndex = localPlot.yAxisIndex;
+      } else {
+        channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
         newPlotType = "scatter";
       }
-      change = {
-        type: "ChangePlotType",
-        plotIndex: plotIndex,
-        plotType: newPlotType,
-        fileId: props.enrichedFile.fileId,
-      };
     } else {
-      let channeIndex = e.value;
-      let channelLabel = channelOptions.find(
-        (x) => x.value == channeIndex
-      ).label;
-      change = {
-        type: "ChannelIndexChange",
-        plotIndex: plotIndex,
-        axis: axis,
-        axisIndex: channeIndex,
-        axisLabel: channelLabel,
-        plotType: "scatter",
-        scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
-        fileId: props.enrichedFile.fileId,
-      };
+      channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
     }
+
+    change = {
+      type: "ChannelIndexChange",
+      plotIndex: plotIndex,
+      axis: axis,
+      axisIndex: channeIndex,
+      axisLabel: channelLabel,
+      plotType: newPlotType,
+      scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
+      fileId: props.enrichedFile.fileId,
+    };
+
     props.onChangeChannel(change);
   };
 
