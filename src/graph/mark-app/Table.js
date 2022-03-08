@@ -62,7 +62,6 @@ function Table(props) {
         style={{
           color: "#fff",
           backgroundColor: "#66ccff",
-          textAlign: "center",
           fontWeight: "bold",
           display: "flex",
           paddingLeft: "10px",
@@ -70,6 +69,7 @@ function Table(props) {
       >
         <div
           style={{
+            width: "20%",
             order: 1,
           }}
         >
@@ -77,13 +77,16 @@ function Table(props) {
         </div>
         <div
           style={{
+            width: "60%",
             order: 2,
+            textAlign: "center",
           }}
         >
           CONTROL FILE
         </div>
         <div
           style={{
+            width: "20%",
             order: 3,
           }}
         ></div>
