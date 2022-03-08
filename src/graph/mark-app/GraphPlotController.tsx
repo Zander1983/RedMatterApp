@@ -5,7 +5,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
 import Files51 from "./Files51.json";
-import Files90 from "./Files90.json";
+// import Files90 from "./Files90.json";
 import Files from "./Files.json";
 import SmallFiles from "./SmallFiles.json";
 import workspaceState from "./WorkspaceState.json";
@@ -199,9 +199,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (fileKey == workspaceState.controlFile) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[
-          change.plotIndex
-        ] = JSON.parse(JSON.stringify(change.plot));
+        (workspaceState as any).files[fileId].plots[change.plotIndex] =
+          JSON.parse(JSON.stringify(change.plot));
       });
     }
 
@@ -265,13 +264,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         if (fileKey == workspaceState.controlFile) {
           const filesIds = Object.keys((workspaceState as any).files);
           filesIds.forEach((fileId, index) => {
-            (workspaceState as any).files[fileId].plots[
-              change.plotIndex
-            ] = JSON.parse(
-              JSON.stringify(
-                (workspaceState as any).files[fileKey].plots[change.plotIndex]
-              )
-            );
+            (workspaceState as any).files[fileId].plots[change.plotIndex] =
+              JSON.parse(
+                JSON.stringify(
+                  (workspaceState as any).files[fileKey].plots[change.plotIndex]
+                )
+              );
           });
         }
         break;
