@@ -1,8 +1,8 @@
 {
   "experimentId": "61f98c2ddf76230e13f6c585",
-  "controlFile": "963b7f9a-4bbc-4ef9-919b-b12b2e87afe9",
+  "controlFile": "file_key_1_control",
   "files": {
-    "963b7f9a-4bbc-4ef9-919b-b12b2e87afe9": {
+    "file_key_1_control": {
       "plots": [
         {
           "population": "All",

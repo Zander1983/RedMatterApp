@@ -36,7 +36,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files51));
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -64,7 +64,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -125,15 +125,52 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //gatedPlot.gate = gate;
     let controlFile: string = workspaceState.controlFile;
 
+    // this is setting the last plot to be the gated plot on the contorl
     (workspaceState as any).files[controlFile].plots[
       (workspaceState as any).files[controlFile].plots.length - 1
     ] = gatedPlot;
 
+    // this is adding a new plot to the end of the plots array on the control
     (workspaceState as any).files[controlFile].plots.push(newPlot);
+
+    // new plots are only added on the control file,
+    // so loop through the other fileIds - which have adjusted gates
+    // and make sure to keep them
+    let fileIds = Object.keys((workspaceState as any).files);
+    fileIds.forEach((fileId) => {
+      if (fileId != controlFile) {
+        let plots = (workspaceState as any).files[fileId].plots;
+        // const stashedPlot = JSON.parse(
+        //   JSON.stringify(
+        //     (workspaceState as any).files[fileId].plots[
+        //       (workspaceState as any).files[fileId].plots.length - 1
+        //     ]
+        //   )
+        // );
+
+        // console.log(">>>>>> stashedPlot is ", stashedPlot);
+        // gatedPlot.gate = JSON.parse(JSON.stringify(stashedPlot.gate));
+        (workspaceState as any).files[fileId].plots[
+          (workspaceState as any).files[fileId].plots.length - 1
+        ] = JSON.parse(JSON.stringify(gatedPlot));
+
+        (workspaceState as any).files[fileId].plots.push(
+          JSON.parse(JSON.stringify(newPlot))
+        );
+      }
+    });
+
+    // (workspaceState as any).files[fileKey] = {
+    //   plots: JSON.parse(
+    //     JSON.stringify(
+    //       (workspaceState as any).files[workspaceState.controlFile].plots
+    //     )
+    //   ),
+    // };
 
     console.log("in add gate, workspaceState is now ", workspaceState);
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -160,7 +197,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   onEditGate = (change: any) => {
     let fileKey = change.fileId;
-    if (!(workspaceState as any)[fileKey]) {
+    if (!(workspaceState as any).files[fileKey]) {
       // so its a non-control gate being edited, copy plots from control
       (workspaceState as any).files[fileKey] = {
         plots: JSON.parse(
@@ -171,11 +208,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       };
     }
 
+    // now change the specific plot for specific file
     (workspaceState as any).files[fileKey].plots[change.plotIndex] = JSON.parse(
       JSON.stringify(change.plot)
     );
 
     // if its control file - change for all
+
     if (fileKey == workspaceState.controlFile) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
@@ -185,7 +224,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       });
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
+    console.log(">>>>UPDATED workspaceState is now ", workspaceState);
+
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -202,7 +243,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let plotIndex = change.plotIndex;
     switch (type) {
       case "ChannelIndexChange":
-        if (!(workspaceState as any)[fileKey]) {
+        if (!(workspaceState as any).files[fileKey]) {
           // so its a non-control gate being edited, copy plots from control
           (workspaceState as any).files[fileKey] = {
             plots: JSON.parse(
@@ -260,7 +301,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         break;
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files51));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
