@@ -194,18 +194,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(change.plot)
     );
 
-    // if its control file - change for all
-
-    //@ts-ignore
-    if (fileKey == workspaceState.controlFileId) {
-      const filesIds = Object.keys((workspaceState as any).files);
-      filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[
-          change.plotIndex
-        ] = JSON.parse(JSON.stringify(change.plot));
-      });
-    }
-
     let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -244,7 +232,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         Object.keys((workspaceState as any).files).forEach((fileId, index) => {
           // if the file being changed is the control file, change for all
           // otherwise just change for it
-          if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
+          if (fileId == fileKey) {
             if (change.axis == "x") {
               workspaceState = this.updateWorkspaceStateChannels(
                 "x",
@@ -276,7 +264,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         console.log("in change plot and fileKey is ", fileKey);
         Object.keys((workspaceState as any).files).forEach((fileId, index) => {
           console.log("fileId is ", fileId);
-          if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
+          if (fileId == fileKey) {
             console.log("in the if....so change");
             //@ts-ignore
             workspaceState.files[fileId].plots[plotIndex].plotType =
