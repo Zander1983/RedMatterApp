@@ -65,7 +65,7 @@ function Table(props) {
           textAlign: "center",
           fontWeight: "bold",
           display: "flex",
-          justifyContent: "center",
+          paddingLeft: "10px",
         }}
       >
         <div
