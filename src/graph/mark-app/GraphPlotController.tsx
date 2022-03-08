@@ -139,17 +139,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let fileIds = Object.keys((workspaceState as any).files);
     fileIds.forEach((fileId) => {
       if (fileId != controlFile) {
-        let plots = (workspaceState as any).files[fileId].plots;
-        // const stashedPlot = JSON.parse(
-        //   JSON.stringify(
-        //     (workspaceState as any).files[fileId].plots[
-        //       (workspaceState as any).files[fileId].plots.length - 1
-        //     ]
-        //   )
-        // );
-
-        // console.log(">>>>>> stashedPlot is ", stashedPlot);
-        // gatedPlot.gate = JSON.parse(JSON.stringify(stashedPlot.gate));
         (workspaceState as any).files[fileId].plots[
           (workspaceState as any).files[fileId].plots.length - 1
         ] = JSON.parse(JSON.stringify(gatedPlot));
@@ -159,14 +148,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         );
       }
     });
-
-    // (workspaceState as any).files[fileKey] = {
-    //   plots: JSON.parse(
-    //     JSON.stringify(
-    //       (workspaceState as any).files[workspaceState.controlFile].plots
-    //     )
-    //   ),
-    // };
 
     console.log("in add gate, workspaceState is now ", workspaceState);
 
