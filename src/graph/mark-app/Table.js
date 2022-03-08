@@ -64,11 +64,30 @@ function Table(props) {
           backgroundColor: "#66ccff",
           textAlign: "center",
           fontWeight: "bold",
+          display: "flex",
+          justifyContent: "center",
         }}
       >
-        CONTROL FILE
+        <div
+          style={{
+            order: 1,
+          }}
+        >
+          PIPELINE 1
+        </div>
+        <div
+          style={{
+            order: 2,
+          }}
+        >
+          CONTROL FILE
+        </div>
+        <div
+          style={{
+            order: 3,
+          }}
+        ></div>
       </div>
-
       <table className="workspace">
         <tbody style={{ width: "100%" }}>
           <tr>
