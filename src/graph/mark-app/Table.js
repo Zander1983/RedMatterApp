@@ -62,14 +62,14 @@ function Table(props) {
         style={{
           color: "#fff",
           backgroundColor: "#66ccff",
-          textAlign: "center",
           fontWeight: "bold",
           display: "flex",
-          justifyContent: "center",
+          paddingLeft: "10px",
         }}
       >
         <div
           style={{
+            width: "20%",
             order: 1,
           }}
         >
@@ -77,13 +77,16 @@ function Table(props) {
         </div>
         <div
           style={{
+            width: "60%",
             order: 2,
+            textAlign: "center",
           }}
         >
           CONTROL FILE
         </div>
         <div
           style={{
+            width: "20%",
             order: 3,
           }}
         ></div>
@@ -162,31 +165,54 @@ function Table(props) {
                     fontWeight: "bold",
                   }}
                 >
-                  {plot.population}
-                  <img
-                    onClick={() => {
-                      props.sortByGate(plot.population, "asc");
-                    }}
-                    src={downArrow}
-                    alt="down-arrow"
+                  <div
                     style={{
-                      width: 10,
-                      marginLeft: 5,
-                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
-                  />
-                  <img
-                    onClick={() => {
-                      props.sortByGate(plot.population, "dsc");
-                    }}
-                    src={upArrow}
-                    alt="up-arrow"
-                    style={{
-                      width: 10,
-                      marginLeft: 5,
-                      cursor: "pointer",
-                    }}
-                  />
+                  >
+                    <div
+                      style={{
+                        marginRight: "10px",
+                        backgroundColor: `${
+                          plotIindex > 0
+                            ? controlEnrichedFile.plots[plotIindex - 1].gate
+                                .color
+                            : "#000000"
+                        }`,
+                        width: "15px",
+                        height: "15px",
+                      }}
+                    ></div>
+                    <div>
+                      {plot.population}
+                      <img
+                        onClick={() => {
+                          props.sortByGate(plot.population, "asc");
+                        }}
+                        src={downArrow}
+                        alt="down-arrow"
+                        style={{
+                          width: 10,
+                          marginLeft: 5,
+                          cursor: "pointer",
+                        }}
+                      />
+                      <img
+                        onClick={() => {
+                          props.sortByGate(plot.population, "dsc");
+                        }}
+                        src={upArrow}
+                        alt="up-arrow"
+                        style={{
+                          width: 10,
+                          marginLeft: 5,
+                          cursor: "pointer",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </td>
               );
             })}
