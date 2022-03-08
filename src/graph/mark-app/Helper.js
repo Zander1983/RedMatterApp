@@ -9,7 +9,7 @@ export const superAlgorithm = (Files, WorkspaceState) => {
 
   // TODO logicle here needs to be got correctly
   let logicle = new MarkLogicle(0, 262144);
-  let controlFile = WorkspaceState.controlFile;
+  let controlFileId = WorkspaceState.controlFileId;
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
@@ -25,7 +25,7 @@ export const superAlgorithm = (Files, WorkspaceState) => {
       // if the file has its own plots, use that, otherwise use control file plots
       let plots = WorkspaceState.files[file.id]
         ? WorkspaceState.files[file.id].plots
-        : WorkspaceState.files[controlFile].plots;
+        : WorkspaceState.files[controlFileId].plots;
 
       for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
         let isInGate;

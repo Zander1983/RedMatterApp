@@ -7,8 +7,9 @@ import PlotTableComponent from "./Table";
 import Files51 from "./Files51.json";
 // import Files90 from "./Files90.json";
 import Files from "./Files.json";
+import Files21 from "./Files21.json";
 import SmallFiles from "./SmallFiles.json";
-import workspaceState from "./WorkspaceState.json";
+import WorkspaceState from "./WorkspaceState.json";
 import { superAlgorithm } from "./Helper";
 import MarkLogicle from "./logicleMark";
 
@@ -32,11 +33,17 @@ interface IState {
   testParam: string;
 }
 
+let workspaceState = {
+  controlFileId: "",
+};
+
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files));
+    workspaceState = JSON.parse(JSON.stringify(WorkspaceState));
+
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -55,16 +62,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
     this.onResize = this.onResize.bind(this);
-
-    // if (workspaceState[controlFile]) {
-    //   workspaceState[controlFile].plots[
-    //     workspaceState[controlFile].plots.length - 1
-    //   ] = gatedPlot;
-    // }
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -93,11 +94,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         };
       });
 
-      let controlFile = workspaceState.controlFile;
+      let controlFileId = workspaceState.controlFileId;
 
       let plots = workspaceState.files[file.id]
         ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
-        : JSON.parse(JSON.stringify(workspaceState.files[controlFile].plots));
+        : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
 
       return {
         enrichedEvents: file.events,
@@ -106,7 +107,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         gateStats: file.gateStats,
         plots: plots,
         fileId: file.id,
-        isControlFile: file.id == controlFile ? 1 : 0,
+        isControlFile: file.id == controlFileId ? 1 : 0,
         label: file.label,
       };
     });
@@ -122,23 +123,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // set the passed up plot to be in the state
     let gatedPlot = JSON.parse(JSON.stringify(change.plot));
 
-    //gatedPlot.gate = gate;
-    let controlFile: string = workspaceState.controlFile;
+    //@ts-ignore
+    let controlFileId: string = workspaceState.controlFileId;
 
     // this is setting the last plot to be the gated plot on the contorl
-    (workspaceState as any).files[controlFile].plots[
-      (workspaceState as any).files[controlFile].plots.length - 1
+    (workspaceState as any).files[controlFileId].plots[
+      (workspaceState as any).files[controlFileId].plots.length - 1
     ] = gatedPlot;
 
     // this is adding a new plot to the end of the plots array on the control
-    (workspaceState as any).files[controlFile].plots.push(newPlot);
+    (workspaceState as any).files[controlFileId].plots.push(newPlot);
 
     // new plots are only added on the control file,
     // so loop through the other fileIds - which have adjusted gates
     // and make sure to keep them
     let fileIds = Object.keys((workspaceState as any).files);
     fileIds.forEach((fileId) => {
-      if (fileId != controlFile) {
+      if (fileId != controlFileId) {
         (workspaceState as any).files[fileId].plots[
           (workspaceState as any).files[fileId].plots.length - 1
         ] = JSON.parse(JSON.stringify(gatedPlot));
@@ -149,9 +150,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    console.log("in add gate, workspaceState is now ", workspaceState);
-
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -181,9 +180,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (!(workspaceState as any).files[fileKey]) {
       // so its a non-control gate being edited, copy plots from control
       (workspaceState as any).files[fileKey] = {
+        //@ts-ignore
         plots: JSON.parse(
           JSON.stringify(
-            (workspaceState as any).files[workspaceState.controlFile].plots
+            (workspaceState as any).files[workspaceState.controlFileId].plots
           )
         ),
       };
@@ -196,17 +196,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // if its control file - change for all
 
-    if (fileKey == workspaceState.controlFile) {
+    //@ts-ignore
+    if (fileKey == workspaceState.controlFileId) {
       const filesIds = Object.keys((workspaceState as any).files);
       filesIds.forEach((fileId, index) => {
-        (workspaceState as any).files[fileId].plots[change.plotIndex] =
-          JSON.parse(JSON.stringify(change.plot));
+        (workspaceState as any).files[fileId].plots[
+          change.plotIndex
+        ] = JSON.parse(JSON.stringify(change.plot));
       });
     }
 
-    console.log(">>>>UPDATED workspaceState is now ", workspaceState);
-
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -221,66 +221,75 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let type = change.type;
     let fileKey = change.fileId;
     let plotIndex = change.plotIndex;
+    //let filesIds;
+    console.log(">>>>> type is ", type);
     switch (type) {
       case "ChannelIndexChange":
         if (!(workspaceState as any).files[fileKey]) {
           // so its a non-control gate being edited, copy plots from control
+          //@ts-ignore
           (workspaceState as any).files[fileKey] = {
             plots: JSON.parse(
               JSON.stringify(
-                (workspaceState as any).files[workspaceState.controlFile].plots
+                (workspaceState as any).files[workspaceState.controlFileId]
+                  .plots
               )
             ),
           };
         }
 
         //@ts-ignore
-        workspaceState.files[fileKey].plots[plotIndex].plotType =
-          change.plotType;
+        // workspaceState.files[fileKey].plots[plotIndex].plotType =
+        //   change.plotType;
 
-        if (change.axis == "x") {
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].xAxisIndex = change.axisIndex;
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].xAxisLabel = change.axisLabel;
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].xScaleType = change.scaleType;
-        } else {
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].yAxisIndex = change.axisIndex;
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].yAxisLabel = change.axisLabel;
-          (workspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].yScaleType = change.scaleType;
-        }
-
-        // if its control file - change for all
-        if (fileKey == workspaceState.controlFile) {
-          const filesIds = Object.keys((workspaceState as any).files);
-          filesIds.forEach((fileId, index) => {
-            (workspaceState as any).files[fileId].plots[change.plotIndex] =
-              JSON.parse(
-                JSON.stringify(
-                  (workspaceState as any).files[fileKey].plots[change.plotIndex]
-                )
+        Object.keys((workspaceState as any).files).forEach((fileId, index) => {
+          // if the file being changed is the control file, change for all
+          // otherwise just change for it
+          if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
+            console.log(
+              "fileKey == workspaceState.controlFileId is ",
+              fileKey == workspaceState.controlFileId
+            );
+            if (change.axis == "x") {
+              workspaceState = this.updateWorkspaceStateChannels(
+                "x",
+                workspaceState,
+                fileId,
+                plotIndex,
+                change.axisIndex,
+                change.axisLabel,
+                change.scaleType
               );
-          });
-        }
+            } else {
+              workspaceState = this.updateWorkspaceStateChannels(
+                "y",
+                workspaceState,
+                fileId,
+                plotIndex,
+                change.axisIndex,
+                change.axisLabel,
+                change.scaleType
+              );
+            }
+          }
+        });
+
         break;
       case "ChangePlotType":
-        //@ts-ignore
-        workspaceState.files[fileKey].plots[plotIndex].plotType =
-          change.plotType;
+        console.log("in change plot and fileKey is ", fileKey);
+        Object.keys((workspaceState as any).files).forEach((fileId, index) => {
+          if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
+            console.log("in the if....so change");
+            //@ts-ignore
+            workspaceState.files[fileId].plots[plotIndex].plotType =
+              change.plotType;
+          }
+        });
+
         break;
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files));
+    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -288,6 +297,32 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       enrichedFiles: enrichedFiles,
     });
+  };
+
+  //@ts-ignore
+  updateWorkspaceStateChannels = (
+    axis: any,
+    workspaceState: any,
+    fileKeyBeingChanged: any,
+    plotIndexBeingChanged: any,
+    axisIndex: any,
+    axisLabel: any,
+    scaleType: any
+  ) => {
+    let plot = (workspaceState as any).files[fileKeyBeingChanged].plots[
+      plotIndexBeingChanged
+    ];
+    if (axis == "x") {
+      plot.xAxisIndex = axisIndex;
+      plot.xAxisLabel = axisLabel;
+      plot.xScaleType = scaleType;
+    } else {
+      plot.yAxisIndex = axisIndex;
+      plot.yAxisLabel = axisLabel;
+      plot.yScaleType = scaleType;
+    }
+
+    return JSON.parse(JSON.stringify(workspaceState));
   };
 
   sortByGate = (gateName: any, sortType: any) => {

@@ -1,6 +1,6 @@
 {
   "experimentId": "61f98c2ddf76230e13f6c585",
-  "controlFile": "file_key_1_control",
+  "controlFileId": "file_key_1_control",
   "files": {
     "file_key_1_control": {
       "plots": [
