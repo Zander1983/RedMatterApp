@@ -257,7 +257,8 @@ function Plot(props) {
     }
 
     change = {
-      type: "ChannelIndexChange",
+      type:
+        newPlotType == "histogram" ? "ChangePlotType" : "ChannelIndexChange",
       plotIndex: plotIndex,
       axis: axis,
       axisIndex: channeIndex,

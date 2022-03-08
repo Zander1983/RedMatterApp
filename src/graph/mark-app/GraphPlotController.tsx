@@ -223,22 +223,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let plotIndex = change.plotIndex;
     //let filesIds;
     console.log(">>>>> type is ", type);
+    if (!(workspaceState as any).files[fileKey]) {
+      // so its a non-control gate being edited, copy plots from control
+      //@ts-ignore
+      (workspaceState as any).files[fileKey] = {
+        plots: JSON.parse(
+          JSON.stringify(
+            (workspaceState as any).files[workspaceState.controlFileId].plots
+          )
+        ),
+      };
+    }
+
     switch (type) {
       case "ChannelIndexChange":
-        if (!(workspaceState as any).files[fileKey]) {
-          // so its a non-control gate being edited, copy plots from control
-          //@ts-ignore
-          (workspaceState as any).files[fileKey] = {
-            plots: JSON.parse(
-              JSON.stringify(
-                (workspaceState as any).files[workspaceState.controlFileId]
-                  .plots
-              )
-            ),
-          };
-        }
-
-        //@ts-ignore
+        // //@ts-ignore
         // workspaceState.files[fileKey].plots[plotIndex].plotType =
         //   change.plotType;
 
@@ -246,10 +245,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           // if the file being changed is the control file, change for all
           // otherwise just change for it
           if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
-            console.log(
-              "fileKey == workspaceState.controlFileId is ",
-              fileKey == workspaceState.controlFileId
-            );
             if (change.axis == "x") {
               workspaceState = this.updateWorkspaceStateChannels(
                 "x",
@@ -258,7 +253,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 plotIndex,
                 change.axisIndex,
                 change.axisLabel,
-                change.scaleType
+                change.scaleType,
+                change.plotType
               );
             } else {
               workspaceState = this.updateWorkspaceStateChannels(
@@ -268,7 +264,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 plotIndex,
                 change.axisIndex,
                 change.axisLabel,
-                change.scaleType
+                change.scaleType,
+                change.plotType
               );
             }
           }
@@ -278,6 +275,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       case "ChangePlotType":
         console.log("in change plot and fileKey is ", fileKey);
         Object.keys((workspaceState as any).files).forEach((fileId, index) => {
+          console.log("fileId is ", fileId);
           if (fileKey == workspaceState.controlFileId || fileId == fileKey) {
             console.log("in the if....so change");
             //@ts-ignore
@@ -307,7 +305,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndexBeingChanged: any,
     axisIndex: any,
     axisLabel: any,
-    scaleType: any
+    scaleType: any,
+    plotType: any
   ) => {
     let plot = (workspaceState as any).files[fileKeyBeingChanged].plots[
       plotIndexBeingChanged
@@ -316,10 +315,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       plot.xAxisIndex = axisIndex;
       plot.xAxisLabel = axisLabel;
       plot.xScaleType = scaleType;
+      plot.plotType = plotType;
     } else {
       plot.yAxisIndex = axisIndex;
       plot.yAxisLabel = axisLabel;
       plot.yScaleType = scaleType;
+      plot.plotType = plotType;
     }
 
     return JSON.parse(JSON.stringify(workspaceState));
