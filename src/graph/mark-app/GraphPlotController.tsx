@@ -10,6 +10,8 @@ import Files from "./Files.json";
 import Files21 from "./Files21.json";
 import SmallFiles from "./SmallFiles.json";
 import WorkspaceState from "./WorkspaceState.json";
+import HistogramState from "./HistogramState.json";
+import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
 import { superAlgorithm } from "./Helper";
 import MarkLogicle from "./logicleMark";
 
@@ -43,7 +45,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     workspaceState = JSON.parse(JSON.stringify(WorkspaceState));
 
-    let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
+    console.log("workspaceState is ", workspaceState);
+
+    let copyOfFiles: any[] = JSON.parse(JSON.stringify(SmallFiles));
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -65,7 +69,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   getEnrichedEvents = () => {
-    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
 
     let enrichedEvents = superAlgorithm(copyOfFiles, workspaceState);
 
@@ -150,7 +154,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -194,7 +198,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(change.plot)
     );
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -275,7 +279,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         break;
     }
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let copyOfFiles = JSON.parse(JSON.stringify(SmallFiles));
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);

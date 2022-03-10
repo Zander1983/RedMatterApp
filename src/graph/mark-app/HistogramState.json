@@ -1,0 +1,51 @@
+{
+  "experimentId": "61f98c2ddf76230e13f6c585",
+  "controlFileId": "file_key_1_control",
+  "files": {
+    "file_key_1_control": {
+      "plots": [
+        {
+          "population": "All",
+          "plotType": "histogram",
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "width": 200,
+          "height": 200,
+          "plotScale": 2,
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "label": "",
+          "dimensions": {
+            "h": 10,
+            "w": 9
+          },
+          "positions": {
+            "x": 20,
+            "y": 0
+          },
+          "gate": {
+            "name": "population1",
+            "points": [5000, 180000],
+            "xAxisLabel": "FSC-A",
+            "xAxisIndex": 0,
+            "xScaleType": "lin",
+            "xAxisOriginalRanges": [0, 262144],
+            "yAxisOriginalRanges": [0, 262144],
+            "parents": [],
+            "color": "#dd688f",
+            "gateType": "histogram",
+            "id": "79b4fd10-651e-47ce-ba7b-5caa054293f5"
+          }
+        }
+      ],
+      "open": true
+    }
+  },
+  "sharedWorkspace": "false",
+  "editWorkspace": "true",
+  "selectedFile": "9008c670-8396-11ec-a459-0dc7b0553594",
+  "clearOpenFiles": "false",
+  "isShared": "false"
+}

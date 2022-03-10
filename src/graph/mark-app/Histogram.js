@@ -1,6 +1,25 @@
 import { histogram } from "./HistogramHelper";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
+import { getRealPointFromCanvasPoints, getPointOnCanvas } from "./PlotHelper";
+
+let startXPointsReal;
+let isMouseDown = false;
+
+const hasGate = (localPlot) => {
+  return !!localPlot.gate;
+};
+
+const shouldDrawGate = (plot) => {
+  if (
+    plot.xAxisIndex === plot.gate.xAxisIndex &&
+    plot.xScaleType === plot.gate.xScaleType
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 const getContext = (plot, plotIndex) => {
   // const findBy = "canvas-" + plot.plotIndex
@@ -68,7 +87,7 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
   let ratioY = plot.height / maxCount;
 
   //value, scaleType, ratio, minimum, width, axis
-  let firstX = getPointOnCanvas(
+  let firstX = getPointOnCanvasByRatio(
     hists[0].x,
     plot.xScaleType,
     ratio,
@@ -85,7 +104,7 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
   hists.forEach(function (hist, index) {
     let pointX, pointY;
 
-    pointX = getPointOnCanvas(
+    pointX = getPointOnCanvasByRatio(
       hist.x,
       plot.xScaleType,
       ratio,
@@ -94,7 +113,14 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
       "x"
     );
 
-    pointY = getPointOnCanvas(hist.y, "lin", ratioY, 0, plot.height, "y");
+    pointY = getPointOnCanvasByRatio(
+      hist.y,
+      "lin",
+      ratioY,
+      0,
+      plot.height,
+      "y"
+    );
 
     context.lineTo(pointX, pointY);
   });
@@ -106,7 +132,14 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
   context.stroke();
 };
 
-const getPointOnCanvas = (value, scaleType, ratio, minimum, width, axis) => {
+const getPointOnCanvasByRatio = (
+  value,
+  scaleType,
+  ratio,
+  minimum,
+  width,
+  axis
+) => {
   let point;
 
   if (scaleType === "lin") {
@@ -137,24 +170,32 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
+  const [localPlot, setLocalPlot] = useState(props.plot);
+  // let [newXPointsReal, setNewXPointsReal] = useState(0);
+
+  // useEffect(() => {
+  //   console.log("in the 2nd useEffect, here you could rewrite the canvas");
+  // }, [newXPointsReal]);
+
   useEffect(() => {
-    let { context } = getContext(props.plot, props.plotIndex);
+    setLocalPlot(localPlot);
+    let { context } = getContext(localPlot, props.plotIndex);
     let color = "#000";
 
     let data = props.enrichedFile.enrichedEvents.flatMap(
       (enrichedEvent, index) => {
         if (
-          props.plot.population == "All" ||
-          enrichedEvent["isInGate" + props.plot.population]
+          localPlot.population == "All" ||
+          enrichedEvent["isInGate" + localPlot.population]
         ) {
           // TODO no need to keep setting the color like this
           color = enrichedEvent["color"];
 
-          if (props.plot.xScaleType == "lin") {
-            return enrichedEvent[props.plot.xAxisIndex];
+          if (localPlot.xScaleType == "lin") {
+            return enrichedEvent[localPlot.xAxisIndex];
           } else {
-            let logicle = props.enrichedFile.logicles[props.plot.xAxisIndex];
-            return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
+            let logicle = props.enrichedFile.logicles[localPlot.xAxisIndex];
+            return logicle.scale(enrichedEvent[localPlot.xAxisIndex]);
           }
         } else {
           return [];
@@ -163,13 +204,13 @@ function Histogram(props) {
     );
 
     let bins;
-    if (props.plot.xScaleType === "bi") {
-      bins = linspace(0, 1, props.plot.width);
+    if (localPlot.xScaleType === "bi") {
+      bins = linspace(0, 1, localPlot.width);
     } else {
       bins = linspace(
-        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        props.plot.width
+        props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
+        props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
+        localPlot.width
       );
     }
 
@@ -182,19 +223,58 @@ function Histogram(props) {
       context,
       hists,
       props.enrichedFile,
-      props.plot,
-      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      localPlot,
+      props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       color
     );
-  });
+
+    if (localPlot.gate && shouldDrawGate(localPlot)) {
+      drawGateLine(context, localPlot);
+    }
+  }, [localPlot]);
+
+  const drawGateLine = (context, plot) => {
+    context.strokeStyle = "red";
+    context.lineWidth = 1;
+    context.beginPath();
+
+    let leftPointsOnCanvas = getPointOnCanvas(
+      props.enrichedFile.channels,
+      plot.gate.points[0],
+      null,
+      plot,
+      props.enrichedFile.logicles
+    );
+    let rightPointsOnCanvas = getPointOnCanvas(
+      props.enrichedFile.channels,
+      plot.gate.points[1],
+      null,
+      plot,
+      props.enrichedFile.logicles
+    );
+
+    context.lineWidth = 2;
+
+    // draw the first point of the gate
+    context.moveTo(leftPointsOnCanvas[0], plot.height / 2);
+    context.lineTo(rightPointsOnCanvas[0], plot.height / 2);
+
+    context.moveTo(leftPointsOnCanvas[0], plot.height / 2 - 10);
+    context.lineTo(leftPointsOnCanvas[0], plot.height / 2 + 10);
+
+    context.moveTo(rightPointsOnCanvas[0], plot.height / 2 - 10);
+    context.lineTo(rightPointsOnCanvas[0], plot.height / 2 + 10);
+
+    context.stroke();
+  };
 
   const onChangeScale = (e, axis, plotIndex) => {
-    let channeIndex = props.plot.xAxisIndex;
-    let channelLabel = props.plot.xAxisLabel;
+    let channeIndex = localPlot.xAxisIndex;
+    let channelLabel = localPlot.xAxisLabel;
     let channelScale = e.scale;
     if (axis == "y") {
-      channeIndex = props.plot.yAxisIndex;
-      channelLabel = props.plot.yAxisLabel;
+      channeIndex = localPlot.yAxisIndex;
+      channelLabel = localPlot.yAxisLabel;
     }
 
     let change = {
@@ -211,14 +291,14 @@ function Histogram(props) {
 
   const onChangeChannel = (e, axis, plotIndex) => {
     let change = {};
-    let newPlotType = props.plot.plotType;
+    let newPlotType = localPlot.plotType;
     let channelLabel = "";
     let channeIndex = e.value;
     if (axis == "y") {
       if (e.value == "histogram") {
         newPlotType = "histogram";
-        channelLabel = props.plot.yAxisLabel;
-        channeIndex = props.plot.yAxisIndex;
+        channelLabel = localPlot.yAxisLabel;
+        channeIndex = localPlot.yAxisIndex;
       } else {
         channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
         newPlotType = "scatter";
@@ -249,6 +329,99 @@ function Histogram(props) {
     };
   });
 
+  /*********************MOUSE EVENTS FOR GATES********************************/
+  const handleMouseDown = (event) => {
+    isMouseDown = true;
+
+    console.log(
+      "in handleMouseDown hasGate(localPlot) is ",
+      hasGate(localPlot)
+    );
+    if (!hasGate(localPlot)) {
+      startXPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      )[0];
+
+      console.log(">>>>>>> startXPointsReal is ", startXPointsReal);
+    } else {
+    }
+  };
+
+  const handleMouseUp = (event) => {
+    isMouseDown = false;
+    if (hasGate(localPlot)) {
+      let change = {
+        type: "EditGate",
+        plot: localPlot,
+        plotIndex: props.plotIndex.split("-")[1],
+        points: JSON.parse(JSON.stringify(localPlot.gate.points)),
+        fileId: props.enrichedFile.fileId,
+      };
+
+      props.onEditGate(change);
+    } else {
+      // // so its a new gate
+      // newGatePointsCanvas.forEach((newGatePointCanvas) => {
+      //   if (
+      //     inRange(
+      //       event.offsetX,
+      //       newGatePointCanvas[0] - 10,
+      //       newGatePointCanvas[0] + 10
+      //     ) &&
+      //     inRange(
+      //       event.offsetY,
+      //       newGatePointCanvas[1] - 10,
+      //       newGatePointCanvas[1] + 10
+      //     )
+      //   ) {
+      //     setModalIsOpen(true);
+      //     polygonComplete = true;
+      //   }
+      // });
+      // if (!polygonComplete) {
+      //   newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      // }
+      // redraw();
+    }
+  };
+
+  const handleMouseMove = (event) => {
+    if (isMouseDown) {
+      let newPointsCanvas = [event.offsetX, event.offsetY];
+
+      let newXPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      )[0];
+
+      //setNewXPointsReal();
+
+      // localPlot.gate.points = localPlot.gate.points = [
+      //   startXPointsReal,
+      //   newXPointsReal,
+      // ];
+
+      localPlot.gate.points = localPlot.gate.points = [
+        startXPointsReal,
+        newXPointsReal,
+      ];
+
+      setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
+
+      // IMPORTANT - reste start points
+      startXPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      )[0];
+
+      console.log(">>>>>>. startXPointsReal is ", startXPointsReal);
+    }
+  };
+
   return (
     <>
       {" "}
@@ -257,14 +430,26 @@ function Histogram(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
-          plot={props.plot}
+          plot={localPlot}
           plotIndex={props.plotIndex}
           canvasComponent={
             <canvas
               className="canvas"
               id={`canvas-${props.plotIndex}`}
-              width={props.plot.width}
-              height={props.plot.height}
+              width={localPlot.width}
+              height={localPlot.height}
+              onMouseDown={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseDown(nativeEvent);
+              }}
+              onMouseMove={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseMove(nativeEvent);
+              }}
+              onMouseUp={(e) => {
+                let nativeEvent = e.nativeEvent;
+                handleMouseUp(nativeEvent);
+              }}
             />
           }
         />

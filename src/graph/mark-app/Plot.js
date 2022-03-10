@@ -1,5 +1,13 @@
 import { useEffect, useState, useCallback, useReducer, React } from "react";
 import { isPointInPolygon, graphLine } from "./Helper";
+import {
+  getRealPointFromCanvasPoints,
+  getPointOnCanvas,
+  getRealXAxisValueFromCanvasPointOnLinearScale,
+  getRealYAxisValueFromCanvasPointOnLinearScale,
+  getRealXAxisValueFromCanvasPointOnLogicleScale,
+  getRealYAxisValueFromCanvasPointOnLogicleScale,
+} from "./PlotHelper";
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
 import numeral from "numeral";
@@ -74,114 +82,19 @@ function Plot(props) {
     }
   }, [localPlot, props.plot, props.enrichedFile]);
 
-  // points are an array like [100, 150]
-  const getRealPointFromCanvasPoints = (plot, points) => {
-    let x = points[0],
-      y = points[1];
-    if (plot.xScaleType === "lin") {
-      // if linear, convert to the "real" value
-      x = getRealXAxisValueFromCanvasPointOnLinearScale(
-        plot.xAxisIndex,
-        plot.width,
-        x
-      );
-    } else {
-      // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
-      x = getRealXAxisValueFromCanvasPointOnLogicleScale(plot, x);
-    }
-
-    if (plot.yScaleType === "lin") {
-      y = getRealYAxisValueFromCanvasPointOnLinearScale(
-        plot.yAxisIndex,
-        plot.height,
-        y
-      );
-    } else {
-      y = getRealYAxisValueFromCanvasPointOnLogicleScale(plot, y);
-    }
-
-    return [x, y];
-  };
-
-  const getRealXAxisValueFromCanvasPointOnLogicleScale = (
-    plot,
-    xAxisPointOnCanvas
-  ) => {
-    const logicle = props.enrichedFile.logicles[plot.xAxisIndex];
-    xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
-    return logicle.inverse(xAxisPointOnCanvas);
-  };
-
-  const getRealYAxisValueFromCanvasPointOnLogicleScale = (
-    plot,
-    yAxisPointOnCanvas
-  ) => {
-    const logicle = props.enrichedFile.logicles[plot.yAxisIndex];
-    yAxisPointOnCanvas = plot.height - yAxisPointOnCanvas;
-    yAxisPointOnCanvas = yAxisPointOnCanvas / plot.height;
-    return logicle.inverse(yAxisPointOnCanvas);
-  };
-
-  const getRealXAxisValueFromCanvasPointOnLinearScale = (
-    xAxisIndex,
-    width,
-    xAxisPointOnCanvas
-  ) => {
-    const range =
-      Math.abs(props.enrichedFile.channels[xAxisIndex].minimum) +
-      props.enrichedFile.channels[xAxisIndex].maximum;
-    // get full range by adding min and max of a channel - the min could be negative
-    return (range * xAxisPointOnCanvas) / width;
-  };
-
-  const getRealYAxisValueFromCanvasPointOnLinearScale = (
-    yAxisIndex,
-    height,
-    yAxisPointOnCanvas
-  ) => {
-    yAxisPointOnCanvas = height - yAxisPointOnCanvas;
-    const range =
-      Math.abs(props.enrichedFile.channels[yAxisIndex].minimum) +
-      props.enrichedFile.channels[yAxisIndex].maximum;
-    // get full range by adding min and max of a channel - the min could be negative
-    return (range * yAxisPointOnCanvas) / height;
-  };
-
-  const getPointOnCanvas = (realXValue, realYValue, plot) => {
-    if (plot.xScaleType === "bi") {
-      const logicle = props.enrichedFile.logicles[plot.xAxisIndex];
-      realXValue = logicle.scale(realXValue);
-      realXValue = Math.floor(realXValue * plot.width);
-    } else {
-      realXValue = Math.floor(
-        (realXValue * plot.width) /
-          props.enrichedFile.channels[plot.xAxisIndex].maximum
-      );
-    }
-
-    if (plot.yScaleType === "bi") {
-      const logicle = props.enrichedFile.logicles[plot.yAxisIndex];
-      realYValue = logicle.scale(realYValue);
-      realYValue = plot.height - Math.floor(realYValue * plot.height);
-    } else {
-      realYValue =
-        plot.height -
-        Math.floor(
-          (realYValue * plot.height) /
-            props.enrichedFile.channels[plot.yAxisIndex].maximum
-        );
-    }
-
-    return [realXValue, realYValue];
-  };
-
   const drawGateLine = (context, plot) => {
     context.strokeStyle = "red";
     context.lineWidth = 1;
     context.beginPath();
 
     let pointsOnCanvas = plot.gate.points.map((point) => {
-      return getPointOnCanvas(point[0], point[1], plot);
+      return getPointOnCanvas(
+        props.enrichedFile.channels,
+        point[0],
+        point[1],
+        plot,
+        props.enrichedFile.logicles
+      );
     });
 
     // draw the first point of the gate
@@ -204,9 +117,11 @@ function Plot(props) {
       enrichedEvent["isInGate" + plot.population]
     ) {
       let pointOnCanvas = getPointOnCanvas(
+        props.enrichedFile.channels,
         enrichedEvent[plot.xAxisIndex],
         enrichedEvent[plot.yAxisIndex],
-        plot
+        plot,
+        props.enrichedFile.logicles
       );
 
       pointOnCanvas.color = enrichedEvent["color"];
@@ -282,6 +197,7 @@ function Plot(props) {
       if (localPlot.xScaleType === "lin") {
         // if linear, convert to the "real" value
         point[0] = getRealXAxisValueFromCanvasPointOnLinearScale(
+          props.enrichedFile.channels,
           plot.xAxisIndex,
           plot.width,
           point[0]
@@ -289,6 +205,7 @@ function Plot(props) {
       } else {
         // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
         point[0] = getRealXAxisValueFromCanvasPointOnLogicleScale(
+          props.enrichedFile.logicles,
           plot,
           point[0]
         );
@@ -296,12 +213,14 @@ function Plot(props) {
 
       if (plot.yScaleType === "lin") {
         point[1] = getRealYAxisValueFromCanvasPointOnLinearScale(
+          props.enrichedFile.channels,
           plot.yAxisIndex,
           plot.height,
           point[1]
         );
       } else {
         point[1] = getRealYAxisValueFromCanvasPointOnLogicleScale(
+          props.enrichedFile.logicles,
           plot,
           point[1]
         );
@@ -386,11 +305,13 @@ function Plot(props) {
       let newValueReal =
         axis == "x"
           ? getRealXAxisValueFromCanvasPointOnLinearScale(
+              props.enrichedFile.channels,
               localPlot.xAxisIndex,
               localPlot.width,
               newValueCanvas
             )
           : getRealYAxisValueFromCanvasPointOnLinearScale(
+              props.enrichedFile.channels,
               localPlot.yAxisIndex,
               localPlot.height,
               newValueCanvas
@@ -398,6 +319,10 @@ function Plot(props) {
 
       return newValueReal - startValueReal;
     }
+  };
+
+  const hasGate = () => {
+    return !!props.plot.gate;
   };
 
   const getGateValue = (value, scale, axisIndex, length, moveBy) => {
@@ -414,13 +339,8 @@ function Plot(props) {
     }
   };
 
-  const hasGate = () => {
-    return !!props.plot.gate;
-  };
-
   const redraw = () => {
     drawPolygon();
-
     drawPoints();
   };
 
@@ -676,10 +596,11 @@ function Plot(props) {
     isMouseDown = true;
 
     if (hasGate()) {
-      startPointsReal = getRealPointFromCanvasPoints(localPlot, [
-        event.offsetX,
-        event.offsetY,
-      ]);
+      startPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      );
     } else {
     }
   };
@@ -729,10 +650,11 @@ function Plot(props) {
     if (isMouseDown && hasGate()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
-      let newPointsReal = getRealPointFromCanvasPoints(localPlot, [
-        event.offsetX,
-        event.offsetY,
-      ]);
+      let newPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      );
 
       let isInside = isPointInPolygon(
         newPointsReal[0],
@@ -776,10 +698,11 @@ function Plot(props) {
         });
 
         // IMPORTANT - reste start points
-        startPointsReal = getRealPointFromCanvasPoints(localPlot, [
-          event.offsetX,
-          event.offsetY,
-        ]);
+        startPointsReal = getRealPointFromCanvasPoints(
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY]
+        );
 
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
@@ -797,6 +720,7 @@ function Plot(props) {
     setModalIsOpen(false);
     newGatePointsCanvas = [];
     polygonComplete = false;
+    setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
   };
 
   const customStyles = {
