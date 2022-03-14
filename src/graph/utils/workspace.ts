@@ -16,6 +16,7 @@ import {
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
 import { snackbarService } from "uno-material-ui";
+import {createDefaultPlotSnapShot } from "../mark-app/Helper";
 
 export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
@@ -273,56 +274,12 @@ export const getWorkspaceStateFromServer = async (
   return { loaded: false, requestSuccess: true };
 };
 
-
-const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
-  return  {
-    "experimentId": experimentId,
-    "controlFileId": fileID,
-    "files": {
-      [fileID]: {
-        "plots": [
-          {
-            "population": "All",
-            "plotType": "scatter",
-            "width": 200,
-            "height": 200,
-            "xAxisLabel": "FSC-A",
-            "yAxisLabel": "SSC-A",
-            "xAxisIndex": 0,
-            "yAxisIndex": 1,
-            "plotScale": 2,
-            "xScaleType": "lin",
-            "yScaleType": "lin",
-            "histogramAxis": "",
-            "label": "",
-            "dimensions": {
-              "w": 9,
-              "h": 10
-            },
-            "positions": {
-              "x": 0,
-              "y": 0
-            },
-            "parentPlotId": "",
-            "gatingActive": ""
-          }
-        ]
-      }
-    },
-    "sharedWorkspace": "false",
-    "editWorkspace": "true",
-    "selectedFile": fileID,
-    "clearOpenFiles": "false",
-    "isShared": "false"
-  }
-};
-
 const saveWorkspaceStateToRedux = async (
     workspace: string,
 ) => {
    const workspaceObj = JSON.parse(workspace || "{}");
   if(workspaceObj?.workspaceState?.files?.length === 0) {
-    let workspaceState = initTemporaryDynamicPlot(workspaceObj.selectedFile, workspaceObj.experimentId);
+    let workspaceState = createDefaultPlotSnapShot(workspaceObj.selectedFile, workspaceObj.experimentId);
     const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
     await WorkspaceDispatch.SetPlotStates(newWorkspace);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);

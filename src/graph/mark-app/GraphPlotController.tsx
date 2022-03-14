@@ -12,7 +12,7 @@ import PlotTableComponent from "./Table";
 // import WorkspaceState from "./WorkspaceState.json";
 // import HistogramState from "./HistogramState.json";
 // import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
-import { superAlgorithm } from "./Helper";
+import { superAlgorithm, createDefaultPlotSnapShot } from "./Helper";
 import MarkLogicle from "./logicleMark";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 
@@ -40,77 +40,34 @@ interface IState {
 //   controlFileId: "",
 // };
 
-const initTemporaryDynamicPlot = (file:any) =>{
-   return  {
-        "experimentId": file.experimentId,
-        "controlFileId": file.id,
-        "files": {
-        [file.id]: {
-            "plots": [
-                {
-                    "population": "All",
-                    "plotType": "scatter",
-                    "width": 200,
-                    "height": 200,
-                    "xAxisLabel": "FSC-A",
-                    "yAxisLabel": "SSC-A",
-                    "xAxisIndex": 0,
-                    "yAxisIndex": 1,
-                    "plotScale": 2,
-                    "xScaleType": "lin",
-                    "yScaleType": "lin",
-                    "histogramAxis": "",
-                    "label": "",
-                    "dimensions": {
-                        "w": 9,
-                        "h": 10
-                    },
-                    "positions": {
-                        "x": 0,
-                        "y": 0
-                    },
-                    "parentPlotId": "",
-                    "gatingActive": ""
-                }
-            ]
-        }
-        },
-        "sharedWorkspace": "false",
-        "editWorkspace": "true",
-        "selectedFile": file.id,
-        "clearOpenFiles": "false",
-        "isShared": "false"
-    }
-};
-
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
       // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
-    // console.log(JSON.parse(JSON.stringify(Files21)));
-    // console.log("== work space file ====");
-    // let copyOfFiles: any[] = getWorkspace().files;
-    //console.log(copyOfFiles);
-    //console.log("===== get from server =====");
-    //console.log(getWorkspace().workspaceState);
-   // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
-   // WorkspaceDispatch.UpdatePlotStates(workspaceState);
-   // console.log(enrichedFiles);
+      // console.log(JSON.parse(JSON.stringify(Files21)));
+      // console.log("== work space file ====");
+      // let copyOfFiles: any[] = getWorkspace().files;
+      // console.log(copyOfFiles);
+      // console.log("===== get from server =====");
+      // console.log(getWorkspace().workspaceState);
+      // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
+      // WorkspaceDispatch.UpdatePlotStates(workspaceState);
+      // console.log(enrichedFiles);
 
       let workspaceState = getWorkspace().workspaceState;
       // @ts-ignore
       const plots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-      let isSnapShot = false;
+      let isSnapShotCreated = false;
       let copyOfFiles: any[] = getWorkspace().files;
       if (plots === null || plots === undefined) {
-          workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
-          isSnapShot = true;
+          workspaceState = createDefaultPlotSnapShot(copyOfFiles[0]?.id, copyOfFiles[0]?.experimentId);
+          isSnapShotCreated = true;
       }
       let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
       enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
-      if (isSnapShot)
+      if (isSnapShotCreated)
           WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
     this.state = {

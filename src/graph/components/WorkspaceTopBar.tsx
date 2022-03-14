@@ -22,6 +22,7 @@ import GateNamePrompt from "./modals/GateNamePrompt";
 import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
+import {createDefaultPlotSnapShot } from "../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -116,49 +117,6 @@ const WorkspaceTopBarComponent = ({
       setRenderPlotController(true);
     }
   }, [plotLength]);
-
-  const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
-    return  {
-      "experimentId": experimentId,
-      "controlFileId": fileID,
-      "files": {
-        [fileID]: {
-          "plots": [
-            {
-              "population": "All",
-              "plotType": "scatter",
-              "width": 200,
-              "height": 200,
-              "xAxisLabel": "FSC-A",
-              "yAxisLabel": "SSC-A",
-              "xAxisIndex": 0,
-              "yAxisIndex": 1,
-              "plotScale": 2,
-              "xScaleType": "lin",
-              "yScaleType": "lin",
-              "histogramAxis": "",
-              "label": "",
-              "dimensions": {
-                "w": 9,
-                "h": 10
-              },
-              "positions": {
-                "x": 0,
-                "y": 0
-              },
-              "parentPlotId": "",
-              "gatingActive": ""
-            }
-          ]
-        }
-      },
-      "sharedWorkspace": "false",
-      "editWorkspace": "true",
-      "selectedFile": fileID,
-      "clearOpenFiles": "false",
-      "isShared": "false"
-    }
-  };
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -312,7 +270,7 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                   }}
-                  disabled={!!workspace.selectedFile}
+                  disabled={!!workspace?.selectedFile}
                 >
                   Plot sample
                 </Button>
@@ -416,8 +374,8 @@ const WorkspaceTopBarComponent = ({
   };
 
   const clearWorkStateFromServer = async () => {
-    let currentFile = getWorkspace().selectedFile;
-    const resetState = initTemporaryDynamicPlot(currentFile, experimentId);
+    let currentFile = getWorkspace()?.selectedFile;
+    const resetState = createDefaultPlotSnapShot(currentFile, experimentId);
     await saveWorkspace(false, resetState);
   };
 
@@ -430,7 +388,7 @@ const WorkspaceTopBarComponent = ({
     return (
       <>
         <GateNamePrompt />
-        {workspace.files.length > 0 && (
+        {workspace?.files?.length > 0 && (
           <AddFileModal
             open={addFileModalOpen}
             closeCall={{
@@ -439,8 +397,8 @@ const WorkspaceTopBarComponent = ({
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
-            files={getWorkspace().files}
-            selectedFile={getWorkspace().selectedFile}
+            files={getWorkspace()?.files}
+            selectedFile={getWorkspace()?.selectedFile}
           />
         )}
         <MessageModal
