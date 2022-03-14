@@ -251,6 +251,7 @@ function Table(props) {
                             <Plot
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
+                              plotNames={enrichedFile.plots.map(plot => plot.population)}
                               enrichedFile={enrichedFile}
                               onAddGate={props.onAddGate}
                               onEditGate={props.onEditGate}
