@@ -21,7 +21,7 @@ export const getSetLinearPoints = (width, height, number) => {
   return points;
 };
 
-export const getRealPointFromCanvasPoints = (channels, plot, points) => {
+export const getRealPointFromCanvasPoints = (channels, plot, points, logicles) => {
   let x = points[0],
     y = points[1];
   if (plot.xScaleType === "lin") {
@@ -34,7 +34,7 @@ export const getRealPointFromCanvasPoints = (channels, plot, points) => {
     );
   } else {
     // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
-    x = getRealXAxisValueFromCanvasPointOnLogicleScale(plot, x);
+    x = getRealXAxisValueFromCanvasPointOnLogicleScale(logicles, plot, x);
   }
 
   if (plot.yScaleType === "lin") {
@@ -45,7 +45,7 @@ export const getRealPointFromCanvasPoints = (channels, plot, points) => {
       y
     );
   } else {
-    y = getRealYAxisValueFromCanvasPointOnLogicleScale(plot, y);
+    y = getRealYAxisValueFromCanvasPointOnLogicleScale(logicles, plot, y);
   }
 
   return [x, y];
@@ -125,7 +125,7 @@ export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
   plot,
   xAxisPointOnCanvas
 ) => {
-  const logicle = logicles[plot.xAxisIndex];
+  const logicle = logicles[plot.xAxisIndex]; // this is undefined
   xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
   return logicle.inverse(xAxisPointOnCanvas);
 };
