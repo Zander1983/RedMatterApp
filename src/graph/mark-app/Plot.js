@@ -600,7 +600,8 @@ function Plot(props) {
       startPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       );
     } else {
     }
@@ -654,7 +655,8 @@ function Plot(props) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       );
 
       let isInside = isPointInPolygon(
@@ -664,6 +666,11 @@ function Plot(props) {
       );
       document.body.style.cursor = isInside ? 'grab' :'context-menu';
       if (isInside) {
+        console.log(startPointsReal[0],
+          newPointsCanvas[0],
+          localPlot.xScaleType,
+          localPlot.xAxisIndex,
+          "x");
         let moveX = getMoveValue(
           startPointsReal[0],
           newPointsCanvas[0],
@@ -703,7 +710,8 @@ function Plot(props) {
         startPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
           localPlot,
-          [event.offsetX, event.offsetY]
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
         );
 
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
@@ -716,7 +724,8 @@ function Plot(props) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       );
       let isInside = isPointInPolygon(
         newPointsReal[0],
