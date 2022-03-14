@@ -347,6 +347,7 @@ function Plot(props) {
   const drawPolygon = () => {
     let context = getContext(props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
+    // context.style.cursor = "grab";
     context.strokeStyle = "#df4b26";
     context.lineWidth = 1;
 
@@ -661,6 +662,7 @@ function Plot(props) {
         newPointsReal[1],
         localPlot.gate.points
       );
+      document.body.style.cursor = isInside ? 'grab' :'context-menu';
       if (isInside) {
         let moveX = getMoveValue(
           startPointsReal[0],
@@ -708,6 +710,24 @@ function Plot(props) {
       }
     }
   };
+
+  const handleCursorProperty = (event) => {
+    if(hasGate() && props?.plot?.gate?.gateType === "polygon" ){
+      let newPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY]
+      );
+      let isInside = isPointInPolygon(
+        newPointsReal[0],
+        newPointsReal[1],
+        localPlot.gate.points
+      );
+      document.body.style.cursor = isInside ? 'grab' : 'context-menu'; 
+    } else {
+      document.body.style.cursor = 'crosshair'
+    }
+  }
 
   const onSetGateName = () => {
     onAddGate(localPlot, props.plotIndex);
@@ -787,11 +807,15 @@ function Plot(props) {
                 }}
                 onMouseMove={(e) => {
                   let nativeEvent = e.nativeEvent;
+                  handleCursorProperty(nativeEvent)
                   handleMouseMove(nativeEvent);
                 }}
                 onMouseUp={(e) => {
                   let nativeEvent = e.nativeEvent;
                   handleMouseUp(nativeEvent);
+                }}
+                onMouseLeave={(e) => {
+                  document.body.style.cursor = 'context-menu'
                 }}
               />
             </div>

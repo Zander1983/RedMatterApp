@@ -422,6 +422,12 @@ function Histogram(props) {
     }
   };
 
+  const handleCursorProperty = (event) => {
+    if(props?.plot?.plotType === "histogram" ){
+      document.body.style.cursor = 'text'
+    }
+  }
+
   return (
     <>
       {" "}
@@ -444,11 +450,15 @@ function Histogram(props) {
               }}
               onMouseMove={(e) => {
                 let nativeEvent = e.nativeEvent;
+                handleCursorProperty(nativeEvent)
                 handleMouseMove(nativeEvent);
               }}
               onMouseUp={(e) => {
                 let nativeEvent = e.nativeEvent;
                 handleMouseUp(nativeEvent);
+              }}
+              onMouseLeave={(e) => {
+                document.body.style.cursor = 'context-menu'
               }}
             />
           }
