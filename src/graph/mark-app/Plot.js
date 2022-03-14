@@ -746,7 +746,11 @@ function Plot(props) {
           }
         }
       >
-        <Modal isOpen={modalIsOpen} style={customStyles}>
+        <Modal 
+          isOpen={modalIsOpen} 
+          appElement={document.getElementById('root') || undefined}
+          style={customStyles}
+        >
           <label>
             Gate Name:
             <input type="text" onChange={(e) => setGateName(e.target.value)} />
