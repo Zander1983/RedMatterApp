@@ -228,12 +228,7 @@ function Table(props) {
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
-                    <td
-                      style={{
-                        paddingLeft: 15,
-                      }}
-                      key={`td-${plotIindex + 1}`}
-                    >
+                    <td key={`td-${plotIindex + 1}`}>
                       <div
                         style={{
                           textAlign: "center",
