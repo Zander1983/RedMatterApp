@@ -15,7 +15,7 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
-import { getFile, getAllFiles } from "graph/utils/workspace";
+import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
 
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
@@ -60,10 +60,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
 const AddFileModal = React.memo(
   (props: {
     open: boolean;
-    closeCall: { f: Function; ref: Function };
+    closeCall: { f: Function; ref: Function};
     isShared: boolean;
     experimentId: string;
     files: File[];
@@ -94,6 +95,49 @@ const AddFileModal = React.memo(
       }
       await PlotResource.createNewPlotFromFile(file);
       props.closeCall.f(props.closeCall.ref);
+    };
+
+    const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
+      return  {
+        "experimentId": experimentId,
+        "controlFileId": fileID,
+        "files": {
+          [fileID]: {
+            "plots": [
+              {
+                "population": "All",
+                "plotType": "scatter",
+                "width": 200,
+                "height": 200,
+                "xAxisLabel": "FSC-A",
+                "yAxisLabel": "SSC-A",
+                "xAxisIndex": 0,
+                "yAxisIndex": 1,
+                "plotScale": 2,
+                "xScaleType": "lin",
+                "yScaleType": "lin",
+                "histogramAxis": "",
+                "label": "",
+                "dimensions": {
+                  "w": 9,
+                  "h": 10
+                },
+                "positions": {
+                  "x": 0,
+                  "y": 0
+                },
+                "parentPlotId": "",
+                "gatingActive": ""
+              }
+            ]
+          }
+        },
+        "sharedWorkspace": "false",
+        "editWorkspace": "true",
+        "selectedFile": fileID,
+        "clearOpenFiles": "false",
+        "isShared": "false"
+      }
     };
 
     useEffect(() => {
@@ -367,14 +411,13 @@ const AddFileModal = React.memo(
                             }}
                             disabled={isDownloading}
                             onClick={() => {
-                              eventStacker(
-                                `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
-                              );
+                              // eventStacker(
+                              //   `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
+                              // );
                               // downloadFile(fileMetadata.id);
-                              WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.id
-                              );
-
+                              let plot:any = initTemporaryDynamicPlot(fileMetadata.id, props.experimentId);
+                              WorkspaceDispatch.UpdatePlotStates(plot);
+                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
@@ -407,12 +450,9 @@ const AddFileModal = React.memo(
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
-                              PlotResource.createNewPlotFromFile(
-                                getFile(fileMetadata.id)
-                              );
-                              WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.id
-                              );
+                              // PlotResource.createNewPlotFromFile(
+                              //   getFile(fileMetadata.id)
+                              // );
 
                               // making the selected file the first element of filesArray
                               const filesInNewOrder: File[] = [];
@@ -425,7 +465,9 @@ const AddFileModal = React.memo(
                                 }
                               }
                               WorkspaceDispatch.SetFiles(filesInNewOrder);
-
+                              let plot:any = initTemporaryDynamicPlot(fileMetadata.id, props.experimentId);
+                              WorkspaceDispatch.UpdatePlotStates(plot);
+                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
