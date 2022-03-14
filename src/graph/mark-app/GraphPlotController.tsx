@@ -65,6 +65,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
+    this.onDeleteGate = this.onDeleteGate.bind(this);
     this.onResize = this.onResize.bind(this);
   }
 
@@ -165,6 +166,44 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // workspaceState: this.state.workspaceState,
     });
   };
+
+  onDeleteGate = (plot:any) =>{
+    if(plot.population === "All"){
+      console.log("Delete Everything")
+      return;
+    }
+
+    let controlFileId: string = workspaceState.controlFileId;
+
+    // deleting the plot of the gate 
+    (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.filter((plt:any) => plt.population !== plot.population);
+
+    // deleting the gate from the parent plot
+    const parentPlot =  (workspaceState as any).files[controlFileId].plots.find((plt:any) => plot.population === plt?.gate?.name)
+    if(parentPlot){
+      const { gate, ...plotWithOutGate } = parentPlot
+      (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.map((plt:any) => {
+        if(plt.population === plotWithOutGate.population){
+          return plotWithOutGate
+        }else {
+          return plt
+        }
+      })
+
+      console.log(parentPlot, plotWithOutGate)
+    }
+
+
+
+
+    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+    this.setState({
+      enrichedFiles: enrichedFiles,
+    });
+
+  }
 
   setPlotsOfAllFilesToBeSameAsControl = (plotIndex: any) => {
     let controlEnrichedFile = this.state.enrichedFiles.find(
@@ -400,6 +439,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           className="workspace"
           onChangeChannel={this.onChangeChannel}
           onAddGate={this.onAddGate}
+          onDeleteGate={this.onDeleteGate}
           onEditGate={this.onEditGate}
           onResize={this.onResize}
           sortByGate={this.sortByGate}

@@ -40,21 +40,21 @@ const classes = {
 };
 
 function Table(props) {
-  console.log(">> table props is ", props);
+  // console.log(">> table props is ", props);
 
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
 
-  console.log("FIND CONTROL FILE");
-  console.log(controlEnrichedFile);
+  // console.log("FIND CONTROL FILE");
+  // console.log(controlEnrichedFile);
 
   let nonControlEnrichedFiles = props.enrichedFiles.filter(
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  console.log("NON CONTROLS FILES ");
-  console.log(nonControlEnrichedFiles);
+  // console.log("NON CONTROLS FILES ");
+  // console.log(nonControlEnrichedFiles);
 
   return (
     <div>
@@ -113,6 +113,7 @@ function Table(props) {
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
                           onAddGate={props.onAddGate}
+                          onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
                           onResize={props.onResize}
                           onChangeChannel={props.onChangeChannel}
@@ -126,6 +127,7 @@ function Table(props) {
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           onChangeChannel={props.onChangeChannel}
+                          // onDeleteGate={props.onDeleteGate}
                           enrichedFile={controlEnrichedFile}
                           plotIndex={`0-${plotIindex}`}
                         />

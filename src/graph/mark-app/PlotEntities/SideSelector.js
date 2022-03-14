@@ -1,4 +1,5 @@
 import { MenuItem, Select } from "@material-ui/core";
+import deleteIcon from './../../../assets/images/delete.png'
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -14,7 +15,9 @@ function SideSelector(props) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 15,
+        paddingLeft: 15,
+        paddingBottom: 15,
+        paddingRight: 15,
       }}
     >
       <div>
@@ -94,6 +97,23 @@ function SideSelector(props) {
           paddingRight: 0,
         }}
       >
+        {/* canvas-top-bar */}
+        <div style={{
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          alignSelf: "flex-start", 
+          marginTop: 5, 
+          marginBottom: 10
+        }}
+        > 
+          <img 
+            src={deleteIcon} 
+            alt={props.plot.id} 
+            style={{width: 15, height:15, cursor: "pointer"}} 
+            onClick={() => props.onDeleteGate(props.plot)} 
+          />
+        </div>
         {props.canvasComponent}
         <div
           style={{

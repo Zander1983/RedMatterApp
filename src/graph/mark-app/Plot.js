@@ -758,6 +758,7 @@ function Plot(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
+          onDeleteGate={props.onDeleteGate}
           plot={localPlot}
           plotIndex={props.plotIndex}
           handleResizeMouseDown={handleResizeMouseDown}
