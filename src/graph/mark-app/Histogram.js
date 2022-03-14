@@ -341,7 +341,8 @@ function Histogram(props) {
       startXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       console.log(">>>>>>> startXPointsReal is ", startXPointsReal);
@@ -394,7 +395,8 @@ function Histogram(props) {
       let newXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       //setNewXPointsReal();
@@ -415,7 +417,8 @@ function Histogram(props) {
       startXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       console.log(">>>>>>. startXPointsReal is ", startXPointsReal);

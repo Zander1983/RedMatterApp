@@ -666,11 +666,6 @@ function Plot(props) {
       );
       document.body.style.cursor = isInside ? 'grab' :'context-menu';
       if (isInside) {
-        console.log(startPointsReal[0],
-          newPointsCanvas[0],
-          localPlot.xScaleType,
-          localPlot.xAxisIndex,
-          "x");
         let moveX = getMoveValue(
           startPointsReal[0],
           newPointsCanvas[0],
