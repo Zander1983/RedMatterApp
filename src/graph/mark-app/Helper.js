@@ -2,6 +2,15 @@ import MarkLogicle from "./logicleMark";
 import numeral from "numeral";
 
 const minLabelPadding = 30;
+
+const DEFAULT_PLOT_TYPE = "scatter";
+const DEFAULT_X_AXIS_LABEL = "FSC-A";
+const DEFAULT_Y_AXIS_LABEL = "SSC-A";
+const DEFAULT_PLOT_WIDTH = 200;
+const DEFAULT_PLOT_HEIGHT = 200;
+const DEFAULT_X_SCALE_TYPE = "lin";
+const DEFAULT_Y_SCALE_TYPE =  "lin";
+
 export const superAlgorithm = (Files, WorkspaceState) => {
   // event 1 is not in any gate, it will have color black
   // event 2 is in both gate, it will have the color of the last gate
@@ -401,6 +410,49 @@ export const graphLine = (params, ctx) => {
   }
 };
 
+export const createDefaultPlotSnapShot = (fileId, experimentId, plotType = DEFAULT_PLOT_TYPE, xAxisLabel = DEFAULT_X_AXIS_LABEL, yAxisLabel = DEFAULT_Y_AXIS_LABEL) => {
+  return  {
+    "experimentId": experimentId,
+    "controlFileId": fileId,
+    "files": {
+      [fileId]: {
+        "plots": [
+          {
+            "population": "All",
+            "plotType": plotType || DEFAULT_PLOT_TYPE,
+            "width": DEFAULT_PLOT_WIDTH,
+            "height": DEFAULT_PLOT_HEIGHT,
+            "xAxisLabel": xAxisLabel || DEFAULT_X_AXIS_LABEL,
+            "yAxisLabel": yAxisLabel || DEFAULT_Y_AXIS_LABEL,
+            "xAxisIndex": 0,
+            "yAxisIndex": 1,
+            "plotScale": 2,
+            "xScaleType": DEFAULT_X_SCALE_TYPE,
+            "yScaleType": DEFAULT_Y_SCALE_TYPE,
+            "histogramAxis": "",
+            "label": "",
+            "dimensions": {
+              "w": 9,
+              "h": 10
+            },
+            "positions": {
+              "x": 0,
+              "y": 0
+            },
+            "parentPlotId": "",
+            "gatingActive": ""
+          }
+        ]
+      }
+    },
+    "sharedWorkspace": "false",
+    "editWorkspace": "true",
+    "selectedFile": fileId,
+    "clearOpenFiles": "false",
+    "isShared": "false"
+  }
+};
+
 const numToLabelText = (num) => {
   let snum = "";
   if (num < 2) {
@@ -440,3 +492,4 @@ const drawText = (params, ctx) => {
     ctx.rotate(-params.rotate);
   }
 };
+
