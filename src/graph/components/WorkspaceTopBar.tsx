@@ -130,6 +130,7 @@ const WorkspaceTopBarComponent = ({
     if (!renderPlotController) {
       setRenderPlotController(true);
     }
+    setPlotCallNeeded(false);
     if (renderPlotController) {
       setPlotCallNeeded(true);
     }
@@ -137,6 +138,13 @@ const WorkspaceTopBarComponent = ({
   };
 
   const handleCloseClearWorkspace = (func: Function) => {
+    if (!renderPlotController) {
+      setRenderPlotController(true);
+    }
+    setPlotCallNeeded(false);
+    if (renderPlotController) {
+      setPlotCallNeeded(true);
+    }
     func(false);
   };
 
@@ -421,9 +429,6 @@ const WorkspaceTopBarComponent = ({
             yes: () => {
               clearWorkStateFromServer();
               WorkspaceDispatch.ResetWorkspaceExceptFiles();
-              setRenderPlotController(true);
-              setPlotCallNeeded(false);
-
             },
             no: () => {
               handleClose(setClearModal);

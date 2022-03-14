@@ -55,6 +55,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // WorkspaceDispatch.UpdatePlotStates(workspaceState);
       // console.log(enrichedFiles);
 
+    this.state = {
+      sortByChanged: false,
+      sortBy: "file",
+      isTableRenderCall: false,
+      enrichedFiles: [],
+      workspaceState: {},
+      enrichedEvents: [],
+      testParam: "some value",
+    };
+
+    this.onChangeChannel = this.onChangeChannel.bind(this);
+    this.onEditGate = this.onEditGate.bind(this);
+    this.onAddGate = this.onAddGate.bind(this);
+    this.onResize = this.onResize.bind(this);
+    this.onInitState = this.onInitState.bind(this);
+  }
+
+  onInitState = () => {
       let workspaceState = getWorkspace().workspaceState;
       // @ts-ignore
       const plots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
@@ -70,21 +88,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       if (isSnapShotCreated)
           WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
-    this.state = {
-      sortByChanged: false,
-      sortBy: "file",
-      isTableRenderCall: false,
-      enrichedFiles: enrichedFiles,
-      workspaceState: workspaceState,
-      enrichedEvents: [],
-      testParam: "some value",
-    };
-
-    this.onChangeChannel = this.onChangeChannel.bind(this);
-    this.onEditGate = this.onEditGate.bind(this);
-    this.onAddGate = this.onAddGate.bind(this);
-    this.onResize = this.onResize.bind(this);
-  }
+      this.setState({enrichedFiles: enrichedFiles, workspaceState: workspaceState});
+  };
 
   getEnrichedEvents = () => {
       let copyOfFiles: any[] = getWorkspace().files;
@@ -409,14 +414,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // });
   };
 
-  componentDidMount() {
-    setTimeout(() => this.setState({ isTableRenderCall: true }), 1000);
+  componentDidUpdate(prevProps: Readonly<PlotControllerProps>, prevState: Readonly<IState>, snapshot?: any): void {
+      let workspaceState = getWorkspace().workspaceState;
+      // @ts-ignore
+      const newPlots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+      const oldPlots = prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+      if(oldPlots !== newPlots) this.onInitState();
+  }
+
+    componentDidMount() {
+      this.onInitState();
+      setTimeout(() => {
+          this.setState({ isTableRenderCall: true })
+      }, 1000);
   }
 
   renderTable = () => {
-    if (
-        getWorkspace()?.selectedFile && this.state.isTableRenderCall
-    ) {
+    if (this.state.isTableRenderCall) {
       return (
         <PlotTableComponent
           enrichedFiles={this.state.enrichedFiles}
