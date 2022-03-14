@@ -89,6 +89,38 @@ export const getGate = (gateID: GateID): Gate => {
   return gates.length > 0 ? gates[0] : null;
 };
 
+
+export const saveWorkspaceStateToServer = async (
+    shared: boolean,
+    experimentId: string,
+    stateData?:any
+): Promise<boolean> => {
+  //let stateJson = JSON.stringify(getWorkspace().workspaceState);
+  let stateJson = stateData ?  JSON.stringify(stateData) : JSON.stringify(getWorkspace().workspaceState);
+  const updateWorkSpace = WorkspacesApiFetchParamCreator({
+    accessToken: userManager.getToken(),
+  }).upsertWorkSpace(userManager.getToken(), {
+    experimentId: experimentId,
+    state: stateJson,
+    isShared: shared,
+  });
+
+  try {
+    await axios.post(
+        updateWorkSpace.url,
+        updateWorkSpace.options.body,
+        updateWorkSpace.options
+    );
+    return true;
+  } catch (err) {
+    snackbarService.showSnackbar(
+        "Could not save the workspace, reload the page and try again!",
+        "error"
+    );
+  }
+  return false;
+};
+
 export const saveWorkspaceToRemote = async (
   shared: boolean,
   experimentId: string
@@ -104,6 +136,7 @@ export const saveWorkspaceToRemote = async (
     state: stateJson,
     isShared: shared,
   });
+
   try {
     await axios.post(
       updateWorkSpace.url,
@@ -200,4 +233,103 @@ const loadSavedWorkspace = async (
     editWorkspace: !shared,
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
+};
+
+
+export const getWorkspaceStateFromServer = async (
+    shared: boolean,
+    experimentId: string
+): Promise<{
+  loaded: boolean;
+  requestSuccess: boolean;
+}> => {
+  let workspaceData;
+  try {
+    if (shared) {
+      workspaceData = await axios.post("/api/verifyWorkspace", {
+        experimentId: experimentId,
+      });
+    } else {
+      workspaceData = await axios.post(
+          "/api/getWorkspace",
+          {
+            experimentId,
+          },
+          {
+            headers: {
+              token: userManager.getToken(),
+            },
+          }
+      );
+    }
+    const workspace = workspaceData.data.state;
+    if (workspace && Object.keys(workspace).length > 0) {
+      await saveWorkspaceStateToRedux(workspace);
+      return { loaded: true, requestSuccess: true };
+    }
+  } catch (err) {
+    throw err;
+  }
+  return { loaded: false, requestSuccess: true };
+};
+
+
+const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
+  return  {
+    "experimentId": experimentId,
+    "controlFileId": fileID,
+    "files": {
+      [fileID]: {
+        "plots": [
+          {
+            "population": "All",
+            "plotType": "scatter",
+            "width": 200,
+            "height": 200,
+            "xAxisLabel": "FSC-A",
+            "yAxisLabel": "SSC-A",
+            "xAxisIndex": 0,
+            "yAxisIndex": 1,
+            "plotScale": 2,
+            "xScaleType": "lin",
+            "yScaleType": "lin",
+            "histogramAxis": "",
+            "label": "",
+            "dimensions": {
+              "w": 9,
+              "h": 10
+            },
+            "positions": {
+              "x": 0,
+              "y": 0
+            },
+            "parentPlotId": "",
+            "gatingActive": ""
+          }
+        ]
+      }
+    },
+    "sharedWorkspace": "false",
+    "editWorkspace": "true",
+    "selectedFile": fileID,
+    "clearOpenFiles": "false",
+    "isShared": "false"
+  }
+};
+
+const saveWorkspaceStateToRedux = async (
+    workspace: string,
+) => {
+   const workspaceObj = JSON.parse(workspace || "{}");
+  // if(workspaceObj?.workspaceState?.files?.length === 0) {
+  //   let workspaceState = initTemporaryDynamicPlot(workspaceObj.selectedFile, workspaceObj.experimentId);
+  //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
+  //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
+  //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  // }else {
+    const newWorkspace: Workspace = {...workspaceObj};
+    await WorkspaceDispatch.SetPlotStates(newWorkspace);
+    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  //}
+
 };
