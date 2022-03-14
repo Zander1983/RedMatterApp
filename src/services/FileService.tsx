@@ -301,7 +301,9 @@ export const downloadEvent = async (
       newFile.downloading = false;
       newFileArray.push(newFile);
     }
+
     WorkspaceDispatch.SetFiles(newFileArray);
+
     return files;
   } catch (err:any){
     if (err && err?.name === "Error" || err?.message.toString() === "Network Error") throw err;

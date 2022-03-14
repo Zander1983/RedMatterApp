@@ -87,30 +87,31 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
+      // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
     // console.log(JSON.parse(JSON.stringify(Files21)));
     // console.log("== work space file ====");
-
-    let copyOfFiles: any[] = getWorkspace().files;
-
+    // let copyOfFiles: any[] = getWorkspace().files;
     //console.log(copyOfFiles);
-
     //console.log("===== get from server =====");
     //console.log(getWorkspace().workspaceState);
-
-    //let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
-    //WorkspaceDispatch.UpdatePlotStates(workspaceState);
-
-    let workspaceState = getWorkspace().workspaceState;
-
-    // workspaceState = JSON.parse(JSON.stringify(WorkspaceState));
-    //console.log("workspaceState is TEMP:  ", workspaceState);
-
-    let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
-
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
-
+   // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
+   // WorkspaceDispatch.UpdatePlotStates(workspaceState);
    // console.log(enrichedFiles);
+
+      let workspaceState = getWorkspace().workspaceState;
+      // @ts-ignore
+      const plots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+      let isSnapShot = false;
+      let copyOfFiles: any[] = getWorkspace().files;
+      if (plots === null || plots === undefined) {
+          workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
+          isSnapShot = true;
+      }
+      let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+      enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+
+      if (isSnapShot)
+          WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
     this.state = {
       sortByChanged: false,
@@ -126,7 +127,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
     this.onResize = this.onResize.bind(this);
-
   }
 
   getEnrichedEvents = () => {
@@ -458,7 +458,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   renderTable = () => {
     if (
-      getWorkspace().selectedFile && this.state.isTableRenderCall
+        getWorkspace()?.selectedFile && this.state.isTableRenderCall
     ) {
       return (
         <PlotTableComponent
@@ -477,62 +477,65 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-    if (getWorkspace().workspaceState) {
-      // const plotGroups = getPlotGroups(getWorkspace().plots);
-      return (
-        <div
-          style={{
-            padding: 20,
-          }}
-        >
-          {!this.state.isTableRenderCall ? (
-            <Grid
-              container
+      const workState =  getWorkspace().workspaceState;
+      // @ts-ignoreconst
+      const plots = workState && workState?.files?.[getWorkspace().selectedFile]?.plots;
+      if (getWorkspace()?.selectedFile && plots?.length > 0) {
+          // const plotGroups = getPlotGroups(getWorkspace().plots);
+          return (
+            <div
               style={{
-                height: 100,
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
+                padding: 20,
+              }}
+            >
+              {!this.state.isTableRenderCall ? (
+                <Grid
+                  container
+                  style={{
+                    height: 100,
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                    textAlign: "center",
+                  }}
+                  justify="center"
+                  alignItems="center"
+                  alignContent="center"
+                >
+                  <CircularProgress style={{ padding: "10px" }} />
+                  <span>Wait Loading...</span>
+                </Grid>
+              ) : (
+                getWorkspace().selectedFile !== "" && this.renderTable()
+              )}
+            </div>
+          );
+      } else {
+          return (
+            <div
+              style={{
                 textAlign: "center",
               }}
-              justify="center"
-              alignItems="center"
-              alignContent="center"
             >
-              <CircularProgress style={{ padding: "10px" }} />
-              <span>Wait Loading...</span>
-            </Grid>
-          ) : (
-            getWorkspace().selectedFile !== "" && this.renderTable()
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <div
-          style={{
-            textAlign: "center",
-          }}
-        >
-          {this.props.sharedWorkspace ? (
-            <span>
-              <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
-                If nothing is loaded, either this experiment is not shared or it
-                doesn't exist.
-              </h4>
-            </span>
-          ) : (
-            <span>
-              <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                Click on "Plot sample" to visualize
-              </h3>
-              <h4 style={{ marginBottom: 70, color: "#777" }}>
-                Create a plot from one of your samples to start your analysis
-              </h4>
-            </span>
-          )}
-        </div>
-      );
-    }
+              {this.props.sharedWorkspace ? (
+                <span>
+                  <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
+                    If nothing is loaded, either this experiment is not shared or it
+                    doesn't exist.
+                  </h4>
+                </span>
+              ) : (
+                <span>
+                  <h3 style={{ marginTop: 100, marginBottom: 10 }}>
+                    Click on "Plot sample" to visualize
+                  </h3>
+                  <h4 style={{ marginBottom: 70, color: "#777" }}>
+                    Create a plot from one of your samples to start your analysis
+                  </h4>
+                </span>
+              )}
+            </div>
+          );
+      }
   }
 }
 

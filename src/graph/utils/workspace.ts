@@ -321,15 +321,15 @@ const saveWorkspaceStateToRedux = async (
     workspace: string,
 ) => {
    const workspaceObj = JSON.parse(workspace || "{}");
-  // if(workspaceObj?.workspaceState?.files?.length === 0) {
-  //   let workspaceState = initTemporaryDynamicPlot(workspaceObj.selectedFile, workspaceObj.experimentId);
-  //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
-  //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
-  //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-  // }else {
+  if(workspaceObj?.workspaceState?.files?.length === 0) {
+    let workspaceState = initTemporaryDynamicPlot(workspaceObj.selectedFile, workspaceObj.experimentId);
+    const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
+    await WorkspaceDispatch.SetPlotStates(newWorkspace);
+    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  }else {
     const newWorkspace: Workspace = {...workspaceObj};
     await WorkspaceDispatch.SetPlotStates(newWorkspace);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-  //}
+  }
 
 };
