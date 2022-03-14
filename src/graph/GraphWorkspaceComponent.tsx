@@ -189,7 +189,6 @@ const NewWorkspaceInnerComponent = (props: {
             );
           }
         } catch (err) {
-          console.log(err);
           await handleRequestError(err);
         }
       }
