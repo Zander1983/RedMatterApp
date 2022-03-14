@@ -179,22 +179,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.filter((plt:any) => plt.population !== plot.population);
 
     // deleting the gate from the parent plot
-    const parentPlot =  (workspaceState as any).files[controlFileId].plots.find((plt:any) => plot.population === plt?.gate?.name)
-    if(parentPlot){
-      const { gate, ...plotWithOutGate } = parentPlot
-      (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.map((plt:any) => {
-        if(plt.population === plotWithOutGate.population){
-          return plotWithOutGate
-        }else {
-          return plt
-        }
-      })
-
-      console.log(parentPlot, plotWithOutGate)
-    }
-
-
-
+    const parentPlot =  (workspaceState as any).files[controlFileId].plots.find((plt:any) => plot.population === plt?.gate?.name);
+    (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.map((plt:any) => {
+      if(plt.population === parentPlot.population){
+        const { gate, ...plotWithOutGate } = parentPlot;
+        return plotWithOutGate;
+      }else {
+        return plt;
+      }
+    });
 
     let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
