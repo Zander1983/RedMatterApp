@@ -8,7 +8,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
-import { saveWorkspaceToRemote } from "../utils/workspace";
+import {saveWorkspaceStateToServer, saveWorkspaceToRemote} from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 // import IOSSwitch from "../../Components/common/Switch";
@@ -117,6 +117,49 @@ const WorkspaceTopBarComponent = ({
     }
   }, [plotLength]);
 
+  const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
+    return  {
+      "experimentId": experimentId,
+      "controlFileId": fileID,
+      "files": {
+        [fileID]: {
+          "plots": [
+            {
+              "population": "All",
+              "plotType": "scatter",
+              "width": 200,
+              "height": 200,
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1,
+              "plotScale": 2,
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "histogramAxis": "",
+              "label": "",
+              "dimensions": {
+                "w": 9,
+                "h": 10
+              },
+              "positions": {
+                "x": 0,
+                "y": 0
+              },
+              "parentPlotId": "",
+              "gatingActive": ""
+            }
+          ]
+        }
+      },
+      "sharedWorkspace": "false",
+      "editWorkspace": "true",
+      "selectedFile": fileID,
+      "clearOpenFiles": "false",
+      "isShared": "false"
+    }
+  };
+
   const handleOpen = (func: Function) => {
     func(true);
   };
@@ -139,11 +182,11 @@ const WorkspaceTopBarComponent = ({
     func(false);
   };
 
-  const saveWorkspace = async (shared: boolean = false) => {
+  const saveWorkspace = async (shared: boolean = false, currentState:any = null) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
-      await saveWorkspaceToRemote(shared, experimentId);
+      await saveWorkspaceStateToServer(shared, experimentId, currentState);
     } catch (err) {
       await handleError(err);
     }
@@ -372,12 +415,17 @@ const WorkspaceTopBarComponent = ({
     );
   };
 
+  const clearWorkStateFromServer = async () => {
+    let currentFile = getWorkspace().selectedFile;
+    const resetState = initTemporaryDynamicPlot(currentFile, experimentId);
+    await saveWorkspace(false, resetState);
+  };
+
   if (autoSaveEnabled) {
     if (plotCallNeeded) {
       Debounce(() => saveWorkspace(), 5000);
     }
   }
-
   const renderModal = () => {
     return (
       <>
@@ -387,7 +435,7 @@ const WorkspaceTopBarComponent = ({
             open={addFileModalOpen}
             closeCall={{
               f: handleCloseAndMakePlotControllerTrue,
-              ref: setAddFileModalOpen,
+              ref: setAddFileModalOpen
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
@@ -413,9 +461,11 @@ const WorkspaceTopBarComponent = ({
           }
           options={{
             yes: () => {
+              clearWorkStateFromServer();
               WorkspaceDispatch.ResetWorkspaceExceptFiles();
               setRenderPlotController(true);
               setPlotCallNeeded(false);
+
             },
             no: () => {
               handleClose(setClearModal);
