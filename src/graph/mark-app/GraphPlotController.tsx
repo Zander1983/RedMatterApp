@@ -79,9 +79,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       let isSnapShotCreated = false;
       let copyOfFiles: any[] = getWorkspace().files;
       if (plots === null || plots === undefined) {
-          workspaceState = createDefaultPlotSnapShot(copyOfFiles[0]?.id, copyOfFiles[0]?.experimentId);
-          isSnapShotCreated = true;
+        const defaultFile = copyOfFiles?.[0];
+        // @ts-ignore
+        const defaultFileChannels = defaultFile?.fileChannels;
+        const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+        const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+        const xAxisLabel = defaultFileChannels[xAxisIndex];
+        const yAxisLabel = defaultFileChannels[yAxisIndex];
+        workspaceState = createDefaultPlotSnapShot(defaultFile?.id, this.props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+        isSnapShotCreated = true;
       }
+
       let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
       enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
