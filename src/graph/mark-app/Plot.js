@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useReducer, React } from "react";
+import { useEffect, useState } from "react";
 import { isPointInPolygon, graphLine } from "./Helper";
 import {
   getRealPointFromCanvasPoints,
@@ -12,8 +12,6 @@ import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
 import numeral from "numeral";
 import { CompactPicker } from 'react-color'
-import ResizeObserver from "react-resize-detector";
-import { useResizeDetector } from "react-resize-detector";
 
 export const leftPadding = 55;
 export const rightPadding = 20;
@@ -54,7 +52,6 @@ let resizeStartPoints;
 
 function Plot(props) {
   const [localPlot, setLocalPlot] = useState(props.plot);
-
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
     name: "",
@@ -624,7 +621,6 @@ function Plot(props) {
       props.onEditGate(change);
     } else {
       // so its a new gate
-
       newGatePointsCanvas.forEach((newGatePointCanvas) => {
         if (
           inRange(
@@ -636,17 +632,26 @@ function Plot(props) {
             event.offsetY,
             newGatePointCanvas[1] - 10,
             newGatePointCanvas[1] + 10
-          )
+          ) &&
+          newGatePointsCanvas.length >= 3
         ) {
           setModalIsOpen(true);
           polygonComplete = true;
         }
       });
-
-      if (!polygonComplete) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      
+      // checking if the points are unique or not
+      let uniqueGatePoint = true;
+      for (const point of newGatePointsCanvas){
+        if(point[0] === event.offsetX && point[1] === event.offsetY){
+          uniqueGatePoint = false;
+          break;
+        }
       }
 
+      if (!polygonComplete && uniqueGatePoint) {
+        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      }
       redraw();
     }
   };
