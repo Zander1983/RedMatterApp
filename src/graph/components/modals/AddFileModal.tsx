@@ -20,6 +20,7 @@ import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import {createDefaultPlotSnapShot} from "../../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -95,49 +96,6 @@ const AddFileModal = React.memo(
       }
       await PlotResource.createNewPlotFromFile(file);
       props.closeCall.f(props.closeCall.ref);
-    };
-
-    const initTemporaryDynamicPlot = (fileID:any, experimentId:any) =>{
-      return  {
-        "experimentId": experimentId,
-        "controlFileId": fileID,
-        "files": {
-          [fileID]: {
-            "plots": [
-              {
-                "population": "All",
-                "plotType": "scatter",
-                "width": 200,
-                "height": 200,
-                "xAxisLabel": "FSC-A",
-                "yAxisLabel": "SSC-A",
-                "xAxisIndex": 0,
-                "yAxisIndex": 1,
-                "plotScale": 2,
-                "xScaleType": "lin",
-                "yScaleType": "lin",
-                "histogramAxis": "",
-                "label": "",
-                "dimensions": {
-                  "w": 9,
-                  "h": 10
-                },
-                "positions": {
-                  "x": 0,
-                  "y": 0
-                },
-                "parentPlotId": "",
-                "gatingActive": ""
-              }
-            ]
-          }
-        },
-        "sharedWorkspace": "false",
-        "editWorkspace": "true",
-        "selectedFile": fileID,
-        "clearOpenFiles": "false",
-        "isShared": "false"
-      }
     };
 
     useEffect(() => {
@@ -415,8 +373,16 @@ const AddFileModal = React.memo(
                               //   `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               // );
                               // downloadFile(fileMetadata.id);
-                              let plot:any = initTemporaryDynamicPlot(fileMetadata.id, props.experimentId);
-                              WorkspaceDispatch.UpdatePlotStates(plot);
+                              // @ts-ignore
+                              const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
+                              // @ts-ignore
+                              const defaultFileChannels = defaultFile?.fileChannels;
+                              const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+                              const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+                              const xAxisLabel = defaultFileChannels[xAxisIndex];
+                              const yAxisLabel = defaultFileChannels[yAxisIndex];
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+                              WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
@@ -465,8 +431,15 @@ const AddFileModal = React.memo(
                                 }
                               }
                               WorkspaceDispatch.SetFiles(filesInNewOrder);
-                              let plot:any = initTemporaryDynamicPlot(fileMetadata.id, props.experimentId);
-                              WorkspaceDispatch.UpdatePlotStates(plot);
+                              const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
+                              // @ts-ignore
+                              const defaultFileChannels = defaultFile?.fileChannels;
+                              const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+                              const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+                              const xAxisLabel = defaultFileChannels[xAxisIndex];
+                              const yAxisLabel = defaultFileChannels[yAxisIndex];
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+                              WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);

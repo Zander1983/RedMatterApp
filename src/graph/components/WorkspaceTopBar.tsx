@@ -382,9 +382,21 @@ const WorkspaceTopBarComponent = ({
   };
 
   const clearWorkStateFromServer = async () => {
-    let currentFile = getWorkspace()?.selectedFile;
-    const resetState = createDefaultPlotSnapShot(currentFile, experimentId);
-    await saveWorkspace(false, resetState);
+    // let selectedFileID:any = getWorkspace()?.selectedFile;
+    // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
+    // console.log(defaultFile);
+    // console.log(selectedFileID);
+    // // @ts-ignore
+    // const defaultFileChannels = defaultFile?.fileChannels;
+    // console.log(defaultFileChannels);
+    // const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+    // const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+    // const xAxisLabel = defaultFileChannels[xAxisIndex];
+    // const yAxisLabel = defaultFileChannels[yAxisIndex];
+    // console.log(xAxisLabel, yAxisLabel);
+    // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+    WorkspaceDispatch.ResetWorkspaceExceptFiles();
+    await saveWorkspace(false);
   };
 
   if (autoSaveEnabled) {
@@ -428,7 +440,6 @@ const WorkspaceTopBarComponent = ({
           options={{
             yes: () => {
               clearWorkStateFromServer();
-              WorkspaceDispatch.ResetWorkspaceExceptFiles();
             },
             no: () => {
               handleClose(setClearModal);
