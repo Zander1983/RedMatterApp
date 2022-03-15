@@ -671,7 +671,7 @@ function Plot(props) {
         props.enrichedFile.logicles
       );
 
-      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot.gate.points, newPointsReal);
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
       const isInside = isPointInPolygon(
         newPointsReal[0],
         newPointsReal[1],
@@ -764,7 +764,7 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot.gate.points, newPointsReal);
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
       document.body.style.cursor =  isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu'; 
 
     } else {
