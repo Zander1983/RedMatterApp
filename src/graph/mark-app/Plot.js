@@ -11,6 +11,7 @@ import {
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
 import numeral from "numeral";
+import { CompactPicker } from 'react-color'
 import ResizeObserver from "react-resize-detector";
 import { useResizeDetector } from "react-resize-detector";
 
@@ -55,7 +56,12 @@ function Plot(props) {
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [gateName, setGateName] = useState("");
+  const [gateName, setGateName] = useState({
+    name: "",
+    error: false
+  });
+  const [gateColor, setGateColor] = useState(`#${Math.floor(Math.random() * 16777215).toString(16)}`)
+  const plotNames = props.enrichedFile.plots.map(plt => plt.population)
 
   useEffect(() => {
     setLocalPlot(props.plot);
@@ -232,16 +238,14 @@ function Plot(props) {
       plot: plot,
       plotIndex: plotIndex,
       points: points,
-      gateName: gateName,
+      gateName: gateName.name,
     };
 
-    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-
     let gate = {
-      color: "#" + randomColor,
+      color: gateColor,
       gateType: "polygon",
       // need to ask for gate name
-      name: gateName,
+      name: gateName.name,
       points: points,
       xAxisLabel: plot.xAxisIndex,
       yAxisLabel: plot.yAxisLabel,
@@ -599,7 +603,8 @@ function Plot(props) {
       startPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       );
     } else {
     }
@@ -653,7 +658,8 @@ function Plot(props) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       );
 
       let isInside = isPointInPolygon(
@@ -661,6 +667,7 @@ function Plot(props) {
         newPointsReal[1],
         localPlot.gate.points
       );
+      document.body.style.cursor = isInside ? 'grab' :'context-menu';
       if (isInside) {
         let moveX = getMoveValue(
           startPointsReal[0],
@@ -701,13 +708,33 @@ function Plot(props) {
         startPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
           localPlot,
-          [event.offsetX, event.offsetY]
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
         );
 
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
     }
   };
+
+  const handleCursorProperty = (event) => {
+    if(hasGate() && props?.plot?.gate?.gateType === "polygon" ){
+      let newPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
+      );
+      let isInside = isPointInPolygon(
+        newPointsReal[0],
+        newPointsReal[1],
+        localPlot.gate.points
+      );
+      document.body.style.cursor = isInside ? 'grab' : 'context-menu'; 
+    } else {
+      document.body.style.cursor = 'crosshair'
+    }
+  }
 
   const onSetGateName = () => {
     onAddGate(localPlot, props.plotIndex);
@@ -735,6 +762,18 @@ function Plot(props) {
     },
   };
 
+  const handleChangeComplete = (color) => {
+    setGateColor(color.hex)
+  }
+
+  const gateNameHandler = (name) => {
+    setGateName({
+      name: name,
+      error: plotNames.includes(name) ? true : false
+    })
+  }
+
+
   return (
     <>
       {" "}
@@ -746,13 +785,43 @@ function Plot(props) {
           }
         }
       >
-        <Modal isOpen={modalIsOpen} style={customStyles}>
-          <label>
-            Gate Name:
-            <input type="text" onChange={(e) => setGateName(e.target.value)} />
-          </label>
-          <button onClick={() => onSetGateName()}>Ok</button>
-          <button onClick={() => onCancelGateName()}>Cancel</button>
+        <Modal 
+          isOpen={modalIsOpen} 
+          appElement={document.getElementById('root') || undefined}
+          style={customStyles}
+        >
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "cneter",
+            justifyContent: "center"
+            
+          }}>
+            <label>
+              Gate Name:
+              <input 
+                type="text" 
+                style={{width: 200, marginLeft: 5, border:"none", borderRadius: 5}} 
+                onChange={(e) => gateNameHandler(e.target.value)} 
+              />
+            </label>
+            <p style={{height: 16, textAlign: "center", paddingTop: 2.5}}> 
+              {gateName.error && "A unique gate name is required"} 
+            </p>
+            <div style={{padding: 10, alignSelf: 'center', paddingTop: 0, paddingBottom: 25}}>
+              <CompactPicker onChangeComplete={ handleChangeComplete } color={ gateColor } />
+            </div>
+            <div style={{margin: "auto"}}>
+              <button 
+                style={{marginRight: 5}} 
+                disabled={gateName.error || !gateName.name} 
+                onClick={() => onSetGateName()}
+              >
+                Ok
+              </button>
+              <button onClick={() => onCancelGateName()}>Cancel</button>
+            </div>
+          </div>
         </Modal>
         <SideSelector
           channelOptions={channelOptions}
@@ -783,11 +852,15 @@ function Plot(props) {
                 }}
                 onMouseMove={(e) => {
                   let nativeEvent = e.nativeEvent;
+                  handleCursorProperty(nativeEvent)
                   handleMouseMove(nativeEvent);
                 }}
                 onMouseUp={(e) => {
                   let nativeEvent = e.nativeEvent;
                   handleMouseUp(nativeEvent);
+                }}
+                onMouseLeave={(e) => {
+                  document.body.style.cursor = 'context-menu'
                 }}
               />
             </div>
