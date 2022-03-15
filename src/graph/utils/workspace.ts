@@ -97,7 +97,7 @@ export const saveWorkspaceStateToServer = async (
     stateData?:any
 ): Promise<boolean> => {
   //let stateJson = JSON.stringify(getWorkspace().workspaceState);
-  let stateJson = stateData ?  JSON.stringify(stateData) : JSON.stringify(getWorkspace().workspaceState);
+  let stateJson = stateData ?  JSON.stringify(stateData) : JSON.stringify(getWorkspace().workspaceState || {});
   const updateWorkSpace = WorkspacesApiFetchParamCreator({
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
@@ -278,15 +278,27 @@ const saveWorkspaceStateToRedux = async (
     workspace: string,
 ) => {
    const workspaceObj = JSON.parse(workspace || "{}");
-  if(workspaceObj?.workspaceState?.files?.length === 0) {
-    let workspaceState = createDefaultPlotSnapShot(workspaceObj.selectedFile, workspaceObj.experimentId);
-    const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
-    await WorkspaceDispatch.SetPlotStates(newWorkspace);
-    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-  }else {
+  // if(getWorkspace().workspaceState?.length === 0) {
+  //   let selectedFileID:any = getWorkspace().selectedFile;
+  //   // @ts-ignore
+  //   const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
+  //   console.log(defaultFile);
+  //   // @ts-ignore
+  //   const defaultFileChannels = defaultFile?.fileChannels;
+  //   console.log("==== default File channels redux === ");
+  //   console.log(defaultFileChannels);
+  //   const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+  //   const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+  //   const xAxisLabel = defaultFileChannels[xAxisIndex];
+  //   const yAxisLabel = defaultFileChannels[yAxisIndex];
+  //   const workspaceState = createDefaultPlotSnapShot(selectedFileID, workspaceObj.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+  //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
+  //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
+  //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  // }else {
     const newWorkspace: Workspace = {...workspaceObj};
     await WorkspaceDispatch.SetPlotStates(newWorkspace);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-  }
+  //}
 
 };

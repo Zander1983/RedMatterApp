@@ -410,7 +410,8 @@ export const graphLine = (params, ctx) => {
   }
 };
 
-export const createDefaultPlotSnapShot = (fileId, experimentId, plotType = DEFAULT_PLOT_TYPE, xAxisLabel = DEFAULT_X_AXIS_LABEL, yAxisLabel = DEFAULT_Y_AXIS_LABEL) => {
+export const createDefaultPlotSnapShot = (fileId, experimentId, xAxisLabel = DEFAULT_X_AXIS_LABEL, yAxisLabel = DEFAULT_Y_AXIS_LABEL,  xAxisIndex = 0,
+    yAxisIndex = 1, plotType = DEFAULT_PLOT_TYPE) => {
   return  {
     "experimentId": experimentId,
     "controlFileId": fileId,
@@ -424,8 +425,8 @@ export const createDefaultPlotSnapShot = (fileId, experimentId, plotType = DEFAU
             "height": DEFAULT_PLOT_HEIGHT,
             "xAxisLabel": xAxisLabel || DEFAULT_X_AXIS_LABEL,
             "yAxisLabel": yAxisLabel || DEFAULT_Y_AXIS_LABEL,
-            "xAxisIndex": 0,
-            "yAxisIndex": 1,
+            "xAxisIndex": xAxisIndex,
+            "yAxisIndex": yAxisIndex,
             "plotScale": 2,
             "xScaleType": DEFAULT_X_SCALE_TYPE,
             "yScaleType": DEFAULT_Y_SCALE_TYPE,
