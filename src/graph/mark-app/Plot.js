@@ -7,6 +7,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  isCursorNearAPolygonPoint
 } from "./PlotHelper";
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
@@ -112,6 +113,15 @@ function Plot(props) {
 
     context.closePath();
     context.stroke();
+
+    // draw polygon gate points
+    for(const point of pointsOnCanvas){
+      context.beginPath();
+      context.arc(point[0], point[1], 2, 0, 2 * Math.PI, false);
+      context.fillStyle = "red";
+      context.fill();
+      context.stroke();
+    }
   };
 
   const getFormattedEvents = (enrichedEvent, plot) => {
@@ -353,7 +363,6 @@ function Plot(props) {
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "#df4b26";
     context.lineWidth = 1;
-
     context.beginPath();
     context.moveTo(newGatePointsCanvas[0][0], newGatePointsCanvas[0][1]);
     for (var i = 1; i < newGatePointsCanvas.length; i++) {
@@ -662,28 +671,51 @@ function Plot(props) {
         props.enrichedFile.logicles
       );
 
-      let isInside = isPointInPolygon(
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot.gate.points, newPointsReal);
+      const isInside = isPointInPolygon(
         newPointsReal[0],
         newPointsReal[1],
         localPlot.gate.points
       );
-      document.body.style.cursor = isInside ? 'grab' :'context-menu';
-      if (isInside) {
-        let moveX = getMoveValue(
-          startPointsReal[0],
-          newPointsCanvas[0],
+
+      let moveX = getMoveValue(
+        startPointsReal[0],
+        newPointsCanvas[0],
+        localPlot.xScaleType,
+        localPlot.xAxisIndex,
+        "x"
+      );
+      let moveY = getMoveValue(
+        startPointsReal[1],
+        newPointsCanvas[1],
+        localPlot.yScaleType,
+        localPlot.yAxisIndex,
+        "y"
+      );
+      
+      
+      if(isDraggingGatePoint?.dragging){
+        // this code will run when a user will drag a specific polygon gate point
+        const draggingPointIndex = localPlot.gate.points.findIndex(point => point === isDraggingGatePoint.pointValue)
+        let newGateValueRealX = getGateValue(
+          localPlot.gate.points[draggingPointIndex][0],
           localPlot.xScaleType,
           localPlot.xAxisIndex,
-          "x"
-        );
-        let moveY = getMoveValue(
-          startPointsReal[1],
-          newPointsCanvas[1],
-          localPlot.yScaleType,
-          localPlot.yAxisIndex,
-          "y"
+          localPlot.width,
+          moveX
         );
 
+        let newGateValueRealY = getGateValue(
+          localPlot.gate.points[draggingPointIndex][1],
+          localPlot.yScaleType,
+          localPlot.yAxisIndex,
+          localPlot.height,
+          moveY
+        );
+        localPlot.gate.points[draggingPointIndex] = [newGateValueRealX, newGateValueRealY];
+
+      } else if (isInside) {
+        // this code will run when a user will drag the entire polygon gate
         localPlot.gate.points = props.plot.gate.points.map((point) => {
           let newGateValueRealX = getGateValue(
             point[0],
@@ -703,7 +735,9 @@ function Plot(props) {
 
           return [newGateValueRealX, newGateValueRealY];
         });
+      }
 
+      if(isInside || isDraggingGatePoint?.dragging){
         // IMPORTANT - reste start points
         startPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
@@ -711,7 +745,6 @@ function Plot(props) {
           [event.offsetX, event.offsetY],
           props.enrichedFile.logicles
         );
-
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
     }
@@ -730,7 +763,10 @@ function Plot(props) {
         newPointsReal[1],
         localPlot.gate.points
       );
-      document.body.style.cursor = isInside ? 'grab' : 'context-menu'; 
+
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot.gate.points, newPointsReal);
+      document.body.style.cursor =  isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu'; 
+
     } else {
       document.body.style.cursor = 'crosshair'
     }

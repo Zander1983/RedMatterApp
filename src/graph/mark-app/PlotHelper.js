@@ -129,3 +129,20 @@ export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
   xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
   return logicle.inverse(xAxisPointOnCanvas);
 };
+
+export const isCursorNearAPolygonPoint = (gatePoints, mouseRealPoints) => {
+  for(const point of gatePoints){
+    const xPointTouched = mouseRealPoints[0]+5000 > point[0] &&  mouseRealPoints[0]-5000 < point[0];
+    const yPointTouched = mouseRealPoints[1]+5000 > point[1] &&  mouseRealPoints[1]-5000 < point[1];
+    if(xPointTouched && yPointTouched){
+      return {
+        dragging: true,
+        pointValue: point,
+      };
+    }
+  }
+  return {
+    dragging: false,
+    pointValue: undefined,
+  }
+}
