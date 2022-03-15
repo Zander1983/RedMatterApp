@@ -252,16 +252,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(change.plot)
     );
 
-    //console.log("=== update plot === ");
-    //console.log(newWorkspaceState);
-
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
 
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 5);
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    // setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 5);
 
     this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState});
   };

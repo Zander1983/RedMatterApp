@@ -55,7 +55,7 @@ function Table(props) {
 
   //console.log("NON CONTROLS FILES ");
   //console.log(nonControlEnrichedFiles);
-    
+
   return (
     <div>
       <div

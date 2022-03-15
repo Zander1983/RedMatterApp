@@ -97,6 +97,13 @@ export const superAlgorithm = (Files, WorkspaceState) => {
             !gateStatsObj[gate.name + "_count"]
               ? (gateStatsObj[gate.name + "_count"] = 1)
               : gateStatsObj[gate.name + "_count"]++;
+          }else {
+            event["isInGate" + gate.name] = false;
+            if(plot['population'] === 'All') {
+              event["color"] = "#000";
+            }else {
+              event["color"] = "#ddd";
+            }
           }
         }
         if (!isInGate) {
