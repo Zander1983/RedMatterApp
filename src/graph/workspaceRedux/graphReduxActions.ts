@@ -19,11 +19,13 @@ export const graphActions = {
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
   ADD_PLOTS: "workspace.ADD_PLOTS",
+  SET_PLOT_STATE: "workspace.SET_PLOT_STATE",
   ADD_GATE: "workspace.ADD_GATE",
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
   UPDATE_PLOT: "workspace.UPDATE_PLOT",
   UPDATE_PLOTS: "workspace.UPDATE_PLOTS",
+  UPDATE_PLOT_STATES: "workspace.UPDATE_PLOT_STATES",
   UPDATE_GATE: "workspace.UPDATE_GATE",
   DELETE_GATE: "workspace.DELETE_GATE",
   DELETE_GATE_ONLY: "workspace.DELETE_GATE_ONLY",
@@ -36,6 +38,7 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
+  UPDATE_WS_SELECTED_FILE: "workspace.UPDATE_WS_SELECTED_FILE",
   ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
   DELETE_PLOTS_GATES_AND_POPULATIONS:
     "workspace.DELETE_PLOTS_GATES_AND_POPULATIONS",
@@ -56,6 +59,7 @@ export const initialState: Workspace = {
   selectedFile: "",
   clearOpenFiles: false,
   updateType: "",
+  workspaceState: {}
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -171,6 +175,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         plots: state.plots.concat(newPlots),
       };
 
+    case graphActions.SET_PLOT_STATE:
+      const plots = action.payload;
+      return {
+        ...state,
+        workspaceState: plots,
+      };
+
     case graphActions.ADD_GATE:
       const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
@@ -181,15 +192,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         gates: [...state.gates, newGate],
       };
-
     case graphActions.UPDATE_SELECTED_FILE:
       const fileName: string = action.payload.fileName;
-
       return {
         ...state,
         selectedFile: fileName,
       };
-
     case graphActions.UPDATE_FILE:
       const updateFile: File = action.payload.file;
       if (!state.files.find((e) => e.id === updateFile.id)) {
@@ -240,6 +248,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...state,
         plots: state.plots,
+      };
+
+    case graphActions.UPDATE_PLOT_STATES:
+      const updateStates: any = action.payload;
+      return {
+        ...state,
+        workspaceState: updateStates,
       };
 
     case graphActions.UPDATE_GATE:

@@ -6,6 +6,7 @@ import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import {file} from "@babel/types";
 
 const EVENTS_LIMIT = 4000;
 
@@ -86,7 +87,6 @@ export const downloadFileEvent = async (
         throw Error("DOWNLOADED-FILE:File already downloaded");
       }
     }
-
     let downloadingFiles: File[] = files.map((e) => getFile(e));
     downloadingFiles.forEach((e) => {
       e.downloading = true;
@@ -121,6 +121,8 @@ export const downloadFileEvent = async (
     if (token) headers = { token };
 
     response = await axios.post("/api/events", payload, { headers });
+
+   // console.log(response);
 
     // if (showNotifications && notification !== null) notification.killNotification();
     // if(response?.data?.length <= 0) throw new Error("Missing Data");
@@ -228,10 +230,94 @@ export const downloadEvents = async (
     const workspace = getWorkspace();
     files = workspace.files.filter((e) => !e.downloaded).map((e) => e.id);
   }
-
   try {
-    return await downloadFileEvent(workspaceIsShared, files, experimentId);
+    return await downloadEvent(workspaceIsShared, files, experimentId);
   } catch (e) {
     throw e;
   }
 };
+
+export const downloadEvent = async (
+    workspaceIsShared: boolean,
+    targetFiles: string | string[],
+    experimentId: string,
+    showNotifications: boolean = true,
+    retry: number = 3
+): Promise<any | any[]> => {
+  try {
+    let files: FileID[] = [];
+    if (typeof targetFiles === "string") {
+      files = [targetFiles];
+    } else {
+      files = targetFiles;
+    }
+
+    const workspace = getWorkspace();
+    for (const fileId of files) {
+      const fileQuery = workspace.files.filter((e) => e.id === fileId);
+      if (fileQuery.length > 1) {
+        throw Error("DUPLICATE-FILE:Multiple files with the same ID present in workspace");
+      }
+      if (fileQuery.length > 0 && fileQuery[0].downloaded) {
+        throw Error("DOWNLOADED-FILE:File already downloaded");
+      }
+    }
+
+    let response;
+    let payload: {
+      experimentId: string;
+      //fileIds: string[];
+      isShared?: boolean;
+      organisationId?: string;
+    } = {
+      experimentId: experimentId,
+      //fileIds: files,
+    };
+
+    if (workspaceIsShared) {
+      payload = { ...payload, isShared: true };
+    } else {
+      payload = {
+        ...payload,
+        organisationId: userManager.getOrganiztionID(),
+      };
+    }
+
+    let token = null;
+    try {
+      if (!workspaceIsShared) token = userManager.getToken();
+    } catch {}
+
+    let headers = {};
+    if (token) headers = { token };
+
+    response = await axios.post("/api/file-events", payload, { headers });
+
+    const newFileArray = [];
+    for (const fileId of Object.keys(response.data.files)) {
+      const remoteFile = response.data.files[fileId];
+      let newFile = {...getFile(fileId), ...remoteFile};
+      newFile.downloaded = true;
+      newFile.downloading = false;
+      newFileArray.push(newFile);
+    }
+
+    WorkspaceDispatch.SetFiles(newFileArray);
+
+    return files;
+  } catch (err:any){
+    if (err && err?.name === "Error" || err?.message.toString() === "Network Error") throw err;
+    if (retry > 0) {
+      downloadEvent(
+          workspaceIsShared,
+          targetFiles,
+          experimentId,
+          (showNotifications = true),
+          retry - 1
+      );
+    } else {
+      throw Error("RETRY-FAILED:File was not downloaded");
+    }
+  }
+};
+

@@ -8,7 +8,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
-import { saveWorkspaceToRemote } from "../utils/workspace";
+import {saveWorkspaceStateToServer, saveWorkspaceToRemote} from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 // import IOSSwitch from "../../Components/common/Switch";
@@ -22,6 +22,7 @@ import GateNamePrompt from "./modals/GateNamePrompt";
 import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
+import {createDefaultPlotSnapShot } from "../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -129,6 +130,7 @@ const WorkspaceTopBarComponent = ({
     if (!renderPlotController) {
       setRenderPlotController(true);
     }
+    setPlotCallNeeded(false);
     if (renderPlotController) {
       setPlotCallNeeded(true);
     }
@@ -136,14 +138,21 @@ const WorkspaceTopBarComponent = ({
   };
 
   const handleCloseClearWorkspace = (func: Function) => {
+    if (!renderPlotController) {
+      setRenderPlotController(true);
+    }
+    setPlotCallNeeded(false);
+    if (renderPlotController) {
+      setPlotCallNeeded(true);
+    }
     func(false);
   };
 
-  const saveWorkspace = async (shared: boolean = false) => {
+  const saveWorkspace = async (shared: boolean = false, currentState:any = null) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
-      await saveWorkspaceToRemote(shared, experimentId);
+      await saveWorkspaceStateToServer(shared, experimentId, currentState);
     } catch (err) {
       await handleError(err);
     }
@@ -269,7 +278,7 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                   }}
-                  disabled={!!workspace.selectedFile}
+                  disabled={!!workspace?.selectedFile}
                 >
                   Plot sample
                 </Button>
@@ -372,27 +381,64 @@ const WorkspaceTopBarComponent = ({
     );
   };
 
+  const clearWorkStateFromServer = async () => {
+    // let selectedFileID:any = getWorkspace()?.selectedFile;
+    // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
+    // console.log(defaultFile);
+    // console.log(selectedFileID);
+    // // @ts-ignore
+    // const defaultFileChannels = defaultFile?.fileChannels;
+    //   let xAxisLabel = "FSC-A";
+    //   let yAxisLabel = "SSC-A";
+    //   let xAxisIndex = 0;
+    //   let yAxisIndex = 0;
+    //
+    //   if(defaultFileChannels.includes("FSC-A")) {
+    //       xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+    //       xAxisLabel = "FSC-A";
+    //   }
+    //   else
+    //       xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+    //
+    //   if(defaultFileChannels.includes("SSC-A")) {
+    //       yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+    //       yAxisLabel = "SSC-A"
+    //   } else
+    //       yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+    //
+    //   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+    //   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+    // console.log(defaultFileChannels);
+    // const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
+    // const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
+    // const xAxisLabel = defaultFileChannels[xAxisIndex];
+    // const yAxisLabel = defaultFileChannels[yAxisIndex];
+    // console.log(xAxisLabel, yAxisLabel);
+    // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+    WorkspaceDispatch.ResetWorkspaceExceptFiles();
+    await saveWorkspace(false);
+  };
+
   if (autoSaveEnabled) {
     if (plotCallNeeded) {
       Debounce(() => saveWorkspace(), 5000);
     }
   }
-
   const renderModal = () => {
     return (
       <>
         <GateNamePrompt />
-        {workspace.files.length > 0 && (
+        {workspace?.files?.length > 0 && (
           <AddFileModal
             open={addFileModalOpen}
             closeCall={{
               f: handleCloseAndMakePlotControllerTrue,
-              ref: setAddFileModalOpen,
+              ref: setAddFileModalOpen
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
-            files={getWorkspace().files}
-            selectedFile={getWorkspace().selectedFile}
+            files={getWorkspace()?.files}
+            selectedFile={getWorkspace()?.selectedFile}
           />
         )}
         <MessageModal
@@ -413,9 +459,7 @@ const WorkspaceTopBarComponent = ({
           }
           options={{
             yes: () => {
-              WorkspaceDispatch.ResetWorkspaceExceptFiles();
-              setRenderPlotController(true);
-              setPlotCallNeeded(false);
+              clearWorkStateFromServer();
             },
             no: () => {
               handleClose(setClearModal);
