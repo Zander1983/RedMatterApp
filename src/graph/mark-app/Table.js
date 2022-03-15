@@ -40,22 +40,22 @@ const classes = {
 };
 
 function Table(props) {
-  console.log(">> table props is ", props);
+  //console.log(">> table props is ", props);
 
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
 
-  console.log("FIND CONTROL FILE");
-  console.log(controlEnrichedFile);
+  //console.log("FIND CONTROL FILE");
+  //console.log(controlEnrichedFile);
 
   let nonControlEnrichedFiles = props.enrichedFiles.filter(
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  console.log("NON CONTROLS FILES ");
-  console.log(nonControlEnrichedFiles);
-
+  //console.log("NON CONTROLS FILES ");
+  //console.log(nonControlEnrichedFiles);
+   
   return (
     <div>
       <div
@@ -94,7 +94,7 @@ function Table(props) {
       <table className="workspace">
         <tbody style={{ width: "100%" }}>
           <tr>
-            {controlEnrichedFile.plots.map((plot, plotIindex) => {
+            {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th key={`td-${plotIindex}`}>
                   <div
@@ -106,7 +106,7 @@ function Table(props) {
                     {controlEnrichedFile.label}
                   </div>
                   {(() => {
-                    if (plot.plotType === "scatter") {
+                    if (plot?.plotType === "scatter") {
                       return (
                         <Plot
                           key={`plot-${plotIindex}`}
@@ -120,7 +120,7 @@ function Table(props) {
                           testParam={props.testParam}
                         />
                       );
-                    } else if (plot.plotType === "histogram") {
+                    } else if (plot?.plotType === "histogram") {
                       return (
                         <Histogram
                           key={`plot-${plotIindex}`}

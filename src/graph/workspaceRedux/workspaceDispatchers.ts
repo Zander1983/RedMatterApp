@@ -56,6 +56,20 @@ const WorkspaceDispatch = {
       payload: { plots },
     });
   },
+  SetPlotStates: (workspaceState:any) => {
+    return store.dispatch({
+      type: graphActions.SET_PLOT_STATE,
+      payload: workspaceState,
+    });
+  },
+
+  UpdatePlotStates: (workspaceState:any) => {
+    return store.dispatch({
+      type: graphActions.UPDATE_PLOT_STATES,
+      payload: workspaceState,
+    });
+  },
+
   AddPlotsAndPopulations: (plots: Plot[], populations: Population[]) => {
     return store.dispatch({
       type: graphActions.ADD_PLOTS_AND_POPULATIONS,

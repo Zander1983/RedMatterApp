@@ -165,6 +165,7 @@ export interface Workspace {
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
+  workspaceState: {},
   sharedWorkspace: boolean;
   editWorkspace: boolean;
   selectedFile: string;
