@@ -341,7 +341,8 @@ function Histogram(props) {
       startXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       console.log(">>>>>>> startXPointsReal is ", startXPointsReal);
@@ -394,7 +395,8 @@ function Histogram(props) {
       let newXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       //setNewXPointsReal();
@@ -415,12 +417,19 @@ function Histogram(props) {
       startXPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
-        [event.offsetX, event.offsetY]
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
       )[0];
 
       console.log(">>>>>>. startXPointsReal is ", startXPointsReal);
     }
   };
+
+  const handleCursorProperty = (event) => {
+    if(props?.plot?.plotType === "histogram" ){
+      document.body.style.cursor = 'text'
+    }
+  }
 
   return (
     <>
@@ -444,11 +453,15 @@ function Histogram(props) {
               }}
               onMouseMove={(e) => {
                 let nativeEvent = e.nativeEvent;
+                handleCursorProperty(nativeEvent)
                 handleMouseMove(nativeEvent);
               }}
               onMouseUp={(e) => {
                 let nativeEvent = e.nativeEvent;
                 handleMouseUp(nativeEvent);
+              }}
+              onMouseLeave={(e) => {
+                document.body.style.cursor = 'context-menu'
               }}
             />
           }

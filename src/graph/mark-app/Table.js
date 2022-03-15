@@ -56,6 +56,7 @@ function Table(props) {
   //console.log("NON CONTROLS FILES ");
   //console.log(nonControlEnrichedFiles);
 
+
   return (
     <div>
       <div
@@ -228,12 +229,7 @@ function Table(props) {
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
-                    <td
-                      style={{
-                        paddingLeft: 15,
-                      }}
-                      key={`td-${plotIindex + 1}`}
-                    >
+                    <td key={`td-${plotIindex + 1}`}>
                       <div
                         style={{
                           textAlign: "center",
@@ -256,6 +252,7 @@ function Table(props) {
                             <Plot
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
+                              plotNames={enrichedFile.plots.map(plot => plot.population)}
                               enrichedFile={enrichedFile}
                               onAddGate={props.onAddGate}
                               onEditGate={props.onEditGate}
