@@ -388,6 +388,26 @@ const WorkspaceTopBarComponent = ({
     // console.log(selectedFileID);
     // // @ts-ignore
     // const defaultFileChannels = defaultFile?.fileChannels;
+    //   let xAxisLabel = "FSC-A";
+    //   let yAxisLabel = "SSC-A";
+    //   let xAxisIndex = 0;
+    //   let yAxisIndex = 0;
+    //
+    //   if(defaultFileChannels.includes("FSC-A")) {
+    //       xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+    //       xAxisLabel = "FSC-A";
+    //   }
+    //   else
+    //       xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+    //
+    //   if(defaultFileChannels.includes("SSC-A")) {
+    //       yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+    //       yAxisLabel = "SSC-A"
+    //   } else
+    //       yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+    //
+    //   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+    //   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
     // console.log(defaultFileChannels);
     // const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
     // const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));

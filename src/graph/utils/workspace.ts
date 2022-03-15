@@ -287,10 +287,26 @@ const saveWorkspaceStateToRedux = async (
   //   const defaultFileChannels = defaultFile?.fileChannels;
   //   console.log("==== default File channels redux === ");
   //   console.log(defaultFileChannels);
-  //   const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
-  //   const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
-  //   const xAxisLabel = defaultFileChannels[xAxisIndex];
-  //   const yAxisLabel = defaultFileChannels[yAxisIndex];
+  //   let xAxisLabel = "";
+  //   let yAxisLabel = "";
+  //   let xAxisIndex = -1;
+  //   let yAxisIndex = -1;
+  //
+  //   if(defaultFileChannels.includes("FSC-A")) {
+  //       xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+  //       xAxisLabel = "FSC-A";
+  //   }
+  //   else
+  //       xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  //
+  //   if(defaultFileChannels.includes("SSC-A")) {
+  //       yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+  //       yAxisLabel = "SSC-A"
+  //   } else
+  //       yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  //
+  //   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+  //   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
   //   const workspaceState = createDefaultPlotSnapShot(selectedFileID, workspaceObj.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
   //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
   //   await WorkspaceDispatch.SetPlotStates(newWorkspace);

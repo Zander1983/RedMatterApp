@@ -377,10 +377,28 @@ const AddFileModal = React.memo(
                               const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
                               // @ts-ignore
                               const defaultFileChannels = defaultFile?.fileChannels;
-                              const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
-                              const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
-                              const xAxisLabel = defaultFileChannels[xAxisIndex];
-                              const yAxisLabel = defaultFileChannels[yAxisIndex];
+
+                                let xAxisLabel = "FSC-A";
+                                let yAxisLabel = "SSC-A";
+                                let xAxisIndex = 0;
+                                let yAxisIndex = 0;
+
+                                if(defaultFileChannels.includes("FSC-A")) {
+                                    xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+                                    xAxisLabel = "FSC-A";
+                                }
+                                else
+                                    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+                                if(defaultFileChannels.includes("SSC-A")) {
+                                    yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+                                    yAxisLabel = "SSC-A"
+                                } else
+                                    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+                                xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+                                yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+
                               const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
@@ -434,10 +452,28 @@ const AddFileModal = React.memo(
                               const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
                               // @ts-ignore
                               const defaultFileChannels = defaultFile?.fileChannels;
-                              const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
-                              const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
-                              const xAxisLabel = defaultFileChannels[xAxisIndex];
-                              const yAxisLabel = defaultFileChannels[yAxisIndex];
+
+                              let xAxisLabel = "FSC-A";
+                              let yAxisLabel = "SSC-A";
+                              let xAxisIndex = 0;
+                              let yAxisIndex = 0;
+
+                                if(defaultFileChannels.includes("FSC-A")) {
+                                    xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+                                    xAxisLabel = "FSC-A";
+                                }
+                                else
+                                    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+                                if(defaultFileChannels.includes("SSC-A")) {
+                                    yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+                                    yAxisLabel = "SSC-A"
+                                } else
+                                    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+                                xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+                                yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+
                               const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
@@ -445,8 +481,7 @@ const AddFileModal = React.memo(
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
                             }}
-                            disabled={isDownloading}
-                          >
+                            disabled={isDownloading}>
                             {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"
                               : "Set As Control"}

@@ -44,7 +44,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-      // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
+    // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
       // console.log(JSON.parse(JSON.stringify(Files21)));
       // console.log("== work space file ====");
       // let copyOfFiles: any[] = getWorkspace().files;
@@ -82,10 +82,28 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         const defaultFile = copyOfFiles?.[0];
         // @ts-ignore
         const defaultFileChannels = defaultFile?.fileChannels;
-        const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
-        const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
-        const xAxisLabel = defaultFileChannels[xAxisIndex];
-        const yAxisLabel = defaultFileChannels[yAxisIndex];
+
+        let xAxisLabel = "";
+        let yAxisLabel = "";
+        let xAxisIndex = -1;
+        let yAxisIndex = -1;
+
+        if(defaultFileChannels.includes("FSC-A")) {
+            xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
+            xAxisLabel = "FSC-A";
+        }
+        else
+            xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+          if(defaultFileChannels.includes("SSC-A")) {
+              yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
+              yAxisLabel = "SSC-A"
+          } else
+              yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+         xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
+         yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+
         workspaceState = createDefaultPlotSnapShot(defaultFile?.id, this.props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
         isSnapShotCreated = true;
       }
