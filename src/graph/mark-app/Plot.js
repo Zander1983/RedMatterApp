@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useReducer, React } from "react";
+import { useEffect, useState } from "react";
 import { isPointInPolygon, graphLine } from "./Helper";
 import {
   getRealPointFromCanvasPoints,
@@ -7,13 +7,12 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  isCursorNearAPolygonPoint
 } from "./PlotHelper";
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
 import numeral from "numeral";
 import { CompactPicker } from 'react-color'
-import ResizeObserver from "react-resize-detector";
-import { useResizeDetector } from "react-resize-detector";
 
 export const leftPadding = 55;
 export const rightPadding = 20;
@@ -35,10 +34,10 @@ const getContext = (plotIndex) => {
 
 const shouldDrawGate = (plot) => {
   if (
-    plot.xAxisIndex === plot.gate.xAxisIndex &&
-    plot.yAxisIndex === plot.gate.yAxisIndex &&
-    plot.xScaleType === plot.gate.xScaleType &&
-    plot.yScaleType === plot.gate.yScaleType
+      plot.xAxisIndex === plot.gate.xAxisIndex &&
+      plot.yAxisIndex === plot.gate.yAxisIndex &&
+      plot.xScaleType === plot.gate.xScaleType &&
+      plot.yScaleType === plot.gate.yScaleType
   ) {
     return true;
   } else {
@@ -54,7 +53,6 @@ let resizeStartPoints;
 
 function Plot(props) {
   const [localPlot, setLocalPlot] = useState(props.plot);
-
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
     name: "",
@@ -73,10 +71,10 @@ function Plot(props) {
     props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
       if (context) {
         getFormattedEvents(enrichedEvent, localPlot).forEach(
-          (formattedEvent) => {
-            context.fillStyle = formattedEvent.color;
-            context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
-          }
+            (formattedEvent) => {
+              context.fillStyle = formattedEvent.color;
+              context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
+            }
         );
       }
     });
@@ -95,11 +93,11 @@ function Plot(props) {
 
     let pointsOnCanvas = plot.gate.points.map((point) => {
       return getPointOnCanvas(
-        props.enrichedFile.channels,
-        point[0],
-        point[1],
-        plot,
-        props.enrichedFile.logicles
+          props.enrichedFile.channels,
+          point[0],
+          point[1],
+          plot,
+          props.enrichedFile.logicles
       );
     });
 
@@ -112,6 +110,15 @@ function Plot(props) {
 
     context.closePath();
     context.stroke();
+
+    // draw polygon gate points
+    for(const point of pointsOnCanvas){
+      context.beginPath();
+      context.arc(point[0], point[1], 2, 0, 2 * Math.PI, false);
+      context.fillStyle = "red";
+      context.fill();
+      context.stroke();
+    }
   };
 
   const getFormattedEvents = (enrichedEvent, plot) => {
@@ -119,15 +126,15 @@ function Plot(props) {
 
     // if population is not "All", isInGate{gateName} is true. Remember, plot.population is the same as the gate name
     if (
-      plot.population === "All" ||
-      enrichedEvent["isInGate" + plot.population]
+        plot.population === "All" ||
+        enrichedEvent["isInGate" + plot.population]
     ) {
       let pointOnCanvas = getPointOnCanvas(
-        props.enrichedFile.channels,
-        enrichedEvent[plot.xAxisIndex],
-        enrichedEvent[plot.yAxisIndex],
-        plot,
-        props.enrichedFile.logicles
+          props.enrichedFile.channels,
+          enrichedEvent[plot.xAxisIndex],
+          enrichedEvent[plot.yAxisIndex],
+          plot,
+          props.enrichedFile.logicles
       );
 
       pointOnCanvas.color = enrichedEvent["color"];
@@ -179,7 +186,7 @@ function Plot(props) {
 
     change = {
       type:
-        newPlotType == "histogram" ? "ChangePlotType" : "ChannelIndexChange",
+          newPlotType == "histogram" ? "ChangePlotType" : "ChannelIndexChange",
       plotIndex: plotIndex,
       axis: axis,
       axisIndex: channeIndex,
@@ -203,32 +210,32 @@ function Plot(props) {
       if (localPlot.xScaleType === "lin") {
         // if linear, convert to the "real" value
         point[0] = getRealXAxisValueFromCanvasPointOnLinearScale(
-          props.enrichedFile.channels,
-          plot.xAxisIndex,
-          plot.width,
-          point[0]
+            props.enrichedFile.channels,
+            plot.xAxisIndex,
+            plot.width,
+            point[0]
         );
       } else {
         // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
         point[0] = getRealXAxisValueFromCanvasPointOnLogicleScale(
-          props.enrichedFile.logicles,
-          plot,
-          point[0]
+            props.enrichedFile.logicles,
+            plot,
+            point[0]
         );
       }
 
       if (plot.yScaleType === "lin") {
         point[1] = getRealYAxisValueFromCanvasPointOnLinearScale(
-          props.enrichedFile.channels,
-          plot.yAxisIndex,
-          plot.height,
-          point[1]
+            props.enrichedFile.channels,
+            plot.yAxisIndex,
+            plot.height,
+            point[1]
         );
       } else {
         point[1] = getRealYAxisValueFromCanvasPointOnLogicleScale(
-          props.enrichedFile.logicles,
-          plot,
-          point[1]
+            props.enrichedFile.logicles,
+            plot,
+            point[1]
         );
       }
     });
@@ -272,11 +279,11 @@ function Plot(props) {
   });
 
   const getMoveValue = (
-    startValueReal,
-    newValueCanvas,
-    scale,
-    axisIndex,
-    axis
+      startValueReal,
+      newValueCanvas,
+      scale,
+      axisIndex,
+      axis
   ) => {
     if (scale == "bi") {
       // For logicle
@@ -288,15 +295,15 @@ function Plot(props) {
       // then, convert all points back to real points by dividing by width or heigh and then logicle.inverse()
 
       newValueCanvas =
-        axis == "y" ? localPlot.height - newValueCanvas : newValueCanvas;
+          axis == "y" ? localPlot.height - newValueCanvas : newValueCanvas;
 
       let logicle = props.enrichedFile.logicles[axisIndex];
       let startValueScaled = logicle.scale(startValueReal);
 
       let startValueCanvas =
-        axis == "x"
-          ? startValueScaled * localPlot.width
-          : startValueScaled * localPlot.height;
+          axis == "x"
+              ? startValueScaled * localPlot.width
+              : startValueScaled * localPlot.height;
 
       return newValueCanvas - startValueCanvas;
     } else {
@@ -307,19 +314,19 @@ function Plot(props) {
       // add to the points
 
       let newValueReal =
-        axis == "x"
-          ? getRealXAxisValueFromCanvasPointOnLinearScale(
+          axis == "x"
+              ? getRealXAxisValueFromCanvasPointOnLinearScale(
               props.enrichedFile.channels,
               localPlot.xAxisIndex,
               localPlot.width,
               newValueCanvas
-            )
-          : getRealYAxisValueFromCanvasPointOnLinearScale(
+              )
+              : getRealYAxisValueFromCanvasPointOnLinearScale(
               props.enrichedFile.channels,
               localPlot.yAxisIndex,
               localPlot.height,
               newValueCanvas
-            );
+              );
 
       return newValueReal - startValueReal;
     }
@@ -353,7 +360,6 @@ function Plot(props) {
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "#df4b26";
     context.lineWidth = 1;
-
     context.beginPath();
     context.moveTo(newGatePointsCanvas[0][0], newGatePointsCanvas[0][1]);
     for (var i = 1; i < newGatePointsCanvas.length; i++) {
@@ -378,51 +384,51 @@ function Plot(props) {
     ];
 
     let [horizontalBinCount, verticalBinCount] = getBins(
-      localPlot.width,
-      localPlot.height,
-      localPlot.plotScale
+        localPlot.width,
+        localPlot.height,
+        localPlot.plotScale
     );
 
     let xLabels = getAxisLabels(
-      localPlot.xScaleType,
-      xRange,
-      props.enrichedFile.logicles[localPlot.xAxisIndex],
-      horizontalBinCount
+        localPlot.xScaleType,
+        xRange,
+        props.enrichedFile.logicles[localPlot.xAxisIndex],
+        horizontalBinCount
     );
 
     let yLabels = getAxisLabels(
-      localPlot.yScaleType,
-      yRange,
-      props.enrichedFile.logicles[localPlot.yAxisIndex],
-      verticalBinCount
+        localPlot.yScaleType,
+        yRange,
+        props.enrichedFile.logicles[localPlot.yAxisIndex],
+        verticalBinCount
     );
 
     graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: leftPadding * localPlot.plotScale,
-        y2: (localPlot.height - bottomPadding) * localPlot.plotScale,
-        ib: yRange[0],
-        ie: yRange[1],
-        bins: verticalBinCount,
-        labels: yLabels,
-      },
-      context
+        {
+          x1: leftPadding * localPlot.plotScale,
+          y1: topPadding * localPlot.plotScale,
+          x2: leftPadding * localPlot.plotScale,
+          y2: (localPlot.height - bottomPadding) * localPlot.plotScale,
+          ib: yRange[0],
+          ie: yRange[1],
+          bins: verticalBinCount,
+          labels: yLabels,
+        },
+        context
     );
 
     graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: (localPlot.width - rightPadding) * localPlot.plotScale,
-        y2: topPadding * localPlot.plotScale,
-        ib: xRange[0],
-        ie: xRange[1],
-        bins: horizontalBinCount,
-        labels: xLabels,
-      },
-      context
+        {
+          x1: leftPadding * localPlot.plotScale,
+          y1: topPadding * localPlot.plotScale,
+          x2: (localPlot.width - rightPadding) * localPlot.plotScale,
+          y2: topPadding * localPlot.plotScale,
+          ib: xRange[0],
+          ie: xRange[1],
+          bins: horizontalBinCount,
+          labels: xLabels,
+        },
+        context
     );
   };
 
@@ -470,8 +476,8 @@ function Plot(props) {
       };
       const add = (x, p) => {
         if (
-          (x >= linRange[0] && x <= linRange[1]) ||
-          (x <= linRange[0] && x >= linRange[1])
+            (x >= linRange[0] && x <= linRange[1]) ||
+            (x <= linRange[0] && x >= linRange[1])
         ) {
           labels.push({
             pos: x,
@@ -503,10 +509,10 @@ function Plot(props) {
           return true;
         }
         if (
-          (e.pos - labels[lastAdded].pos) /
+            (e.pos - labels[lastAdded].pos) /
             (Math.max(linRange[0], linRange[1]) -
-              Math.min(linRange[0], linRange[1])) >=
-          distTolerance
+                Math.min(linRange[0], linRange[1])) >=
+            distTolerance
         ) {
           lastAdded = i;
           return true;
@@ -544,12 +550,12 @@ function Plot(props) {
     for (var i = 0; i < newGatePointsCanvas.length; i++) {
       context.beginPath();
       context.arc(
-        newGatePointsCanvas[i][0],
-        newGatePointsCanvas[i][1],
-        3,
-        0,
-        2 * Math.PI,
-        false
+          newGatePointsCanvas[i][0],
+          newGatePointsCanvas[i][1],
+          3,
+          0,
+          2 * Math.PI,
+          false
       );
       context.fillStyle = "#000";
       context.fill();
@@ -601,10 +607,10 @@ function Plot(props) {
 
     if (hasGate()) {
       startPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
       );
     } else {
     }
@@ -624,29 +630,37 @@ function Plot(props) {
       props.onEditGate(change);
     } else {
       // so its a new gate
-
       newGatePointsCanvas.forEach((newGatePointCanvas) => {
         if (
-          inRange(
-            event.offsetX,
-            newGatePointCanvas[0] - 10,
-            newGatePointCanvas[0] + 10
-          ) &&
-          inRange(
-            event.offsetY,
-            newGatePointCanvas[1] - 10,
-            newGatePointCanvas[1] + 10
-          )
+            inRange(
+                event.offsetX,
+                newGatePointCanvas[0] - 10,
+                newGatePointCanvas[0] + 10
+            ) &&
+            inRange(
+                event.offsetY,
+                newGatePointCanvas[1] - 10,
+                newGatePointCanvas[1] + 10
+            ) &&
+            newGatePointsCanvas.length >= 3
         ) {
           setModalIsOpen(true);
           polygonComplete = true;
         }
       });
 
-      if (!polygonComplete) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      // checking if the points are unique or not
+      let uniqueGatePoint = true;
+      for (const point of newGatePointsCanvas){
+        if(point[0] === event.offsetX && point[1] === event.offsetY){
+          uniqueGatePoint = false;
+          break;
+        }
       }
 
+      if (!polygonComplete && uniqueGatePoint) {
+        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      }
       redraw();
     }
   };
@@ -656,62 +670,86 @@ function Plot(props) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
       );
 
-      let isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
+      const isInside = isPointInPolygon(
+          newPointsReal[0],
+          newPointsReal[1],
+          localPlot.gate.points
       );
-      document.body.style.cursor = isInside ? 'grab' :'context-menu';
-      if (isInside) {
-        let moveX = getMoveValue(
+
+      let moveX = getMoveValue(
           startPointsReal[0],
           newPointsCanvas[0],
           localPlot.xScaleType,
           localPlot.xAxisIndex,
           "x"
-        );
-        let moveY = getMoveValue(
+      );
+      let moveY = getMoveValue(
           startPointsReal[1],
           newPointsCanvas[1],
           localPlot.yScaleType,
           localPlot.yAxisIndex,
           "y"
-        );
+      );
 
-        localPlot.gate.points = props.plot.gate.points.map((point) => {
-          let newGateValueRealX = getGateValue(
-            point[0],
+
+      if(isDraggingGatePoint?.dragging){
+        // this code will run when a user will drag a specific polygon gate point
+        const draggingPointIndex = localPlot.gate.points.findIndex(point => point === isDraggingGatePoint.pointValue)
+        let newGateValueRealX = getGateValue(
+            localPlot.gate.points[draggingPointIndex][0],
             localPlot.xScaleType,
             localPlot.xAxisIndex,
             localPlot.width,
             moveX
-          );
+        );
 
-          let newGateValueRealY = getGateValue(
-            point[1],
+        let newGateValueRealY = getGateValue(
+            localPlot.gate.points[draggingPointIndex][1],
             localPlot.yScaleType,
             localPlot.yAxisIndex,
             localPlot.height,
             moveY
+        );
+        localPlot.gate.points[draggingPointIndex] = [newGateValueRealX, newGateValueRealY];
+
+      } else if (isInside) {
+        // this code will run when a user will drag the entire polygon gate
+        localPlot.gate.points = props.plot.gate.points.map((point) => {
+          let newGateValueRealX = getGateValue(
+              point[0],
+              localPlot.xScaleType,
+              localPlot.xAxisIndex,
+              localPlot.width,
+              moveX
+          );
+
+          let newGateValueRealY = getGateValue(
+              point[1],
+              localPlot.yScaleType,
+              localPlot.yAxisIndex,
+              localPlot.height,
+              moveY
           );
 
           return [newGateValueRealX, newGateValueRealY];
         });
+      }
 
+      if(isInside || isDraggingGatePoint?.dragging){
         // IMPORTANT - reste start points
         startPointsReal = getRealPointFromCanvasPoints(
-          props.enrichedFile.channels,
-          localPlot,
-          [event.offsetX, event.offsetY],
-          props.enrichedFile.logicles
+            props.enrichedFile.channels,
+            localPlot,
+            [event.offsetX, event.offsetY],
+            props.enrichedFile.logicles
         );
-
         setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
     }
@@ -720,17 +758,20 @@ function Plot(props) {
   const handleCursorProperty = (event) => {
     if(hasGate() && props?.plot?.gate?.gateType === "polygon" ){
       let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
       );
       let isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
+          newPointsReal[0],
+          newPointsReal[1],
+          localPlot.gate.points
       );
-      document.body.style.cursor = isInside ? 'grab' : 'context-menu'; 
+
+      const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
+      document.body.style.cursor =  isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu';
+
     } else {
       document.body.style.cursor = 'crosshair'
     }
@@ -775,99 +816,99 @@ function Plot(props) {
 
 
   return (
-    <>
-      {" "}
-      <div
-        key={props.plotIndex}
-        style={
-          {
-            // padding: "20px",
-          }
-        }
-      >
-        <Modal 
-          isOpen={modalIsOpen} 
-          appElement={document.getElementById('root') || undefined}
-          style={customStyles}
+      <>
+        {" "}
+        <div
+            key={props.plotIndex}
+            style={
+              {
+                // padding: "20px",
+              }
+            }
         >
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "cneter",
-            justifyContent: "center"
-            
-          }}>
-            <label>
-              Gate Name:
-              <input 
-                type="text" 
-                style={{width: 200, marginLeft: 5, border:"none", borderRadius: 5}} 
-                onChange={(e) => gateNameHandler(e.target.value)} 
-              />
-            </label>
-            <p style={{height: 16, textAlign: "center", paddingTop: 2.5}}> 
-              {gateName.error && "A unique gate name is required"} 
-            </p>
-            <div style={{padding: 10, alignSelf: 'center', paddingTop: 0, paddingBottom: 25}}>
-              <CompactPicker onChangeComplete={ handleChangeComplete } color={ gateColor } />
+          <Modal
+              isOpen={modalIsOpen}
+              appElement={document.getElementById('root') || undefined}
+              style={customStyles}
+          >
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "cneter",
+              justifyContent: "center"
+
+            }}>
+              <label>
+                Gate Name:
+                <input
+                    type="text"
+                    style={{width: 200, marginLeft: 5, border:"none", borderRadius: 5}}
+                    onChange={(e) => gateNameHandler(e.target.value)}
+                />
+              </label>
+              <p style={{height: 16, textAlign: "center", paddingTop: 2.5}}>
+                {gateName.error && "A unique gate name is required"}
+              </p>
+              <div style={{padding: 10, alignSelf: 'center', paddingTop: 0, paddingBottom: 25}}>
+                <CompactPicker onChangeComplete={ handleChangeComplete } color={ gateColor } />
+              </div>
+              <div style={{margin: "auto"}}>
+                <button
+                    style={{marginRight: 5}}
+                    disabled={gateName.error || !gateName.name}
+                    onClick={() => onSetGateName()}
+                >
+                  Ok
+                </button>
+                <button onClick={() => onCancelGateName()}>Cancel</button>
+              </div>
             </div>
-            <div style={{margin: "auto"}}>
-              <button 
-                style={{marginRight: 5}} 
-                disabled={gateName.error || !gateName.name} 
-                onClick={() => onSetGateName()}
-              >
-                Ok
-              </button>
-              <button onClick={() => onCancelGateName()}>Cancel</button>
-            </div>
-          </div>
-        </Modal>
-        <SideSelector
-          channelOptions={channelOptions}
-          onChange={onChangeChannel}
-          onChangeScale={onChangeScale}
-          plot={localPlot}
-          plotIndex={props.plotIndex}
-          handleResizeMouseDown={handleResizeMouseDown}
-          handleResizeMouseMove={handleResizeMouseMove}
-          handleResizeMouseUp={handleResizeMouseUp}
-          canvasComponent={
-            <div
-              style={{
-                border: "1px solid #32a1ce",
-                width: `${localPlot.width}px`,
-                height: `${localPlot.height}px`,
-              }}
-              // ref={ref}
-            >
-              <canvas
-                className="canvas"
-                id={`canvas-${props.plotIndex}`}
-                width={localPlot.width}
-                height={localPlot.height}
-                onMouseDown={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseDown(nativeEvent);
-                }}
-                onMouseMove={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleCursorProperty(nativeEvent)
-                  handleMouseMove(nativeEvent);
-                }}
-                onMouseUp={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseUp(nativeEvent);
-                }}
-                onMouseLeave={(e) => {
-                  document.body.style.cursor = 'context-menu'
-                }}
-              />
-            </div>
-          }
-        />
-      </div>
-    </>
+          </Modal>
+          <SideSelector
+              channelOptions={channelOptions}
+              onChange={onChangeChannel}
+              onChangeScale={onChangeScale}
+              plot={localPlot}
+              plotIndex={props.plotIndex}
+              handleResizeMouseDown={handleResizeMouseDown}
+              handleResizeMouseMove={handleResizeMouseMove}
+              handleResizeMouseUp={handleResizeMouseUp}
+              canvasComponent={
+                <div
+                    style={{
+                      border: "1px solid #32a1ce",
+                      width: `${localPlot.width}px`,
+                      height: `${localPlot.height}px`,
+                    }}
+                    // ref={ref}
+                >
+                  <canvas
+                      className="canvas"
+                      id={`canvas-${props.plotIndex}`}
+                      width={localPlot.width}
+                      height={localPlot.height}
+                      onMouseDown={(e) => {
+                        let nativeEvent = e.nativeEvent;
+                        handleMouseDown(nativeEvent);
+                      }}
+                      onMouseMove={(e) => {
+                        let nativeEvent = e.nativeEvent;
+                        handleCursorProperty(nativeEvent);
+                        handleMouseMove(nativeEvent);
+                      }}
+                      onMouseUp={(e) => {
+                        let nativeEvent = e.nativeEvent;
+                        handleMouseUp(nativeEvent);
+                      }}
+                      onMouseLeave={(e) => {
+                        document.body.style.cursor = 'context-menu'
+                      }}
+                  />
+                </div>
+              }
+          />
+        </div>
+      </>
   );
 }
 
