@@ -20,7 +20,7 @@ import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {createDefaultPlotSnapShot} from "../../mark-app/Helper";
+import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -375,38 +375,18 @@ const AddFileModal = React.memo(
                               // downloadFile(fileMetadata.id);
                               // @ts-ignore
                               const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
-                              // @ts-ignore
-                              const defaultFileChannels = defaultFile?.fileChannels;
 
-                                let xAxisLabel = "FSC-A";
-                                let yAxisLabel = "SSC-A";
-                                let xAxisIndex = 0;
-                                let yAxisIndex = 0;
-
-                                if(defaultFileChannels.includes("FSC-A")) {
-                                    xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
-                                    xAxisLabel = "FSC-A";
-                                }
-                                else
-                                    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-                                if(defaultFileChannels.includes("SSC-A")) {
-                                    yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
-                                    yAxisLabel = "SSC-A"
-                                } else
-                                    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-                                xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
-                                yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
 
                               const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
+
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
-                            }}
-                          >
+                            }}>
                             {isDownloading ? (
                               <CircularProgress
                                 style={{
@@ -440,43 +420,28 @@ const AddFileModal = React.memo(
 
                               // making the selected file the first element of filesArray
                               const filesInNewOrder: File[] = [];
+                              let selectedFile = null;
                               for (let i = 0; i < files.length; i++) {
                                 if (files[i].id === fileMetadata.id) {
                                   files[i].view = false;
+                                  selectedFile = files[i];
                                   filesInNewOrder.unshift(files[i]);
                                 } else {
                                   filesInNewOrder.push(files[i]);
                                 }
                               }
                               WorkspaceDispatch.SetFiles(filesInNewOrder);
-                              const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
-                              // @ts-ignore
-                              const defaultFileChannels = defaultFile?.fileChannels;
 
-                              let xAxisLabel = "FSC-A";
-                              let yAxisLabel = "SSC-A";
-                              let xAxisIndex = 0;
-                              let yAxisIndex = 0;
+                              // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
 
-                                if(defaultFileChannels.includes("FSC-A")) {
-                                    xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
-                                    xAxisLabel = "FSC-A";
-                                }
-                                else
-                                    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-                                if(defaultFileChannels.includes("SSC-A")) {
-                                    yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
-                                    yAxisLabel = "SSC-A"
-                                } else
-                                    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-                                xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
-                                yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
-
+                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
+                                console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
+                                console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
                               const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
+
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
