@@ -9,12 +9,15 @@ const DEFAULT_Y_AXIS_LABEL = "SSC-A";
 const DEFAULT_PLOT_WIDTH = 200;
 const DEFAULT_PLOT_HEIGHT = 200;
 const DEFAULT_X_SCALE_TYPE = "lin";
-const DEFAULT_Y_SCALE_TYPE =  "lin";
+const DEFAULT_Y_SCALE_TYPE = "lin";
 
-export const superAlgorithm = (Files, WorkspaceState) => {
+export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   // event 1 is not in any gate, it will have color black
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
+
+  let Files = JSON.parse(JSON.stringify(OriginalFiles));
+  let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
 
   // TODO logicle here needs to be got correctly
   let logicle = new MarkLogicle(0, 262144);
@@ -97,9 +100,6 @@ export const superAlgorithm = (Files, WorkspaceState) => {
             !gateStatsObj[gate.name + "_count"]
               ? (gateStatsObj[gate.name + "_count"] = 1)
               : gateStatsObj[gate.name + "_count"]++;
-          }else {
-              event["isInGate" + gate.name] = false;
-              event["color"] = "#000";
           }
         }
         if (!isInGate) {
@@ -413,107 +413,114 @@ export const graphLine = (params, ctx) => {
   }
 };
 
-
 export const getPlotChannelAndPosition = (file) => {
+  const defaultFileChannels = file?.channels;
 
-    const defaultFileChannels = file?.channels;
+  const expectedXChannels = ["FSC-A", "FSC.A", "FSC-H", "FSC.H"];
+  let xAxisLabel = "";
+  let xAxisIndex = defaultFileChannels.findIndex((channel) =>
+    expectedXChannels.includes(channel?.value?.toUpperCase())
+  );
 
-    const expectedXChannels = ["FSC-A", "FSC.A","FSC-H","FSC.H"];
-    let xAxisLabel = "";
-    let xAxisIndex = defaultFileChannels.findIndex(channel => expectedXChannels.includes(channel?.value?.toUpperCase()));
+  let yAxisLabel = "";
+  const expectedYChannels = ["SSC-A", "SSC.A", "SSC-H", "SSC.H"];
+  let yAxisIndex = defaultFileChannels.findIndex((channel, position) =>
+    expectedYChannels.includes(channel?.value?.toUpperCase())
+  );
 
-    let yAxisLabel = "";
-    const expectedYChannels = ["SSC-A", "SSC.A","SSC-H","SSC.H"];
-    let yAxisIndex = defaultFileChannels.findIndex((channel, position) => expectedYChannels.includes(channel?.value?.toUpperCase()));
+  if (xAxisIndex > -1) xAxisLabel = defaultFileChannels[xAxisIndex]?.value;
+  else
+    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
 
-    if(xAxisIndex > -1 )
-        xAxisLabel = defaultFileChannels[xAxisIndex]?.value;
-    else
-        xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  if (yAxisIndex > -1) yAxisLabel = defaultFileChannels[yAxisIndex]?.value;
+  else
+    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
 
-    if(yAxisIndex > -1 )
-        yAxisLabel = defaultFileChannels[yAxisIndex]?.value;
-    else
-        yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  // if(defaultFileChannels.includes("FSC-H")) {
+  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-H");
+  //     xAxisLabel = "FSC-H";
+  // }else if(defaultFileChannels.includes("FSC.H")){
+  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.H");
+  //     xAxisLabel = "FSC.H";
+  // } else if(defaultFileChannels.includes("FSC-A")) {
+  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-A");
+  //     xAxisLabel = "FSC-A";
+  // } else if(defaultFileChannels.includes("FSC.A")){
+  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.A");
+  //     xAxisLabel = "FSC.A";
+  // } else
+  //     xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  //
+  // if(defaultFileChannels.includes("SSC-H")) {
+  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-H");
+  //     yAxisLabel = "SSC-H"
+  // }else if(defaultFileChannels.includes("SSC.H")) {
+  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.H");
+  //     yAxisLabel = "SSC.H"
+  // } else if(defaultFileChannels.includes("SSC.A")) {
+  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.A");
+  //     yAxisLabel = "SSC.A"
+  // } else if(defaultFileChannels.includes("SSC-A")) {
+  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-A");
+  //     yAxisLabel = "SSC-A"
+  // }else
+  //     yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
 
-    // if(defaultFileChannels.includes("FSC-H")) {
-    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-H");
-    //     xAxisLabel = "FSC-H";
-    // }else if(defaultFileChannels.includes("FSC.H")){
-    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.H");
-    //     xAxisLabel = "FSC.H";
-    // } else if(defaultFileChannels.includes("FSC-A")) {
-    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-A");
-    //     xAxisLabel = "FSC-A";
-    // } else if(defaultFileChannels.includes("FSC.A")){
-    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.A");
-    //     xAxisLabel = "FSC.A";
-    // } else
-    //     xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-    //
-    // if(defaultFileChannels.includes("SSC-H")) {
-    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-H");
-    //     yAxisLabel = "SSC-H"
-    // }else if(defaultFileChannels.includes("SSC.H")) {
-    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.H");
-    //     yAxisLabel = "SSC.H"
-    // } else if(defaultFileChannels.includes("SSC.A")) {
-    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.A");
-    //     yAxisLabel = "SSC.A"
-    // } else if(defaultFileChannels.includes("SSC-A")) {
-    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-A");
-    //     yAxisLabel = "SSC-A"
-    // }else
-    //     yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
+  yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
 
-    xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
-    yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
-
-    return{xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex};
+  return { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex };
 };
 
-export const createDefaultPlotSnapShot = (fileId, experimentId, xAxisLabel = DEFAULT_X_AXIS_LABEL, yAxisLabel = DEFAULT_Y_AXIS_LABEL,  xAxisIndex = 0,
-    yAxisIndex = 1, plotType = DEFAULT_PLOT_TYPE) => {
-  return  {
-    "experimentId": experimentId,
-    "controlFileId": fileId,
-    "files": {
+export const createDefaultPlotSnapShot = (
+  fileId,
+  experimentId,
+  xAxisLabel = DEFAULT_X_AXIS_LABEL,
+  yAxisLabel = DEFAULT_Y_AXIS_LABEL,
+  xAxisIndex = 0,
+  yAxisIndex = 1,
+  plotType = DEFAULT_PLOT_TYPE
+) => {
+  return {
+    experimentId: experimentId,
+    controlFileId: fileId,
+    files: {
       [fileId]: {
-        "plots": [
+        plots: [
           {
-            "population": "All",
-            "plotType": plotType || DEFAULT_PLOT_TYPE,
-            "width": DEFAULT_PLOT_WIDTH,
-            "height": DEFAULT_PLOT_HEIGHT,
-            "xAxisLabel": xAxisLabel || DEFAULT_X_AXIS_LABEL,
-            "yAxisLabel": yAxisLabel || DEFAULT_Y_AXIS_LABEL,
-            "xAxisIndex": xAxisIndex,
-            "yAxisIndex": yAxisIndex,
-            "plotScale": 2,
-            "xScaleType": DEFAULT_X_SCALE_TYPE,
-            "yScaleType": DEFAULT_Y_SCALE_TYPE,
-            "histogramAxis": "",
-            "label": "",
-            "dimensions": {
-              "w": 9,
-              "h": 10
+            population: "All",
+            plotType: plotType || DEFAULT_PLOT_TYPE,
+            width: DEFAULT_PLOT_WIDTH,
+            height: DEFAULT_PLOT_HEIGHT,
+            xAxisLabel: xAxisLabel || DEFAULT_X_AXIS_LABEL,
+            yAxisLabel: yAxisLabel || DEFAULT_Y_AXIS_LABEL,
+            xAxisIndex: xAxisIndex,
+            yAxisIndex: yAxisIndex,
+            plotScale: 2,
+            xScaleType: DEFAULT_X_SCALE_TYPE,
+            yScaleType: DEFAULT_Y_SCALE_TYPE,
+            histogramAxis: "",
+            label: "",
+            dimensions: {
+              w: 9,
+              h: 10,
             },
-            "positions": {
-              "x": 0,
-              "y": 0
+            positions: {
+              x: 0,
+              y: 0,
             },
-            "parentPlotId": "",
-            "gatingActive": ""
-          }
-        ]
-      }
+            parentPlotId: "",
+            gatingActive: "",
+          },
+        ],
+      },
     },
-    "sharedWorkspace": "false",
-    "editWorkspace": "true",
-    "selectedFile": fileId,
-    "clearOpenFiles": "false",
-    "isShared": "false"
-  }
+    sharedWorkspace: "false",
+    editWorkspace: "true",
+    selectedFile: fileId,
+    clearOpenFiles: "false",
+    isShared: "false",
+  };
 };
 
 const numToLabelText = (num) => {
@@ -555,4 +562,3 @@ const drawText = (params, ctx) => {
     ctx.rotate(-params.rotate);
   }
 };
-
