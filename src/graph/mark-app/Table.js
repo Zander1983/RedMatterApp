@@ -1,61 +1,17 @@
 import Plot from "./Plot";
 import Histogram from "./Histogram";
-import React from "react";
-import { Divider, Grid } from "@material-ui/core";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 
-const classes = {
-  itemOuterDiv: {
-    flex: 1,
-    backgroundColor: "#eef",
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: 5,
-  },
-  itemInnerDiv: {
-    width: "100%",
-    height: "100%",
-  },
-  mainContainer: {
-    width: "100%",
-    height: "100%",
-    padding: "8px 10px 10px 10px",
-    flex: 1,
-    border: "solid 0.5px #bbb",
-    boxShadow: "1px 3px 4px #bbd",
-    borderRadius: "5px",
-    paddingBottom: "8px",
-    backgroundColor: "rgb(238, 238, 255)",
-  },
-  utilityBar: {
-    width: "100%",
-  },
-  canvasDisplay: {
-    borderRadius: 5,
-    boxShadow: "1px 3px 4px #bbd",
-    backgroundColor: "#dfd",
-    flexGrow: 1,
-  },
-};
-
 function Table(props) {
-  //console.log(">> table props is ", props);
-
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
-
-  //console.log("FIND CONTROL FILE");
-  //console.log(controlEnrichedFile);
 
   let nonControlEnrichedFiles = props.enrichedFiles.filter(
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  //console.log("NON CONTROLS FILES ");
-  //console.log(nonControlEnrichedFiles);
-   
   return (
     <div>
       <div
@@ -114,7 +70,6 @@ function Table(props) {
                           enrichedFile={controlEnrichedFile}
                           onAddGate={props.onAddGate}
                           onDeleteGate={props.onDeleteGate}
-                          // selectedFile={controlEnrichedFile}
                           onEditGate={props.onEditGate}
                           onResize={props.onResize}
                           onChangeChannel={props.onChangeChannel}

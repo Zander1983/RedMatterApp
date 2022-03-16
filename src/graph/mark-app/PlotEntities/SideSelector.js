@@ -1,5 +1,5 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
-import deleteIcon from './../../../assets/images/delete.png'
+import deleteIcon from "./../../../assets/images/delete.png";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -43,7 +43,7 @@ function SideSelector(props) {
                 width: 180,
                 marginLeft: "25px",
                 marginTop: "60px",
-                textAlign: 'center',
+                textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
               }}
@@ -107,28 +107,27 @@ function SideSelector(props) {
         }}
       >
         {/* canvas-top-bar */}
-        {props.plot.gate ? (
-
-          <div style={{
-            display: "flex", 
-            justifyContent: "center", 
-            alignItems: "center", 
-            alignSelf: "center", 
-            marginTop: 5, 
-            marginBottom: 10
-          }}
-          > 
-            <img 
-              src={deleteIcon} 
-              alt={props.plot.id} 
-              style={{width: 15, height:15, cursor: "pointer"}} 
-              onClick={() => props.onDeleteGate(props.plot)} 
+        {props.plot.gate && props.onDeleteGate ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              alignSelf: "center",
+              marginTop: 5,
+              marginBottom: 10,
+            }}
+          >
+            <img
+              src={deleteIcon}
+              alt={props.plot.id}
+              style={{ width: 15, height: 15, cursor: "pointer" }}
+              onClick={() => props.onDeleteGate(props.plot)}
             />
           </div>
-          ):(
-            <div style={{height: 30}}> </div>
-          )
-        }
+        ) : (
+          <div style={{ height: 30 }}> </div>
+        )}
         {props.canvasComponent}
         <div
           style={{
@@ -144,7 +143,7 @@ function SideSelector(props) {
               disableUnderline
               style={{
                 width: 180,
-                textAlign: 'center',
+                textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
               }}

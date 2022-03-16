@@ -11,10 +11,7 @@ import userManager from "Components/users/userManager";
 import PrototypeNotice from "./PrototypeNotice";
 import SideMenus from "./components/static/SideMenus";
 
-import {
-  downloadEvents,
-  downloadFileMetadata,
-} from "services/FileService";
+import { downloadEvents, downloadFileMetadata } from "services/FileService";
 import {
   getWorkspace,
   loadWorkspaceFromRemoteIfExists,
@@ -98,7 +95,8 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] = React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] =
+    React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
