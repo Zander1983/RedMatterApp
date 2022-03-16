@@ -1,4 +1,4 @@
-import { MenuItem, Select } from "@material-ui/core";
+import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from './../../../assets/images/delete.png'
 
 function SideSelector(props) {
@@ -24,49 +24,58 @@ function SideSelector(props) {
         <div
           className="pc-y"
           style={{
-            marginRight: "20px",
+            // marginRight: "20px",
             transform: "rotate(270deg)",
-            marginLeft: "-53px",
+            marginLeft: "-115px",
             marginRight: "-60px",
             width: "min-content",
             display: "flex",
           }}
         >
-          <Select
-            disableUnderline
-            style={{
-              // maxWidth: 100,
-              marginTop: "10px",
-              flex: "1 1 auto",
-            }}
-            onChange={(e) => {
-              props.onChange(
-                { value: e.target.value },
-                "y",
-                props.plotIndex.split("-")[1]
-              );
-            }}
-            value={getYAxisValue()}
+          <Tooltip
+            title={
+              props.plot.yAxisLabel.length > 25 ? props.plot.yAxisLabel : ""
+            }
           >
-            {props.channelOptions.map((e) => (
-              <MenuItem key={e.value} value={e.value}>
-                {e.label}
-              </MenuItem>
-            ))}
-            <MenuItem
+            <Select
+              disableUnderline
               style={{
-                backgroundColor: `${
-                  props.plot.plotType == "histogram"
-                    ? "rgb(236 235 235)"
-                    : "unset"
-                }`,
+                width: 180,
+                marginLeft: "25px",
+                marginTop: "60px",
+                textAlign: 'center',
+                flex: "1 1 auto",
+                fontSize: 12,
               }}
-              key={`${props.plotIndex}-hist`}
-              value="histogram"
+              onChange={(e) => {
+                props.onChange(
+                  { value: e.target.value },
+                  "y",
+                  props.plotIndex.split("-")[1]
+                );
+              }}
+              value={getYAxisValue()}
             >
-              Histogram{" "}
-            </MenuItem>
-          </Select>
+              {props.channelOptions.map((e) => (
+                <MenuItem key={e.value} value={e.value}>
+                  {e.label}
+                </MenuItem>
+              ))}
+              <MenuItem
+                style={{
+                  backgroundColor: `${
+                    props.plot.plotType == "histogram"
+                      ? "rgb(236 235 235)"
+                      : "unset"
+                  }`,
+                }}
+                key={`${props.plotIndex}-hist`}
+                value="histogram"
+              >
+                Histogram{" "}
+              </MenuItem>
+            </Select>
+          </Tooltip>
           {/* <Select
             style={{
               marginTop: "10px",
@@ -120,28 +129,35 @@ function SideSelector(props) {
             display: "flex",
           }}
         >
-          <Select
-            disableUnderline
-            style={{
-              maxWidth: 100,
-              marginTop: "10px",
-              flex: "1 1 auto",
-            }}
-            onChange={(e) => {
-              props.onChange(
-                { value: e.target.value },
-                "x",
-                props.plotIndex.split("-")[1]
-              );
-            }}
-            value={props.plot.xAxisIndex}
+          <Tooltip
+            title={
+              props.plot.xAxisLabel.length > 25 ? props.plot.xAxisLabel : ""
+            }
           >
-            {props.channelOptions.map((e) => (
-              <MenuItem key={e.value} name={e.label} value={e.value}>
-                {e.label}
-              </MenuItem>
-            ))}
-          </Select>
+            <Select
+              disableUnderline
+              style={{
+                width: 180,
+                textAlign: 'center',
+                flex: "1 1 auto",
+                fontSize: 12,
+              }}
+              onChange={(e) => {
+                props.onChange(
+                  { value: e.target.value },
+                  "x",
+                  props.plotIndex.split("-")[1]
+                );
+              }}
+              value={props.plot.xAxisIndex}
+            >
+              {props.channelOptions.map((e) => (
+                <MenuItem key={e.value} name={e.label} value={e.value}>
+                  {e.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </Tooltip>
           {/* <Select
             style={{
               marginTop: "10px",

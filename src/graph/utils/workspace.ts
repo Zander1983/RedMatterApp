@@ -16,6 +16,7 @@ import {
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
 import { snackbarService } from "uno-material-ui";
+import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../mark-app/Helper";
 
 export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
@@ -89,6 +90,38 @@ export const getGate = (gateID: GateID): Gate => {
   return gates.length > 0 ? gates[0] : null;
 };
 
+
+export const saveWorkspaceStateToServer = async (
+    shared: boolean,
+    experimentId: string,
+    stateData?:any
+): Promise<boolean> => {
+  //let stateJson = JSON.stringify(getWorkspace().workspaceState);
+  let stateJson = stateData ?  JSON.stringify(stateData) : JSON.stringify(getWorkspace().workspaceState || {});
+  const updateWorkSpace = WorkspacesApiFetchParamCreator({
+    accessToken: userManager.getToken(),
+  }).upsertWorkSpace(userManager.getToken(), {
+    experimentId: experimentId,
+    state: stateJson,
+    isShared: shared,
+  });
+
+  try {
+    await axios.post(
+        updateWorkSpace.url,
+        updateWorkSpace.options.body,
+        updateWorkSpace.options
+    );
+    return true;
+  } catch (err) {
+    snackbarService.showSnackbar(
+        "Could not save the workspace, reload the page and try again!",
+        "error"
+    );
+  }
+  return false;
+};
+
 export const saveWorkspaceToRemote = async (
   shared: boolean,
   experimentId: string
@@ -104,6 +137,7 @@ export const saveWorkspaceToRemote = async (
     state: stateJson,
     isShared: shared,
   });
+
   try {
     await axios.post(
       updateWorkSpace.url,
@@ -200,4 +234,62 @@ const loadSavedWorkspace = async (
     editWorkspace: !shared,
   };
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
+};
+
+
+export const getWorkspaceStateFromServer = async (
+    shared: boolean,
+    experimentId: string
+): Promise<{
+  loaded: boolean;
+  requestSuccess: boolean;
+}> => {
+  let workspaceData;
+  try {
+    if (shared) {
+      workspaceData = await axios.post("/api/verifyWorkspace", {
+        experimentId: experimentId,
+      });
+    } else {
+      workspaceData = await axios.post(
+          "/api/getWorkspace",
+          {
+            experimentId,
+          },
+          {
+            headers: {
+              token: userManager.getToken(),
+            },
+          }
+      );
+    }
+    const workspace = workspaceData.data.state;
+    if (workspace && Object.keys(workspace).length > 0) {
+      await saveWorkspaceStateToRedux(workspace);
+      return { loaded: true, requestSuccess: true };
+    }
+  } catch (err) {
+    throw err;
+  }
+  return { loaded: false, requestSuccess: true };
+};
+
+const saveWorkspaceStateToRedux = async (
+    workspace: string,
+) => {
+   const workspaceObj = JSON.parse(workspace || "{}");
+  // if(getWorkspace().workspaceState?.length === 0) {
+  //   let selectedFileID:any = getWorkspace().selectedFile;
+  //   const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
+  //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+  //   const workspaceState = createDefaultPlotSnapShot(selectedFileID, workspaceObj.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+  //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
+  //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
+  //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  // }else {
+    const newWorkspace: Workspace = {...workspaceObj};
+    await WorkspaceDispatch.SetPlotStates(newWorkspace);
+    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  //}
+
 };
