@@ -870,6 +870,7 @@ function Plot(props) {
               onChangeScale={onChangeScale}
               plot={localPlot}
               plotIndex={props.plotIndex}
+              onDeleteGate={props.onDeleteGate}
               handleResizeMouseDown={handleResizeMouseDown}
               handleResizeMouseMove={handleResizeMouseMove}
               handleResizeMouseUp={handleResizeMouseUp}

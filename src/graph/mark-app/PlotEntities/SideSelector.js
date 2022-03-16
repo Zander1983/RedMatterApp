@@ -107,22 +107,28 @@ function SideSelector(props) {
         }}
       >
         {/* canvas-top-bar */}
-        <div style={{
-          display: "flex", 
-          justifyContent: "center", 
-          alignItems: "center", 
-          alignSelf: "flex-start", 
-          marginTop: 5, 
-          marginBottom: 10
-        }}
-        > 
-          <img 
-            src={deleteIcon} 
-            alt={props.plot.id} 
-            style={{width: 15, height:15, cursor: "pointer"}} 
-            onClick={() => props.onDeleteGate(props.plot)} 
-          />
-        </div>
+        {props.plot.gate ? (
+
+          <div style={{
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center", 
+            alignSelf: "center", 
+            marginTop: 5, 
+            marginBottom: 10
+          }}
+          > 
+            <img 
+              src={deleteIcon} 
+              alt={props.plot.id} 
+              style={{width: 15, height:15, cursor: "pointer"}} 
+              onClick={() => props.onDeleteGate(props.plot)} 
+            />
+          </div>
+          ):(
+            <div style={{height: 30}}> </div>
+          )
+        }
         {props.canvasComponent}
         <div
           style={{

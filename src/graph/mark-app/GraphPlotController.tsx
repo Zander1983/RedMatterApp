@@ -202,33 +202,44 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onDeleteGate = (plot:any) =>{
-    if(plot.population === "All"){
-      console.log("Delete Everything")
-      return;
-    }
+    //@ts-ignore
+    let newWorkspaceState:any = this.state.workspaceState;
+    let controlFileId: string = newWorkspaceState.controlFileId;
 
-    let controlFileId: string = workspaceState.controlFileId;
-
-    // deleting the plot of the gate 
-    (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.filter((plt:any) => plt.population !== plot.population);
+    // deleting the children of the gate
+    const plotIndex = (newWorkspaceState as any).files[controlFileId].plots.findIndex((plt:any) => plt.population === plot.population);
+    (newWorkspaceState as any).files[controlFileId].plots.length = plotIndex+1;
 
     // deleting the gate from the parent plot
-    const parentPlot =  (workspaceState as any).files[controlFileId].plots.find((plt:any) => plot.population === plt?.gate?.name);
-    (workspaceState as any).files[controlFileId].plots = (workspaceState as any).files[controlFileId].plots.map((plt:any) => {
-      if(plt.population === parentPlot.population){
-        const { gate, ...plotWithOutGate } = parentPlot;
+    (newWorkspaceState as any).files[controlFileId].plots = (newWorkspaceState as any).files[controlFileId].plots.map((plt:any) => {
+      if(plt.population === plot.population){
+        const { gate, ...plotWithOutGate } = plot;
         return plotWithOutGate;
       }else {
         return plt;
       }
     });
 
-    let copyOfFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfFiles, workspaceState);
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
-    this.setState({
-      enrichedFiles: enrichedFiles,
-    });
+
+
+    let copyOfFiles: any[] = getWorkspace().files;
+    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
+    //console.log("in add gate, enrichedFiles is now ", enrichedFiles);
+    // set new gate to redux
+    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState)}, 5);
+
+    //set state
+    this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState});
+
+    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
+    // let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    // enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    // this.setState({
+    //   enrichedFiles: enrichedFiles,
+    // });
 
   }
 

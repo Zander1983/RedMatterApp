@@ -114,6 +114,7 @@ function Table(props) {
                           enrichedFile={controlEnrichedFile}
                           onAddGate={props.onAddGate}
                           onDeleteGate={props.onDeleteGate}
+                          // selectedFile={controlEnrichedFile}
                           onEditGate={props.onEditGate}
                           onResize={props.onResize}
                           onChangeChannel={props.onChangeChannel}
