@@ -131,11 +131,34 @@ export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
 };
 
 export const isCursorNearAPolygonPoint = (plot, mouseRealPoints) => {
-  let minimumDistance = plot.xScaleType === "lin" && plot.yScaleType === "lin" ? 5000 : 2500;
-
+  let minimumDistanceFromPointX = 5000;
+  let minimumDistanceFromPointY = 5000;
+  if (plot.xScaleType === "bi"){
+    minimumDistanceFromPointX = mouseRealPoints[0] < 0 ? 10
+                                :
+                                mouseRealPoints[0] < 100 ? 20
+                                :
+                                mouseRealPoints[0] < 1000 ? 50
+                                :
+                                mouseRealPoints[0] < 10000 ? 500 
+                                :
+                                mouseRealPoints[0] < 50000 ? 5000  : 10000
+                          
+  }
+  if (plot.yScaleType === "bi"){
+    minimumDistanceFromPointY = mouseRealPoints[1] < 0 ? 10
+                                :
+                                mouseRealPoints[1] < 100 ? 20
+                                :
+                                mouseRealPoints[1] < 1000 ? 50
+                                :
+                                mouseRealPoints[1] < 10000 ? 500 
+                                :
+                                mouseRealPoints[1] < 50000 ? 5000 : 10000
+  }
   for(const point of plot.gate.points){
-    const xPointTouched = mouseRealPoints[0]+minimumDistance > point[0] &&  mouseRealPoints[0]-minimumDistance < point[0];
-    const yPointTouched = mouseRealPoints[1]+minimumDistance > point[1] &&  mouseRealPoints[1]-minimumDistance < point[1];
+    const xPointTouched = mouseRealPoints[0]+minimumDistanceFromPointX > point[0] &&  mouseRealPoints[0]-minimumDistanceFromPointX < point[0];
+    const yPointTouched = mouseRealPoints[1]+minimumDistanceFromPointY > point[1] &&  mouseRealPoints[1]-minimumDistanceFromPointY < point[1];
     if(xPointTouched && yPointTouched){
       return {
         dragging: true,
