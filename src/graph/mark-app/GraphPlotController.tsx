@@ -217,20 +217,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     const plotIndex = (newWorkspaceState as any).files[
       controlFileId
     ].plots.findIndex((plt: any) => plt.population === plot.population);
-    (newWorkspaceState as any).files[controlFileId].plots.length =
-      plotIndex + 1;
+    const fileIds = Object.keys((newWorkspaceState as any).files) || [];
+    for (let i = 0; i < fileIds.length; i++) {
+      (newWorkspaceState as any).files[fileIds[i]].plots.length = plotIndex + 1;
+    }
 
     // deleting the gate from the parent plot
-    (newWorkspaceState as any).files[controlFileId].plots = (
-      newWorkspaceState as any
-    ).files[controlFileId].plots.map((plt: any) => {
-      if (plt.population === plot.population) {
-        const { gate, ...plotWithOutGate } = plot;
-        return plotWithOutGate;
-      } else {
-        return plt;
-      }
-    });
+    for (let i = 0; i < fileIds.length; i++) {
+      (newWorkspaceState as any).files[fileIds[i]].plots = (
+        newWorkspaceState as any
+      ).files[fileIds[i]].plots.map((plt: any) => {
+        if (plt.population === plot.population) {
+          const { gate, ...plotWithOutGate } = plot;
+          return plotWithOutGate;
+        } else {
+          return plt;
+        }
+      });
+    }
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
