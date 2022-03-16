@@ -55,7 +55,7 @@ function Table(props) {
 
   //console.log("NON CONTROLS FILES ");
   //console.log(nonControlEnrichedFiles);
-
+   
   return (
     <div>
       <div
@@ -251,7 +251,6 @@ function Table(props) {
                             <Plot
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
-                              plotNames={enrichedFile.plots.map(plot => plot.population)}
                               enrichedFile={enrichedFile}
                               onAddGate={props.onAddGate}
                               onEditGate={props.onEditGate}
