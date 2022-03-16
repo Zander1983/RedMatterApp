@@ -16,7 +16,7 @@ import {
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
 import { snackbarService } from "uno-material-ui";
-import {createDefaultPlotSnapShot } from "../mark-app/Helper";
+import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../mark-app/Helper";
 
 export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
@@ -280,33 +280,8 @@ const saveWorkspaceStateToRedux = async (
    const workspaceObj = JSON.parse(workspace || "{}");
   // if(getWorkspace().workspaceState?.length === 0) {
   //   let selectedFileID:any = getWorkspace().selectedFile;
-  //   // @ts-ignore
   //   const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
-  //   console.log(defaultFile);
-  //   // @ts-ignore
-  //   const defaultFileChannels = defaultFile?.fileChannels;
-  //   console.log("==== default File channels redux === ");
-  //   console.log(defaultFileChannels);
-  //   let xAxisLabel = "";
-  //   let yAxisLabel = "";
-  //   let xAxisIndex = -1;
-  //   let yAxisIndex = -1;
-  //
-  //   if(defaultFileChannels.includes("FSC-A")) {
-  //       xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
-  //       xAxisLabel = "FSC-A";
-  //   }
-  //   else
-  //       xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-  //
-  //   if(defaultFileChannels.includes("SSC-A")) {
-  //       yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
-  //       yAxisLabel = "SSC-A"
-  //   } else
-  //       yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-  //
-  //   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
-  //   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
+  //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
   //   const workspaceState = createDefaultPlotSnapShot(selectedFileID, workspaceObj.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
   //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
   //   await WorkspaceDispatch.SetPlotStates(newWorkspace);

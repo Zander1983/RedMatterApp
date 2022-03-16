@@ -98,12 +98,8 @@ export const superAlgorithm = (Files, WorkspaceState) => {
               ? (gateStatsObj[gate.name + "_count"] = 1)
               : gateStatsObj[gate.name + "_count"]++;
           }else {
-            event["isInGate" + gate.name] = false;
-            if(plot['population'] === 'All') {
+              event["isInGate" + gate.name] = false;
               event["color"] = "#000";
-            }else {
-              event["color"] = "#ddd";
-            }
           }
         }
         if (!isInGate) {
@@ -415,6 +411,65 @@ export const graphLine = (params, ctx) => {
       counter--;
     }
   }
+};
+
+
+export const getPlotChannelAndPosition = (file) => {
+
+    const defaultFileChannels = file?.channels;
+
+    const expectedXChannels = ["FSC-A", "FSC.A","FSC-H","FSC.H"];
+    let xAxisLabel = "";
+    let xAxisIndex = defaultFileChannels.findIndex(channel => expectedXChannels.includes(channel?.value?.toUpperCase()));
+
+    let yAxisLabel = "";
+    const expectedYChannels = ["SSC-A", "SSC.A","SSC-H","SSC.H"];
+    let yAxisIndex = defaultFileChannels.findIndex((channel, position) => expectedYChannels.includes(channel?.value?.toUpperCase()));
+
+    if(xAxisIndex > -1 )
+        xAxisLabel = defaultFileChannels[xAxisIndex]?.value;
+    else
+        xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+    if(yAxisIndex > -1 )
+        yAxisLabel = defaultFileChannels[yAxisIndex]?.value;
+    else
+        yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+    // if(defaultFileChannels.includes("FSC-H")) {
+    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-H");
+    //     xAxisLabel = "FSC-H";
+    // }else if(defaultFileChannels.includes("FSC.H")){
+    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.H");
+    //     xAxisLabel = "FSC.H";
+    // } else if(defaultFileChannels.includes("FSC-A")) {
+    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-A");
+    //     xAxisLabel = "FSC-A";
+    // } else if(defaultFileChannels.includes("FSC.A")){
+    //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.A");
+    //     xAxisLabel = "FSC.A";
+    // } else
+    //     xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+    //
+    // if(defaultFileChannels.includes("SSC-H")) {
+    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-H");
+    //     yAxisLabel = "SSC-H"
+    // }else if(defaultFileChannels.includes("SSC.H")) {
+    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.H");
+    //     yAxisLabel = "SSC.H"
+    // } else if(defaultFileChannels.includes("SSC.A")) {
+    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.A");
+    //     yAxisLabel = "SSC.A"
+    // } else if(defaultFileChannels.includes("SSC-A")) {
+    //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-A");
+    //     yAxisLabel = "SSC-A"
+    // }else
+    //     yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+
+    xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
+    yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
+
+    return{xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex};
 };
 
 export const createDefaultPlotSnapShot = (fileId, experimentId, xAxisLabel = DEFAULT_X_AXIS_LABEL, yAxisLabel = DEFAULT_Y_AXIS_LABEL,  xAxisIndex = 0,
