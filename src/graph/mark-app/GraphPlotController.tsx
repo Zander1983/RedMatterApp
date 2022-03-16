@@ -12,7 +12,7 @@ import PlotTableComponent from "./Table";
 // import WorkspaceState from "./WorkspaceState.json";
 // import HistogramState from "./HistogramState.json";
 // import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
-import { superAlgorithm, createDefaultPlotSnapShot } from "./Helper";
+import { superAlgorithm, createDefaultPlotSnapShot, getPlotChannelAndPosition } from "./Helper";
 import MarkLogicle from "./logicleMark";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 
@@ -79,36 +79,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       let isSnapShotCreated = false;
       let copyOfFiles: any[] = getWorkspace().files;
       if (plots === null || plots === undefined) {
-        const defaultFile = copyOfFiles?.[0];
-        // @ts-ignore
-        const defaultFileChannels = defaultFile?.fileChannels;
+          const defaultFile = copyOfFiles?.[0];
 
-        let xAxisLabel = "";
-        let yAxisLabel = "";
-        let xAxisIndex = -1;
-        let yAxisIndex = -1;
+          const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
 
-        if(defaultFileChannels.includes("FSC-A")) {
-            xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
-            xAxisLabel = "FSC-A";
-        }
-        else
-            xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-          if(defaultFileChannels.includes("SSC-A")) {
-              yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
-              yAxisLabel = "SSC-A"
-          } else
-              yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
-         xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
-         yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
-
-        workspaceState = createDefaultPlotSnapShot(defaultFile?.id, this.props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-        isSnapShotCreated = true;
+          workspaceState = createDefaultPlotSnapShot(defaultFile?.id, this.props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+          isSnapShotCreated = true;
       }
 
       let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+
       enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
       if (isSnapShotCreated)
@@ -132,6 +112,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           channel.biexponentialMaximum
         );
       });
+
 
       let channels = file.channels.map((channel: any) => {
         return {

@@ -22,7 +22,7 @@ import GateNamePrompt from "./modals/GateNamePrompt";
 import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
-import {createDefaultPlotSnapShot } from "../mark-app/Helper";
+// import {createDefaultPlotSnapShot, getPlotChannelAndPosition } from "../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -386,34 +386,7 @@ const WorkspaceTopBarComponent = ({
     // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
     // console.log(defaultFile);
     // console.log(selectedFileID);
-    // // @ts-ignore
-    // const defaultFileChannels = defaultFile?.fileChannels;
-    //   let xAxisLabel = "FSC-A";
-    //   let yAxisLabel = "SSC-A";
-    //   let xAxisIndex = 0;
-    //   let yAxisIndex = 0;
-    //
-    //   if(defaultFileChannels.includes("FSC-A")) {
-    //       xAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "FSC-A");
-    //       xAxisLabel = "FSC-A";
-    //   }
-    //   else
-    //       xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-    //
-    //   if(defaultFileChannels.includes("SSC-A")) {
-    //       yAxisIndex = defaultFileChannels.findIndex((ch: any) => ch?.toUpperCase() === "SSC-A");
-    //       yAxisLabel = "SSC-A"
-    //   } else
-    //       yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-    //
-    //   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex];
-    //   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex];
-    // console.log(defaultFileChannels);
-    // const xAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 0));
-    // const yAxisIndex = Math.floor(Math.random() * ((defaultFileChannels?.length - 1) || 1));
-    // const xAxisLabel = defaultFileChannels[xAxisIndex];
-    // const yAxisLabel = defaultFileChannels[yAxisIndex];
-    // console.log(xAxisLabel, yAxisLabel);
+    //  const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
     // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
     WorkspaceDispatch.ResetWorkspaceExceptFiles();
     await saveWorkspace(false);
