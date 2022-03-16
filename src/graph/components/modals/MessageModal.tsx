@@ -34,6 +34,7 @@ function MessageModal(props: {
   const classes = useStyles();
 
   const eventStacker = useGAEventTrackers("Plot Deleted.");
+
   return (
     <Modal
       open={props.open}

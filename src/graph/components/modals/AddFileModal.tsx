@@ -15,11 +15,12 @@ import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
 import * as PlotResource from "graph/resources/plots";
-import { getFile, getAllFiles } from "graph/utils/workspace";
+import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
 
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -60,10 +61,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
 const AddFileModal = React.memo(
   (props: {
     open: boolean;
-    closeCall: { f: Function; ref: Function };
+    closeCall: { f: Function; ref: Function};
     isShared: boolean;
     experimentId: string;
     files: File[];
@@ -367,19 +369,24 @@ const AddFileModal = React.memo(
                             }}
                             disabled={isDownloading}
                             onClick={() => {
-                              eventStacker(
-                                `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
-                              );
+                              // eventStacker(
+                              //   `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
+                              // );
                               // downloadFile(fileMetadata.id);
-                              WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.id
-                              );
+                              // @ts-ignore
+                              const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
+
+                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+
+                              WorkspaceDispatch.UpdatePlotStates(plotState);
+                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
 
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
-                            }}
-                          >
+                            }}>
                             {isDownloading ? (
                               <CircularProgress
                                 style={{
@@ -407,18 +414,17 @@ const AddFileModal = React.memo(
                               eventStacker(
                                 `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
                               );
-                              PlotResource.createNewPlotFromFile(
-                                getFile(fileMetadata.id)
-                              );
-                              WorkspaceDispatch.UpdateSelectedFile(
-                                fileMetadata.id
-                              );
+                              // PlotResource.createNewPlotFromFile(
+                              //   getFile(fileMetadata.id)
+                              // );
 
                               // making the selected file the first element of filesArray
                               const filesInNewOrder: File[] = [];
+                              let selectedFile = null;
                               for (let i = 0; i < files.length; i++) {
                                 if (files[i].id === fileMetadata.id) {
                                   files[i].view = false;
+                                  selectedFile = files[i];
                                   filesInNewOrder.unshift(files[i]);
                                 } else {
                                   filesInNewOrder.push(files[i]);
@@ -426,12 +432,21 @@ const AddFileModal = React.memo(
                               }
                               WorkspaceDispatch.SetFiles(filesInNewOrder);
 
+                              // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
+
+                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
+                                console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
+                                console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+
+                              WorkspaceDispatch.UpdatePlotStates(plotState);
+                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
+
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
                               }, 10);
                             }}
-                            disabled={isDownloading}
-                          >
+                            disabled={isDownloading}>
                             {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"
                               : "Set As Control"}

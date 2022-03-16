@@ -12,12 +12,13 @@ import PrototypeNotice from "./PrototypeNotice";
 import SideMenus from "./components/static/SideMenus";
 
 import {
-  dowloadAllFileEvents,
+  downloadEvents,
   downloadFileMetadata,
 } from "services/FileService";
 import {
   getWorkspace,
   loadWorkspaceFromRemoteIfExists,
+  getWorkspaceStateFromServer,
   saveWorkspaceToRemote,
 } from "./utils/workspace";
 
@@ -97,9 +98,7 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] = React.useState<
-    boolean
-  >(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
@@ -174,7 +173,7 @@ const NewWorkspaceInnerComponent = (props: {
       if (fileIds.length > 0) {
         WorkspaceDispatch.SetFiles(files?.files?.files);
         try {
-          let result = await dowloadAllFileEvents(
+          let result = await downloadEvents(
             props.shared,
             props.experimentId,
             fileIds
@@ -190,7 +189,6 @@ const NewWorkspaceInnerComponent = (props: {
             );
           }
         } catch (err) {
-          console.log(err);
           await handleRequestError(err);
         }
       }
@@ -201,7 +199,7 @@ const NewWorkspaceInnerComponent = (props: {
     try {
       await downloadFileMetadata(shared, experimentId);
       let fileIds = getWorkspace().files.map((file) => file.id);
-      let result = await dowloadAllFileEvents(
+      let result = await downloadEvents(
         props.shared,
         props.experimentId,
         fileIds
@@ -227,7 +225,7 @@ const NewWorkspaceInnerComponent = (props: {
     WorkspaceDispatch.SetWorkspaceShared(props.shared);
     setSharedWorkspace(props.shared);
     setReloadMessage("Loading...");
-    loadWorkspaceFromRemoteIfExists(shared, experimentId)
+    getWorkspaceStateFromServer(shared, experimentId)
       .then(async (response: any) => {
         setReloadMessage("Loading Done. wait preparing....");
         if (response.requestSuccess && !props.shared) {
