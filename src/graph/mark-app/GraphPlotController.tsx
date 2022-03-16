@@ -12,7 +12,11 @@ import PlotTableComponent from "./Table";
 // import WorkspaceState from "./WorkspaceState.json";
 // import HistogramState from "./HistogramState.json";
 // import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
-import { superAlgorithm, createDefaultPlotSnapShot, getPlotChannelAndPosition } from "./Helper";
+import {
+  superAlgorithm,
+  createDefaultPlotSnapShot,
+  getPlotChannelAndPosition,
+} from "./Helper";
 import MarkLogicle from "./logicleMark";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 
@@ -45,15 +49,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     super(props);
 
     // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
-      // console.log(JSON.parse(JSON.stringify(Files21)));
-      // console.log("== work space file ====");
-      // let copyOfFiles: any[] = getWorkspace().files;
-      // console.log(copyOfFiles);
-      // console.log("===== get from server =====");
-      // console.log(getWorkspace().workspaceState);
-      // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
-      // WorkspaceDispatch.UpdatePlotStates(workspaceState);
-      // console.log(enrichedFiles);
+    // console.log(JSON.parse(JSON.stringify(Files21)));
+    // console.log("== work space file ====");
+    // let copyOfFiles: any[] = getWorkspace().files;
+    // console.log(copyOfFiles);
+    // console.log("===== get from server =====");
+    // console.log(getWorkspace().workspaceState);
+    // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
+    // WorkspaceDispatch.UpdatePlotStates(workspaceState);
+    // console.log(enrichedFiles);
 
     this.state = {
       sortByChanged: false,
@@ -73,35 +77,50 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   onInitState = () => {
-      let workspaceState = getWorkspace().workspaceState;
+    let workspaceState = getWorkspace().workspaceState;
+    // @ts-ignore
+    const plots =
+      workspaceState &&
       // @ts-ignore
-      const plots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-      let isSnapShotCreated = false;
-      let copyOfFiles: any[] = getWorkspace().files;
-      if (plots === null || plots === undefined) {
-          const defaultFile = copyOfFiles?.[0];
+      workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    let isSnapShotCreated = false;
+    let copyOfFiles: any[] = getWorkspace().files;
+    if (plots === null || plots === undefined) {
+      const defaultFile = copyOfFiles?.[0];
 
-          const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
+        getPlotChannelAndPosition(defaultFile);
 
-          workspaceState = createDefaultPlotSnapShot(defaultFile?.id, this.props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-          isSnapShotCreated = true;
-      }
+      workspaceState = createDefaultPlotSnapShot(
+        defaultFile?.id,
+        this.props.experimentId,
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex
+      );
+      isSnapShotCreated = true;
+    }
 
-      let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+    let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
-      enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
 
-      if (isSnapShotCreated)
-          WorkspaceDispatch.UpdatePlotStates(workspaceState);
+    if (isSnapShotCreated) WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
-      this.setState({enrichedFiles: enrichedFiles, workspaceState: workspaceState});
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: workspaceState,
+    });
   };
 
   getEnrichedEvents = () => {
-      let copyOfFiles: any[] = getWorkspace().files;
-      let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
-      enrichedEvents = enrichedEvents.map((events: any[]) => {return events;});
-      return enrichedEvents;
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
+    enrichedEvents = enrichedEvents.map((events: any[]) => {
+      return events;
+    });
+    return enrichedEvents;
   };
 
   formatEnrichedFiles = (enrichedFiles: any[], workspaceState: any) => {
@@ -112,7 +131,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           channel.biexponentialMaximum
         );
       });
-
 
       let channels = file.channels.map((channel: any) => {
         return {
@@ -155,11 +173,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let gatedPlot = JSON.parse(JSON.stringify(change.plot));
 
     //@ts-ignore
-    let newWorkspaceState:any = this.state.workspaceState;
+    let newWorkspaceState: any = this.state.workspaceState;
 
     //@ts-ignore
     let controlFileId: string = newWorkspaceState.controlFileId;
-
 
     // this is setting the last plot to be the gated plot on the contorl
     (newWorkspaceState as any).files[controlFileId].plots[
@@ -194,10 +211,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     //console.log("in add gate, enrichedFiles is now ", enrichedFiles);
     // set new gate to redux
-    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState)}, 5);
+    setTimeout(() => {
+      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    }, 5);
 
     //set state
-    this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState});
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
   };
 
   setPlotsOfAllFilesToBeSameAsControl = (plotIndex: any) => {
@@ -207,31 +229,30 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //console.log(">>> controlEnrichedFile is ", controlEnrichedFile);
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] = JSON.parse(
-        JSON.stringify(controlEnrichedFile.plots[plotIndex])
-      );
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
   onEditGate = (change: any) => {
     let fileKey = change.fileId;
-    let newWorkspaceState:any = this.state.workspaceState;
+    let newWorkspaceState: any = this.state.workspaceState;
     if (!(newWorkspaceState as any).files[fileKey]) {
       // so its a non-control gate being edited, copy plots from control
       (newWorkspaceState as any).files[fileKey] = {
         //@ts-ignore
         plots: JSON.parse(
           JSON.stringify(
-            (newWorkspaceState as any).files[newWorkspaceState.controlFileId].plots
+            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+              .plots
           )
         ),
       };
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] = JSON.parse(
-      JSON.stringify(change.plot)
-    );
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
+      JSON.parse(JSON.stringify(change.plot));
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
@@ -242,7 +263,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     // setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 5);
 
-    this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState});
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
   };
 
   onChangeChannel = (change: any) => {
@@ -251,7 +275,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let fileKey = change.fileId;
     let plotIndex = change.plotIndex;
     //let filesIds;
-    let newWorkspaceState:any = this.state.workspaceState;
+    let newWorkspaceState: any = this.state.workspaceState;
     //console.log(">>>>> type is ", type);
     if (!(newWorkspaceState as any).files[fileKey]) {
       // so its a non-control gate being edited, copy plots from control
@@ -259,7 +283,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       (newWorkspaceState as any).files[fileKey] = {
         plots: JSON.parse(
           JSON.stringify(
-            (newWorkspaceState as any).files[newWorkspaceState.controlFileId].plots
+            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+              .plots
           )
         ),
       };
@@ -270,48 +295,53 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         // //@ts-ignore
         // workspaceState.files[fileKey].plots[plotIndex].plotType =
         //   change.plotType;
-
-        Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
-          // if the file being changed is the control file, change for all
-          // otherwise just change for it
-          if (fileId == fileKey) {
-            if (change.axis == "x") {
-              newWorkspaceState = this.updateWorkspaceStateChannels(
-                "x",
-                newWorkspaceState,
-                fileId,
-                plotIndex,
-                change.axisIndex,
-                change.axisLabel,
-                change.scaleType,
-                change.plotType
-              );
-            } else {
-             newWorkspaceState = this.updateWorkspaceStateChannels(
-                "y",
-                newWorkspaceState,
-                fileId,
-                plotIndex,
-                change.axisIndex,
-                change.axisLabel,
-                change.scaleType,
-                change.plotType
-              );
+        console.log("It is called");
+        Object.keys((newWorkspaceState as any).files).forEach(
+          (fileId, index) => {
+            // if the file being changed is the control file, change for all
+            // otherwise just change for it
+            if (fileId == fileKey) {
+              if (change.axis == "x") {
+                newWorkspaceState = this.updateWorkspaceStateChannels(
+                  "x",
+                  newWorkspaceState,
+                  fileId,
+                  plotIndex,
+                  change.axisIndex,
+                  change.axisLabel,
+                  change.scaleType,
+                  change.plotType
+                );
+              } else {
+                newWorkspaceState = this.updateWorkspaceStateChannels(
+                  "y",
+                  newWorkspaceState,
+                  fileId,
+                  plotIndex,
+                  change.axisIndex,
+                  change.axisLabel,
+                  change.scaleType,
+                  change.plotType
+                );
+              }
             }
           }
-        });
+        );
 
         break;
       case "ChangePlotType":
         //console.log("in change plot and fileKey is ", fileKey);
-        Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
-          console.log("fileId is ", fileId);
-          if (fileId == fileKey) {
-            //console.log("in the if....so change");
-            //@ts-ignore
-            newWorkspaceState.files[fileId].plots[plotIndex].plotType = change.plotType;
+        Object.keys((newWorkspaceState as any).files).forEach(
+          (fileId, index) => {
+            console.log("fileId is ", fileId);
+            if (fileId == fileKey) {
+              //console.log("in the if....so change");
+              //@ts-ignore
+              newWorkspaceState.files[fileId].plots[plotIndex].plotType =
+                change.plotType;
+            }
           }
-        });
+        );
 
         break;
     }
@@ -322,9 +352,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 5);
+    setTimeout(() => {
+      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    }, 5);
 
-    this.setState({workspaceState: newWorkspaceState, enrichedFiles: enrichedFiles});
+    this.setState({
+      workspaceState: newWorkspaceState,
+      enrichedFiles: enrichedFiles,
+    });
   };
 
   //@ts-ignore
@@ -419,19 +454,27 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // });
   };
 
-  componentDidUpdate(prevProps: Readonly<PlotControllerProps>, prevState: Readonly<IState>, snapshot?: any): void {
-      let workspaceState = getWorkspace().workspaceState;
+  componentDidUpdate(
+    prevProps: Readonly<PlotControllerProps>,
+    prevState: Readonly<IState>,
+    snapshot?: any
+  ): void {
+    let workspaceState = getWorkspace().workspaceState;
+    // @ts-ignore
+    const newPlots =
+      workspaceState &&
       // @ts-ignore
-      const newPlots = workspaceState && workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-      const oldPlots = prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-      if(oldPlots !== newPlots) this.onInitState();
+      workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    const oldPlots =
+      prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    if (oldPlots !== newPlots) this.onInitState();
   }
 
-    componentDidMount() {
-      this.onInitState();
-      setTimeout(() => {
-          this.setState({ isTableRenderCall: true })
-      }, 1000);
+  componentDidMount() {
+    this.onInitState();
+    setTimeout(() => {
+      this.setState({ isTableRenderCall: true });
+    }, 1000);
   }
 
   renderTable = () => {
@@ -453,65 +496,67 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-      const workState =  getWorkspace().workspaceState;
-      // @ts-ignoreconst
-      const plots = workState && workState?.files?.[getWorkspace().selectedFile]?.plots;
-      if (getWorkspace()?.selectedFile && plots?.length > 0) {
-          // const plotGroups = getPlotGroups(getWorkspace().plots);
-          return (
-            <div
+    const workState = getWorkspace().workspaceState;
+    // @ts-ignoreconst
+    const plots =
+      // @ts-ignore
+      workState && workState?.files?.[getWorkspace().selectedFile]?.plots;
+    if (getWorkspace()?.selectedFile && plots?.length > 0) {
+      // const plotGroups = getPlotGroups(getWorkspace().plots);
+      return (
+        <div
+          style={{
+            padding: 20,
+          }}
+        >
+          {!this.state.isTableRenderCall ? (
+            <Grid
+              container
               style={{
-                padding: 20,
-              }}
-            >
-              {!this.state.isTableRenderCall ? (
-                <Grid
-                  container
-                  style={{
-                    height: 100,
-                    borderBottomLeftRadius: 10,
-                    borderBottomRightRadius: 10,
-                    textAlign: "center",
-                  }}
-                  justify="center"
-                  alignItems="center"
-                  alignContent="center"
-                >
-                  <CircularProgress style={{ padding: "10px" }} />
-                  <span>Wait Loading...</span>
-                </Grid>
-              ) : (
-                getWorkspace().selectedFile !== "" && this.renderTable()
-              )}
-            </div>
-          );
-      } else {
-          return (
-            <div
-              style={{
+                height: 100,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
                 textAlign: "center",
               }}
+              justify="center"
+              alignItems="center"
+              alignContent="center"
             >
-              {this.props.sharedWorkspace ? (
-                <span>
-                  <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
-                    If nothing is loaded, either this experiment is not shared or it
-                    doesn't exist.
-                  </h4>
-                </span>
-              ) : (
-                <span>
-                  <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                    Click on "Plot sample" to visualize
-                  </h3>
-                  <h4 style={{ marginBottom: 70, color: "#777" }}>
-                    Create a plot from one of your samples to start your analysis
-                  </h4>
-                </span>
-              )}
-            </div>
-          );
-      }
+              <CircularProgress style={{ padding: "10px" }} />
+              <span>Wait Loading...</span>
+            </Grid>
+          ) : (
+            getWorkspace().selectedFile !== "" && this.renderTable()
+          )}
+        </div>
+      );
+    } else {
+      return (
+        <div
+          style={{
+            textAlign: "center",
+          }}
+        >
+          {this.props.sharedWorkspace ? (
+            <span>
+              <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
+                If nothing is loaded, either this experiment is not shared or it
+                doesn't exist.
+              </h4>
+            </span>
+          ) : (
+            <span>
+              <h3 style={{ marginTop: 100, marginBottom: 10 }}>
+                Click on "Plot sample" to visualize
+              </h3>
+              <h4 style={{ marginBottom: 70, color: "#777" }}>
+                Create a plot from one of your samples to start your analysis
+              </h4>
+            </span>
+          )}
+        </div>
+      );
+    }
   }
 }
 

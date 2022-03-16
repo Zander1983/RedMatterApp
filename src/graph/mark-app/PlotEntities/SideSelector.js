@@ -40,7 +40,7 @@ function SideSelector(props) {
                 width: 180,
                 marginLeft: "25px",
                 marginTop: "60px",
-                textAlign: 'center',
+                textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
               }}
@@ -107,6 +107,8 @@ function SideSelector(props) {
         <div
           style={{
             display: "flex",
+            justifyContent: "space-between",
+            width: props.plot.width,
           }}
         >
           <Tooltip
@@ -117,8 +119,8 @@ function SideSelector(props) {
             <Select
               disableUnderline
               style={{
-                width: 180,
-                textAlign: 'center',
+                width: props.plot.width * 0.6,
+                textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
               }}
@@ -138,13 +140,15 @@ function SideSelector(props) {
               ))}
             </Select>
           </Tooltip>
-          {/* <Select
+          <Select
+            disableUnderline
             style={{
-              marginTop: "10px",
-              marginLeft: 10,
+              textAlign: "center",
               flex: "1 1 auto",
+              fontSize: 12,
+              width: props.plot.width * 0.35,
             }}
-            value={props.xScaleType}
+            value={props.plot.xScaleType}
             onChange={(e) =>
               props.onChangeScale(
                 { scale: e.target.value },
@@ -155,7 +159,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select> */}
+          </Select>
         </div>
       </div>
     </div>
