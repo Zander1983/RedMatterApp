@@ -21,16 +21,21 @@ export const getSetLinearPoints = (width, height, number) => {
   return points;
 };
 
-export const getRealPointFromCanvasPoints = (channels, plot, points, logicles) => {
+export const getRealPointFromCanvasPoints = (
+  channels,
+  plot,
+  points,
+  logicles
+) => {
   let x = points[0],
-      y = points[1];
+    y = points[1];
   if (plot.xScaleType === "lin") {
     // if linear, convert to the "real" value
     x = getRealXAxisValueFromCanvasPointOnLinearScale(
-        channels,
-        plot.xAxisIndex,
-        plot.width,
-        x
+      channels,
+      plot.xAxisIndex,
+      plot.width,
+      x
     );
   } else {
     // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
@@ -39,10 +44,10 @@ export const getRealPointFromCanvasPoints = (channels, plot, points, logicles) =
 
   if (plot.yScaleType === "lin") {
     y = getRealYAxisValueFromCanvasPointOnLinearScale(
-        channels,
-        plot.yAxisIndex,
-        plot.height,
-        y
+      channels,
+      plot.yAxisIndex,
+      plot.height,
+      y
     );
   } else {
     y = getRealYAxisValueFromCanvasPointOnLogicleScale(logicles, plot, y);
@@ -52,11 +57,11 @@ export const getRealPointFromCanvasPoints = (channels, plot, points, logicles) =
 };
 
 export const getPointOnCanvas = (
-    channels,
-    realXValue,
-    realYValue,
-    plot,
-    logicles
+  channels,
+  realXValue,
+  realYValue,
+  plot,
+  logicles
 ) => {
   if (plot.xScaleType === "bi") {
     const logicle = logicles[plot.xAxisIndex];
@@ -64,7 +69,7 @@ export const getPointOnCanvas = (
     realXValue = Math.floor(realXValue * plot.width);
   } else {
     realXValue = Math.floor(
-        (realXValue * plot.width) / channels[plot.xAxisIndex].maximum
+      (realXValue * plot.width) / channels[plot.xAxisIndex].maximum
     );
   }
 
@@ -75,10 +80,10 @@ export const getPointOnCanvas = (
       realYValue = plot.height - Math.floor(realYValue * plot.height);
     } else {
       realYValue =
-          plot.height -
-          Math.floor(
-              (realYValue * plot.height) / channels[plot.yAxisIndex].maximum
-          );
+        plot.height -
+        Math.floor(
+          (realYValue * plot.height) / channels[plot.yAxisIndex].maximum
+        );
     }
   }
 
@@ -86,10 +91,10 @@ export const getPointOnCanvas = (
 };
 
 export const getRealXAxisValueFromCanvasPointOnLinearScale = (
-    channels,
-    xAxisIndex,
-    width,
-    xAxisPointOnCanvas
+  channels,
+  xAxisIndex,
+  width,
+  xAxisPointOnCanvas
 ) => {
   const range = channels[xAxisIndex].minimum + channels[xAxisIndex].maximum;
   // get full range by adding min and max of a channel - the min could be negative
@@ -97,9 +102,9 @@ export const getRealXAxisValueFromCanvasPointOnLinearScale = (
 };
 
 export const getRealYAxisValueFromCanvasPointOnLogicleScale = (
-    logicles,
-    plot,
-    yAxisPointOnCanvas
+  logicles,
+  plot,
+  yAxisPointOnCanvas
 ) => {
   const logicle = logicles[plot.yAxisIndex];
   yAxisPointOnCanvas = plot.height - yAxisPointOnCanvas;
@@ -108,22 +113,22 @@ export const getRealYAxisValueFromCanvasPointOnLogicleScale = (
 };
 
 export const getRealYAxisValueFromCanvasPointOnLinearScale = (
-    channels,
-    yAxisIndex,
-    height,
-    yAxisPointOnCanvas
+  channels,
+  yAxisIndex,
+  height,
+  yAxisPointOnCanvas
 ) => {
   yAxisPointOnCanvas = height - yAxisPointOnCanvas;
   const range =
-      Math.abs(channels[yAxisIndex].minimum) + channels[yAxisIndex].maximum;
+    Math.abs(channels[yAxisIndex].minimum) + channels[yAxisIndex].maximum;
   // get full range by adding min and max of a channel - the min could be negative
   return (range * yAxisPointOnCanvas) / height;
 };
 
 export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
-    logicles,
-    plot,
-    xAxisPointOnCanvas
+  logicles,
+  plot,
+  xAxisPointOnCanvas
 ) => {
   const logicle = logicles[plot.xAxisIndex]; // this is undefined
   xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
@@ -133,33 +138,42 @@ export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
 export const isCursorNearAPolygonPoint = (plot, mouseRealPoints) => {
   let minimumDistanceFromPointX = 5000;
   let minimumDistanceFromPointY = 5000;
-  if (plot.xScaleType === "bi"){
-    minimumDistanceFromPointX = mouseRealPoints[0] < 0 ? 10
-                                :
-                                mouseRealPoints[0] < 100 ? 20
-                                :
-                                mouseRealPoints[0] < 1000 ? 50
-                                :
-                                mouseRealPoints[0] < 10000 ? 500 
-                                :
-                                mouseRealPoints[0] < 50000 ? 5000  : 10000
-                          
+  if (plot.xScaleType === "bi") {
+    minimumDistanceFromPointX =
+      mouseRealPoints[0] < 0
+        ? 10
+        : mouseRealPoints[0] < 100
+        ? 20
+        : mouseRealPoints[0] < 1000
+        ? 50
+        : mouseRealPoints[0] < 10000
+        ? 500
+        : mouseRealPoints[0] < 50000
+        ? 5000
+        : 10000;
   }
-  if (plot.yScaleType === "bi"){
-    minimumDistanceFromPointY = mouseRealPoints[1] < 0 ? 10
-                                :
-                                mouseRealPoints[1] < 100 ? 20
-                                :
-                                mouseRealPoints[1] < 1000 ? 50
-                                :
-                                mouseRealPoints[1] < 10000 ? 500 
-                                :
-                                mouseRealPoints[1] < 50000 ? 5000 : 10000
+  if (plot.yScaleType === "bi") {
+    minimumDistanceFromPointY =
+      mouseRealPoints[1] < 0
+        ? 10
+        : mouseRealPoints[1] < 100
+        ? 20
+        : mouseRealPoints[1] < 1000
+        ? 50
+        : mouseRealPoints[1] < 10000
+        ? 500
+        : mouseRealPoints[1] < 50000
+        ? 5000
+        : 10000;
   }
-  for(const point of plot.gate.points){
-    const xPointTouched = mouseRealPoints[0]+minimumDistanceFromPointX > point[0] &&  mouseRealPoints[0]-minimumDistanceFromPointX < point[0];
-    const yPointTouched = mouseRealPoints[1]+minimumDistanceFromPointY > point[1] &&  mouseRealPoints[1]-minimumDistanceFromPointY < point[1];
-    if(xPointTouched && yPointTouched){
+  for (const point of plot.gate.points) {
+    const xPointTouched =
+      mouseRealPoints[0] + minimumDistanceFromPointX > point[0] &&
+      mouseRealPoints[0] - minimumDistanceFromPointX < point[0];
+    const yPointTouched =
+      mouseRealPoints[1] + minimumDistanceFromPointY > point[1] &&
+      mouseRealPoints[1] - minimumDistanceFromPointY < point[1];
+    if (xPointTouched && yPointTouched) {
       return {
         dragging: true,
         pointValue: point,
@@ -169,5 +183,5 @@ export const isCursorNearAPolygonPoint = (plot, mouseRealPoints) => {
   return {
     dragging: false,
     pointValue: undefined,
-  }
-}
+  };
+};

@@ -52,6 +52,7 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
+  console.log("props.plotIndex is ", props.plotIndex);
   const [localPlot, setLocalPlot] = useState(props.plot);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
@@ -895,6 +896,7 @@ function Plot(props) {
                 width: `${localPlot.width}px`,
                 height: `${localPlot.height}px`,
               }}
+              // ref={ref}
             >
               <canvas
                 className="canvas"

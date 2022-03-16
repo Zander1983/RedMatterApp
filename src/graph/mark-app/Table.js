@@ -12,6 +12,9 @@ function Table(props) {
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
+  //console.log("NON CONTROLS FILES ");
+  //console.log(nonControlEnrichedFiles);
+
   return (
     <div>
       <div
