@@ -228,7 +228,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         newWorkspaceState as any
       ).files[fileIds[i]].plots.map((plt: any) => {
         if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plot;
+          console.log();
+          const { gate, ...plotWithOutGate } = plt;
           return plotWithOutGate;
         } else {
           return plt;
