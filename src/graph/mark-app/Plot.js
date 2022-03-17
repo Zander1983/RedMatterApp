@@ -52,6 +52,7 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
+  console.log("plot name is ", props.name);
   console.log("props.plotIndex is ", props.plotIndex);
   const [localPlot, setLocalPlot] = useState(props.plot);
   const [modalIsOpen, setModalIsOpen] = useState(false);
