@@ -148,24 +148,13 @@ function Plot(props) {
   };
 
   const onChangeScale = (e, axis, plotIndex) => {
-    let channeIndex = localPlot.xAxisIndex;
-    let channelLabel = localPlot.xAxisLabel;
-    let channelScale = e.scale;
-    if (axis == "y") {
-      channeIndex = localPlot.yAxisIndex;
-      channelLabel = localPlot.yAxisLabel;
-    }
-
     let change = {
-      type: "ChannelIndexChange",
+      type: "ChangePlotScale",
       plotIndex: plotIndex,
       axis: axis,
-      axisIndex: channeIndex,
-      axisLabel: channelLabel,
-      scaleType: channelScale,
+      scale: e.scale,
+      fileId: props.enrichedFile.fileId,
     };
-    console.log(change);
-
     props.onChangeChannel(change);
   };
 
