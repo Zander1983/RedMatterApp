@@ -110,13 +110,13 @@ const WorkspaceTopBarComponent = ({
   const didMount = useDidMount();
 
   //@ts-ignore
-  const plotLength = useSelector((state) => state.workspace.plots.length);
+  //const plotLength = useSelector((state) => state.workspace.plots.length);
 
-  useEffect(() => {
-    if (didMount && plotLength === 0) {
-      setRenderPlotController(true);
-    }
-  }, [plotLength]);
+  // useEffect(() => {
+  //   if (didMount && plotLength === 0) {
+  //     setRenderPlotController(true);
+  //   }
+  // }, [plotLength]);
 
   const handleOpen = (func: Function) => {
     func(true);
