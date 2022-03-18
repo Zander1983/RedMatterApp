@@ -94,6 +94,7 @@ export const getGate = (gateID: GateID): Gate => {
 export const saveWorkspaceStateToServer = async (
     shared: boolean,
     experimentId: string,
+    pipelineId: string,
     stateData?:any
 ): Promise<boolean> => {
   //let stateJson = JSON.stringify(getWorkspace().workspaceState);
@@ -102,16 +103,19 @@ export const saveWorkspaceStateToServer = async (
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
     experimentId: experimentId,
+    pipelineId: pipelineId,
     state: stateJson,
     isShared: shared,
   });
 
   try {
-    await axios.post(
+    const response = await axios.post(
         updateWorkSpace.url,
         updateWorkSpace.options.body,
         updateWorkSpace.options
     );
+    console.log(response);
+    await WorkspaceDispatch.SetId(response.data.workspaceId);
     return true;
   } catch (err) {
     snackbarService.showSnackbar(
@@ -263,9 +267,10 @@ export const getWorkspaceStateFromServer = async (
           }
       );
     }
+    console.log(workspaceData);
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
-      await saveWorkspaceStateToRedux(workspace);
+      await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);
       return { loaded: true, requestSuccess: true };
     }
   } catch (err) {
@@ -276,6 +281,7 @@ export const getWorkspaceStateFromServer = async (
 
 const saveWorkspaceStateToRedux = async (
     workspace: string,
+    pipelines:any[]
 ) => {
    const workspaceObj = JSON.parse(workspace || "{}");
   // if(getWorkspace().workspaceState?.length === 0) {
@@ -287,8 +293,9 @@ const saveWorkspaceStateToRedux = async (
   //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
   //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
   // }else {
-    const newWorkspace: Workspace = {...workspaceObj};
-    await WorkspaceDispatch.SetPlotStates(newWorkspace);
+    const newWorkspaceState: Workspace = {...workspaceObj};
+    await WorkspaceDispatch.SetPipeLines(pipelines);
+    await WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
   //}
 
