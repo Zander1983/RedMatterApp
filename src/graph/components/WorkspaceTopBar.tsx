@@ -88,6 +88,7 @@ interface Props {
   renderPlotController: boolean;
   setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
   setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
+  setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const WorkspaceTopBarComponent = ({
   sharedWorkspace,
@@ -96,6 +97,7 @@ const WorkspaceTopBarComponent = ({
   renderPlotController,
   setRenderPlotController,
   setPlotCallNeeded,
+  setLoader,
 }: Props) => {
   const classes = useStyles();
   const history = useHistory();
@@ -125,12 +127,6 @@ const WorkspaceTopBarComponent = ({
   // }, [plotLength]);
 
   useEffect(() => {
-    console.log("workState 1=====");
-    console.log(workState);
-    //@ts-ignore
-    console.log("pipepines 1");
-    console.log(getWorkspace()?.pipelines);
-    console.log(getWorkspace()?.activePipelineId);
     setTimeout(() => {
         //@ts-ignore
         setActivePipelineId(activePipeline?.activePipelineId);
@@ -140,12 +136,6 @@ const WorkspaceTopBarComponent = ({
   }, [activePipeline]);
 
   useEffect(() => {
-    console.log("workState=====");
-    console.log(workState);
-    //@ts-ignore
-    console.log("pipepines");
-    console.log(getWorkspace()?.pipelines);
-    console.log(getWorkspace()?.activePipelineId);
     setTimeout(() => {
       //@ts-ignore
       setActivePipelineId(workState?.pipelineId );
@@ -162,17 +152,12 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onPipelineChanged = async (event:any) => {
-    console.log("=== changed ====");
-        console.log(event);
-        console.log(event.target.value);
         const selectedPipeline = event.target.value;
         setActivePipelineId(selectedPipeline);
         if(selectedPipeline){
+          setLoader(true);
           const response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers:{token:userManager.getToken()}});
-
           if (response?.status === 200) {
-            console.log("==== pipe line response =====");
-            console.log(response);
             const workspace = response.data.state;
             if (workspace && Object.keys(workspace).length > 0) {
               const workspaceObj = JSON.parse(workspace || "{}");
@@ -184,6 +169,10 @@ const WorkspaceTopBarComponent = ({
               await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
               await WorkspaceDispatch.UpdateSelectedFile("");
             }
+            await showMessageBox({
+              message: response.data.message,
+              saverity: "success",
+            });
             if (!renderPlotController) {
               setRenderPlotController(true);
             }
@@ -191,7 +180,9 @@ const WorkspaceTopBarComponent = ({
             if (renderPlotController) {
               setPlotCallNeeded(true);
             }
+            setLoader(false);
           } else {
+            setLoader(false);
             await handleError({
               message: "Information missing",
               saverity: "error",
@@ -201,7 +192,6 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onSavePipeline = async (name:any) => {
-    console.log("name: " + name);
     const response = await axios.post("/api/pipeline/create",
         {
           organisationId:userManager.getOrganiztionID(),
@@ -214,8 +204,16 @@ const WorkspaceTopBarComponent = ({
           }
         });
 
-    if (response?.status) {
-         console.log(response);
+    if (response?.status === 200) {
+      let pipelines = getWorkspace()?.pipelines;
+      // @ts-ignore
+      pipelines.push(response.data);
+      setPipelines(pipelines);
+      WorkspaceDispatch.SetPipeLines(pipelines);
+      await showMessageBox({
+        message: response.data.message,
+        saverity: "success",
+      });
     } else {
       await handleError({
         message: "Information missing",
@@ -401,7 +399,7 @@ const WorkspaceTopBarComponent = ({
                     PipeLine:
                     <select name="pipeline" style={{width:200+'px',marginLeft:2+'px'}} onChange={onPipelineChanged}>
                       <option value="">Select Pipeline</option>
-                        {pipelines && pipelines?.map((pipeline:any) => <option value={pipeline?._id} selected={pipeline?._id === activePipelineId}>{pipeline?.name}</option>)}
+                        {pipelines && pipelines?.map((pipeline:any, index:any) => <option key={index} value={pipeline?._id} selected={pipeline?._id === activePipelineId}>{pipeline?.name}</option>)}
                     </select>
                   <Button
                       disabled={!plotCallNeeded && !renderPlotController}

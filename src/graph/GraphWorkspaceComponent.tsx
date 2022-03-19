@@ -297,12 +297,13 @@ const NewWorkspaceInnerComponent = (props: {
   const _renderToolbar = () => {
     return (
       <WorkspaceTopBar
-        sharedWorkspace={sharedWorkspace}
-        experimentId={props.experimentId}
-        plotCallNeeded={plotCallNeeded}
-        renderPlotController={renderPlotController}
-        setRenderPlotController={setRenderPlotController}
-        setPlotCallNeeded={setPlotCallNeeded}
+          setLoader={setOpen}
+          sharedWorkspace={sharedWorkspace}
+          experimentId={props.experimentId}
+          plotCallNeeded={plotCallNeeded}
+          renderPlotController={renderPlotController}
+          setRenderPlotController={setRenderPlotController}
+          setPlotCallNeeded={setPlotCallNeeded}
       />
     );
   };
