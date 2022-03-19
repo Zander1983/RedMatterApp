@@ -109,11 +109,12 @@ const WorkspaceTopBarComponent = ({
   const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
+  const [activePipelineId, setActivePipelineId] = React.useState("");
   const [pipelines, setPipelines] = React.useState([]);
   const didMount = useDidMount();
 
   //@ts-ignore
-  //const plotLength = useSelector((state) => state.workspace.plots.length);
+  const activePipeline = useSelector((state) => state.workspace);
   //@ts-ignore
   const workState = useSelector((state) => state.workspace.workspaceState);
 
@@ -124,13 +125,30 @@ const WorkspaceTopBarComponent = ({
   // }, [plotLength]);
 
   useEffect(() => {
+    console.log("workState 1=====");
+    console.log(workState);
+    //@ts-ignore
+    console.log("pipepines 1");
+    console.log(getWorkspace()?.pipelines);
+    console.log(getWorkspace()?.activePipelineId);
+    setTimeout(() => {
+        //@ts-ignore
+        setActivePipelineId(activePipeline?.activePipelineId);
+        setPipelines(getWorkspace()?.pipelines);
+     }, 1000);
+
+  }, [activePipeline]);
+
+  useEffect(() => {
     console.log("workState=====");
     console.log(workState);
     //@ts-ignore
     console.log("pipepines");
     console.log(getWorkspace()?.pipelines);
+    console.log(getWorkspace()?.activePipelineId);
     setTimeout(() => {
       //@ts-ignore
+      setActivePipelineId(workState?.pipelineId );
       setPipelines(getWorkspace()?.pipelines);
     }, 1000);
   }, [workState]);
@@ -141,6 +159,45 @@ const WorkspaceTopBarComponent = ({
 
   const onQuite = () => {
     setPipeLineModalOpen(false);
+  };
+
+  const onPipelineChanged = async (event:any) => {
+    console.log("=== changed ====");
+        console.log(event);
+        console.log(event.target.value);
+        const selectedPipeline = event.target.value;
+        setActivePipelineId(selectedPipeline);
+        if(selectedPipeline){
+          const response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers:{token:userManager.getToken()}});
+
+          if (response?.status === 200) {
+            console.log("==== pipe line response =====");
+            console.log(response);
+            const workspace = response.data.state;
+            if (workspace && Object.keys(workspace).length > 0) {
+              const workspaceObj = JSON.parse(workspace || "{}");
+              await WorkspaceDispatch.SetPlotStates(workspaceObj);
+              await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+            }else {
+              await WorkspaceDispatch.SetPlotStates({});
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              await WorkspaceDispatch.UpdateSelectedFile("");
+            }
+            if (!renderPlotController) {
+              setRenderPlotController(true);
+            }
+            setPlotCallNeeded(false);
+            if (renderPlotController) {
+              setPlotCallNeeded(true);
+            }
+          } else {
+            await handleError({
+              message: "Information missing",
+              saverity: "error",
+            });
+          }
+        }
   };
 
   const onSavePipeline = async (name:any) => {
@@ -198,7 +255,7 @@ const WorkspaceTopBarComponent = ({
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
-      await saveWorkspaceStateToServer(shared, experimentId, "6234dc88a66dd509b4df25db", currentState);
+      await saveWorkspaceStateToServer(shared, experimentId, activePipelineId, currentState);
     } catch (err) {
       await handleError(err);
     }
@@ -342,9 +399,9 @@ const WorkspaceTopBarComponent = ({
                 </Button>
                 <span style={{margin:5+'px', padding:5 + 'px'}}>
                     PipeLine:
-                    <select name="pipeline" style={{width:200+'px',marginLeft:2+'px'}}>
-                      <option>Select One</option>
-                        {pipelines && pipelines?.map((pipeline:any) => <option value={pipeline?._id} selected={pipeline?.controlId === workState.controlFileId}>{pipeline?.name}</option>)}
+                    <select name="pipeline" style={{width:200+'px',marginLeft:2+'px'}} onChange={onPipelineChanged}>
+                      <option value="">Select Pipeline</option>
+                        {pipelines && pipelines?.map((pipeline:any) => <option value={pipeline?._id} selected={pipeline?._id === activePipelineId}>{pipeline?.name}</option>)}
                     </select>
                   <Button
                       disabled={!plotCallNeeded && !renderPlotController}
@@ -481,6 +538,7 @@ const WorkspaceTopBarComponent = ({
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}
+            pipelineId={getWorkspace().activePipelineId || activePipelineId}
             files={getWorkspace()?.files}
             selectedFile={getWorkspace()?.selectedFile}
           />
