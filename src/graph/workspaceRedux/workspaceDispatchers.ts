@@ -202,6 +202,12 @@ const WorkspaceDispatch = {
       payload: { fileName },
     });
   },
+  UpdatePipelineId: (pipeline: string) => {
+    return store.dispatch({
+      type: graphActions.UPDATE_SELECTED_PIPELINE,
+      payload: { pipeline },
+    });
+  },
   ClearOpenFiles: () => {
     return store.dispatch({
       type: graphActions.CLEAR_OPEN_FILE,

@@ -297,6 +297,7 @@ const saveWorkspaceStateToRedux = async (
     await WorkspaceDispatch.SetPipeLines(pipelines);
     await WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+    await WorkspaceDispatch.UpdatePipelineId(workspaceObj.pipelineId);
   //}
 
 };

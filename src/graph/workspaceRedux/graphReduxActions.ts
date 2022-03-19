@@ -40,6 +40,7 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
+  UPDATE_SELECTED_PIPELINE: "workspace.UPDATE_SELECTED_PIPELINE",
   UPDATE_WS_SELECTED_FILE: "workspace.UPDATE_WS_SELECTED_FILE",
   ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
   DELETE_PLOTS_GATES_AND_POPULATIONS:
@@ -60,6 +61,7 @@ export const initialState: Workspace = {
   sharedWorkspace: false,
   editWorkspace: true,
   selectedFile: "",
+  activePipelineId: "",
   clearOpenFiles: false,
   updateType: "",
   workspaceState: {}
@@ -82,7 +84,6 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         id: id,
       };
-
 
     case graphActions.UPDATE_TYPE:
       const type = action.payload.type;
@@ -215,6 +216,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         selectedFile: fileName,
       };
+    case graphActions.UPDATE_SELECTED_PIPELINE:
+      const pipeline: string = action.payload.pipeline;
+      return {
+        ...state,
+        activePipelineId: pipeline,
+      };
+
     case graphActions.UPDATE_FILE:
       const updateFile: File = action.payload.file;
       if (!state.files.find((e) => e.id === updateFile.id)) {

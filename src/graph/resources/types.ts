@@ -170,6 +170,7 @@ export interface Workspace {
   sharedWorkspace: boolean;
   editWorkspace: boolean;
   selectedFile: string;
+  activePipelineId:string,
   clearOpenFiles: boolean;
   updateType: string;
 }
