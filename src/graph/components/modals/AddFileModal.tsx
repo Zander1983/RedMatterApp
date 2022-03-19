@@ -68,6 +68,7 @@ const AddFileModal = React.memo(
     closeCall: { f: Function; ref: Function};
     isShared: boolean;
     experimentId: string;
+    pipelineId?: string,
     files: File[];
     selectedFile: string;
   }): JSX.Element => {
@@ -378,10 +379,11 @@ const AddFileModal = React.memo(
 
                               const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
 
-                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, props.pipelineId);
 
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
+                              WorkspaceDispatch.UpdatePipelineId(props.pipelineId);
 
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);
@@ -437,10 +439,11 @@ const AddFileModal = React.memo(
                               const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
                                 console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
                                 console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, props.pipelineId);
 
                               WorkspaceDispatch.UpdatePlotStates(plotState);
                               WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
+                              WorkspaceDispatch.UpdatePipelineId(props.pipelineId);
 
                               setTimeout(() => {
                                 props.closeCall.f(props.closeCall.ref);

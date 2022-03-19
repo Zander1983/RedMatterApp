@@ -479,11 +479,13 @@ export const createDefaultPlotSnapShot = (
   yAxisLabel = DEFAULT_Y_AXIS_LABEL,
   xAxisIndex = 0,
   yAxisIndex = 1,
+  pipelineId = "",
   plotType = DEFAULT_PLOT_TYPE
 ) => {
   return {
     experimentId: experimentId,
     controlFileId: fileId,
+    pipelineId: pipelineId,
     files: {
       [fileId]: {
         plots: [
