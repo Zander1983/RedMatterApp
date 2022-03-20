@@ -170,6 +170,7 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
+  console.log("props.plotIndex is ", props.plotIndex);
   const [localPlot, setLocalPlot] = useState(props.plot);
   // let [newXPointsReal, setNewXPointsReal] = useState(0);
 
@@ -426,10 +427,10 @@ function Histogram(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if(props?.plot?.plotType === "histogram" ){
-      document.body.style.cursor = 'text'
+    if (props?.plot?.plotType === "histogram") {
+      document.body.style.cursor = "text";
     }
-  }
+  };
 
   return (
     <>
@@ -453,7 +454,7 @@ function Histogram(props) {
               }}
               onMouseMove={(e) => {
                 let nativeEvent = e.nativeEvent;
-                handleCursorProperty(nativeEvent)
+                handleCursorProperty(nativeEvent);
                 handleMouseMove(nativeEvent);
               }}
               onMouseUp={(e) => {
@@ -461,7 +462,7 @@ function Histogram(props) {
                 handleMouseUp(nativeEvent);
               }}
               onMouseLeave={(e) => {
-                document.body.style.cursor = 'context-menu'
+                document.body.style.cursor = "context-menu";
               }}
             />
           }

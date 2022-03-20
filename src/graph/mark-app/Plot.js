@@ -7,7 +7,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
-  isCursorNearAPolygonPoint,
+  // isCursorNearAPolygonPoint
 } from "./PlotHelper";
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
@@ -52,6 +52,7 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 function Plot(props) {
+  console.log("props.plotIndex is ", props.plotIndex);
   const [localPlot, setLocalPlot] = useState(props.plot);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
@@ -668,57 +669,50 @@ function Plot(props) {
         props.enrichedFile.logicles
       );
 
-      const isDraggingGatePoint = isCursorNearAPolygonPoint(
-        localPlot,
-        newPointsReal
-      );
+      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
       const isInside = isPointInPolygon(
         newPointsReal[0],
         newPointsReal[1],
         localPlot.gate.points
       );
 
-      let moveX = getMoveValue(
-        startPointsReal[0],
-        newPointsCanvas[0],
-        localPlot.xScaleType,
-        localPlot.xAxisIndex,
-        "x"
-      );
-      let moveY = getMoveValue(
-        startPointsReal[1],
-        newPointsCanvas[1],
-        localPlot.yScaleType,
-        localPlot.yAxisIndex,
-        "y"
-      );
+      // this code will run when a user will drag a specific polygon gate point
+      // if(isDraggingGatePoint?.dragging){
+      //   const draggingPointIndex = localPlot.gate.points.findIndex(point => point === isDraggingGatePoint.pointValue)
+      //   let newGateValueRealX = getGateValue(
+      //       localPlot.gate.points[draggingPointIndex][0],
+      //       localPlot.xScaleType,
+      //       localPlot.xAxisIndex,
+      //       localPlot.width,
+      //       moveX
+      //   );
 
-      if (isDraggingGatePoint?.dragging) {
-        // this code will run when a user will drag a specific polygon gate point
-        const draggingPointIndex = localPlot.gate.points.findIndex(
-          (point) => point === isDraggingGatePoint.pointValue
-        );
-        let newGateValueRealX = getGateValue(
-          localPlot.gate.points[draggingPointIndex][0],
+      //   let newGateValueRealY = getGateValue(
+      //       localPlot.gate.points[draggingPointIndex][1],
+      //       localPlot.yScaleType,
+      //       localPlot.yAxisIndex,
+      //       localPlot.height,
+      //       moveY
+      //   );
+      //   localPlot.gate.points[draggingPointIndex] = [newGateValueRealX, newGateValueRealY];
+      // }
+
+      if (isInside) {
+        // this code will run when a user will drag the entire polygon gate
+        let moveX = getMoveValue(
+          startPointsReal[0],
+          newPointsCanvas[0],
           localPlot.xScaleType,
           localPlot.xAxisIndex,
-          localPlot.width,
-          moveX
+          "x"
         );
-
-        let newGateValueRealY = getGateValue(
-          localPlot.gate.points[draggingPointIndex][1],
+        let moveY = getMoveValue(
+          startPointsReal[1],
+          newPointsCanvas[1],
           localPlot.yScaleType,
           localPlot.yAxisIndex,
-          localPlot.height,
-          moveY
+          "y"
         );
-        localPlot.gate.points[draggingPointIndex] = [
-          newGateValueRealX,
-          newGateValueRealY,
-        ];
-      } else if (isInside) {
-        // this code will run when a user will drag the entire polygon gate
         localPlot.gate.points = props.plot.gate.points.map((point) => {
           let newGateValueRealX = getGateValue(
             point[0],
@@ -738,9 +732,7 @@ function Plot(props) {
 
           return [newGateValueRealX, newGateValueRealY];
         });
-      }
 
-      if (isInside || isDraggingGatePoint?.dragging) {
         // IMPORTANT - reste start points
         startPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
@@ -767,15 +759,9 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      const isDraggingGatePoint = isCursorNearAPolygonPoint(
-        localPlot,
-        newPointsReal
-      );
-      document.body.style.cursor = isDraggingGatePoint?.dragging
-        ? "nesw-resize"
-        : isInside
-        ? "grab"
-        : "context-menu";
+      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
+      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu';
+      document.body.style.cursor = isInside ? "grab" : "context-menu";
     } else {
       document.body.style.cursor = "crosshair";
     }
@@ -889,6 +875,7 @@ function Plot(props) {
           onChangeScale={onChangeScale}
           plot={localPlot}
           plotIndex={props.plotIndex}
+          onDeleteGate={props.onDeleteGate}
           handleResizeMouseDown={handleResizeMouseDown}
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
