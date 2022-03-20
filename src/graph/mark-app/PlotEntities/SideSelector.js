@@ -24,25 +24,27 @@ function SideSelector(props) {
         <div
           className="pc-y"
           style={{
-            // marginRight: "20px",
             transform: "rotate(270deg)",
-            marginLeft: "-115px",
-            marginRight: "-60px",
+            marginLeft: "-145px",
+            marginRight: "-80px",
             width: "min-content",
             display: "flex",
+            justifyContent: "center",
           }}
         >
           <Tooltip
             title={
-              props.plot.yAxisLabel.length > 25 ? props.plot.yAxisLabel : ""
+              props.plot.yAxisLabel.length > 20 ? props.plot.yAxisLabel : ""
             }
           >
             <Select
               disableUnderline
               style={{
-                width: 180,
-                marginLeft: "25px",
-                marginTop: "60px",
+                width: props.plot.width * 0.6,
+                marginLeft: "35px",
+                marginTop: "75px",
+                marginRight: "-10px",
+                marginBottom: "25px",
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
@@ -76,13 +78,18 @@ function SideSelector(props) {
               </MenuItem>
             </Select>
           </Tooltip>
-          {/* <Select
+          <Select
+            disableUnderline
             style={{
-              marginTop: "10px",
-              marginLeft: 10,
+              width: props.plot.width * 0.35,
+              marginLeft: "25px",
+              marginTop: "60px",
+              marginBottom: "10px",
+              textAlign: "center",
               flex: "1 1 auto",
+              fontSize: 12,
             }}
-            value={props.yScaleType}
+            value={props.plot.yScaleType}
             onChange={(e) =>
               props.onChangeScale(
                 { scale: e.target.value },
@@ -93,7 +100,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select> */}
+          </Select>
         </div>
       </div>
       <div
@@ -132,17 +139,19 @@ function SideSelector(props) {
         <div
           style={{
             display: "flex",
+            justifyContent: "space-between",
+            width: props.plot.width,
           }}
         >
           <Tooltip
             title={
-              props.plot.xAxisLabel.length > 25 ? props.plot.xAxisLabel : ""
+              props.plot.xAxisLabel.length > 20 ? props.plot.xAxisLabel : ""
             }
           >
             <Select
               disableUnderline
               style={{
-                width: 180,
+                width: props.plot.width * 0.6,
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
@@ -163,13 +172,15 @@ function SideSelector(props) {
               ))}
             </Select>
           </Tooltip>
-          {/* <Select
+          <Select
+            disableUnderline
             style={{
-              marginTop: "10px",
-              marginLeft: 10,
+              textAlign: "center",
               flex: "1 1 auto",
+              fontSize: 12,
+              width: props.plot.width * 0.35,
             }}
-            value={props.xScaleType}
+            value={props.plot.xScaleType}
             onChange={(e) =>
               props.onChangeScale(
                 { scale: e.target.value },
@@ -180,7 +191,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select> */}
+          </Select>
         </div>
       </div>
     </div>
