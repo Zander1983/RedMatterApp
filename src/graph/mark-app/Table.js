@@ -86,7 +86,9 @@ function Table(props) {
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           onChangeChannel={props.onChangeChannel}
-                          // onDeleteGate={props.onDeleteGate}
+                          onAddGate={props.onAddGate}
+                          onDeleteGate={props.onDeleteGate}
+                          onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
                           plotIndex={`0-${plotIindex}`}
                         />
@@ -227,6 +229,9 @@ function Table(props) {
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
                               onChangeChannel={props.onChangeChannel}
+                              onAddGate={props.onAddGate}
+                              onDeleteGate={props.onDeleteGate}
+                              onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                             />

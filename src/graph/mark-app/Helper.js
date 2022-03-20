@@ -60,13 +60,26 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
             pointX = logicle.scale(pointX);
             // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
             // either way this inefficient here - the logicle transform of the gate point needs only to be done once
-            tranformedPoints = gate.points.map((point) => {
-              return [logicle.scale(point[0]), point[1]];
-            });
+
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [logicle.scale(point[0]), point[1]];
+              });
+            } else {
+              // so histogram
+              tranformedPoints = [
+                logicle.scale(gate.points[0]),
+                logicle.scale(gate.points[1]),
+              ];
+            }
           } else {
-            tranformedPoints = gate.points.map((point) => {
-              return [point[0], point[1]];
-            });
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [point[0], point[1]];
+              });
+            } else {
+              tranformedPoints = [gate.points[0], gate.points[1]];
+            }
           }
 
           if (gate["yScaleType"] === "bi") {
@@ -82,17 +95,22 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
             return { x: point[0], y: point[1] };
           });
 
-          // console.log("gate.name is ", gate.name);
-          // console.log("isInGate is ", isInGate);
-          // console.log("gate is ", gate);
-
-          isInGate = pointInsidePolygon(
-            {
-              x: pointX,
-              y: pointY,
-            },
-            tranformedPoints
-          );
+          if (gate.gateType == "polygon") {
+            isInGate = pointInsidePolygon(
+              {
+                x: pointX,
+                y: pointY,
+              },
+              tranformedPoints
+            );
+          } else {
+            // so its histogram
+            isInGate = isInHistGate(
+              tranformedPoints[0],
+              tranformedPoints[1],
+              pointX
+            );
+          }
 
           if (isInGate) {
             event["color"] = gate["color"];
@@ -237,6 +255,14 @@ export const pointInsidePolygon = ({ x, y }, polygon) => {
   }
   if (hits & 1) return true;
   return false;
+};
+
+let isInHistGate = (gateStartPoint, gateEndpoint, value) => {
+  if (value < gateStartPoint || value > gateEndpoint) {
+    return false;
+  }
+
+  return true;
 };
 
 export const graphLine = (params, ctx) => {
