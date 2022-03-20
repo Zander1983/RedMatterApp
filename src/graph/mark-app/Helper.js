@@ -26,6 +26,12 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
+    // For Mean
+    let sumOfPointX = 0;
+    let sumOfPointY = 0;
+    // For Median
+    let xPointsInsideGate = [];
+    let yPointsInsideGate = [];
 
     for (
       let eventIndex = 0;
@@ -95,6 +101,12 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           );
 
           if (isInGate) {
+            // Mean
+            sumOfPointX += pointX;
+            sumOfPointY += pointY;
+            // Median
+            xPointsInsideGate.push(pointX);
+            yPointsInsideGate.push(pointY);
             event["color"] = gate["color"];
             event["isInGate" + gate.name] = true;
             !gateStatsObj[gate.name + "_count"]
@@ -125,10 +137,33 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
         Files[fileIndex].events.length
       ).toFixed(2);
 
+      // Mean Calculation
+      let meanX = (sumOfPointX / gateStatsObj[gateKey]).toFixed(2);
+      let meanY = (sumOfPointY / gateStatsObj[gateKey]).toFixed(2);
+
+      // Median Calculation
+      xPointsInsideGate = xPointsInsideGate.sort();
+      yPointsInsideGate = yPointsInsideGate.sort();
+
+      let medianX =
+        gateStatsObj[gateKey] % 2 === 0
+          ? xPointsInsideGate[gateStatsObj[gateKey] / 2] +
+            xPointsInsideGate[gateStatsObj[gateKey] / 2 - 1]
+          : xPointsInsideGate[gateStatsObj[gateKey] / 2 - 0.5];
+      let medianY =
+        gateStatsObj[gateKey] % 2 === 0
+          ? yPointsInsideGate[gateStatsObj[gateKey] / 2] +
+            yPointsInsideGate[gateStatsObj[gateKey] / 2 - 1]
+          : yPointsInsideGate[gateStatsObj[gateKey] / 2 - 0.5];
+
       gateStats.push({
         gateName: gateName,
         count: gateStatsObj[gateKey],
         percentage: percentage,
+        meanX: meanX,
+        meanY: meanY,
+        medianX: medianX,
+        medianY: medianY,
       });
     });
 
