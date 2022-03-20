@@ -273,6 +273,8 @@ export const getWorkspaceStateFromServer = async (
       await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);
       return { loaded: true, requestSuccess: true };
     }
+    await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
+    await WorkspaceDispatch.UpdatePipelineId(workspaceData.data.pipelines?.filter((pipe:any) => pipe.isDefault)?.[0]?._id);
   } catch (err) {
     throw err;
   }

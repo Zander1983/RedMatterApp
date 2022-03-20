@@ -8,6 +8,8 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 
 export default function PipelineNamePrompt(props: {
   open: boolean;
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  pipelines:any[],
   closeCall: {  quit: Function, save: Function};
 }) {
   const [open, setOpen] = React.useState<boolean>(false);
@@ -15,7 +17,7 @@ export default function PipelineNamePrompt(props: {
   const [name, setName] = React.useState("");
 
   const quit = () => {
-    setOpen(false);
+    props.setOpen(false);
   };
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function PipelineNamePrompt(props: {
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
         <DialogTitle>Name Your PipeLine</DialogTitle>
         <DialogContent>
+          <div>
           <TextField
             error={nameError}
             value={name}
@@ -61,6 +64,23 @@ export default function PipelineNamePrompt(props: {
               setName(e.target.value);
             }}
           />
+          </div>
+          {/*<table style={{padding:5+'px'}}>*/}
+          {/*  <thead>*/}
+          {/*   <td>Name</td>*/}
+          {/*  <td>Action</td>*/}
+          {/*  </thead>*/}
+          {/*  <tbody>*/}
+          {/*  {props.pipelines?.map( (pipeline:any, index:any) => {*/}
+          {/*    return(*/}
+          {/*        <tr key={index} style={{padding:2+'px', margin:5+'px'}}>*/}
+          {/*          <td style={{padding:2+'px', margin:1+'px'}}>{pipeline.name}</td>*/}
+          {/*          <td><button style={{cursor:'pointer'}}>Set as Default</button></td>*/}
+          {/*        </tr>*/}
+          {/*    )*/}
+          {/*  })}*/}
+          {/*  </tbody>*/}
+          {/*</table>*/}
         </DialogContent>
         <DialogActions>
           <Button onClick={quit} color="primary">

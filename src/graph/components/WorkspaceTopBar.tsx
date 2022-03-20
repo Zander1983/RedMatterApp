@@ -138,7 +138,7 @@ const WorkspaceTopBarComponent = ({
   useEffect(() => {
     setTimeout(() => {
       //@ts-ignore
-      setActivePipelineId(workState?.pipelineId );
+      setActivePipelineId(workState?.pipelineId || workspace.activePipelineId);
       setPipelines(getWorkspace()?.pipelines);
     }, 1000);
   }, [workState]);
@@ -164,6 +164,7 @@ const WorkspaceTopBarComponent = ({
               await WorkspaceDispatch.SetPlotStates(workspaceObj);
               await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
               await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              setActivePipelineId(selectedPipeline);
             }else {
               await WorkspaceDispatch.SetPlotStates({});
               await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
@@ -211,7 +212,7 @@ const WorkspaceTopBarComponent = ({
       setPipelines(pipelines);
       WorkspaceDispatch.SetPipeLines(pipelines);
       await showMessageBox({
-        message: response.data.message,
+        message: "Created Success",
         saverity: "success",
       });
     } else {
@@ -379,8 +380,7 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                   }}
-                  disabled={!!workspace?.selectedFile}
-                >
+                  disabled={!!(workspace?.selectedFile)}>
                   Plot sample
                 </Button>
                 <Button
@@ -523,9 +523,11 @@ const WorkspaceTopBarComponent = ({
         {/*<GateNamePrompt />*/}
         <PipeLineNamePrompt
             open={pipeLineModalOpen}
+            pipelines={pipelines}
+            setOpen={setPipeLineModalOpen}
             closeCall={{
               quit: onQuite,
-              save: onSavePipeline
+              save: onSavePipeline,
             }}/>
         {workspace?.files?.length > 0 && (
           <AddFileModal
