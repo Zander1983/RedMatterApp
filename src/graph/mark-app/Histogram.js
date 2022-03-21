@@ -11,12 +11,9 @@ import {
   getRealYAxisValueFromCanvasPointOnLogicleScale,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText } from "./Helper";
-import numeral from "numeral";
+import { drawText, getAxisLabels, getBins } from "./Helper";
 
 let isMouseDown = false;
-
-const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
 const hasGate = (plot) => {
   return !!plot.gate;
@@ -374,6 +371,7 @@ function Histogram(props) {
         xLabels[i].pos / xDivisor + 20 > props.plot.width
           ? props.plot.width
           : xLabels[i].pos / xDivisor + 20;
+      // to avoid overlapping between the labels
       if (tooClose) {
         xPos += 8;
       }
@@ -417,114 +415,6 @@ function Histogram(props) {
         contextY
       );
     }
-  };
-
-  const linLabel = (num) => {
-    let snum = "";
-    if (num < 2) {
-      snum = numeral(num.toFixed(2)).format("0.0a");
-    } else {
-      snum = num.toFixed(2);
-      snum = numeral(snum).format("0a");
-    }
-    return snum;
-  };
-
-  const pot10Label = (pot10Indx) => {
-    let ev = "";
-    for (const l of Math.abs(pot10Indx).toString()) ev += EXP_NUMS[parseInt(l)];
-    let name = "10" + ev;
-    if (!name.includes("-") && pot10Indx < 0) name = "-" + name;
-    return name;
-  };
-
-  const getAxisLabels = (format, linRange, logicle, binsCount) => {
-    let labels = [];
-    if (format === "lin") {
-      const binSize = (linRange[1] - linRange[0]) / binsCount;
-
-      for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
-        labels.push({
-          pos: i,
-          name: linLabel(i),
-        });
-    }
-    if (format === "bi") {
-      const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
-      let pot10 = 1;
-      let pot10Exp = 0;
-      const fow = () => {
-        pot10 *= 10;
-        pot10Exp++;
-      };
-      const back = () => {
-        pot10 /= 10;
-        pot10Exp--;
-      };
-      const add = (x, p) => {
-        if (
-          (x >= linRange[0] && x <= linRange[1]) ||
-          (x <= linRange[0] && x >= linRange[1])
-        ) {
-          labels.push({
-            pos: x,
-            name: pot10Label(p),
-          });
-        }
-      };
-      while (pot10 <= baseline) fow();
-      while (pot10 >= 1) {
-        add(pot10, pot10Exp);
-        add(-pot10, -pot10Exp);
-        back();
-      }
-
-      let newPos = labels.map((e) => logicle.scale(e.pos));
-
-      newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
-      labels = labels.map((e, i) => {
-        e.pos = newPos[i];
-        return e;
-      });
-      labels = labels.sort((a, b) => a.pos - b.pos);
-
-      const distTolerance = 0.03;
-      let lastAdded = null;
-      labels = labels.filter((e, i) => {
-        if (i === 0) {
-          lastAdded = i;
-          return true;
-        }
-        if (
-          (e.pos - labels[lastAdded].pos) /
-            (Math.max(linRange[0], linRange[1]) -
-              Math.min(linRange[0], linRange[1])) >=
-          distTolerance
-        ) {
-          lastAdded = i;
-          return true;
-        }
-        return false;
-      });
-    }
-    return labels;
-  };
-
-  const getBins = (width, height, scale) => {
-    let verticalBinCount = 1;
-    let horizontalBinCount = 1;
-
-    if (scale === 0 || width === 0) {
-      verticalBinCount = 1;
-      horizontalBinCount = 1;
-      return;
-    }
-    horizontalBinCount = width === undefined ? 2 : Math.round(width / 60);
-    verticalBinCount = height === undefined ? 2 : Math.round(height / 60);
-    horizontalBinCount = Math.max(2, horizontalBinCount);
-    verticalBinCount = Math.max(2, verticalBinCount);
-
-    return [verticalBinCount, horizontalBinCount];
   };
 
   const onChangeScale = (e, axis, plotIndex) => {
