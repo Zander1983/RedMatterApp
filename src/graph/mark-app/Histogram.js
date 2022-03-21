@@ -803,9 +803,6 @@ function Histogram(props) {
                     position: "relative",
                     zIndex: 1000,
                   }}
-                  onMouseMove={(e) => {
-                    console.log(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-                  }}
                 />
                 {/* main canvas */}
                 <div
@@ -831,6 +828,7 @@ function Histogram(props) {
                     width={props.plot.width}
                     height={props.plot.height}
                     style={{
+                      border: "1px solid #32a1ce",
                       position: "absolute",
                       left: 0,
                       top: 0,
@@ -854,37 +852,6 @@ function Histogram(props) {
                     }}
                   />
                 </div>
-                {/* <div
-                  style={{
-                    border: "1px solid #32a1ce",
-                    width: `${props.plot.width}px`,
-                    height: `${props.plot.height}px`,
-                  }}
-                  // ref={ref}
-                >
-                  <canvas
-                    className="canvas"
-                    id={`canvas-${props.plotIndex}`}
-                    width={props.plot.width}
-                    height={props.plot.height}
-                    onMouseDown={(e) => {
-                      let nativeEvent = e.nativeEvent;
-                      handleMouseDown(nativeEvent);
-                    }}
-                    onMouseMove={(e) => {
-                      let nativeEvent = e.nativeEvent;
-                      handleCursorProperty(nativeEvent);
-                      handleMouseMove(nativeEvent);
-                    }}
-                    onMouseUp={(e) => {
-                      let nativeEvent = e.nativeEvent;
-                      handleMouseUp(nativeEvent);
-                    }}
-                    onMouseLeave={(e) => {
-                      document.body.style.cursor = "context-menu";
-                    }}
-                  />
-                </div> */}
               </div>
               {/* X-axis */}
               <canvas

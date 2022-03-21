@@ -920,9 +920,6 @@ function Plot(props) {
                     position: "relative",
                     zIndex: 1000,
                   }}
-                  onMouseMove={(e) => {
-                    console.log(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-                  }}
                 />
                 {/* main canvas */}
                 <div
