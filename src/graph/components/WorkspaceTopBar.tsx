@@ -1,4 +1,6 @@
 import React, { useEffect } from "react";
+import { CSVLink } from "react-csv";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
@@ -8,7 +10,10 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
-import {saveWorkspaceStateToServer, saveWorkspaceToRemote} from "../utils/workspace";
+import {
+  saveWorkspaceStateToServer,
+  saveWorkspaceToRemote,
+} from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 // import IOSSwitch from "../../Components/common/Switch";
@@ -22,7 +27,12 @@ import GateNamePrompt from "./modals/GateNamePrompt";
 import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
-// import {createDefaultPlotSnapShot, getPlotChannelAndPosition } from "../mark-app/Helper";
+import {
+  superAlgorithm,
+  createDefaultPlotSnapShot,
+  getPlotChannelAndPosition,
+} from "graph/mark-app/Helper";
+import MarkLogicle from "graph/mark-app/logicleMark";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -48,6 +58,19 @@ const useStyles = makeStyles((theme) => ({
   fileSelectDivider: {
     marginTop: 10,
     marginBottom: 10,
+  },
+  downloadBtn: {
+    marginLeft: 10,
+    backgroundColor: "#fff",
+    color: "#000",
+  },
+  downloadBtnLayout: {
+    display: "flex",
+    alignItems: "center",
+    color: "#000",
+    "&:hover": {
+      color: "#000",
+    },
   },
   topButton: {
     marginLeft: 10,
@@ -109,6 +132,17 @@ const WorkspaceTopBarComponent = ({
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const didMount = useDidMount();
 
+  const headers = [
+    { label: "File Name", key: "fileName" },
+    { label: "Gate Name", key: "gateName" },
+    { label: "Percentage", key: "percentage" },
+    { label: "X Mean", key: "xMean" },
+    { label: "Y Mean", key: "yMean" },
+    { label: "X Median", key: "xMedian" },
+    { label: "Y Median", key: "yMedian" },
+  ];
+  const [data, setData] = React.useState<any[]>([]);
+
   //@ts-ignore
   const plotLength = useSelector((state) => state.workspace.plots.length);
 
@@ -148,7 +182,10 @@ const WorkspaceTopBarComponent = ({
     func(false);
   };
 
-  const saveWorkspace = async (shared: boolean = false, currentState:any = null) => {
+  const saveWorkspace = async (
+    shared: boolean = false,
+    currentState: any = null
+  ) => {
     setSavingWorkspace(true);
     setLastSavedTime(new Date().toLocaleString());
     try {
@@ -227,6 +264,96 @@ const WorkspaceTopBarComponent = ({
     handleOpen(setLinkShareModalOpen);
   };
 
+  const downloadCSV = () => {
+    let workspaceState = getWorkspace().workspaceState;
+    // @ts-ignore
+    const plots =
+      workspaceState &&
+      // @ts-ignore
+      workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    let isSnapShotCreated = false;
+    let copyOfFiles: any[] = getWorkspace().files;
+    if (plots === null || plots === undefined) {
+      const defaultFile = copyOfFiles?.[0];
+      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
+        getPlotChannelAndPosition(defaultFile);
+      workspaceState = createDefaultPlotSnapShot(
+        defaultFile?.id,
+        experimentId,
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex
+      );
+      isSnapShotCreated = true;
+    }
+
+    let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
+
+    const csvData = [];
+
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      for (
+        let statsIndex = 0;
+        statsIndex < enrichedFiles[fileIndex].gateStats.length;
+        statsIndex++
+      ) {
+        const stat = {
+          fileName: enrichedFiles[fileIndex]?.label,
+          gateName: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.gateName,
+          percentage:
+            enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage,
+          xMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanX,
+          yMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanY,
+          xMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianX,
+          yMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianY,
+        };
+        csvData.push(stat);
+      }
+    }
+
+    setData(csvData);
+  };
+
+  const formatEnrichedFiles = (enrichedFiles: any[], workspaceState: any) => {
+    return enrichedFiles.map((file) => {
+      let logicles = file.channels.map((channel: any) => {
+        return new MarkLogicle(
+          channel.biexponentialMinimum,
+          channel.biexponentialMaximum
+        );
+      });
+
+      let channels = file.channels.map((channel: any) => {
+        return {
+          minimum: channel.biexponentialMinimum,
+          maximum: channel.biexponentialMaximum,
+          name: channel.value,
+          defaultScale: channel.display,
+        };
+      });
+
+      let controlFileId = workspaceState.controlFileId;
+
+      let plots = workspaceState.files[file.id]
+        ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
+        : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
+
+      return {
+        enrichedEvents: file.events,
+        channels: channels,
+        logicles: logicles,
+        gateStats: file.gateStats,
+        plots: plots,
+        fileId: file.id,
+        isControlFile: file.id == controlFileId ? 1 : 0,
+        label: file.label,
+      };
+    });
+  };
+
   const _renderToolbar = () => {
     // console.log("==== render toolbar =====");
     return (
@@ -242,7 +369,8 @@ const WorkspaceTopBarComponent = ({
           WebkitBorderBottomRightRadius: 0,
           minHeight: "43px",
         }}
-        container>
+        container
+      >
         <Grid container>
           {workspace.editWorkspace ? (
             <span
@@ -293,6 +421,28 @@ const WorkspaceTopBarComponent = ({
                   }}
                 >
                   Clear
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => downloadCSV()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <CSVLink
+                    headers={headers}
+                    data={data}
+                    filename="WorkspaceReport.csv"
+                    className={classes.downloadBtnLayout}
+                  >
+                    <GetAppIcon
+                      fontSize="small"
+                      style={{ marginRight: 10 }}
+                    ></GetAppIcon>
+                    Download Stats
+                  </CSVLink>
                 </Button>
                 <span>
                   <Button
@@ -406,7 +556,7 @@ const WorkspaceTopBarComponent = ({
             open={addFileModalOpen}
             closeCall={{
               f: handleCloseAndMakePlotControllerTrue,
-              ref: setAddFileModalOpen
+              ref: setAddFileModalOpen,
             }}
             isShared={sharedWorkspace}
             experimentId={experimentId}

@@ -9,7 +9,6 @@ import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
 import userManager from "Components/users/userManager";
 import PrototypeNotice from "./PrototypeNotice";
-import SideMenus from "./components/static/SideMenus";
 
 import { downloadEvents, downloadFileMetadata } from "services/FileService";
 import {
@@ -361,7 +360,6 @@ const NewWorkspaceInnerComponent = (props: {
       <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <SideMenus workspace={getWorkspace()} />
       <Grid
         style={{
           marginTop: 0,
