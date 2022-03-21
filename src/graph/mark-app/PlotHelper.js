@@ -29,28 +29,33 @@ export const getRealPointFromCanvasPoints = (
 ) => {
   let x = points[0],
     y = points[1];
-  if (plot.xScaleType === "lin") {
-    // if linear, convert to the "real" value
-    x = getRealXAxisValueFromCanvasPointOnLinearScale(
-      channels,
-      plot.xAxisIndex,
-      plot.width,
-      x
-    );
-  } else {
-    // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
-    x = getRealXAxisValueFromCanvasPointOnLogicleScale(logicles, plot, x);
+
+  if (x) {
+    if (plot.xScaleType === "lin") {
+      // if linear, convert to the "real" value
+      x = getRealXAxisValueFromCanvasPointOnLinearScale(
+        channels,
+        plot.xAxisIndex,
+        plot.width,
+        x
+      );
+    } else {
+      // if logicle, get the logicle transform, convert the canvas point to logicle (between 0 and 1), and then to real value
+      x = getRealXAxisValueFromCanvasPointOnLogicleScale(logicles, plot, x);
+    }
   }
 
-  if (plot.yScaleType === "lin") {
-    y = getRealYAxisValueFromCanvasPointOnLinearScale(
-      channels,
-      plot.yAxisIndex,
-      plot.height,
-      y
-    );
-  } else {
-    y = getRealYAxisValueFromCanvasPointOnLogicleScale(logicles, plot, y);
+  if (y) {
+    if (plot.yScaleType === "lin") {
+      y = getRealYAxisValueFromCanvasPointOnLinearScale(
+        channels,
+        plot.yAxisIndex,
+        plot.height,
+        y
+      );
+    } else {
+      y = getRealYAxisValueFromCanvasPointOnLogicleScale(logicles, plot, y);
+    }
   }
 
   return [x, y];
