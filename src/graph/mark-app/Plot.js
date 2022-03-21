@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isPointInPolygon, graphLine, drawText } from "./Helper";
+import { isPointInPolygon, drawText } from "./Helper";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
