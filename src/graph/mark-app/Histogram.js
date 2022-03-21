@@ -70,9 +70,15 @@ const linspace = (a, b, n) => {
   return ret;
 };
 
-const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
-  let maxCount = 0;
-
+const paintHist = (
+  context,
+  hists,
+  enrichedFile,
+  plot,
+  minimum,
+  color,
+  maxCountPlusTenPercent
+) => {
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
   const ratio = getAxisRatio(
@@ -82,15 +88,7 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
     plot.xScaleType
   );
 
-  let countYMinMax = getMultiArrayMinMax(hists, "y");
-
-  if (countYMinMax.max * 1.1 > maxCount) {
-    maxCount = countYMinMax.max * 1.1;
-  }
-
-  hists.maxCount = countYMinMax.max;
-
-  let ratioY = plot.height / maxCount;
+  let ratioY = plot.height / maxCountPlusTenPercent;
 
   //value, scaleType, ratio, minimum, width, axis
   let firstX = getPointOnCanvasByRatio(
@@ -249,10 +247,18 @@ function Histogram(props) {
       );
     }
 
+    console.log(">>> bins is ", bins);
+
     const hists = histogram({
       data: data,
       bins: bins,
     });
+
+    let countYMinMax = getMultiArrayMinMax(hists, "y");
+    console.log("countYMinMax is ", countYMinMax);
+
+    let maxCountPlusTenPercent = countYMinMax.max * 1.1;
+    console.log("maxCountPlusTenPercent is ", maxCountPlusTenPercent);
 
     paintHist(
       context,
@@ -260,7 +266,8 @@ function Histogram(props) {
       props.enrichedFile,
       props.plot,
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-      color
+      color,
+      maxCountPlusTenPercent
     );
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {
