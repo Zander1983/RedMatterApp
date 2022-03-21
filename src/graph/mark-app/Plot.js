@@ -403,7 +403,7 @@ function Plot(props) {
       }
       let xPos =
         xLabels[i].pos / xDivisor + 20 > localPlot.width
-          ? localPlot.width
+          ? localPlot.width - 2
           : xLabels[i].pos / xDivisor + 20;
       if (tooClose) {
         xPos += 8;
@@ -413,7 +413,7 @@ function Plot(props) {
           x: xPos,
           y: 12,
           text: xLabels[i].name,
-          font: "8px Arial",
+          font: "10px Arial",
           fillColor: "black",
         },
         contextX
@@ -442,7 +442,7 @@ function Plot(props) {
           x: 0,
           y: localPlot.height + 20 - yPos,
           text: yLabels[i].name,
-          font: "8px Arial",
+          font: "10px Arial",
           fillColor: "black",
         },
         contextY
@@ -803,7 +803,7 @@ function Plot(props) {
                 <canvas
                   height={localPlot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
-                  width={20}
+                  width={25}
                   style={{
                     background: "#FAFAFA",
                     position: "relative",

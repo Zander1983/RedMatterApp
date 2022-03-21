@@ -369,7 +369,7 @@ function Histogram(props) {
       }
       let xPos =
         xLabels[i].pos / xDivisor + 20 > props.plot.width
-          ? props.plot.width
+          ? props.plot.width - 2
           : xLabels[i].pos / xDivisor + 20;
       // to avoid overlapping between the labels
       if (tooClose) {
@@ -380,7 +380,7 @@ function Histogram(props) {
           x: xPos,
           y: 12,
           text: xLabels[i].name,
-          font: "8px Arial",
+          font: "10px Arial",
           fillColor: "black",
         },
         contextX
@@ -409,7 +409,7 @@ function Histogram(props) {
           x: 0,
           y: props.plot.height + 20 - yPos,
           text: yLabels[i].name,
-          font: "8px Arial",
+          font: "10px Arial",
           fillColor: "black",
         },
         contextY
@@ -687,7 +687,7 @@ function Histogram(props) {
                 <canvas
                   height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
-                  width={20}
+                  width={25}
                   style={{
                     background: "#FAFAFA",
                     position: "relative",
