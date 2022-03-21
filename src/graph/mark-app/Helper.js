@@ -474,6 +474,43 @@ export const graphLine = (params, ctx) => {
   }
 };
 
+export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
+  return enrichedFiles.map((file) => {
+    let logicles = file.channels.map((channel) => {
+      return new MarkLogicle(
+        channel.biexponentialMinimum,
+        channel.biexponentialMaximum
+      );
+    });
+
+    let channels = file.channels.map((channel) => {
+      return {
+        minimum: channel.biexponentialMinimum,
+        maximum: channel.biexponentialMaximum,
+        name: channel.value,
+        defaultScale: channel.display,
+      };
+    });
+
+    let controlFileId = workspaceState.controlFileId;
+
+    let plots = workspaceState.files[file.id]
+      ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
+      : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
+
+    return {
+      enrichedEvents: file.events,
+      channels: channels,
+      logicles: logicles,
+      gateStats: file.gateStats,
+      plots: plots,
+      fileId: file.id,
+      isControlFile: file.id == controlFileId ? 1 : 0,
+      label: file.label,
+    };
+  });
+};
+
 export const getPlotChannelAndPosition = (file) => {
   const defaultFileChannels = file?.channels;
 

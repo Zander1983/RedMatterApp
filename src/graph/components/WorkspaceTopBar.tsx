@@ -31,8 +31,8 @@ import {
   superAlgorithm,
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
+  formatEnrichedFiles,
 } from "graph/mark-app/Helper";
-import MarkLogicle from "graph/mark-app/logicleMark";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -315,43 +315,6 @@ const WorkspaceTopBarComponent = ({
     }
 
     setData(csvData);
-  };
-
-  const formatEnrichedFiles = (enrichedFiles: any[], workspaceState: any) => {
-    return enrichedFiles.map((file) => {
-      let logicles = file.channels.map((channel: any) => {
-        return new MarkLogicle(
-          channel.biexponentialMinimum,
-          channel.biexponentialMaximum
-        );
-      });
-
-      let channels = file.channels.map((channel: any) => {
-        return {
-          minimum: channel.biexponentialMinimum,
-          maximum: channel.biexponentialMaximum,
-          name: channel.value,
-          defaultScale: channel.display,
-        };
-      });
-
-      let controlFileId = workspaceState.controlFileId;
-
-      let plots = workspaceState.files[file.id]
-        ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
-        : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
-
-      return {
-        enrichedEvents: file.events,
-        channels: channels,
-        logicles: logicles,
-        gateStats: file.gateStats,
-        plots: plots,
-        fileId: file.id,
-        isControlFile: file.id == controlFileId ? 1 : 0,
-        label: file.label,
-      };
-    });
   };
 
   const _renderToolbar = () => {

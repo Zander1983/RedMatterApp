@@ -15,8 +15,8 @@ import {
   superAlgorithm,
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
+  formatEnrichedFiles,
 } from "./Helper";
-import MarkLogicle from "./logicleMark";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 
 interface PlotControllerProps {
@@ -97,7 +97,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
 
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 
     if (isSnapShotCreated) WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
@@ -114,43 +114,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       return events;
     });
     return enrichedEvents;
-  };
-
-  formatEnrichedFiles = (enrichedFiles: any[], workspaceState: any) => {
-    return enrichedFiles.map((file) => {
-      let logicles = file.channels.map((channel: any) => {
-        return new MarkLogicle(
-          channel.biexponentialMinimum,
-          channel.biexponentialMaximum
-        );
-      });
-
-      let channels = file.channels.map((channel: any) => {
-        return {
-          minimum: channel.biexponentialMinimum,
-          maximum: channel.biexponentialMaximum,
-          name: channel.value,
-          defaultScale: channel.display,
-        };
-      });
-
-      let controlFileId = workspaceState.controlFileId;
-
-      let plots = workspaceState.files[file.id]
-        ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
-        : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
-
-      return {
-        enrichedEvents: file.events,
-        channels: channels,
-        logicles: logicles,
-        gateStats: file.gateStats,
-        plots: plots,
-        fileId: file.id,
-        isControlFile: file.id == controlFileId ? 1 : 0,
-        label: file.label,
-      };
-    });
   };
 
   onAddGate = (change: any) => {
@@ -196,7 +159,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     // set new gate to redux
     setTimeout(() => {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
@@ -241,7 +204,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     // set new gate to redux
     setTimeout(() => {
@@ -290,7 +253,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
 
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     // setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 5);
@@ -388,7 +351,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfFiles: any[] = getWorkspace().files;
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     setTimeout(() => {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
