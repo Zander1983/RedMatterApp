@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isPointInPolygon, graphLine } from "./Helper";
+import { isPointInPolygon, graphLine, drawText } from "./Helper";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -82,7 +82,7 @@ function Plot(props) {
       }
     });
 
-    //drawLabel();
+    drawLabel();
 
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
@@ -365,16 +365,19 @@ function Plot(props) {
   };
 
   const drawLabel = () => {
-    let context = getContext(props.plotIndex);
-
     let xRange = [
       props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
+    const xDivisor =
+      props.enrichedFile.channels[localPlot.xAxisIndex].maximum / 200;
+
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
+    const yDivisor =
+      props.enrichedFile.channels[localPlot.yAxisIndex].maximum / 200;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -388,6 +391,37 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.xAxisIndex],
       horizontalBinCount
     );
+    let contextX = document
+      .getElementById("canvas-" + props.plotIndex + "-xAxis")
+      .getContext("2d");
+
+    contextX.clearRect(0, 0, localPlot.width + 20, 20);
+    for (let i = 0; i < xLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
+      ) {
+        tooClose = true;
+      }
+      let xPos =
+        xLabels[i].pos / xDivisor + 20 > localPlot.width
+          ? localPlot.width
+          : xLabels[i].pos / xDivisor + 20;
+      if (tooClose) {
+        xPos += 8;
+      }
+      drawText(
+        {
+          x: xPos,
+          y: 12,
+          text: xLabels[i].name,
+          font: "8px Arial",
+          fillColor: "black",
+        },
+        contextX
+      );
+    }
 
     let yLabels = getAxisLabels(
       localPlot.yScaleType,
@@ -396,33 +430,27 @@ function Plot(props) {
       verticalBinCount
     );
 
-    graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: leftPadding * localPlot.plotScale,
-        y2: (localPlot.height - bottomPadding) * localPlot.plotScale,
-        ib: yRange[0],
-        ie: yRange[1],
-        bins: verticalBinCount,
-        labels: yLabels,
-      },
-      context
-    );
+    let contextY = document
+      .getElementById("canvas-" + props.plotIndex + "-yAxis")
+      .getContext("2d");
 
-    graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: (localPlot.width - rightPadding) * localPlot.plotScale,
-        y2: topPadding * localPlot.plotScale,
-        ib: xRange[0],
-        ie: xRange[1],
-        bins: horizontalBinCount,
-        labels: xLabels,
-      },
-      context
-    );
+    contextY.clearRect(0, 0, 20, localPlot.height + 20);
+    for (let i = 0; i < yLabels.length; i++) {
+      let yPos =
+        yLabels[i].pos / yDivisor + 20 > localPlot.height
+          ? localPlot.height
+          : yLabels[i].pos / yDivisor + 20;
+      drawText(
+        {
+          x: 0,
+          y: localPlot.height + 20 - yPos,
+          text: yLabels[i].name,
+          font: "8px Arial",
+          fillColor: "black",
+        },
+        contextY
+      );
+    }
   };
 
   const linLabel = (num) => {
@@ -880,35 +908,61 @@ function Plot(props) {
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
           canvasComponent={
-            <div
-              style={{
-                border: "1px solid #32a1ce",
-                width: `${localPlot.width}px`,
-                height: `${localPlot.height}px`,
-              }}
-              // ref={ref}
-            >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex" }}>
+                {/* Y-axis */}
+                <canvas
+                  height={localPlot.height}
+                  id={`canvas-${props.plotIndex}-yAxis`}
+                  width={20}
+                  style={{
+                    background: "#FAFAFA",
+                    position: "relative",
+                    zIndex: 1000,
+                  }}
+                  onMouseMove={(e) => {
+                    console.log(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+                  }}
+                />
+                {/* main canvas */}
+                <div
+                  style={{
+                    border: "1px solid #32a1ce",
+                    width: `${localPlot.width}px`,
+                    height: `${localPlot.height}px`,
+                  }}
+                  // ref={ref}
+                >
+                  <canvas
+                    className="canvas"
+                    id={`canvas-${props.plotIndex}`}
+                    width={localPlot.width}
+                    height={localPlot.height}
+                    onMouseDown={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseDown(nativeEvent);
+                    }}
+                    onMouseMove={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleCursorProperty(nativeEvent);
+                      handleMouseMove(nativeEvent);
+                    }}
+                    onMouseUp={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseUp(nativeEvent);
+                    }}
+                    onMouseLeave={(e) => {
+                      document.body.style.cursor = "context-menu";
+                    }}
+                  />
+                </div>
+              </div>
+              {/* X-axis */}
               <canvas
-                className="canvas"
-                id={`canvas-${props.plotIndex}`}
-                width={localPlot.width}
-                height={localPlot.height}
-                onMouseDown={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseDown(nativeEvent);
-                }}
-                onMouseMove={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleCursorProperty(nativeEvent);
-                  handleMouseMove(nativeEvent);
-                }}
-                onMouseUp={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseUp(nativeEvent);
-                }}
-                onMouseLeave={(e) => {
-                  document.body.style.cursor = "context-menu";
-                }}
+                width={localPlot.width + 20}
+                id={`canvas-${props.plotIndex}-xAxis`}
+                height={20}
+                style={{ background: "#FAFAFA" }}
               />
             </div>
           }

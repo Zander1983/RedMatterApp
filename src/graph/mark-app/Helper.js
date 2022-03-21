@@ -544,7 +544,7 @@ const drawSegment = (params, ctx) => {
   ctx.stroke();
 };
 
-const drawText = (params, ctx) => {
+export const drawText = (params, ctx) => {
   ctx.fillStyle = params.fillColor;
   if (params.font !== undefined) {
     ctx.font = params.font;
