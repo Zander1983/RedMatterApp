@@ -21,9 +21,11 @@ import LinkShareModal from "./modals/linkShareModal";
 import GateNamePrompt from "./modals/GateNamePrompt";
 // @ts-ignore
 import PipeLineNamePrompt from "./modals/PipelineNamePrompt";
-import { getWorkspace } from "graph/utils/workspace";
+import { getWorkspace,getAllFiles } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
+import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../mark-app/Helper";
+import { File} from "graph/resources/types";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -148,7 +150,7 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onQuite = () => {
-    setPipeLineModalOpen(false);
+    setAddFileModalOpen(false);
   };
 
   const onPipelineChanged = async (event:any) => {
@@ -165,15 +167,32 @@ const WorkspaceTopBarComponent = ({
               await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
               await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
               setActivePipelineId(selectedPipeline);
+              await showMessageBox({message: response.data.message, saverity: "success"});
             }else {
-              await WorkspaceDispatch.SetPlotStates({});
-              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-              await WorkspaceDispatch.UpdateSelectedFile("");
+                const workspaceObj = response.data;
+                //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
+                const filesInNewOrder: File[] = [];
+                let files = getAllFiles();
+                let selectedFile = null;
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].id === workspaceObj.pipeline.controlFileId) {
+                        files[i].view = false;
+                        selectedFile = files[i];
+                        filesInNewOrder.unshift(files[i]);
+                    } else {
+                        filesInNewOrder.push(files[i]);
+                    }
+                }
+                WorkspaceDispatch.SetFiles(filesInNewOrder);
+                const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
+                const plotState = createDefaultPlotSnapShot(selectedFile.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, selectedPipeline, workspaceObj.pipeline.name);
+                await WorkspaceDispatch.SetPlotStates(plotState);
+                await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+                await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+                setActivePipelineId(selectedPipeline);
+                await showMessageBox({message: "Plot init success", saverity: "success"});
             }
-            await showMessageBox({
-              message: response.data.message,
-              saverity: "success",
-            });
+
             if (!renderPlotController) {
               setRenderPlotController(true);
             }
@@ -184,37 +203,65 @@ const WorkspaceTopBarComponent = ({
             setLoader(false);
           } else {
             setLoader(false);
-            await handleError({
-              message: "Information missing",
-              saverity: "error",
-            });
+            await handleError({message: "Information missing", saverity: "error"});
           }
         }
   };
 
-  const onSavePipeline = async (name:any) => {
+  const onSavePipeline = async (name:any, controlFileId:any) => {
     const response = await axios.post("/api/pipeline/create",
         {
           organisationId:userManager.getOrganiztionID(),
           experimentId:experimentId,
-          name:name
+          name:name,
+          controlFileId:controlFileId
         },
         {
           headers:{
             token:userManager.getToken()
           }
         });
-
     if (response?.status === 200) {
-      let pipelines = getWorkspace()?.pipelines;
+      let pipelines = getWorkspace()?.pipelines || [];
       // @ts-ignore
       pipelines.push(response.data);
+      if(pipelines?.length === 1 && response?.data?.isDefault){
+          const pipelineId = response.data._id;
+          setActivePipelineId(pipelineId);
+          const filesInNewOrder: File[] = [];
+          let files = getAllFiles();
+          let selectedFile = null;
+          for (let i = 0; i < files.length; i++) {
+              if (files[i].id === controlFileId) {
+                  files[i].view = false;
+                  selectedFile = files[i];
+                  filesInNewOrder.unshift(files[i]);
+              } else {
+                  filesInNewOrder.push(files[i]);
+              }
+          }
+          WorkspaceDispatch.SetFiles(filesInNewOrder);
+          const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
+          const plotState = createDefaultPlotSnapShot(selectedFile.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, pipelineId, name);
+          await WorkspaceDispatch.SetPlotStates(plotState);
+          await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+          await WorkspaceDispatch.UpdatePipelineId(pipelineId);
+          if (!renderPlotController) {
+              setRenderPlotController(true);
+          }
+          setPlotCallNeeded(false);
+          if (renderPlotController) {
+              setPlotCallNeeded(true);
+          }
+          setLoader(false);
+      }
       setPipelines(pipelines);
       WorkspaceDispatch.SetPipeLines(pipelines);
       await showMessageBox({
         message: "Created Success",
         saverity: "success",
       });
+
     } else {
       await handleError({
         message: "Information missing",
@@ -379,12 +426,12 @@ const WorkspaceTopBarComponent = ({
                   className={classes.topButton}
                   style={{
                     backgroundColor: "#fafafa",
-                  }}
-                  disabled={!!(workspace?.selectedFile)}>
-                  Plot sample
+                  }}>
+                  {/*// disabled={!!(workspace?.selectedFile)}>*/}
+                  New Analysis
                 </Button>
                 <Button
-                  disabled={!plotCallNeeded && !renderPlotController}
+                  disabled={true}
                   variant="contained"
                   size="small"
                   onClick={() => handleOpen(setClearModal)}
@@ -397,22 +444,22 @@ const WorkspaceTopBarComponent = ({
                 </Button>
                 <span style={{margin:5+'px', padding:5 + 'px'}}>
                     PipeLine:
-                    <select name="pipeline" style={{width:200+'px',marginLeft:2+'px'}} onChange={onPipelineChanged}>
+                    <select value={activePipelineId} name="pipeline" style={{width:200+'px',marginLeft:2+'px'}} onChange={onPipelineChanged}>
                       <option value="">Select Pipeline</option>
-                        {pipelines && pipelines?.map((pipeline:any, index:any) => <option key={index} value={pipeline?._id} selected={pipeline?._id === activePipelineId}>{pipeline?.name}</option>)}
+                        {pipelines && pipelines?.map((pipeline:any, index:any) => <option key={index} value={pipeline?._id}>{pipeline?.name}</option>)}
                     </select>
-                  <Button
-                      disabled={!plotCallNeeded && !renderPlotController}
-                      variant="contained"
-                      size="small"
-                      onClick={() => setPipeLineModalOpen(true)}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                        width: 137,
-                      }}>
-                    +New
-                  </Button>
+                  {/*<Button*/}
+                  {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
+                  {/*    variant="contained"*/}
+                  {/*    size="small"*/}
+                  {/*    onClick={() => setPipeLineModalOpen(true)}*/}
+                  {/*    className={classes.topButton}*/}
+                  {/*    style={{*/}
+                  {/*      backgroundColor: "#fafafa",*/}
+                  {/*      width: 137,*/}
+                  {/*    }}>*/}
+                  {/*  +New*/}
+                  {/*</Button>*/}
                     </span>
                 <span>
                   <Button
@@ -521,14 +568,14 @@ const WorkspaceTopBarComponent = ({
     return (
       <>
         {/*<GateNamePrompt />*/}
-        <PipeLineNamePrompt
-            open={pipeLineModalOpen}
-            pipelines={pipelines}
-            setOpen={setPipeLineModalOpen}
-            closeCall={{
-              quit: onQuite,
-              save: onSavePipeline,
-            }}/>
+        {/*<PipeLineNamePrompt*/}
+        {/*    open={pipeLineModalOpen}*/}
+        {/*    pipelines={pipelines}*/}
+        {/*    setOpen={setPipeLineModalOpen}*/}
+        {/*    closeCall={{*/}
+        {/*      quit: onQuite,*/}
+        {/*      save: onSavePipeline,*/}
+        {/*    }}/>*/}
         {workspace?.files?.length > 0 && (
           <AddFileModal
             open={addFileModalOpen}
@@ -536,6 +583,7 @@ const WorkspaceTopBarComponent = ({
               f: handleCloseAndMakePlotControllerTrue,
               ref: setAddFileModalOpen
             }}
+            onPipeline={{save: onSavePipeline}}
             isShared={sharedWorkspace}
             experimentId={experimentId}
             pipelineId={getWorkspace().activePipelineId || activePipelineId}
