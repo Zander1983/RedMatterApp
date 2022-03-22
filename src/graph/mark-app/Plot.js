@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
+
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -48,9 +49,32 @@ let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 
+// useful function to trace what props reacting is updating
+// use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
+function useTraceUpdate(props) {
+  const prev = useRef(props);
+  useEffect(() => {
+    const changedProps = Object.entries(props).reduce(
+      (lookup, [key, value]) => {
+        if (prev.current[key] !== value) {
+          lookup[key] = [prev.current[key], value];
+        }
+        return lookup;
+      },
+      {}
+    );
+    if (Object.keys(changedProps).length > 0) {
+      console.log("Changed props:", Object.keys(changedProps));
+    }
+    prev.current = props;
+  });
+}
+
 function Plot(props) {
-  console.log("props.plotIndex is ", props.plotIndex);
   const [localPlot, setLocalPlot] = useState(props.plot);
+
+  //useTraceUpdate({ ...props, localPlot });
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
     name: "",
@@ -63,7 +87,13 @@ function Plot(props) {
 
   useEffect(() => {
     setLocalPlot(props.plot);
+  }, [props.plot]);
 
+  useEffect(() => {
+    console.log(
+      ">>>>> in the second useEffect where heavy calculation for plotIndex ",
+      props.plotIndex
+    );
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -84,7 +114,7 @@ function Plot(props) {
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
     }
-  }, [localPlot, props.plot, props.enrichedFile]);
+  }, [localPlot]);
 
   const drawGateLine = (context, plot) => {
     context.strokeStyle = "red";
@@ -623,6 +653,7 @@ function Plot(props) {
           localPlot.xAxisIndex,
           "x"
         );
+
         let moveY = getMoveValue(
           startPointsReal[1],
           newPointsCanvas[1],
@@ -630,7 +661,8 @@ function Plot(props) {
           localPlot.yAxisIndex,
           "y"
         );
-        localPlot.gate.points = props.plot.gate.points.map((point) => {
+
+        let points = localPlot.gate.points.map((point) => {
           let newGateValueRealX = getGateValue(
             point[0],
             localPlot.xScaleType,
@@ -650,14 +682,18 @@ function Plot(props) {
           return [newGateValueRealX, newGateValueRealY];
         });
 
-        // IMPORTANT - reste start points
+        setLocalPlot({
+          ...localPlot,
+          gate: { ...localPlot.gate, points: points },
+        });
+
+        // IMPORTANT - reset start points
         startPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
           localPlot,
           [event.offsetX, event.offsetY],
           props.enrichedFile.logicles
         );
-        setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
       }
     }
   };
