@@ -27,6 +27,154 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
+
+    for (
+      let eventIndex = 0;
+      eventIndex < Files[fileIndex].events.length;
+      eventIndex++
+    ) {
+      let event = Files[fileIndex].events[eventIndex];
+
+      // if the file has its own plots, use that, otherwise use control file plots
+      let plots = WorkspaceState.files[file.id]
+        ? WorkspaceState.files[file.id].plots
+        : WorkspaceState.files[controlFileId].plots;
+
+      for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
+        let isInGate;
+        let plot = plots[plotIndex];
+        if (!event["color"]) {
+          event["color"] = "#000";
+        }
+
+        if (plot.gate) {
+          let gate = plot.gate;
+
+          let pointX = event[gate["xAxisIndex"]];
+          let pointY = event[gate["yAxisIndex"]];
+          let tranformedPoints = [];
+
+          // if a gate was made on an axis with the scale logicle, we need to convert it with logicle transform
+          // same for the event point
+          // a gate can be created on a linear scale on 1 axis, and logicle on the other
+          if (gate["xScaleType"] === "bi") {
+            pointX = logicle.scale(pointX);
+            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
+            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [logicle.scale(point[0]), point[1]];
+              });
+            } else {
+              // so histogram
+              tranformedPoints = [
+                logicle.scale(gate.points[0]),
+                logicle.scale(gate.points[1]),
+              ];
+            }
+          } else {
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [point[0], point[1]];
+              });
+            } else {
+              tranformedPoints = [gate.points[0], gate.points[1]];
+            }
+          }
+
+          if (gate["yScaleType"] === "bi") {
+            pointY = logicle.scale(pointY);
+            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
+            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+            tranformedPoints = tranformedPoints.map((point) => {
+              return [point[0], logicle.scale(point[1])];
+            });
+          }
+
+          tranformedPoints = tranformedPoints.map((point) => {
+            return { x: point[0], y: point[1] };
+          });
+
+          if (gate.gateType == "polygon") {
+            isInGate = pointInsidePolygon(
+              {
+                x: pointX,
+                y: pointY,
+              },
+              tranformedPoints
+            );
+          } else {
+            // so its histogram
+            isInGate = isInHistGate(
+              tranformedPoints[0],
+              tranformedPoints[1],
+              pointX
+            );
+          }
+
+          if (isInGate) {
+            event["color"] = gate["color"];
+            event["isInGate" + gate.name] = true;
+            !gateStatsObj[gate.name + "_count"]
+              ? (gateStatsObj[gate.name + "_count"] = 1)
+              : gateStatsObj[gate.name + "_count"]++;
+          }
+        }
+        if (!isInGate) {
+          break;
+        }
+      }
+    }
+
+    // const gateCounts = Object.keys(gateStats);
+    // gateCounts.forEach((gateCount, index) => {
+    //   gateStats[gateCount.replace("_count", "_percentage")] = (
+    //     (gateStats[gateCount] * 100) /
+    //     Files[fileIndex].events.length
+    //   ).toFixed(2);
+    // });
+    const gateKeys = Object.keys(gateStatsObj);
+    let gateStats = [];
+    gateKeys.forEach((gateKey, index) => {
+      const gateName = gateKey.replace("_count", "");
+
+      let percentage = (
+        (gateStatsObj[gateKey] * 100) /
+        Files[fileIndex].events.length
+      ).toFixed(2);
+
+      gateStats.push({
+        gateName: gateName,
+        count: gateStatsObj[gateKey],
+        percentage: percentage,
+      });
+    });
+
+    Files[fileIndex].gateStats = gateStats;
+  }
+
+  return Files;
+};
+
+export const superAlgorithmEnhancedVersion = (
+  OriginalFiles,
+  OriginalWorkspaceState
+) => {
+  // event 1 is not in any gate, it will have color black
+  // event 2 is in both gate, it will have the color of the last gate
+  // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
+
+  let Files = JSON.parse(JSON.stringify(OriginalFiles));
+  let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
+
+  // TODO logicle here needs to be got correctly
+  let logicle = new MarkLogicle(0, 262144);
+  let controlFileId = WorkspaceState.controlFileId;
+
+  for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    let file = Files[fileIndex];
+    let gateStatsObj = {};
     // For Mean
     let sumOfPointX = 0;
     let sumOfPointY = 0;
@@ -139,13 +287,6 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
       }
     }
 
-    // const gateCounts = Object.keys(gateStats);
-    // gateCounts.forEach((gateCount, index) => {
-    //   gateStats[gateCount.replace("_count", "_percentage")] = (
-    //     (gateStats[gateCount] * 100) /
-    //     Files[fileIndex].events.length
-    //   ).toFixed(2);
-    // });
     const gateKeys = Object.keys(gateStatsObj);
     let gateStats = [];
     gateKeys.forEach((gateKey, index) => {
@@ -161,19 +302,8 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
       let meanY = (sumOfPointY / gateStatsObj[gateKey]).toFixed(2);
 
       // Median Calculation
-      xPointsInsideGate = xPointsInsideGate.sort();
-      yPointsInsideGate = yPointsInsideGate.sort();
-
-      let medianX =
-        gateStatsObj[gateKey] % 2 === 0
-          ? xPointsInsideGate[gateStatsObj[gateKey] / 2] +
-            xPointsInsideGate[gateStatsObj[gateKey] / 2 - 1]
-          : xPointsInsideGate[gateStatsObj[gateKey] / 2 - 0.5];
-      let medianY =
-        gateStatsObj[gateKey] % 2 === 0
-          ? yPointsInsideGate[gateStatsObj[gateKey] / 2] +
-            yPointsInsideGate[gateStatsObj[gateKey] / 2 - 1]
-          : yPointsInsideGate[gateStatsObj[gateKey] / 2 - 0.5];
+      let medianX = getMedian(xPointsInsideGate);
+      let medianY = getMedian(yPointsInsideGate);
 
       gateStats.push({
         gateName: gateName,
@@ -190,6 +320,18 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   }
 
   return Files;
+};
+
+export const getMedian = (values) => {
+  values.sort(function (a, b) {
+    return a - b;
+  });
+  let half = Math.floor(values.length / 2);
+
+  if (values.length % 2) {
+    return values[half];
+  }
+  return (values[half - 1] + values[half]) / 2.0;
 };
 
 export function isPointInPolygon(latitude, longitude, polygon) {

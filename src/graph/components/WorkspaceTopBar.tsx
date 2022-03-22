@@ -28,7 +28,7 @@ import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
 import {
-  superAlgorithm,
+  superAlgorithmEnhancedVersion,
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
   formatEnrichedFiles,
@@ -288,7 +288,10 @@ const WorkspaceTopBarComponent = ({
       isSnapShotCreated = true;
     }
 
-    let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
+    let enrichedFiles: any[] = superAlgorithmEnhancedVersion(
+      copyOfFiles,
+      workspaceState
+    );
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -318,7 +321,6 @@ const WorkspaceTopBarComponent = ({
   };
 
   const _renderToolbar = () => {
-    // console.log("==== render toolbar =====");
     return (
       <Grid
         style={{
