@@ -90,10 +90,10 @@ function Plot(props) {
   }, [props.plot]);
 
   useEffect(() => {
-    // console.log(
-    //   ">>>>> in the second useEffect where heavy calculation for plotIndex ",
-    //   props.plotIndex
-    // );
+    console.log(
+      ">>>>> in the second useEffect where heavy calculation for plotIndex ",
+      props.plotIndex
+    );
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
