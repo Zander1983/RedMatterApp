@@ -248,18 +248,14 @@ function Histogram(props) {
       );
     }
 
-    // console.log(">>> bins is ", bins);
-
     const hists = histogram({
       data: data,
       bins: bins,
     });
 
     let countYMinMax = getMultiArrayMinMax(hists, "y");
-    // console.log("countYMinMax is ", countYMinMax);
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
-    // console.log("maxCountPlusTenPercent is ", maxCountPlusTenPercent);
     drawLabel(maxCountPlusTenPercent);
 
     paintHist(
@@ -335,7 +331,6 @@ function Histogram(props) {
   };
 
   const drawLabel = (maxCountPlusTenPercent) => {
-    // console.log("hell Yeah Bitch", maxCountPlusTenPercent);
     let xRange = [
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
