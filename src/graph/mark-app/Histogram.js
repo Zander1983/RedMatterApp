@@ -248,7 +248,7 @@ function Histogram(props) {
       );
     }
 
-    console.log(">>> bins is ", bins);
+    // console.log(">>> bins is ", bins);
 
     const hists = histogram({
       data: data,
@@ -256,10 +256,10 @@ function Histogram(props) {
     });
 
     let countYMinMax = getMultiArrayMinMax(hists, "y");
-    console.log("countYMinMax is ", countYMinMax);
+    // console.log("countYMinMax is ", countYMinMax);
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
-    console.log("maxCountPlusTenPercent is ", maxCountPlusTenPercent);
+    // console.log("maxCountPlusTenPercent is ", maxCountPlusTenPercent);
     drawLabel(maxCountPlusTenPercent);
 
     paintHist(
