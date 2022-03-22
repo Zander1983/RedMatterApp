@@ -25,8 +25,9 @@ function SideSelector(props) {
           className="pc-y"
           style={{
             transform: "rotate(270deg)",
-            marginLeft: "-145px",
+            marginLeft: "-90px",
             marginRight: "-80px",
+            marginBottom: "15px",
             width: "min-content",
             display: "flex",
             justifyContent: "center",
@@ -41,10 +42,6 @@ function SideSelector(props) {
               disableUnderline
               style={{
                 width: props.plot.width * 0.6,
-                marginLeft: "35px",
-                marginTop: "75px",
-                marginRight: "-10px",
-                marginBottom: "25px",
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
@@ -82,9 +79,6 @@ function SideSelector(props) {
             disableUnderline
             style={{
               width: props.plot.width * 0.35,
-              marginLeft: "25px",
-              marginTop: "60px",
-              marginBottom: "10px",
               textAlign: "center",
               flex: "1 1 auto",
               fontSize: 12,

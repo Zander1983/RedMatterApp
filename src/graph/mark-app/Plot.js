@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { isPointInPolygon, graphLine } from "./Helper";
+import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
+
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -11,15 +12,12 @@ import {
 } from "./PlotHelper";
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
-import numeral from "numeral";
 import { CompactPicker } from "react-color";
 
 export const leftPadding = 55;
 export const rightPadding = 20;
 export const topPadding = 40;
 export const bottomPadding = 5;
-
-const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
 const getContext = (plotIndex) => {
   const canvas = document.getElementById("canvas-" + plotIndex);
@@ -111,7 +109,7 @@ function Plot(props) {
       }
     });
 
-    //drawLabel();
+    drawLabel();
 
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
@@ -394,16 +392,19 @@ function Plot(props) {
   };
 
   const drawLabel = () => {
-    let context = getContext(props.plotIndex);
-
     let xRange = [
       props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
+    const xDivisor =
+      props.enrichedFile.channels[localPlot.xAxisIndex].maximum / 200;
+
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
+    const yDivisor =
+      props.enrichedFile.channels[localPlot.yAxisIndex].maximum / 200;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -417,6 +418,37 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.xAxisIndex],
       horizontalBinCount
     );
+    let contextX = document
+      .getElementById("canvas-" + props.plotIndex + "-xAxis")
+      .getContext("2d");
+
+    contextX.clearRect(0, 0, localPlot.width + 20, 20);
+    for (let i = 0; i < xLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
+      ) {
+        tooClose = true;
+      }
+      let xPos =
+        xLabels[i].pos / xDivisor + 20 > localPlot.width
+          ? localPlot.width - 2
+          : xLabels[i].pos / xDivisor + 20;
+      if (tooClose) {
+        xPos += 8;
+      }
+      drawText(
+        {
+          x: xPos,
+          y: 12,
+          text: xLabels[i].name,
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextX
+      );
+    }
 
     let yLabels = getAxisLabels(
       localPlot.yScaleType,
@@ -425,141 +457,27 @@ function Plot(props) {
       verticalBinCount
     );
 
-    graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: leftPadding * localPlot.plotScale,
-        y2: (localPlot.height - bottomPadding) * localPlot.plotScale,
-        ib: yRange[0],
-        ie: yRange[1],
-        bins: verticalBinCount,
-        labels: yLabels,
-      },
-      context
-    );
+    let contextY = document
+      .getElementById("canvas-" + props.plotIndex + "-yAxis")
+      .getContext("2d");
 
-    graphLine(
-      {
-        x1: leftPadding * localPlot.plotScale,
-        y1: topPadding * localPlot.plotScale,
-        x2: (localPlot.width - rightPadding) * localPlot.plotScale,
-        y2: topPadding * localPlot.plotScale,
-        ib: xRange[0],
-        ie: xRange[1],
-        bins: horizontalBinCount,
-        labels: xLabels,
-      },
-      context
-    );
-  };
-
-  const linLabel = (num) => {
-    let snum = "";
-    if (num < 2) {
-      snum = numeral(num.toFixed(2)).format("0.0a");
-    } else {
-      snum = num.toFixed(2);
-      snum = numeral(snum).format("0a");
+    contextY.clearRect(0, 0, 20, localPlot.height + 20);
+    for (let i = 0; i < yLabels.length; i++) {
+      let yPos =
+        yLabels[i].pos / yDivisor + 20 > localPlot.height
+          ? localPlot.height
+          : yLabels[i].pos / yDivisor + 20;
+      drawText(
+        {
+          x: 0,
+          y: localPlot.height + 20 - yPos,
+          text: yLabels[i].name,
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextY
+      );
     }
-    return snum;
-  };
-
-  const pot10Label = (pot10Indx) => {
-    let ev = "";
-    for (const l of Math.abs(pot10Indx).toString()) ev += EXP_NUMS[parseInt(l)];
-    let name = "10" + ev;
-    if (!name.includes("-") && pot10Indx < 0) name = "-" + name;
-    return name;
-  };
-
-  const getAxisLabels = (format, linRange, logicle, binsCount) => {
-    let labels = [];
-    if (format === "lin") {
-      const binSize = (linRange[1] - linRange[0]) / binsCount;
-
-      for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
-        labels.push({
-          pos: i,
-          name: linLabel(i),
-        });
-    }
-    if (format === "bi") {
-      const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
-      let pot10 = 1;
-      let pot10Exp = 0;
-      const fow = () => {
-        pot10 *= 10;
-        pot10Exp++;
-      };
-      const back = () => {
-        pot10 /= 10;
-        pot10Exp--;
-      };
-      const add = (x, p) => {
-        if (
-          (x >= linRange[0] && x <= linRange[1]) ||
-          (x <= linRange[0] && x >= linRange[1])
-        ) {
-          labels.push({
-            pos: x,
-            name: pot10Label(p),
-          });
-        }
-      };
-      while (pot10 <= baseline) fow();
-      while (pot10 >= 1) {
-        add(pot10, pot10Exp);
-        add(-pot10, -pot10Exp);
-        back();
-      }
-
-      let newPos = labels.map((e) => logicle.scale(e.pos));
-
-      newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
-      labels = labels.map((e, i) => {
-        e.pos = newPos[i];
-        return e;
-      });
-      labels = labels.sort((a, b) => a.pos - b.pos);
-
-      const distTolerance = 0.03;
-      let lastAdded = null;
-      labels = labels.filter((e, i) => {
-        if (i === 0) {
-          lastAdded = i;
-          return true;
-        }
-        if (
-          (e.pos - labels[lastAdded].pos) /
-            (Math.max(linRange[0], linRange[1]) -
-              Math.min(linRange[0], linRange[1])) >=
-          distTolerance
-        ) {
-          lastAdded = i;
-          return true;
-        }
-        return false;
-      });
-    }
-    return labels;
-  };
-
-  const getBins = (width, height, scale) => {
-    let verticalBinCount = 1;
-    let horizontalBinCount = 1;
-
-    if (scale === 0 || width === 0) {
-      verticalBinCount = 1;
-      horizontalBinCount = 1;
-      return;
-    }
-    horizontalBinCount = width === undefined ? 2 : Math.round(width / 60);
-    verticalBinCount = height === undefined ? 2 : Math.round(height / 60);
-    horizontalBinCount = Math.max(2, horizontalBinCount);
-    verticalBinCount = Math.max(2, verticalBinCount);
-
-    return [verticalBinCount, horizontalBinCount];
   };
 
   const drawPoints = () => {
@@ -857,6 +775,8 @@ function Plot(props) {
         >
           <div
             style={{
+              // position: "relative",
+              // zIndex: 2000,
               display: "flex",
               flexDirection: "column",
               alignItems: "cneter",
@@ -915,34 +835,57 @@ function Plot(props) {
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
           canvasComponent={
-            <div
-              style={{
-                border: "1px solid #32a1ce",
-                width: `${localPlot.width}px`,
-                height: `${localPlot.height}px`,
-              }}
-              // ref={ref}
-            >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex" }}>
+                {/* Y-axis */}
+                <canvas
+                  height={localPlot.height}
+                  id={`canvas-${props.plotIndex}-yAxis`}
+                  width={25}
+                  style={{
+                    background: "#FAFAFA",
+                  }}
+                />
+                {/* main canvas */}
+                <div
+                  style={{
+                    border: "1px solid #32a1ce",
+                    width: `${localPlot.width}px`,
+                    height: `${localPlot.height}px`,
+                  }}
+                  // ref={ref}
+                >
+                  <canvas
+                    className="canvas"
+                    id={`canvas-${props.plotIndex}`}
+                    width={localPlot.width}
+                    height={localPlot.height}
+                    onMouseDown={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseDown(nativeEvent);
+                    }}
+                    onMouseMove={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleCursorProperty(nativeEvent);
+                      handleMouseMove(nativeEvent);
+                    }}
+                    onMouseUp={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseUp(nativeEvent);
+                    }}
+                    onMouseLeave={(e) => {
+                      document.body.style.cursor = "context-menu";
+                    }}
+                  />
+                </div>
+              </div>
+              {/* X-axis */}
               <canvas
-                className="canvas"
-                id={`canvas-${props.plotIndex}`}
-                width={localPlot.width}
-                height={localPlot.height}
-                onMouseDown={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseDown(nativeEvent);
-                }}
-                onMouseMove={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleCursorProperty(nativeEvent);
-                  handleMouseMove(nativeEvent);
-                }}
-                onMouseUp={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseUp(nativeEvent);
-                }}
-                onMouseLeave={(e) => {
-                  document.body.style.cursor = "context-menu";
+                width={localPlot.width + 20}
+                id={`canvas-${props.plotIndex}-xAxis`}
+                height={20}
+                style={{
+                  background: "#FAFAFA",
                 }}
               />
             </div>
