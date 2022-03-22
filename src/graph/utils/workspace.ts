@@ -260,14 +260,15 @@ export const getWorkspaceStateFromServer = async (
           }
       );
     }
-    console.log(workspaceData);
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
       await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);
       return { loaded: true, requestSuccess: true };
+    }else if(workspaceData.data.pipelines?.length > 0) {
+        await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
+        await WorkspaceDispatch.UpdatePipelineId(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?._id);
+        await WorkspaceDispatch.UpdateSelectedFile(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?.controlFileId);
     }
-    await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
-    await WorkspaceDispatch.UpdatePipelineId(workspaceData.data.pipelines?.filter((pipe:any) => pipe.isDefault)?.[0]?._id);
   } catch (err) {
     throw err;
   }
