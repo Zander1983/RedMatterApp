@@ -109,12 +109,11 @@ export const saveWorkspaceStateToServer = async (
   });
 
   try {
-    const response = await axios.post(
-        updateWorkSpace.url,
+    const response = await axios.put(
+        `/api/experiment/${experimentId}/pipeline`,
         updateWorkSpace.options.body,
         updateWorkSpace.options
     );
-    console.log(response);
     await WorkspaceDispatch.SetId(response.data.workspaceId);
     return true;
   } catch (err) {
@@ -240,7 +239,6 @@ const loadSavedWorkspace = async (
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
 };
 
-
 export const getWorkspaceStateFromServer = async (
     shared: boolean,
     experimentId: string
@@ -251,15 +249,10 @@ export const getWorkspaceStateFromServer = async (
   let workspaceData;
   try {
     if (shared) {
-      workspaceData = await axios.post("/api/verifyWorkspace", {
-        experimentId: experimentId,
-      });
+      workspaceData = await axios.get(`/api/experiment/${experimentId}/verifyPipeline`);
     } else {
-      workspaceData = await axios.post(
-          "/api/getWorkspace",
-          {
-            experimentId,
-          },
+      workspaceData = await axios.get(
+          `/api/experiment/${experimentId}/pipeline`,
           {
             headers: {
               token: userManager.getToken(),
