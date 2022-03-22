@@ -248,19 +248,15 @@ function Histogram(props) {
       );
     }
 
-    drawLabel();
-    console.log(">>> bins is ", bins);
-
     const hists = histogram({
       data: data,
       bins: bins,
     });
 
     let countYMinMax = getMultiArrayMinMax(hists, "y");
-    console.log("countYMinMax is ", countYMinMax);
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
-    console.log("maxCountPlusTenPercent is ", maxCountPlusTenPercent);
+    drawLabel(maxCountPlusTenPercent);
 
     paintHist(
       context,
@@ -334,7 +330,7 @@ function Histogram(props) {
     context.stroke();
   };
 
-  const drawLabel = () => {
+  const drawLabel = (maxCountPlusTenPercent) => {
     let xRange = [
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
@@ -394,28 +390,26 @@ function Histogram(props) {
       );
     }
 
-    let yLabels = getAxisLabels(
-      props.plot.yScaleType,
-      yRange,
-      props.enrichedFile.logicles[props.plot.yAxisIndex],
-      verticalBinCount
-    );
+    const values = [
+      maxCountPlusTenPercent.toFixed(0),
+      (maxCountPlusTenPercent * 0.75).toFixed(0),
+      (maxCountPlusTenPercent * 0.5).toFixed(0),
+      (maxCountPlusTenPercent * 0.25).toFixed(0),
+    ];
 
     let contextY = document
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
     contextY.clearRect(0, 0, 20, props.plot.height + 20);
-    for (let i = 0; i < yLabels.length; i++) {
-      let yPos =
-        yLabels[i].pos / yDivisor + 20 > props.plot.height
-          ? props.plot.height
-          : yLabels[i].pos / yDivisor + 20;
+
+    for (let i = 0; i < values.length; i++) {
+      const yPos = ((props.plot.height + 20) / 4) * i;
       drawText(
         {
           x: 0,
-          y: props.plot.height + 20 - yPos,
-          text: yLabels[i].name,
+          y: yPos + 20,
+          text: values[i],
           font: "10px Arial",
           fillColor: "black",
         },
