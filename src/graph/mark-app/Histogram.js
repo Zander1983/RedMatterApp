@@ -11,6 +11,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLogicleScale,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
+import { drawText, getAxisLabels, getBins } from "./Helper";
 
 let isMouseDown = false;
 
@@ -70,9 +71,15 @@ const linspace = (a, b, n) => {
   return ret;
 };
 
-const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
-  let maxCount = 0;
-
+const paintHist = (
+  context,
+  hists,
+  enrichedFile,
+  plot,
+  minimum,
+  color,
+  maxCountPlusTenPercent
+) => {
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
   const ratio = getAxisRatio(
@@ -82,15 +89,7 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
     plot.xScaleType
   );
 
-  let countYMinMax = getMultiArrayMinMax(hists, "y");
-
-  if (countYMinMax.max * 1.1 > maxCount) {
-    maxCount = countYMinMax.max * 1.1;
-  }
-
-  hists.maxCount = countYMinMax.max;
-
-  let ratioY = plot.height / maxCount;
+  let ratioY = plot.height / maxCountPlusTenPercent;
 
   //value, scaleType, ratio, minimum, width, axis
   let firstX = getPointOnCanvasByRatio(
@@ -254,13 +253,19 @@ function Histogram(props) {
       bins: bins,
     });
 
+    let countYMinMax = getMultiArrayMinMax(hists, "y");
+
+    let maxCountPlusTenPercent = countYMinMax.max * 1.1;
+    drawLabel(maxCountPlusTenPercent);
+
     paintHist(
       context,
       hists,
       props.enrichedFile,
       props.plot,
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-      color
+      color,
+      maxCountPlusTenPercent
     );
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {
@@ -323,6 +328,94 @@ function Histogram(props) {
     context.lineTo(endCanvasPoint, plot.height);
 
     context.stroke();
+  };
+
+  const drawLabel = (maxCountPlusTenPercent) => {
+    let xRange = [
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+    ];
+    const xDivisor =
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum / 200;
+
+    let yRange = [
+      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+    ];
+    const yDivisor =
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum / 200;
+
+    let [horizontalBinCount, verticalBinCount] = getBins(
+      props.plot.width,
+      props.plot.height,
+      props.plot.plotScale
+    );
+
+    let xLabels = getAxisLabels(
+      props.plot.xScaleType,
+      xRange,
+      props.enrichedFile.logicles[props.plot.xAxisIndex],
+      horizontalBinCount
+    );
+    let contextX = document
+      .getElementById("canvas-" + props.plotIndex + "-xAxis")
+      .getContext("2d");
+
+    contextX.clearRect(0, 0, props.plot.width + 20, 20);
+    for (let i = 0; i < xLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
+      ) {
+        tooClose = true;
+      }
+      let xPos =
+        xLabels[i].pos / xDivisor + 20 > props.plot.width
+          ? props.plot.width - 2
+          : xLabels[i].pos / xDivisor + 20;
+      // to avoid overlapping between the labels
+      if (tooClose) {
+        xPos += 8;
+      }
+      drawText(
+        {
+          x: xPos,
+          y: 12,
+          text: xLabels[i].name,
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextX
+      );
+    }
+
+    const values = [
+      maxCountPlusTenPercent.toFixed(0),
+      (maxCountPlusTenPercent * 0.75).toFixed(0),
+      (maxCountPlusTenPercent * 0.5).toFixed(0),
+      (maxCountPlusTenPercent * 0.25).toFixed(0),
+    ];
+
+    let contextY = document
+      .getElementById("canvas-" + props.plotIndex + "-yAxis")
+      .getContext("2d");
+
+    contextY.clearRect(0, 0, 20, props.plot.height + 20);
+
+    for (let i = 0; i < values.length; i++) {
+      const yPos = ((props.plot.height + 20) / 4) * i;
+      drawText(
+        {
+          x: 0,
+          y: yPos + 20,
+          text: values[i],
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextY
+      );
+    }
   };
 
   const onChangeScale = (e, axis, plotIndex) => {
@@ -589,50 +682,72 @@ function Histogram(props) {
           plot={props.plot}
           plotIndex={props.plotIndex}
           canvasComponent={
-            <div
-              style={{
-                position: "relative",
-                width: props.plot.width,
-                height: props.plot.height,
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex" }}>
+                {/* Y-axis */}
+                <canvas
+                  height={props.plot.height}
+                  id={`canvas-${props.plotIndex}-yAxis`}
+                  width={25}
+                  style={{
+                    background: "#FAFAFA",
+                  }}
+                />
+                {/* main canvas */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: props.plot.width,
+                    height: props.plot.height,
+                  }}
+                >
+                  <canvas
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                    }}
+                    className="canvas"
+                    id={`canvas-${props.plotIndex}`}
+                    width={props.plot.width}
+                    height={props.plot.height}
+                  />
+                  <canvas
+                    id={`covering-canvas-${props.plotIndex}`}
+                    width={props.plot.width}
+                    height={props.plot.height}
+                    style={{
+                      border: "1px solid #32a1ce",
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      // display: "block" : "none",
+                    }}
+                    onMouseDown={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseDown(nativeEvent);
+                    }}
+                    onMouseMove={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleCursorProperty(nativeEvent);
+                      handleMouseMove(nativeEvent);
+                    }}
+                    onMouseUp={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseUp(nativeEvent);
+                    }}
+                    onMouseLeave={(e) => {
+                      document.body.style.cursor = "context-menu";
+                    }}
+                  />
+                </div>
+              </div>
+              {/* X-axis */}
               <canvas
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                }}
-                className="canvas"
-                id={`canvas-${props.plotIndex}`}
-                width={props.plot.width}
-                height={props.plot.height}
-              />
-              <canvas
-                id={`covering-canvas-${props.plotIndex}`}
-                width={props.plot.width}
-                height={props.plot.height}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  // display: "block" : "none",
-                }}
-                onMouseDown={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseDown(nativeEvent);
-                }}
-                onMouseMove={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleCursorProperty(nativeEvent);
-                  handleMouseMove(nativeEvent);
-                }}
-                onMouseUp={(e) => {
-                  let nativeEvent = e.nativeEvent;
-                  handleMouseUp(nativeEvent);
-                }}
-                onMouseLeave={(e) => {
-                  document.body.style.cursor = "context-menu";
-                }}
+                width={props.plot.width + 20}
+                id={`canvas-${props.plotIndex}-xAxis`}
+                height={20}
+                style={{ background: "#FAFAFA" }}
               />
             </div>
           }
