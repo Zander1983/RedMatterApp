@@ -42,10 +42,6 @@ function SideSelector(props) {
               disableUnderline
               style={{
                 width: props.plot.width * 0.6,
-                // marginLeft: "35px",
-                // marginTop: "75px",
-                // marginRight: "-10px",
-                // marginBottom: "25px",
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
@@ -83,9 +79,6 @@ function SideSelector(props) {
             disableUnderline
             style={{
               width: props.plot.width * 0.35,
-              // marginLeft: "25px",
-              // marginTop: "60px",
-              // marginBottom: "10px",
               textAlign: "center",
               flex: "1 1 auto",
               fontSize: 12,
