@@ -690,8 +690,6 @@ function Histogram(props) {
                   width={25}
                   style={{
                     background: "#FAFAFA",
-                    position: "relative",
-                    zIndex: 1000,
                   }}
                 />
                 {/* main canvas */}

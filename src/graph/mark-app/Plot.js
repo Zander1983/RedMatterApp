@@ -739,6 +739,8 @@ function Plot(props) {
         >
           <div
             style={{
+              // position: "relative",
+              // zIndex: 2000,
               display: "flex",
               flexDirection: "column",
               alignItems: "cneter",
@@ -806,8 +808,6 @@ function Plot(props) {
                   width={25}
                   style={{
                     background: "#FAFAFA",
-                    position: "relative",
-                    zIndex: 1000,
                   }}
                 />
                 {/* main canvas */}
@@ -848,7 +848,9 @@ function Plot(props) {
                 width={localPlot.width + 20}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
-                style={{ background: "#FAFAFA" }}
+                style={{
+                  background: "#FAFAFA",
+                }}
               />
             </div>
           }
