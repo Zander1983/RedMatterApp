@@ -35,7 +35,7 @@ interface IState {
   workspaceState: any;
   enrichedEvents: any[];
   testParam: string;
-    isUpdateNeeded:boolean
+  controlFileId:string
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -88,7 +88,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         workspaceState: {},
       enrichedEvents: [],
       testParam: "some value",
-        isUpdateNeeded: false
+        controlFileId: ""
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -100,6 +100,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   onInitState = () => {
+    //console.log("init====");
     let workspaceState = getWorkspace().workspaceState;
     // @ts-ignore
     const plots =
@@ -108,6 +109,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
     let isSnapShotCreated = false;
     let copyOfFiles: any[] = getWorkspace().files;
+    //console.log(copyOfFiles);
     if (plots === null || plots === undefined) {
       const defaultFile = copyOfFiles?.[0];
       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
@@ -132,6 +134,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: workspaceState,
+      controlFileId:  getWorkspace()?.selectedFile
     });
   };
 
@@ -542,11 +545,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           // @ts-ignore
           workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
       const oldPlots = prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-      if(JSON.stringify(oldPlots)?.length == JSON.stringify(workspaceState)?.length){
-          console.log(" did update true=======");
+      // if(!this.state.isTableRenderCall || JSON.stringify(oldPlots)?.length !== JSON.stringify(newPlots)?.length){
+      if(getWorkspace()?.selectedFile !== prevState.controlFileId || JSON.stringify(oldPlots)?.length !== JSON.stringify(newPlots)?.length){
+          //console.log(" did update true=======");
           this.onInitState();
       }else {
-          console.log("did update false=======");
+          //console.log("did update false=======");
       }
 
   }
@@ -558,7 +562,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   renderTable = () => {
     if (this.state.isTableRenderCall) {
-        console.log("== call table ==");
+        //console.log("== call table ==");
       return (
         <PlotTableComponent
           enrichedFiles={this.state.enrichedFiles}
