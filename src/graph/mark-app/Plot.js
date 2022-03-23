@@ -45,6 +45,7 @@ const shouldDrawGate = (plot) => {
 
 let isMouseDown = false;
 let startPointsReal;
+let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
@@ -546,6 +547,33 @@ function Plot(props) {
     isMouseDown = true;
 
     if (hasGate()) {
+      // check if on point
+      // convert real points to canvas points and check if within 5 points of canvas points
+      let gateCanvasPoints = localPlot.gate.points.map((point) => {
+        console.log("point is ", point);
+        let canvasPoint = getPointOnCanvas(
+          props.enrichedFile.channels,
+          point[0],
+          point[1],
+          // TODO make sure can only change gate when on correct channels
+          // this is important, make sure they can only edit gate when the gate channels match prop channels
+          localPlot,
+          props.enrichedFile.logicles
+        );
+
+        return canvasPoint;
+      });
+
+      gateCanvasPoints.find((point, index) => {
+        let isNear =
+          point[0] + 5 >= event.offsetX &&
+          point[0] - 5 <= event.offsetX &&
+          point[1] + 5 >= event.offsetY &&
+          point[1] - 5 <= event.offsetY;
+        if (isNear) dragPointIndex = index;
+        return isNear;
+      });
+
       startPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
@@ -558,6 +586,7 @@ function Plot(props) {
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
+    dragPointIndex = false;
     if (hasGate()) {
       let change = {
         type: "EditGate",
@@ -616,35 +645,13 @@ function Plot(props) {
         props.enrichedFile.logicles
       );
 
-      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
       const isInside = isPointInPolygon(
         newPointsReal[0],
         newPointsReal[1],
         localPlot.gate.points
       );
 
-      // this code will run when a user will drag a specific polygon gate point
-      // if(isDraggingGatePoint?.dragging){
-      //   const draggingPointIndex = localPlot.gate.points.findIndex(point => point === isDraggingGatePoint.pointValue)
-      //   let newGateValueRealX = getGateValue(
-      //       localPlot.gate.points[draggingPointIndex][0],
-      //       localPlot.xScaleType,
-      //       localPlot.xAxisIndex,
-      //       localPlot.width,
-      //       moveX
-      //   );
-
-      //   let newGateValueRealY = getGateValue(
-      //       localPlot.gate.points[draggingPointIndex][1],
-      //       localPlot.yScaleType,
-      //       localPlot.yAxisIndex,
-      //       localPlot.height,
-      //       moveY
-      //   );
-      //   localPlot.gate.points[draggingPointIndex] = [newGateValueRealX, newGateValueRealY];
-      // }
-
-      if (isInside) {
+      if (isInside || typeof dragPointIndex == "number") {
         // this code will run when a user will drag the entire polygon gate
         let moveX = getMoveValue(
           startPointsReal[0],
@@ -662,24 +669,49 @@ function Plot(props) {
           "y"
         );
 
-        let points = localPlot.gate.points.map((point) => {
-          let newGateValueRealX = getGateValue(
-            point[0],
-            localPlot.xScaleType,
-            localPlot.xAxisIndex,
-            localPlot.width,
-            moveX
-          );
+        let points = localPlot.gate.points.map((point, index) => {
+          if (typeof dragPointIndex == "number") {
+            // TODO too much code repetition here
+            if (dragPointIndex == index) {
+              let newGateValueRealX = getGateValue(
+                point[0],
+                localPlot.xScaleType,
+                localPlot.xAxisIndex,
+                localPlot.width,
+                moveX
+              );
 
-          let newGateValueRealY = getGateValue(
-            point[1],
-            localPlot.yScaleType,
-            localPlot.yAxisIndex,
-            localPlot.height,
-            moveY
-          );
+              let newGateValueRealY = getGateValue(
+                point[1],
+                localPlot.yScaleType,
+                localPlot.yAxisIndex,
+                localPlot.height,
+                moveY
+              );
 
-          return [newGateValueRealX, newGateValueRealY];
+              return [newGateValueRealX, newGateValueRealY];
+            } else {
+              return [point[0], point[1]];
+            }
+          } else {
+            let newGateValueRealX = getGateValue(
+              point[0],
+              localPlot.xScaleType,
+              localPlot.xAxisIndex,
+              localPlot.width,
+              moveX
+            );
+
+            let newGateValueRealY = getGateValue(
+              point[1],
+              localPlot.yScaleType,
+              localPlot.yAxisIndex,
+              localPlot.height,
+              moveY
+            );
+
+            return [newGateValueRealX, newGateValueRealY];
+          }
         });
 
         setLocalPlot({
