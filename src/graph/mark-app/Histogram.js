@@ -12,6 +12,7 @@ import {
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
 import { drawText, getAxisLabels, getBins } from "./Helper";
+import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
 
@@ -523,7 +524,9 @@ function Histogram(props) {
     isMouseDown = true;
 
     if (!hasGate(props.plot)) {
-      setStartCanvasPoint(event.offsetX);
+      // draw histogram gate only if it is selected file
+      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        setStartCanvasPoint(event.offsetX);
     } else {
     }
   };
@@ -540,7 +543,9 @@ function Histogram(props) {
       // };
       //props.onEditGate(change);
     } else {
-      setModalIsOpen(true);
+      // draw histogram gate only if it is selected file
+      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        setModalIsOpen(true);
 
       // // so its a new gate
       // newGatePointsCanvas.forEach((newGatePointCanvas) => {
@@ -577,7 +582,10 @@ function Histogram(props) {
 
   const handleCursorProperty = (event) => {
     if (props?.plot?.plotType === "histogram") {
-      document.body.style.cursor = "text";
+      document.body.style.cursor =
+        props.enrichedFile.fileId === getWorkspace().selectedFile
+          ? "text"
+          : "context-menu";
     }
   };
 
