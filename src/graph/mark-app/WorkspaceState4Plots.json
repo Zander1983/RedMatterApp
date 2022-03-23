@@ -124,7 +124,7 @@
             "yAxisOriginalRanges": [0, 262144],
             "parents": [],
             "color": "#dd688f",
-            "gateType": "polygon",
+            "gateType": "histogram",
             "id": "79b4fd10-651e-47ce-ba7b-5caa054293f5"
           }
         },

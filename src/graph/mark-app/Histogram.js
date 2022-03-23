@@ -1,13 +1,22 @@
 import { histogram } from "./HistogramHelper";
 import { useEffect, useState } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
-import { getRealPointFromCanvasPoints, getPointOnCanvas } from "./PlotHelper";
+import Modal from "react-modal";
+import {
+  getRealPointFromCanvasPoints,
+  getPointOnCanvas,
+  getRealXAxisValueFromCanvasPointOnLinearScale,
+  getRealYAxisValueFromCanvasPointOnLinearScale,
+  getRealXAxisValueFromCanvasPointOnLogicleScale,
+  getRealYAxisValueFromCanvasPointOnLogicleScale,
+} from "./PlotHelper";
+import { CompactPicker } from "react-color";
+import { drawText, getAxisLabels, getBins } from "./Helper";
 
-let startXPointsReal;
 let isMouseDown = false;
 
-const hasGate = (localPlot) => {
-  return !!localPlot.gate;
+const hasGate = (plot) => {
+  return !!plot.gate;
 };
 
 const shouldDrawGate = (plot) => {
@@ -21,14 +30,12 @@ const shouldDrawGate = (plot) => {
   }
 };
 
-const getContext = (plot, plotIndex) => {
+const getContext = (canvasId) => {
   // const findBy = "canvas-" + plot.plotIndex
-  const canvas = document.getElementById("canvas-" + plotIndex);
+  const canvas = document.getElementById(canvasId);
   if (canvas) {
     const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "white";
-    return { context };
+    return context;
   } else {
     return {};
   }
@@ -64,9 +71,15 @@ const linspace = (a, b, n) => {
   return ret;
 };
 
-const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
-  let maxCount = 0;
-
+const paintHist = (
+  context,
+  hists,
+  enrichedFile,
+  plot,
+  minimum,
+  color,
+  maxCountPlusTenPercent
+) => {
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
   const ratio = getAxisRatio(
@@ -76,15 +89,7 @@ const paintHist = (context, hists, enrichedFile, plot, minimum, color) => {
     plot.xScaleType
   );
 
-  let countYMinMax = getMultiArrayMinMax(hists, "y");
-
-  if (countYMinMax.max * 1.1 > maxCount) {
-    maxCount = countYMinMax.max * 1.1;
-  }
-
-  hists.maxCount = countYMinMax.max;
-
-  let ratioY = plot.height / maxCount;
+  let ratioY = plot.height / maxCountPlusTenPercent;
 
   //value, scaleType, ratio, minimum, width, axis
   let firstX = getPointOnCanvasByRatio(
@@ -170,33 +175,61 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
-  console.log("props.plotIndex is ", props.plotIndex);
-  const [localPlot, setLocalPlot] = useState(props.plot);
-  // let [newXPointsReal, setNewXPointsReal] = useState(0);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  console.log(
+    "histogram props.plotIndex is ",
+    props.plotIndex,
+    " and props is ",
+    props
+  );
 
-  // useEffect(() => {
-  //   console.log("in the 2nd useEffect, here you could rewrite the canvas");
-  // }, [newXPointsReal]);
+  let [startCanvasPoint, setStartCanvasPoint] = useState(null);
+  let [endCanvasPoint, setEndCanvasPoint] = useState(null);
+  const [gateName, setGateName] = useState({
+    name: "",
+    error: false,
+  });
+  const [gateColor, setGateColor] = useState(
+    `#${Math.floor(Math.random() * 16777215).toString(16)}`
+  );
+  const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
 
   useEffect(() => {
-    setLocalPlot(localPlot);
-    let { context } = getContext(localPlot, props.plotIndex);
+    if (startCanvasPoint && endCanvasPoint) {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+
+      if (context) {
+        drawTemporaryGateLine(context, props.plot);
+      }
+    } else {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+      context.clearRect(0, 0, props.plot.width, props.plot.height);
+      context.fillStyle = "white";
+    }
+  }, [startCanvasPoint, endCanvasPoint]);
+
+  useEffect(() => {
+    //setLocalPlot(props.plot);
+    let context = getContext("canvas-" + props.plotIndex);
+    context.clearRect(0, 0, props.plot.width, props.plot.height);
+    context.fillStyle = "white";
+
     let color = "#000";
 
     let data = props.enrichedFile.enrichedEvents.flatMap(
       (enrichedEvent, index) => {
         if (
-          localPlot.population == "All" ||
-          enrichedEvent["isInGate" + localPlot.population]
+          props.plot.population == "All" ||
+          enrichedEvent["isInGate" + props.plot.population]
         ) {
           // TODO no need to keep setting the color like this
           color = enrichedEvent["color"];
 
-          if (localPlot.xScaleType == "lin") {
-            return enrichedEvent[localPlot.xAxisIndex];
+          if (props.plot.xScaleType == "lin") {
+            return enrichedEvent[props.plot.xAxisIndex];
           } else {
-            let logicle = props.enrichedFile.logicles[localPlot.xAxisIndex];
-            return logicle.scale(enrichedEvent[localPlot.xAxisIndex]);
+            let logicle = props.enrichedFile.logicles[props.plot.xAxisIndex];
+            return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
           }
         } else {
           return [];
@@ -205,13 +238,13 @@ function Histogram(props) {
     );
 
     let bins;
-    if (localPlot.xScaleType === "bi") {
-      bins = linspace(0, 1, localPlot.width);
+    if (props.plot.xScaleType === "bi") {
+      bins = linspace(0, 1, props.plot.width);
     } else {
       bins = linspace(
-        props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
-        props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
-        localPlot.width
+        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        props.plot.width
       );
     }
 
@@ -220,19 +253,25 @@ function Histogram(props) {
       bins: bins,
     });
 
+    let countYMinMax = getMultiArrayMinMax(hists, "y");
+
+    let maxCountPlusTenPercent = countYMinMax.max * 1.1;
+    drawLabel(maxCountPlusTenPercent);
+
     paintHist(
       context,
       hists,
       props.enrichedFile,
-      localPlot,
-      props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
-      color
+      props.plot,
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      color,
+      maxCountPlusTenPercent
     );
 
-    if (localPlot.gate && shouldDrawGate(localPlot)) {
-      drawGateLine(context, localPlot);
+    if (props.plot.gate && shouldDrawGate(props.plot)) {
+      drawGateLine(context, props.plot);
     }
-  }, [localPlot]);
+  }, [props.plot]);
 
   const drawGateLine = (context, plot) => {
     context.strokeStyle = "red";
@@ -269,13 +308,123 @@ function Histogram(props) {
     context.stroke();
   };
 
+  const drawTemporaryGateLine = (context, plot) => {
+    context.clearRect(0, 0, props.plot.width, props.plot.height);
+    context.fillStyle = "white";
+
+    context.strokeStyle = "pink";
+    context.lineWidth = 1;
+    context.beginPath();
+
+    context.lineWidth = 2;
+
+    context.moveTo(startCanvasPoint, plot.height / 2);
+    context.lineTo(endCanvasPoint, plot.height / 2);
+
+    context.moveTo(startCanvasPoint, 0);
+    context.lineTo(startCanvasPoint, plot.height);
+
+    context.moveTo(endCanvasPoint, 0);
+    context.lineTo(endCanvasPoint, plot.height);
+
+    context.stroke();
+  };
+
+  const drawLabel = (maxCountPlusTenPercent) => {
+    let xRange = [
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+    ];
+    const xDivisor =
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum / 200;
+
+    let yRange = [
+      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+    ];
+    const yDivisor =
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum / 200;
+
+    let [horizontalBinCount, verticalBinCount] = getBins(
+      props.plot.width,
+      props.plot.height,
+      props.plot.plotScale
+    );
+
+    let xLabels = getAxisLabels(
+      props.plot.xScaleType,
+      xRange,
+      props.enrichedFile.logicles[props.plot.xAxisIndex],
+      horizontalBinCount
+    );
+    let contextX = document
+      .getElementById("canvas-" + props.plotIndex + "-xAxis")
+      .getContext("2d");
+
+    contextX.clearRect(0, 0, props.plot.width + 20, 20);
+    for (let i = 0; i < xLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
+      ) {
+        tooClose = true;
+      }
+      let xPos =
+        xLabels[i].pos / xDivisor + 20 > props.plot.width
+          ? props.plot.width - 2
+          : xLabels[i].pos / xDivisor + 20;
+      // to avoid overlapping between the labels
+      if (tooClose) {
+        xPos += 8;
+      }
+      drawText(
+        {
+          x: xPos,
+          y: 12,
+          text: xLabels[i].name,
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextX
+      );
+    }
+
+    const values = [
+      maxCountPlusTenPercent.toFixed(0),
+      (maxCountPlusTenPercent * 0.75).toFixed(0),
+      (maxCountPlusTenPercent * 0.5).toFixed(0),
+      (maxCountPlusTenPercent * 0.25).toFixed(0),
+    ];
+
+    let contextY = document
+      .getElementById("canvas-" + props.plotIndex + "-yAxis")
+      .getContext("2d");
+
+    contextY.clearRect(0, 0, 20, props.plot.height + 20);
+
+    for (let i = 0; i < values.length; i++) {
+      const yPos = ((props.plot.height + 20) / 4) * i;
+      drawText(
+        {
+          x: 0,
+          y: yPos + 20,
+          text: values[i],
+          font: "10px Arial",
+          fillColor: "black",
+        },
+        contextY
+      );
+    }
+  };
+
   const onChangeScale = (e, axis, plotIndex) => {
-    let channeIndex = localPlot.xAxisIndex;
-    let channelLabel = localPlot.xAxisLabel;
+    let channeIndex = props.plot.xAxisIndex;
+    let channelLabel = props.plot.xAxisLabel;
     let channelScale = e.scale;
     if (axis == "y") {
-      channeIndex = localPlot.yAxisIndex;
-      channelLabel = localPlot.yAxisLabel;
+      channeIndex = props.plot.yAxisIndex;
+      channelLabel = props.plot.yAxisLabel;
     }
 
     let change = {
@@ -292,14 +441,14 @@ function Histogram(props) {
 
   const onChangeChannel = (e, axis, plotIndex) => {
     let change = {};
-    let newPlotType = localPlot.plotType;
+    let newPlotType = props.plot.plotType;
     let channelLabel = "";
     let channeIndex = e.value;
     if (axis == "y") {
       if (e.value == "histogram") {
         newPlotType = "histogram";
-        channelLabel = localPlot.yAxisLabel;
-        channeIndex = localPlot.yAxisIndex;
+        channelLabel = props.plot.yAxisLabel;
+        channeIndex = props.plot.yAxisIndex;
       } else {
         channelLabel = channelOptions.find((x) => x.value == channeIndex).label;
         newPlotType = "scatter";
@@ -330,40 +479,69 @@ function Histogram(props) {
     };
   });
 
+  const onAddGate = () => {
+    // Here im generating a random gate, which is a triangle
+
+    let startPoint = getRealPointFromCanvasPoints(
+      props.enrichedFile.channels,
+      props.plot,
+      [startCanvasPoint, null],
+      props.enrichedFile.logicles
+    );
+    let endPoint = getRealPointFromCanvasPoints(
+      props.enrichedFile.channels,
+      props.plot,
+      [endCanvasPoint, null],
+      props.enrichedFile.logicles
+    );
+
+    let gate = {
+      color: gateColor,
+      gateType: "histogram",
+      name: gateName.name,
+      points: [startPoint[0], endPoint[0]],
+      xAxisLabel: props.plot.xAxisIndex,
+      xScaleType: props.plot.xScaleType,
+      xAxisIndex: props.plot.xAxisIndex,
+      parent: props.plot.population,
+    };
+
+    let plot = JSON.parse(JSON.stringify(props.plot));
+    plot.gate = gate;
+
+    let change = {
+      type: "AddGate",
+      plot: plot,
+      plotIndex: props.plotIndex,
+    };
+
+    props.onAddGate(change);
+  };
+
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
 
-    console.log(
-      "in handleMouseDown hasGate(localPlot) is ",
-      hasGate(localPlot)
-    );
-    if (!hasGate(localPlot)) {
-      startXPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      )[0];
-
-      console.log(">>>>>>> startXPointsReal is ", startXPointsReal);
+    if (!hasGate(props.plot)) {
+      setStartCanvasPoint(event.offsetX);
     } else {
     }
   };
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
-    if (hasGate(localPlot)) {
-      let change = {
-        type: "EditGate",
-        plot: localPlot,
-        plotIndex: props.plotIndex.split("-")[1],
-        points: JSON.parse(JSON.stringify(localPlot.gate.points)),
-        fileId: props.enrichedFile.fileId,
-      };
-
-      props.onEditGate(change);
+    if (hasGate(props.plot)) {
+      // let change = {
+      //   type: "EditGate",
+      //   plot: props.plot,
+      //   plotIndex: props.plotIndex.split("-")[1],
+      //   points: JSON.parse(JSON.stringify(props.plot.gate.points)),
+      //   fileId: props.enrichedFile.fileId,
+      // };
+      //props.onEditGate(change);
     } else {
+      setModalIsOpen(true);
+
       // // so its a new gate
       // newGatePointsCanvas.forEach((newGatePointCanvas) => {
       //   if (
@@ -391,38 +569,9 @@ function Histogram(props) {
 
   const handleMouseMove = (event) => {
     if (isMouseDown) {
-      let newPointsCanvas = [event.offsetX, event.offsetY];
+      //let endCanvasPoint = event.offsetX;
 
-      let newXPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      )[0];
-
-      //setNewXPointsReal();
-
-      // localPlot.gate.points = localPlot.gate.points = [
-      //   startXPointsReal,
-      //   newXPointsReal,
-      // ];
-
-      localPlot.gate.points = localPlot.gate.points = [
-        startXPointsReal,
-        newXPointsReal,
-      ];
-
-      setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
-
-      // IMPORTANT - reste start points
-      startXPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      )[0];
-
-      console.log(">>>>>>. startXPointsReal is ", startXPointsReal);
+      setEndCanvasPoint(event.offsetX);
     }
   };
 
@@ -432,39 +581,175 @@ function Histogram(props) {
     }
   };
 
+  const onSetGateName = () => {
+    onAddGate();
+    setModalIsOpen(false);
+    setStartCanvasPoint(null);
+    setEndCanvasPoint(null);
+  };
+
+  const onCancelGateName = () => {
+    setModalIsOpen(false);
+    setStartCanvasPoint(null);
+    setEndCanvasPoint(null);
+  };
+
+  const gateNameHandler = (name) => {
+    setGateName({
+      name: name,
+      error: plotNames.includes(name) ? true : false,
+    });
+  };
+
+  const handleChangeComplete = (color) => {
+    setGateColor(color.hex);
+  };
+
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      backgroundColor: "#F0AA89",
+    },
+  };
+
   return (
     <>
       {" "}
       <div>
+        <Modal
+          isOpen={modalIsOpen}
+          appElement={document.getElementById("root") || undefined}
+          style={customStyles}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "cneter",
+              justifyContent: "center",
+            }}
+          >
+            <label>
+              Gate Name:
+              <input
+                type="text"
+                style={{
+                  width: 200,
+                  marginLeft: 5,
+                  border: "none",
+                  borderRadius: 5,
+                }}
+                onChange={(e) => gateNameHandler(e.target.value)}
+              />
+            </label>
+            <p style={{ height: 16, textAlign: "center", paddingTop: 2.5 }}>
+              {gateName.error && "A unique gate name is required"}
+            </p>
+            <div
+              style={{
+                padding: 10,
+                alignSelf: "center",
+                paddingTop: 0,
+                paddingBottom: 25,
+              }}
+            >
+              <CompactPicker
+                onChangeComplete={handleChangeComplete}
+                color={gateColor}
+              />
+            </div>
+            <div style={{ margin: "auto" }}>
+              <button
+                style={{ marginRight: 5 }}
+                disabled={gateName.error || !gateName.name}
+                onClick={() => onSetGateName()}
+              >
+                Ok
+              </button>
+              <button onClick={() => onCancelGateName()}>Cancel</button>
+            </div>
+          </div>
+        </Modal>
         <SideSelector
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
-          plot={localPlot}
+          plot={props.plot}
           plotIndex={props.plotIndex}
           canvasComponent={
-            <canvas
-              className="canvas"
-              id={`canvas-${props.plotIndex}`}
-              width={localPlot.width}
-              height={localPlot.height}
-              onMouseDown={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleMouseDown(nativeEvent);
-              }}
-              onMouseMove={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleCursorProperty(nativeEvent);
-                handleMouseMove(nativeEvent);
-              }}
-              onMouseUp={(e) => {
-                let nativeEvent = e.nativeEvent;
-                handleMouseUp(nativeEvent);
-              }}
-              onMouseLeave={(e) => {
-                document.body.style.cursor = "context-menu";
-              }}
-            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex" }}>
+                {/* Y-axis */}
+                <canvas
+                  height={props.plot.height}
+                  id={`canvas-${props.plotIndex}-yAxis`}
+                  width={25}
+                  style={{
+                    background: "#FAFAFA",
+                  }}
+                />
+                {/* main canvas */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: props.plot.width,
+                    height: props.plot.height,
+                  }}
+                >
+                  <canvas
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                    }}
+                    className="canvas"
+                    id={`canvas-${props.plotIndex}`}
+                    width={props.plot.width}
+                    height={props.plot.height}
+                  />
+                  <canvas
+                    id={`covering-canvas-${props.plotIndex}`}
+                    width={props.plot.width}
+                    height={props.plot.height}
+                    style={{
+                      border: "1px solid #32a1ce",
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      // display: "block" : "none",
+                    }}
+                    onMouseDown={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseDown(nativeEvent);
+                    }}
+                    onMouseMove={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleCursorProperty(nativeEvent);
+                      handleMouseMove(nativeEvent);
+                    }}
+                    onMouseUp={(e) => {
+                      let nativeEvent = e.nativeEvent;
+                      handleMouseUp(nativeEvent);
+                    }}
+                    onMouseLeave={(e) => {
+                      document.body.style.cursor = "context-menu";
+                    }}
+                  />
+                </div>
+              </div>
+              {/* X-axis */}
+              <canvas
+                width={props.plot.width + 20}
+                id={`canvas-${props.plotIndex}-xAxis`}
+                height={20}
+                style={{ background: "#FAFAFA" }}
+              />
+            </div>
           }
         />
       </div>
