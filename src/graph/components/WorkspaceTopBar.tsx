@@ -28,10 +28,10 @@ import { getWorkspace } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
 import {
-  superAlgorithmEnhancedVersion,
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
   formatEnrichedFiles,
+  superAlgorithm,
 } from "graph/mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
@@ -288,13 +288,13 @@ const WorkspaceTopBarComponent = ({
       isSnapShotCreated = true;
     }
 
-    let enrichedFiles: any[] = superAlgorithmEnhancedVersion(
+    let enrichedFiles: any[] = superAlgorithm(
       copyOfFiles,
-      workspaceState
+      workspaceState,
+      true
     );
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
-
     const csvData = [];
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
@@ -303,20 +303,22 @@ const WorkspaceTopBarComponent = ({
         statsIndex < enrichedFiles[fileIndex].gateStats.length;
         statsIndex++
       ) {
-        const stat = {
-          fileName: enrichedFiles[fileIndex]?.label,
-          gateName: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.gateName,
-          percentage:
-            enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage,
-          xMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanX,
-          yMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanY,
-          xMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianX,
-          yMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianY,
-        };
-        csvData.push(stat);
+        if (enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage) {
+          const stat = {
+            fileName: enrichedFiles[fileIndex]?.label,
+            gateName: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.gateName,
+            percentage:
+              enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage,
+            xMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanX,
+            yMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanY,
+            xMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianX,
+            yMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianY,
+          };
+
+          csvData.push(stat);
+        }
       }
     }
-
     setData(csvData);
   };
 
