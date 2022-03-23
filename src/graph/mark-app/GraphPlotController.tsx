@@ -35,7 +35,8 @@ interface IState {
   workspaceState: any;
   enrichedEvents: any[];
   testParam: string;
-  controlFileId:string
+  controlFileId:string,
+  activePipelineId:string
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -88,7 +89,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         workspaceState: {},
       enrichedEvents: [],
       testParam: "some value",
-        controlFileId: ""
+        controlFileId: "",
+      activePipelineId: "",
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -108,12 +110,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfFiles: any[] = getWorkspace().files;
 
     let defaultFile = null;
-
+    let pipeline = null;
     if (plots?.length === 0 && getWorkspace()?.pipelines?.length > 0) {
       // const defaultFile = copyOfFiles?.[0];
       defaultFile = getWorkspace()?.selectedFile ? copyOfFiles?.filter(file => file.id === getWorkspace()?.selectedFile)?.[0] : copyOfFiles?.[0];
       // @ts-ignore
-      const pipeline = getWorkspace()?.pipelines?.length > 0 ? getWorkspace()?.pipelines?.filter(pipeline => pipeline.controlFileId === getWorkspace()?.selectedFile)?.[0] : null;
+      pipeline = getWorkspace()?.pipelines?.length > 0 ? getWorkspace()?.pipelines?.filter(pipeline => pipeline.controlFileId === getWorkspace()?.selectedFile)?.[0] : null;
 
       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } = getPlotChannelAndPosition(defaultFile);
 
@@ -144,7 +146,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.setState({
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
-        controlFileId: isSnapShotCreated && defaultFile ? defaultFile?.id : getWorkspace()?.selectedFile
+        controlFileId: isSnapShotCreated && defaultFile ? defaultFile?.id : getWorkspace()?.selectedFile,
+        // @ts-ignore
+        activePipelineId: isSnapShotCreated && pipeline ? pipeline._id : getWorkspace()?.activePipelineId,
       });
     }
   };
@@ -558,9 +562,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       const oldPlots = prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
       // if(!this.state.isTableRenderCall || JSON.stringify(oldPlots)?.length !== JSON.stringify(newPlots)?.length){
 
-    if(getWorkspace()?.selectedFile !== prevState.controlFileId || JSON.stringify(prevState.workspaceState)?.length !== JSON.stringify(workspaceState)?.length){
+    if(getWorkspace()?.selectedFile !== prevState.controlFileId
+        || getWorkspace()?.activePipelineId !== prevState?.activePipelineId
+        || JSON.stringify(prevState.workspaceState)?.length !== JSON.stringify(workspaceState)?.length){
           //console.log(" did update true=======");
-          this.onInitState();
+      this.onInitState();
     }else {
       //console.log("did update false=======");
     }

@@ -126,8 +126,6 @@ const AddFileModal = React.memo(
 
     const onSetControl = (FileId:any, isDownloading = false) => {
      // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
-
-      console.log(FileId);
       if(name?.length === 0){
         setErrorMessage("Name is Required");
         setNameError(true)
