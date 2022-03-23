@@ -10,6 +10,7 @@ const DEFAULT_PLOT_WIDTH = 200;
 const DEFAULT_PLOT_HEIGHT = 200;
 const DEFAULT_X_SCALE_TYPE = "lin";
 const DEFAULT_Y_SCALE_TYPE = "lin";
+const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
 export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   // event 1 is not in any gate, it will have color black
@@ -60,13 +61,26 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
             pointX = logicle.scale(pointX);
             // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
             // either way this inefficient here - the logicle transform of the gate point needs only to be done once
-            tranformedPoints = gate.points.map((point) => {
-              return [logicle.scale(point[0]), point[1]];
-            });
+
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [logicle.scale(point[0]), point[1]];
+              });
+            } else {
+              // so histogram
+              tranformedPoints = [
+                logicle.scale(gate.points[0]),
+                logicle.scale(gate.points[1]),
+              ];
+            }
           } else {
-            tranformedPoints = gate.points.map((point) => {
-              return [point[0], point[1]];
-            });
+            if (gate.gateType == "polygon") {
+              tranformedPoints = gate.points.map((point) => {
+                return [point[0], point[1]];
+              });
+            } else {
+              tranformedPoints = [gate.points[0], gate.points[1]];
+            }
           }
 
           if (gate["yScaleType"] === "bi") {
@@ -82,17 +96,22 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
             return { x: point[0], y: point[1] };
           });
 
-          // console.log("gate.name is ", gate.name);
-          // console.log("isInGate is ", isInGate);
-          // console.log("gate is ", gate);
-
-          isInGate = pointInsidePolygon(
-            {
-              x: pointX,
-              y: pointY,
-            },
-            tranformedPoints
-          );
+          if (gate.gateType == "polygon") {
+            isInGate = pointInsidePolygon(
+              {
+                x: pointX,
+                y: pointY,
+              },
+              tranformedPoints
+            );
+          } else {
+            // so its histogram
+            isInGate = isInHistGate(
+              tranformedPoints[0],
+              tranformedPoints[1],
+              pointX
+            );
+          }
 
           if (isInGate) {
             event["color"] = gate["color"];
@@ -237,6 +256,14 @@ export const pointInsidePolygon = ({ x, y }, polygon) => {
   }
   if (hits & 1) return true;
   return false;
+};
+
+let isInHistGate = (gateStartPoint, gateEndpoint, value) => {
+  if (value < gateStartPoint || value > gateEndpoint) {
+    return false;
+  }
+
+  return true;
 };
 
 export const graphLine = (params, ctx) => {
@@ -548,7 +575,7 @@ const drawSegment = (params, ctx) => {
   ctx.stroke();
 };
 
-const drawText = (params, ctx) => {
+export const drawText = (params, ctx) => {
   ctx.fillStyle = params.fillColor;
   if (params.font !== undefined) {
     ctx.font = params.font;
@@ -565,4 +592,112 @@ const drawText = (params, ctx) => {
   if (params.rotate !== undefined) {
     ctx.rotate(-params.rotate);
   }
+};
+
+export const linLabel = (num) => {
+  let snum = "";
+  if (num < 2) {
+    snum = numeral(num.toFixed(2)).format("0.0a");
+  } else {
+    snum = num.toFixed(2);
+    snum = numeral(snum).format("0a");
+  }
+  return snum;
+};
+
+export const pot10Label = (pot10Indx) => {
+  let ev = "";
+  for (const l of Math.abs(pot10Indx).toString()) ev += EXP_NUMS[parseInt(l)];
+  let name = "10" + ev;
+  if (!name.includes("-") && pot10Indx < 0) name = "-" + name;
+  return name;
+};
+
+export const getAxisLabels = (format, linRange, logicle, binsCount) => {
+  let labels = [];
+  if (format === "lin") {
+    const binSize = (linRange[1] - linRange[0]) / binsCount;
+
+    for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
+      labels.push({
+        pos: i,
+        name: linLabel(i),
+      });
+  }
+  if (format === "bi") {
+    const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
+    let pot10 = 1;
+    let pot10Exp = 0;
+    const fow = () => {
+      pot10 *= 10;
+      pot10Exp++;
+    };
+    const back = () => {
+      pot10 /= 10;
+      pot10Exp--;
+    };
+    const add = (x, p) => {
+      if (
+        (x >= linRange[0] && x <= linRange[1]) ||
+        (x <= linRange[0] && x >= linRange[1])
+      ) {
+        labels.push({
+          pos: x,
+          name: pot10Label(p),
+        });
+      }
+    };
+    while (pot10 <= baseline) fow();
+    while (pot10 >= 1) {
+      add(pot10, pot10Exp);
+      add(-pot10, -pot10Exp);
+      back();
+    }
+
+    let newPos = labels.map((e) => logicle.scale(e.pos));
+
+    newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
+    labels = labels.map((e, i) => {
+      e.pos = newPos[i];
+      return e;
+    });
+    labels = labels.sort((a, b) => a.pos - b.pos);
+
+    const distTolerance = 0.03;
+    let lastAdded = null;
+    labels = labels.filter((e, i) => {
+      if (i === 0) {
+        lastAdded = i;
+        return true;
+      }
+      if (
+        (e.pos - labels[lastAdded].pos) /
+          (Math.max(linRange[0], linRange[1]) -
+            Math.min(linRange[0], linRange[1])) >=
+        distTolerance
+      ) {
+        lastAdded = i;
+        return true;
+      }
+      return false;
+    });
+  }
+  return labels;
+};
+
+export const getBins = (width, height, scale) => {
+  let verticalBinCount = 1;
+  let horizontalBinCount = 1;
+
+  if (scale === 0 || width === 0) {
+    verticalBinCount = 1;
+    horizontalBinCount = 1;
+    return;
+  }
+  horizontalBinCount = width === undefined ? 2 : Math.round(width / 60);
+  verticalBinCount = height === undefined ? 2 : Math.round(height / 60);
+  horizontalBinCount = Math.max(2, horizontalBinCount);
+  verticalBinCount = Math.max(2, verticalBinCount);
+
+  return [verticalBinCount, horizontalBinCount];
 };

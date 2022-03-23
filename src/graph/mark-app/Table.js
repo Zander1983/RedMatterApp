@@ -2,6 +2,8 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
+import { getWorkspace } from "graph/utils/workspace";
+import { Button } from "@material-ui/core";
 
 function Table(props) {
   let controlEnrichedFile = props.enrichedFiles.find(
@@ -12,8 +14,8 @@ function Table(props) {
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  //console.log("NON CONTROLS FILES ");
-  //console.log(nonControlEnrichedFiles);
+  let editedFiles = getWorkspace().workspaceState?.files;
+  let editedFileIds = Object.keys(editedFiles);
 
   return (
     <div>
@@ -86,7 +88,9 @@ function Table(props) {
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           onChangeChannel={props.onChangeChannel}
-                          // onDeleteGate={props.onDeleteGate}
+                          onAddGate={props.onAddGate}
+                          onDeleteGate={props.onDeleteGate}
+                          onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
                           plotIndex={`0-${plotIindex}`}
                         />
@@ -184,7 +188,9 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
-                  border: "4px solid #32a1ce",
+                  border:
+                    editedFileIds.includes(enrichedFile.fileId) &&
+                    "4px solid #FCBA05",
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
@@ -196,15 +202,33 @@ function Table(props) {
                           fontWeight: "bold",
                         }}
                       >
-                        {plot.population != "All"
-                          ? `${enrichedFile.gateStats
-                              .filter((gateStat) => {
-                                return gateStat.gateName == plot.population;
-                              })
-                              .map((gateStat) => {
-                                return gateStat && gateStat.percentage;
-                              })}%`
-                          : enrichedFile.label}
+                        <p>
+                          {plot.population != "All"
+                            ? `${enrichedFile.gateStats
+                                .filter((gateStat) => {
+                                  return gateStat.gateName == plot.population;
+                                })
+                                .map((gateStat) => {
+                                  return gateStat && gateStat.percentage;
+                                })}%`
+                            : enrichedFile.label}
+                        </p>
+
+                        {plot.population === "All" &&
+                          editedFileIds.includes(enrichedFile.fileId) && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              style={{
+                                backgroundColor: "#fafafa",
+                              }}
+                              onClick={() =>
+                                props.onResetToControl(enrichedFile.fileId)
+                              }
+                            >
+                              Reset To Control
+                            </Button>
+                          )}
                       </div>
                       {(() => {
                         if (plot.plotType === "scatter") {
@@ -227,6 +251,9 @@ function Table(props) {
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
                               onChangeChannel={props.onChangeChannel}
+                              onAddGate={props.onAddGate}
+                              onDeleteGate={props.onDeleteGate}
+                              onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                             />
