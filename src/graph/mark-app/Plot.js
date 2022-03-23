@@ -752,7 +752,10 @@ function Plot(props) {
       // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu';
       document.body.style.cursor = isInside ? "grab" : "context-menu";
     } else {
-      document.body.style.cursor = "crosshair";
+      document.body.style.cursor =
+        props.enrichedFile.fileId === getWorkspace().selectedFile
+          ? "crosshair"
+          : "context-menu";
     }
   };
 
