@@ -51,6 +51,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onResize = this.onResize.bind(this);
     this.onInitState = this.onInitState.bind(this);
     this.onResetToControl = this.onResetToControl.bind(this);
+    this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
   }
 
   onInitState = () => {
@@ -280,6 +281,68 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
     });
+  };
+
+  downloadPlotAsImage = (plot: any, plotIndex: any) => {
+    let downloadLink = document.createElement("a");
+
+    downloadLink.setAttribute("download", `${plot.population}.png`);
+
+    // selecting the canvas from dom
+    const canvas: HTMLCanvasElement = document.getElementById(
+      "canvas-" + plotIndex
+    ) as HTMLCanvasElement;
+
+    canvas.width = 400;
+    const context: CanvasRenderingContext2D = canvas.getContext("2d");
+    context.font = "12px Roboto";
+    context.fillStyle = "black";
+    context.fillText(`${plot.xAxisLabel}`, 20, 200);
+    context.fillText(
+      `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
+      160,
+      200
+    );
+
+    context.font = "12px Roboto";
+    context.translate(10, 50);
+    context.rotate(-0.5 * Math.PI);
+    context.fillText(
+      `${plot.yScaleType === "lin" ? "Linear" : "Logicle"}`,
+      0,
+      0
+    );
+    // context.fillText(
+    //   `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
+    //   160,
+    //   200
+    // );
+    // context.restore();
+    // context.font = "10px Roboto";
+    // context.fillText(`Channel-Y: ${plot.yAxisLabel}`, 20, 30);
+    // context.font = "10px Roboto";
+    // context.fillText(`Scale-Y: ${plot.yScaleType}`, 100, 20);
+    // context.font = "10px Roboto";
+    // context.fillText(`Plot Name: ${plot.population}`, 20, 20);
+
+    // //@ts-ignore
+    // let dataURL = canvas.toDataURL("image/png");
+    // let url = dataURL.replace(
+    //   /^data:image\/png/,
+    //   "data:application/octet-stream"
+    // );
+    // downloadLink.setAttribute("href", url);
+    // downloadLink.click();
+
+    // let newWorkspaceState: any = this.state.workspaceState;
+    // let copyOfFiles: any[] = getWorkspace().files;
+    // let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    // enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    // WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    // this.setState({
+    //   enrichedFiles: enrichedFiles,
+    //   workspaceState: newWorkspaceState,
+    // });
   };
 
   onResetToControl = (fileId: string) => {
@@ -540,6 +603,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           onEditGate={this.onEditGate}
           onResize={this.onResize}
           sortByGate={this.sortByGate}
+          downloadPlotAsImage={this.downloadPlotAsImage}
           onResetToControl={this.onResetToControl}
           testParam={this.state.testParam}
         />

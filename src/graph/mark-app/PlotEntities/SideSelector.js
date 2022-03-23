@@ -1,5 +1,6 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
+import cameraIcon from "./../../../assets/images/camera.png";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -108,27 +109,42 @@ function SideSelector(props) {
         }}
       >
         {/* canvas-top-bar */}
-        {props.plot.gate && props.onDeleteGate ? (
-          <div
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            alignSelf: "center",
+            marginTop: 5,
+            marginBottom: 10,
+          }}
+        >
+          <img
+            src={cameraIcon}
+            alt={props.plot.id}
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              alignSelf: "center",
-              marginTop: 5,
-              marginBottom: 10,
+              width: 15,
+              height: 15,
+              cursor: "pointer",
             }}
-          >
+            onClick={() =>
+              props.downloadPlotAsImage(props.plot, props.plotIndex)
+            }
+          />
+          {props.plot.gate && props.onDeleteGate && (
             <img
               src={deleteIcon}
               alt={props.plot.id}
-              style={{ width: 15, height: 15, cursor: "pointer" }}
+              style={{
+                width: 15,
+                height: 15,
+                marginLeft: 30,
+                cursor: "pointer",
+              }}
               onClick={() => props.onDeleteGate(props.plot)}
             />
-          </div>
-        ) : (
-          <div style={{ height: 30 }}> </div>
-        )}
+          )}
+        </div>
         {props.canvasComponent}
         <div
           style={{

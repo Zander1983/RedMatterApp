@@ -866,6 +866,7 @@ function Plot(props) {
           handleResizeMouseDown={handleResizeMouseDown}
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
+          downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex" }}>
