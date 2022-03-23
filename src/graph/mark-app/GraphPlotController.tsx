@@ -4,6 +4,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
 import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
+import * as htmlToImage from "html-to-image";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -284,26 +285,29 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   downloadPlotAsImage = (plot: any, plotIndex: any) => {
-    let downloadLink = document.createElement("a");
-
-    downloadLink.setAttribute("download", `${plot.population}.png`);
-
     // selecting the canvas from dom
     const canvas: HTMLCanvasElement = document.getElementById(
       "canvas-" + plotIndex
     ) as HTMLCanvasElement;
 
-    canvas.width = 400;
     const context: CanvasRenderingContext2D = canvas.getContext("2d");
+
+    // x-axis
     context.font = "12px Roboto";
     context.fillStyle = "black";
-    context.fillText(`${plot.xAxisLabel}`, 20, 200);
+    context.fillText(`${plot.xAxisLabel}`, 20, 195);
     context.fillText(
       `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
       160,
-      200
+      195
     );
+    // plot name
+    context.font = "12px Roboto";
+    context.fillStyle = "black";
+    context.fillText(`Plot Name: ${plot.population}`, 50, 20);
+    context.save();
 
+    // y-axis
     context.font = "12px Roboto";
     context.translate(10, 50);
     context.rotate(-0.5 * Math.PI);
@@ -312,37 +316,33 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       0,
       0
     );
-    // context.fillText(
-    //   `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
-    //   160,
-    //   200
-    // );
-    // context.restore();
-    // context.font = "10px Roboto";
-    // context.fillText(`Channel-Y: ${plot.yAxisLabel}`, 20, 30);
-    // context.font = "10px Roboto";
-    // context.fillText(`Scale-Y: ${plot.yScaleType}`, 100, 20);
-    // context.font = "10px Roboto";
-    // context.fillText(`Plot Name: ${plot.population}`, 20, 20);
+    context.restore();
+    context.save();
+    context.translate(10, 180);
+    context.rotate(-0.5 * Math.PI);
+    context.fillText(`${plot.yAxisLabel}`, 0, 0);
+    context.restore();
 
-    // //@ts-ignore
-    // let dataURL = canvas.toDataURL("image/png");
-    // let url = dataURL.replace(
-    //   /^data:image\/png/,
-    //   "data:application/octet-stream"
-    // );
-    // downloadLink.setAttribute("href", url);
-    // downloadLink.click();
+    // downloading functionality
+    htmlToImage
+      .toPng(document.getElementById(`entire-canvas-${plotIndex}`))
+      .then(function (dataUrl) {
+        var link = document.createElement("a");
+        link.download = `${plot.population}`;
+        link.href = dataUrl;
+        link.click();
+      });
 
-    // let newWorkspaceState: any = this.state.workspaceState;
-    // let copyOfFiles: any[] = getWorkspace().files;
-    // let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    // enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-    // WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    // this.setState({
-    //   enrichedFiles: enrichedFiles,
-    //   workspaceState: newWorkspaceState,
-    // });
+    // re-draw
+    let newWorkspaceState: any = this.state.workspaceState;
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
   };
 
   onResetToControl = (fileId: string) => {

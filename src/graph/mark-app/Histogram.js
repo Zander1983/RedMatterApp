@@ -683,7 +683,10 @@ function Histogram(props) {
           plotIndex={props.plotIndex}
           downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              id={`entire-canvas-${props.plotIndex}`}
+              style={{ display: "flex", flexDirection: "column" }}
+            >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
