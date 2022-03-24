@@ -94,6 +94,7 @@ export const getGate = (gateID: GateID): Gate => {
 export const saveWorkspaceStateToServer = async (
     shared: boolean,
     experimentId: string,
+    pipelineId: string,
     stateData?:any
 ): Promise<boolean> => {
   //let stateJson = JSON.stringify(getWorkspace().workspaceState);
@@ -102,16 +103,18 @@ export const saveWorkspaceStateToServer = async (
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
     experimentId: experimentId,
+    pipelineId: pipelineId,
     state: stateJson,
     isShared: shared,
   });
 
   try {
-    await axios.post(
-        updateWorkSpace.url,
+    const response = await axios.put(
+        `/api/experiment/${experimentId}/pipeline`,
         updateWorkSpace.options.body,
         updateWorkSpace.options
     );
+    await WorkspaceDispatch.SetId(response.data.workspaceId);
     return true;
   } catch (err) {
     snackbarService.showSnackbar(
@@ -236,7 +239,6 @@ const loadSavedWorkspace = async (
   await WorkspaceDispatch.LoadWorkspace(newWorkspace);
 };
 
-
 export const getWorkspaceStateFromServer = async (
     shared: boolean,
     experimentId: string
@@ -247,15 +249,10 @@ export const getWorkspaceStateFromServer = async (
   let workspaceData;
   try {
     if (shared) {
-      workspaceData = await axios.post("/api/verifyWorkspace", {
-        experimentId: experimentId,
-      });
+      workspaceData = await axios.get(`/api/experiment/${experimentId}/verifyPipeline`);
     } else {
-      workspaceData = await axios.post(
-          "/api/getWorkspace",
-          {
-            experimentId,
-          },
+      workspaceData = await axios.get(
+          `/api/experiment/${experimentId}/pipeline`,
           {
             headers: {
               token: userManager.getToken(),
@@ -265,8 +262,12 @@ export const getWorkspaceStateFromServer = async (
     }
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
-      await saveWorkspaceStateToRedux(workspace);
+      await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);
       return { loaded: true, requestSuccess: true };
+    }else if(workspaceData.data.pipelines?.length > 0) {
+        await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
+        await WorkspaceDispatch.UpdatePipelineId(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?._id);
+        await WorkspaceDispatch.UpdateSelectedFile(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?.controlFileId);
     }
   } catch (err) {
     throw err;
@@ -276,6 +277,7 @@ export const getWorkspaceStateFromServer = async (
 
 const saveWorkspaceStateToRedux = async (
     workspace: string,
+    pipelines:any[]
 ) => {
    const workspaceObj = JSON.parse(workspace || "{}");
   // if(getWorkspace().workspaceState?.length === 0) {
@@ -287,9 +289,11 @@ const saveWorkspaceStateToRedux = async (
   //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
   //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
   // }else {
-    const newWorkspace: Workspace = {...workspaceObj};
-    await WorkspaceDispatch.SetPlotStates(newWorkspace);
+    const newWorkspaceState: Workspace = {...workspaceObj};
+    await WorkspaceDispatch.SetPipeLines(pipelines);
+    await WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+    await WorkspaceDispatch.UpdatePipelineId(workspaceObj.pipelineId);
   //}
 
 };
