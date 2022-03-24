@@ -1,26 +1,26 @@
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button } from "@material-ui/core";
+import { Button,FormControlLabel } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { green } from "@material-ui/core/colors";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import userManager from "Components/users/userManager";
-import {saveWorkspaceStateToServer, saveWorkspaceToRemote} from "../utils/workspace";
+import {saveWorkspaceStateToServer} from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
-// import IOSSwitch from "../../Components/common/Switch";
+import IOSSwitch from "../../Components/common/Switch";
 import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import axios from "axios";
 import { Debounce } from "../../services/Dbouncer";
 import LinkShareModal from "./modals/linkShareModal";
-import GateNamePrompt from "./modals/GateNamePrompt";
+//import GateNamePrompt from "./modals/GateNamePrompt";
 // @ts-ignore
-import PipeLineNamePrompt from "./modals/PipelineNamePrompt";
+//import PipeLineNamePrompt from "./modals/PipelineNamePrompt";
 import { getWorkspace,getAllFiles } from "graph/utils/workspace";
 import { useSelector } from "react-redux";
 import useDidMount from "hooks/useDidMount";
@@ -119,8 +119,10 @@ const WorkspaceTopBarComponent = ({
 
   //@ts-ignore
   const activePipeline = useSelector((state) => state.workspace);
+
   //@ts-ignore
   const workState = useSelector((state) => state.workspace.workspaceState);
+
 
   // useEffect(() => {
   //   if (didMount && plotLength === 0) {
@@ -503,22 +505,22 @@ const WorkspaceTopBarComponent = ({
                       </Typography>
                     )}
                   </Button>
-                  {/*<FormControlLabel*/}
-                  {/*  style={{*/}
-                  {/*    marginLeft: 0,*/}
-                  {/*    height: 20,*/}
-                  {/*    marginTop: 4,*/}
-                  {/*    color: "#333",*/}
-                  {/*  }}*/}
-                  {/*  label={"Autosave"}*/}
-                  {/*  control={*/}
-                  {/*    <IOSSwitch*/}
-                  {/*      disabled={!plotCallNeeded && !renderPlotController}*/}
-                  {/*      checked={autoSaveEnabled}*/}
-                  {/*      onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}*/}
-                  {/*    />*/}
-                  {/*  }*/}
-                  {/*/>*/}
+                  <FormControlLabel
+                    style={{
+                      marginLeft: 0,
+                      height: 20,
+                      marginTop: 4,
+                      color: "#333",
+                    }}
+                    label={"Autosave"}
+                    control={
+                      <IOSSwitch
+                        disabled={!plotCallNeeded && !renderPlotController}
+                        checked={autoSaveEnabled}
+                        onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}
+                      />
+                    }
+                  />
                 </span>
                 {lastSavedTime ? (
                   <span
@@ -575,10 +577,13 @@ const WorkspaceTopBarComponent = ({
   };
 
   if (autoSaveEnabled) {
-    if (plotCallNeeded) {
-      Debounce(() => saveWorkspace(), 5000);
-    }
+      //console.log("== gate save updated 3 =====");
+    // if (plotCallNeeded) {
+        //console.log("== gate save updated 4 =====");
+      Debounce(() => saveWorkspace(), 2000);
+    // }
   }
+
   const renderModal = () => {
     return (
       <>
