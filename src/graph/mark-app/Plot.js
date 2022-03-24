@@ -72,6 +72,7 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
+
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });

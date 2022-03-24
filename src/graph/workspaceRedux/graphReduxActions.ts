@@ -18,8 +18,10 @@ export const graphActions = {
   ADD_FILE: "workspace.ADD_FILE",
   ADD_POPULATION: "workspace.ADD_POPULATION",
   ADD_PLOT: "workspace.ADD_PLOT",
+  SET_ID: "workspace.SET_ID",
   ADD_PLOTS: "workspace.ADD_PLOTS",
   SET_PLOT_STATE: "workspace.SET_PLOT_STATE",
+  SET_PIPELINE_STATE: "workspace.SET_PIPELINE_STATE",
   ADD_GATE: "workspace.ADD_GATE",
   UPDATE_FILE: "workspace.UPDATE_FILE",
   UPDATE_POPULATION: "workspace.UPDATE_POPULATION",
@@ -38,6 +40,7 @@ export const graphActions = {
   DELETE_NOTIFICATION: "workspace.DELETE_NOTIFICATION",
   SET_EDIT_WORKSPACE: "workspace.SET_EDIT_WORKSPACE",
   UPDATE_SELECTED_FILE: "workspace.UPDATE_SELECTED_FILE",
+  UPDATE_SELECTED_PIPELINE: "workspace.UPDATE_SELECTED_PIPELINE",
   UPDATE_WS_SELECTED_FILE: "workspace.UPDATE_WS_SELECTED_FILE",
   ADD_PLOTS_AND_POPULATIONS: "workspace.ADD_PLOTS_AND_POPULATIONS",
   DELETE_PLOTS_GATES_AND_POPULATIONS:
@@ -52,11 +55,13 @@ export const initialState: Workspace = {
   gates: [],
   files: [],
   plots: [],
+  pipelines: [],
   populations: [],
   previousStates: [],
   sharedWorkspace: false,
   editWorkspace: true,
   selectedFile: "",
+  activePipelineId: "",
   clearOpenFiles: false,
   updateType: "",
   workspaceState: {}
@@ -71,6 +76,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       return {
         ...initialState,
         files: state.files,
+      };
+
+    case graphActions.SET_ID:
+      const id = action.payload;
+      return {
+        ...state,
+        id: id,
       };
 
     case graphActions.UPDATE_TYPE:
@@ -182,6 +194,12 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         workspaceState: plots,
       };
 
+    case graphActions.SET_PIPELINE_STATE:
+      const pipeLines = action.payload;
+      return {
+        ...state,
+        pipelines: [...pipeLines],
+      };
     case graphActions.ADD_GATE:
       const newGate = action.payload.gate;
       if (state.gates.find((e) => e.id === newGate.id)) {
@@ -198,6 +216,13 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         selectedFile: fileName,
       };
+    case graphActions.UPDATE_SELECTED_PIPELINE:
+      const pipeline: string = action.payload.pipeline;
+      return {
+        ...state,
+        activePipelineId: pipeline,
+      };
+
     case graphActions.UPDATE_FILE:
       const updateFile: File = action.payload.file;
       if (!state.files.find((e) => e.id === updateFile.id)) {
