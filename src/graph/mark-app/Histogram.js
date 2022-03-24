@@ -580,7 +580,6 @@ function Histogram(props) {
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
-
     if (!hasGate(props.plot)) {
       // draw histogram gate only if it is selected file
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
