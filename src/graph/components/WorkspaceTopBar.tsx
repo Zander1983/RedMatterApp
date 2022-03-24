@@ -32,6 +32,7 @@ import {
   getPlotChannelAndPosition,
   formatEnrichedFiles,
   superAlgorithm,
+  getMedian,
 } from "graph/mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
@@ -132,18 +133,12 @@ const WorkspaceTopBarComponent = ({
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const didMount = useDidMount();
 
-  const headers = [
-    { label: "File Name", key: "fileName" },
-    { label: "Gate Name", key: "gateName" },
-    { label: "X Channel", key: "xChannel" },
-    { label: "Y Channel", key: "yChannel" },
-    { label: "Percentage", key: "percentage" },
-    { label: "X Mean", key: "xMean" },
-    { label: "Y Mean", key: "yMean" },
-    { label: "X Median", key: "xMedian" },
-    { label: "Y Median", key: "yMedian" },
-  ];
   const [data, setData] = React.useState<any[]>([]);
+  const [heeaderForCSV, setHeaderForCSV] = React.useState<any[]>([]);
+
+  useEffect(() => {
+    updateHeaders();
+  }, []);
 
   //@ts-ignore
   const plotLength = useSelector((state) => state.workspace.plots.length);
@@ -266,6 +261,29 @@ const WorkspaceTopBarComponent = ({
     handleOpen(setLinkShareModalOpen);
   };
 
+  const updateHeaders = () => {
+    const headers = [
+      { label: "File Name", key: "fileName" },
+      { label: "Gate Name", key: "gateName" },
+      { label: "X Channel", key: "xChannel" },
+      { label: "Y Channel", key: "yChannel" },
+      { label: "Percentage", key: "percentage" },
+    ];
+    let copyOfFiles: any[] = getWorkspace().files;
+    const channels =
+      copyOfFiles.length > 0
+        ? copyOfFiles[0]?.channels.map((element: any) => element?.label)
+        : [];
+
+    for (let i = 0; i < channels.length; i++) {
+      headers.push({ label: `${channels[i]} Mean`, key: `channel${i}Mean` });
+      headers.push({
+        label: `${channels[i]} Median`,
+        key: `channel${i}Median`,
+      });
+    }
+    setHeaderForCSV(headers);
+  };
   const downloadCSV = () => {
     let workspaceState = getWorkspace().workspaceState;
     // @ts-ignore
@@ -296,32 +314,136 @@ const WorkspaceTopBarComponent = ({
       true
     );
 
+    const channels =
+      copyOfFiles.length > 0
+        ? copyOfFiles[0]?.channels.map((element: any) => element?.label)
+        : [];
+    const obj: any = {};
+    for (let i = 0; i < channels.length; i++) {
+      obj[channels[i]] = [];
+    }
+
     enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
     const csvData = [];
+    const eventsSeparatedByChannels: any = {};
+    for (let i = 0; i < enrichedFiles.length; i++) {
+      eventsSeparatedByChannels[enrichedFiles[i].fileId] = {};
+    }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      const channelsObj: any = {};
+      for (let i = 0; i < channels.length; i++) {
+        channelsObj[channels[i]] = {
+          array: [],
+          sum: 0,
+          mean: 0,
+          median: 0,
+        };
+      }
+      channelsObj.percentage = 0;
+      channelsObj.gateName = "";
+      channelsObj.xChannel = "";
+      channelsObj.gateName = "";
       for (
         let statsIndex = 0;
         statsIndex < enrichedFiles[fileIndex].gateStats.length;
         statsIndex++
       ) {
         if (enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage) {
-          const stat = {
-            fileName: enrichedFiles[fileIndex]?.label,
-            gateName: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.gateName,
-            percentage:
-              enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage,
-            xMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanX,
-            yMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanY,
-            xMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianX,
-            yMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianY,
-            xChannel: enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel,
-            yChannel: enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel,
-          };
+          const events =
+            enrichedFiles[fileIndex]?.gateStats[statsIndex]?.eventsInsideGate;
+          channelsObj.percentage =
+            enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage;
+          channelsObj.gateName =
+            enrichedFiles[fileIndex]?.gateStats[statsIndex]?.gateName;
+          channelsObj.xChannel =
+            enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel;
+          channelsObj.yChannel =
+            enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel;
+          for (
+            let eventsIndex = 0;
+            eventsIndex < events.length;
+            eventsIndex++
+          ) {
+            for (
+              let channelIndex = 0;
+              channelIndex < events[eventsIndex].length;
+              channelIndex++
+            ) {
+              channelsObj[channels[channelIndex]].array.push(
+                events[eventsIndex][channelIndex]
+              );
+              channelsObj[channels[channelIndex]].sum +=
+                events[eventsIndex][channelIndex];
+              channelsObj[channels[channelIndex]].percentage =
+                enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage;
+            }
+          }
 
-          csvData.push(stat);
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId] =
+            channelsObj;
         }
       }
+    }
+
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      for (
+        let channelIndex = 0;
+        channelIndex < channels.length;
+        channelIndex++
+      ) {
+        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+          channels[channelIndex]
+        ].mean = (
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+            channels[channelIndex]
+          ].sum /
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+            channels[channelIndex]
+          ].array.length
+        ).toFixed(2);
+
+        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+          channels[channelIndex]
+        ].median = getMedian(
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+            channels[channelIndex]
+          ].array
+        );
+      }
+    }
+
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      const stats: any = {
+        fileName: enrichedFiles[fileIndex]?.label,
+        gateName:
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.gateName,
+        percentage:
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]
+            ?.percentage,
+        xChannel:
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.xChannel,
+        yChannel:
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.yChannel,
+      };
+      for (
+        let channelIndex = 0;
+        channelIndex < channels.length;
+        channelIndex++
+      ) {
+        const median = `channel${channelIndex}Median`;
+        const mean = `channel${channelIndex}Mean`;
+        stats[median] =
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+            channels[channelIndex]
+          ].median;
+
+        stats[mean] =
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+            channels[channelIndex]
+          ].mean;
+      }
+      csvData.push(stats);
     }
     setData(csvData);
   };
@@ -403,7 +525,7 @@ const WorkspaceTopBarComponent = ({
                   }}
                 >
                   <CSVLink
-                    headers={headers}
+                    headers={heeaderForCSV}
                     data={data}
                     filename="WorkspaceReport.csv"
                     className={classes.downloadBtnLayout}

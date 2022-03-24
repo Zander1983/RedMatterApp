@@ -31,12 +31,7 @@ export const superAlgorithm = (
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
-    // For Mean
-    let sumOfPointX = 0;
-    let sumOfPointY = 0;
-    // For Median
-    let xPointsInsideGate = [];
-    let yPointsInsideGate = [];
+    let eventsInsideGate = [];
 
     for (
       let eventIndex = 0;
@@ -125,12 +120,7 @@ export const superAlgorithm = (
 
           if (isInGate) {
             if (calculateMedianAndMean) {
-              // Mean
-              sumOfPointX += pointX;
-              sumOfPointY += pointY;
-              // Median
-              xPointsInsideGate.push(pointX);
-              yPointsInsideGate.push(pointY);
+              eventsInsideGate.push(event.filter(Number));
             }
 
             event["color"] = gate["color"];
@@ -164,22 +154,11 @@ export const superAlgorithm = (
       ).toFixed(2);
 
       if (calculateMedianAndMean) {
-        // Mean Calculation
-        let meanX = (sumOfPointX / gateStatsObj[gateKey]).toFixed(2);
-        let meanY = (sumOfPointY / gateStatsObj[gateKey]).toFixed(2);
-
-        // Median Calculation
-        let medianX = getMedian(xPointsInsideGate);
-        let medianY = getMedian(yPointsInsideGate);
-
         gateStats.push({
           gateName: gateName,
           count: gateStatsObj[gateKey],
           percentage: percentage,
-          meanX: meanX,
-          meanY: meanY,
-          medianX: medianX,
-          medianY: medianY,
+          eventsInsideGate: eventsInsideGate,
         });
       } else {
         gateStats.push({
@@ -192,7 +171,6 @@ export const superAlgorithm = (
 
     Files[fileIndex].gateStats = gateStats;
   }
-
   return Files;
 };
 
