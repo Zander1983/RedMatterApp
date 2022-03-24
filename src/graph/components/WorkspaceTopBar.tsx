@@ -135,6 +135,8 @@ const WorkspaceTopBarComponent = ({
   const headers = [
     { label: "File Name", key: "fileName" },
     { label: "Gate Name", key: "gateName" },
+    { label: "X Channel", key: "xChannel" },
+    { label: "Y Channel", key: "yChannel" },
     { label: "Percentage", key: "percentage" },
     { label: "X Mean", key: "xMean" },
     { label: "Y Mean", key: "yMean" },
@@ -313,6 +315,8 @@ const WorkspaceTopBarComponent = ({
             yMean: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.meanY,
             xMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianX,
             yMedian: enrichedFiles[fileIndex]?.gateStats[statsIndex]?.medianY,
+            xChannel: enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel,
+            yChannel: enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel,
           };
 
           csvData.push(stat);
