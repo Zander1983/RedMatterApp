@@ -237,10 +237,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
     // set new gate to redux
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 5);
+    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 10);
 
     //set state
     this.setState({
@@ -283,9 +282,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     // set new gate to redux
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 5);
+    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 10);
 
     //set state
     this.setState({
@@ -325,8 +322,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
       JSON.parse(JSON.stringify(change.plot));
 
-      console.log("Plots: ", (newWorkspaceState as any).files[fileKey].plots);
-
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
@@ -334,10 +329,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     //WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    setTimeout(() => {
-        WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-        }, 5);
-      this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState, isTableRenderCall:true});
+    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 10);
+
+    this.setState({enrichedFiles: enrichedFiles, workspaceState: newWorkspaceState, isTableRenderCall:true});
   };
 
   onResetToControl = (fileId: string) => {
@@ -443,9 +437,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
     enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 5);
+    setTimeout(() => {WorkspaceDispatch.SetPlotStates(newWorkspaceState);}, 10);
 
     this.setState({
       workspaceState: newWorkspaceState,
