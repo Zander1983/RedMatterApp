@@ -21,6 +21,7 @@ import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../../mark-app/Helper";
+import DialogContent from "@material-ui/core/DialogContent/DialogContent";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -66,8 +67,10 @@ const AddFileModal = React.memo(
   (props: {
     open: boolean;
     closeCall: { f: Function; ref: Function};
+    onPipeline?: { save: Function}
     isShared: boolean;
     experimentId: string;
+    pipelineId?: string,
     files: File[];
     selectedFile: string;
   }): JSX.Element => {
@@ -79,7 +82,11 @@ const AddFileModal = React.memo(
 
     const [downloading, setDowloading] = useState<FileID[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
+    const [errorMessage, setErrorMessage] = useState("This Field Is Required");
     const eventStacker = useGAEventTrackers("Plot Added.");
+
+    const [nameError, setNameError] = React.useState(false);
+    const [name, setName] = React.useState("");
 
     const downloadFile = async (fileId: string) => {
       let file: File = getFile(fileId);
@@ -117,6 +124,69 @@ const AddFileModal = React.memo(
       "name"
     );
 
+    const onSetControl = (FileId:any, isDownloading = false) => {
+     // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
+      if(name?.length === 0){
+        setErrorMessage("Name is Required");
+        setNameError(true)
+      }else if(name?.length <= 8 || name?.length >= 20){
+        setErrorMessage("Name must be equal 8 to 20 char");
+        setNameError(true)
+      } else {
+          let isSavePermitted = true;
+          if(getWorkspace()?.pipelines?.length > 1){
+              const isHasIndex = getWorkspace()?.pipelines?.findIndex(pipeline => pipeline?.name?.toLowerCase() === name.toLowerCase());
+              if(isHasIndex > -1){
+                  setErrorMessage("Duplicate name not allowed.");
+                  setNameError(true);
+                  isSavePermitted = false;
+              }
+          }
+          if(isSavePermitted){
+              setNameError(false);
+              setErrorMessage("This Field Is Required");
+              setName("");
+              props.onPipeline.save(name, FileId);
+          }
+      }
+        // PlotResource.createNewPlotFromFile(
+        //   getFile(fileMetadata.id)
+        // );
+      //   let selectedFile = null;
+      //   if (isDownloading) {
+      //     selectedFile = getWorkspace()?.files?.filter(file => file.id === FileId)[0];
+      //   } else {
+      //     // making the selected file the first element of filesArray
+      //     const filesInNewOrder: File[] = [];
+      //
+      //     for (let i = 0; i < files.length; i++) {
+      //       if (files[i].id === FileId) {
+      //         files[i].view = false;
+      //         selectedFile = files[i];
+      //         filesInNewOrder.unshift(files[i]);
+      //       } else {
+      //         filesInNewOrder.push(files[i]);
+      //       }
+      //     }
+      //     WorkspaceDispatch.SetFiles(filesInNewOrder);
+      //   }
+      //
+      //   // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
+      //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
+      //   console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
+      //   console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
+      //   const plotState = createDefaultPlotSnapShot(FileId, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, props.pipelineId, name);
+      //
+      //   WorkspaceDispatch.UpdatePlotStates(plotState);
+      //   WorkspaceDispatch.UpdateSelectedFile(FileId);
+      //   WorkspaceDispatch.UpdatePipelineId(props.pipelineId);
+      //
+      //   setTimeout(() => {
+      //     props.closeCall.f(props.closeCall.ref);
+      //   }, 10);
+      // }
+    };
+
     return (
       <Modal
         open={props.open}
@@ -132,8 +202,7 @@ const AddFileModal = React.memo(
               color: "#777",
               fontSize: 15,
               textAlign: "center",
-            }}
-          >
+            }}>
             Load and use your Flow Analysis files.
           </p>
 
@@ -162,6 +231,24 @@ const AddFileModal = React.memo(
                 Plot all samples
               </Button>
             </Grid> */}
+            <Grid item xs={12}>
+              <div>
+                <TextField
+                    style={{ width: "100%" }}
+                    error={nameError}
+                    value={name}
+                    helperText={errorMessage}
+                    autoFocus
+                    margin="dense"
+                    id="gate-name-textinput"
+                    label="Enter new pipe line name"
+                    type="text"
+                    onChange={(e: any) => {
+                      setName(e.target.value);
+                    }}
+                />
+              </div>
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 style={{ width: "100%" }}
@@ -368,25 +455,7 @@ const AddFileModal = React.memo(
                               marginLeft: 20,
                             }}
                             disabled={isDownloading}
-                            onClick={() => {
-                              // eventStacker(
-                              //   `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
-                              // );
-                              // downloadFile(fileMetadata.id);
-                              // @ts-ignore
-                              const defaultFile = getWorkspace()?.files?.filter(file => file.id === fileMetadata.id)[0];
-
-                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
-
-                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-
-                              WorkspaceDispatch.UpdatePlotStates(plotState);
-                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
-
-                              setTimeout(() => {
-                                props.closeCall.f(props.closeCall.ref);
-                              }, 10);
-                            }}>
+                            onClick={() => onSetControl(fileMetadata.id, isDownloading)}>
                             {isDownloading ? (
                               <CircularProgress
                                 style={{
@@ -410,42 +479,7 @@ const AddFileModal = React.memo(
                               fontSize: 13,
                               marginLeft: 20,
                             }}
-                            onClick={() => {
-                              eventStacker(
-                                `A plot added on experimentID: ${props.experimentId} from file ${fileMetadata.name}.`
-                              );
-                              // PlotResource.createNewPlotFromFile(
-                              //   getFile(fileMetadata.id)
-                              // );
-
-                              // making the selected file the first element of filesArray
-                              const filesInNewOrder: File[] = [];
-                              let selectedFile = null;
-                              for (let i = 0; i < files.length; i++) {
-                                if (files[i].id === fileMetadata.id) {
-                                  files[i].view = false;
-                                  selectedFile = files[i];
-                                  filesInNewOrder.unshift(files[i]);
-                                } else {
-                                  filesInNewOrder.push(files[i]);
-                                }
-                              }
-                              WorkspaceDispatch.SetFiles(filesInNewOrder);
-
-                              // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
-
-                              const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
-                                console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
-                                console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-                              const plotState = createDefaultPlotSnapShot(fileMetadata.id, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-
-                              WorkspaceDispatch.UpdatePlotStates(plotState);
-                              WorkspaceDispatch.UpdateSelectedFile(fileMetadata.id);
-
-                              setTimeout(() => {
-                                props.closeCall.f(props.closeCall.ref);
-                              }, 10);
-                            }}
+                            onClick={() => onSetControl(fileMetadata.id, isDownloaded)}
                             disabled={isDownloading}>
                             {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"

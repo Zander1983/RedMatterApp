@@ -97,9 +97,8 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] = React.useState<
-    boolean
-  >(false);
+  const [renderPlotController, setRenderPlotController] =
+    React.useState<boolean>(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;

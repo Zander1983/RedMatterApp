@@ -69,6 +69,7 @@ export const getPointOnCanvas = (
   logicles
 ) => {
   if (plot.xScaleType === "bi") {
+    //console.log(">>> logicles[plot.xAxisIndex] is ", logicles[plot.xAxisIndex]);
     const logicle = logicles[plot.xAxisIndex];
     realXValue = logicle.scale(realXValue);
     realXValue = Math.floor(realXValue * plot.width);

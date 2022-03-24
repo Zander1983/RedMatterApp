@@ -12,7 +12,11 @@ const DEFAULT_X_SCALE_TYPE = "lin";
 const DEFAULT_Y_SCALE_TYPE = "lin";
 const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
-export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
+export const superAlgorithm = (
+  OriginalFiles,
+  OriginalWorkspaceState,
+  calculateMedianAndMean = false
+) => {
   // event 1 is not in any gate, it will have color black
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
@@ -20,13 +24,37 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
 
-  // TODO logicle here needs to be got correctly
-  let logicle = new MarkLogicle(0, 262144);
   let controlFileId = WorkspaceState.controlFileId;
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
+    let eventsInsideGate = [];
+
+    let plots = WorkspaceState.files[file.id]
+      ? WorkspaceState.files[file.id].plots
+      : WorkspaceState.files[controlFileId].plots;
+
+    plots.forEach((plot) => {
+      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+        console.log(
+          "plot.gate.xAxisOriginalRanges[0] is ",
+          plot.gate.xAxisOriginalRanges[0]
+        );
+        let xLogicle = new MarkLogicle(
+          plot.gate.xAxisOriginalRanges[0],
+          plot.gate.xAxisOriginalRanges[1]
+        );
+        plot.gate.xLogicle = xLogicle;
+      }
+      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+        let yLogicle = new MarkLogicle(
+          plot.gate.yAxisOriginalRanges[0],
+          plot.gate.yAxisOriginalRanges[1]
+        );
+        plot.gate.yLogicle = yLogicle;
+      }
+    });
 
     for (
       let eventIndex = 0;
@@ -36,20 +64,16 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
       let event = Files[fileIndex].events[eventIndex];
 
       // if the file has its own plots, use that, otherwise use control file plots
-      let plots = WorkspaceState.files[file.id]
-        ? WorkspaceState.files[file.id].plots
-        : WorkspaceState.files[controlFileId].plots;
 
       for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
         let isInGate;
         let plot = plots[plotIndex];
+        let gate = plot.gate;
         if (!event["color"]) {
           event["color"] = "#000";
         }
 
-        if (plot.gate) {
-          let gate = plot.gate;
-
+        if (gate) {
           let pointX = event[gate["xAxisIndex"]];
           let pointY = event[gate["yAxisIndex"]];
           let tranformedPoints = [];
@@ -58,19 +82,17 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           // same for the event point
           // a gate can be created on a linear scale on 1 axis, and logicle on the other
           if (gate["xScaleType"] === "bi") {
-            pointX = logicle.scale(pointX);
-            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
-            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+            pointX = gate.xLogicle.scale(pointX);
 
             if (gate.gateType == "polygon") {
               tranformedPoints = gate.points.map((point) => {
-                return [logicle.scale(point[0]), point[1]];
+                return [gate.xLogicle.scale(point[0]), point[1]];
               });
             } else {
               // so histogram
               tranformedPoints = [
-                logicle.scale(gate.points[0]),
-                logicle.scale(gate.points[1]),
+                gate.xLogicle.scale(gate.points[0]),
+                gate.xLogicle.scale(gate.points[1]),
               ];
             }
           } else {
@@ -84,17 +106,19 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           }
 
           if (gate["yScaleType"] === "bi") {
-            pointY = logicle.scale(pointY);
+            pointY = gate.yLogicle.scale(pointY);
             // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
             // either way this inefficient here - the logicle transform of the gate point needs only to be done once
             tranformedPoints = tranformedPoints.map((point) => {
-              return [point[0], logicle.scale(point[1])];
+              return [point[0], gate.yLogicle.scale(point[1])];
             });
           }
 
-          tranformedPoints = tranformedPoints.map((point) => {
-            return { x: point[0], y: point[1] };
-          });
+          if (gate.gateType == "polygon") {
+            tranformedPoints = tranformedPoints.map((point) => {
+              return { x: point[0], y: point[1] };
+            });
+          }
 
           if (gate.gateType == "polygon") {
             isInGate = pointInsidePolygon(
@@ -114,6 +138,10 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           }
 
           if (isInGate) {
+            if (calculateMedianAndMean) {
+              eventsInsideGate.push(event.filter(Number));
+            }
+
             event["color"] = gate["color"];
             event["isInGate" + gate.name] = true;
             !gateStatsObj[gate.name + "_count"]
@@ -144,17 +172,37 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
         Files[fileIndex].events.length
       ).toFixed(2);
 
-      gateStats.push({
-        gateName: gateName,
-        count: gateStatsObj[gateKey],
-        percentage: percentage,
-      });
+      if (calculateMedianAndMean) {
+        gateStats.push({
+          gateName: gateName,
+          count: gateStatsObj[gateKey],
+          percentage: percentage,
+          eventsInsideGate: eventsInsideGate,
+        });
+      } else {
+        gateStats.push({
+          gateName: gateName,
+          count: gateStatsObj[gateKey],
+          percentage: percentage,
+        });
+      }
     });
 
     Files[fileIndex].gateStats = gateStats;
   }
-
   return Files;
+};
+
+export const getMedian = (values) => {
+  values.sort(function (a, b) {
+    return a - b;
+  });
+  let half = Math.floor(values.length / 2);
+
+  if (values.length % 2) {
+    return values[half];
+  }
+  return (values[half - 1] + values[half]) / 2.0;
 };
 
 export function isPointInPolygon(latitude, longitude, polygon) {
@@ -259,11 +307,11 @@ export const pointInsidePolygon = ({ x, y }, polygon) => {
 };
 
 let isInHistGate = (gateStartPoint, gateEndpoint, value) => {
-  if (value < gateStartPoint || value > gateEndpoint) {
-    return false;
+  if (value > gateStartPoint && value < gateEndpoint) {
+    return true;
   }
 
-  return true;
+  return false;
 };
 
 export const graphLine = (params, ctx) => {
@@ -440,6 +488,43 @@ export const graphLine = (params, ctx) => {
   }
 };
 
+export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
+  return enrichedFiles.map((file) => {
+    let logicles = file.channels.map((channel) => {
+      return new MarkLogicle(
+        channel.biexponentialMinimum,
+        channel.biexponentialMaximum
+      );
+    });
+
+    let channels = file.channels.map((channel) => {
+      return {
+        minimum: channel.biexponentialMinimum,
+        maximum: channel.biexponentialMaximum,
+        name: channel.value,
+        defaultScale: channel.display,
+      };
+    });
+
+    let controlFileId = workspaceState.controlFileId;
+
+    let plots = workspaceState.files[file.id]
+      ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
+      : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
+
+    return {
+      enrichedEvents: file.events,
+      channels: channels,
+      logicles: logicles,
+      gateStats: file.gateStats,
+      plots: plots,
+      fileId: file.id,
+      isControlFile: file.id == controlFileId ? 1 : 0,
+      label: file.label,
+    };
+  });
+};
+
 export const getPlotChannelAndPosition = (file) => {
   const defaultFileChannels = file?.channels;
 
@@ -506,11 +591,15 @@ export const createDefaultPlotSnapShot = (
   yAxisLabel = DEFAULT_Y_AXIS_LABEL,
   xAxisIndex = 0,
   yAxisIndex = 1,
+  pipelineId = "",
+  name = "",
   plotType = DEFAULT_PLOT_TYPE
 ) => {
   return {
     experimentId: experimentId,
     controlFileId: fileId,
+    pipelineId: pipelineId,
+    name:name,
     files: {
       [fileId]: {
         plots: [

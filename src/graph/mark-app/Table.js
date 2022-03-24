@@ -69,7 +69,7 @@ function Table(props) {
                   {(() => {
                     if (plot?.plotType === "scatter") {
                       return (
-                        <Plot
+                        <Plot name="control-file"
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
@@ -206,13 +206,27 @@ function Table(props) {
                       >
                         <p>
                           {plot.population != "All"
-                            ? `${enrichedFile.gateStats
-                                .filter((gateStat) => {
-                                  return gateStat.gateName == plot.population;
-                                })
-                                .map((gateStat) => {
-                                  return gateStat && gateStat.percentage;
-                                })}%`
+                            ? `${
+                                enrichedFile.gateStats
+                                  .filter((gateStat) => {
+                                    return (
+                                      gateStat.gateName === plot.population
+                                    );
+                                  })
+                                  .map((gateStat) => {
+                                    return gateStat && gateStat.percentage;
+                                  }).length === 0
+                                  ? "0.00"
+                                  : enrichedFile.gateStats
+                                      .filter((gateStat) => {
+                                        return (
+                                          gateStat.gateName === plot.population
+                                        );
+                                      })
+                                      .map((gateStat) => {
+                                        return gateStat && gateStat.percentage;
+                                      })
+                              }%`
                             : enrichedFile.label}
                         </p>
 
@@ -235,7 +249,7 @@ function Table(props) {
                       {(() => {
                         if (plot.plotType === "scatter") {
                           return (
-                            <Plot
+                            <Plot name="non-control-file"
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
                               enrichedFile={enrichedFile}
