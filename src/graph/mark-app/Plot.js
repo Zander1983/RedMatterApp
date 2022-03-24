@@ -73,6 +73,7 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
+
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -262,13 +263,15 @@ function Plot(props) {
       }
     });
 
-    let change = {
-      type: "AddGate",
-      plot: plot,
-      plotIndex: plotIndex,
-      points: points,
-      gateName: gateName.name,
-    };
+    let xRange = [
+      props.enrichedFile.channels[plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[plot.xAxisIndex].maximum,
+    ];
+
+    let yRange = [
+      props.enrichedFile.channels[plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[plot.yAxisIndex].maximum,
+    ];
 
     let gate = {
       color: gateColor,
@@ -282,12 +285,19 @@ function Plot(props) {
       yScaleType: plot.yScaleType,
       xAxisIndex: plot.xAxisIndex,
       yAxisIndex: plot.yAxisIndex,
-      xAxisOriginalRanges: [0, 262144],
-      yAxisOriginalRanges: [0, 262144],
+      xAxisOriginalRanges: xRange,
+      yAxisOriginalRanges: yRange,
       parent: plot.population,
     };
 
     plot.gate = gate;
+
+    let change = {
+      type: "AddGate",
+      plot: plot,
+      plotIndex: plotIndex,
+      gateName: gateName.name,
+    };
 
     props.onAddGate(change);
   };
@@ -593,7 +603,6 @@ function Plot(props) {
         type: "EditGate",
         plot: localPlot,
         plotIndex: props.plotIndex.split("-")[1],
-        points: JSON.parse(JSON.stringify(localPlot.gate.points)),
         fileId: props.enrichedFile.fileId,
       };
 
@@ -717,6 +726,19 @@ function Plot(props) {
             return [newGateValueRealX, newGateValueRealY];
           }
         });
+
+        let xRange = [
+          props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+          props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        ];
+
+        let yRange = [
+          props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+          props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+        ];
+
+        localPlot.gate.xAxisOriginalRanges = xRange;
+        localPlot.gate.yAxisOriginalRanges = yRange;
 
         setLocalPlot({
           ...localPlot,
@@ -873,8 +895,12 @@ function Plot(props) {
           handleResizeMouseDown={handleResizeMouseDown}
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
+          downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              id={`entire-canvas-${props.plotIndex}`}
+              style={{ display: "flex", flexDirection: "column" }}
+            >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas

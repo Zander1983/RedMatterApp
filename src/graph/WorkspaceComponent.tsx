@@ -141,9 +141,8 @@ const WorkspaceInnerComponent = (props: {
   const [workspaceLoading, setWorkspaceLoading] = React.useState(false);
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [generateReportModalOpen, setGenerateReportModalOpen] = React.useState(
-    false
-  );
+  const [generateReportModalOpen, setGenerateReportModalOpen] =
+    React.useState(false);
   const [loadModal, setLoadModal] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
   const [editWorkspace, setEditWorkspace] = React.useState(

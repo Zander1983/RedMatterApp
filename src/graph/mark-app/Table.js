@@ -69,7 +69,7 @@ function Table(props) {
                   {(() => {
                     if (plot?.plotType === "scatter") {
                       return (
-                        <Plot
+                        <Plot name="control-file"
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
@@ -79,6 +79,7 @@ function Table(props) {
                           onResize={props.onResize}
                           onChangeChannel={props.onChangeChannel}
                           plotIndex={`0-${plotIindex}`}
+                          downloadPlotAsImage={props.downloadPlotAsImage}
                           testParam={props.testParam}
                         />
                       );
@@ -93,6 +94,7 @@ function Table(props) {
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
                           plotIndex={`0-${plotIindex}`}
+                          downloadPlotAsImage={props.downloadPlotAsImage}
                         />
                       );
                     }
@@ -204,13 +206,27 @@ function Table(props) {
                       >
                         <p>
                           {plot.population != "All"
-                            ? `${enrichedFile.gateStats
-                                .filter((gateStat) => {
-                                  return gateStat.gateName == plot.population;
-                                })
-                                .map((gateStat) => {
-                                  return gateStat && gateStat.percentage;
-                                })}%`
+                            ? `${
+                                enrichedFile.gateStats
+                                  .filter((gateStat) => {
+                                    return (
+                                      gateStat.gateName === plot.population
+                                    );
+                                  })
+                                  .map((gateStat) => {
+                                    return gateStat && gateStat.percentage;
+                                  }).length === 0
+                                  ? "0.00"
+                                  : enrichedFile.gateStats
+                                      .filter((gateStat) => {
+                                        return (
+                                          gateStat.gateName === plot.population
+                                        );
+                                      })
+                                      .map((gateStat) => {
+                                        return gateStat && gateStat.percentage;
+                                      })
+                              }%`
                             : enrichedFile.label}
                         </p>
 
@@ -233,7 +249,7 @@ function Table(props) {
                       {(() => {
                         if (plot.plotType === "scatter") {
                           return (
-                            <Plot
+                            <Plot name="non-control-file"
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
                               enrichedFile={enrichedFile}
@@ -243,6 +259,7 @@ function Table(props) {
                               onChangeChannel={props.onChangeChannel}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                               testParam={props.testParam}
+                              downloadPlotAsImage={props.downloadPlotAsImage}
                             />
                           );
                         } else if (plot.plotType === "histogram") {
@@ -256,6 +273,7 @@ function Table(props) {
                               onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                              downloadPlotAsImage={props.downloadPlotAsImage}
                             />
                           );
                         }
