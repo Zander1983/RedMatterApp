@@ -261,6 +261,16 @@ function Plot(props) {
       }
     });
 
+    let xRange = [
+      props.enrichedFile.channels[plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[plot.xAxisIndex].maximum,
+    ];
+
+    let yRange = [
+      props.enrichedFile.channels[plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[plot.yAxisIndex].maximum,
+    ];
+
     let gate = {
       color: gateColor,
       gateType: "polygon",
@@ -273,8 +283,8 @@ function Plot(props) {
       yScaleType: plot.yScaleType,
       xAxisIndex: plot.xAxisIndex,
       yAxisIndex: plot.yAxisIndex,
-      xAxisOriginalRanges: [0, 262144],
-      yAxisOriginalRanges: [0, 262144],
+      xAxisOriginalRanges: xRange,
+      yAxisOriginalRanges: yRange,
       parent: plot.population,
     };
 
@@ -711,6 +721,19 @@ function Plot(props) {
             return [newGateValueRealX, newGateValueRealY];
           }
         });
+
+        let xRange = [
+          props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+          props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        ];
+
+        let yRange = [
+          props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+          props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+        ];
+
+        localPlot.gate.xAxisOriginalRanges = xRange;
+        localPlot.gate.yAxisOriginalRanges = yRange;
 
         setLocalPlot({
           ...localPlot,

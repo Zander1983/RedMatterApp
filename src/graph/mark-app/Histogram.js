@@ -496,6 +496,17 @@ function Histogram(props) {
 
     let points =
       endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
+
+    let xRange = [
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+    ];
+
+    let yRange = [
+      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+    ];
+
     let gate = {
       color: gateColor,
       gateType: "histogram",
@@ -505,6 +516,8 @@ function Histogram(props) {
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
       parent: props.plot.population,
+      xAxisOriginalRanges: xRange,
+      yAxisOriginalRanges: yRange,
     };
 
     let plot = JSON.parse(JSON.stringify(props.plot));
@@ -538,9 +551,20 @@ function Histogram(props) {
       endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
 
     let plot = JSON.parse(JSON.stringify(props.plot));
-    plot.gate.points = points;
 
-    console.log("in onEditGate is plot.gate.points ", plot.gate.points);
+    let xRange = [
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+    ];
+
+    let yRange = [
+      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+    ];
+
+    plot.gate.points = points;
+    plot.gate.xAxisOriginalRanges = xRange;
+    plot.gate.yAxisOriginalRanges = yRange;
 
     let change = {
       type: "EditGate",

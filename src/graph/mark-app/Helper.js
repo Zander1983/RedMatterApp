@@ -20,13 +20,36 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
 
-  // TODO logicle here needs to be got correctly
-  let logicle = new MarkLogicle(0, 262144);
   let controlFileId = WorkspaceState.controlFileId;
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
+
+    let plots = WorkspaceState.files[file.id]
+      ? WorkspaceState.files[file.id].plots
+      : WorkspaceState.files[controlFileId].plots;
+
+    plots.forEach((plot) => {
+      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+        console.log(
+          "plot.gate.xAxisOriginalRanges[0] is ",
+          plot.gate.xAxisOriginalRanges[0]
+        );
+        let xLogicle = new MarkLogicle(
+          plot.gate.xAxisOriginalRanges[0],
+          plot.gate.xAxisOriginalRanges[1]
+        );
+        plot.gate.xLogicle = xLogicle;
+      }
+      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+        let yLogicle = new MarkLogicle(
+          plot.gate.yAxisOriginalRanges[0],
+          plot.gate.yAxisOriginalRanges[1]
+        );
+        plot.gate.yLogicle = yLogicle;
+      }
+    });
 
     for (
       let eventIndex = 0;
@@ -36,20 +59,16 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
       let event = Files[fileIndex].events[eventIndex];
 
       // if the file has its own plots, use that, otherwise use control file plots
-      let plots = WorkspaceState.files[file.id]
-        ? WorkspaceState.files[file.id].plots
-        : WorkspaceState.files[controlFileId].plots;
 
       for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
         let isInGate;
         let plot = plots[plotIndex];
+        let gate = plot.gate;
         if (!event["color"]) {
           event["color"] = "#000";
         }
 
-        if (plot.gate) {
-          let gate = plot.gate;
-
+        if (gate) {
           let pointX = event[gate["xAxisIndex"]];
           let pointY = event[gate["yAxisIndex"]];
           let tranformedPoints = [];
@@ -58,19 +77,17 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           // same for the event point
           // a gate can be created on a linear scale on 1 axis, and logicle on the other
           if (gate["xScaleType"] === "bi") {
-            pointX = logicle.scale(pointX);
-            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
-            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+            pointX = gate.xLogicle.scale(pointX);
 
             if (gate.gateType == "polygon") {
               tranformedPoints = gate.points.map((point) => {
-                return [logicle.scale(point[0]), point[1]];
+                return [gate.xLogicle.scale(point[0]), point[1]];
               });
             } else {
               // so histogram
               tranformedPoints = [
-                logicle.scale(gate.points[0]),
-                logicle.scale(gate.points[1]),
+                gate.xLogicle.scale(gate.points[0]),
+                gate.xLogicle.scale(gate.points[1]),
               ];
             }
           } else {
@@ -84,11 +101,11 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
           }
 
           if (gate["yScaleType"] === "bi") {
-            pointY = logicle.scale(pointY);
+            pointY = gate.yLogicle.scale(pointY);
             // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
             // either way this inefficient here - the logicle transform of the gate point needs only to be done once
             tranformedPoints = tranformedPoints.map((point) => {
-              return [point[0], logicle.scale(point[1])];
+              return [point[0], gate.yLogicle.scale(point[1])];
             });
           }
 
