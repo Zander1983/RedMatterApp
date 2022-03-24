@@ -15,6 +15,7 @@ import { drawText, getAxisLabels, getBins } from "./Helper";
 import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
+let dragPointIndex = false;
 
 const hasGate = (plot) => {
   return !!plot.gate;
@@ -177,12 +178,6 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 
 function Histogram(props) {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  console.log(
-    "histogram props.plotIndex is ",
-    props.plotIndex,
-    " and props is ",
-    props
-  );
 
   let [startCanvasPoint, setStartCanvasPoint] = useState(null);
   let [endCanvasPoint, setEndCanvasPoint] = useState(null);
@@ -210,12 +205,19 @@ function Histogram(props) {
   }, [startCanvasPoint, endCanvasPoint]);
 
   useEffect(() => {
+    console.log(
+      "in useEffect and plotIndex is ",
+      props.plotIndex,
+      " and props.plot is ",
+      props.plot
+    );
+
     //setLocalPlot(props.plot);
     let context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, props.plot.width, props.plot.height);
     context.fillStyle = "white";
 
-    let color = "#000";
+    let color = props.plot.color || "#000";
 
     let data = props.enrichedFile.enrichedEvents.flatMap(
       (enrichedEvent, index) => {
@@ -223,9 +225,6 @@ function Histogram(props) {
           props.plot.population == "All" ||
           enrichedEvent["isInGate" + props.plot.population]
         ) {
-          // TODO no need to keep setting the color like this
-          color = enrichedEvent["color"];
-
           if (props.plot.xScaleType == "lin") {
             return enrichedEvent[props.plot.xAxisIndex];
           } else {
@@ -488,19 +487,21 @@ function Histogram(props) {
       props.plot,
       [startCanvasPoint, null],
       props.enrichedFile.logicles
-    );
+    )[0];
     let endPoint = getRealPointFromCanvasPoints(
       props.enrichedFile.channels,
       props.plot,
       [endCanvasPoint, null],
       props.enrichedFile.logicles
-    );
+    )[0];
 
+    let points =
+      endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
     let gate = {
       color: gateColor,
       gateType: "histogram",
       name: gateName.name,
-      points: [startPoint[0], endPoint[0]],
+      points: points,
       xAxisLabel: props.plot.xAxisIndex,
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
@@ -513,35 +514,63 @@ function Histogram(props) {
     let change = {
       type: "AddGate",
       plot: plot,
-      plotIndex: props.plotIndex,
+      plotIndex: props.plotIndex.split("-")[1],
+      fileId: props.enrichedFile.fileId,
     };
 
     props.onAddGate(change);
   };
 
+  const onEditGate = () => {
+    let startPoint = getRealPointFromCanvasPoints(
+      props.enrichedFile.channels,
+      props.plot,
+      [startCanvasPoint, null],
+      props.enrichedFile.logicles
+    )[0];
+    let endPoint = getRealPointFromCanvasPoints(
+      props.enrichedFile.channels,
+      props.plot,
+      [endCanvasPoint, null],
+      props.enrichedFile.logicles
+    )[0];
+
+    let points =
+      endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
+
+    let plot = JSON.parse(JSON.stringify(props.plot));
+    plot.gate.points = points;
+
+    console.log("in onEditGate is plot.gate.points ", plot.gate.points);
+
+    let change = {
+      type: "EditGate",
+      plot: plot,
+      plotIndex: props.plotIndex.split("-")[1],
+      fileId: props.enrichedFile.fileId,
+    };
+
+    props.onEditGate(change);
+  };
+
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
-
     if (!hasGate(props.plot)) {
       // draw histogram gate only if it is selected file
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
         setStartCanvasPoint(event.offsetX);
     } else {
     }
+
   };
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
     if (hasGate(props.plot)) {
-      // let change = {
-      //   type: "EditGate",
-      //   plot: props.plot,
-      //   plotIndex: props.plotIndex.split("-")[1],
-      //   points: JSON.parse(JSON.stringify(props.plot.gate.points)),
-      //   fileId: props.enrichedFile.fileId,
-      // };
-      //props.onEditGate(change);
+      onEditGate();
+      setStartCanvasPoint(null);
+      setEndCanvasPoint(null);
     } else {
       // draw histogram gate only if it is selected file
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
@@ -574,8 +603,6 @@ function Histogram(props) {
 
   const handleMouseMove = (event) => {
     if (isMouseDown) {
-      //let endCanvasPoint = event.offsetX;
-
       setEndCanvasPoint(event.offsetX);
     }
   };

@@ -92,9 +92,11 @@ export const superAlgorithm = (OriginalFiles, OriginalWorkspaceState) => {
             });
           }
 
-          tranformedPoints = tranformedPoints.map((point) => {
-            return { x: point[0], y: point[1] };
-          });
+          if (gate.gateType == "polygon") {
+            tranformedPoints = tranformedPoints.map((point) => {
+              return { x: point[0], y: point[1] };
+            });
+          }
 
           if (gate.gateType == "polygon") {
             isInGate = pointInsidePolygon(
@@ -259,11 +261,11 @@ export const pointInsidePolygon = ({ x, y }, polygon) => {
 };
 
 let isInHistGate = (gateStartPoint, gateEndpoint, value) => {
-  if (value < gateStartPoint || value > gateEndpoint) {
-    return false;
+  if (value > gateStartPoint && value < gateEndpoint) {
+    return true;
   }
 
-  return true;
+  return false;
 };
 
 export const graphLine = (params, ctx) => {
@@ -506,11 +508,15 @@ export const createDefaultPlotSnapShot = (
   yAxisLabel = DEFAULT_Y_AXIS_LABEL,
   xAxisIndex = 0,
   yAxisIndex = 1,
+  pipelineId = "",
+  name = "",
   plotType = DEFAULT_PLOT_TYPE
 ) => {
   return {
     experimentId: experimentId,
     controlFileId: fileId,
+    pipelineId: pipelineId,
+    name:name,
     files: {
       [fileId]: {
         plots: [

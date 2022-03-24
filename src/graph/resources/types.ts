@@ -162,6 +162,7 @@ export interface Workspace {
   notifications: Notification[];
   gates: Gate[];
   files: File[];
+  pipelines: File[];
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
@@ -169,6 +170,7 @@ export interface Workspace {
   sharedWorkspace: boolean;
   editWorkspace: boolean;
   selectedFile: string;
+  activePipelineId:string,
   clearOpenFiles: boolean;
   updateType: string;
 }
