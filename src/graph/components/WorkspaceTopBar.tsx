@@ -157,7 +157,7 @@ const WorkspaceTopBarComponent = ({
 
   const onPipelineChanged = async (event:any) => {
       const selectedPipeline = event.target.value;
-      if(window.confirm("After continue you lost last work if you don't save yet. Are you continue?")){
+      // if(window.confirm("After continue you lost last work if you don't save yet. Are you continue?")){
           setActivePipelineId(selectedPipeline);
           if (selectedPipeline !== "" && activePipelineId !== selectedPipeline) {
               if (selectedPipeline) {
@@ -213,7 +213,7 @@ const WorkspaceTopBarComponent = ({
           } else {
               await showMessageBox({message: "Already you here", saverity: "success"});
           }
-      }
+      //}
   };
 
   const onSavePipeline = async (name:any, controlFileId:any) => {
