@@ -284,33 +284,45 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  downloadPlotAsImage = (plot: any, plotIndex: any) => {
+  downloadPlotAsImage = async (plot: any, plotIndex: any) => {
     // selecting the canvas from dom
     const canvas: HTMLCanvasElement = document.getElementById(
       "canvas-" + plotIndex
     ) as HTMLCanvasElement;
 
     const context: CanvasRenderingContext2D = canvas.getContext("2d");
-
+    context.fillStyle = "blue";
     // x-axis
+    context.fillStyle = "white";
+    context.fillRect(20, 185, plot.xAxisLabel.length * 7, 10);
     context.font = "12px Roboto";
     context.fillStyle = "black";
     context.fillText(`${plot.xAxisLabel}`, 20, 195);
+
+    context.fillStyle = "white";
+    context.fillRect(150, 185, 40, 10);
+    context.font = "12px Roboto";
+    context.fillStyle = "black";
     context.fillText(
       `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
-      160,
+      150,
       195
     );
     // plot name
+    context.fillStyle = "white";
+    context.fillRect(50, 10, (plot.population.length + 9) * 7, 10);
     context.font = "12px Roboto";
     context.fillStyle = "black";
     context.fillText(`Plot Name: ${plot.population}`, 50, 20);
     context.save();
 
     // y-axis
-    context.font = "12px Roboto";
     context.translate(10, 50);
     context.rotate(-0.5 * Math.PI);
+    context.fillStyle = "white";
+    context.fillRect(0, -10, 40, 10);
+    context.font = "12px Roboto";
+    context.fillStyle = "black";
     context.fillText(
       `${plot.yScaleType === "lin" ? "Linear" : "Logicle"}`,
       0,
@@ -320,18 +332,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     context.save();
     context.translate(10, 180);
     context.rotate(-0.5 * Math.PI);
+    context.fillStyle = "white";
+    context.fillRect(0, -10, plot.yAxisLabel.length * 7, 10);
+    context.font = "12px Roboto";
+    context.fillStyle = "black";
     context.fillText(`${plot.yAxisLabel}`, 0, 0);
     context.restore();
 
     // downloading functionality
-    htmlToImage
-      .toPng(document.getElementById(`entire-canvas-${plotIndex}`))
-      .then(function (dataUrl) {
-        var link = document.createElement("a");
-        link.download = `${plot.population}`;
-        link.href = dataUrl;
-        link.click();
-      });
+    const dataUrl = await htmlToImage.toPng(
+      document.getElementById(`entire-canvas-${plotIndex}`)
+    );
+    var link = document.createElement("a");
+    link.download = `${plot.population}`;
+    link.href = dataUrl;
+    link.click();
 
     // re-draw
     let newWorkspaceState: any = this.state.workspaceState;
