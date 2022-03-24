@@ -69,7 +69,7 @@ function Table(props) {
                   {(() => {
                     if (plot?.plotType === "scatter") {
                       return (
-                        <Plot
+                        <Plot name="control-file"
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
@@ -247,7 +247,7 @@ function Table(props) {
                       {(() => {
                         if (plot.plotType === "scatter") {
                           return (
-                            <Plot
+                            <Plot name="non-control-file"
                               key={`plot-${plotIindex + 1}`}
                               plot={plot}
                               enrichedFile={enrichedFile}
