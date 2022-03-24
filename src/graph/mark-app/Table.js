@@ -79,6 +79,7 @@ function Table(props) {
                           onResize={props.onResize}
                           onChangeChannel={props.onChangeChannel}
                           plotIndex={`0-${plotIindex}`}
+                          downloadPlotAsImage={props.downloadPlotAsImage}
                           testParam={props.testParam}
                         />
                       );
@@ -93,6 +94,7 @@ function Table(props) {
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
                           plotIndex={`0-${plotIindex}`}
+                          downloadPlotAsImage={props.downloadPlotAsImage}
                         />
                       );
                     }
@@ -257,6 +259,7 @@ function Table(props) {
                               onChangeChannel={props.onChangeChannel}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                               testParam={props.testParam}
+                              downloadPlotAsImage={props.downloadPlotAsImage}
                             />
                           );
                         } else if (plot.plotType === "histogram") {
@@ -270,6 +273,7 @@ function Table(props) {
                               onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                              downloadPlotAsImage={props.downloadPlotAsImage}
                             />
                           );
                         }
