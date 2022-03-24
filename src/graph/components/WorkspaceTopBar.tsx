@@ -494,7 +494,9 @@ const WorkspaceTopBarComponent = ({
     let copyOfFiles: any[] = getWorkspace().files;
     const channels =
       copyOfFiles.length > 0
-        ? copyOfFiles[0]?.channels.map((element: any) => element?.label)
+        ? copyOfFiles[0]?.channels.map(
+            (element: any) => element?.label || element?.value
+          )
         : [];
 
     for (let i = 0; i < channels.length; i++) {
@@ -538,7 +540,9 @@ const WorkspaceTopBarComponent = ({
 
     const channels =
       copyOfFiles.length > 0
-        ? copyOfFiles[0]?.channels.map((element: any) => element?.label)
+        ? copyOfFiles[0]?.channels.map(
+            (element: any) => element?.label || element?.value
+          )
         : [];
     const obj: any = {};
     for (let i = 0; i < channels.length; i++) {
@@ -614,24 +618,30 @@ const WorkspaceTopBarComponent = ({
         channelIndex < channels.length;
         channelIndex++
       ) {
-        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-          channels[channelIndex]
-        ].mean = (
+        if (
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
             channels[channelIndex]
-          ].sum /
+          ]?.array.length > 0
+        ) {
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
             channels[channelIndex]
-          ].array.length
-        ).toFixed(2);
+          ].mean = (
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              channels[channelIndex]
+            ]?.sum /
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              channels[channelIndex]
+            ]?.array.length
+          ).toFixed(2);
 
-        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-          channels[channelIndex]
-        ].median = getMedian(
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
             channels[channelIndex]
-          ].array
-        );
+          ].median = getMedian(
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              channels[channelIndex]
+            ].array
+          );
+        }
       }
     }
 
@@ -658,18 +668,17 @@ const WorkspaceTopBarComponent = ({
         stats[median] =
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
             channels[channelIndex]
-          ].median;
+          ]?.median;
 
         stats[mean] =
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
             channels[channelIndex]
-          ].mean;
+          ]?.mean;
       }
       csvData.push(stats);
     }
     setData(csvData);
   };
-
   const _renderToolbar = () => {
     return (
       <Grid
