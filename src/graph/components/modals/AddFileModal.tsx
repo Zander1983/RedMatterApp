@@ -126,18 +126,28 @@ const AddFileModal = React.memo(
 
     const onSetControl = (FileId:any, isDownloading = false) => {
      // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
-
-      console.log(FileId);
       if(name?.length === 0){
         setErrorMessage("Name is Required");
         setNameError(true)
-      }else if(name?.length <= 5 || name?.length >= 20){
-        setErrorMessage("Name must be 5 to 20 char");
+      }else if(name?.length <= 8 || name?.length >= 20){
+        setErrorMessage("Name must be equal 8 to 20 char");
         setNameError(true)
-      }else {
-        setNameError(false);
-        setErrorMessage("This Field Is Required");
-        props.onPipeline.save(name, FileId);
+      } else {
+          let isSavePermitted = true;
+          if(getWorkspace()?.pipelines?.length > 1){
+              const isHasIndex = getWorkspace()?.pipelines?.findIndex(pipeline => pipeline?.name?.toLowerCase() === name.toLowerCase());
+              if(isHasIndex > -1){
+                  setErrorMessage("Duplicate name not allowed.");
+                  setNameError(true);
+                  isSavePermitted = false;
+              }
+          }
+          if(isSavePermitted){
+              setNameError(false);
+              setErrorMessage("This Field Is Required");
+              setName("");
+              props.onPipeline.save(name, FileId);
+          }
       }
         // PlotResource.createNewPlotFromFile(
         //   getFile(fileMetadata.id)
