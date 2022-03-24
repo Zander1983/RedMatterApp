@@ -408,7 +408,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let newWorkspaceState: any = this.state.workspaceState;
     let copyOfFiles: any[] = getWorkspace().files;
     let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    enrichedFiles = this.formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
       enrichedFiles: enrichedFiles,
