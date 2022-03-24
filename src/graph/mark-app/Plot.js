@@ -72,6 +72,7 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
+
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -261,14 +262,6 @@ function Plot(props) {
       }
     });
 
-    let change = {
-      type: "AddGate",
-      plot: plot,
-      plotIndex: plotIndex,
-      points: points,
-      gateName: gateName.name,
-    };
-
     let gate = {
       color: gateColor,
       gateType: "polygon",
@@ -287,6 +280,13 @@ function Plot(props) {
     };
 
     plot.gate = gate;
+
+    let change = {
+      type: "AddGate",
+      plot: plot,
+      plotIndex: plotIndex,
+      gateName: gateName.name,
+    };
 
     props.onAddGate(change);
   };
@@ -592,7 +592,6 @@ function Plot(props) {
         type: "EditGate",
         plot: localPlot,
         plotIndex: props.plotIndex.split("-")[1],
-        points: JSON.parse(JSON.stringify(localPlot.gate.points)),
         fileId: props.enrichedFile.fileId,
       };
 
