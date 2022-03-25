@@ -635,7 +635,7 @@ function Histogram(props) {
       document.body.style.cursor =
         props.enrichedFile.fileId === getWorkspace().selectedFile
           ? "text"
-          : "context-menu";
+          : "auto";
     }
   };
 
@@ -799,7 +799,7 @@ function Histogram(props) {
                       handleMouseUp(nativeEvent);
                     }}
                     onMouseLeave={(e) => {
-                      document.body.style.cursor = "context-menu";
+                      document.body.style.cursor = "auto";
                     }}
                   />
                 </div>

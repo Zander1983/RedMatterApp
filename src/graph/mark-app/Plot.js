@@ -73,7 +73,6 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
-
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -771,13 +770,13 @@ function Plot(props) {
       );
 
       // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
-      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu';
-      document.body.style.cursor = isInside ? "grab" : "context-menu";
+      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'auto';
+      document.body.style.cursor = isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
         props.enrichedFile.fileId === getWorkspace().selectedFile
           ? "crosshair"
-          : "context-menu";
+          : "auto";
     }
   };
 
@@ -939,7 +938,7 @@ function Plot(props) {
                       handleMouseUp(nativeEvent);
                     }}
                     onMouseLeave={(e) => {
-                      document.body.style.cursor = "context-menu";
+                      document.body.style.cursor = "auto";
                     }}
                   />
                 </div>
