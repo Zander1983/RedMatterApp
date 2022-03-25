@@ -3,7 +3,7 @@ import { CSVLink } from "react-csv";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button, FormControlLabel, MenuItem, Select } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -770,21 +770,24 @@ const WorkspaceTopBarComponent = ({
                   </CSVLink>
                 </Button>
                 <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                  PipeLine:
-                  <select
+                  <span style={{ marginRight: 5 }}> Analyses: </span>
+                  <Select
+                    // disableUnderline
                     value={activePipelineId}
                     name="pipeline"
                     style={{ width: 200 + "px", marginLeft: 2 + "px" }}
                     onChange={onPipelineChanged}
                   >
-                    <option value="">Select Pipeline</option>
+                    {pipelines.length === 0 && (
+                      <MenuItem value="">Select Pipeline</MenuItem>
+                    )}
                     {pipelines &&
                       pipelines?.map((pipeline: any, index: any) => (
-                        <option key={index} value={pipeline?._id}>
+                        <MenuItem key={index} value={pipeline?._id}>
                           {pipeline?.name}
-                        </option>
+                        </MenuItem>
                       ))}
-                  </select>
+                  </Select>
                   {/*<Button*/}
                   {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
                   {/*    variant="contained"*/}
@@ -824,7 +827,7 @@ const WorkspaceTopBarComponent = ({
                               : "black",
                         }}
                       >
-                        Save Workspace
+                        Save Analysis
                       </Typography>
                     )}
                   </Button>
