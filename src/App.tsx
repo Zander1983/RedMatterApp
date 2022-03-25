@@ -314,23 +314,23 @@ const App = () => {
           if (!sessionCheckStarted) {
             sessionCheckStarted = true;
             axios
-              .get("/api/authVerify", {
-                headers: {
-                  refreshToken: userManager.getRefreshToken(),
-                },
-              })
-              .then(async (response) => {
-                let data = response.data;
-                dispatch({
-                  type: "UPDATE_TOKENS",
-                  payload: {
-                    token: data.token,
-                    refreshToken: data.refreshToken,
+                .get("/api/authVerify", {
+                  headers: {
+                    refreshToken: userManager.getRefreshToken(),
                   },
-                });
-                await updateUserStripeDetails(dispatch);
-                sessionCheckStarted = false;
-                window.location.reload();
+                })
+                .then(async (response) => {
+                  let data = response.data;
+                  dispatch({
+                    type: "UPDATE_TOKENS",
+                    payload: {
+                      token: data.token,
+                      refreshToken: data.refreshToken,
+                    },
+                  });
+                  await updateUserStripeDetails(dispatch);
+                  sessionCheckStarted = false;
+                  window.location.reload();
               })
               .catch((e) => {});
           }
