@@ -162,7 +162,7 @@ const WorkspaceTopBarComponent = ({
       //@ts-ignore
       setActivePipelineId(activePipeline?.activePipelineId);
       setPipelines(getWorkspace()?.pipelines);
-      setAutoSaveEnabled(true);
+      // setAutoSaveEnabled(true);
     }, 1000);
   }, [activePipeline]);
 
@@ -769,38 +769,33 @@ const WorkspaceTopBarComponent = ({
                     Download Stats
                   </CSVLink>
                 </Button>
-                <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                  <span style={{ marginRight: 5 }}> Analyses: </span>
-                  <Select
-                    // disableUnderline
-                    value={activePipelineId}
-                    name="pipeline"
-                    style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                    onChange={onPipelineChanged}
-                  >
-                    {pipelines.length === 0 && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
+                    Analyses:
+                    <Select
+                      disableUnderline
+                      value={activePipelineId}
+                      name="pipeline"
+                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                      onChange={onPipelineChanged}
+                    >
                       <MenuItem value="">Select Pipeline</MenuItem>
-                    )}
-                    {pipelines &&
-                      pipelines?.map((pipeline: any, index: any) => (
-                        <MenuItem key={index} value={pipeline?._id}>
-                          {pipeline?.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                  {/*<Button*/}
-                  {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
-                  {/*    variant="contained"*/}
-                  {/*    size="small"*/}
-                  {/*    onClick={() => setPipeLineModalOpen(true)}*/}
-                  {/*    className={classes.topButton}*/}
-                  {/*    style={{*/}
-                  {/*      backgroundColor: "#fafafa",*/}
-                  {/*      width: 137,*/}
-                  {/*    }}>*/}
-                  {/*  +New*/}
-                  {/*</Button>*/}
-                </span>
+                      {pipelines &&
+                        pipelines?.map((pipeline: any, index: any) => (
+                          <MenuItem key={index} value={pipeline?._id}>
+                            {pipeline?.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </span>
+                </Button>
                 <span>
                   <Button
                     disabled={
