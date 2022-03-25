@@ -162,6 +162,7 @@ const WorkspaceTopBarComponent = ({
       //@ts-ignore
       setActivePipelineId(activePipeline?.activePipelineId);
       setPipelines(getWorkspace()?.pipelines);
+      setAutoSaveEnabled(true);
     }, 1000);
   }, [activePipeline]);
 
