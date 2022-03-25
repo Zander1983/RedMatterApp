@@ -291,7 +291,7 @@ export const downloadEvent = async (
     let headers = {};
     if (token) headers = { token };
 
-    response = await axios.post("/api/file-events", payload, { headers });
+    response = await axios.post(!workspaceIsShared ? "/api/file-events" : "/api/events", payload, { headers });
 
     const newFileArray = [];
     for (const fileId of Object.keys(response.data.files)) {

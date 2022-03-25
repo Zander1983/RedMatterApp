@@ -3,7 +3,7 @@ import { getWorkspace } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
-import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
+//import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
 import * as htmlToImage from "html-to-image";
 import {
   superAlgorithm,
