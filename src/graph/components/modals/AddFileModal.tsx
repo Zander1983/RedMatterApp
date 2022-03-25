@@ -10,7 +10,6 @@ import {
   TextField,
 } from "@material-ui/core";
 
-import { SearchOutlined } from "@ant-design/icons";
 import { getHumanReadableTimeDifference } from "utils/time";
 import { File, FileID } from "graph/resources/types";
 import { downloadFileEvent } from "services/FileService";
@@ -20,8 +19,10 @@ import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
 import { filterArrayAsPerInput } from "utils/searchFunction";
 import useGAEventTrackers from "hooks/useGAEvents";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../../mark-app/Helper";
-import DialogContent from "@material-ui/core/DialogContent/DialogContent";
+import {
+  createDefaultPlotSnapShot,
+  getPlotChannelAndPosition,
+} from "../../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -62,15 +63,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
 const AddFileModal = React.memo(
   (props: {
     open: boolean;
-    closeCall: { f: Function; ref: Function};
-    onPipeline?: { save: Function}
+    closeCall: { f: Function; ref: Function };
+    onPipeline?: { save: Function };
     isShared: boolean;
     experimentId: string;
-    pipelineId?: string,
+    pipelineId?: string;
     files: File[];
     selectedFile: string;
   }): JSX.Element => {
@@ -124,34 +124,36 @@ const AddFileModal = React.memo(
       "name"
     );
 
-    const onSetControl = (FileId:any, isDownloading = false) => {
-     // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
-      if(name?.length === 0){
+    const onSetControl = (FileId: any, isDownloading = false) => {
+      // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
+      if (name?.length === 0) {
         setErrorMessage("Name is Required");
-        setNameError(true)
-      }else if(name?.length <= 8 || name?.length >= 20){
+        setNameError(true);
+      } else if (name?.length <= 8 || name?.length >= 20) {
         setErrorMessage("Name must be equal 8 to 20 char");
-        setNameError(true)
+        setNameError(true);
       } else {
-          let isSavePermitted = true;
-          if(getWorkspace()?.pipelines?.length > 1){
-              const isHasIndex = getWorkspace()?.pipelines?.findIndex(pipeline => pipeline?.name?.toLowerCase() === name.toLowerCase());
-              if(isHasIndex > -1){
-                  setErrorMessage("Duplicate name not allowed.");
-                  setNameError(true);
-                  isSavePermitted = false;
-              }
+        let isSavePermitted = true;
+        if (getWorkspace()?.pipelines?.length > 1) {
+          const isHasIndex = getWorkspace()?.pipelines?.findIndex(
+            (pipeline) => pipeline?.name?.toLowerCase() === name.toLowerCase()
+          );
+          if (isHasIndex > -1) {
+            setErrorMessage("Duplicate name not allowed.");
+            setNameError(true);
+            isSavePermitted = false;
           }
-          if(isSavePermitted){
-              setNameError(false);
-              setErrorMessage("This Field Is Required");
-              setName("");
-              props.onPipeline.save(name, FileId);
-          }
+        }
+        if (isSavePermitted) {
+          setNameError(false);
+          setErrorMessage("This Field Is Required");
+          setName("");
+          props.onPipeline.save(name, FileId);
+        }
       }
-        // PlotResource.createNewPlotFromFile(
-        //   getFile(fileMetadata.id)
-        // );
+      // PlotResource.createNewPlotFromFile(
+      //   getFile(fileMetadata.id)
+      // );
       //   let selectedFile = null;
       //   if (isDownloading) {
       //     selectedFile = getWorkspace()?.files?.filter(file => file.id === FileId)[0];
@@ -202,7 +204,8 @@ const AddFileModal = React.memo(
               color: "#777",
               fontSize: 15,
               textAlign: "center",
-            }}>
+            }}
+          >
             Load and use your Flow Analysis files.
           </p>
 
@@ -234,36 +237,20 @@ const AddFileModal = React.memo(
             <Grid item xs={12}>
               <div>
                 <TextField
-                    style={{ width: "100%" }}
-                    error={nameError}
-                    value={name}
-                    helperText={errorMessage}
-                    autoFocus
-                    margin="dense"
-                    id="gate-name-textinput"
-                    label="Enter new pipe line name"
-                    type="text"
-                    onChange={(e: any) => {
-                      setName(e.target.value);
-                    }}
+                  style={{ width: "100%" }}
+                  error={nameError}
+                  value={name}
+                  helperText={errorMessage}
+                  autoFocus
+                  margin="dense"
+                  id="gate-name-textinput"
+                  label="Enter new pipe line name"
+                  type="text"
+                  onChange={(e: any) => {
+                    setName(e.target.value);
+                  }}
                 />
               </div>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                style={{ width: "100%" }}
-                InputProps={{
-                  startAdornment: (
-                    <SearchOutlined style={{ marginRight: 10 }} />
-                  ),
-                }}
-                variant="standard"
-                onChange={(v) => {
-                  if (v.type === "change") {
-                    setFileSearchTerm(v.currentTarget.value);
-                  }
-                }}
-              />
             </Grid>
           </Grid>
 
@@ -455,7 +442,10 @@ const AddFileModal = React.memo(
                               marginLeft: 20,
                             }}
                             disabled={isDownloading}
-                            onClick={() => onSetControl(fileMetadata.id, isDownloading)}>
+                            onClick={() =>
+                              onSetControl(fileMetadata.id, isDownloading)
+                            }
+                          >
                             {isDownloading ? (
                               <CircularProgress
                                 style={{
@@ -479,8 +469,11 @@ const AddFileModal = React.memo(
                               fontSize: 13,
                               marginLeft: 20,
                             }}
-                            onClick={() => onSetControl(fileMetadata.id, isDownloaded)}
-                            disabled={isDownloading}>
+                            onClick={() =>
+                              onSetControl(fileMetadata.id, isDownloaded)
+                            }
+                            disabled={isDownloading}
+                          >
                             {props.selectedFile === fileMetadata.id
                               ? "Selected As Control"
                               : "Set As Control"}
