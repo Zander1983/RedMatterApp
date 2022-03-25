@@ -298,8 +298,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
-    console.log("in onEditGate and  is ", change);
-
     let fileKey = change.fileId;
     let newWorkspaceState: any = this.state.workspaceState;
     if (!(newWorkspaceState as any).files[fileKey]) {
