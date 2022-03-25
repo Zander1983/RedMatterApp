@@ -1348,22 +1348,18 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            <div
+                            {/* <div
                               style={{
                                 display: "flex",
-                                // flexDirection: "column",
                                 float: "right",
                                 alignItems: "center",
                                 marginTop: -5,
-                                // justifyItems: "center",
                               }}
                             >
                               <img
                                 onClick={() => {
                                   setDeleteFileId(e.id);
                                   setDeleteFileModal(true);
-                                  // setOpenFiles([getWorkspace().selectedFile]);
-                                  // deleteColumn(index - 1);
                                 }}
                                 src={deleteIcon}
                                 alt={`${e.id}-delete-icon`}
@@ -1428,7 +1424,7 @@ const Experiment = (props: any) => {
                                     </a>
                                   )}
                               </p>
-                            </div>
+                            </div> */}
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
