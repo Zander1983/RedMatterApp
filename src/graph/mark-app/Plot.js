@@ -13,6 +13,7 @@ import {
 import Modal from "react-modal";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
+import { getWorkspace } from "graph/utils/workspace";
 
 export const leftPadding = 55;
 export const rightPadding = 20;
@@ -72,7 +73,6 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
-
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -608,38 +608,41 @@ function Plot(props) {
       props.onEditGate(change);
     } else {
       // so its a new gate
-      newGatePointsCanvas.forEach((newGatePointCanvas) => {
-        if (
-          inRange(
-            event.offsetX,
-            newGatePointCanvas[0] - 10,
-            newGatePointCanvas[0] + 10
-          ) &&
-          inRange(
-            event.offsetY,
-            newGatePointCanvas[1] - 10,
-            newGatePointCanvas[1] + 10
-          ) &&
-          newGatePointsCanvas.length >= 3
-        ) {
-          setModalIsOpen(true);
-          polygonComplete = true;
-        }
-      });
+      // only if the file is controlled file then it is allowed to create a new gate
+      if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+        newGatePointsCanvas.forEach((newGatePointCanvas) => {
+          if (
+            inRange(
+              event.offsetX,
+              newGatePointCanvas[0] - 10,
+              newGatePointCanvas[0] + 10
+            ) &&
+            inRange(
+              event.offsetY,
+              newGatePointCanvas[1] - 10,
+              newGatePointCanvas[1] + 10
+            ) &&
+            newGatePointsCanvas.length >= 3
+          ) {
+            setModalIsOpen(true);
+            polygonComplete = true;
+          }
+        });
 
-      // checking if the points are unique or not
-      let uniqueGatePoint = true;
-      for (const point of newGatePointsCanvas) {
-        if (point[0] === event.offsetX && point[1] === event.offsetY) {
-          uniqueGatePoint = false;
-          break;
+        // checking if the points are unique or not
+        let uniqueGatePoint = true;
+        for (const point of newGatePointsCanvas) {
+          if (point[0] === event.offsetX && point[1] === event.offsetY) {
+            uniqueGatePoint = false;
+            break;
+          }
         }
-      }
 
-      if (!polygonComplete && uniqueGatePoint) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        if (!polygonComplete && uniqueGatePoint) {
+          newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        }
+        redraw();
       }
-      redraw();
     }
   };
 
@@ -767,10 +770,13 @@ function Plot(props) {
       );
 
       // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
-      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'context-menu';
-      document.body.style.cursor = isInside ? "grab" : "context-menu";
+      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'auto';
+      document.body.style.cursor = isInside ? "grab" : "auto";
     } else {
-      document.body.style.cursor = "crosshair";
+      document.body.style.cursor =
+        props.enrichedFile.fileId === getWorkspace().selectedFile
+          ? "crosshair"
+          : "auto";
     }
   };
 
@@ -932,7 +938,7 @@ function Plot(props) {
                       handleMouseUp(nativeEvent);
                     }}
                     onMouseLeave={(e) => {
-                      document.body.style.cursor = "context-menu";
+                      document.body.style.cursor = "auto";
                     }}
                   />
                 </div>
