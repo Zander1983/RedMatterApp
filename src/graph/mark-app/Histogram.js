@@ -12,6 +12,7 @@ import {
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
 import { drawText, getAxisLabels, getBins } from "./Helper";
+import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
 let dragPointIndex = false;
@@ -572,8 +573,12 @@ function Histogram(props) {
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
-
-    setStartCanvasPoint(event.offsetX);
+    if (!hasGate(props.plot)) {
+      // draw histogram gate only if it is selected file
+      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        setStartCanvasPoint(event.offsetX);
+    } else {
+    }
   };
 
   const handleMouseUp = (event) => {
@@ -583,7 +588,32 @@ function Histogram(props) {
       setStartCanvasPoint(null);
       setEndCanvasPoint(null);
     } else {
-      setModalIsOpen(true);
+      // draw histogram gate only if it is selected file
+      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        setModalIsOpen(true);
+
+      // // so its a new gate
+      // newGatePointsCanvas.forEach((newGatePointCanvas) => {
+      //   if (
+      //     inRange(
+      //       event.offsetX,
+      //       newGatePointCanvas[0] - 10,
+      //       newGatePointCanvas[0] + 10
+      //     ) &&
+      //     inRange(
+      //       event.offsetY,
+      //       newGatePointCanvas[1] - 10,
+      //       newGatePointCanvas[1] + 10
+      //     )
+      //   ) {
+      //     setModalIsOpen(true);
+      //     polygonComplete = true;
+      //   }
+      // });
+      // if (!polygonComplete) {
+      //   newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      // }
+      // redraw();
     }
   };
 
@@ -595,7 +625,10 @@ function Histogram(props) {
 
   const handleCursorProperty = (event) => {
     if (props?.plot?.plotType === "histogram") {
-      document.body.style.cursor = "text";
+      document.body.style.cursor =
+        props.enrichedFile.fileId === getWorkspace().selectedFile
+          ? "text"
+          : "auto";
     }
   };
 
@@ -759,7 +792,7 @@ function Histogram(props) {
                       handleMouseUp(nativeEvent);
                     }}
                     onMouseLeave={(e) => {
-                      document.body.style.cursor = "context-menu";
+                      document.body.style.cursor = "auto";
                     }}
                   />
                 </div>

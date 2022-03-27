@@ -3,7 +3,7 @@ import { CSVLink } from "react-csv";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel } from "@material-ui/core";
+import { Button, FormControlLabel, MenuItem, Select } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -98,6 +98,15 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 500,
     color: "white",
   },
+
+  sharedHeader: {
+    width: "100%",
+    textAlign: "center",
+    paddingTop: "5px",
+    fontSize: "19px",
+    fontWeight: 500,
+    color: "#6fcc88",
+  },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: "#fff",
@@ -162,6 +171,7 @@ const WorkspaceTopBarComponent = ({
       //@ts-ignore
       setActivePipelineId(activePipeline?.activePipelineId);
       setPipelines(getWorkspace()?.pipelines);
+      // setAutoSaveEnabled(true);
     }, 1000);
   }, [activePipeline]);
 
@@ -188,10 +198,15 @@ const WorkspaceTopBarComponent = ({
     if (selectedPipeline !== "" && activePipelineId !== selectedPipeline) {
       if (selectedPipeline) {
         setLoader(true);
-        const response = await axios.get(
-          `/api/${experimentId}/pipeline/${selectedPipeline}`,
-          { headers: { token: userManager.getToken() } }
-        );
+        let response = null;
+
+        if(!sharedWorkspace) {
+          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers: {token: userManager.getToken()}});
+        }else {
+          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}/shared`,
+          );
+        }
+
         if (response?.status === 200) {
           const workspace = response.data.state;
           if (workspace && Object.keys(workspace).length > 0) {
@@ -426,10 +441,10 @@ const WorkspaceTopBarComponent = ({
       });
     } else if (error?.response) {
       if (error.response?.status == 401 || error.response.status == 419) {
-        setTimeout(() => {
-          userManager.logout();
-          history.replace("/login");
-        }, 3000);
+        // setTimeout(() => {
+        //   userManager.logout();
+        //   history.replace("/login");
+        // }, 3000);
         showMessageBox({
           message: "Authentication Failed Or Session Time out",
           saverity: "error",
@@ -460,25 +475,25 @@ const WorkspaceTopBarComponent = ({
     if (isLoggedIn) {
       await saveWorkspace(true);
     } else if (sharedWorkspace) {
-      let stateJson = JSON.stringify(workspace);
-      let newWorkspaceDB;
-      try {
-        newWorkspaceDB = await axios.post(
-          "/api/upsertSharedWorkspace",
-          {
-            workspaceId: newWorkspaceId,
-            experimentId: experimentId,
-            state: stateJson,
-          },
-          {}
-        );
-        setNewWorkspaceId(newWorkspaceDB.data);
-      } catch (e) {
-        snackbarService.showSnackbar(
-          "Could not save shared workspace, reload the page and try again!",
-          "error"
-        );
-      }
+      // let stateJson = JSON.stringify(workState);
+      // let newWorkspaceDB;
+      // try {
+      //   newWorkspaceDB = await axios.post(
+      //     "/api/upsertSharedWorkspace",
+      //     {
+      //       //workspaceId: newWorkspaceId,
+      //       experimentId: experimentId,
+      //       state: stateJson,
+      //     },
+      //     {}
+      //   );
+      //   setNewWorkspaceId(newWorkspaceDB.data);
+      // } catch (e) {
+      //   snackbarService.showSnackbar(
+      //     "Could not save shared workspace, reload the page and try again!",
+      //     "error"
+      //   );
+      // }
     }
     handleOpen(setLinkShareModalOpen);
   };
@@ -768,35 +783,33 @@ const WorkspaceTopBarComponent = ({
                     Download Stats
                   </CSVLink>
                 </Button>
-                <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                  PipeLine:
-                  <select
-                    value={activePipelineId}
-                    name="pipeline"
-                    style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                    onChange={onPipelineChanged}
-                  >
-                    <option value="">Select Pipeline</option>
-                    {pipelines &&
-                      pipelines?.map((pipeline: any, index: any) => (
-                        <option key={index} value={pipeline?._id}>
-                          {pipeline?.name}
-                        </option>
-                      ))}
-                  </select>
-                  {/*<Button*/}
-                  {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
-                  {/*    variant="contained"*/}
-                  {/*    size="small"*/}
-                  {/*    onClick={() => setPipeLineModalOpen(true)}*/}
-                  {/*    className={classes.topButton}*/}
-                  {/*    style={{*/}
-                  {/*      backgroundColor: "#fafafa",*/}
-                  {/*      width: 137,*/}
-                  {/*    }}>*/}
-                  {/*  +New*/}
-                  {/*</Button>*/}
-                </span>
+                <Button
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
+                    Analyses:
+                    <Select
+                      disableUnderline
+                      value={activePipelineId}
+                      name="pipeline"
+                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                      onChange={onPipelineChanged}
+                    >
+                      <MenuItem value="">Select Pipeline</MenuItem>
+                      {pipelines &&
+                        pipelines?.map((pipeline: any, index: any) => (
+                          <MenuItem key={index} value={pipeline?._id}>
+                            {pipeline?.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </span>
+                </Button>
                 <span>
                   <Button
                     disabled={
@@ -823,7 +836,7 @@ const WorkspaceTopBarComponent = ({
                               : "black",
                         }}
                       >
-                        Save Workspace
+                        Save Analysis
                       </Typography>
                     )}
                   </Button>
@@ -864,7 +877,7 @@ const WorkspaceTopBarComponent = ({
               </div>
               <div>
                 <Button
-                  disabled={!plotCallNeeded}
+                  disabled={(!plotCallNeeded && !renderPlotController) || activePipelineId === ""}
                   variant="contained"
                   size="small"
                   onClick={() => onLinkShareClick()}
@@ -880,7 +893,37 @@ const WorkspaceTopBarComponent = ({
               </div>
             </span>
           ) : (
-            <span className={classes.sharedHeaderText}>Shared Workspace</span>
+              <div>
+              <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
+                  PipeLine:
+                  <select
+                      value={activePipelineId}
+                      name="pipeline"
+                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                      onChange={onPipelineChanged}>
+                    <option value="">Select Pipeline</option>
+                    {pipelines &&
+                    pipelines?.map((pipeline: any, index: any) => (
+                        <option key={index} value={pipeline?._id}>
+                          {pipeline?.name}
+                        </option>
+                    ))}
+                  </select>
+                {/*<Button*/}
+                {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
+                {/*    variant="contained"*/}
+                {/*    size="small"*/}
+                {/*    onClick={() => setPipeLineModalOpen(true)}*/}
+                {/*    className={classes.topButton}*/}
+                {/*    style={{*/}
+                {/*      backgroundColor: "#fafafa",*/}
+                {/*      width: 137,*/}
+                {/*    }}>*/}
+                {/*  +New*/}
+                {/*</Button>*/}
+                </span>
+                <span className={classes.sharedHeader}>Shared Workspace</span>
+              </div>
           )}
         </Grid>
       </Grid>

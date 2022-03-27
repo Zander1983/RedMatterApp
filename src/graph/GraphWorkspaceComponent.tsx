@@ -298,7 +298,7 @@ const NewWorkspaceInnerComponent = (props: {
     return (
       <WorkspaceTopBar
           setLoader={setOpen}
-          sharedWorkspace={sharedWorkspace}
+          sharedWorkspace={props.shared}
           experimentId={props.experimentId}
           plotCallNeeded={plotCallNeeded}
           renderPlotController={renderPlotController}
