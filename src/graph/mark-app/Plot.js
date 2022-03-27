@@ -64,15 +64,12 @@ function useTraceUpdate(props) {
       },
       {}
     );
-    if (Object.keys(changedProps).length > 0) {
-      console.log("Changed props:", Object.keys(changedProps));
-    }
+
     prev.current = props;
   });
 }
 
 function Plot(props) {
-
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -92,10 +89,6 @@ function Plot(props) {
   }, [props.plot]);
 
   useEffect(() => {
-    console.log(
-      ">>>>> in the second useEffect where heavy calculation for plotIndex ",
-      props.plotIndex
-    );
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -560,7 +553,6 @@ function Plot(props) {
       // check if on point
       // convert real points to canvas points and check if within 5 points of canvas points
       let gateCanvasPoints = localPlot.gate.points.map((point) => {
-        console.log("point is ", point);
         let canvasPoint = getPointOnCanvas(
           props.enrichedFile.channels,
           point[0],
