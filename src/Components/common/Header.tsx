@@ -122,9 +122,9 @@ const AppHeader = (props: any) => {
                 {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
                 Browse
               </NavLink> */}
-                {/* <NavLink className={classes.topBarLink} to="/why-red-matter">
-                  Why Red Matter?
-                </NavLink> */}
+                <NavLink className={classes.topBarLink} to="/why-red-matter">
+                  Why Red Matter
+                </NavLink>
                 <a className={classes.topBarLink} onClick={onLogout} href="/">
                   Logout
                 </a>
@@ -132,7 +132,7 @@ const AppHeader = (props: any) => {
             ) : (
               <>
                 <NavLink className={classes.topBarLink} to="/why-red-matter">
-                  Why Red Matter?
+                  Why Red Matter
                 </NavLink>
                 <NavLink className={classes.topBarLink} to="/login">
                   Login
