@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
@@ -16,6 +17,18 @@ function Table(props) {
 
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
+
+  const [shouldFileRender, setShouldFileRender] = useState([]);
+
+  const fileViewHideHandler = (fileId) => {
+    {
+      if (shouldFileRender.includes(fileId)) {
+        setShouldFileRender((prev) => prev.filter((item) => item !== fileId));
+      } else {
+        setShouldFileRender((prev) => [...prev, fileId]);
+      }
+    }
+  };
 
   return (
     <div>
@@ -106,22 +119,24 @@ function Table(props) {
           </tr>
         </tbody>
       </table>
-      <div
-        style={{
-          color: "#000",
-          backgroundColor: "#ffff99",
-          border: "1px solid #000",
-          textAlign: "center",
-          fontWeight: "bold",
-        }}
-      >
-        OTHER FILES
-      </div>
+      {
+        <div
+          style={{
+            color: "#000",
+            backgroundColor: "#ffff99",
+            border: "1px solid #000",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          OTHER FILES
+        </div>
+      }
       <table>
         <tbody>
           <tr
             style={{
-              border: "1px solid #32a1ce",
+              border: "1px solid black",
             }}
           >
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
@@ -131,6 +146,9 @@ function Table(props) {
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
+                    minWidth: 275,
+                    padding: 5,
+                    borderInline: "1px solid black",
                   }}
                 >
                   <div
@@ -191,21 +209,25 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
-                  border:
-                    editedFileIds.includes(enrichedFile.fileId) &&
-                    "4px solid #FCBA05",
+                  border: editedFileIds.includes(enrichedFile.fileId)
+                    ? "4px solid #FCBA05"
+                    : "1px solid black",
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
-                    <td key={`td-${plotIindex + 1}`}>
+                    <td
+                      key={`td-${plotIindex + 1}`}
+                      style={{ padding: 5, borderInline: "1px solid black" }}
+                    >
                       <div
                         style={{
                           textAlign: "center",
                           fontWeight: "bold",
+                          minWidth: 275,
                         }}
                       >
-                        <p>
+                        <p style={{ margin: 0 }}>
                           {plot.population != "All"
                             ? `${
                                 enrichedFile.gateStats
@@ -247,42 +269,64 @@ function Table(props) {
                             </Button>
                           )}
                       </div>
-                      {(() => {
-                        if (plot.plotType === "scatter") {
-                          return (
-                            <Plot
-                              name="non-control-file"
-                              key={`plot-${plotIindex + 1}`}
-                              plot={plot}
-                              enrichedFile={enrichedFile}
-                              onAddGate={props.onAddGate}
-                              onEditGate={props.onEditGate}
-                              onResize={props.onResize}
-                              onChangeChannel={props.onChangeChannel}
-                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                              testParam={props.testParam}
-                              downloadPlotAsImage={props.downloadPlotAsImage}
-                            />
-                          );
-                        } else if (plot.plotType === "histogram") {
-                          return (
-                            <Histogram
-                              key={`plot-${plotIindex + 1}`}
-                              plot={plot}
-                              onChangeChannel={props.onChangeChannel}
-                              onAddGate={props.onAddGate}
-                              onDeleteGate={props.onDeleteGate}
-                              onEditGate={props.onEditGate}
-                              enrichedFile={enrichedFile}
-                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                              downloadPlotAsImage={props.downloadPlotAsImage}
-                            />
-                          );
-                        }
-                      })()}
+
+                      {shouldFileRender.includes(enrichedFile?.fileId) &&
+                        (() => {
+                          if (plot.plotType === "scatter") {
+                            return (
+                              <Plot
+                                name="non-control-file"
+                                key={`plot-${plotIindex + 1}`}
+                                plot={plot}
+                                enrichedFile={enrichedFile}
+                                onAddGate={props.onAddGate}
+                                onEditGate={props.onEditGate}
+                                onResize={props.onResize}
+                                onChangeChannel={props.onChangeChannel}
+                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                                testParam={props.testParam}
+                                downloadPlotAsImage={props.downloadPlotAsImage}
+                              />
+                            );
+                          } else if (plot.plotType === "histogram") {
+                            return (
+                              <Histogram
+                                key={`plot-${plotIindex + 1}`}
+                                plot={plot}
+                                onChangeChannel={props.onChangeChannel}
+                                onAddGate={props.onAddGate}
+                                onDeleteGate={props.onDeleteGate}
+                                onEditGate={props.onEditGate}
+                                enrichedFile={enrichedFile}
+                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                                downloadPlotAsImage={props.downloadPlotAsImage}
+                              />
+                            );
+                          }
+                        })()}
                     </td>
                   );
                 })}
+                <td
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    onClick={() => fileViewHideHandler(enrichedFile?.fileId)}
+                    style={{
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      paddingRight: 5,
+                    }}
+                  >
+                    {shouldFileRender.includes(enrichedFile?.fileId)
+                      ? "Hide"
+                      : "View"}
+                  </span>
+                </td>
               </tr>
             );
           })}
