@@ -9,38 +9,38 @@ import { updateUserStripeDetails } from "../../services/StripeService";
 export default function Plans(props: { session_id: any }) {
   const dispatch = useDispatch();
   useEffect(() => {
-      if (props.session_id) {
-          axios
-              .get(`/checkout-session?id=${props.session_id}`)
-              .then((response) => response.data)
-              .then((data) => {
-                  if (data) {
-                      axios
-                          .post(`/save-checkout`, {
-                              body: {
-                                  id: data.id,
-                                  user: data.metadata.userId,
-                                  subscription: data.subscription,
-                                  customer: data.customer,
-                              },
-                          })
-                          .then(() => {
-                              axios
-                                  .post(`/add-subscription`, {
-                                      body: {
-                                          user: data.metadata.userId,
-                                          subscriptionType: data.metadata.subscriptionType,
-                                          subscription: data.subscription,
-                                          customer: data.customer,
-                                      },
-                                  })
-                                  .then(async () => {
-                                      updateUserStripeDetails(dispatch);
-                                  });
-                          });
-                  }
+    if (props.session_id) {
+      axios
+        .get(`/checkout-session?id=${props.session_id}`)
+        .then((response) => response.data)
+        .then((data) => {
+          if (data) {
+            axios
+              .post(`/save-checkout`, {
+                body: {
+                  id: data.id,
+                  user: data.metadata.userId,
+                  subscription: data.subscription,
+                  customer: data.customer,
+                },
+              })
+              .then(() => {
+                axios
+                  .post(`/add-subscription`, {
+                    body: {
+                      user: data.metadata.userId,
+                      subscriptionType: data.metadata.subscriptionType,
+                      subscription: data.subscription,
+                      customer: data.customer,
+                    },
+                  })
+                  .then(async () => {
+                    updateUserStripeDetails(dispatch);
+                  });
               });
-      }
+          }
+        });
+    }
   }, [dispatch, props.session_id]);
   return (
     <Grid
@@ -79,10 +79,13 @@ export default function Plans(props: { session_id: any }) {
             margin: "15px auto 20px",
           }}
         />
-        <h1>Your payment has been Received!</h1>
+        <h1>Thank you, your payment has been received!</h1>
         <h2>
-          Go to your
-          <NavLink to="/experiments">Experiments</NavLink>
+          Go to
+          <NavLink to="/experiments" style={{ marginInline: 5 }}>
+            Experiments
+          </NavLink>
+          to begin analysing your files.
         </h2>
       </Grid>
     </Grid>
