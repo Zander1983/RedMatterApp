@@ -97,6 +97,7 @@ export default function Plans(props: any) {
   const [showCancelSubscription, setShowCancelSubscription] = useState(false);
   const [showResumeSubscription, setShowResumeSubscription] = useState(false);
   const [plans, setPlans] = useState([]);
+  const [totalFilesUploaded, setTotalFilesUploaded] = useState(0);
   const [planFiltered, setPlanFiltered] = useState([]);
   const [profileLoader, setProfileLoader] = useState(true);
   // @ts-ignore
@@ -234,9 +235,10 @@ export default function Plans(props: any) {
     const initUserProfile = async () => {
       setProfileLoader(true);
       let plans = await getPlans();
-      setPlans(plans);
-      await setVisibility(plans);
+      setPlans(plans.data);
+      await setVisibility(plans.data);
       setProfileLoader(false);
+      setTotalFilesUploaded(plans.total);
     };
     initUserProfile();
   }, [dispatch]);
@@ -356,6 +358,7 @@ export default function Plans(props: any) {
                     Current Subscription:
                     <span> </span>
                     <span>{subscription}</span>
+                    <span>TotalFiles: {totalFilesUploaded}</span>
                   </h3>
                   {showSubscriptionDropdown ? (
                     <div>
