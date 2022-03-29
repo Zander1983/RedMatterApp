@@ -205,13 +205,6 @@ function Histogram(props) {
   }, [startCanvasPoint, endCanvasPoint]);
 
   useEffect(() => {
-    console.log(
-      "in useEffect and plotIndex is ",
-      props.plotIndex,
-      " and props.plot is ",
-      props.plot
-    );
-
     //setLocalPlot(props.plot);
     let context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, props.plot.width, props.plot.height);

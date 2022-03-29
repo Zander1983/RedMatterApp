@@ -171,11 +171,7 @@ const Register = (props: any) => {
       justify="center"
       className={classes.gridContainer}
     >
-      <Grid item
-        lg={6}
-        md={9}
-        sm={12}
-        className={classes.innerGridContainer}>
+      <Grid item lg={6} md={9} sm={12} className={classes.innerGridContainer}>
         <h2>Create your Red Matter account</h2>
         <ValidatorForm
           ref={registerForm}
@@ -261,7 +257,7 @@ const Register = (props: any) => {
           />
 
           {/* Switch from Register to create organisation page*/}
-          {joiningOrg === false && (
+          {/* {joiningOrg === false && (
             <button
               onClick={() => {
                 setJoiningOrg(true);
@@ -278,7 +274,7 @@ const Register = (props: any) => {
             >
               I'm here to join my organisation
             </button>
-          )}
+          )} */}
 
           {joiningOrg && (
             <div>

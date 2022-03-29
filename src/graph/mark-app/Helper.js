@@ -37,10 +37,6 @@ export const superAlgorithm = (
 
     plots.forEach((plot) => {
       if (plot.gate && plot.gate["xScaleType"] === "bi") {
-        console.log(
-          "plot.gate.xAxisOriginalRanges[0] is ",
-          plot.gate.xAxisOriginalRanges[0]
-        );
         let xLogicle = new MarkLogicle(
           plot.gate.xAxisOriginalRanges[0],
           plot.gate.xAxisOriginalRanges[1]
@@ -599,7 +595,7 @@ export const createDefaultPlotSnapShot = (
     experimentId: experimentId,
     controlFileId: fileId,
     pipelineId: pipelineId,
-    name:name,
+    name: name,
     files: {
       [fileId]: {
         plots: [

@@ -18,8 +18,6 @@ readModuleFile("./Files.json", function (err, files) {
   var filesParsed = JSON.parse(files);
   // console.log(" is ", files);
 
-  console.log("filesParsed.length is ", filesParsed.length);
-
   let count = 0;
   for (var x = 0; x < 7; x++) {
     for (var i = 0; i < filesParsed.length; i++) {

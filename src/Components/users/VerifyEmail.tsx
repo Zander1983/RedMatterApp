@@ -123,11 +123,7 @@ const VerifyEmail = (props: any) => {
               ) : (
                 <>
                   <h1>Welcome to Red Matter!</h1>
-                  <p>
-                    We are currently in our version{" "}
-                    {process.env.REACT_APP_CURRENT_APP_VERSION} and building
-                    several features to make your analysis easier
-                  </p>
+                  <p>Log in to begin analysing your flow cytometry files</p>
                   <Button
                     type="submit"
                     style={{
