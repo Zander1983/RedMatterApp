@@ -26,7 +26,7 @@ const WorkspaceDispatch = {
       payload: { workspace },
     });
   },
-  SetId: (id:any) => {
+  SetId: (id: any) => {
     return store.dispatch({
       type: graphActions.SET_ID,
       payload: id,
@@ -62,21 +62,26 @@ const WorkspaceDispatch = {
       payload: { plots },
     });
   },
-  SetPlotStates: (workspaceState:any) => {
+  SetPlotStates: (workspaceState: any) => {
     return store.dispatch({
       type: graphActions.SET_PLOT_STATE,
       payload: workspaceState,
     });
   },
 
-  SetPipeLines: (pipeLines:any) => {
+  SetPipeLines: (pipeLines: any) => {
     return store.dispatch({
       type: graphActions.SET_PIPELINE_STATE,
       payload: pipeLines,
     });
   },
-
-  UpdatePlotStates: (workspaceState:any) => {
+  UpdateOpenFiles: (fileId: string) => {
+    return store.dispatch({
+      type: graphActions.UPDATE_OPEN_FILES,
+      payload: { fileId },
+    });
+  },
+  UpdatePlotStates: (workspaceState: any) => {
     return store.dispatch({
       type: graphActions.UPDATE_PLOT_STATES,
       payload: workspaceState,

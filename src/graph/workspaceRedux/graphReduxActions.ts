@@ -47,6 +47,7 @@ export const graphActions = {
     "workspace.DELETE_PLOTS_GATES_AND_POPULATIONS",
   CLEAR_OPEN_FILE: "workspace.CLEAR_OPEN_FILE",
   UPDATE_TYPE: "workspace.UPDATE_TYPE",
+  UPDATE_OPEN_FILES: "workspace.UPDATE_OPEN_FILES",
 };
 
 export const initialState: Workspace = {
@@ -64,7 +65,7 @@ export const initialState: Workspace = {
   activePipelineId: "",
   clearOpenFiles: false,
   updateType: "",
-  workspaceState: {}
+  workspaceState: {},
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -96,6 +97,20 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       const newWorkspace: Workspace = action.payload.workspace;
       return newWorkspace;
 
+    case graphActions.UPDATE_OPEN_FILES:
+      const fileId: string = action.payload.fileId;
+      // @ts-ignore
+      if (state.workspaceState?.openFiles?.includes(fileId)) {
+        // @ts-ignore
+        state.workspaceState?.openFiles?.filter((ele) => ele !== fileId);
+      } else {
+        // @ts-ignore
+        state.workspaceState?.openFiles?.push(fileId);
+      }
+      return {
+        ...state,
+        workspaceState: state.workspaceState,
+      };
     case graphActions.SET_FILES:
       const files = action.payload.files;
       return {

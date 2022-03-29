@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 function Table(props) {
   let controlEnrichedFile = props.enrichedFiles.find(
@@ -18,17 +19,22 @@ function Table(props) {
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
 
-  const [shouldFileRender, setShouldFileRender] = useState([]);
+  const [shouldFileRender, setShouldFileRender] = useState(
+    getWorkspace()?.workspaceState?.openFiles || []
+  );
 
   const fileViewHideHandler = (fileId) => {
-    {
-      if (shouldFileRender.includes(fileId)) {
-        setShouldFileRender((prev) => prev.filter((item) => item !== fileId));
-      } else {
-        setShouldFileRender((prev) => [...prev, fileId]);
-      }
+    if (shouldFileRender.includes(fileId)) {
+      setShouldFileRender((prev) => prev.filter((item) => item !== fileId));
+    } else {
+      setShouldFileRender((prev) => [...prev, fileId]);
     }
+    setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId), 0);
   };
+
+  useEffect(() => {
+    setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
+  }, [getWorkspace()?.activePipelineId]);
 
   return (
     <div>

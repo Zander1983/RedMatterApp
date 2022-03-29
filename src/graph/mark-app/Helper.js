@@ -632,6 +632,7 @@ export const createDefaultPlotSnapShot = (
     selectedFile: fileId,
     clearOpenFiles: "false",
     isShared: "false",
+    openFiles: [],
   };
 };
 
