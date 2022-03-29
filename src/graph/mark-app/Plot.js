@@ -640,7 +640,12 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate()) {
+    if (
+      isMouseDown &&
+      hasGate() &&
+      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
+      localPlot?.gate?.yScaleType === localPlot?.yScaleType
+    ) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
@@ -749,7 +754,12 @@ function Plot(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (hasGate() && props?.plot?.gate?.gateType === "polygon") {
+    if (
+      hasGate() &&
+      props?.plot?.gate?.gateType === "polygon" &&
+      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
+      localPlot?.gate?.yScaleType === localPlot?.yScaleType
+    ) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
@@ -767,7 +777,8 @@ function Plot(props) {
       document.body.style.cursor = isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
-        props.enrichedFile.fileId === getWorkspace().selectedFile
+        props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !localPlot?.gate
           ? "crosshair"
           : "auto";
     }
