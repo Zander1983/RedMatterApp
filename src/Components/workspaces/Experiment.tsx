@@ -56,6 +56,8 @@ interface ReportType {
   link: string;
 }
 
+const FREE_PLAN_FILE_UPLOAD_LIMIT = 50;
+
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
   const [experimentData, setExperimentData] = useState(null);
@@ -147,7 +149,7 @@ const Experiment = (props: any) => {
         fetchExperiments.url,
         fetchExperiments.options
       );
-
+      
       if (response?.status) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
@@ -873,10 +875,10 @@ const Experiment = (props: any) => {
 
               (async () => {
                 // backend call will be here...
-                console.log(
-                  deleteFileId,
-                  experimentData?.experimentDetails?.id
-                );
+                // console.log(
+                //   deleteFileId,
+                //   experimentData?.experimentDetails?.id
+                // );
                 await deleteFileFromServer(props.id, deleteFileId);
               })();
             },
@@ -1059,8 +1061,21 @@ const Experiment = (props: any) => {
                 {/*File number limit: <b>{maxFileCount}</b>*/}
                 {/*<br />*/}
                 {/*Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>*/}
+                {experimentData?.version !== "v1" ? (
+                    <>
+                    Your Plan limit: <b>{
+                      experimentData !== null ? ((userManager.getSubscriptionType() === "" || userManager.getSubscriptionType() === "Free" || userManager.getSubscriptionType() === "free" ) ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited") : null}</b>
+                    <br />
+                    Current Uploaded: <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
+                    <br />
+                    {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
+                    </>
+                ) : (
+                    <>
+                    {/*File number limit: <b>{0}</b>*/}
+                    </>
+                )}
 
-                File number limit: <b>{totalFilesUploaded}</b>
               </Grid>
               <Grid
                 style={{
