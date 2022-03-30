@@ -6,6 +6,7 @@ import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
 
 function Table(props) {
+  console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -16,6 +17,10 @@ function Table(props) {
 
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
+
+  let allFileIds = props.enrichedFiles.map((enrichedFile) => {
+    return enrichedFile.fileId;
+  });
 
   return (
     <div>
@@ -108,6 +113,18 @@ function Table(props) {
                         />
                       );
                     } else if (plot?.plotType === "histogram") {
+                      let enrichedOverlayFiles;
+                      if (plot.overlays && plot.overlays.length > 0) {
+                        enrichedOverlayFiles = props.enrichedFiles.filter(
+                          (enrichedFile) => {
+                            //
+                            return (
+                              plot.overlays.indexOf(enrichedFile.fileId) > -1
+                            );
+                          }
+                        );
+                      }
+
                       return (
                         <Histogram
                           key={`plot-${plotIindex}`}
@@ -117,6 +134,8 @@ function Table(props) {
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
+                          enrichedOverlayFiles={enrichedOverlayFiles}
+                          allFileIds={allFileIds}
                           plotIndex={`0-${plotIindex}`}
                           downloadPlotAsImage={props.downloadPlotAsImage}
                         />

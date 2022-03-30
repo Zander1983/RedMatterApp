@@ -524,6 +524,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     }, 10);
 
+    console.log(">>> newWorkspaceState is ", newWorkspaceState);
+
     this.setState({
       workspaceState: newWorkspaceState,
       enrichedFiles: enrichedFiles,

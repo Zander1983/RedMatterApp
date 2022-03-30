@@ -177,6 +177,7 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
+  console.log("hist props is ", props);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   let [startCanvasPoint, setStartCanvasPoint] = useState(null);
@@ -212,7 +213,19 @@ function Histogram(props) {
 
     let color = props.plot.color || "#000";
 
-    let data = props.enrichedFile.enrichedEvents.flatMap(
+    let bins;
+    if (props.plot.xScaleType === "bi") {
+      bins = linspace(0, 1, props.plot.width);
+    } else {
+      bins = linspace(
+        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        props.plot.width
+      );
+    }
+
+    // enrichedFileData will be for the control file
+    let enrichedFileData = props.enrichedFile.enrichedEvents.flatMap(
       (enrichedEvent, index) => {
         if (
           props.plot.population == "All" ||
@@ -230,19 +243,8 @@ function Histogram(props) {
       }
     );
 
-    let bins;
-    if (props.plot.xScaleType === "bi") {
-      bins = linspace(0, 1, props.plot.width);
-    } else {
-      bins = linspace(
-        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        props.plot.width
-      );
-    }
-
     const hists = histogram({
-      data: data,
+      data: enrichedFileData,
       bins: bins,
     });
 
@@ -260,6 +262,14 @@ function Histogram(props) {
       color,
       maxCountPlusTenPercent
     );
+
+    // at this point, the histogram for the control file will have been draw on the canvas
+    if (props.plot.overlays && props.plot.overlays.length > 0) {
+      // here we need to loop through props.enrichedOverlayFiles and calculate:
+      // - enrichedOverlayFileData
+      // - hists (note: bins wont change)
+      // - call paintHist
+    }
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {
       drawGateLine(context, props.plot);
@@ -740,6 +750,7 @@ function Histogram(props) {
             >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
+
                 <canvas
                   height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
@@ -795,6 +806,13 @@ function Histogram(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
+                  checkbox here with selector of <br />
+                  allFileIds OnClick on a fileId,
+                  <br />
+                  propagate back up to top level <br />
+                  component and add to the State eg
+                  <br />
+                  plots[3].overlay.push(theSelectedFileId)
                 </div>
               </div>
               {/* X-axis */}
