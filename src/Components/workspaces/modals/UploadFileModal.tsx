@@ -60,8 +60,8 @@ function UploadFileModal(props: {
         userManager.getOrganiztionID(),
         files[i]
       )
-        // eslint-disable-next-line no-loop-func
-        .then(() => {
+        .then((response:any) => {
+            console.log(response);
           if (sum + addP >= 100) {
             endFileUpload();
           }
@@ -150,8 +150,8 @@ function UploadFileModal(props: {
             <Button
               variant="contained"
               style={{ backgroundColor: "#43A047", color: "white" }}
-              onClick={() => {
-                uploadFileToWorkpace();
+              onClick={ () => {
+                 uploadFileToWorkpace();
                 forceUpdate();
               }}
             >

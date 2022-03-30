@@ -97,6 +97,7 @@ export default function Plans(props: any) {
   const [showCancelSubscription, setShowCancelSubscription] = useState(false);
   const [showResumeSubscription, setShowResumeSubscription] = useState(false);
   const [plans, setPlans] = useState([]);
+  const [totalFilesUploaded, setTotalFilesUploaded] = useState(0);
   const [planFiltered, setPlanFiltered] = useState([]);
   const [profileLoader, setProfileLoader] = useState(true);
   // @ts-ignore
@@ -130,7 +131,7 @@ export default function Plans(props: any) {
         let subEndTime = date.getTime();
         let currentTime = new Date().getTime();
         if (currentTime <= subEndTime) {
-          subscriptionType = userManager.getSubscriptionType();
+          subscriptionType = userManager.getSubscriptionType() || "Free";
           nextBillDate = JSON.stringify(date).substring(1, 11);
           showResumeSubscriptionBtn = true;
           setLastDateText("Subscription ends at:");
@@ -234,9 +235,11 @@ export default function Plans(props: any) {
     const initUserProfile = async () => {
       setProfileLoader(true);
       let plans = await getPlans();
-      setPlans(plans);
-      await setVisibility(plans);
+      setPlans(plans.data);
+      await setVisibility(plans.data);
+      setTotalFilesUploaded(plans.total);
       setProfileLoader(false);
+      setSubscription(userManager.getSubscriptionType() || "Free");
     };
     initUserProfile();
   }, [dispatch]);
@@ -355,9 +358,8 @@ export default function Plans(props: any) {
               <Grid item lg={12} md={12} sm={12} style={{ textAlign: "left" }}>
                 <Grid item lg={9} md={6} sm={6}>
                   <h3 style={{ marginBottom: "1.5em" }}>
-                    Current Subscription:
-                    <span> </span>
-                    <span>{subscription}</span>
+                    <p>Current Subscription: {subscription}</p>
+                    <p>TotalFiles: {totalFilesUploaded}</p>
                   </h3>
                   {showSubscriptionDropdown ? (
                     <div>

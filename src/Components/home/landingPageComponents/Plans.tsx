@@ -94,16 +94,16 @@ export default function Plans(props: any) {
       setValues();
       let plans = await getPlans();
 
-      plans.forEach((plan: any) => {
+      plans.data.forEach((plan: any) => {
         let metadata = plansMetaData.find((x) => x.name === plan.name);
         plan["features"] = metadata.features;
       });
 
-      plans.sort((a: any, b: any) => {
+      plans.data.sort((a: any, b: any) => {
         return a.price.amount - b.price.amount;
       });
 
-      setPlans(plans);
+      setPlans(plans.data);
       setPageLoader(false);
     };
 
