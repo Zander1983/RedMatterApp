@@ -2,27 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  TextField,
-} from "@material-ui/core";
+import { Button, Divider, Grid, TextField } from "@material-ui/core";
 
-import { getHumanReadableTimeDifference } from "utils/time";
-import { File, FileID } from "graph/resources/types";
-import { downloadFileEvent } from "services/FileService";
-import * as PlotResource from "graph/resources/plots";
-import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
+import { File } from "graph/resources/types";
+import { getAllFiles, getWorkspace } from "graph/utils/workspace";
 
 import { filterArrayAsPerInput } from "utils/searchFunction";
-import useGAEventTrackers from "hooks/useGAEvents";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {
-  createDefaultPlotSnapShot,
-  getPlotChannelAndPosition,
-} from "../../mark-app/Helper";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -79,46 +64,14 @@ const AddFileModal = React.memo(
     const classes = useStyles();
 
     const filesMetadata = props.files;
-    const files = getAllFiles();
     const [onHover, setOnHover] = React.useState(-1);
-
-    const [downloading, setDowloading] = useState<FileID[]>([]);
+    const [files, setFiles] = React.useState<any[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const eventStacker = useGAEventTrackers("Plot Added.");
 
     const [nameError, setNameError] = React.useState(false);
     const [name, setName] = React.useState("");
-
-    const downloadFile = async (fileId: string) => {
-      let file: File = getFile(fileId);
-      if (!file.downloaded) {
-        const newId = await downloadFileEvent(
-          props.isShared,
-          fileId,
-          props.experimentId
-        );
-        if (typeof newId !== "string") {
-          throw Error("wtf?");
-        }
-        file = getFile(newId);
-      }
-      await PlotResource.createNewPlotFromFile(file);
-      props.closeCall.f(props.closeCall.ref);
-    };
-
-    useEffect(() => {
-      let downloadingFiles: File[] = files.filter((x) => x.downloading);
-      let downloadingFileIds: string[] = [];
-      if (downloadingFiles && downloadingFiles.length > 0) {
-        downloadingFileIds = downloadingFiles.map((x) => x.id);
-      }
-      setDowloading(downloadingFileIds);
-    }, [props.files]);
-
-    const everythingDownloaded = filesMetadata
-      .map((e) => e.downloaded)
-      .every((e) => e);
+    const [searchingText, setSearchingText] = React.useState("");
 
     const shownFilesMetadata = filterArrayAsPerInput(
       filesMetadata,
@@ -153,43 +106,35 @@ const AddFileModal = React.memo(
           props.onPipeline.save(name, FileId);
         }
       }
-      // PlotResource.createNewPlotFromFile(
-      //   getFile(fileMetadata.id)
-      // );
-      //   let selectedFile = null;
-      //   if (isDownloading) {
-      //     selectedFile = getWorkspace()?.files?.filter(file => file.id === FileId)[0];
-      //   } else {
-      //     // making the selected file the first element of filesArray
-      //     const filesInNewOrder: File[] = [];
-      //
-      //     for (let i = 0; i < files.length; i++) {
-      //       if (files[i].id === FileId) {
-      //         files[i].view = false;
-      //         selectedFile = files[i];
-      //         filesInNewOrder.unshift(files[i]);
-      //       } else {
-      //         filesInNewOrder.push(files[i]);
-      //       }
-      //     }
-      //     WorkspaceDispatch.SetFiles(filesInNewOrder);
-      //   }
-      //
-      //   // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
-      //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
-      //   console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
-      //   console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-      //   const plotState = createDefaultPlotSnapShot(FileId, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, props.pipelineId, name);
-      //
-      //   WorkspaceDispatch.UpdatePlotStates(plotState);
-      //   WorkspaceDispatch.UpdateSelectedFile(FileId);
-      //   WorkspaceDispatch.UpdatePipelineId(props.pipelineId);
-      //
-      //   setTimeout(() => {
-      //     props.closeCall.f(props.closeCall.ref);
-      //   }, 10);
-      // }
     };
+
+    useEffect(() => {
+      const fileArray = props?.files
+        ?.map((file: File) => {
+          if (searchingText === "") {
+            return {
+              id: file?.id,
+              label: file?.label,
+              eventCount: file?.eventCount,
+            };
+          } else {
+            if (
+              file?.label
+                .slice(0, searchingText.length)
+                .toLowerCase()
+                .includes(searchingText.toLowerCase())
+            ) {
+              return {
+                id: file?.id,
+                label: file?.label,
+                eventCount: file?.eventCount,
+              };
+            }
+          }
+        })
+        .filter(Boolean);
+      setFiles(fileArray);
+    }, [searchingText]);
 
     return (
       <Modal
@@ -254,6 +199,26 @@ const AddFileModal = React.memo(
                 />
               </div>
             </Grid>
+            <Grid item xs={12}>
+              <div>
+                <TextField
+                  style={{
+                    width: "100%",
+                    padding: 0,
+                    marginTop: 5,
+                    marginBottom: 5,
+                  }}
+                  value={searchingText}
+                  margin="dense"
+                  id="gate-name-textinput"
+                  label="Search By File Title"
+                  type="text"
+                  onChange={(e: any) => {
+                    setSearchingText(e.target.value);
+                  }}
+                />
+              </div>
+            </Grid>
           </Grid>
 
           {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
@@ -290,28 +255,19 @@ const AddFileModal = React.memo(
               borderWidth: 0.3,
             }}
           >
-            {shownFilesMetadata.length === 0 ? (
+            {files.length === 0 ? (
               <Grid style={{ textAlign: "center" }}>
                 No files found with search term '{fileSearchTerm}'
               </Grid>
             ) : (
-              shownFilesMetadata.map((fileMetadata: File, i: number) => {
+              files.map((fileMetadata: any, i: number) => {
                 const divider =
                   i === filesMetadata.length - 1 ? null : (
                     <Divider className={classes.fileSelectDivider} />
                   );
 
-                const isDownloading =
-                  downloading.filter((e) => e === fileMetadata.id).length > 0;
-
-                let isDownloaded = fileMetadata.downloaded;
-
                 return (
-                  <div
-                    key={
-                      i.toString() + (fileMetadata.name || fileMetadata.label)
-                    }
-                  >
+                  <div key={i.toString() + fileMetadata.label}>
                     <div
                       onMouseEnter={() => setOnHover(i)}
                       onMouseLeave={() => setOnHover(-1)}
@@ -350,54 +306,19 @@ const AddFileModal = React.memo(
                               textAlign: "right",
                             }}
                           >
-                            {isDownloaded === false ? (
-                              <Button
-                                style={{
-                                  backgroundColor: "#66d",
-                                  color: "white",
-                                  fontSize: 13,
-                                  marginLeft: 20,
-                                }}
-                                disabled={isDownloading}
-                                onClick={() =>
-                                  onSetControl(fileMetadata.id, isDownloading)
-                                }
-                              >
-                                {isDownloading ? (
-                                  <CircularProgress
-                                    style={{
-                                      color: "white",
-                                      width: 23,
-                                      height: 23,
-                                    }}
-                                  />
-                                ) : props.selectedFile === fileMetadata.id ? (
-                                  "Selected As Control"
-                                ) : (
-                                  "Set As Control"
-                                )}
-                              </Button>
-                            ) : null}
-                            {isDownloaded ? (
-                              <Button
-                                style={{
-                                  backgroundColor: isDownloaded
-                                    ? "#66d"
-                                    : "#99d",
-                                  color: "white",
-                                  fontSize: 13,
-                                  marginLeft: 20,
-                                }}
-                                onClick={() =>
-                                  onSetControl(fileMetadata.id, isDownloaded)
-                                }
-                                disabled={isDownloading}
-                              >
-                                {props.selectedFile === fileMetadata.id
-                                  ? "Selected As Control"
-                                  : "Set As Control"}
-                              </Button>
-                            ) : null}
+                            <Button
+                              style={{
+                                backgroundColor: "#66d",
+                                color: "white",
+                                fontSize: 13,
+                                marginLeft: 20,
+                              }}
+                              onClick={() => onSetControl(fileMetadata.id)}
+                            >
+                              {props.selectedFile === fileMetadata.id
+                                ? "Selected As Control"
+                                : "Set As Control"}
+                            </Button>
                           </div>
                         </div>
                       </Grid>
