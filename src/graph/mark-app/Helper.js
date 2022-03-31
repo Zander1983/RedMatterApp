@@ -786,3 +786,14 @@ export const getBins = (width, height, scale) => {
 
   return [verticalBinCount, horizontalBinCount];
 };
+
+export const isGateShowing = (plot) => {
+  return (
+    plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
+    plot?.gate?.xScaleType === plot?.xScaleType &&
+    plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
+    plot?.gate?.yScaleType === plot?.yScaleType &&
+    ((plot?.gate?.gateType === "polygon" && plot?.plotType === "scatter") ||
+      plot?.gate?.gateType === plot?.plotType)
+  );
+};
