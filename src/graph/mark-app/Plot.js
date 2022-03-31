@@ -8,9 +8,9 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
-  // isCursorNearAPolygonPoint
 } from "./PlotHelper";
 import Modal from "react-modal";
+import { isGateShowing } from "./Helper";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
 import { getWorkspace } from "graph/utils/workspace";
@@ -272,7 +272,7 @@ function Plot(props) {
       // need to ask for gate name
       name: gateName.name,
       points: points,
-      xAxisLabel: plot.xAxisIndex,
+      xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
       yScaleType: plot.yScaleType,
@@ -359,13 +359,6 @@ function Plot(props) {
 
   const hasGate = () => {
     return !!props.plot.gate;
-  };
-
-  const hasGateSameLogicles = () => {
-    return (
-      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
-      localPlot?.gate?.yScaleType === localPlot?.yScaleType
-    );
   };
 
   const getGateValue = (value, scale, axisIndex, length, moveBy) => {
@@ -646,7 +639,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate() && hasGateSameLogicles()) {
+    if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
@@ -757,7 +750,7 @@ function Plot(props) {
   const handleCursorProperty = (event) => {
     if (
       hasGate() &&
-      hasGateSameLogicles() &&
+      isGateShowing(localPlot) &&
       props?.plot?.gate?.gateType === "polygon"
     ) {
       let newPointsReal = getRealPointFromCanvasPoints(
