@@ -411,24 +411,35 @@ function Histogram(props) {
     }
   };
 
-  const onChangeScale = (e, axis, plotIndex) => {
-    let channeIndex = props.plot.xAxisIndex;
-    let channelLabel = props.plot.xAxisLabel;
-    let channelScale = e.scale;
-    if (axis == "y") {
-      channeIndex = props.plot.yAxisIndex;
-      channelLabel = props.plot.yAxisLabel;
-    }
+  // const onChangeScale = (e, axis, plotIndex) => {
+  //   let channeIndex = props.plot.xAxisIndex;
+  //   let channelLabel = props.plot.xAxisLabel;
+  //   let channelScale = e.scale;
+  //   if (axis == "y") {
+  //     channeIndex = props.plot.yAxisIndex;
+  //     channelLabel = props.plot.yAxisLabel;
+  //   }
 
+  //   let change = {
+  //     type: "ChannelIndexChange",
+  //     plotIndex: plotIndex,
+  //     axis: axis,
+  //     axisIndex: channeIndex,
+  //     axisLabel: channelLabel,
+  //     scaleType: channelScale,
+  //   };
+
+  //   props.onChangeChannel(change);
+  // };
+
+  const onChangeScale = (e, axis, plotIndex) => {
     let change = {
-      type: "ChannelIndexChange",
+      type: "ChangePlotScale",
       plotIndex: plotIndex,
       axis: axis,
-      axisIndex: channeIndex,
-      axisLabel: channelLabel,
-      scaleType: channelScale,
+      scale: e.scale,
+      fileId: props.enrichedFile.fileId,
     };
-
     props.onChangeChannel(change);
   };
 
@@ -506,7 +517,7 @@ function Histogram(props) {
       gateType: "histogram",
       name: gateName.name,
       points: points,
-      xAxisLabel: props.plot.xAxisIndex,
+      xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
       parent: props.plot.population,
@@ -624,10 +635,10 @@ function Histogram(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (props?.plot?.plotType === "histogram") {
+    if (props?.plot?.plotType === "histogram" && !props?.plot?.gate) {
       document.body.style.cursor =
         props.enrichedFile.fileId === getWorkspace().selectedFile
-          ? "text"
+          ? "col-resize"
           : "auto";
     }
   };
