@@ -6,7 +6,7 @@ import { store } from "redux/store";
 import { File, FileID, Workspace } from "graph/resources/types";
 import { createFile } from "graph/resources/files";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {file} from "@babel/types";
+
 
 const EVENTS_LIMIT = 4000;
 
@@ -291,7 +291,7 @@ export const downloadEvent = async (
     let headers = {};
     if (token) headers = { token };
 
-    response = await axios.post(!workspaceIsShared ? "/api/file-events" : "/api/events", payload, { headers });
+    response = await axios.post(!workspaceIsShared ? "/api/file-events" : "/api/events", payload, !workspaceIsShared ? { headers } : null);
 
     const newFileArray = [];
     for (const fileId of Object.keys(response.data.files)) {

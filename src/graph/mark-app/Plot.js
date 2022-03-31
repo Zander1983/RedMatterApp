@@ -604,7 +604,6 @@ function Plot(props) {
         plotIndex: props.plotIndex.split("-")[1],
         fileId: props.enrichedFile.fileId,
       };
-
       props.onEditGate(change);
     } else {
       // so its a new gate
@@ -773,7 +772,31 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      document.body.style.cursor = isInside ? "grab" : "auto";
+      let gateCanvasPoints = localPlot.gate.points.map((point) => {
+        let canvasPoint = getPointOnCanvas(
+          props.enrichedFile.channels,
+          point[0],
+          point[1],
+          // TODO make sure can only change gate when on correct channels
+          // this is important, make sure they can only edit gate when the gate channels match prop channels
+          localPlot,
+          props.enrichedFile.logicles
+        );
+
+        return canvasPoint;
+      });
+      let near = false;
+      gateCanvasPoints.find((point) => {
+        let isNear =
+          point[0] + 5 >= event.offsetX &&
+          point[0] - 5 <= event.offsetX &&
+          point[1] + 5 >= event.offsetY &&
+          point[1] - 5 <= event.offsetY;
+        if (isNear) near = isNear;
+        return isNear;
+      });
+
+      document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
         props.enrichedFile.fileId === getWorkspace().selectedFile &&
