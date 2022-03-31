@@ -786,10 +786,8 @@ export const getBins = (width, height, scale) => {
 export const isGateShowing = (plot) => {
   return (
     plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
-    plot?.gate?.xAxisLabel === plot?.xAxisLabel &&
     plot?.gate?.xScaleType === plot?.xScaleType &&
     plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
-    plot?.gate?.yAxisLabel === plot?.yAxisLabel &&
     plot?.gate?.yScaleType === plot?.yScaleType
   );
 };
