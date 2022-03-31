@@ -361,6 +361,13 @@ function Plot(props) {
     return !!props.plot.gate;
   };
 
+  const hasGateSameLogicles = () => {
+    return (
+      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
+      localPlot?.gate?.yScaleType === localPlot?.yScaleType
+    );
+  };
+
   const getGateValue = (value, scale, axisIndex, length, moveBy) => {
     if (scale == "bi") {
       let logicle = props.enrichedFile.logicles[axisIndex];
@@ -640,12 +647,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (
-      isMouseDown &&
-      hasGate() &&
-      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
-      localPlot?.gate?.yScaleType === localPlot?.yScaleType
-    ) {
+    if (isMouseDown && hasGate() && hasGateSameLogicles()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
@@ -756,9 +758,8 @@ function Plot(props) {
   const handleCursorProperty = (event) => {
     if (
       hasGate() &&
-      props?.plot?.gate?.gateType === "polygon" &&
-      localPlot?.gate?.xScaleType === localPlot?.xScaleType &&
-      localPlot?.gate?.yScaleType === localPlot?.yScaleType
+      hasGateSameLogicles() &&
+      props?.plot?.gate?.gateType === "polygon"
     ) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
@@ -772,8 +773,6 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
-      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'auto';
       document.body.style.cursor = isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
