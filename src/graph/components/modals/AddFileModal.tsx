@@ -5,9 +5,7 @@ import Modal from "@material-ui/core/Modal";
 import { Button, Divider, Grid, TextField } from "@material-ui/core";
 
 import { File } from "graph/resources/types";
-import { getAllFiles, getWorkspace } from "graph/utils/workspace";
-
-import { filterArrayAsPerInput } from "utils/searchFunction";
+import { getWorkspace } from "graph/utils/workspace";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -66,18 +64,11 @@ const AddFileModal = React.memo(
     const filesMetadata = props.files;
     const [onHover, setOnHover] = React.useState(-1);
     const [files, setFiles] = React.useState<any[]>([]);
-    const [fileSearchTerm, setFileSearchTerm] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
     const [nameError, setNameError] = React.useState(false);
     const [name, setName] = React.useState("");
     const [searchingText, setSearchingText] = React.useState("");
-
-    const shownFilesMetadata = filterArrayAsPerInput(
-      filesMetadata,
-      fileSearchTerm,
-      "name"
-    );
 
     const onSetControl = (FileId: any, isDownloading = false) => {
       // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
@@ -257,7 +248,7 @@ const AddFileModal = React.memo(
           >
             {files.length === 0 ? (
               <Grid style={{ textAlign: "center" }}>
-                No files found with search term '{fileSearchTerm}'
+                No files found with search term '{searchingText}'
               </Grid>
             ) : (
               files.map((fileMetadata: any, i: number) => {
