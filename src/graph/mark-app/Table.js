@@ -170,7 +170,7 @@ function Table(props) {
             onClick={() => {
               if (shouldFileRender.length) {
                 setShouldFileRender([]);
-                WorkspaceDispatch.UpdateOpenFiles("clear", true);
+                WorkspaceDispatch.UpdateOpenFiles("", true);
               }
             }}
           >
