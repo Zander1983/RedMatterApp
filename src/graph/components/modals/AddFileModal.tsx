@@ -31,10 +31,12 @@ const useStyles = makeStyles((theme) => ({
     padding: 20,
     width: "800px",
     position: "absolute",
-    left: "50%",
-    top: "30%",
-    marginLeft: "-400px",
-    marginTop: "-150px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    left: 0,
+    right: 0,
+    height: "90vh",
+    top: "5vh",
     textAlign: "center",
     borderRadius: 10,
     fontFamiliy: "Quicksand",
@@ -82,7 +84,7 @@ const AddFileModal = React.memo(
 
     const [downloading, setDowloading] = useState<FileID[]>([]);
     const [fileSearchTerm, setFileSearchTerm] = useState("");
-    const [errorMessage, setErrorMessage] = useState("This Field Is Required");
+    const [errorMessage, setErrorMessage] = useState("");
     const eventStacker = useGAEventTrackers("Plot Added.");
 
     const [nameError, setNameError] = React.useState(false);
@@ -197,16 +199,16 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2>Pick Control File</h2>
-
+          <h2 style={{ margin: 0 }}>{"Name Your Analysis"}</h2>
           <p
             style={{
               color: "#777",
               fontSize: 15,
               textAlign: "center",
+              margin: 0,
             }}
           >
-            Load and use your Flow Analysis files.
+            {"Each analysis consists of a pipeline of gates."}
           </p>
 
           <Grid container direction="row">
@@ -237,14 +239,14 @@ const AddFileModal = React.memo(
             <Grid item xs={12}>
               <div>
                 <TextField
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: 0, margin: 0 }}
                   error={nameError}
                   value={name}
                   helperText={errorMessage}
                   autoFocus
                   margin="dense"
                   id="gate-name-textinput"
-                  label="Enter new pipe line name"
+                  label="Analysis name*"
                   type="text"
                   onChange={(e: any) => {
                     setName(e.target.value);
@@ -320,166 +322,85 @@ const AddFileModal = React.memo(
                       }
                     >
                       <Grid container direction="row">
-                        <Grid container direction="row">
-                          <p style={{ width: "100%" }}>
-                            <b>Title:</b>{" "}
-                            <a
-                              style={{
-                                color: "#777",
-                                fontSize: 14,
-                              }}
-                            >
-                              {fileMetadata.label}
-                            </a>
-                          </p>
-                          <div style={{ display: "inline-block" }}>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                              }}
-                            >
-                              <b>Date:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {getHumanReadableTimeDifference(
-                                  new Date(fileMetadata.createdOn),
-                                  new Date()
-                                )}
-                              </a>
-                            </p>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                                marginLeft: 10,
-                              }}
-                            >
-                              <b>Size:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                              </a>
-                            </p>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                                marginLeft: 10,
-                              }}
-                            >
-                              <b>Events:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {fileMetadata.eventCount}
-                              </a>
-                            </p>
-                          </div>
-                        </Grid>
-                      </Grid>
-                      <div
-                        style={{
-                          marginBottom: 10,
-                          marginLeft: -20,
-                          textAlign: "right",
-                        }}
-                      >
-                        <Grid
+                        <div
                           style={{
-                            textAlign: "right",
-                            flex: 1,
-                            flexDirection: "row",
-                            display: "inline-block",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            width: "100%",
                           }}
                         >
-                          <Grid style={{ display: "inline-block" }}>
-                            {isDownloaded
-                              ? "Loaded"
-                              : isDownloading
-                              ? "Loading..."
-                              : "Remote"}
-                          </Grid>
-                          <Grid
-                            style={{
-                              display: "inline-block",
-                            }}
-                          >
-                            <Grid
+                          <div style={{ display: "flex" }}>
+                            <p>
+                              <b>{"Title: "}</b>
+                              <span>{fileMetadata.label}</span>
+                            </p>
+                            <p
                               style={{
-                                borderRadius: "100%",
-                                width: 13,
-                                height: 13,
-                                position: "relative",
-                                top: 2,
                                 marginLeft: 10,
-                                backgroundColor: isDownloaded
-                                  ? "green"
-                                  : isDownloading
-                                  ? "#66d"
-                                  : "#d66",
                               }}
-                            />
-                          </Grid>
-                        </Grid>
-                        {isDownloaded === false ? (
-                          <Button
+                            >
+                              <b>{"Events: "}</b>
+                              <span>{fileMetadata.eventCount}</span>
+                            </p>
+                          </div>
+                          <div
                             style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
+                              marginBottom: 10,
+                              marginLeft: -20,
+                              textAlign: "right",
                             }}
-                            disabled={isDownloading}
-                            onClick={() =>
-                              onSetControl(fileMetadata.id, isDownloading)
-                            }
                           >
-                            {isDownloading ? (
-                              <CircularProgress
+                            {isDownloaded === false ? (
+                              <Button
                                 style={{
+                                  backgroundColor: "#66d",
                                   color: "white",
-                                  width: 23,
-                                  height: 23,
+                                  fontSize: 13,
+                                  marginLeft: 20,
                                 }}
-                              />
-                            ) : props.selectedFile === fileMetadata.id ? (
-                              "Selected As Control"
-                            ) : (
-                              "Set As Control"
-                            )}
-                          </Button>
-                        ) : null}
-                        {isDownloaded ? (
-                          <Button
-                            style={{
-                              backgroundColor: isDownloaded ? "#66d" : "#99d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
-                            }}
-                            onClick={() =>
-                              onSetControl(fileMetadata.id, isDownloaded)
-                            }
-                            disabled={isDownloading}
-                          >
-                            {props.selectedFile === fileMetadata.id
-                              ? "Selected As Control"
-                              : "Set As Control"}
-                          </Button>
-                        ) : null}
-                      </div>
+                                disabled={isDownloading}
+                                onClick={() =>
+                                  onSetControl(fileMetadata.id, isDownloading)
+                                }
+                              >
+                                {isDownloading ? (
+                                  <CircularProgress
+                                    style={{
+                                      color: "white",
+                                      width: 23,
+                                      height: 23,
+                                    }}
+                                  />
+                                ) : props.selectedFile === fileMetadata.id ? (
+                                  "Selected As Control"
+                                ) : (
+                                  "Set As Control"
+                                )}
+                              </Button>
+                            ) : null}
+                            {isDownloaded ? (
+                              <Button
+                                style={{
+                                  backgroundColor: isDownloaded
+                                    ? "#66d"
+                                    : "#99d",
+                                  color: "white",
+                                  fontSize: 13,
+                                  marginLeft: 20,
+                                }}
+                                onClick={() =>
+                                  onSetControl(fileMetadata.id, isDownloaded)
+                                }
+                                disabled={isDownloading}
+                              >
+                                {props.selectedFile === fileMetadata.id
+                                  ? "Selected As Control"
+                                  : "Set As Control"}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      </Grid>
                     </div>
                     {divider}
                   </div>
