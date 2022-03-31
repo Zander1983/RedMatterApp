@@ -788,6 +788,8 @@ export const isGateShowing = (plot) => {
     plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
     plot?.gate?.xScaleType === plot?.xScaleType &&
     plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
-    plot?.gate?.yScaleType === plot?.yScaleType
+    plot?.gate?.yScaleType === plot?.yScaleType &&
+    ((plot?.gate?.gateType === "polygon" && plot?.plotType === "scatter") ||
+      plot?.gate?.gateType === plot?.plotType)
   );
 };

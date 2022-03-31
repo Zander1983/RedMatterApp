@@ -517,7 +517,7 @@ function Histogram(props) {
       gateType: "histogram",
       name: gateName.name,
       points: points,
-      xAxisLabel: props.plot.xAxisIndex,
+      xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
       parent: props.plot.population,
