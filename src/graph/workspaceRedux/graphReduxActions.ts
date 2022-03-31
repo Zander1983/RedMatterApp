@@ -99,13 +99,24 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 
     case graphActions.UPDATE_OPEN_FILES:
       const fileId: string = action.payload.fileId;
-      // @ts-ignore
-      if (state.workspaceState?.openFiles?.includes(fileId)) {
+      const clear: boolean = action.payload.clear;
+
+      if (clear) {
         // @ts-ignore
-        state.workspaceState?.openFiles?.filter((ele) => ele !== fileId);
+        state.workspaceState.openFiles = [];
       } else {
         // @ts-ignore
-        state.workspaceState?.openFiles?.push(fileId);
+        if (state.workspaceState?.openFiles?.includes(fileId)) {
+          // @ts-ignore
+          state.workspaceState.openFiles =
+            // @ts-ignore
+            state.workspaceState?.openFiles?.filter(
+              (ele: any) => ele !== fileId
+            );
+        } else {
+          // @ts-ignore
+          state.workspaceState?.openFiles?.push(fileId);
+        }
       }
       return {
         ...state,

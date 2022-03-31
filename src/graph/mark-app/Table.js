@@ -29,7 +29,7 @@ function Table(props) {
     } else {
       setShouldFileRender((prev) => [...prev, fileId]);
     }
-    setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId), 0);
+    setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
   };
 
   useEffect(() => {
@@ -159,6 +159,23 @@ function Table(props) {
           }}
         >
           OTHER FILES
+          <span
+            style={{
+              float: "right",
+              marginRight: 20,
+              cursor: shouldFileRender.length && "pointer",
+              color: shouldFileRender.length ? "#000" : "gray",
+              fontWeight: shouldFileRender.length ? "bolder" : "bold",
+            }}
+            onClick={() => {
+              if (shouldFileRender.length) {
+                setShouldFileRender([]);
+                WorkspaceDispatch.UpdateOpenFiles("clear", true);
+              }
+            }}
+          >
+            {"Close All"}
+          </span>
         </div>
       }
       <table>
