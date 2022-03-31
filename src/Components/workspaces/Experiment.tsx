@@ -56,6 +56,8 @@ interface ReportType {
   link: string;
 }
 
+const FREE_PLAN_FILE_UPLOAD_LIMIT = 50;
+
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
   const [experimentData, setExperimentData] = useState(null);
@@ -73,6 +75,8 @@ const Experiment = (props: any) => {
   const [deleteFileModal, setDeleteFileModal] = useState<boolean>(false);
   const [deleteFileId, setDeleteFileId] = useState<string>("");
   const [experimentSize, setExperimentSize] = useState(0);
+  const [totalFilesUploaded, setTotalFilesUploaded] = useState(0);
+
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
@@ -145,10 +149,11 @@ const Experiment = (props: any) => {
         fetchExperiments.url,
         fetchExperiments.options
       );
-
+      
       if (response?.status) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
+        setTotalFilesUploaded(response.data.totalFilesUploaded);
         setTimeout(() => {
           sessionStorage.setItem(
             "experimentFiles",
@@ -540,6 +545,7 @@ const Experiment = (props: any) => {
           userManager.getOrganiztionID(),
           file.file
         );
+     
         if (response?.status === 201) {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
@@ -549,6 +555,17 @@ const Experiment = (props: any) => {
             message: "Uploaded " + file.file.name,
             saverity: "success",
           });
+        }else {
+          if(response && response.data.level === "danger"){
+            setTimeout(() => {
+              showMessageBox({
+                message: response.data.message,
+                saverity: "error",
+              });
+
+            },10);
+            return completedCount;
+          }
         }
       } catch (err) {
         showMessageBox({
@@ -585,6 +602,7 @@ const Experiment = (props: any) => {
         if (expFileInfo) {
           setExperimentData(expFileInfo?.files);
           setExperiment(expFileInfo?.files?.experimentDetails);
+          setTotalFilesUploaded(expFileInfo?.files?.totalFilesUploaded);
         } else {
           sessionStorage.removeItem("activeOrg");
           (async () => {
@@ -857,10 +875,10 @@ const Experiment = (props: any) => {
 
               (async () => {
                 // backend call will be here...
-                console.log(
-                  deleteFileId,
-                  experimentData?.experimentDetails?.id
-                );
+                // console.log(
+                //   deleteFileId,
+                //   experimentData?.experimentDetails?.id
+                // );
                 await deleteFileFromServer(props.id, deleteFileId);
               })();
             },
@@ -876,7 +894,8 @@ const Experiment = (props: any) => {
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={async () => {
+        added={async (response:any) => {
+          //console.log(response);
           await reload();
         }}
         experiment={{
@@ -1039,9 +1058,24 @@ const Experiment = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                File number limit: <b>{maxFileCount}</b>
-                <br />
-                Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
+                {/*File number limit: <b>{maxFileCount}</b>*/}
+                {/*<br />*/}
+                {/*Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>*/}
+                {experimentData?.version !== "v1" ? (
+                    <>
+                    Your Plan limit: <b>{
+                      experimentData !== null ? ((userManager.getSubscriptionType() === "" || userManager.getSubscriptionType() === "Free" || userManager.getSubscriptionType() === "free" ) ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited") : null}</b>
+                    <br />
+                    Current Uploaded: <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
+                    <br />
+                    {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
+                    </>
+                ) : (
+                    <>
+                    {/*File number limit: <b>{0}</b>*/}
+                    </>
+                )}
+
               </Grid>
               <Grid
                 style={{

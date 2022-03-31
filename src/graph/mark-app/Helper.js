@@ -497,7 +497,7 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       return {
         minimum: channel.biexponentialMinimum,
         maximum: channel.biexponentialMaximum,
-        name: channel.value,
+        name: channel.label || channel.value,
         defaultScale: channel.display,
       };
     });

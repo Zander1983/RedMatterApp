@@ -83,7 +83,30 @@ function Table(props) {
                       fontWeight: "bold",
                     }}
                   >
-                    {controlEnrichedFile.label}
+                    <p>
+                      {plot.population != "All"
+                        ? `${
+                            controlEnrichedFile?.gateStats
+                              .filter((gateStat) => {
+                                return gateStat.gateName === plot.population;
+                              })
+                              .map((gateStat) => {
+                                return gateStat && gateStat.percentage;
+                              }).length === 0
+                              ? "0.00"
+                              : controlEnrichedFile?.gateStats
+                                  .filter((gateStat) => {
+                                    return (
+                                      gateStat.gateName === plot.population
+                                    );
+                                  })
+                                  .map((gateStat) => {
+                                    return gateStat && gateStat.percentage;
+                                  })
+                          }%`
+                        : controlEnrichedFile?.label}
+                    </p>
+                    {/* {controlEnrichedFile.label} */}
                   </div>
                   {(() => {
                     if (plot?.plotType === "scatter") {
