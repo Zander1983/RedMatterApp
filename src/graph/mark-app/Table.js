@@ -294,7 +294,6 @@ function Table(props) {
                               plot={plot}
                               onChangeChannel={props.onChangeChannel}
                               onAddGate={props.onAddGate}
-                              onDeleteGate={props.onDeleteGate}
                               onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}

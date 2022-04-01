@@ -739,6 +739,7 @@ function Histogram(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
+          onDeleteGate={props.onDeleteGate}
           plot={props.plot}
           plotIndex={props.plotIndex}
           downloadPlotAsImage={props.downloadPlotAsImage}
