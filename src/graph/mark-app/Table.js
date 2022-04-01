@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
+import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 function Table(props) {
   let controlEnrichedFile = props.enrichedFiles.find(
@@ -16,6 +18,23 @@ function Table(props) {
 
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
+
+  const [shouldFileRender, setShouldFileRender] = useState(
+    getWorkspace()?.workspaceState?.openFiles || []
+  );
+
+  const fileViewHideHandler = (fileId) => {
+    if (shouldFileRender.includes(fileId)) {
+      setShouldFileRender((prev) => prev.filter((item) => item !== fileId));
+    } else {
+      setShouldFileRender((prev) => [...prev, fileId]);
+    }
+    setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
+  };
+
+  useEffect(() => {
+    setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
+  }, [getWorkspace()?.activePipelineId]);
 
   return (
     <div>
@@ -87,7 +106,6 @@ function Table(props) {
                           }%`
                         : controlEnrichedFile?.label}
                     </p>
-                    {/* {controlEnrichedFile.label} */}
                   </div>
                   {(() => {
                     if (plot?.plotType === "scatter") {
@@ -129,22 +147,72 @@ function Table(props) {
           </tr>
         </tbody>
       </table>
-      <div
-        style={{
-          color: "#000",
-          backgroundColor: "#ffff99",
-          border: "1px solid #000",
-          textAlign: "center",
-          fontWeight: "bold",
-        }}
-      >
-        OTHER FILES
-      </div>
+      {
+        <div
+          style={{
+            color: "#000",
+            backgroundColor: "#ffff99",
+            border: "1px solid #000",
+            textAlign: "center",
+            fontWeight: "bold",
+            marginBottom: 5,
+          }}
+        >
+          OTHER FILES
+          <span
+            style={{
+              float: "right",
+              marginRight: 20,
+              cursor: shouldFileRender.length && "pointer",
+              color: shouldFileRender.length ? "#000" : "gray",
+              fontWeight: shouldFileRender.length ? "bolder" : "bold",
+            }}
+            onClick={() => {
+              if (shouldFileRender.length) {
+                setShouldFileRender([]);
+                WorkspaceDispatch.UpdateOpenFiles("", "close");
+              }
+            }}
+          >
+            {"Close All"}
+          </span>
+          <span
+            style={{
+              float: "right",
+              marginRight: 20,
+              cursor:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1 &&
+                "pointer",
+              color:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1
+                  ? "#000"
+                  : "gray",
+              fontWeight:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1
+                  ? "bolder"
+                  : "bold",
+            }}
+            onClick={() => {
+              setShouldFileRender(
+                getWorkspace()
+                  ?.files?.map((file) => file?.id)
+                  .filter(
+                    (fileId) =>
+                      fileId !== getWorkspace()?.workspaceState?.controlFileId
+                  )
+              );
+              WorkspaceDispatch.UpdateOpenFiles("", "view");
+            }}
+          >
+            {"View All"}
+          </span>
+        </div>
+      }
       <table>
         <tbody>
           <tr
             style={{
-              border: "1px solid #32a1ce",
+              border: "1px solid gray",
             }}
           >
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
@@ -154,6 +222,9 @@ function Table(props) {
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
+                    minWidth: 275,
+                    padding: 5,
+                    borderInline: "1px solid gray",
                   }}
                 >
                   <div
@@ -214,21 +285,26 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
-                  border:
-                    editedFileIds.includes(enrichedFile.fileId) &&
-                    "4px solid #FCBA05",
+                  // border: editedFileIds.includes(enrichedFile.fileId)
+                  //   ? "4px solid #FCBA05"
+                  //   : "1px solid gray",
+                  border: "1px solid gray",
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
-                    <td key={`td-${plotIindex + 1}`}>
+                    <td
+                      key={`td-${plotIindex + 1}`}
+                      style={{ padding: 5, borderInline: "1px solid gray" }}
+                    >
                       <div
                         style={{
                           textAlign: "center",
                           fontWeight: "bold",
+                          minWidth: 275,
                         }}
                       >
-                        <p>
+                        <p style={{ margin: 0 }}>
                           {plot.population != "All"
                             ? `${
                                 enrichedFile.gateStats
@@ -260,7 +336,7 @@ function Table(props) {
                               size="small"
                               variant="contained"
                               style={{
-                                backgroundColor: "#fafafa",
+                                backgroundColor: "#FCBA05",
                               }}
                               onClick={() =>
                                 props.onResetToControl(enrichedFile.fileId)
@@ -270,41 +346,63 @@ function Table(props) {
                             </Button>
                           )}
                       </div>
-                      {(() => {
-                        if (plot.plotType === "scatter") {
-                          return (
-                            <Plot
-                              name="non-control-file"
-                              key={`plot-${plotIindex + 1}`}
-                              plot={plot}
-                              enrichedFile={enrichedFile}
-                              onAddGate={props.onAddGate}
-                              onEditGate={props.onEditGate}
-                              onResize={props.onResize}
-                              onChangeChannel={props.onChangeChannel}
-                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                              testParam={props.testParam}
-                              downloadPlotAsImage={props.downloadPlotAsImage}
-                            />
-                          );
-                        } else if (plot.plotType === "histogram") {
-                          return (
-                            <Histogram
-                              key={`plot-${plotIindex + 1}`}
-                              plot={plot}
-                              onChangeChannel={props.onChangeChannel}
-                              onAddGate={props.onAddGate}
-                              onEditGate={props.onEditGate}
-                              enrichedFile={enrichedFile}
-                              plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                              downloadPlotAsImage={props.downloadPlotAsImage}
-                            />
-                          );
-                        }
-                      })()}
+
+                      {shouldFileRender.includes(enrichedFile?.fileId) &&
+                        (() => {
+                          if (plot.plotType === "scatter") {
+                            return (
+                              <Plot
+                                name="non-control-file"
+                                key={`plot-${plotIindex + 1}`}
+                                plot={plot}
+                                enrichedFile={enrichedFile}
+                                onAddGate={props.onAddGate}
+                                onEditGate={props.onEditGate}
+                                onResize={props.onResize}
+                                onChangeChannel={props.onChangeChannel}
+                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                                testParam={props.testParam}
+                                downloadPlotAsImage={props.downloadPlotAsImage}
+                              />
+                            );
+                          } else if (plot.plotType === "histogram") {
+                            return (
+                              <Histogram
+                                key={`plot-${plotIindex + 1}`}
+                                plot={plot}
+                                onChangeChannel={props.onChangeChannel}
+                                onAddGate={props.onAddGate}
+                                onEditGate={props.onEditGate}
+                                enrichedFile={enrichedFile}
+                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
+                                downloadPlotAsImage={props.downloadPlotAsImage}
+                              />
+                            );
+                          }
+                        })()}
                     </td>
                   );
                 })}
+                <td
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    onClick={() => fileViewHideHandler(enrichedFile?.fileId)}
+                    style={{
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      paddingRight: 5,
+                    }}
+                  >
+                    {shouldFileRender.includes(enrichedFile?.fileId)
+                      ? "Hide"
+                      : "View"}
+                  </span>
+                </td>
               </tr>
             );
           })}

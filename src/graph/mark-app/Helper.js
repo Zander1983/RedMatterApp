@@ -1,4 +1,5 @@
 import MarkLogicle from "./logicleMark";
+import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
 
 const minLabelPadding = 30;
@@ -632,6 +633,9 @@ export const createDefaultPlotSnapShot = (
     selectedFile: fileId,
     clearOpenFiles: "false",
     isShared: "false",
+    openFiles: getWorkspace()
+      ?.files?.filter((file) => file?.id !== fileId && file?.id)
+      ?.map((file) => file?.id),
   };
 };
 
