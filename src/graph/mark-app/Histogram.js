@@ -11,7 +11,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLogicleScale,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins } from "./Helper";
+import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
 import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
@@ -584,23 +584,29 @@ function Histogram(props) {
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
-    if (!hasGate(props.plot)) {
-      // draw histogram gate only if it is selected file
-      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+
+    // draw histogram gate only if it is selected file
+    if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+      if (!props?.plot?.gate) {
+        // if there is no gate
         setStartCanvasPoint(event.offsetX);
-    } else {
+      } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
+        // if there is gate and same channel and scale
+        setStartCanvasPoint(event.offsetX);
+      }
     }
   };
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
-    if (hasGate(props.plot)) {
+    if (hasGate(props.plot) && isGateShowing(props?.plot)) {
       onEditGate();
       setStartCanvasPoint(null);
       setEndCanvasPoint(null);
     } else {
-      // draw histogram gate only if it is selected file
+      // show histogram gate creation modal only if it is selected file and it doesn't have any gate
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !props?.plot?.gate &&
         setModalIsOpen(true);
 
       // // so its a new gate
@@ -741,6 +747,7 @@ function Histogram(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
+          onDeleteGate={props.onDeleteGate}
           plot={props.plot}
           plotIndex={props.plotIndex}
           downloadPlotAsImage={props.downloadPlotAsImage}
