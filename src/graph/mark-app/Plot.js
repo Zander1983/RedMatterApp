@@ -8,9 +8,9 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
-  // isCursorNearAPolygonPoint
 } from "./PlotHelper";
 import Modal from "react-modal";
+import { isGateShowing } from "./Helper";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
 import { getWorkspace } from "graph/utils/workspace";
@@ -272,7 +272,7 @@ function Plot(props) {
       // need to ask for gate name
       name: gateName.name,
       points: points,
-      xAxisLabel: plot.xAxisIndex,
+      xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
       yScaleType: plot.yScaleType,
@@ -639,7 +639,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate()) {
+    if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
@@ -748,7 +748,11 @@ function Plot(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (hasGate() && props?.plot?.gate?.gateType === "polygon") {
+    if (
+      hasGate() &&
+      isGateShowing(localPlot) &&
+      props?.plot?.gate?.gateType === "polygon"
+    ) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
@@ -785,12 +789,11 @@ function Plot(props) {
         return isNear;
       });
 
-      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
-      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'auto';
       document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
-        props.enrichedFile.fileId === getWorkspace().selectedFile
+        props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !localPlot?.gate
           ? "crosshair"
           : "auto";
     }
