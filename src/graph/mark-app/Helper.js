@@ -793,8 +793,7 @@ export const isGateShowing = (plot) => {
       plot?.gate?.gateType === "polygon" &&
       plot?.plotType === "scatter"
     );
-  }
-  if (plot?.plotType === "histogram") {
+  } else if (plot?.plotType === "histogram") {
     return (
       plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
       plot?.gate?.xScaleType === plot?.xScaleType &&
