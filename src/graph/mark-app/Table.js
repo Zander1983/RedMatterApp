@@ -155,6 +155,7 @@ function Table(props) {
             border: "1px solid #000",
             textAlign: "center",
             fontWeight: "bold",
+            marginBottom: 5,
           }}
         >
           OTHER FILES
@@ -223,7 +224,7 @@ function Table(props) {
                     fontWeight: "bold",
                     minWidth: 275,
                     padding: 5,
-                    borderInline: "1px solid black",
+                    borderInline: "1px solid gray",
                   }}
                 >
                   <div
@@ -284,16 +285,17 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
-                  border: editedFileIds.includes(enrichedFile.fileId)
-                    ? "4px solid #FCBA05"
-                    : "1px solid black",
+                  // border: editedFileIds.includes(enrichedFile.fileId)
+                  //   ? "4px solid #FCBA05"
+                  //   : "1px solid gray",
+                  border: "1px solid gray",
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
                     <td
                       key={`td-${plotIindex + 1}`}
-                      style={{ padding: 5, borderInline: "1px solid black" }}
+                      style={{ padding: 5, borderInline: "1px solid gray" }}
                     >
                       <div
                         style={{
@@ -334,7 +336,7 @@ function Table(props) {
                               size="small"
                               variant="contained"
                               style={{
-                                backgroundColor: "#fafafa",
+                                backgroundColor: "#FCBA05",
                               }}
                               onClick={() =>
                                 props.onResetToControl(enrichedFile.fileId)
