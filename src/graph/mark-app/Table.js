@@ -106,7 +106,6 @@ function Table(props) {
                           }%`
                         : controlEnrichedFile?.label}
                     </p>
-                    {/* {controlEnrichedFile.label} */}
                   </div>
                   {(() => {
                     if (plot?.plotType === "scatter") {
@@ -170,11 +169,41 @@ function Table(props) {
             onClick={() => {
               if (shouldFileRender.length) {
                 setShouldFileRender([]);
-                WorkspaceDispatch.UpdateOpenFiles("", true);
+                WorkspaceDispatch.UpdateOpenFiles("", "close");
               }
             }}
           >
             {"Close All"}
+          </span>
+          <span
+            style={{
+              float: "right",
+              marginRight: 20,
+              cursor:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1 &&
+                "pointer",
+              color:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1
+                  ? "#000"
+                  : "gray",
+              fontWeight:
+                shouldFileRender.length !== getWorkspace()?.files.length - 1
+                  ? "bolder"
+                  : "bold",
+            }}
+            onClick={() => {
+              setShouldFileRender(
+                getWorkspace()
+                  ?.files?.map((file) => file?.id)
+                  .filter(
+                    (fileId) =>
+                      fileId !== getWorkspace()?.workspaceState?.controlFileId
+                  )
+              );
+              WorkspaceDispatch.UpdateOpenFiles("", "view");
+            }}
+          >
+            {"View All"}
           </span>
         </div>
       }
@@ -182,7 +211,7 @@ function Table(props) {
         <tbody>
           <tr
             style={{
-              border: "1px solid black",
+              border: "1px solid gray",
             }}
           >
             {controlEnrichedFile.plots.map((plot, plotIindex) => {

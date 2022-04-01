@@ -99,11 +99,20 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 
     case graphActions.UPDATE_OPEN_FILES:
       const fileId: string = action.payload.fileId;
-      const clear: boolean = action.payload.clear;
+      const all: string = action.payload.all;
 
-      if (clear) {
+      if (all === "close") {
         // @ts-ignore
         state.workspaceState.openFiles = [];
+      } else if (all === "view") {
+        // @ts-ignore
+        state.workspaceState.openFiles = state.files
+          ?.filter(
+            (file) =>
+              // @ts-ignore
+              file?.id !== state?.workspaceState?.controlFileId && file?.id
+          )
+          ?.map((file) => file?.id);
       } else {
         // @ts-ignore
         if (state.workspaceState?.openFiles?.includes(fileId)) {

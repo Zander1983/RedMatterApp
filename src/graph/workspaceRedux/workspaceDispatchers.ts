@@ -75,10 +75,10 @@ const WorkspaceDispatch = {
       payload: pipeLines,
     });
   },
-  UpdateOpenFiles: (fileId: string, clear: boolean = false) => {
+  UpdateOpenFiles: (fileId: string, all: string = "") => {
     return store.dispatch({
       type: graphActions.UPDATE_OPEN_FILES,
-      payload: { fileId, clear },
+      payload: { fileId, all },
     });
   },
   UpdatePlotStates: (workspaceState: any) => {
