@@ -784,12 +784,20 @@ export const getBins = (width, height, scale) => {
 };
 
 export const isGateShowing = (plot) => {
-  return (
-    plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
-    plot?.gate?.xScaleType === plot?.xScaleType &&
-    plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
-    plot?.gate?.yScaleType === plot?.yScaleType &&
-    ((plot?.gate?.gateType === "polygon" && plot?.plotType === "scatter") ||
-      plot?.gate?.gateType === plot?.plotType)
-  );
+  if (plot?.plotType === "scatter") {
+    return (
+      plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
+      plot?.gate?.xScaleType === plot?.xScaleType &&
+      plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
+      plot?.gate?.yScaleType === plot?.yScaleType &&
+      plot?.gate?.gateType === "polygon" &&
+      plot?.plotType === "scatter"
+    );
+  } else if (plot?.plotType === "histogram") {
+    return (
+      plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
+      plot?.gate?.xScaleType === plot?.xScaleType &&
+      plot?.gate?.gateType === plot?.plotType
+    );
+  }
 };
