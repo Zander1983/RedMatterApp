@@ -751,7 +751,9 @@ function Histogram(props) {
           onChangeScale={onChangeScale}
           onDeleteGate={props.onDeleteGate}
           plot={props.plot}
+          enrichedFile={props.enrichedFile}
           plotIndex={props.plotIndex}
+          allFileMinObj={props.allFileMinObj}
           downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
             <div
@@ -816,13 +818,14 @@ function Histogram(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
-                  checkbox here with selector of <br />
+
+                  {/* checkbox here with selector of <br />
                   allFileIds OnClick on a fileId,
                   <br />
                   propagate back up to top level <br />
                   component and add to the State eg
                   <br />
-                  plots[3].overlay.push(theSelectedFileId)
+                  plots[3].overlay.push(theSelectedFileId) */}
                 </div>
               </div>
               {/* X-axis */}

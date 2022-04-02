@@ -18,8 +18,8 @@ function Table(props) {
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
 
-  let allFileIds = props.enrichedFiles.map((enrichedFile) => {
-    return enrichedFile.fileId;
+  let allFileMinObj = props.enrichedFiles.map((enrichedFile) => {
+    return { id: enrichedFile.fileId, name: enrichedFile.label };
   });
 
   return (
@@ -135,7 +135,7 @@ function Table(props) {
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
                           enrichedOverlayFiles={enrichedOverlayFiles}
-                          allFileIds={allFileIds}
+                          allFileMinObj={allFileMinObj}
                           plotIndex={`0-${plotIindex}`}
                           downloadPlotAsImage={props.downloadPlotAsImage}
                         />
@@ -315,6 +315,7 @@ function Table(props) {
                               onAddGate={props.onAddGate}
                               onEditGate={props.onEditGate}
                               enrichedFile={enrichedFile}
+                              allFileMinObj={allFileMinObj}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                               downloadPlotAsImage={props.downloadPlotAsImage}
                             />

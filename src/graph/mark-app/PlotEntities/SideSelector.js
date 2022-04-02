@@ -14,14 +14,18 @@ function SideSelector(props) {
     <div
       style={{
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
         paddingLeft: 15,
         paddingBottom: 15,
         paddingRight: 15,
       }}
     >
-      <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <div
           className="pc-y"
           style={{
@@ -204,6 +208,38 @@ function SideSelector(props) {
           </Select>
         </div>
       </div>
+      {props.plot.plotType == "histogram" ? (
+        <div
+          style={{
+            marginLeft: "20px",
+            marginTop: "30px",
+            height: "fit-content",
+            padding: "10px",
+            border: "1px solid black",
+          }}
+        >
+          {props.allFileMinObj
+            .filter((x) => x.id != props.enrichedFile.fileId)
+            .map((x) => {
+              return (
+                <div
+                  class="form-check"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value={x.id}
+                    id={props.plotIndex + x.id}
+                  ></input>
+                  <label class="form-check-label" for={props.plotIndex + x.id}>
+                    {x.name}
+                  </label>
+                </div>
+              );
+            })}
+        </div>
+      ) : null}
     </div>
   );
 }
