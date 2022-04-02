@@ -43,7 +43,7 @@ export const superAlgorithm = (
         );
         plot.gate.xLogicle = xLogicle;
       }
-      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+      if (plot.gate && plot.gate["yScaleType"] === "bi") {
         let yLogicle = new MarkLogicle(
           plot.gate.yAxisOriginalRanges[0],
           plot.gate.yAxisOriginalRanges[1]
