@@ -131,6 +131,7 @@ function Table(props) {
                           plot={plot}
                           onChangeChannel={props.onChangeChannel}
                           onAddGate={props.onAddGate}
+                          addOverlay={props.addOverlay}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
@@ -314,6 +315,7 @@ function Table(props) {
                               onChangeChannel={props.onChangeChannel}
                               onAddGate={props.onAddGate}
                               onEditGate={props.onEditGate}
+                              addOverlay={props.addOverlay}
                               enrichedFile={enrichedFile}
                               allFileMinObj={allFileMinObj}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}

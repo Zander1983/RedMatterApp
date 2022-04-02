@@ -230,6 +230,15 @@ function SideSelector(props) {
                     class="form-check-input"
                     type="checkbox"
                     value={x.id}
+                    checked={props.plot?.overlays?.includes(x.id)}
+                    onClick={(e) => {
+                      debugger;
+                      props.addOverlay(
+                        props.enrichedFile.fileId,
+                        e.target.value,
+                        props.plotIndex.split("-")[1]
+                      );
+                    }}
                     id={props.plotIndex + x.id}
                   ></input>
                   <label class="form-check-label" for={props.plotIndex + x.id}>

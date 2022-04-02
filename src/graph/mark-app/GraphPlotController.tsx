@@ -126,12 +126,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             )?.[0]
           : null;
 
-      const {
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-      } = getPlotChannelAndPosition(defaultFile);
+      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
+        getPlotChannelAndPosition(defaultFile);
 
       workspaceState = createDefaultPlotSnapShot(
         defaultFile?.id,
@@ -259,18 +255,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[
-        fileIds[i]
-      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
-        (plt: any) => {
-          if (plt.population === plot.population) {
-            const { gate, ...plotWithOutGate } = plt;
-            return plotWithOutGate;
-          } else {
-            return plt;
-          }
+      (newWorkspaceState as any).files[fileIds[i]].plots = (
+        newWorkspaceState as any
+      ).files[fileIds[i]].plots.map((plt: any) => {
+        if (plt.population === plot.population) {
+          const { gate, ...plotWithOutGate } = plt;
+          return plotWithOutGate;
+        } else {
+          return plt;
         }
-      );
+      });
     }
 
     let copyOfFiles: any[] = getWorkspace().files;
@@ -296,9 +290,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[
-        plotIndex
-      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -319,9 +312,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[
-      change.plotIndex
-    ] = JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
+      JSON.parse(JSON.stringify(change.plot));
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
@@ -428,6 +420,33 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
       enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
+  };
+
+  addOverlay = (fileId: string, addFileId: string, plotIndex: number) => {
+    debugger;
+    let workspace = getWorkspace();
+    let newWorkspaceState: any = JSON.parse(
+      JSON.stringify(workspace.workspaceState)
+    );
+
+    let enrichedPlot = this.state.enrichedFiles.find((x) => x.fileId == fileId)
+      .plots[plotIndex];
+    if (!enrichedPlot?.overlays) {
+      enrichedPlot.overlays = [];
+    }
+    enrichedPlot.overlays.push(addFileId);
+
+    let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
+    if (!workspaceStatePlot?.overlays) {
+      workspaceStatePlot.overlays = [];
+    }
+    workspaceStatePlot.overlays.push(addFileId);
+
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    this.setState({
+      enrichedFiles: this.state.enrichedFiles,
       workspaceState: newWorkspaceState,
     });
   };
@@ -710,6 +729,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           enrichedFiles={this.state.enrichedFiles}
           className="workspace"
           onChangeChannel={this.onChangeChannel}
+          addOverlay={this.addOverlay}
           onAddGate={this.onAddGate}
           onDeleteGate={this.onDeleteGate}
           onEditGate={this.onEditGate}
