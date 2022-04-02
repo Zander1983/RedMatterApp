@@ -119,7 +119,9 @@ function Table(props) {
                           (enrichedFile) => {
                             //
                             return (
-                              plot.overlays.indexOf(enrichedFile.fileId) > -1
+                              plot.overlays.findIndex(
+                                (x) => x.id == enrichedFile.fileId
+                              ) > -1
                             );
                           }
                         );
@@ -308,6 +310,19 @@ function Table(props) {
                             />
                           );
                         } else if (plot.plotType === "histogram") {
+                          let enrichedOverlayFiles;
+                          if (plot.overlays && plot.overlays.length > 0) {
+                            enrichedOverlayFiles = props.enrichedFiles.filter(
+                              (enrichedFile) => {
+                                //
+                                return (
+                                  plot.overlays.findIndex(
+                                    (x) => x.id == enrichedFile.fileId
+                                  ) > -1
+                                );
+                              }
+                            );
+                          }
                           return (
                             <Histogram
                               key={`plot-${plotIindex + 1}`}
@@ -318,6 +333,7 @@ function Table(props) {
                               addOverlay={props.addOverlay}
                               enrichedFile={enrichedFile}
                               allFileMinObj={allFileMinObj}
+                              enrichedOverlayFiles={enrichedOverlayFiles}
                               plotIndex={`${fileIndex + 1}-${plotIindex}`}
                               downloadPlotAsImage={props.downloadPlotAsImage}
                             />

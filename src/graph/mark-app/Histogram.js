@@ -80,7 +80,8 @@ const paintHist = (
   plot,
   minimum,
   color,
-  maxCountPlusTenPercent
+  maxCountPlusTenPercent,
+  fill = true
 ) => {
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
@@ -134,8 +135,10 @@ const paintHist = (
 
   context.lineTo(plot.width, plot.height);
   context.closePath();
-  context.fillStyle = color;
-  context.fill();
+  if (fill) {
+    context.fillStyle = color;
+    context.fill();
+  }
   context.stroke();
 };
 
@@ -265,10 +268,44 @@ function Histogram(props) {
 
     // at this point, the histogram for the control file will have been draw on the canvas
     if (props.plot.overlays && props.plot.overlays.length > 0) {
-      // here we need to loop through props.enrichedOverlayFiles and calculate:
-      // - enrichedOverlayFileData
-      // - hists (note: bins wont change)
-      // - call paintHist
+      for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
+        let overlayEnrichedFileData =
+          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
+            if (
+              props.plot.population == "All" ||
+              enrichedEvent["isInGate" + props.plot.population]
+            ) {
+              if (props.plot.xScaleType == "lin") {
+                return enrichedEvent[props.plot.xAxisIndex];
+              } else {
+                let logicle =
+                  props.enrichedOverlayFiles[index].logicles[
+                    props.plot.xAxisIndex
+                  ];
+                return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
+              }
+            } else {
+              return [];
+            }
+          });
+        const overlayHists = histogram({
+          data: overlayEnrichedFileData,
+          bins: bins,
+        });
+        let overlayColor = props.plot.overlays.find(
+          (x) => x.id == enrichedOverlayFile.fileId
+        ).color;
+        paintHist(
+          context,
+          overlayHists,
+          enrichedOverlayFile,
+          props.plot,
+          enrichedOverlayFile.channels[props.plot.xAxisIndex].minimum,
+          overlayColor,
+          maxCountPlusTenPercent,
+          false
+        );
+      }
     }
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {

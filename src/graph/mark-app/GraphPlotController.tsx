@@ -424,8 +424,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  addOverlay = (fileId: string, addFileId: string, plotIndex: number) => {
-    debugger;
+  addOverlay = (
+    fileId: string,
+    addFileId: string,
+    plotIndex: number,
+    checked: boolean
+  ) => {
     let workspace = getWorkspace();
     let newWorkspaceState: any = JSON.parse(
       JSON.stringify(workspace.workspaceState)
@@ -436,13 +440,26 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (!enrichedPlot?.overlays) {
       enrichedPlot.overlays = [];
     }
-    enrichedPlot.overlays.push(addFileId);
-
+    let color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    if (checked) enrichedPlot.overlays.push({ id: addFileId, color: color });
+    else {
+      let deleteIndex = enrichedPlot.overlays.findIndex(
+        (x: any) => x.id == addFileId
+      );
+      enrichedPlot.overlays.splice(deleteIndex, 1);
+    }
     let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
     if (!workspaceStatePlot?.overlays) {
       workspaceStatePlot.overlays = [];
     }
-    workspaceStatePlot.overlays.push(addFileId);
+    if (checked)
+      workspaceStatePlot.overlays.push({ id: addFileId, color: color });
+    else {
+      let deleteIndex = workspaceStatePlot.overlays.findIndex(
+        (x: any) => x.id == addFileId
+      );
+      workspaceStatePlot.overlays.splice(deleteIndex, 1);
+    }
 
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({

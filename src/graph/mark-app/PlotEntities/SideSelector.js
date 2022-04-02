@@ -230,13 +230,13 @@ function SideSelector(props) {
                     class="form-check-input"
                     type="checkbox"
                     value={x.id}
-                    checked={props.plot?.overlays?.includes(x.id)}
+                    checked={props.plot?.overlays?.find((y) => y.id == x.id)}
                     onClick={(e) => {
-                      debugger;
                       props.addOverlay(
                         props.enrichedFile.fileId,
                         e.target.value,
-                        props.plotIndex.split("-")[1]
+                        props.plotIndex.split("-")[1],
+                        e.target.checked
                       );
                     }}
                     id={props.plotIndex + x.id}
