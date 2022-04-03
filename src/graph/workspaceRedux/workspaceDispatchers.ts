@@ -87,7 +87,12 @@ const WorkspaceDispatch = {
       payload: workspaceState,
     });
   },
-
+  SetSortedFileId: (files: string[]) => {
+    return store.dispatch({
+      type: graphActions.SET_SORTED_FILES,
+      payload: { sortedFileIds: files },
+    });
+  },
   AddPlotsAndPopulations: (plots: Plot[], populations: Population[]) => {
     return store.dispatch({
       type: graphActions.ADD_PLOTS_AND_POPULATIONS,
@@ -220,7 +225,6 @@ const WorkspaceDispatch = {
     });
   },
   ChangeUpdateType: (type: string) => {
-    console.log(type);
     return store.dispatch({
       type: graphActions.UPDATE_TYPE,
       payload: { type },

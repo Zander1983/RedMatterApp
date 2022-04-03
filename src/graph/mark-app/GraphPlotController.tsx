@@ -617,6 +617,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         }
       }
     }
+    WorkspaceDispatch.SetSortedFileId(sortedFiles.map((file) => file?.id));
     WorkspaceDispatch.SetFiles(sortedFiles);
     this.setState({
       enrichedFiles: enrichedFiles,
