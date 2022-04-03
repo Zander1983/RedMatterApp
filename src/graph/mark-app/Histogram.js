@@ -368,12 +368,17 @@ function Histogram(props) {
           ? props.plot.width - 2
           : xLabels[i].pos / xDivisor + 20;
       // to avoid overlapping between the labels
-      if (tooClose) {
-        xPos += 8;
+      if (tooClose && i > 0) {
+        xPos +=
+          xLabels[i - 1].name.length === 4
+            ? 20
+            : xLabels[i - 1].name.length === 3
+            ? 15
+            : 8;
       }
       drawText(
         {
-          x: xPos,
+          x: i === 0 ? 20 : xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",

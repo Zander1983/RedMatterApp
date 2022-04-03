@@ -402,14 +402,19 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
     const xDivisor =
-      props.enrichedFile.channels[localPlot.xAxisIndex].maximum / 200;
+      (props.enrichedFile.channels[localPlot.xAxisIndex].maximum -
+        props.enrichedFile.channels[localPlot.xAxisIndex].minimum) /
+      200;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
+
     const yDivisor =
-      props.enrichedFile.channels[localPlot.yAxisIndex].maximum / 200;
+      (props.enrichedFile.channels[localPlot.yAxisIndex].maximum -
+        props.enrichedFile.channels[localPlot.yAxisIndex].minimum) /
+      200;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -440,12 +445,18 @@ function Plot(props) {
         xLabels[i].pos / xDivisor + 20 > localPlot.width
           ? localPlot.width - 2
           : xLabels[i].pos / xDivisor + 20;
-      if (tooClose) {
-        xPos += 8;
+
+      if (tooClose && i > 0) {
+        xPos +=
+          xLabels[i - 1].name.length === 4
+            ? 20
+            : xLabels[i - 1].name.length === 3
+            ? 15
+            : 8;
       }
       drawText(
         {
-          x: xPos,
+          x: i === 0 ? 20 : xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",
@@ -468,14 +479,26 @@ function Plot(props) {
 
     contextY.clearRect(0, 0, 20, localPlot.height + 20);
     for (let i = 0; i < yLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        yLabels[i].pos / yDivisor - yLabels[i - 1].pos / yDivisor < 15
+      ) {
+        tooClose = true;
+      }
+
       let yPos =
         yLabels[i].pos / yDivisor + 20 > localPlot.height
           ? localPlot.height
           : yLabels[i].pos / yDivisor + 20;
+
+      if (tooClose) {
+        yPos += 10;
+      }
       drawText(
         {
           x: 0,
-          y: localPlot.height + 20 - yPos,
+          y: i === 0 ? 200 : localPlot.height + 20 - yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
