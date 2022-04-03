@@ -34,6 +34,26 @@ function Table(props) {
 
   useEffect(() => {
     setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
+    if (getWorkspace()?.workspaceState?.sortingState?.sortingState === "asc") {
+      props.sortByGate(
+        getWorkspace()?.workspaceState?.sortingState?.gateName,
+        "asc"
+      );
+    } else if (
+      getWorkspace()?.workspaceState?.sortingState?.sortingState === "dsc"
+    ) {
+      props.sortByGate(
+        getWorkspace()?.workspaceState?.sortingState?.gateName,
+        "dsc"
+      );
+    } else {
+      const files = getWorkspace()?.files;
+      const newFiles = [];
+      for (const id of getWorkspace()?.fileIds) {
+        newFiles.push(files.find((file) => file.id === id));
+      }
+      WorkspaceDispatch.SetFiles(newFiles);
+    }
   }, [getWorkspace()?.activePipelineId]);
 
   return (

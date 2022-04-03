@@ -552,7 +552,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   sortByGate = (gateName: any, sortType: any) => {
     let enrichedFiles = this.state.enrichedFiles;
-
     let controlEnrichedFile = enrichedFiles.find(
       (enrichedFile) => enrichedFile.isControlFile
     );
@@ -617,6 +616,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         }
       }
     }
+    WorkspaceDispatch.SetSortingState(sortType, gateName);
     WorkspaceDispatch.SetFiles(sortedFiles);
     this.setState({
       enrichedFiles: enrichedFiles,

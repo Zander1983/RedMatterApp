@@ -182,6 +182,7 @@ export interface Workspace {
   activePipelineId: string;
   clearOpenFiles: boolean;
   updateType: string;
+  fileIds: string[];
 }
 
 export interface PlotSpecificWorkspaceData {
