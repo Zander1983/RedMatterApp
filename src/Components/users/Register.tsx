@@ -102,9 +102,9 @@ const Register = (props: any) => {
     location: "",
     password: "",
     g_recaptcha_response: "",
-    subscribed: false,
   });
-
+  const [subscribed, setSubscribed] = useState("");
+  const [subscribedError, setSubscribedError] = useState("");
   const eventStacker = useGAEventTrackers("Registration");
 
   const handleChange = (event: any) => {
@@ -140,13 +140,20 @@ const Register = (props: any) => {
       setLocationStatus((prev: any) => false);
       return;
     }
+    if (subscribed === "") {
+      setSubscribedError("Please Select Yes/No for Special Offers");
+      return;
+    }
     if (!captcha) {
       setCaptchaError(true);
       return;
     }
+
+    const data = { ...formData, subscribed: subscribed === "Yes" };
+
     try {
       setLoading(true);
-      await axios.post("api/register", formData);
+      await axios.post("api/register", data);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
       eventStacker(
@@ -314,11 +321,10 @@ const Register = (props: any) => {
             type="radio"
             name="subscribed"
             value="Yes"
-            onClick={() =>
-              setFormData((prev: any) => {
-                return { ...prev, subscribed: true };
-              })
-            }
+            onClick={() => {
+              setSubscribed("Yes");
+              setSubscribedError("");
+            }}
           />
           <label
             htmlFor="Yes"
@@ -330,15 +336,17 @@ const Register = (props: any) => {
             type="radio"
             name="subscribed"
             value="No"
-            onClick={() =>
-              setFormData((prev: any) => {
-                return { ...prev, subscribed: false };
-              })
-            }
+            onClick={() => {
+              setSubscribed("No");
+              setSubscribedError("");
+            }}
           />
           <label htmlFor="No" style={{ marginLeft: 2, fontWeight: 500 }}>
             No
           </label>
+
+          <p className={classes.captchaError}> {subscribedError} </p>
+
           {/* Captcha */}
           <Grid
             container
