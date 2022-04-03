@@ -102,6 +102,7 @@ const Register = (props: any) => {
     location: "",
     password: "",
     g_recaptcha_response: "",
+    subscribed: false,
   });
 
   const eventStacker = useGAEventTrackers("Registration");
@@ -192,7 +193,6 @@ const Register = (props: any) => {
               errorMessages={["Organisation is required"]}
             />
           )}
-
           {/* Select Country */}
           <Autocomplete
             id="location"
@@ -226,7 +226,6 @@ const Register = (props: any) => {
               );
             }}
           />
-
           {/* Email */}
           <TextValidator
             className={classes.textFieldWidth}
@@ -238,7 +237,6 @@ const Register = (props: any) => {
             validators={["required", "isEmail"]}
             errorMessages={["Email is required", "Email is not valid"]}
           />
-
           {/* Password */}
           <TextValidator
             style={{ marginBottom: 10 }}
@@ -275,8 +273,7 @@ const Register = (props: any) => {
               I'm here to join my organisation
             </button>
           )} */}
-
-          {joiningOrg && (
+          {/* {joiningOrg && (
             <div>
               <TextValidator
                 style={{ marginBottom: 10 }}
@@ -307,8 +304,41 @@ const Register = (props: any) => {
                 I do not have an organisation to join.
               </button>
             </div>
-          )}
+          )} */}
 
+          {/* Subscribed */}
+          <p style={{ margin: 0, fontWeight: 500 }}>
+            Yes, please send me special offers and new product emails
+          </p>
+          <input
+            type="radio"
+            name="subscribed"
+            value="Yes"
+            onClick={() =>
+              setFormData((prev: any) => {
+                return { ...prev, subscribed: true };
+              })
+            }
+          />
+          <label
+            htmlFor="Yes"
+            style={{ marginRight: 5, marginLeft: 2, fontWeight: 500 }}
+          >
+            Yes
+          </label>
+          <input
+            type="radio"
+            name="subscribed"
+            value="No"
+            onClick={() =>
+              setFormData((prev: any) => {
+                return { ...prev, subscribed: false };
+              })
+            }
+          />
+          <label htmlFor="No" style={{ marginLeft: 2, fontWeight: 500 }}>
+            No
+          </label>
           {/* Captcha */}
           <Grid
             container
@@ -335,7 +365,6 @@ const Register = (props: any) => {
               </p>
             )}
           </Grid>
-
           <Grid container justify="center" style={{ marginTop: 30 }}>
             <Button type="submit" className={classes.submitBtn}>
               {loading ? (
