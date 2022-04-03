@@ -329,14 +329,17 @@ function Histogram(props) {
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
     ];
     const xDivisor =
-      props.enrichedFile.channels[props.plot.xAxisIndex].maximum / 200;
+      (props.enrichedFile.channels[props.plot.xAxisIndex].maximum -
+        props.enrichedFile.channels[props.plot.xAxisIndex].minimum) /
+      props.plot.width;
 
     let yRange = [
       props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
     ];
     const yDivisor =
-      props.enrichedFile.channels[props.plot.yAxisIndex].maximum / 200;
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum /
+      props.plot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       props.plot.width,

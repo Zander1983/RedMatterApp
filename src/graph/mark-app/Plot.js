@@ -404,7 +404,7 @@ function Plot(props) {
     const xDivisor =
       (props.enrichedFile.channels[localPlot.xAxisIndex].maximum -
         props.enrichedFile.channels[localPlot.xAxisIndex].minimum) /
-      200;
+      localPlot.width;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
@@ -414,7 +414,7 @@ function Plot(props) {
     const yDivisor =
       (props.enrichedFile.channels[localPlot.yAxisIndex].maximum -
         props.enrichedFile.channels[localPlot.yAxisIndex].minimum) /
-      200;
+      localPlot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -428,6 +428,7 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
@@ -498,7 +499,7 @@ function Plot(props) {
       drawText(
         {
           x: 0,
-          y: i === 0 ? 200 : localPlot.height + 20 - yPos,
+          y: i === 0 ? localPlot.height : localPlot.height + 20 - yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
