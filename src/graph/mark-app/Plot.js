@@ -218,10 +218,9 @@ function Plot(props) {
   const onClickGateButton = (plot, plotIndex) => {};
 
   const onAddGate = (plot, plotIndex) => {
-    let points = newGatePointsCanvas;
+    let pointsReal = JSON.parse(JSON.stringify(newGatePointsCanvas));
 
-    // Here im generating a random gate, which is a triangle
-    points.forEach((point) => {
+    pointsReal.forEach((point) => {
       // the scale the gate is created on is important hear - linear very different to logicle
       if (localPlot.xScaleType === "lin") {
         // if linear, convert to the "real" value
@@ -271,7 +270,7 @@ function Plot(props) {
       gateType: "polygon",
       // need to ask for gate name
       name: gateName.name,
-      points: points,
+      points: pointsReal,
       xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
