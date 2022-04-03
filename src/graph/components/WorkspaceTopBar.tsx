@@ -167,11 +167,12 @@ const WorkspaceTopBarComponent = ({
   //@ts-ignore
   const workState = useSelector((state) => state.workspace.workspaceState);
 
-  // useEffect(() => {
-  //   if (didMount && plotLength === 0) {
-  //     setRenderPlotController(true);
-  //   }
-  // }, [plotLength]);
+  useEffect(() => {
+    const files = getSortedFile(getWorkspace()?.files);
+    if (files.length) {
+      WorkspaceDispatch.SetFiles(files);
+    }
+  }, [workState?.pipelineId]);
 
   useEffect(() => {
     setSaveNeeded(false);
@@ -225,8 +226,6 @@ const WorkspaceTopBarComponent = ({
           );
         }
 
-        const files = getWorkspace()?.files;
-        const sortedFiles = getSortedFile(files);
         if (response?.status === 200) {
           setSaveNeeded(false);
           const workspace = response.data.state;
@@ -237,10 +236,6 @@ const WorkspaceTopBarComponent = ({
             await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
             await WorkspaceDispatch.UpdateSelectedFile(
               workspaceObj.selectedFile
-            );
-
-            await WorkspaceDispatch.SetFiles(
-              files.length === sortedFiles.length ? sortedFiles : files
             );
 
             //setActivePipelineId(selectedPipeline);
@@ -263,10 +258,7 @@ const WorkspaceTopBarComponent = ({
                 filesInNewOrder.push(files[i]);
               }
             }
-
-            await WorkspaceDispatch.SetFiles(
-              files.length === sortedFiles.length ? sortedFiles : files
-            );
+            WorkspaceDispatch.SetFiles(filesInNewOrder);
             const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
               getPlotChannelAndPosition(selectedFile);
             const plotState = createDefaultPlotSnapShot(

@@ -13,10 +13,11 @@ export const getSortedFile = (files: File[]) => {
   //@ts-ignore
   const sortedFileIds = getWorkspace()?.workspaceState?.sortedFiles;
   const sortedFiles = [];
-  for (const id of sortedFileIds) {
-    sortedFiles.push(files.find((file) => file.id === id));
+  if (sortedFileIds) {
+    for (const id of sortedFileIds) {
+      sortedFiles.push(files.find((file) => file.id === id));
+    }
   }
-
   return sortedFiles.filter(Boolean);
 };
 export const downloadFileMetadata = async (
@@ -334,9 +335,11 @@ export const downloadEvent = async (
     }
 
     const sortedFiles = getSortedFile(newFileArray);
+
     WorkspaceDispatch.SetFiles(
       newFileArray.length === sortedFiles.length ? sortedFiles : newFileArray
     );
+    // WorkspaceDispatch.SetFiles(newFileArray);
 
     return files;
   } catch (err: any) {
@@ -346,6 +349,7 @@ export const downloadEvent = async (
     )
       throw err;
     if (retry > 0) {
+      console.log(err?.message);
       downloadEvent(
         workspaceIsShared,
         targetFiles,
