@@ -1474,9 +1474,8 @@ const Experiment = (props: any) => {
                 ) : null}
                 {uploadingFiles?.map((e: any, i: number) => {
                   return (
-                    <>
+                    <div key={`uploadingFiles-${i}`}>
                       <Grid
-                        key={`uploadingFiles-${i}`}
                         item
                         xs={12}
                         style={{
@@ -1513,7 +1512,7 @@ const Experiment = (props: any) => {
                           style={{ marginTop: 15, marginBottom: 15 }}
                         ></Divider>
                       ) : null}
-                    </>
+                    </div>
                   );
                 })}
                 {Object.keys(experiment).length > 0 ? (

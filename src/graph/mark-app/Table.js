@@ -38,7 +38,7 @@ function Table(props) {
 
   return (
     <div>
-      <p style={{ margin: 0 }}>
+      <p style={{ margin: 0, marginBottom: 5, marginTop: 5 }}>
         <strong> {"Analysis based on sampling of 10,000 events"} </strong>
       </p>
       <div
