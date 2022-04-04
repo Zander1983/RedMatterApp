@@ -135,7 +135,7 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2 style={{ margin: 0 }}>{"Name Your Analysis"}</h2>
+          <h2 style={{ margin: 0 }}>{"Name Your Gate Pipeline"}</h2>
           <p
             style={{
               color: "#777",
@@ -182,7 +182,7 @@ const AddFileModal = React.memo(
                   autoFocus
                   margin="dense"
                   id="gate-name-textinput"
-                  label="Analysis name*"
+                  label="Gate Pipeline Name*"
                   type="text"
                   onChange={(e: any) => {
                     setName(e.target.value);

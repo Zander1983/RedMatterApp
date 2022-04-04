@@ -149,7 +149,7 @@ const Experiment = (props: any) => {
         fetchExperiments.url,
         fetchExperiments.options
       );
-      
+
       if (response?.status) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
@@ -526,7 +526,7 @@ const Experiment = (props: any) => {
           userManager.getOrganiztionID(),
           file.file
         );
-     
+
         if (response?.status === 201) {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
@@ -1118,16 +1118,27 @@ const Experiment = (props: any) => {
                     }}
                   >
                     <div style={{ textAlign: "left" }}>
-                      <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                      <h1 style={{ fontWeight: 600, margin: 0 }}>
                         Experiment Files
                       </h1>
                       <p
                         style={{
                           fontSize: 14,
+                          margin: 0,
                         }}
                       >
                         To upload files, drag and drop them here or click the
                         upload button
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          margin: 0,
+                        }}
+                      >
+                        Files MUST have the same channels, and the channels must
+                        be in the same order. Any file without the same channels
+                        will not be uploaded.
                       </p>
                     </div>
                     <div>
@@ -1470,9 +1481,8 @@ const Experiment = (props: any) => {
                 ) : null}
                 {uploadingFiles?.map((e: any, i: number) => {
                   return (
-                    <>
+                    <div key={`uploadingFiles-${i}`}>
                       <Grid
-                        key={`uploadingFiles-${i}`}
                         item
                         xs={12}
                         style={{
@@ -1509,7 +1519,7 @@ const Experiment = (props: any) => {
                           style={{ marginTop: 15, marginBottom: 15 }}
                         ></Divider>
                       ) : null}
-                    </>
+                    </div>
                   );
                 })}
                 {Object.keys(experiment).length > 0 ? (

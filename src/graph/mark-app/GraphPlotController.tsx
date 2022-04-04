@@ -721,11 +721,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (getWorkspace()?.selectedFile && plots?.length > 0) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
-        <div
-          style={{
-            padding: 20,
-          }}
-        >
+        <div style={{ padding: 10 }}>
           {!this.state.isTableRenderCall ? (
             <Grid
               container

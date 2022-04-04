@@ -711,6 +711,7 @@ function Histogram(props) {
                   marginLeft: 5,
                   border: "none",
                   borderRadius: 5,
+                  outline: "none",
                 }}
                 onChange={(e) => gateNameHandler(e.target.value)}
               />
@@ -733,13 +734,31 @@ function Histogram(props) {
             </div>
             <div style={{ margin: "auto" }}>
               <button
-                style={{ marginRight: 5 }}
+                style={{
+                  marginRight: 5,
+                  backgroundColor:
+                    gateName.error || !gateName.name ? "#f3f3f3" : "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: gateName.error || !gateName.name ? "auto" : "pointer",
+                  color: gateName.error || !gateName.name ? "gray" : "black",
+                }}
                 disabled={gateName.error || !gateName.name}
                 onClick={() => onSetGateName()}
               >
                 Ok
               </button>
-              <button onClick={() => onCancelGateName()}>Cancel</button>
+              <button
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => onCancelGateName()}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </Modal>
