@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
+import { useResizeDetector } from "react-resize-detector";
 
 import {
   getRealPointFromCanvasPoints,
@@ -75,6 +76,21 @@ function Plot(props) {
 
   //useTraceUpdate({ ...props, localPlot });
 
+  const onResize = useCallback((w, h) => {
+    console.log("w, h is ", w, h);
+    //setSize({ w, h });
+
+    //{ ...localPlot.gate, points: points }
+    // setLocalPlot({
+    //   ...localPlot,
+    //   width: w,
+    //   height: h,
+    // });
+  }, []);
+  const canvasRef = useRef();
+  const { ref } = useResizeDetector({ onResize });
+  const [isReSize, setIsReSize] = useState(false);
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
     name: "",
@@ -86,10 +102,12 @@ function Plot(props) {
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
 
   useEffect(() => {
+    console.log("1 in plot useEffect");
     setLocalPlot(props.plot);
   }, [props.plot]);
 
   useEffect(() => {
+    console.log("2 in plot useEffect");
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -930,14 +948,18 @@ function Plot(props) {
                 />
                 {/* main canvas */}
                 <div
+                  id="resizer"
                   style={{
                     border: "1px solid #32a1ce",
-                    width: `${localPlot.width}px`,
-                    height: `${localPlot.height}px`,
+                    width: "200px",
+                    height: "200px",
+                    resize: "both",
+                    overflow: "auto",
                   }}
-                  // ref={ref}
+                  ref={ref}
                 >
                   <canvas
+                    ref={canvasRef}
                     className="canvas"
                     id={`canvas-${props.plotIndex}`}
                     width={localPlot.width}
