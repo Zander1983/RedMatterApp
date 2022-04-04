@@ -24,7 +24,6 @@ export const superAlgorithm = (
 
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
-
   let controlFileId = WorkspaceState.controlFileId;
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
@@ -69,7 +68,6 @@ export const superAlgorithm = (
         if (!event["color"]) {
           event["color"] = "#000";
         }
-
         if (gate) {
           let pointX = event[gate["xAxisIndex"]];
           let pointY = event[gate["yAxisIndex"]];
@@ -159,15 +157,18 @@ export const superAlgorithm = (
     //     Files[fileIndex].events.length
     //   ).toFixed(2);
     // });
+
     const gateKeys = Object.keys(gateStatsObj);
     let gateStats = [];
     gateKeys.forEach((gateKey, index) => {
       const gateName = gateKey.replace("_count", "");
 
-      let percentage = (
-        (gateStatsObj[gateKey] * 100) /
-        Files[fileIndex].events.length
-      ).toFixed(2);
+      const divider =
+        index === 0
+          ? Files[fileIndex].events.length
+          : gateStatsObj[gateKeys[index - 1]];
+
+      let percentage = ((gateStatsObj[gateKey] * 100) / divider).toFixed(2);
 
       if (calculateMedianAndMean) {
         gateStats.push({
