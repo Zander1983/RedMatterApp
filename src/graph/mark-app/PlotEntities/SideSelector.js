@@ -216,15 +216,24 @@ function SideSelector(props) {
             height: "fit-content",
             padding: "10px",
             border: "1px solid black",
+            maxWidth: 250,
           }}
         >
+          <h4>Overlays</h4>
           {props.allFileMinObj
             .filter((x) => x.id != props.enrichedFile.fileId)
             .map((x) => {
               return (
                 <div
                   class="form-check"
-                  style={{ display: "flex", alignItems: "center" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: 5,
+                    backgroundColor: `${
+                      props.plot?.overlays?.find((y) => y.id == x.id)?.color
+                    }`,
+                  }}
                 >
                   <input
                     class="form-check-input"
@@ -241,8 +250,16 @@ function SideSelector(props) {
                     }}
                     id={props.plotIndex + x.id}
                   ></input>
-                  <label class="form-check-label" for={props.plotIndex + x.id}>
-                    {x.name}
+                  <label
+                    class="form-check-label"
+                    style={{ wordBreak: "break-all", marginLeft: 3 }}
+                    for={props.plotIndex + x.id}
+                  >
+                    {`${
+                      x.name.length > 50
+                        ? x.name.substring(0, 50) + "..."
+                        : x.name
+                    }`}
                   </label>
                 </div>
               );

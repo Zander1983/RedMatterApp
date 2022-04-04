@@ -268,6 +268,7 @@ function Histogram(props) {
 
     // at this point, the histogram for the control file will have been draw on the canvas
     if (props.plot.overlays && props.plot.overlays.length > 0) {
+      let overlayFileIndex = 0;
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
         let overlayEnrichedFileData =
           enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
@@ -279,7 +280,7 @@ function Histogram(props) {
                 return enrichedEvent[props.plot.xAxisIndex];
               } else {
                 let logicle =
-                  props.enrichedOverlayFiles[index].logicles[
+                  props.enrichedOverlayFiles[overlayFileIndex].logicles[
                     props.plot.xAxisIndex
                   ];
                 return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
@@ -305,6 +306,7 @@ function Histogram(props) {
           maxCountPlusTenPercent,
           false
         );
+        overlayFileIndex = overlayFileIndex + 1;
       }
     }
 
