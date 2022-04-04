@@ -136,7 +136,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         yAxisLabel,
         xAxisIndex,
         yAxisIndex,
-        // @ts-ignore
         pipeline._id,
         pipeline.name
       );

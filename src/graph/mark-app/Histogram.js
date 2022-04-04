@@ -11,7 +11,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLogicleScale,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins } from "./Helper";
+import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
 import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
@@ -635,19 +635,27 @@ function Histogram(props) {
     isMouseDown = true;
 
     // draw histogram gate only if it is selected file
-    props.enrichedFile.fileId === getWorkspace().selectedFile &&
-      setStartCanvasPoint(event.offsetX);
+    if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+      if (!props?.plot?.gate) {
+        // if there is no gate
+        setStartCanvasPoint(event.offsetX);
+      } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
+        // if there is gate and same channel and scale
+        setStartCanvasPoint(event.offsetX);
+      }
+    }
   };
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
-    if (hasGate(props.plot)) {
+    if (hasGate(props.plot) && isGateShowing(props?.plot)) {
       onEditGate();
       setStartCanvasPoint(null);
       setEndCanvasPoint(null);
     } else {
-      // draw histogram gate only if it is selected file
+      // show histogram gate creation modal only if it is selected file and it doesn't have any gate
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !props?.plot?.gate &&
         setModalIsOpen(true);
 
       // // so its a new gate

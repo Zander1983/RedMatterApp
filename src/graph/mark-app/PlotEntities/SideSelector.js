@@ -232,6 +232,8 @@ function SideSelector(props) {
                     marginTop: 5,
                     backgroundColor: `${
                       props.plot?.overlays?.find((y) => y.id == x.id)?.color
+                        ? props.plot?.overlays?.find((y) => y.id == x.id)?.color
+                        : "transparent"
                     }`,
                   }}
                 >

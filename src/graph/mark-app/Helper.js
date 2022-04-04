@@ -1,4 +1,5 @@
 import MarkLogicle from "./logicleMark";
+import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
 
 const minLabelPadding = 30;
@@ -43,7 +44,7 @@ export const superAlgorithm = (
         );
         plot.gate.xLogicle = xLogicle;
       }
-      if (plot.gate && plot.gate["xScaleType"] === "bi") {
+      if (plot.gate && plot.gate["yScaleType"] === "bi") {
         let yLogicle = new MarkLogicle(
           plot.gate.yAxisOriginalRanges[0],
           plot.gate.yAxisOriginalRanges[1]
@@ -632,6 +633,9 @@ export const createDefaultPlotSnapShot = (
     selectedFile: fileId,
     clearOpenFiles: "false",
     isShared: "false",
+    openFiles: getWorkspace()
+      ?.files?.filter((file) => file?.id !== fileId && file?.id)
+      ?.map((file) => file?.id),
   };
 };
 
@@ -784,12 +788,20 @@ export const getBins = (width, height, scale) => {
 };
 
 export const isGateShowing = (plot) => {
-  return (
-    plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
-    plot?.gate?.xScaleType === plot?.xScaleType &&
-    plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
-    plot?.gate?.yScaleType === plot?.yScaleType &&
-    ((plot?.gate?.gateType === "polygon" && plot?.plotType === "scatter") ||
-      plot?.gate?.gateType === plot?.plotType)
-  );
+  if (plot?.plotType === "scatter") {
+    return (
+      plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
+      plot?.gate?.xScaleType === plot?.xScaleType &&
+      plot?.gate?.yAxisIndex === plot?.yAxisIndex &&
+      plot?.gate?.yScaleType === plot?.yScaleType &&
+      plot?.gate?.gateType === "polygon" &&
+      plot?.plotType === "scatter"
+    );
+  } else if (plot?.plotType === "histogram") {
+    return (
+      plot?.gate?.xAxisIndex === plot?.xAxisIndex &&
+      plot?.gate?.xScaleType === plot?.xScaleType &&
+      plot?.gate?.gateType === plot?.plotType
+    );
+  }
 };
