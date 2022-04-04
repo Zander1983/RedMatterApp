@@ -943,7 +943,7 @@ const WorkspaceTopBarComponent = ({
                       </Typography>
                     )}
                   </Button>
-                  <FormControlLabel
+                  {/* <FormControlLabel
                     style={{
                       marginLeft: 0,
                       height: 20,
@@ -961,9 +961,9 @@ const WorkspaceTopBarComponent = ({
                         }}
                       />
                     }
-                  />
+                  /> */}
                 </span>
-                {lastSavedTime ? (
+                {/* {lastSavedTime ? (
                   <span
                     style={{
                       height: "100%",
@@ -980,7 +980,7 @@ const WorkspaceTopBarComponent = ({
                       saved at {lastSavedTime}
                     </span>
                   </span>
-                ) : null}
+                ) : null} */}
               </div>
               <div>
                 <Button
