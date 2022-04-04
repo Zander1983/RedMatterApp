@@ -1054,8 +1054,15 @@ const Experiment = (props: any) => {
                         : null}
                     </b>
                     <br />
-                    Current Uploaded:{" "}
-                    <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
+                    {
+                      userManager.getSubscriptionType() === "" ||
+                      userManager.getSubscriptionType() === "Free" ||
+                      userManager.getSubscriptionType() === "free" ? (
+                        <>
+                        Current Uploaded:{" "}
+                        <b>{ experimentData !== null ? totalFilesUploaded : 0}</b>
+                        </>
+                    ):( null)}
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
                   </>
