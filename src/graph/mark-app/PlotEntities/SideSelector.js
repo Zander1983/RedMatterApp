@@ -1,6 +1,7 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
 import cameraIcon from "./../../../assets/images/camera.png";
+import { getPointColors } from "graph/resources/plots";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -8,6 +9,12 @@ function SideSelector(props) {
       return "histogram";
     }
     return props.plot.yAxisIndex;
+  };
+
+  const getOverlayColor = (id) => {
+    let color = props.plot?.overlays?.find((y) => y.id == id)?.color;
+    if (color) return color;
+    else return "transparent";
   };
 
   return (
@@ -208,64 +215,77 @@ function SideSelector(props) {
           </Select>
         </div>
       </div>
+
       {props.plot.plotType == "histogram" ? (
         <div
           style={{
-            marginLeft: "20px",
+            marginLeft: "10px",
             marginTop: "30px",
             height: "fit-content",
-            padding: "10px",
-            border: "1px solid black",
-            maxWidth: 250,
+            padding: "5px",
           }}
         >
-          <h4>Overlays</h4>
-          {props.allFileMinObj
-            .filter((x) => x.id != props.enrichedFile.fileId)
-            .map((x) => {
-              return (
-                <div
-                  class="form-check"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginTop: 5,
-                    backgroundColor: `${
-                      props.plot?.overlays?.find((y) => y.id == x.id)?.color
-                        ? props.plot?.overlays?.find((y) => y.id == x.id)?.color
-                        : "transparent"
-                    }`,
-                  }}
-                >
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    value={x.id}
-                    checked={props.plot?.overlays?.find((y) => y.id == x.id)}
-                    onClick={(e) => {
-                      props.addOverlay(
-                        props.enrichedFile.fileId,
-                        e.target.value,
-                        props.plotIndex.split("-")[1],
-                        e.target.checked
-                      );
-                    }}
-                    id={props.plotIndex + x.id}
-                  ></input>
-                  <label
-                    class="form-check-label"
-                    style={{ wordBreak: "break-all", marginLeft: 3 }}
-                    for={props.plotIndex + x.id}
-                  >
-                    {`${
-                      x.name.length > 50
-                        ? x.name.substring(0, 50) + "..."
-                        : x.name
-                    }`}
-                  </label>
-                </div>
-              );
-            })}
+          <Select
+            disableUnderline
+            multiple
+            style={{
+              textAlign: "center",
+              flex: "1 1 auto",
+              fontSize: 12,
+              width: 100,
+            }}
+            value={[""]}
+          >
+            <MenuItem value="">Overlays</MenuItem>
+            {props.allFileMinObj
+              .filter((x) => x.id != props.enrichedFile.fileId)
+              .map((x) => {
+                return (
+                  <MenuItem>
+                    <div
+                      class="form-check"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: 5,
+                        backgroundColor: getOverlayColor(x.id),
+                      }}
+                    >
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        value={x.id}
+                        checked={
+                          props.plot?.overlays?.find((y) => y.id == x.id)
+                            ? true
+                            : false
+                        }
+                        onClick={(e) => {
+                          props.addOverlay(
+                            props.enrichedFile.fileId,
+                            e.target.value,
+                            props.plotIndex.split("-")[1],
+                            e.target.checked
+                          );
+                        }}
+                        id={props.plotIndex + x.id}
+                      ></input>
+                      <label
+                        class="form-check-label"
+                        style={{ wordBreak: "break-all", marginLeft: 3 }}
+                        for={props.plotIndex + x.id}
+                      >
+                        {`${
+                          x.name.length > 50
+                            ? x.name.substring(0, 50) + "..."
+                            : x.name
+                        }`}
+                      </label>
+                    </div>
+                  </MenuItem>
+                );
+              })}
+          </Select>
         </div>
       ) : null}
     </div>

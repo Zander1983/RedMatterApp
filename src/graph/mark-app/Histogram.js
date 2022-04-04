@@ -269,6 +269,15 @@ function Histogram(props) {
     // at this point, the histogram for the control file will have been draw on the canvas
     if (props.plot.overlays && props.plot.overlays.length > 0) {
       let overlayFileIndex = 0;
+      if (props.plot.xScaleType === "bi") {
+        bins = linspace(0, 1, props.plot.width / 4);
+      } else {
+        bins = linspace(
+          props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+          props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+          props.plot.width / 4
+        );
+      }
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
         let overlayEnrichedFileData =
           enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
@@ -289,6 +298,7 @@ function Histogram(props) {
               return [];
             }
           });
+
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
           bins: bins,

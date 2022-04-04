@@ -440,6 +440,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       enrichedPlot.overlays = [];
     }
     let color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    if (color in enrichedPlot && color == enrichedPlot.color) {
+      color = color.substring(0, color.length - 1) + "F";
+    } else if (!(color in enrichedPlot) && color == "#000000") {
+      color = color.substring(0, color.length - 1) + "F";
+    }
     if (checked) enrichedPlot.overlays.push({ id: addFileId, color: color });
     else {
       let deleteIndex = enrichedPlot.overlays.findIndex(
