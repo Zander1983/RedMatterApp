@@ -210,6 +210,7 @@ function Histogram(props) {
 
   useEffect(() => {
     //setLocalPlot(props.plot);
+    let paintHistArr = [];
     let context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, props.plot.width, props.plot.height);
     context.fillStyle = "white";
@@ -254,17 +255,16 @@ function Histogram(props) {
     let countYMinMax = getMultiArrayMinMax(hists, "y");
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
-    drawLabel(maxCountPlusTenPercent);
 
-    paintHist(
-      context,
-      hists,
-      props.enrichedFile,
-      props.plot,
-      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-      color,
-      maxCountPlusTenPercent
-    );
+    paintHistArr.push({
+      context: context,
+      histsObj: hists,
+      enrichedFile: props.enrichedFile,
+      plot: props.plot,
+      minimum: props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      color: color,
+      fill: true,
+    });
 
     // at this point, the histogram for the control file will have been draw on the canvas
     if (props.plot.overlays && props.plot.overlays.length > 0) {
@@ -303,21 +303,38 @@ function Histogram(props) {
           data: overlayEnrichedFileData,
           bins: bins,
         });
+        let countYMinMax = getMultiArrayMinMax(overlayHists, "y");
+        let tempMaxCountPlusTenPercent = countYMinMax.max * 1.1;
+        if (tempMaxCountPlusTenPercent > maxCountPlusTenPercent)
+          maxCountPlusTenPercent = tempMaxCountPlusTenPercent;
         let overlayColor = props.plot.overlays.find(
           (x) => x.id == enrichedOverlayFile.fileId
         ).color;
-        paintHist(
-          context,
-          overlayHists,
-          enrichedOverlayFile,
-          props.plot,
-          enrichedOverlayFile.channels[props.plot.xAxisIndex].minimum,
-          overlayColor,
-          maxCountPlusTenPercent,
-          false
-        );
+        paintHistArr.push({
+          context: context,
+          histsObj: overlayHists,
+          enrichedFile: enrichedOverlayFile,
+          plot: props.plot,
+          minimum: enrichedOverlayFile.channels[props.plot.xAxisIndex].minimum,
+          color: overlayColor,
+          fill: false,
+        });
         overlayFileIndex = overlayFileIndex + 1;
       }
+    }
+    drawLabel(maxCountPlusTenPercent);
+
+    for (let i = 0; i < paintHistArr.length; i++) {
+      paintHist(
+        paintHistArr[i].context,
+        paintHistArr[i].histsObj,
+        paintHistArr[i].enrichedFile,
+        paintHistArr[i].plot,
+        paintHistArr[i].minimum,
+        paintHistArr[i].color,
+        maxCountPlusTenPercent,
+        paintHistArr[i].fill
+      );
     }
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {
