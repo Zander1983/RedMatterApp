@@ -423,6 +423,62 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
+  addOverlay = (
+    fileId: string,
+    addFileId: string,
+    plotIndex: number,
+    checked: boolean
+  ) => {
+    let workspace = getWorkspace();
+    let newWorkspaceState: any = JSON.parse(
+      JSON.stringify(workspace.workspaceState)
+    );
+
+    let foundEnrichedFile = this.state.enrichedFiles.find(
+      (x: any) => x.fileId == fileId
+    );
+
+    var letters = "0123456789ABCDEF";
+    var color = "#";
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+
+    if (!newWorkspaceState.files[fileId]) {
+      newWorkspaceState.files[fileId] = { plots: foundEnrichedFile.plots };
+    }
+
+    let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
+    if (!workspaceStatePlot?.overlays) {
+      workspaceStatePlot.overlays = [];
+    }
+
+    if (color in workspaceStatePlot && color == workspaceStatePlot.color) {
+      color = "FFF" + color.substring(0, 3);
+    } else if (!(color in workspaceStatePlot) && color == "#000000") {
+      color = "FFF" + color.substring(0, 3);
+    }
+
+    if (checked)
+      workspaceStatePlot.overlays.push({ id: addFileId, color: color });
+    else {
+      let deleteIndex = workspaceStatePlot.overlays.findIndex(
+        (x: any) => x.id == addFileId
+      );
+      workspaceStatePlot.overlays.splice(deleteIndex, 1);
+    }
+
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
+  };
+
   onChangeChannel = (change: any) => {
     let type = change.type;
     let fileKey = change.fileId;
@@ -514,6 +570,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     setTimeout(() => {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     }, 10);
+
+    console.log(">>> newWorkspaceState is ", newWorkspaceState);
 
     this.setState({
       workspaceState: newWorkspaceState,
@@ -699,6 +757,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           enrichedFiles={this.state.enrichedFiles}
           className="workspace"
           onChangeChannel={this.onChangeChannel}
+          addOverlay={this.addOverlay}
           onAddGate={this.onAddGate}
           onDeleteGate={this.onDeleteGate}
           onEditGate={this.onEditGate}
@@ -721,11 +780,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (getWorkspace()?.selectedFile && plots?.length > 0) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
-        <div
-          style={{
-            padding: 20,
-          }}
-        >
+        <div style={{ padding: 10 }}>
           {!this.state.isTableRenderCall ? (
             <Grid
               container

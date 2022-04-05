@@ -218,10 +218,9 @@ function Plot(props) {
   const onClickGateButton = (plot, plotIndex) => {};
 
   const onAddGate = (plot, plotIndex) => {
-    let points = newGatePointsCanvas;
+    let pointsReal = JSON.parse(JSON.stringify(newGatePointsCanvas));
 
-    // Here im generating a random gate, which is a triangle
-    points.forEach((point) => {
+    pointsReal.forEach((point) => {
       // the scale the gate is created on is important hear - linear very different to logicle
       if (localPlot.xScaleType === "lin") {
         // if linear, convert to the "real" value
@@ -271,7 +270,7 @@ function Plot(props) {
       gateType: "polygon",
       // need to ask for gate name
       name: gateName.name,
-      points: points,
+      points: pointsReal,
       xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
@@ -402,14 +401,19 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
     const xDivisor =
-      props.enrichedFile.channels[localPlot.xAxisIndex].maximum / 200;
+      (props.enrichedFile.channels[localPlot.xAxisIndex].maximum -
+        props.enrichedFile.channels[localPlot.xAxisIndex].minimum) /
+      localPlot.width;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
+
     const yDivisor =
-      props.enrichedFile.channels[localPlot.yAxisIndex].maximum / 200;
+      (props.enrichedFile.channels[localPlot.yAxisIndex].maximum -
+        props.enrichedFile.channels[localPlot.yAxisIndex].minimum) /
+      localPlot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -423,6 +427,7 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
@@ -440,12 +445,18 @@ function Plot(props) {
         xLabels[i].pos / xDivisor + 20 > localPlot.width
           ? localPlot.width - 2
           : xLabels[i].pos / xDivisor + 20;
-      if (tooClose) {
-        xPos += 8;
+
+      if (tooClose && i > 0) {
+        xPos +=
+          xLabels[i - 1].name.length === 4
+            ? 20
+            : xLabels[i - 1].name.length === 3
+            ? 15
+            : 8;
       }
       drawText(
         {
-          x: xPos,
+          x: i === 0 ? 20 : xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",
@@ -468,14 +479,26 @@ function Plot(props) {
 
     contextY.clearRect(0, 0, 20, localPlot.height + 20);
     for (let i = 0; i < yLabels.length; i++) {
+      let tooClose = false;
+      if (
+        i > 0 &&
+        yLabels[i].pos / yDivisor - yLabels[i - 1].pos / yDivisor < 15
+      ) {
+        tooClose = true;
+      }
+
       let yPos =
         yLabels[i].pos / yDivisor + 20 > localPlot.height
           ? localPlot.height
           : yLabels[i].pos / yDivisor + 20;
+
+      if (tooClose) {
+        yPos += 10;
+      }
       drawText(
         {
           x: 0,
-          y: localPlot.height + 20 - yPos,
+          y: i === 0 ? localPlot.height : localPlot.height + 20 - yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
@@ -871,6 +894,7 @@ function Plot(props) {
                   marginLeft: 5,
                   border: "none",
                   borderRadius: 5,
+                  outline: "none",
                 }}
                 onChange={(e) => gateNameHandler(e.target.value)}
               />
@@ -893,13 +917,31 @@ function Plot(props) {
             </div>
             <div style={{ margin: "auto" }}>
               <button
-                style={{ marginRight: 5 }}
+                style={{
+                  marginRight: 5,
+                  backgroundColor:
+                    gateName.error || !gateName.name ? "#f3f3f3" : "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: gateName.error || !gateName.name ? "auto" : "pointer",
+                  color: gateName.error || !gateName.name ? "gray" : "black",
+                }}
                 disabled={gateName.error || !gateName.name}
                 onClick={() => onSetGateName()}
               >
                 Ok
               </button>
-              <button onClick={() => onCancelGateName()}>Cancel</button>
+              <button
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => onCancelGateName()}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </Modal>

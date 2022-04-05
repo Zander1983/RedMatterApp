@@ -8,6 +8,7 @@ import { Button } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 
 function Table(props) {
+  console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -19,6 +20,9 @@ function Table(props) {
   let editedFiles = getWorkspace().workspaceState?.files;
   let editedFileIds = Object.keys(editedFiles);
 
+  let allFileMinObj = props.enrichedFiles.map((enrichedFile) => {
+    return { id: enrichedFile.fileId, name: enrichedFile.label };
+  });
   const [shouldFileRender, setShouldFileRender] = useState(
     getWorkspace()?.workspaceState?.openFiles || []
   );
@@ -58,6 +62,9 @@ function Table(props) {
 
   return (
     <div>
+      <p style={{ margin: 0, marginBottom: 5, marginTop: 5 }}>
+        <strong> {"Analysis based on sampling of 10,000 events"} </strong>
+      </p>
       <div
         style={{
           color: "#fff",
@@ -73,7 +80,11 @@ function Table(props) {
             order: 1,
           }}
         >
-          PIPELINE 1
+          {
+            getWorkspace()?.pipelines?.find(
+              (pipeline) => pipeline._id === getWorkspace()?.activePipelineId
+            ).name
+          }
         </div>
         <div
           style={{
@@ -146,15 +157,32 @@ function Table(props) {
                         />
                       );
                     } else if (plot?.plotType === "histogram") {
+                      let enrichedOverlayFiles;
+                      if (plot.overlays && plot.overlays.length > 0) {
+                        enrichedOverlayFiles = props.enrichedFiles.filter(
+                          (enrichedFile) => {
+                            //
+                            return (
+                              plot.overlays.findIndex(
+                                (x) => x.id == enrichedFile.fileId
+                              ) > -1
+                            );
+                          }
+                        );
+                      }
+
                       return (
                         <Histogram
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           onChangeChannel={props.onChangeChannel}
                           onAddGate={props.onAddGate}
+                          addOverlay={props.addOverlay}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
+                          enrichedOverlayFiles={enrichedOverlayFiles}
+                          allFileMinObj={allFileMinObj}
                           plotIndex={`0-${plotIindex}`}
                           downloadPlotAsImage={props.downloadPlotAsImage}
                         />
@@ -386,6 +414,19 @@ function Table(props) {
                               />
                             );
                           } else if (plot.plotType === "histogram") {
+                            let enrichedOverlayFiles;
+                            if (plot.overlays && plot.overlays.length > 0) {
+                              enrichedOverlayFiles = props.enrichedFiles.filter(
+                                (enrichedFile) => {
+                                  //
+                                  return (
+                                    plot.overlays.findIndex(
+                                      (x) => x.id == enrichedFile.fileId
+                                    ) > -1
+                                  );
+                                }
+                              );
+                            }
                             return (
                               <Histogram
                                 key={`plot-${plotIindex + 1}`}
@@ -393,7 +434,10 @@ function Table(props) {
                                 onChangeChannel={props.onChangeChannel}
                                 onAddGate={props.onAddGate}
                                 onEditGate={props.onEditGate}
+                                addOverlay={props.addOverlay}
                                 enrichedFile={enrichedFile}
+                                allFileMinObj={allFileMinObj}
+                                enrichedOverlayFiles={enrichedOverlayFiles}
                                 plotIndex={`${fileIndex + 1}-${plotIindex}`}
                                 downloadPlotAsImage={props.downloadPlotAsImage}
                               />

@@ -104,7 +104,9 @@ export const getRealXAxisValueFromCanvasPointOnLinearScale = (
 ) => {
   const range = channels[xAxisIndex].minimum + channels[xAxisIndex].maximum;
   // get full range by adding min and max of a channel - the min could be negative
-  return (range * xAxisPointOnCanvas) / width;
+  let value = (range * xAxisPointOnCanvas) / width;
+  value = value + channels[xAxisIndex].minimum;
+  return value;
 };
 
 export const getRealYAxisValueFromCanvasPointOnLogicleScale = (
@@ -127,8 +129,11 @@ export const getRealYAxisValueFromCanvasPointOnLinearScale = (
   yAxisPointOnCanvas = height - yAxisPointOnCanvas;
   const range =
     Math.abs(channels[yAxisIndex].minimum) + channels[yAxisIndex].maximum;
+
   // get full range by adding min and max of a channel - the min could be negative
-  return (range * yAxisPointOnCanvas) / height;
+  let value = (range * yAxisPointOnCanvas) / height;
+  value = value + channels[yAxisIndex].minimum;
+  return value;
 };
 
 export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
