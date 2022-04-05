@@ -590,7 +590,7 @@ const WorkspaceTopBarComponent = ({
     const csvData = [];
     const eventsSeparatedByChannels: any = {};
     for (let i = 0; i < enrichedFiles.length; i++) {
-      eventsSeparatedByChannels[enrichedFiles[i].fileId] = {};
+      eventsSeparatedByChannels[enrichedFiles[i].fileId] = [];
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
@@ -623,6 +623,7 @@ const WorkspaceTopBarComponent = ({
             enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel;
           channelsObj.yChannel =
             enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel;
+
           for (
             let eventsIndex = 0;
             eventsIndex < events.length;
@@ -642,78 +643,100 @@ const WorkspaceTopBarComponent = ({
                 enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage;
             }
           }
-
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId] =
-            channelsObj;
-        }
-      }
-    }
-
-    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      for (
-        let channelIndex = 0;
-        channelIndex < channels.length;
-        channelIndex++
-      ) {
-        if (
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.array.length > 0
-        ) {
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].mean = (
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.sum /
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.array.length
-          ).toFixed(2);
-
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].median = getMedian(
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ].array
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].push(
+            JSON.parse(JSON.stringify(channelsObj))
           );
         }
       }
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      const stats: any = {
-        fileName: enrichedFiles[fileIndex]?.label,
-        gateName:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.gateName,
-        percentage:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]
-            ?.percentage,
-        xChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.xChannel,
-        yChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.yChannel,
-      };
       for (
         let channelIndex = 0;
         channelIndex < channels.length;
         channelIndex++
       ) {
-        const median = `channel${channelIndex}Median`;
-        const mean = `channel${channelIndex}Mean`;
-        stats[median] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.median;
+        for (
+          let statsIndex = 0;
+          statsIndex <
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+          statsIndex++
+        ) {
+          if (
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.array.length > 0
+          ) {
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].mean = (
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.sum /
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.array.length
+            ).toFixed(2);
 
-        stats[mean] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.mean;
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].median = getMedian(
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]].array
+            );
+          }
+        }
       }
-      csvData.push(stats);
     }
+
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      for (
+        let statsIndex = 0;
+        statsIndex <
+        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+        statsIndex++
+      ) {
+        const stats: any = {
+          fileName: enrichedFiles[fileIndex]?.label,
+          gateName:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.gateName,
+          percentage:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.percentage,
+          xChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.xChannel,
+          yChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.yChannel,
+        };
+        for (
+          let channelIndex = 0;
+          channelIndex < channels.length;
+          channelIndex++
+        ) {
+          const median = `channel${channelIndex}Median`;
+          const mean = `channel${channelIndex}Mean`;
+          stats[median] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.median;
+
+          stats[mean] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.mean;
+        }
+        csvData.push(stats);
+      }
+    }
+
     setData(csvData);
   };
 
