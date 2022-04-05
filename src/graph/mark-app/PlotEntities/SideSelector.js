@@ -286,7 +286,7 @@ function SideSelector(props) {
                 );
               })}
           </Select>
-          {props.plot?.overlays.map((x) => {
+          {props.plot?.overlays?.map((x) => {
             return (
               <div
                 style={{
