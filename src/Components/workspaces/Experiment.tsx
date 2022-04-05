@@ -149,7 +149,7 @@ const Experiment = (props: any) => {
         fetchExperiments.url,
         fetchExperiments.options
       );
-      
+
       if (response?.status) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
@@ -461,25 +461,6 @@ const Experiment = (props: any) => {
       const id = Math.random().toString(36).substring(7);
       fileList.push({ tempId: id, file });
     }
-    // if the filesize exceed the limit
-    if (listSize + experimentSize > maxExperimentSize) {
-      snackbarService.showSnackbar(
-        "Files passed go above experiment size limit, total size would be " +
-          ((listSize + experimentSize) / 1e6).toFixed(2) +
-          "MB",
-        "error"
-      );
-      return;
-    }
-    // if the fileCount exceed the limit
-    if (experimentData.files.length + files.length > maxFileCount) {
-      snackbarService.showSnackbar(
-        "Files passed go above experiment file limit, total file number would not be greater than " +
-          maxFileCount,
-        "error"
-      );
-      return;
-    }
 
     let filesUpload = uploadingFiles
       ? uploadingFiles.concat(
@@ -545,7 +526,7 @@ const Experiment = (props: any) => {
           userManager.getOrganiztionID(),
           file.file
         );
-     
+
         if (response?.status === 201) {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
@@ -555,15 +536,14 @@ const Experiment = (props: any) => {
             message: "Uploaded " + file.file.name,
             saverity: "success",
           });
-        }else {
-          if(response && response.data.level === "danger"){
+        } else {
+          if (response && response.data.level === "danger") {
             setTimeout(() => {
               showMessageBox({
                 message: response.data.message,
                 saverity: "error",
               });
-
-            },10);
+            }, 10);
             return completedCount;
           }
         }
@@ -894,7 +874,7 @@ const Experiment = (props: any) => {
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={async (response:any) => {
+        added={async (response: any) => {
           //console.log(response);
           await reload();
         }}
@@ -1062,20 +1042,26 @@ const Experiment = (props: any) => {
                 {/*<br />*/}
                 {/*Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>*/}
                 {experimentData?.version !== "v1" ? (
-                    <>
-                    Your Plan limit: <b>{
-                      experimentData !== null ? ((userManager.getSubscriptionType() === "" || userManager.getSubscriptionType() === "Free" || userManager.getSubscriptionType() === "free" ) ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited") : null}</b>
+                  <>
+                    Your Plan limit:{" "}
+                    <b>
+                      {experimentData !== null
+                        ? userManager.getSubscriptionType() === "" ||
+                          userManager.getSubscriptionType() === "Free" ||
+                          userManager.getSubscriptionType() === "free"
+                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
+                          : "Unlimited"
+                        : null}
+                    </b>
                     <br />
-                    Current Uploaded: <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
+                    Current Uploaded:{" "}
+                    <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
-                    </>
+                  </>
                 ) : (
-                    <>
-                    {/*File number limit: <b>{0}</b>*/}
-                    </>
+                  <>{/*File number limit: <b>{0}</b>*/}</>
                 )}
-
               </Grid>
               <Grid
                 style={{
@@ -1125,16 +1111,27 @@ const Experiment = (props: any) => {
                     }}
                   >
                     <div style={{ textAlign: "left" }}>
-                      <h1 style={{ fontWeight: 600, marginBottom: -8 }}>
+                      <h1 style={{ fontWeight: 600, margin: 0 }}>
                         Experiment Files
                       </h1>
                       <p
                         style={{
                           fontSize: 14,
+                          margin: 0,
                         }}
                       >
                         To upload files, drag and drop them here or click the
                         upload button
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          margin: 0,
+                        }}
+                      >
+                        Files MUST have the same channels, and the channels must
+                        be in the same order. Any file without the same channels
+                        will not be uploaded.
                       </p>
                     </div>
                     <div>
@@ -1477,9 +1474,8 @@ const Experiment = (props: any) => {
                 ) : null}
                 {uploadingFiles?.map((e: any, i: number) => {
                   return (
-                    <>
+                    <div key={`uploadingFiles-${i}`}>
                       <Grid
-                        key={`uploadingFiles-${i}`}
                         item
                         xs={12}
                         style={{
@@ -1516,7 +1512,7 @@ const Experiment = (props: any) => {
                           style={{ marginTop: 15, marginBottom: 15 }}
                         ></Divider>
                       ) : null}
-                    </>
+                    </div>
                   );
                 })}
                 {Object.keys(experiment).length > 0 ? (

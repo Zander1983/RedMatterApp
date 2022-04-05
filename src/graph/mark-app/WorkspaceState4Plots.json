@@ -131,6 +131,7 @@
         {
           "population": "population2",
           "plotType": "histogram",
+          "overlays": ["file_key_2_non_control", "file_key_3_non_control"],
           "xAxisLabel": "APA-A",
           "yAxisLabel": "FSC-A",
           "xAxisIndex": 3,
