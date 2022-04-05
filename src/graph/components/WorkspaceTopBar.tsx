@@ -14,7 +14,7 @@ import { saveWorkspaceStateToServer } from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 import IOSSwitch from "../../Components/common/Switch";
-import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
+import ShareIcon from "assets/images/share.png";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import axios from "axios";
@@ -143,7 +143,9 @@ const WorkspaceTopBarComponent = ({
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [pipeLineModalOpen, setPipeLineModalOpen] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(!sharedWorkspace);
+  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(
+    !sharedWorkspace
+  );
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
   const [isSaveNeeded, setSaveNeeded] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
@@ -174,7 +176,9 @@ const WorkspaceTopBarComponent = ({
     setSaveNeeded(false);
     setTimeout(() => {
       //@ts-ignore
-      setActivePipelineId(getWorkspace().activePipelineId || workState?.pipelineId);
+      setActivePipelineId(
+        getWorkspace().activePipelineId || workState?.pipelineId
+      );
       //setSaveNeeded(false);
       //setPipelines(getWorkspace()?.pipelines);
     }, 1000);
@@ -182,14 +186,13 @@ const WorkspaceTopBarComponent = ({
 
   useEffect(() => {
     setTimeout(() => {
-      if(!isSaveNeeded) setSaveNeeded(true);
+      if (!isSaveNeeded) setSaveNeeded(true);
       //@ts-ignore
       setPipelines(getWorkspace()?.pipelines);
       setActivePipelineId(getWorkspace()?.activePipelineId);
       setSaveNeeded(false);
     }, 1000);
   }, [activePipeline]);
-
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -210,10 +213,14 @@ const WorkspaceTopBarComponent = ({
         setLoader(true);
         let response = null;
 
-        if(!sharedWorkspace) {
-          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers: {token: userManager.getToken()}});
-        }else {
-          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}/shared`,
+        if (!sharedWorkspace) {
+          response = await axios.get(
+            `/api/${experimentId}/pipeline/${selectedPipeline}`,
+            { headers: { token: userManager.getToken() } }
+          );
+        } else {
+          response = await axios.get(
+            `/api/${experimentId}/pipeline/${selectedPipeline}/shared`
           );
         }
 
@@ -225,7 +232,9 @@ const WorkspaceTopBarComponent = ({
 
             await WorkspaceDispatch.SetPlotStates(workspaceObj);
             await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-            await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+            await WorkspaceDispatch.UpdateSelectedFile(
+              workspaceObj.selectedFile
+            );
 
             //setActivePipelineId(selectedPipeline);
             await showMessageBox({
@@ -584,7 +593,7 @@ const WorkspaceTopBarComponent = ({
     const csvData = [];
     const eventsSeparatedByChannels: any = {};
     for (let i = 0; i < enrichedFiles.length; i++) {
-      eventsSeparatedByChannels[enrichedFiles[i].fileId] = {};
+      eventsSeparatedByChannels[enrichedFiles[i].fileId] = [];
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
@@ -617,6 +626,7 @@ const WorkspaceTopBarComponent = ({
             enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel;
           channelsObj.yChannel =
             enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel;
+
           for (
             let eventsIndex = 0;
             eventsIndex < events.length;
@@ -636,78 +646,100 @@ const WorkspaceTopBarComponent = ({
                 enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage;
             }
           }
-
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId] =
-            channelsObj;
-        }
-      }
-    }
-
-    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      for (
-        let channelIndex = 0;
-        channelIndex < channels.length;
-        channelIndex++
-      ) {
-        if (
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.array.length > 0
-        ) {
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].mean = (
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.sum /
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.array.length
-          ).toFixed(2);
-
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].median = getMedian(
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ].array
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].push(
+            JSON.parse(JSON.stringify(channelsObj))
           );
         }
       }
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      const stats: any = {
-        fileName: enrichedFiles[fileIndex]?.label,
-        gateName:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.gateName,
-        percentage:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]
-            ?.percentage,
-        xChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.xChannel,
-        yChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.yChannel,
-      };
       for (
         let channelIndex = 0;
         channelIndex < channels.length;
         channelIndex++
       ) {
-        const median = `channel${channelIndex}Median`;
-        const mean = `channel${channelIndex}Mean`;
-        stats[median] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.median;
+        for (
+          let statsIndex = 0;
+          statsIndex <
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+          statsIndex++
+        ) {
+          if (
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.array.length > 0
+          ) {
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].mean = (
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.sum /
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.array.length
+            ).toFixed(2);
 
-        stats[mean] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.mean;
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].median = getMedian(
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]].array
+            );
+          }
+        }
       }
-      csvData.push(stats);
     }
+
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      for (
+        let statsIndex = 0;
+        statsIndex <
+        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+        statsIndex++
+      ) {
+        const stats: any = {
+          fileName: enrichedFiles[fileIndex]?.label,
+          gateName:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.gateName,
+          percentage:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.percentage,
+          xChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.xChannel,
+          yChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.yChannel,
+        };
+        for (
+          let channelIndex = 0;
+          channelIndex < channels.length;
+          channelIndex++
+        ) {
+          const median = `channel${channelIndex}Median`;
+          const mean = `channel${channelIndex}Mean`;
+          stats[median] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.median;
+
+          stats[mean] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.mean;
+        }
+        csvData.push(stats);
+      }
+    }
+
     setData(csvData);
   };
 
@@ -790,222 +822,232 @@ const WorkspaceTopBarComponent = ({
 
   const _renderToolbar = () => {
     return (
-        <Grid
-            style={{
-              position: "fixed",
-              zIndex: 100,
-              top: 64,
-              backgroundColor: "white",
-              paddingTop: 4,
-              paddingBottom: 6,
-              WebkitBorderBottomLeftRadius: 0,
-              WebkitBorderBottomRightRadius: 0,
-              minHeight: "43px",
-            }}
-            container
-        >
-          <Grid container>
-            {workspace.editWorkspace ? (
-                <span
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      background: "white",
-                    }}
-                >
+      <Grid
+        style={{
+          position: "fixed",
+          zIndex: 100,
+          top: 64,
+          backgroundColor: "white",
+          paddingTop: 4,
+          paddingBottom: 6,
+          WebkitBorderBottomLeftRadius: 0,
+          WebkitBorderBottomRightRadius: 0,
+          minHeight: "43px",
+        }}
+        container
+      >
+        <Grid container>
+          {workspace.editWorkspace ? (
+            <span
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "white",
+              }}
+            >
               <div>
                 <Button
-                    disabled={!plotCallNeeded && !renderPlotController}
-                    size="small"
-                    variant="contained"
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
-                    className={classes.topButton}
-                    startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                    onClick={() => {
-                      history.goBack();
-                    }}
+                  disabled={!plotCallNeeded && !renderPlotController}
+                  size="small"
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                  className={classes.topButton}
+                  startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
+                  onClick={() => {
+                    history.goBack();
+                  }}
                 >
                   Back
                 </Button>
 
                 <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setAddFileModalOpen)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setAddFileModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
                 >
                   {/*// disabled={!!(workspace?.selectedFile)}>*/}
-                  New Analysis
+                  New Gate Pipeline
                 </Button>
                 <Button
-                    disabled={true}
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpen(setClearModal)}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
+                  disabled={true}
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setClearModal)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
                 >
                   Clear
                 </Button>
                 <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => downloadCSV()}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
+                  variant="contained"
+                  size="small"
+                  onClick={() => downloadCSV()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
                 >
                   <CSVLink
-                      headers={heeaderForCSV}
-                      data={data}
-                      filename="WorkspaceReport.csv"
-                      className={classes.downloadBtnLayout}
+                    headers={heeaderForCSV}
+                    data={data}
+                    filename="WorkspaceReport.csv"
+                    className={classes.downloadBtnLayout}
                   >
                     <GetAppIcon
-                        fontSize="small"
-                        style={{ marginRight: 10 }}
+                      fontSize="small"
+                      style={{ marginRight: 10 }}
                     ></GetAppIcon>
                     Download Stats
                   </CSVLink>
                 </Button>
                 <Button
-                    variant="contained"
-                    size="small"
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                    }}
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
                 >
                   <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                    Analyses:
+                    Gate Pipelines:
                     <Select
-                        disableUnderline
-                        value={activePipelineId}
-                        name="pipeline"
-                        style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                        onChange={onPipelineChanged}
+                      disableUnderline
+                      value={activePipelineId}
+                      name="pipeline"
+                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                      onChange={onPipelineChanged}
                     >
                       <MenuItem value="">Select Pipeline</MenuItem>
                       {pipelines &&
-                      pipelines?.map((pipeline: any, index: any) => (
+                        pipelines?.map((pipeline: any, index: any) => (
                           <MenuItem key={index} value={pipeline?._id}>
                             {pipeline?.name}
                           </MenuItem>
-                      ))}
+                        ))}
                     </Select>
                   </span>
                 </Button>
                 <span>
                   <Button
-                      disabled={
-                        (!plotCallNeeded && !renderPlotController) ||
-                        activePipelineId === ""
-                      }
-                      variant="contained"
-                      size="small"
-                      onClick={() => saveWorkspace()}
-                      className={classes.topButton}
-                      style={{
-                        backgroundColor: "#fafafa",
-                        width: 137,
-                      }}
+                    disabled={
+                      (!plotCallNeeded && !renderPlotController) ||
+                      activePipelineId === ""
+                    }
+                    variant="contained"
+                    size="small"
+                    onClick={() => saveWorkspace()}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                      width: 160,
+                    }}
                   >
                     {savingWorkspace ? (
-                        <CircularProgress style={{ width: 20, height: 20 }} />
+                      <CircularProgress style={{ width: 20, height: 20 }} />
                     ) : (
-                        <Typography
-                            style={{
-                              color:
-                                  !plotCallNeeded && !renderPlotController
-                                      ? "rgba(0, 0, 0, 0.26)"
-                                      : "black",
-                            }}
-                        >
-                          Save Analysis
-                        </Typography>
+                      <Typography
+                        style={{
+                          color:
+                            !plotCallNeeded && !renderPlotController
+                              ? "rgba(0, 0, 0, 0.26)"
+                              : "black",
+                        }}
+                      >
+                        Save Gate Pipeline
+                      </Typography>
                     )}
                   </Button>
-                  <FormControlLabel
-                      style={{
-                        marginLeft: 0,
-                        height: 20,
-                        marginTop: 4,
-                        color: "#333",
-                      }}
-                      label={"Autosave"}
-                      control={
-                        <IOSSwitch
-                            disabled={!plotCallNeeded && !renderPlotController}
-                            checked={autoSaveEnabled}
-                            onChange={() => {
-                              setAutoSaveEnabled(!autoSaveEnabled);
-                              setSaveNeeded(false);
-                            }}
-                        />
-                      }
-                  />
+                  {/* <FormControlLabel
+                    style={{
+                      marginLeft: 0,
+                      height: 20,
+                      marginTop: 4,
+                      color: "#333",
+                    }}
+                    label={"Autosave"}
+                    control={
+                      <IOSSwitch
+                        disabled={!plotCallNeeded && !renderPlotController}
+                        checked={autoSaveEnabled}
+                        onChange={() => {
+                          setAutoSaveEnabled(!autoSaveEnabled);
+                          setSaveNeeded(false);
+                        }}
+                      />
+                    }
+                  /> */}
                 </span>
-                {lastSavedTime ? (
+                {/* {lastSavedTime ? (
+                  <span
+                    style={{
+                      height: "100%",
+                      display: "inline-flex",
+                    }}
+                  >
                     <span
-                        style={{
-                          height: "100%",
-                          display: "inline-flex",
-                        }}
-                    >
-                    <span
-                        style={{
-                          color: "#333",
-                          fontStyle: "italic",
-                        }}
+                      style={{
+                        color: "#333",
+                        fontStyle: "italic",
+                        fontSize: 9,
+                      }}
                     >
                       saved at {lastSavedTime}
                     </span>
                   </span>
-                ) : null}
+                ) : null} */}
               </div>
               <div>
                 <Button
-                    disabled={(!plotCallNeeded && !renderPlotController) || activePipelineId === ""}
-                    variant="contained"
-                    size="small"
-                    onClick={() => onLinkShareClick()}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                      marginRight: 10,
-                    }}
+                  disabled={
+                    (!plotCallNeeded && !renderPlotController) ||
+                    activePipelineId === ""
+                  }
+                  variant="contained"
+                  // size="small"
+                  onClick={() => onLinkShareClick()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                    marginRight: 10,
+                    width: 200,
+                  }}
                 >
-                  <ShareIcon fontSize="small" style={{ marginRight: 10 }} />
+                  <img
+                    src={ShareIcon}
+                    alt="shareicon"
+                    style={{ width: 15, height: 15, marginRight: 10 }}
+                  />
                   Share Workspace
                 </Button>
               </div>
             </span>
-            ) : (
-                <div>
+          ) : (
+            <div>
               <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                  PipeLine:
-                  <select
-                      value={activePipelineId}
-                      name="pipeline"
-                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                      onChange={onPipelineChanged}>
-                    <option value="">Select Pipeline</option>
-                    {pipelines &&
+                PipeLine:
+                <select
+                  value={activePipelineId}
+                  name="pipeline"
+                  style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                  onChange={onPipelineChanged}
+                >
+                  <option value="">Select Pipeline</option>
+                  {pipelines &&
                     pipelines?.map((pipeline: any, index: any) => (
-                        <option key={index} value={pipeline?._id}>
-                          {pipeline?.name}
-                        </option>
+                      <option key={index} value={pipeline?._id}>
+                        {pipeline?.name}
+                      </option>
                     ))}
-                  </select>
+                </select>
                 {/*<Button*/}
                 {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
                 {/*    variant="contained"*/}
@@ -1018,12 +1060,12 @@ const WorkspaceTopBarComponent = ({
                 {/*    }}>*/}
                 {/*  +New*/}
                 {/*</Button>*/}
-                </span>
-                  <span className={classes.sharedHeader}>Shared Workspace</span>
-                </div>
-            )}
-          </Grid>
+              </span>
+              <span className={classes.sharedHeader}>Shared Workspace</span>
+            </div>
+          )}
         </Grid>
+      </Grid>
     );
   };
 
