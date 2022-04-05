@@ -359,7 +359,12 @@ export default function Plans(props: any) {
                 <Grid item lg={9} md={6} sm={6}>
                   <h3 style={{ marginBottom: "1.5em" }}>
                     <p>Current Subscription: {subscription}</p>
-                    <p>TotalFiles: {totalFilesUploaded}</p>
+                    {
+                      userManager.getSubscriptionType() === "" ||
+                      userManager.getSubscriptionType() === "Free" ||
+                      userManager.getSubscriptionType() === "free" ? (
+                        <p>TotalFiles: {totalFilesUploaded}</p>) :(null)
+                    }
                   </h3>
                   {showSubscriptionDropdown ? (
                     <div>
