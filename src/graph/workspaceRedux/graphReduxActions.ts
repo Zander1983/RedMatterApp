@@ -48,6 +48,8 @@ export const graphActions = {
   CLEAR_OPEN_FILE: "workspace.CLEAR_OPEN_FILE",
   UPDATE_TYPE: "workspace.UPDATE_TYPE",
   UPDATE_OPEN_FILES: "workspace.UPDATE_OPEN_FILES",
+  SET_SORTING_STATE: "workspace.SET_SORTING_STATE",
+  SET_FILE_IDS: "workspace.SET_FILE_IDS",
 };
 
 export const initialState: Workspace = {
@@ -66,6 +68,7 @@ export const initialState: Workspace = {
   clearOpenFiles: false,
   updateType: "",
   workspaceState: {},
+  fileIds: [],
 };
 
 const graphReducers = (state: Workspace = initialState, action: any) => {
@@ -131,6 +134,24 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
         ...state,
         workspaceState: state.workspaceState,
       };
+
+    case graphActions.SET_SORTING_STATE:
+      const sortingState: string = action.payload.sortingState;
+      const gateName: string = action.payload.gateName;
+      // @ts-ignore
+      state.workspaceState.sortingState = { sortingState, gateName };
+      return {
+        ...state,
+        workspaceState: state.workspaceState,
+      };
+
+    case graphActions.SET_FILE_IDS:
+      state.fileIds = action.payload.fileIds;
+      return {
+        ...state,
+        fileIds: state.fileIds,
+      };
+
     case graphActions.SET_FILES:
       const files = action.payload.files;
       return {
