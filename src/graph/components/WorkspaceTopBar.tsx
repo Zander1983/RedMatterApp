@@ -594,24 +594,24 @@ const WorkspaceTopBarComponent = ({
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      const channelsObj: any = {};
-      for (let i = 0; i < channels.length; i++) {
-        channelsObj[channels[i]] = {
-          array: [],
-          sum: 0,
-          mean: 0,
-          median: 0,
-        };
-      }
-      channelsObj.percentage = 0;
-      channelsObj.gateName = "";
-      channelsObj.xChannel = "";
-      channelsObj.gateName = "";
       for (
         let statsIndex = 0;
         statsIndex < enrichedFiles[fileIndex].gateStats.length;
         statsIndex++
       ) {
+        let channelsObj: any = {};
+        for (let i = 0; i < channels.length; i++) {
+          channelsObj[channels[i]] = {
+            array: [],
+            sum: 0,
+            mean: 0,
+            median: 0,
+          };
+        }
+        channelsObj.percentage = 0;
+        channelsObj.gateName = "";
+        channelsObj.xChannel = "";
+        channelsObj.gateName = "";
         if (enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage) {
           const events =
             enrichedFiles[fileIndex]?.gateStats[statsIndex]?.eventsInsideGate;
@@ -643,10 +643,12 @@ const WorkspaceTopBarComponent = ({
                 enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage;
             }
           }
+
           eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].push(
             JSON.parse(JSON.stringify(channelsObj))
           );
         }
+        channelsObj = {};
       }
     }
 
