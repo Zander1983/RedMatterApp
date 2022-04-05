@@ -452,19 +452,20 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       );
       enrichedPlot.overlays.splice(deleteIndex, 1);
     }
-    let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
-    if (!workspaceStatePlot?.overlays) {
-      workspaceStatePlot.overlays = [];
+    if (newWorkspaceState.files[fileId]) {
+      let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
+      if (!workspaceStatePlot?.overlays) {
+        workspaceStatePlot.overlays = [];
+      }
+      if (checked)
+        workspaceStatePlot.overlays.push({ id: addFileId, color: color });
+      else {
+        let deleteIndex = workspaceStatePlot.overlays.findIndex(
+          (x: any) => x.id == addFileId
+        );
+        workspaceStatePlot.overlays.splice(deleteIndex, 1);
+      }
     }
-    if (checked)
-      workspaceStatePlot.overlays.push({ id: addFileId, color: color });
-    else {
-      let deleteIndex = workspaceStatePlot.overlays.findIndex(
-        (x: any) => x.id == addFileId
-      );
-      workspaceStatePlot.overlays.splice(deleteIndex, 1);
-    }
-
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
       enrichedFiles: this.state.enrichedFiles,
