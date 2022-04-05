@@ -434,41 +434,43 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(workspace.workspaceState)
     );
 
-    let enrichedPlot = this.state.enrichedFiles.find((x) => x.fileId == fileId)
-      .plots[plotIndex];
-    if (!enrichedPlot?.overlays) {
-      enrichedPlot.overlays = [];
-    }
+    let foundEnrichedFile = this.state.enrichedFiles.find(
+      (x: any) => x.fileId == fileId
+    );
+
     let color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-    if (color in enrichedPlot && color == enrichedPlot.color) {
+
+    if (!newWorkspaceState.files[fileId]) {
+      newWorkspaceState.files[fileId] = { plots: foundEnrichedFile.plots };
+    }
+
+    let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
+    if (!workspaceStatePlot?.overlays) {
+      workspaceStatePlot.overlays = [];
+    }
+
+    if (color in workspaceStatePlot && color == workspaceStatePlot.color) {
       color = color.substring(0, color.length - 1) + "F";
-    } else if (!(color in enrichedPlot) && color == "#000000") {
+    } else if (!(color in workspaceStatePlot) && color == "#000000") {
       color = color.substring(0, color.length - 1) + "F";
     }
-    if (checked) enrichedPlot.overlays.push({ id: addFileId, color: color });
+
+    if (checked)
+      workspaceStatePlot.overlays.push({ id: addFileId, color: color });
     else {
-      let deleteIndex = enrichedPlot.overlays.findIndex(
+      let deleteIndex = workspaceStatePlot.overlays.findIndex(
         (x: any) => x.id == addFileId
       );
-      enrichedPlot.overlays.splice(deleteIndex, 1);
+      workspaceStatePlot.overlays.splice(deleteIndex, 1);
     }
-    if (newWorkspaceState.files[fileId]) {
-      let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
-      if (!workspaceStatePlot?.overlays) {
-        workspaceStatePlot.overlays = [];
-      }
-      if (checked)
-        workspaceStatePlot.overlays.push({ id: addFileId, color: color });
-      else {
-        let deleteIndex = workspaceStatePlot.overlays.findIndex(
-          (x: any) => x.id == addFileId
-        );
-        workspaceStatePlot.overlays.splice(deleteIndex, 1);
-      }
-    }
+
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
-      enrichedFiles: this.state.enrichedFiles,
+      enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
     });
   };

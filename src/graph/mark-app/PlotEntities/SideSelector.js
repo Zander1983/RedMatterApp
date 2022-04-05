@@ -298,6 +298,7 @@ function SideSelector(props) {
                 <div style={{ alignItems: "center", display: "flex" }}>
                   <div
                     style={{
+                      userSelect: "none",
                       backgroundColor: x.color,
                       width: 15,
                       height: 15,
