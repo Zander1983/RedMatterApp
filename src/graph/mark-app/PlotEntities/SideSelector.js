@@ -286,6 +286,26 @@ function SideSelector(props) {
                 );
               })}
           </Select>
+          {props.plot?.overlays.map((x) => {
+            return (
+              <div
+                style={{
+                  maxHeight: 180,
+                  overflowY: "auto",
+                  maxWidth: 230,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{ backgroundColor: x.color, width: 15, height: 15 }}
+                ></div>
+                <div style={{ marginLeft: 5 }}>
+                  {props.allFileMinObj.find((y) => y.id == x.id).name}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>
