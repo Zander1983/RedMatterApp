@@ -68,32 +68,46 @@ export const getPointOnCanvas = (
   plot,
   logicles
 ) => {
+  let canvasXValue, canvasYValue;
   if (plot.xScaleType === "bi") {
     //console.log(">>> logicles[plot.xAxisIndex] is ", logicles[plot.xAxisIndex]);
     const logicle = logicles[plot.xAxisIndex];
     realXValue = logicle.scale(realXValue);
-    realXValue = Math.floor(realXValue * plot.width);
+    canvasXValue = Math.floor(realXValue * plot.width);
   } else {
-    realXValue = Math.floor(
-      (realXValue * plot.width) / channels[plot.xAxisIndex].maximum
+    let range = getRealRange(
+      channels[plot.xAxisIndex].minimum,
+      channels[plot.xAxisIndex].maximum
     );
+
+    let realValueInRange =
+      realXValue + Math.abs(channels[plot.xAxisIndex].minimum);
+    canvasXValue = (plot.width * realValueInRange) / range;
   }
 
   if (realYValue) {
     if (plot.yScaleType === "bi") {
       const logicle = logicles[plot.yAxisIndex];
       realYValue = logicle.scale(realYValue);
-      realYValue = plot.height - Math.floor(realYValue * plot.height);
+      canvasYValue = plot.height - Math.floor(realYValue * plot.height);
     } else {
-      realYValue =
-        plot.height -
-        Math.floor(
-          (realYValue * plot.height) / channels[plot.yAxisIndex].maximum
-        );
+      let range = getRealRange(
+        channels[plot.yAxisIndex].minimum,
+        channels[plot.yAxisIndex].maximum
+      );
+
+      let realValueInRange =
+        realYValue + Math.abs(channels[plot.yAxisIndex].minimum);
+
+      canvasYValue = plot.height - (plot.height * realValueInRange) / range;
     }
   }
 
-  return [realXValue, realYValue];
+  return [canvasXValue, canvasYValue];
+};
+
+export const getRealRange = (minimum, maximum) => {
+  return minimum > 0 ? maximum - minimum : maximum + Math.abs(minimum);
 };
 
 export const getRealXAxisValueFromCanvasPointOnLinearScale = (
@@ -102,7 +116,10 @@ export const getRealXAxisValueFromCanvasPointOnLinearScale = (
   width,
   xAxisPointOnCanvas
 ) => {
-  const range = channels[xAxisIndex].minimum + channels[xAxisIndex].maximum;
+  const range = getRealRange(
+    channels[xAxisIndex].minimum,
+    channels[xAxisIndex].maximum
+  );
   // get full range by adding min and max of a channel - the min could be negative
   let value = (range * xAxisPointOnCanvas) / width;
   value = value + channels[xAxisIndex].minimum;
@@ -127,8 +144,11 @@ export const getRealYAxisValueFromCanvasPointOnLinearScale = (
   yAxisPointOnCanvas
 ) => {
   yAxisPointOnCanvas = height - yAxisPointOnCanvas;
-  const range =
-    Math.abs(channels[yAxisIndex].minimum) + channels[yAxisIndex].maximum;
+
+  const range = getRealRange(
+    channels[yAxisIndex].minimum,
+    channels[yAxisIndex].maximum
+  );
 
   // get full range by adding min and max of a channel - the min could be negative
   let value = (range * yAxisPointOnCanvas) / height;
