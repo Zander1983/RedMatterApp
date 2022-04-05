@@ -116,6 +116,18 @@ const WorkspaceDispatch = {
       payload: { gate },
     });
   },
+  SetSortingState: (sortingState: string, gateName: string) => {
+    return store.dispatch({
+      type: graphActions.SET_SORTING_STATE,
+      payload: { sortingState, gateName },
+    });
+  },
+  SetFileIds: (fileIds: string[]) => {
+    return store.dispatch({
+      type: graphActions.SET_FILE_IDS,
+      payload: { fileIds },
+    });
+  },
   UpdateFile: (file: File) => {
     return store.dispatch({
       type: graphActions.UPDATE_FILE,
