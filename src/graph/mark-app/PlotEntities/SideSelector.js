@@ -290,7 +290,7 @@ function SideSelector(props) {
             style={{
               height: 180,
               overflowY: "auto",
-              width: 230,
+              maxWidth: 230,
             }}
           >
             {props.plot?.overlays?.map((x) => {
