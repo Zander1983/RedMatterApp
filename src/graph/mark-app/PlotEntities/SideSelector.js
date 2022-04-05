@@ -286,26 +286,33 @@ function SideSelector(props) {
                 );
               })}
           </Select>
-          {props.plot?.overlays?.map((x) => {
-            return (
-              <div
-                style={{
-                  maxHeight: 180,
-                  overflowY: "auto",
-                  maxWidth: 230,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{ backgroundColor: x.color, width: 15, height: 15 }}
-                ></div>
-                <div style={{ marginLeft: 5 }}>
-                  {props.allFileMinObj.find((y) => y.id == x.id).name}
+          <div
+            style={{
+              height: 180,
+              overflowY: "auto",
+              width: 230,
+            }}
+          >
+            {props.plot?.overlays?.map((x) => {
+              return (
+                <div style={{ alignItems: "center", display: "flex" }}>
+                  <div
+                    style={{
+                      backgroundColor: x.color,
+                      width: 15,
+                      height: 15,
+                      color: "transparent",
+                    }}
+                  >
+                    df
+                  </div>
+                  <div style={{ marginLeft: 5 }}>
+                    {props.allFileMinObj.find((y) => y.id == x.id).name}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       ) : null}
     </div>
