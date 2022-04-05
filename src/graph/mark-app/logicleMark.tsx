@@ -359,7 +359,7 @@ class Logicle {
     //     return 0;
     // }
 
-    var M = 4.5;
+    var M = 4.42;
 
     var W = (M - Math.log10(T / Math.abs(r))) / 2;
 
@@ -372,7 +372,7 @@ class Logicle {
 
   getTMWA = (biexponentialMinimum: number, biexponentialMaximum: number) => {
     var T = biexponentialMaximum;
-    var M = 4.5;
+    var M = 4.42;
     var A = 0;
     var W = this.calculateW(biexponentialMinimum, T);
 
