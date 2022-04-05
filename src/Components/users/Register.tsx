@@ -102,8 +102,9 @@ const Register = (props: any) => {
     location: "",
     password: "",
     g_recaptcha_response: "",
+    subscribed: "",
   });
-  const [subscribed, setSubscribed] = useState("");
+
   const [subscribedError, setSubscribedError] = useState("");
   const eventStacker = useGAEventTrackers("Registration");
 
@@ -140,7 +141,7 @@ const Register = (props: any) => {
       setLocationStatus((prev: any) => false);
       return;
     }
-    if (subscribed === "") {
+    if (formData.subscribed === "") {
       setSubscribedError("Please Select Yes/No for Special Offers");
       return;
     }
@@ -149,11 +150,9 @@ const Register = (props: any) => {
       return;
     }
 
-    const data = { ...formData, subscribed: subscribed === "Yes" };
-
     try {
       setLoading(true);
-      await axios.post("api/register", data);
+      await axios.post("api/register", formData);
       setLoading(false);
       snackbarService.showSnackbar("Email verification sent!", "success");
       eventStacker(
@@ -322,7 +321,9 @@ const Register = (props: any) => {
             name="subscribed"
             value="Yes"
             onClick={() => {
-              setSubscribed("Yes");
+              setFormData((prevData: any) => {
+                return { ...prevData, subscribed: true };
+              });
               setSubscribedError("");
             }}
           />
@@ -335,9 +336,10 @@ const Register = (props: any) => {
           <input
             type="radio"
             name="subscribed"
-            value="No"
             onClick={() => {
-              setSubscribed("No");
+              setFormData((prevData: any) => {
+                return { ...prevData, subscribed: false };
+              });
               setSubscribedError("");
             }}
           />
