@@ -470,7 +470,7 @@ function Histogram(props) {
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 20, props.plot.height + 20);
+    contextY.clearRect(0, 0, 30, props.plot.height + 20);
 
     for (let i = 0; i < values.length; i++) {
       const yPos = ((props.plot.height + 20) / 4) * i;
