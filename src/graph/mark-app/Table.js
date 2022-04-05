@@ -6,6 +6,7 @@ import downArrow from "assets/images/down_arrow.png";
 import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+import { DSC_SORT, ASC_SORT } from "./Helper";
 
 function Table(props) {
   console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
@@ -38,17 +39,10 @@ function Table(props) {
 
   useEffect(() => {
     setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
-    if (getWorkspace()?.workspaceState?.sortingState?.sortingState === "asc") {
+    if (getWorkspace()?.workspaceState?.sortingState?.sortingState) {
       props.sortByGate(
         getWorkspace()?.workspaceState?.sortingState?.gateName,
-        "asc"
-      );
-    } else if (
-      getWorkspace()?.workspaceState?.sortingState?.sortingState === "dsc"
-    ) {
-      props.sortByGate(
-        getWorkspace()?.workspaceState?.sortingState?.gateName,
-        "dsc"
+        getWorkspace()?.workspaceState?.sortingState?.sortingState
       );
     } else {
       const files = getWorkspace()?.files;
@@ -299,7 +293,7 @@ function Table(props) {
                       {plot.population}
                       <img
                         onClick={() => {
-                          props.sortByGate(plot.population, "asc");
+                          props.sortByGate(plot.population, ASC_SORT);
                         }}
                         src={downArrow}
                         alt="down-arrow"
@@ -311,7 +305,7 @@ function Table(props) {
                       />
                       <img
                         onClick={() => {
-                          props.sortByGate(plot.population, "dsc");
+                          props.sortByGate(plot.population, DSC_SORT);
                         }}
                         src={upArrow}
                         alt="up-arrow"

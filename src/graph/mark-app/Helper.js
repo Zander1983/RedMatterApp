@@ -13,6 +13,9 @@ const DEFAULT_X_SCALE_TYPE = "lin";
 const DEFAULT_Y_SCALE_TYPE = "lin";
 const EXP_NUMS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
+export const DSC_SORT = "dsc";
+export const ASC_SORT = "asc";
+
 export const superAlgorithm = (
   OriginalFiles,
   OriginalWorkspaceState,

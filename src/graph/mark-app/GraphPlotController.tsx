@@ -10,6 +10,8 @@ import {
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
   formatEnrichedFiles,
+  DSC_SORT,
+  ASC_SORT,
 } from "./Helper";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 
@@ -632,7 +634,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         return 0;
       }
 
-      if (sortType == "asc") {
+      if (sortType === ASC_SORT) {
         if (gateStat1.count > gateStat2.count) {
           return 1;
         } else if (gateStat1.count < gateStat2.count) {
