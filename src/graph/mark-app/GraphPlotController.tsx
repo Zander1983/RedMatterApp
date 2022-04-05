@@ -450,9 +450,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     if (color in workspaceStatePlot && color == workspaceStatePlot.color) {
-      color = color.substring(0, color.length - 1) + "F";
+      color = "FFF" + color.substring(0, 3);
     } else if (!(color in workspaceStatePlot) && color == "#000000") {
-      color = color.substring(0, color.length - 1) + "F";
+      color = "FFF" + color.substring(0, 3);
     }
 
     if (checked)
