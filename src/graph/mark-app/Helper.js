@@ -29,11 +29,17 @@ export const superAlgorithm = (
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
-    let eventsInsideGate = [];
 
     let plots = WorkspaceState.files[file.id]
       ? WorkspaceState.files[file.id].plots
       : WorkspaceState.files[controlFileId].plots;
+
+    let eventsInsideGate = [];
+    for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
+      if (plots[plotIndex].gate) {
+        eventsInsideGate.push([]);
+      }
+    }
 
     plots.forEach((plot) => {
       if (plot.gate && plot.gate["xScaleType"] === "bi") {
@@ -134,7 +140,7 @@ export const superAlgorithm = (
 
           if (isInGate) {
             if (calculateMedianAndMean) {
-              eventsInsideGate.push(event.filter(Number));
+              eventsInsideGate[plotIndex].push(event.filter(Number));
             }
 
             event["color"] = gate["color"];
@@ -175,7 +181,7 @@ export const superAlgorithm = (
           gateName: gateName,
           count: gateStatsObj[gateKey],
           percentage: percentage,
-          eventsInsideGate: eventsInsideGate,
+          eventsInsideGate: eventsInsideGate[index],
         });
       } else {
         gateStats.push({
