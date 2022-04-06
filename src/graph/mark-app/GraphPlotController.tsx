@@ -33,6 +33,7 @@ interface IState {
   testParam: string;
   controlFileId: string;
   activePipelineId: string;
+  isForceToUpdate: boolean
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -87,6 +88,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       testParam: "some value",
       controlFileId: "",
       activePipelineId: "",
+      isForceToUpdate: false
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -684,11 +686,27 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onResize = (change: any) => {
-    // this.state.workspaceState.plots[change.plotIndex].width = change.width;
-    // this.state.workspaceState.plots[change.plotIndex].height = change.height;
-    // this.setState({
-    //   workspaceState: JSON.parse(JSON.stringify(this.state.workspaceState)),
-    // });
+    console.log("== change == ");
+    console.log(change);
+    let newWorkspaceState: any = this.state.workspaceState;
+    console.log("== newWorkspaceState ==");
+    console.log(newWorkspaceState);
+    Object.keys((newWorkspaceState as any).files).forEach(
+        (fileId, index) => {
+          console.log(fileId," ", change.fileId);
+          if (fileId == change.fileId) {
+            //@ts-ignore
+            newWorkspaceState.files[fileId].plots[+change.plotIndex].width = +change.width;
+            newWorkspaceState.files[fileId].plots[+change.plotIndex].height = +change.height;
+          }
+        }
+    );
+
+    setTimeout(() => {
+      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    }, 10);
+
+    this.setState({workspaceState: newWorkspaceState, isForceToUpdate: true});
   };
 
   // shouldComponentUpdate(nextProps: Readonly<PlotControllerProps>, nextState: Readonly<IState>, nextContext: any): boolean {
@@ -723,12 +741,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //console.log("did update ===");
     let workspaceState = this.state.workspaceState;
     // @ts-ignore
-    const newPlots =
-      workspaceState &&
-      // @ts-ignore
-      workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-    const oldPlots =
-      prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    // const newPlots =
+    //   workspaceState &&
+    //   // @ts-ignore
+    //   workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
+    // const oldPlots =
+    //   prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
     // if(!this.state.isTableRenderCall || JSON.stringify(oldPlots)?.length !== JSON.stringify(newPlots)?.length){
 
     if (
@@ -737,10 +755,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(prevState.workspaceState)?.length !==
         JSON.stringify(workspaceState)?.length
     ) {
-      //console.log(" did update true=======");
       this.onInitState();
     } else {
-      //console.log("did update false=======");
+      if(this.state.isForceToUpdate) {
+        this.setState({isForceToUpdate:false});
+        this.onInitState();
+      }else {
+        //console.log("did update false=======");
+      }
     }
   }
 
