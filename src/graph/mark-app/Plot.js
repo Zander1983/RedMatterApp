@@ -8,6 +8,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  getRealRange,
 } from "./PlotHelper";
 import Modal from "react-modal";
 import { isGateShowing } from "./Helper";
@@ -400,27 +401,21 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
-    const xDivisor =
-      (props.enrichedFile.channels[localPlot.xAxisIndex].maximum -
-        props.enrichedFile.channels[localPlot.xAxisIndex].minimum) /
-      localPlot.width;
+
+    const xDivisor = getRealRange(xRange[0], xRange[1]) / localPlot.width;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
 
-    const yDivisor =
-      (props.enrichedFile.channels[localPlot.yAxisIndex].maximum -
-        props.enrichedFile.channels[localPlot.yAxisIndex].minimum) /
-      localPlot.height;
+    const yDivisor = getRealRange(xRange[0], xRange[1]) / localPlot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
       localPlot.height,
       localPlot.plotScale
     );
-
     let xLabels = getAxisLabels(
       localPlot.xScaleType,
       xRange,
@@ -432,7 +427,10 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 20, 20);
+    contextX.clearRect(0, 0, localPlot.width + 50, 20);
+
+    let shiftRight = -xRange[0] / xDivisor;
+
     for (let i = 0; i < xLabels.length; i++) {
       let tooClose = false;
       if (
@@ -441,22 +439,31 @@ function Plot(props) {
       ) {
         tooClose = true;
       }
-      let xPos =
-        xLabels[i].pos / xDivisor + 20 > localPlot.width
-          ? localPlot.width - 2
-          : xLabels[i].pos / xDivisor + 20;
+
+      let xPos = xLabels[i].pos / xDivisor;
+
+      xPos = 20 + xPos + shiftRight;
 
       if (tooClose && i > 0) {
-        xPos +=
-          xLabels[i - 1].name.length === 4
-            ? 20
-            : xLabels[i - 1].name.length === 3
-            ? 15
-            : 8;
+        if (localPlot?.xScaleType === "bi") {
+          xPos +=
+            xLabels[i - 1].name.length === 4
+              ? 12
+              : xLabels[i - 1].name.length === 3
+              ? 8
+              : 4;
+        } else {
+          xPos +=
+            xLabels[i - 1].name.length === 4
+              ? 20
+              : xLabels[i - 1].name.length === 3
+              ? 15
+              : 8;
+        }
       }
       drawText(
         {
-          x: i === 0 ? 20 : xPos,
+          x: xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",
@@ -477,28 +484,20 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 20, localPlot.height + 20);
+    contextY.clearRect(0, 0, 25, localPlot.height);
+
+    let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        yLabels[i].pos / yDivisor - yLabels[i - 1].pos / yDivisor < 15
-      ) {
-        tooClose = true;
-      }
+      let yPos = yLabels[i].pos / yDivisor;
+      yPos = 20 + yPos + shiftUp;
 
-      let yPos =
-        yLabels[i].pos / yDivisor + 20 > localPlot.height
-          ? localPlot.height
-          : yLabels[i].pos / yDivisor + 20;
+      yPos =
+        localPlot.height + 20 - yPos < 10 ? 10 : localPlot.height + 20 - yPos;
 
-      if (tooClose) {
-        yPos += 10;
-      }
       drawText(
         {
           x: 0,
-          y: i === 0 ? localPlot.height : localPlot.height + 20 - yPos,
+          y: yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
@@ -1006,7 +1005,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 20}
+                width={localPlot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{

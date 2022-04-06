@@ -241,7 +241,7 @@ function SideSelector(props) {
               .filter((x) => x.id != props.enrichedFile.fileId)
               .map((x) => {
                 return (
-                  <MenuItem>
+                  <MenuItem key={x?.id}>
                     <div
                       class="form-check"
                       style={{

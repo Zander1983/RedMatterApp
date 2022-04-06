@@ -692,7 +692,7 @@ export const drawText = (params, ctx) => {
 export const linLabel = (num) => {
   let snum = "";
   if (num < 2) {
-    snum = numeral(num.toFixed(2)).format("0.0a");
+    snum = numeral(num.toFixed(2)).format("0a");
   } else {
     snum = num.toFixed(2);
     snum = numeral(snum).format("0a");
