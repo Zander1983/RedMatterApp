@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
-
+import { useResizeDetector } from 'react-resize-detector';
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -51,6 +51,8 @@ let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 
+let lastPlot = null;
+
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
 function useTraceUpdate(props) {
@@ -73,6 +75,21 @@ function useTraceUpdate(props) {
 function Plot(props) {
   const [localPlot, setLocalPlot] = useState(props.plot);
 
+  const onResize = useCallback((w, h) => {
+    console.log("== on resize ==");
+    let tempPlot = {...localPlot, ...{width:w, height:h}};
+    setLocalPlot(tempPlot);
+  }, []);
+
+  const { ref } = useResizeDetector({ onResize,
+    // handleHeight: false,
+    refreshMode: 'debounce',
+    refreshRate: 1000
+  });
+
+  const [size, setSize] = useState({ w: props.plot.width, h: props.plot.height });
+
+
   //useTraceUpdate({ ...props, localPlot });
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -90,6 +107,10 @@ function Plot(props) {
   }, [props.plot]);
 
   useEffect(() => {
+    console.log("call====");
+    console.log(size);
+    console.log("==== localPlot ===");
+    console.log(localPlot);
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -110,6 +131,7 @@ function Plot(props) {
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
     }
+
   }, [localPlot]);
 
   const drawGateLine = (context, plot) => {
@@ -375,6 +397,7 @@ function Plot(props) {
   };
 
   const redraw = () => {
+    console.log("==== re draw===");
     drawPolygon();
     drawPoints();
   };
@@ -572,7 +595,7 @@ function Plot(props) {
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     isMouseDown = true;
-
+    console.log("== call mouse down==");
     if (hasGate()) {
       // check if on point
       // convert real points to canvas points and check if within 5 points of canvas points
@@ -611,9 +634,11 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    console.log("== call mouse up==");
     isMouseDown = false;
     dragPointIndex = false;
     if (hasGate()) {
+      console.log("== has gate==");
       let change = {
         type: "EditGate",
         plot: localPlot,
@@ -622,9 +647,11 @@ function Plot(props) {
       };
       props.onEditGate(change);
     } else {
+      console.log("== has no gate==");
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
       if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+        console.log("== has gate selected ok==");
         newGatePointsCanvas.forEach((newGatePointCanvas) => {
           if (
             inRange(
@@ -639,6 +666,7 @@ function Plot(props) {
             ) &&
             newGatePointsCanvas.length >= 3
           ) {
+            console.log("== has gate selected in gange ok==");
             setModalIsOpen(true);
             polygonComplete = true;
           }
@@ -654,10 +682,12 @@ function Plot(props) {
         }
 
         if (!polygonComplete && uniqueGatePoint) {
+          console.log("== has gate selected in plogon completed ok==");
           newGatePointsCanvas.push([event.offsetX, event.offsetY]);
         }
         redraw();
       }
+      console.log("== has gate selected no ok==");
     }
   };
 
@@ -964,7 +994,7 @@ function Plot(props) {
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
-                  height={localPlot.height}
+                  height={size.h}
                   id={`canvas-${props.plotIndex}-yAxis`}
                   width={25}
                   style={{
@@ -975,11 +1005,12 @@ function Plot(props) {
                 <div
                   style={{
                     border: "1px solid #32a1ce",
-                    width: `${localPlot.width}px`,
-                    height: `${localPlot.height}px`,
+                    width: `${size.w}px`,
+                    height: `${size.h}px`,
+                    resize: 'both',
+                    overflow: 'hidden'
                   }}
-                  // ref={ref}
-                >
+                  ref={ref}>
                   <canvas
                     className="canvas"
                     id={`canvas-${props.plotIndex}`}
@@ -1006,7 +1037,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 20}
+                width={size.w + 20}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
