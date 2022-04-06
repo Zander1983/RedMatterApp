@@ -496,6 +496,9 @@ export const graphLine = (params, ctx) => {
 };
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
+  let selectedFileId = workspaceState.selectedFile;
+  let controlFile = enrichedFiles.find((x) => x.fileId == selectedFileId);
+
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel) => {
       return new MarkLogicle(
@@ -505,9 +508,27 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
     });
 
     let channels = file.channels.map((channel) => {
+      let minimum = channel.biexponentialMinimum;
+      let maximum = channel.biexponentialMaximum;
+
+      if (file.fileId != selectedFileId) {
+        let controlFileChannelObj = controlFile.channels.find(
+          (x) => x.label == channel.label
+        );
+        if (!controlFileChannelObj) {
+          controlFileChannelObj = controlFile.channels.find(
+            (x) =>
+              channel.label.includes(x.label) || x.label.includes(channel.label)
+          );
+        }
+
+        minimum = controlFileChannelObj.biexponentialMinimum;
+        maximum = controlFileChannelObj.biexponentialMaximum;
+      }
+
       return {
-        minimum: channel.biexponentialMinimum,
-        maximum: channel.biexponentialMaximum,
+        minimum: minimum,
+        maximum: maximum,
         name: channel.label || channel.value,
         defaultScale: channel.display,
       };
@@ -813,5 +834,11 @@ export const isGateShowing = (plot) => {
       plot?.gate?.xScaleType === plot?.xScaleType &&
       plot?.gate?.gateType === plot?.plotType
     );
+  }
+};
+
+export const getMinMax = (getControlFileMinMax = true, enchrichedFile) => {
+  if (getControlFileMinMax) {
+  } else {
   }
 };
