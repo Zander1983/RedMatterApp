@@ -836,9 +836,3 @@ export const isGateShowing = (plot) => {
     );
   }
 };
-
-export const getMinMax = (getControlFileMinMax = true, enchrichedFile) => {
-  if (getControlFileMinMax) {
-  } else {
-  }
-};
