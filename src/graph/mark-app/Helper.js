@@ -632,8 +632,8 @@ export const createDefaultPlotSnapShot = (
             xAxisIndex: xAxisIndex,
             yAxisIndex: yAxisIndex,
             plotScale: 2,
-            xScaleType: xScaleType,
-            yScaleType: yScaleType,
+            xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
+            yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
             histogramAxis: "",
             label: "",
             dimensions: {
