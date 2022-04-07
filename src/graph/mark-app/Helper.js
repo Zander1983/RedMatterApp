@@ -500,28 +500,25 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
   let controlFile = enrichedFiles.find((x) => x.fileId == selectedFileId);
 
   return enrichedFiles.map((file) => {
-    let logicles = file.channels.map((channel) => {
-      return new MarkLogicle(
-        channel.biexponentialMinimum,
-        channel.biexponentialMaximum
-      );
-    });
-
-    let channels = file.channels.map((channel) => {
+    let logicles = file.channels.map((channel, index) => {
       let minimum = channel.biexponentialMinimum;
       let maximum = channel.biexponentialMaximum;
 
       if (file.fileId != selectedFileId) {
-        let controlFileChannelObj = controlFile.channels.find(
-          (x) => x.label == channel.label
-        );
-        if (!controlFileChannelObj) {
-          controlFileChannelObj = controlFile.channels.find(
-            (x) =>
-              channel.label.includes(x.label) || x.label.includes(channel.label)
-          );
-        }
+        let controlFileChannelObj = controlFile.channels[index];
+        minimum = controlFileChannelObj.biexponentialMinimum;
+        maximum = controlFileChannelObj.biexponentialMaximum;
+      }
 
+      return new MarkLogicle(minimum, maximum);
+    });
+
+    let channels = file.channels.map((channel, index) => {
+      let minimum = channel.biexponentialMinimum;
+      let maximum = channel.biexponentialMaximum;
+
+      if (file.fileId != selectedFileId) {
+        let controlFileChannelObj = controlFile.channels[index];
         minimum = controlFileChannelObj.biexponentialMinimum;
         maximum = controlFileChannelObj.biexponentialMaximum;
       }
