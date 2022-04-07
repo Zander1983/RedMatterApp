@@ -402,20 +402,17 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
 
-    const xDivisor = getRealRange(xRange[0], xRange[1]) / localPlot.width;
-
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
-
-    const yDivisor = getRealRange(xRange[0], xRange[1]) / localPlot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
       localPlot.height,
       localPlot.plotScale
     );
+
     let xLabels = getAxisLabels(
       localPlot.xScaleType,
       xRange,
@@ -429,38 +426,15 @@ function Plot(props) {
 
     contextX.clearRect(0, 0, localPlot.width + 50, 20);
 
-    let shiftRight = -xRange[0] / xDivisor;
-
     for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
-      }
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        localPlot,
+        props.enrichedFile.logicles
+      );
 
-      let xPos = xLabels[i].pos / xDivisor;
-
-      xPos = 20 + xPos + shiftRight;
-
-      if (tooClose && i > 0) {
-        if (localPlot?.xScaleType === "bi") {
-          xPos +=
-            xLabels[i - 1].name.length === 4
-              ? 12
-              : xLabels[i - 1].name.length === 3
-              ? 8
-              : 4;
-        } else {
-          xPos +=
-            xLabels[i - 1].name.length === 4
-              ? 20
-              : xLabels[i - 1].name.length === 3
-              ? 15
-              : 8;
-        }
-      }
       drawText(
         {
           x: xPos,
@@ -486,13 +460,19 @@ function Plot(props) {
 
     contextY.clearRect(0, 0, 25, localPlot.height);
 
-    let shiftUp = Math.abs(yRange[0]) / xDivisor;
+    //let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
-      let yPos = yLabels[i].pos / yDivisor;
-      yPos = 20 + yPos + shiftUp;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        null,
+        yLabels[i].pos,
+        localPlot,
+        props.enrichedFile.logicles
+      );
 
-      yPos =
-        localPlot.height + 20 - yPos < 10 ? 10 : localPlot.height + 20 - yPos;
+      if (i == yLabels.length - 1) {
+        yPos = yPos + 9;
+      }
 
       drawText(
         {
@@ -1010,6 +990,7 @@ function Plot(props) {
                 height={20}
                 style={{
                   background: "#FAFAFA",
+                  marginLeft: 25,
                 }}
               />
             </div>

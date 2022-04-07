@@ -1,6 +1,7 @@
 import MarkLogicle from "./logicleMark";
 import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
+import { pow } from "mathjs";
 
 const minLabelPadding = 30;
 
@@ -498,6 +499,10 @@ export const graphLine = (params, ctx) => {
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel) => {
+      if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
+        return new MarkLogicle(1000, channel.biexponentialMaximum);
+      }
+
       return new MarkLogicle(
         channel.biexponentialMinimum,
         channel.biexponentialMaximum
@@ -505,6 +510,15 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
     });
 
     let channels = file.channels.map((channel) => {
+      if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
+        return {
+          minimum: 1000,
+          maximum: channel.biexponentialMaximum,
+          name: channel.label || channel.value,
+          defaultScale: channel.display,
+        };
+      }
+
       return {
         minimum: channel.biexponentialMinimum,
         maximum: channel.biexponentialMaximum,
@@ -711,7 +725,7 @@ export const pot10Label = (pot10Indx) => {
 export const getAxisLabels = (format, linRange, logicle, binsCount) => {
   let labels = [];
   if (format === "lin") {
-    const binSize = (linRange[1] - linRange[0]) / binsCount;
+    const binSize = (Math.abs(linRange[1]) - linRange[0]) / binsCount;
 
     for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
       labels.push({
@@ -728,54 +742,43 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
       pot10Exp++;
     };
     const back = () => {
-      pot10 /= 10;
-      pot10Exp--;
+      pot10 /= Math.pow(10, binsCount);
+      pot10Exp = pot10Exp - binsCount;
     };
-    const add = (x, p) => {
+    const add = (x, p, val) => {
+      let label = pot10Label(p);
       if (
-        (x >= linRange[0] && x <= linRange[1]) ||
-        (x <= linRange[0] && x >= linRange[1])
+        !labels.find((x) => x.name == label) &&
+        ((x >= linRange[0] && x <= linRange[1]) ||
+          x <= linRange[0] ||
+          x >= linRange[1])
       ) {
         labels.push({
-          pos: x,
+          pos: val,
           name: pot10Label(p),
         });
       }
     };
     while (pot10 <= baseline) fow();
+    let cnt = 1;
+    let max = linRange[1];
     while (pot10 >= 1) {
-      add(pot10, pot10Exp);
-      add(-pot10, -pot10Exp);
+      add(pot10, pot10Exp, max / cnt);
       back();
+      cnt = cnt * 10;
     }
-
-    let newPos = labels.map((e) => logicle.scale(e.pos));
-
-    newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
-    labels = labels.map((e, i) => {
-      e.pos = newPos[i];
-      return e;
-    });
-    labels = labels.sort((a, b) => a.pos - b.pos);
-
-    const distTolerance = 0.03;
-    let lastAdded = null;
-    labels = labels.filter((e, i) => {
-      if (i === 0) {
-        lastAdded = i;
-        return true;
-      }
-      if (
-        (e.pos - labels[lastAdded].pos) /
-          (Math.max(linRange[0], linRange[1]) -
-            Math.min(linRange[0], linRange[1])) >=
-        distTolerance
-      ) {
-        lastAdded = i;
-        return true;
-      }
-      return false;
-    });
+    const baselineMin = Math.min(Math.abs(linRange[0]), Math.abs(linRange[1]));
+    pot10 = 1;
+    pot10Exp = 0;
+    cnt = 1;
+    let min = linRange[0];
+    while (pot10 <= baselineMin) fow();
+    while (pot10 >= 1) {
+      add(min < 0 ? -pot10 : pot10, min < 0 ? -pot10Exp : pot10Exp, min / cnt);
+      back();
+      cnt = cnt * 10;
+    }
+    labels.sort((a, b) => a.pos - b.pos);
   }
   return labels;
 };
