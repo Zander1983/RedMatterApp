@@ -58,7 +58,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //   let copyOfFiles: any[] = getWorkspace().files;
     //   if (plots === null || plots === undefined) {
     //       const defaultFile = copyOfFiles?.[0];
-    //       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
+    //       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } =
     //           getPlotChannelAndPosition(defaultFile);
     //       workspaceState = createDefaultPlotSnapShot(
     //           defaultFile?.id,
@@ -128,8 +128,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             )?.[0]
           : null;
 
-      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-        getPlotChannelAndPosition(defaultFile);
+      const {
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType,
+      } = getPlotChannelAndPosition(defaultFile);
 
       workspaceState = createDefaultPlotSnapShot(
         defaultFile?.id,

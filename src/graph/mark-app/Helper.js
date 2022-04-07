@@ -4,7 +4,7 @@ import numeral from "numeral";
 
 const minLabelPadding = 30;
 
-const DEFAULT_PLOT_TYPE = "scatter";
+export const DEFAULT_PLOT_TYPE = "scatter";
 const DEFAULT_X_AXIS_LABEL = "FSC-A";
 const DEFAULT_Y_AXIS_LABEL = "SSC-A";
 const DEFAULT_PLOT_WIDTH = 200;
@@ -588,7 +588,17 @@ export const getPlotChannelAndPosition = (file) => {
   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
 
-  return { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex };
+  let xAxisScaleType = defaultFileChannels[xAxisIndex]?.display;
+  let yAxisScaleType = defaultFileChannels[yAxisIndex]?.display;
+
+  return {
+    xAxisLabel,
+    yAxisLabel,
+    xAxisIndex,
+    yAxisIndex,
+    xAxisScaleType,
+    yAxisScaleType,
+  };
 };
 
 export const createDefaultPlotSnapShot = (
@@ -600,7 +610,9 @@ export const createDefaultPlotSnapShot = (
   yAxisIndex = 1,
   pipelineId = "",
   name = "",
-  plotType = DEFAULT_PLOT_TYPE
+  plotType = DEFAULT_PLOT_TYPE,
+  xScaleType = DEFAULT_X_SCALE_TYPE,
+  yScaleType = DEFAULT_Y_SCALE_TYPE
 ) => {
   return {
     experimentId: experimentId,
@@ -620,8 +632,8 @@ export const createDefaultPlotSnapShot = (
             xAxisIndex: xAxisIndex,
             yAxisIndex: yAxisIndex,
             plotScale: 2,
-            xScaleType: DEFAULT_X_SCALE_TYPE,
-            yScaleType: DEFAULT_Y_SCALE_TYPE,
+            xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
+            yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
             histogramAxis: "",
             label: "",
             dimensions: {
