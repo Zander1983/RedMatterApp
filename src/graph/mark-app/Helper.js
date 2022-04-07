@@ -759,22 +759,17 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
     };
     const add = (x, p, val) => {
       let label = pot10Label(p);
-      if (
-        !labels.find((x) => x.name == label) &&
-        ((x >= linRange[0] && x <= linRange[1]) ||
-          x <= linRange[0] ||
-          x >= linRange[1])
-      ) {
+      if (!labels.find((x) => x.name == label)) {
         labels.push({
-          pos: val,
+          pos: x,
           name: pot10Label(p),
         });
       }
     };
-    while (pot10 <= baseline) fow();
+    while (pot10 < baseline) fow();
     let cnt = 1;
     let max = linRange[1];
-    while (pot10 >= 1) {
+    while (pot10 > 1) {
       add(pot10, pot10Exp, max / cnt);
       back();
       cnt = cnt * 10;
@@ -791,6 +786,8 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
       cnt = cnt * 10;
     }
     labels.sort((a, b) => a.pos - b.pos);
+    //labels[0].pos = linRange[0];
+    labels[labels.length - 1].pos = linRange[1];
   }
   return labels;
 };
