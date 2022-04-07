@@ -32,6 +32,7 @@ import {
   formatEnrichedFiles,
   superAlgorithm,
   getMedian,
+  DEFAULT_PLOT_TYPE,
 } from "graph/mark-app/Helper";
 import { File } from "graph/resources/types";
 
@@ -214,84 +215,96 @@ const WorkspaceTopBarComponent = ({
         let response = null;
 
         setTimeout(async () => {
-            if(!sharedWorkspace) {
-                response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers: {token: userManager.getToken()}});
-            }else {
-                response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}/shared`,
-                );
-            }
+          if (!sharedWorkspace) {
+            response = await axios.get(
+              `/api/${experimentId}/pipeline/${selectedPipeline}`,
+              { headers: { token: userManager.getToken() } }
+            );
+          } else {
+            response = await axios.get(
+              `/api/${experimentId}/pipeline/${selectedPipeline}/shared`
+            );
+          }
 
-            if (response?.status === 200) {
-                setSaveNeeded(false);
-                const workspace = response.data.state;
-                if (workspace && Object.keys(workspace).length > 0) {
-                    const workspaceObj = JSON.parse(workspace || "{}");
+          if (response?.status === 200) {
+            setSaveNeeded(false);
+            const workspace = response.data.state;
+            if (workspace && Object.keys(workspace).length > 0) {
+              const workspaceObj = JSON.parse(workspace || "{}");
 
-                    await WorkspaceDispatch.SetPlotStates(workspaceObj);
-                    await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-                    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-                    
-                    //setActivePipelineId(selectedPipeline);
-                    await showMessageBox({
-                        message: response.data.message,
-                        saverity: "success",
-                    });
-                } else {
-                    const workspaceObj = response.data;
-                    //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
-                    const filesInNewOrder: File[] = [];
-                    let files = getAllFiles();
-                    let selectedFile = null;
-                    for (let i = 0; i < files.length; i++) {
-                        if (files[i].id === workspaceObj.pipeline.controlFileId) {
-                            files[i].view = false;
-                            selectedFile = files[i];
-                            filesInNewOrder.unshift(files[i]);
-                        } else {
-                            filesInNewOrder.push(files[i]);
-                        }
-                    }
-                    WorkspaceDispatch.SetFiles(filesInNewOrder);
-                    const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-                        getPlotChannelAndPosition(selectedFile);
-                    const plotState = createDefaultPlotSnapShot(
-                        selectedFile.id,
-                        experimentId,
-                        xAxisLabel,
-                        yAxisLabel,
-                        xAxisIndex,
-                        yAxisIndex,
-                        selectedPipeline,
-                        workspaceObj.pipeline.name
-                    );
+              await WorkspaceDispatch.SetPlotStates(workspaceObj);
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              await WorkspaceDispatch.UpdateSelectedFile(
+                workspaceObj.selectedFile
+              );
 
-                    await WorkspaceDispatch.SetPlotStates(plotState);
-                    await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-                    await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
-                    setActivePipelineId(selectedPipeline);
-
-                    await showMessageBox({
-                        message: "Plot init success",
-                        saverity: "success",
-                    });
-                }
-
-                if (!renderPlotController) {
-                    setRenderPlotController(true);
-                }
-                setPlotCallNeeded(false);
-                if (renderPlotController) {
-                    setPlotCallNeeded(true);
-                }
-                setLoader(false);
+              //setActivePipelineId(selectedPipeline);
+              await showMessageBox({
+                message: response.data.message,
+                saverity: "success",
+              });
             } else {
-                setLoader(false);
-                await handleError({
-                    message: "Information missing",
-                    saverity: "error",
-                });
+              const workspaceObj = response.data;
+              //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
+              const filesInNewOrder: File[] = [];
+              let files = getAllFiles();
+              let selectedFile = null;
+              for (let i = 0; i < files.length; i++) {
+                if (files[i].id === workspaceObj.pipeline.controlFileId) {
+                  files[i].view = false;
+                  selectedFile = files[i];
+                  filesInNewOrder.unshift(files[i]);
+                } else {
+                  filesInNewOrder.push(files[i]);
+                }
+              }
+              WorkspaceDispatch.SetFiles(filesInNewOrder);
+              const {
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                xAxisScaleType,
+                yAxisScaleType,
+              } = getPlotChannelAndPosition(selectedFile);
+              const plotState = createDefaultPlotSnapShot(
+                selectedFile.id,
+                experimentId,
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                selectedPipeline,
+                workspaceObj.pipeline.name
+              );
+
+              await WorkspaceDispatch.SetPlotStates(plotState);
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+              setActivePipelineId(selectedPipeline);
+
+              await showMessageBox({
+                message: "Plot init success",
+                saverity: "success",
+              });
             }
-        },5);
+
+            if (!renderPlotController) {
+              setRenderPlotController(true);
+            }
+            setPlotCallNeeded(false);
+            if (renderPlotController) {
+              setPlotCallNeeded(true);
+            }
+            setLoader(false);
+          } else {
+            setLoader(false);
+            await handleError({
+              message: "Information missing",
+              saverity: "error",
+            });
+          }
+        }, 5);
       }
     } else {
       setSaveNeeded(false);
@@ -304,94 +317,103 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onSavePipeline = async (name: any, controlFileId: any) => {
-      onQuite();
-      setLoader(true);
-      setTimeout(async () => {
-          const response = await axios.post(
-              "/api/pipeline/create",
-              {
-                  organisationId: userManager.getOrganiztionID(),
-                  experimentId: experimentId,
-                  name: name,
-                  controlFileId: controlFileId,
-              },
-              {
-                  headers: {
-                      token: userManager.getToken(),
-                  },
-              }
-          );
-          if (response?.status === 200) {
-              let pipelines = getWorkspace()?.pipelines || [];
-              // @ts-ignore
-              pipelines.push(response.data);
-              // if(pipelines?.length === 1 && response?.data?.isDefault){
-              if (pipelines?.length >= 1) {
-                  const pipelineId = response.data._id;
-                  setActivePipelineId(pipelineId);
-                  const filesInNewOrder: File[] = [];
-                  let files = getAllFiles();
-                  let selectedFile = null;
-                  for (let i = 0; i < files.length; i++) {
-                      if (files[i].id === controlFileId) {
-                          files[i].view = false;
-                          selectedFile = files[i];
-                          filesInNewOrder.unshift(files[i]);
-                      } else {
-                          filesInNewOrder.push(files[i]);
-                      }
-                  }
-                  WorkspaceDispatch.SetFiles(filesInNewOrder);
-                  const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-                      getPlotChannelAndPosition(selectedFile);
-                  const plotState = createDefaultPlotSnapShot(
-                      selectedFile.id,
-                      experimentId,
-                      xAxisLabel,
-                      yAxisLabel,
-                      xAxisIndex,
-                      yAxisIndex,
-                      pipelineId,
-                      name
-                  );
-                  await WorkspaceDispatch.SetPlotStates(plotState);
-                  await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
-                  await WorkspaceDispatch.UpdatePipelineId(pipelineId);
-
-                  if (pipelines?.length === 1)
-                      setTimeout(
-                          () =>
-                              saveWorkspace(
-                                  false,
-                                  null,
-                                  pipelineId ? pipelineId : activePipelineId
-                              ),
-                          5
-                      );
-
-                  if (!renderPlotController) {
-                      setRenderPlotController(true);
-                  }
-                  setPlotCallNeeded(false);
-                  if (renderPlotController) {
-                      setPlotCallNeeded(true);
-                  }
-                  setLoader(false);
-              }
-              setPipelines(pipelines);
-              WorkspaceDispatch.SetPipeLines(pipelines);
-              await showMessageBox({
-                  message: "Created Success",
-                  saverity: "success",
-              });
-          } else {
-              setLoader(false);
-              await handleError({
-                  message: "Information missing",
-                  saverity: "error",
-              });
+    onQuite();
+    setLoader(true);
+    setTimeout(async () => {
+      const response = await axios.post(
+        "/api/pipeline/create",
+        {
+          organisationId: userManager.getOrganiztionID(),
+          experimentId: experimentId,
+          name: name,
+          controlFileId: controlFileId,
+        },
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+      if (response?.status === 200) {
+        let pipelines = getWorkspace()?.pipelines || [];
+        // @ts-ignore
+        pipelines.push(response.data);
+        // if(pipelines?.length === 1 && response?.data?.isDefault){
+        if (pipelines?.length >= 1) {
+          const pipelineId = response.data._id;
+          setActivePipelineId(pipelineId);
+          const filesInNewOrder: File[] = [];
+          let files = getAllFiles();
+          let selectedFile = null;
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].id === controlFileId) {
+              files[i].view = false;
+              selectedFile = files[i];
+              filesInNewOrder.unshift(files[i]);
+            } else {
+              filesInNewOrder.push(files[i]);
+            }
           }
-      }, 5)
+          WorkspaceDispatch.SetFiles(filesInNewOrder);
+          const {
+            xAxisLabel,
+            yAxisLabel,
+            xAxisIndex,
+            yAxisIndex,
+            xAxisScaleType,
+            yAxisScaleType,
+          } = getPlotChannelAndPosition(selectedFile);
+          const plotState = createDefaultPlotSnapShot(
+            selectedFile.id,
+            experimentId,
+            xAxisLabel,
+            yAxisLabel,
+            xAxisIndex,
+            yAxisIndex,
+            pipelineId,
+            name,
+            DEFAULT_PLOT_TYPE,
+            xAxisScaleType,
+            yAxisScaleType
+          );
+          await WorkspaceDispatch.SetPlotStates(plotState);
+          await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+          await WorkspaceDispatch.UpdatePipelineId(pipelineId);
+
+          if (pipelines?.length === 1)
+            setTimeout(
+              () =>
+                saveWorkspace(
+                  false,
+                  null,
+                  pipelineId ? pipelineId : activePipelineId
+                ),
+              5
+            );
+
+          if (!renderPlotController) {
+            setRenderPlotController(true);
+          }
+          setPlotCallNeeded(false);
+          if (renderPlotController) {
+            setPlotCallNeeded(true);
+          }
+          setLoader(false);
+        }
+        setPipelines(pipelines);
+        WorkspaceDispatch.SetPipeLines(pipelines);
+        await showMessageBox({
+          message: "Created Success",
+          saverity: "success",
+        });
+      } else {
+        setLoader(false);
+        await handleError({
+          message: "Information missing",
+          saverity: "error",
+        });
+      }
+    }, 5);
   };
 
   const handleClose = (func: Function) => {
@@ -446,7 +468,7 @@ const WorkspaceTopBarComponent = ({
         await handleError(err);
       }
     } else {
-     // console.log("TEMP-MESSAGE: Work state empty");
+      // console.log("TEMP-MESSAGE: Work state empty");
     }
     setSavingWorkspace(false);
   };
@@ -556,8 +578,14 @@ const WorkspaceTopBarComponent = ({
     let copyOfFiles: any[] = getWorkspace().files;
     if (plots === null || plots === undefined) {
       const defaultFile = copyOfFiles?.[0];
-      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-        getPlotChannelAndPosition(defaultFile);
+      const {
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType,
+      } = getPlotChannelAndPosition(defaultFile);
       workspaceState = createDefaultPlotSnapShot(
         defaultFile?.id,
         experimentId,
@@ -747,7 +775,7 @@ const WorkspaceTopBarComponent = ({
     // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
     // console.log(defaultFile);
     // console.log(selectedFileID);
-    //  const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+    //  const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } = getPlotChannelAndPosition(defaultFile);
     // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
     WorkspaceDispatch.ResetWorkspaceExceptFiles();
     await saveWorkspace(false);
