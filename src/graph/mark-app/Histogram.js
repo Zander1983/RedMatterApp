@@ -397,7 +397,6 @@ function Histogram(props) {
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
     ];
-    const xDivisor = getRealRange(xRange[0], xRange[1]) / props.plot.width;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       props.plot.width,
@@ -411,44 +410,29 @@ function Histogram(props) {
       props.enrichedFile.logicles[props.plot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
     contextX.clearRect(0, 0, props.plot.width + 50, 20);
 
-    let shiftRight = -xRange[0] / xDivisor;
+    let prevLabelPos = null;
 
     for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        props.plot,
+        props.enrichedFile.logicles
+      );
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
       }
 
-      let xPos = xLabels[i].pos / xDivisor;
-
-      xPos = 20 + xPos + shiftRight;
-
-      if (tooClose && i > 0) {
-        if (props?.plot?.xScaleType === "bi") {
-          xPos +=
-            xLabels[i - 1].name.length === 4
-              ? 12
-              : xLabels[i - 1].name.length === 3
-              ? 8
-              : 4;
-        } else {
-          xPos +=
-            xLabels[i - 1].name.length === 4
-              ? 20
-              : xLabels[i - 1].name.length === 3
-              ? 15
-              : 8;
-        }
-      }
+      prevLabelPos = xPos;
       drawText(
         {
           x: xPos,
@@ -929,7 +913,7 @@ function Histogram(props) {
                 width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
-                style={{ background: "#FAFAFA" }}
+                style={{ background: "#FAFAFA", marginLeft: 25 }}
               />
             </div>
           }
