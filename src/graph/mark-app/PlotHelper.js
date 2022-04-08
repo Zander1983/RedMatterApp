@@ -82,6 +82,12 @@ export const getPointOnCanvas = (
 
     let realValueInRange =
       realXValue + Math.abs(channels[plot.xAxisIndex].minimum);
+
+    if (channels[plot.xAxisIndex].minimum > 0) {
+      realValueInRange =
+        realXValue - Math.abs(channels[plot.xAxisIndex].minimum);
+    }
+
     canvasXValue = (plot.width * realValueInRange) / range;
   }
 
@@ -98,6 +104,11 @@ export const getPointOnCanvas = (
 
       let realValueInRange =
         realYValue + Math.abs(channels[plot.yAxisIndex].minimum);
+
+      if (channels[plot.yAxisIndex].minimum > 0) {
+        realValueInRange =
+          realYValue - Math.abs(channels[plot.yAxisIndex].minimum);
+      }
 
       canvasYValue = plot.height - (plot.height * realValueInRange) / range;
     }

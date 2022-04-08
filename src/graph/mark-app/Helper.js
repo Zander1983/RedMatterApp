@@ -1,6 +1,7 @@
 import MarkLogicle from "./logicleMark";
 import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
+import { pow } from "mathjs";
 
 const minLabelPadding = 30;
 
@@ -707,7 +708,7 @@ export const drawText = (params, ctx) => {
 export const linLabel = (num) => {
   let snum = "";
   if (num < 2) {
-    snum = numeral(num.toFixed(2)).format("0.0a");
+    snum = numeral(num.toFixed(2)).format("0a");
   } else {
     snum = num.toFixed(2);
     snum = numeral(snum).format("0a");
@@ -726,7 +727,7 @@ export const pot10Label = (pot10Indx) => {
 export const getAxisLabels = (format, linRange, logicle, binsCount) => {
   let labels = [];
   if (format === "lin") {
-    const binSize = (linRange[1] - linRange[0]) / binsCount;
+    const binSize = (Math.abs(linRange[1]) - linRange[0]) / binsCount;
 
     for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
       labels.push({
@@ -735,16 +736,50 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
       });
   }
   if (format === "bi") {
-    const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
-    let pot10 = 1;
+    let originalBinsCount = binsCount;
+    binsCount = 2;
+    const baseline = Math.abs(linRange[1]);
+
+    const baselineMin = linRange[0];
+    const baselineMax = linRange[1];
+
+    //-1000 to 1000
+    let pot10 = baselineMin || 1;
     let pot10Exp = 0;
+
+    if (baselineMin > 0) {
+      let min = baselineMin;
+      while (min > 9) {
+        min = Math.floor(min / 10);
+        pot10Exp++;
+      }
+    }
+
     const fow = () => {
-      pot10 *= 10;
-      pot10Exp++;
+      if (Math.ceil(pot10) == 0) {
+        pot10 = 1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 / Math.pow(10, binsCount - 1);
+      } else {
+        pot10 *= 10;
+        pot10Exp++;
+      }
     };
     const back = () => {
-      pot10 /= 10;
-      pot10Exp--;
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      } else {
+        pot10 /= Math.pow(10, binsCount - 1);
+      }
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      }
+      pot10Exp = pot10Exp - (binsCount - 1);
     };
     const add = (x, p) => {
       if (
@@ -755,42 +790,20 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
           pos: x,
           name: pot10Label(p),
         });
+        // if (originalBinsCount) {
+        //   binsCount = originalBinsCount;
+        //   originalBinsCount = 0;
+        // }
       }
     };
     while (pot10 <= baseline) fow();
-    while (pot10 >= 1) {
+    while (pot10 >= baselineMin) {
       add(pot10, pot10Exp);
-      add(-pot10, -pot10Exp);
+
       back();
     }
 
-    let newPos = labels.map((e) => logicle.scale(e.pos));
-
-    newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
-    labels = labels.map((e, i) => {
-      e.pos = newPos[i];
-      return e;
-    });
-    labels = labels.sort((a, b) => a.pos - b.pos);
-
-    const distTolerance = 0.03;
-    let lastAdded = null;
-    labels = labels.filter((e, i) => {
-      if (i === 0) {
-        lastAdded = i;
-        return true;
-      }
-      if (
-        (e.pos - labels[lastAdded].pos) /
-          (Math.max(linRange[0], linRange[1]) -
-            Math.min(linRange[0], linRange[1])) >=
-        distTolerance
-      ) {
-        lastAdded = i;
-        return true;
-      }
-      return false;
-    });
+    labels.sort((a, b) => a.pos - b.pos);
   }
   return labels;
 };
