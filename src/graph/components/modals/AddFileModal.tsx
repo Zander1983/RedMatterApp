@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import { Button, Divider, Grid, TextField } from "@material-ui/core";
+import { Button, Divider, Grid, TextField, Tooltip } from "@material-ui/core";
 
 import { File } from "graph/resources/types";
 import { getWorkspace } from "graph/utils/workspace";
@@ -239,7 +239,7 @@ const AddFileModal = React.memo(
               backgroundColor: "#fff",
               padding: 15,
               textAlign: "left",
-              maxHeight: 500,
+              maxHeight: "75%",
               overflowY: "scroll",
               border: "solid #ddd",
               borderRadius: 5,
@@ -277,13 +277,30 @@ const AddFileModal = React.memo(
                           }}
                         >
                           <div style={{ display: "flex" }}>
-                            <p>
-                              <b>{"Title: "}</b>
-                              <span>{fileMetadata.label}</span>
-                            </p>
+                            <Tooltip
+                              title={
+                                fileMetadata.label.length > 45
+                                  ? fileMetadata?.label
+                                  : ""
+                              }
+                            >
+                              <p
+                                style={{
+                                  width: 400,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                <b>{"Title: "}</b>
+
+                                {fileMetadata.label}
+                              </p>
+                            </Tooltip>
                             <p
                               style={{
-                                marginLeft: 10,
+                                marginLeft: 5,
+                                width: 100,
                               }}
                             >
                               <b>{"Events: "}</b>
@@ -293,7 +310,7 @@ const AddFileModal = React.memo(
                           <div
                             style={{
                               marginBottom: 10,
-                              marginLeft: -20,
+                              marginLeft: -60,
                               textAlign: "right",
                             }}
                           >
@@ -302,7 +319,7 @@ const AddFileModal = React.memo(
                                 backgroundColor: "#66d",
                                 color: "white",
                                 fontSize: 13,
-                                marginLeft: 20,
+                                width: 180,
                               }}
                               onClick={() => onSetControl(fileMetadata.id)}
                             >
