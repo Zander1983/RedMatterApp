@@ -426,6 +426,8 @@ function Plot(props) {
 
     contextX.clearRect(0, 0, localPlot.width + 50, 20);
 
+    let prevLabelPos = null;
+
     for (let i = 0; i < xLabels.length; i++) {
       let [xPos, yPos] = getPointOnCanvas(
         props.enrichedFile.channels,
@@ -435,6 +437,11 @@ function Plot(props) {
         props.enrichedFile.logicles
       );
 
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
+      }
+
+      prevLabelPos = xPos;
       drawText(
         {
           x: xPos,
@@ -459,7 +466,7 @@ function Plot(props) {
       .getContext("2d");
 
     contextY.clearRect(0, 0, 25, localPlot.height);
-
+    prevLabelPos = null;
     //let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
       let [xPos, yPos] = getPointOnCanvas(
@@ -474,6 +481,10 @@ function Plot(props) {
         yPos = yPos + 9;
       }
 
+      if (prevLabelPos != null && i != 0 && prevLabelPos <= yPos + 5) {
+        continue;
+      }
+      prevLabelPos = yPos;
       drawText(
         {
           x: 0,

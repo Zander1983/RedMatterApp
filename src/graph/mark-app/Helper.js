@@ -499,6 +499,9 @@ export const graphLine = (params, ctx) => {
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel) => {
+      // if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
+      //   return new MarkLogicle(10000, channel.biexponentialMaximum);
+      // }
       return new MarkLogicle(
         channel.biexponentialMinimum,
         channel.biexponentialMaximum
@@ -506,6 +509,23 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
     });
 
     let channels = file.channels.map((channel) => {
+      // if (channel.label == "SSC-A") {
+      //   return {
+      //     minimum: 85000,
+      //     maximum: channel.biexponentialMaximum,
+      //     name: channel.label || channel.value,
+      //     defaultScale: channel.display,
+      //   };
+      // }
+      // if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
+      //   return {
+      //     minimum: 10000,
+      //     maximum: channel.biexponentialMaximum,
+      //     name: channel.label || channel.value,
+      //     defaultScale: channel.display,
+      //   };
+      // }
+
       return {
         minimum: channel.biexponentialMinimum,
         maximum: channel.biexponentialMaximum,
@@ -733,48 +753,74 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
       });
   }
   if (format === "bi") {
-    const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
-    let pot10 = 1;
+    let originalBinsCount = binsCount;
+    binsCount = 2;
+    const baseline = Math.abs(linRange[1]);
+
+    const baselineMin = linRange[0];
+    const baselineMax = linRange[1];
+
+    //-1000 to 1000
+    let pot10 = baselineMin || 1;
     let pot10Exp = 0;
+
+    if (baselineMin > 0) {
+      let min = baselineMin;
+      while (min > 9) {
+        min = Math.floor(min / 10);
+        pot10Exp++;
+      }
+    }
+
     const fow = () => {
-      pot10 *= 10;
-      pot10Exp++;
+      if (Math.ceil(pot10) == 0) {
+        pot10 = 1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 / Math.pow(10, binsCount - 1);
+      } else {
+        pot10 *= 10;
+        pot10Exp++;
+      }
     };
     const back = () => {
-      pot10 /= Math.pow(10, binsCount);
-      pot10Exp = pot10Exp - binsCount;
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      } else {
+        pot10 /= Math.pow(10, binsCount - 1);
+      }
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      }
+      pot10Exp = pot10Exp - (binsCount - 1);
     };
-    const add = (x, p, val) => {
-      let label = pot10Label(p);
-      if (!labels.find((x) => x.name == label)) {
+    const add = (x, p) => {
+      if (
+        (x >= linRange[0] && x <= linRange[1]) ||
+        (x <= linRange[0] && x >= linRange[1])
+      ) {
         labels.push({
           pos: x,
           name: pot10Label(p),
         });
+        // if (originalBinsCount) {
+        //   binsCount = originalBinsCount;
+        //   originalBinsCount = 0;
+        // }
       }
     };
-    while (pot10 < baseline) fow();
-    let cnt = 1;
-    let max = linRange[1];
-    while (pot10 > 1) {
-      add(pot10, pot10Exp, max / cnt);
+    while (pot10 <= baseline) fow();
+    while (pot10 >= baselineMin) {
+      add(pot10, pot10Exp);
+
       back();
-      cnt = cnt * 10;
     }
-    const baselineMin = Math.min(Math.abs(linRange[0]), Math.abs(linRange[1]));
-    pot10 = 1;
-    pot10Exp = 0;
-    cnt = 1;
-    let min = linRange[0];
-    while (pot10 <= baselineMin) fow();
-    while (pot10 >= 1) {
-      add(min < 0 ? -pot10 : pot10, min < 0 ? -pot10Exp : pot10Exp, min / cnt);
-      back();
-      cnt = cnt * 10;
-    }
+
     labels.sort((a, b) => a.pos - b.pos);
-    //labels[0].pos = linRange[0];
-    labels[labels.length - 1].pos = linRange[1];
   }
   return labels;
 };
