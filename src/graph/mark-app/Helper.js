@@ -496,18 +496,21 @@ export const graphLine = (params, ctx) => {
 };
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
+  let selectedFileId = workspaceState.selectedFile;
+  let controlFile = enrichedFiles.find((x) => x.fileId == selectedFileId);
+
   return enrichedFiles.map((file) => {
-    let logicles = file.channels.map((channel) => {
+    let logicles = file.channels.map((channel, index) => {
       return new MarkLogicle(
-        channel.biexponentialMinimum,
-        channel.biexponentialMaximum
+        controlFile.channels[index].biexponentialMinimum,
+        controlFile.channels[index].biexponentialMaximum
       );
     });
 
-    let channels = file.channels.map((channel) => {
+    let channels = file.channels.map((channel, index) => {
       return {
-        minimum: channel.biexponentialMinimum,
-        maximum: channel.biexponentialMaximum,
+        minimum: controlFile.channels[index].biexponentialMinimum,
+        maximum: controlFile.channels[index].biexponentialMaximum,
         name: channel.label || channel.value,
         defaultScale: channel.display,
       };
