@@ -499,9 +499,6 @@ export const graphLine = (params, ctx) => {
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel) => {
-      // if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
-      //   return new MarkLogicle(10000, channel.biexponentialMaximum);
-      // }
       return new MarkLogicle(
         channel.biexponentialMinimum,
         channel.biexponentialMaximum
@@ -509,23 +506,6 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
     });
 
     let channels = file.channels.map((channel) => {
-      // if (channel.label == "SSC-A") {
-      //   return {
-      //     minimum: 85000,
-      //     maximum: channel.biexponentialMaximum,
-      //     name: channel.label || channel.value,
-      //     defaultScale: channel.display,
-      //   };
-      // }
-      // if (channel.label == "FITC-A" || channel.label == "FITC-A - GFP") {
-      //   return {
-      //     minimum: 10000,
-      //     maximum: channel.biexponentialMaximum,
-      //     name: channel.label || channel.value,
-      //     defaultScale: channel.display,
-      //   };
-      // }
-
       return {
         minimum: channel.biexponentialMinimum,
         maximum: channel.biexponentialMaximum,
