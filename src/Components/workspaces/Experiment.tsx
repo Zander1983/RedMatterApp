@@ -858,10 +858,10 @@ const Experiment = (props: any) => {
 
               (async () => {
                 // backend call will be here...
-                // console.log(
-                //   deleteFileId,
-                //   experimentData?.experimentDetails?.id
-                // );
+                console.log(
+                  deleteFileId,
+                  experimentData?.experimentDetails?.id
+                );
                 await deleteFileFromServer(props.id, deleteFileId);
               })();
             },
@@ -877,8 +877,7 @@ const Experiment = (props: any) => {
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={async (response: any) => {
-          //console.log(response);
+        added={async () => {
           await reload();
         }}
         experiment={{
@@ -1041,30 +1040,9 @@ const Experiment = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                {/*File number limit: <b>{maxFileCount}</b>*/}
-                {/*<br />*/}
-                {/*Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>*/}
-                {experimentData?.version !== "v1" ? (
-                  <>
-                    Your Plan limit:{" "}
-                    <b>
-                      {experimentData !== null
-                        ? userManager.getSubscriptionType() === "" ||
-                          userManager.getSubscriptionType() === "Free" ||
-                          userManager.getSubscriptionType() === "free"
-                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                          : "Unlimited"
-                        : null}
-                    </b>
-                    <br />
-                    Current Uploaded:{" "}
-                    <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
-                    <br />
-                    {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
-                  </>
-                ) : (
-                  <>{/*File number limit: <b>{0}</b>*/}</>
-                )}
+                File number limit: <b>{maxFileCount}</b>
+                <br />
+                Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
                 style={{
@@ -1371,18 +1349,22 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            {/* <div
+                            <div
                               style={{
                                 display: "flex",
+                                // flexDirection: "column",
                                 float: "right",
                                 alignItems: "center",
                                 marginTop: -5,
+                                // justifyItems: "center",
                               }}
                             >
                               <img
                                 onClick={() => {
                                   setDeleteFileId(e.id);
                                   setDeleteFileModal(true);
+                                  // setOpenFiles([getWorkspace().selectedFile]);
+                                  // deleteColumn(index - 1);
                                 }}
                                 src={deleteIcon}
                                 alt={`${e.id}-delete-icon`}
@@ -1447,7 +1429,7 @@ const Experiment = (props: any) => {
                                     </a>
                                   )}
                               </p>
-                            </div> */}
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
