@@ -30,7 +30,7 @@ import oldBackFileUploader from "utils/oldBackFileUploader";
 import FCSServices from "services/FCSServices/FCSServices";
 import { useDispatch } from "react-redux";
 import deleteIcon from "assets/images/delete.png";
-import MessageModal from "./../../graph/components/modals/MessageModal";
+
 const styles = {
   input: {
     color: "white",
@@ -41,12 +41,6 @@ const styles = {
     borderBottom: "solid 1px white",
     height: 30,
   },
-  delete: {
-    height: 20,
-    width: 20,
-    marginRight: 10,
-    cursor: "pointer",
-  },
 };
 
 const fileTempIdMap: any = {};
@@ -55,8 +49,6 @@ interface ReportType {
   fileId: string;
   link: string;
 }
-
-const FREE_PLAN_FILE_UPLOAD_LIMIT = 50;
 
 const Experiment = (props: any) => {
   const dispatch = useDispatch();
@@ -69,19 +61,15 @@ const Experiment = (props: any) => {
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [experiment, setExperiment] = useState(Object);
   const [fileUploadInputValue, setFileUploadInputValue] = useState("");
-  const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
+
   const [reports, setReport] = useState<ReportType[]>([]);
   const [reportStatus, setReportStatus] = useState(false);
-  const [deleteFileModal, setDeleteFileModal] = useState<boolean>(false);
-  const [deleteFileId, setDeleteFileId] = useState<string>("");
-  const [experimentSize, setExperimentSize] = useState(0);
-  const [totalFilesUploaded, setTotalFilesUploaded] = useState(0);
 
+  const [experimentSize, setExperimentSize] = useState(0);
   const maxExperimentSize = parseInt(
     process.env.REACT_APP_MAX_WORKSPACE_SIZE_IN_BYTES
   );
-  const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
-  // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
+  const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
 
   const { classes } = props;
   const history = useHistory();
@@ -153,7 +141,6 @@ const Experiment = (props: any) => {
       if (response?.status) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
-        setTotalFilesUploaded(response.data.totalFilesUploaded);
         setTimeout(() => {
           sessionStorage.setItem(
             "experimentFiles",
@@ -362,11 +349,7 @@ const Experiment = (props: any) => {
     }
   };
 
-  const updateExperimentFileCount = async (
-    expId: any,
-    fileCount: any,
-    isOverwrite = false
-  ) => {
+  const updateExperimentFileCount = async (expId: any, fileCount: any) => {
     const data = SecurityUtil.decryptData(
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
@@ -388,7 +371,7 @@ const Experiment = (props: any) => {
             ...currentExperiment,
             ...{
               fileCount:
-                !isOverwrite && currentExperiment?.fileCount > 0
+                currentExperiment?.fileCount > 0
                   ? currentExperiment?.fileCount + fileCount
                   : fileCount,
             },
@@ -464,6 +447,15 @@ const Experiment = (props: any) => {
       const id = Math.random().toString(36).substring(7);
       fileList.push({ tempId: id, file });
     }
+    if (listSize + experimentSize > maxExperimentSize) {
+      snackbarService.showSnackbar(
+        "Files passed go above experiment size limit, total size would be " +
+          ((listSize + experimentSize) / 1e6).toFixed(2) +
+          "MB",
+        "error"
+      );
+      return;
+    }
 
     let filesUpload = uploadingFiles
       ? uploadingFiles.concat(
@@ -529,7 +521,6 @@ const Experiment = (props: any) => {
           userManager.getOrganiztionID(),
           file.file
         );
-
         if (response?.status === 201) {
           eventStacker(
             `A file has been uploaded on experiment ${experimentData?.experimenteName}`,
@@ -539,16 +530,6 @@ const Experiment = (props: any) => {
             message: "Uploaded " + file.file.name,
             saverity: "success",
           });
-        } else {
-          if (response && response.data.level === "danger") {
-            setTimeout(() => {
-              showMessageBox({
-                message: response.data.message,
-                saverity: "error",
-              });
-            }, 10);
-            return completedCount;
-          }
         }
       } catch (err) {
         showMessageBox({
@@ -585,7 +566,6 @@ const Experiment = (props: any) => {
         if (expFileInfo) {
           setExperimentData(expFileInfo?.files);
           setExperiment(expFileInfo?.files?.experimentDetails);
-          setTotalFilesUploaded(expFileInfo?.files?.totalFilesUploaded);
         } else {
           sessionStorage.removeItem("activeOrg");
           (async () => {
@@ -609,6 +589,8 @@ const Experiment = (props: any) => {
   const handleClose = (func: Function) => {
     func(false);
   };
+
+  const [uploadFileModalOpen, setUploadFileModalOpen] = React.useState(false);
 
   const GenOrView = async (event: any, fileId: any, name: string) => {
     setReportName(name);
@@ -680,47 +662,7 @@ const Experiment = (props: any) => {
     }
   };
 
-  const deleteFromCache = async (fileId: any) => {
-    const activeOrg: string = sessionStorage.getItem("activeOrg");
-    if (activeOrg && activeOrg === props.id) {
-      const expFileInfo = SecurityUtil.decryptData(
-        sessionStorage.getItem("experimentFiles"),
-        process.env.REACT_APP_DATA_SECRET_SOLD
-      );
-      if (expFileInfo) {
-        let updatedFiles = expFileInfo?.files?.files?.filter(
-          (file: any) => file.id !== fileId
-        );
-        //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
-        if (updatedFiles) {
-          const newFiles = {
-            ...expFileInfo.files,
-            ...{ files: [...updatedFiles] },
-          };
-          setExperimentData(newFiles);
-          setExperiment(expFileInfo?.files?.experimentDetails);
-
-          sessionStorage.setItem(
-            "experimentFiles",
-            SecurityUtil.encryptData(
-              { files: newFiles },
-              process.env.REACT_APP_DATA_SECRET_SOLD
-            )
-          );
-
-          await updateExperimentFileCount(props.id, updatedFiles?.length, true);
-        } else await reload();
-      } else {
-        await reload();
-      }
-    } else await reload();
-  };
-
-  const handleResponse = async (
-    response: any,
-    isMsgShow = false,
-    isCacheUpdate = false
-  ) => {
+  const handleResponse = async (response: any, isMsgShow = false) => {
     if (response?.level === "success") {
       if (isMsgShow) {
         showMessageBox({
@@ -729,8 +671,7 @@ const Experiment = (props: any) => {
           saverity: "success",
         });
       }
-      if (!isCacheUpdate) await doStaff(response);
-      else await deleteFromCache(response?.fileId);
+      await doStaff(response);
     } else if (response?.level === "danger") {
       showMessageBox({
         message: response?.message || "Request Not Completed",
@@ -798,87 +739,17 @@ const Experiment = (props: any) => {
         )
       );
   };
-
-  const deleteFileFromServer = async (experimentId: any, fileId: any) => {
-    const URL = `${process.env.REACT_APP_API_URL}api/file-delete/${experimentId}/${fileId}`;
-    try {
-      const response = await axios.delete(URL, {
-        headers: {
-          "Content-Type": "application/json",
-          token: userManager.getToken(),
-        },
-      });
-      if (response.status === 200) {
-        await handleResponse({ ...response.data, fileId: fileId }, true, true);
-      } else
-        await handleError({
-          message:
-            response?.data?.message ||
-            "Request not completed. Due to Time out Or Unable To Allocation",
-          saverity: "error",
-        });
-    } catch (error) {
-      await handleError(error);
-    }
-  };
+  console.log(reports);
 
   return (
     <>
-      {deleteFileModal && (
-        <MessageModal
-          open={deleteFileModal}
-          closeCall={{
-            f: handleClose,
-            ref: setDeleteFileModal,
-          }}
-          message={
-            <div>
-              <h2>
-                Are you sure you want to delete this file from the experiment
-                permanently?
-              </h2>
-            </div>
-          }
-          options={{
-            yes: () => {
-              if (!deleteFileId) {
-                snackbarService.showSnackbar(
-                  "Please try again, Invalid File.",
-                  "error"
-                );
-                return;
-              }
-              if (!experimentData?.experimentDetails?.id) {
-                snackbarService.showSnackbar(
-                  "Please try again, The ExperimentId can't be fetched.",
-                  "error"
-                );
-                return;
-              }
-
-              (async () => {
-                // backend call will be here...
-                // console.log(
-                //   deleteFileId,
-                //   experimentData?.experimentDetails?.id
-                // );
-                await deleteFileFromServer(props.id, deleteFileId);
-              })();
-            },
-            no: () => {
-              handleClose(setDeleteFileModal);
-            },
-          }}
-        />
-      )}
       <UploadFileModal
         open={uploadFileModalOpen}
         closeCall={{
           f: handleClose,
           ref: setUploadFileModalOpen,
         }}
-        added={async (response: any) => {
-          //console.log(response);
+        added={async () => {
           await reload();
         }}
         experiment={{
@@ -1002,17 +873,43 @@ const Experiment = (props: any) => {
                 }}
                 onClick={() => {
                   if (props.poke === false) {
-                    history.push("/graph-workspace/" + props.id + "/plots");
+                    history.push("/workspace/" + props.id + "/plots");
+                    // var w =1000;
+                    // var h = 100;
+                    // var left = (window.screen.width - w) + 1350;
+                    // var top = (window.screen.height - h) / 10;
+                    // var workSpaceWindow = window.open("/workspace/" + props.id + "/plots", props.id,'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', left=' + left +', top=' + top);
+                    // if(workSpaceWindow){
+                    //     workSpaceWindow.oncontextmenu = function (event:any) {
+                    //         return false;
+                    //     }
+                    // }
                   } else {
-                    history.push(
-                      "/graph-workspace/" + props.id + "/plots/poke"
-                    );
+                    history.push("/workspace/" + props.id + "/plots/poke");
                   }
                 }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
                 Workspace
               </Button>
+              {/*  <Button*/}
+              {/*  variant="contained"*/}
+              {/*  style={{*/}
+              {/*    backgroundColor: "#fafafa",*/}
+              {/*    maxHeight: 50,*/}
+              {/*    visibility:*/}
+              {/*      experimentData?.files.length === 0 ? "hidden" : "visible",*/}
+              {/*  }}*/}
+              {/*  onClick={() => {*/}
+              {/*    if (props.poke === false) {*/}
+              {/*      history.push("/experiment/" + props.id + "/plots");*/}
+              {/*    } else {*/}
+              {/*      history.push("/experiment/" + props.id + "/plots/poke");*/}
+              {/*    }*/}
+              {/*  }}*/}
+              {/*  endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}>*/}
+              {/*  Workspace*/}
+              {/*</Button>*/}
             </Grid>
             <Grid
               style={{
@@ -1041,30 +938,9 @@ const Experiment = (props: any) => {
               }}
             >
               <Grid style={{ textAlign: "center" }}>
-                {/*File number limit: <b>{maxFileCount}</b>*/}
-                {/*<br />*/}
-                {/*Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>*/}
-                {experimentData?.version !== "v1" ? (
-                  <>
-                    Your Plan limit:{" "}
-                    <b>
-                      {experimentData !== null
-                        ? userManager.getSubscriptionType() === "" ||
-                          userManager.getSubscriptionType() === "Free" ||
-                          userManager.getSubscriptionType() === "free"
-                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                          : "Unlimited"
-                        : null}
-                    </b>
-                    <br />
-                    Current Uploaded:{" "}
-                    <b>{experimentData !== null ? totalFilesUploaded : 0}</b>
-                    <br />
-                    {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
-                  </>
-                ) : (
-                  <>{/*File number limit: <b>{0}</b>*/}</>
-                )}
+                File size limit: <b>{maxFileSize / 1e6}MB</b>
+                <br />
+                Experiment size limit: <b>{maxExperimentSize / 1e6}MB</b>
               </Grid>
               <Grid
                 style={{
@@ -1371,23 +1247,15 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            {/* <div
+                            <div
                               style={{
                                 display: "flex",
+                                flexDirection: "column",
                                 float: "right",
-                                alignItems: "center",
-                                marginTop: -5,
+                                alignItems: "flex-end",
+                                marginTop: -15,
                               }}
                             >
-                              <img
-                                onClick={() => {
-                                  setDeleteFileId(e.id);
-                                  setDeleteFileModal(true);
-                                }}
-                                src={deleteIcon}
-                                alt={`${e.id}-delete-icon`}
-                                className={classes.delete}
-                              />
                               <Button
                                 disabled={reportStatus}
                                 variant="contained"
@@ -1447,7 +1315,7 @@ const Experiment = (props: any) => {
                                     </a>
                                   )}
                               </p>
-                            </div> */}
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
