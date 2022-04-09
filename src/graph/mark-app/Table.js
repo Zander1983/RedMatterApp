@@ -7,6 +7,7 @@ import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { DSC_SORT, ASC_SORT } from "./Helper";
+import { Tooltip } from "@material-ui/core";
 
 function Table(props) {
   console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
@@ -102,14 +103,26 @@ function Table(props) {
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th key={`td-${plotIindex}`}>
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontWeight: "bold",
-                    }}
+                  <Tooltip
+                    title={
+                      plot.population === "All" &&
+                      controlEnrichedFile?.label.length > 21
+                        ? controlEnrichedFile?.label
+                        : ""
+                    }
                   >
-                    <p>
-                      {plot.population != "All"
+                    <div
+                      style={{
+                        whiteSpace: "nowrap",
+                        maxWidth: plot.width,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        margin: "auto",
+                      }}
+                    >
+                      {plot.population !== "All"
                         ? `${
                             controlEnrichedFile?.gateStats
                               .filter((gateStat) => {
@@ -130,8 +143,9 @@ function Table(props) {
                                   })
                           }%`
                         : controlEnrichedFile?.label}
-                    </p>
-                  </div>
+                    </div>
+                  </Tooltip>
+
                   {(() => {
                     if (plot?.plotType === "scatter") {
                       return (
@@ -346,31 +360,53 @@ function Table(props) {
                           minWidth: 275,
                         }}
                       >
-                        <p style={{ margin: 0 }}>
-                          {plot.population != "All"
-                            ? `${
-                                enrichedFile.gateStats
-                                  .filter((gateStat) => {
-                                    return (
-                                      gateStat.gateName === plot.population
-                                    );
-                                  })
-                                  .map((gateStat) => {
-                                    return gateStat && gateStat.percentage;
-                                  }).length === 0
-                                  ? "0.00"
-                                  : enrichedFile.gateStats
-                                      .filter((gateStat) => {
-                                        return (
-                                          gateStat.gateName === plot.population
-                                        );
-                                      })
-                                      .map((gateStat) => {
-                                        return gateStat && gateStat.percentage;
-                                      })
-                              }%`
-                            : enrichedFile.label}
-                        </p>
+                        <Tooltip
+                          title={
+                            plot.population === "All" &&
+                            enrichedFile?.label.length > 21
+                              ? enrichedFile?.label
+                              : ""
+                          }
+                        >
+                          <div
+                            style={{
+                              whiteSpace: "nowrap",
+                              maxWidth: plot.width,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              textAlign: "center",
+                              fontWeight: "bold",
+                              margin: "auto",
+                            }}
+                          >
+                            {plot.population !== "All"
+                              ? `${
+                                  enrichedFile.gateStats
+                                    .filter((gateStat) => {
+                                      return (
+                                        gateStat.gateName === plot.population
+                                      );
+                                    })
+                                    .map((gateStat) => {
+                                      return gateStat && gateStat.percentage;
+                                    }).length === 0
+                                    ? "0.00"
+                                    : enrichedFile.gateStats
+                                        .filter((gateStat) => {
+                                          return (
+                                            gateStat.gateName ===
+                                            plot.population
+                                          );
+                                        })
+                                        .map((gateStat) => {
+                                          return (
+                                            gateStat && gateStat.percentage
+                                          );
+                                        })
+                                }%`
+                              : enrichedFile.label}
+                          </div>
+                        </Tooltip>
 
                         {plot.population === "All" &&
                           editedFileIds.includes(enrichedFile.fileId) && (
