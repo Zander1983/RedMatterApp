@@ -94,16 +94,16 @@ export default function Plans(props: any) {
       setValues();
       let plans = await getPlans();
 
-      plans.forEach((plan: any) => {
+      plans.data.forEach((plan: any) => {
         let metadata = plansMetaData.find((x) => x.name === plan.name);
         plan["features"] = metadata.features;
       });
 
-      plans.sort((a: any, b: any) => {
+      plans.data.sort((a: any, b: any) => {
         return a.price.amount - b.price.amount;
       });
 
-      setPlans(plans);
+      setPlans(plans.data);
       setPageLoader(false);
     };
 
@@ -171,101 +171,106 @@ export default function Plans(props: any) {
           <CircularProgress />
         </div>
       ) : (
-        <p style={{ fontSize: "20px", justifyContent: "center" }}>
-          For unlimited experiments, contact us at mark.kelly@redmatterapp.com
-        </p>
-        // <Grid
-        //   container
-        //   spacing={5}
-        //   style={{ display: "flex", justifyContent: "center" }}
-        // >
-        //   {plans.map((plan, index) => (
-        //     <Grid key={Math.random() + index}
-        //       item
-        //       md={4}
-        //       xs={12}
-        //       className={classes.planContainer} component={"div"}>
-        //       <Grid item className={classes.plan}>
-        //         <Grid item style={{ flex: 1 }}>
-        //           <Grid item className={classes.nameHighlight}>
-        //             <h2 className={classes.white}>{plan.name}</h2>
-        //           </Grid>
-        //           <h1>
-        //             {plan.price.amount}
-        //             {plan.price.currency}
-        //             <span>{"/month"}</span>
-        //           </h1>
+        // <p style={{ fontSize: "20px", justifyContent: "center" }}>
+        //   For unlimited experiments, contact us at mark.kelly@redmatterapp.com
+        // </p>
+        <Grid
+          container
+          spacing={5}
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          {plans.map((plan, index) => (
+            <Grid
+              key={Math.random() + index}
+              item
+              md={4}
+              xs={12}
+              className={classes.planContainer}
+              component={"div"}
+            >
+              <Grid item className={classes.plan}>
+                <Grid item style={{ flex: 1 }}>
+                  <Grid item className={classes.nameHighlight}>
+                    <h2 className={classes.white}>{plan.name}</h2>
+                  </Grid>
+                  <h1>
+                    {plan.price.amount}
+                    {plan.price.currency}
+                    <span>{"/month"}</span>
+                  </h1>
 
-        //           {plan.features.map((feature: any, index: number) => (
-        //             <p key={index} className={classes.planFeature}>{feature}</p>
-        //           ))}
-        //         </Grid>
-        //         <Grid item style={{ flexGrow: 1, flex: 1 }}/>
-        //         <Grid item>
-        //           {subscriptionDetails.everSubscribed ? (
-        //             subscriptionDetails.product === plan.id &&
-        //             !subscriptionDetails.canceled ? (
-        //               <Button
-        //                 color="primary"
-        //                 variant="contained"
-        //                 disabled={true}
-        //                 className={classes.planButton}
-        //                 style={{
-        //                   backgroundColor: "#8888BA",
-        //                   flex: 1,
-        //                 }}
-        //               >
-        //                 <b className={classes.white}>Subscribed</b>
-        //               </Button>
-        //             ) : (
-        //               <Button
-        //                 color="primary"
-        //                 variant="contained"
-        //                 className={classes.planButton}
-        //                 style={{
-        //                   backgroundColor:
-        //                     plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
-        //                   flex: 1,
-        //                 }}
-        //                 disabled={plan.name === "Enterprise"}
-        //                 onClick={() => {
-        //                   handleUpdateSubscription(plan);
-        //                 }}
-        //               >
-        //                 <b className={classes.white}>
-        //                   {plan.name === "Enterprise"
-        //                     ? "Coming soon..."
-        //                     : "Update"}
-        //                 </b>
-        //               </Button>
-        //             )
-        //           ) : (
-        //             <Button
-        //               color="primary"
-        //               variant="contained"
-        //               className={classes.planButton}
-        //               style={{
-        //                 backgroundColor:
-        //                   plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
-        //                 flex: 1,
-        //               }}
-        //               disabled={plan.name === "Enterprise"}
-        //               onClick={() => {
-        //                 handleGetStarted(plan);
-        //               }}
-        //             >
-        //               <b className={classes.white}>
-        //                 {plan.name === "Enterprise"
-        //                   ? "Coming soon..."
-        //                   : "Get Started"}
-        //               </b>
-        //             </Button>
-        //           )}
-        //         </Grid>
-        //       </Grid>
-        //     </Grid>
-        //   ))}
-        // </Grid>
+                  {plan.features.map((feature: any, index: number) => (
+                    <p key={index} className={classes.planFeature}>
+                      {feature}
+                    </p>
+                  ))}
+                </Grid>
+                <Grid item style={{ flexGrow: 1, flex: 1 }} />
+                <Grid item>
+                  {subscriptionDetails.everSubscribed ? (
+                    subscriptionDetails.product === plan.id &&
+                    !subscriptionDetails.canceled ? (
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        disabled={true}
+                        className={classes.planButton}
+                        style={{
+                          backgroundColor: "#8888BA",
+                          flex: 1,
+                        }}
+                      >
+                        <b className={classes.white}>Subscribed</b>
+                      </Button>
+                    ) : (
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        className={classes.planButton}
+                        style={{
+                          backgroundColor:
+                            plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
+                          flex: 1,
+                        }}
+                        disabled={plan.name === "Enterprise"}
+                        onClick={() => {
+                          handleUpdateSubscription(plan);
+                        }}
+                      >
+                        <b className={classes.white}>
+                          {plan.name === "Enterprise"
+                            ? "Coming soon..."
+                            : "Update"}
+                        </b>
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      className={classes.planButton}
+                      style={{
+                        backgroundColor:
+                          plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
+                        flex: 1,
+                      }}
+                      disabled={plan.name === "Enterprise"}
+                      onClick={() => {
+                        handleGetStarted(plan);
+                      }}
+                    >
+                      <b className={classes.white}>
+                        {plan.name === "Enterprise"
+                          ? "Coming soon..."
+                          : "Get Started"}
+                      </b>
+                    </Button>
+                  )}
+                </Grid>
+              </Grid>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </Grid>
   );

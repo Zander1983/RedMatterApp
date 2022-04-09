@@ -33,6 +33,7 @@ import Success from "./Components/plans/Success";
 import UserProfileCompo from "./Components/plans/UserProfile";
 import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
+import WhyRedMatter from "Components/home/whyRedMatter";
 
 import Jobs from "Components/home/Jobs";
 import ChatBox from "./Components/common/ChatBox/ChatBox";
@@ -43,7 +44,7 @@ import userManager, { UserProfile } from "Components/users/userManager";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 import { updateUserStripeDetails } from "services/StripeService";
-import SecurityUtil from './utils/Security.js';
+import SecurityUtil from "./utils/Security.js";
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
@@ -93,6 +94,10 @@ const router = [
   {
     path: "/register",
     component: Register,
+  },
+  {
+    path: "/why-red-matter",
+    component: WhyRedMatter,
   },
   {
     path: "/forget-password",
@@ -158,13 +163,19 @@ const router = [
   {
     path: "/workspace/:experimentId/plots",
     component: ({ match }: any) => (
-        <WorkSpaceComponent experimentId={match.params.experimentId} shared={false} />
+      <WorkSpaceComponent
+        experimentId={match.params.experimentId}
+        shared={false}
+      />
     ),
   },
   {
     path: "/graph-workspace/:experimentId/plots",
     component: ({ match }: any) => (
-        <GraphWorkspaceComponent experimentId={match.params.experimentId} shared={false} />
+      <GraphWorkspaceComponent
+        experimentId={match.params.experimentId}
+        shared={false}
+      />
     ),
   },
   {
@@ -176,27 +187,42 @@ const router = [
   {
     path: "/workspace/:experimentId/plots/public",
     component: ({ match }: any) => (
-        <WorkSpaceComponent experimentId={match.params.experimentId} shared={true} />
+      <WorkSpaceComponent
+        experimentId={match.params.experimentId}
+        shared={true}
+      />
     ),
   },
   {
     path: "/graph-workspace/:experimentId/plots/public",
     component: ({ match }: any) => (
-        <GraphWorkspaceComponent experimentId={match.params.experimentId} shared={true} />
+      <GraphWorkspaceComponent
+        experimentId={match.params.experimentId}
+        shared={true}
+      />
     ),
   },
+
   { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
     component: ({ match }: any) => (
-      <Experiment id={match.params.experimentId} poke={false} />
+      <>
+        {/* 
+            // @ts-ignore */}
+        <Experiment id={match.params.experimentId} poke={false} />
+      </>
     ),
   },
   {
     path: "/experiment/:experimentId/poke",
     component: ({ match }: any) => (
-      <Experiment id={match.params.experimentId} poke={true} />
+      <>
+        {/* 
+            // @ts-ignore */}
+        <Experiment id={match.params.experimentId} poke={false} />
+      </>
     ),
   },
   {
@@ -212,7 +238,7 @@ const router = [
     component: Jobs,
   },
 ].filter((e) => {
-  if(process.env.REACT_APP_NO_WORKSPACES === "true") {
+  if (process.env.REACT_APP_NO_WORKSPACES === "true") {
     return e.path.indexOf("experiment") === -1;
   }
   return true;
@@ -314,23 +340,23 @@ const App = () => {
           if (!sessionCheckStarted) {
             sessionCheckStarted = true;
             axios
-                .get("/api/authVerify", {
-                  headers: {
-                    refreshToken: userManager.getRefreshToken(),
+              .get("/api/authVerify", {
+                headers: {
+                  refreshToken: userManager.getRefreshToken(),
+                },
+              })
+              .then(async (response) => {
+                let data = response.data;
+                dispatch({
+                  type: "UPDATE_TOKENS",
+                  payload: {
+                    token: data.token,
+                    refreshToken: data.refreshToken,
                   },
-                })
-                .then(async (response) => {
-                  let data = response.data;
-                  dispatch({
-                    type: "UPDATE_TOKENS",
-                    payload: {
-                      token: data.token,
-                      refreshToken: data.refreshToken,
-                    },
-                  });
-                  await updateUserStripeDetails(dispatch);
-                  sessionCheckStarted = false;
-                  window.location.reload();
+                });
+                await updateUserStripeDetails(dispatch);
+                sessionCheckStarted = false;
+                window.location.reload();
               })
               .catch((e) => {});
           }
@@ -361,10 +387,13 @@ const App = () => {
         ) : (
           <Content
             className={classes.content}
-            style={{ fontFamily: "Quicksand" }}>
+            style={{ fontFamily: "Quicksand" }}
+          >
             <Switch>
               <Route key={1001} exact path="/" component={AppLandingPage} />
             </Switch>
+            {/* 
+            // @ts-ignore */}
             <ErrorBoundaryMain mainScreen={false} appScreen={true}>
               <Switch>
                 {router.map((e, number) => (

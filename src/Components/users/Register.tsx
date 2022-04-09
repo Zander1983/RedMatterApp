@@ -102,8 +102,10 @@ const Register = (props: any) => {
     location: "",
     password: "",
     g_recaptcha_response: "",
+    subscribed: "",
   });
 
+  const [subscribedError, setSubscribedError] = useState("");
   const eventStacker = useGAEventTrackers("Registration");
 
   const handleChange = (event: any) => {
@@ -139,10 +141,15 @@ const Register = (props: any) => {
       setLocationStatus((prev: any) => false);
       return;
     }
+    if (formData.subscribed === "") {
+      setSubscribedError("Please Select Yes/No for Special Offers");
+      return;
+    }
     if (!captcha) {
       setCaptchaError(true);
       return;
     }
+
     try {
       setLoading(true);
       await axios.post("api/register", formData);
@@ -171,11 +178,7 @@ const Register = (props: any) => {
       justify="center"
       className={classes.gridContainer}
     >
-      <Grid item
-        lg={6}
-        md={9}
-        sm={12}
-        className={classes.innerGridContainer}>
+      <Grid item lg={6} md={9} sm={12} className={classes.innerGridContainer}>
         <h2>Create your Red Matter account</h2>
         <ValidatorForm
           ref={registerForm}
@@ -196,7 +199,6 @@ const Register = (props: any) => {
               errorMessages={["Organisation is required"]}
             />
           )}
-
           {/* Select Country */}
           <Autocomplete
             id="location"
@@ -230,7 +232,6 @@ const Register = (props: any) => {
               );
             }}
           />
-
           {/* Email */}
           <TextValidator
             className={classes.textFieldWidth}
@@ -242,7 +243,6 @@ const Register = (props: any) => {
             validators={["required", "isEmail"]}
             errorMessages={["Email is required", "Email is not valid"]}
           />
-
           {/* Password */}
           <TextValidator
             style={{ marginBottom: 10 }}
@@ -261,7 +261,7 @@ const Register = (props: any) => {
           />
 
           {/* Switch from Register to create organisation page*/}
-          {joiningOrg === false && (
+          {/* {joiningOrg === false && (
             <button
               onClick={() => {
                 setJoiningOrg(true);
@@ -278,9 +278,8 @@ const Register = (props: any) => {
             >
               I'm here to join my organisation
             </button>
-          )}
-
-          {joiningOrg && (
+          )} */}
+          {/* {joiningOrg && (
             <div>
               <TextValidator
                 style={{ marginBottom: 10 }}
@@ -311,7 +310,44 @@ const Register = (props: any) => {
                 I do not have an organisation to join.
               </button>
             </div>
-          )}
+          )} */}
+
+          {/* Subscribed */}
+          <p style={{ margin: 0, fontWeight: 500 }}>
+            Yes, please send me special offers and new product emails
+          </p>
+          <input
+            type="radio"
+            name="subscribed"
+            value="Yes"
+            onClick={() => {
+              setFormData((prevData: any) => {
+                return { ...prevData, subscribed: true };
+              });
+              setSubscribedError("");
+            }}
+          />
+          <label
+            htmlFor="Yes"
+            style={{ marginRight: 5, marginLeft: 2, fontWeight: 500 }}
+          >
+            Yes
+          </label>
+          <input
+            type="radio"
+            name="subscribed"
+            onClick={() => {
+              setFormData((prevData: any) => {
+                return { ...prevData, subscribed: false };
+              });
+              setSubscribedError("");
+            }}
+          />
+          <label htmlFor="No" style={{ marginLeft: 2, fontWeight: 500 }}>
+            No
+          </label>
+
+          <p className={classes.captchaError}> {subscribedError} </p>
 
           {/* Captcha */}
           <Grid
@@ -339,7 +375,6 @@ const Register = (props: any) => {
               </p>
             )}
           </Grid>
-
           <Grid container justify="center" style={{ marginTop: 30 }}>
             <Button type="submit" className={classes.submitBtn}>
               {loading ? (

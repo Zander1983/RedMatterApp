@@ -2,27 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from "@material-ui/core/Modal";
-import {
-  Button,
-  CircularProgress,
-  Divider,
-  Grid,
-  TextField,
-} from "@material-ui/core";
+import { Button, Divider, Grid, TextField, Tooltip } from "@material-ui/core";
 
-import { getHumanReadableTimeDifference } from "utils/time";
-import { File, FileID } from "graph/resources/types";
-import { downloadFileEvent } from "services/FileService";
-import * as PlotResource from "graph/resources/plots";
-import { getFile, getAllFiles, getWorkspace } from "graph/utils/workspace";
-
-import { filterArrayAsPerInput } from "utils/searchFunction";
-import useGAEventTrackers from "hooks/useGAEvents";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
-import {
-  createDefaultPlotSnapShot,
-  getPlotChannelAndPosition,
-} from "../../mark-app/Helper";
+import { File } from "graph/resources/types";
+import { getWorkspace } from "graph/utils/workspace";
 
 const useStyles = makeStyles((theme) => ({
   fileSelectModal: {
@@ -31,10 +14,12 @@ const useStyles = makeStyles((theme) => ({
     padding: 20,
     width: "800px",
     position: "absolute",
-    left: "50%",
-    top: "30%",
-    marginLeft: "-400px",
-    marginTop: "-150px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    left: 0,
+    right: 0,
+    height: "90vh",
+    top: "5vh",
     textAlign: "center",
     borderRadius: 10,
     fontFamiliy: "Quicksand",
@@ -77,52 +62,13 @@ const AddFileModal = React.memo(
     const classes = useStyles();
 
     const filesMetadata = props.files;
-    const files = getAllFiles();
     const [onHover, setOnHover] = React.useState(-1);
-
-    const [downloading, setDowloading] = useState<FileID[]>([]);
-    const [fileSearchTerm, setFileSearchTerm] = useState("");
-    const [errorMessage, setErrorMessage] = useState("This Field Is Required");
-    const eventStacker = useGAEventTrackers("Plot Added.");
+    const [files, setFiles] = React.useState<any[]>([]);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [nameError, setNameError] = React.useState(false);
     const [name, setName] = React.useState("");
-
-    const downloadFile = async (fileId: string) => {
-      let file: File = getFile(fileId);
-      if (!file.downloaded) {
-        const newId = await downloadFileEvent(
-          props.isShared,
-          fileId,
-          props.experimentId
-        );
-        if (typeof newId !== "string") {
-          throw Error("wtf?");
-        }
-        file = getFile(newId);
-      }
-      await PlotResource.createNewPlotFromFile(file);
-      props.closeCall.f(props.closeCall.ref);
-    };
-
-    useEffect(() => {
-      let downloadingFiles: File[] = files.filter((x) => x.downloading);
-      let downloadingFileIds: string[] = [];
-      if (downloadingFiles && downloadingFiles.length > 0) {
-        downloadingFileIds = downloadingFiles.map((x) => x.id);
-      }
-      setDowloading(downloadingFileIds);
-    }, [props.files]);
-
-    const everythingDownloaded = filesMetadata
-      .map((e) => e.downloaded)
-      .every((e) => e);
-
-    const shownFilesMetadata = filterArrayAsPerInput(
-      filesMetadata,
-      fileSearchTerm,
-      "name"
-    );
+    const [searchingText, setSearchingText] = React.useState("");
 
     const onSetControl = (FileId: any, isDownloading = false) => {
       // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
@@ -151,43 +97,35 @@ const AddFileModal = React.memo(
           props.onPipeline.save(name, FileId);
         }
       }
-      // PlotResource.createNewPlotFromFile(
-      //   getFile(fileMetadata.id)
-      // );
-      //   let selectedFile = null;
-      //   if (isDownloading) {
-      //     selectedFile = getWorkspace()?.files?.filter(file => file.id === FileId)[0];
-      //   } else {
-      //     // making the selected file the first element of filesArray
-      //     const filesInNewOrder: File[] = [];
-      //
-      //     for (let i = 0; i < files.length; i++) {
-      //       if (files[i].id === FileId) {
-      //         files[i].view = false;
-      //         selectedFile = files[i];
-      //         filesInNewOrder.unshift(files[i]);
-      //       } else {
-      //         filesInNewOrder.push(files[i]);
-      //       }
-      //     }
-      //     WorkspaceDispatch.SetFiles(filesInNewOrder);
-      //   }
-      //
-      //   // const defaultFile = filesInNewOrder?.filter(file => file.id === fileMetadata.id)[0];
-      //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(selectedFile);
-      //   console.log("xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex");
-      //   console.log(xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
-      //   const plotState = createDefaultPlotSnapShot(FileId, props.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, props.pipelineId, name);
-      //
-      //   WorkspaceDispatch.UpdatePlotStates(plotState);
-      //   WorkspaceDispatch.UpdateSelectedFile(FileId);
-      //   WorkspaceDispatch.UpdatePipelineId(props.pipelineId);
-      //
-      //   setTimeout(() => {
-      //     props.closeCall.f(props.closeCall.ref);
-      //   }, 10);
-      // }
     };
+
+    useEffect(() => {
+      const fileArray = props?.files
+        ?.map((file: File) => {
+          if (searchingText === "") {
+            return {
+              id: file?.id,
+              label: file?.label,
+              eventCount: file?.eventCount,
+            };
+          } else {
+            if (
+              file?.label
+                .slice(0, searchingText.length)
+                .toLowerCase()
+                .includes(searchingText.toLowerCase())
+            ) {
+              return {
+                id: file?.id,
+                label: file?.label,
+                eventCount: file?.eventCount,
+              };
+            }
+          }
+        })
+        .filter(Boolean);
+      setFiles(fileArray);
+    }, [searchingText]);
 
     return (
       <Modal
@@ -197,16 +135,16 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2>Pick Control File</h2>
-
+          <h2 style={{ margin: 0 }}>{"Name Your Gate Pipeline"}</h2>
           <p
             style={{
               color: "#777",
               fontSize: 15,
               textAlign: "center",
+              margin: 0,
             }}
           >
-            Load and use your Flow Analysis files.
+            {"Each analysis consists of a pipeline of gates."}
           </p>
 
           <Grid container direction="row">
@@ -237,17 +175,37 @@ const AddFileModal = React.memo(
             <Grid item xs={12}>
               <div>
                 <TextField
-                  style={{ width: "100%" }}
+                  style={{ width: "100%", padding: 0, margin: 0 }}
                   error={nameError}
                   value={name}
                   helperText={errorMessage}
                   autoFocus
                   margin="dense"
                   id="gate-name-textinput"
-                  label="Enter new pipe line name"
+                  label="Gate Pipeline Name*"
                   type="text"
                   onChange={(e: any) => {
                     setName(e.target.value);
+                  }}
+                />
+              </div>
+            </Grid>
+            <Grid item xs={12}>
+              <div>
+                <TextField
+                  style={{
+                    width: "100%",
+                    padding: 0,
+                    marginTop: 5,
+                    marginBottom: 5,
+                  }}
+                  value={searchingText}
+                  margin="dense"
+                  id="gate-name-textinput"
+                  label="Search By File Title"
+                  type="text"
+                  onChange={(e: any) => {
+                    setSearchingText(e.target.value);
                   }}
                 />
               </div>
@@ -281,35 +239,26 @@ const AddFileModal = React.memo(
               backgroundColor: "#fff",
               padding: 15,
               textAlign: "left",
-              maxHeight: 500,
+              maxHeight: "75%",
               overflowY: "scroll",
               border: "solid #ddd",
               borderRadius: 5,
               borderWidth: 0.3,
             }}
           >
-            {shownFilesMetadata.length === 0 ? (
+            {files.length === 0 ? (
               <Grid style={{ textAlign: "center" }}>
-                No files found with search term '{fileSearchTerm}'
+                No files found with search term '{searchingText}'
               </Grid>
             ) : (
-              shownFilesMetadata.map((fileMetadata: File, i: number) => {
+              files.map((fileMetadata: any, i: number) => {
                 const divider =
                   i === filesMetadata.length - 1 ? null : (
                     <Divider className={classes.fileSelectDivider} />
                   );
 
-                const isDownloading =
-                  downloading.filter((e) => e === fileMetadata.id).length > 0;
-
-                let isDownloaded = fileMetadata.downloaded;
-
                 return (
-                  <div
-                    key={
-                      i.toString() + (fileMetadata.name || fileMetadata.label)
-                    }
-                  >
+                  <div key={i.toString() + fileMetadata.label}>
                     <div
                       onMouseEnter={() => setOnHover(i)}
                       onMouseLeave={() => setOnHover(-1)}
@@ -320,166 +269,67 @@ const AddFileModal = React.memo(
                       }
                     >
                       <Grid container direction="row">
-                        <Grid container direction="row">
-                          <p style={{ width: "100%" }}>
-                            <b>Title:</b>{" "}
-                            <a
-                              style={{
-                                color: "#777",
-                                fontSize: 14,
-                              }}
-                            >
-                              {fileMetadata.label}
-                            </a>
-                          </p>
-                          <div style={{ display: "inline-block" }}>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                              }}
-                            >
-                              <b>Date:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {getHumanReadableTimeDifference(
-                                  new Date(fileMetadata.createdOn),
-                                  new Date()
-                                )}
-                              </a>
-                            </p>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                                marginLeft: 10,
-                              }}
-                            >
-                              <b>Size:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {(fileMetadata.fileSize / 1e6).toFixed(2)} MB
-                              </a>
-                            </p>
-                            <p
-                              style={{
-                                marginTop: -6,
-                                display: "inline-block",
-                                marginLeft: 10,
-                              }}
-                            >
-                              <b>Events:</b>{" "}
-                              <a
-                                style={{
-                                  color: "#777",
-                                  fontSize: 14,
-                                }}
-                              >
-                                {fileMetadata.eventCount}
-                              </a>
-                            </p>
-                          </div>
-                        </Grid>
-                      </Grid>
-                      <div
-                        style={{
-                          marginBottom: 10,
-                          marginLeft: -20,
-                          textAlign: "right",
-                        }}
-                      >
-                        <Grid
+                        <div
                           style={{
-                            textAlign: "right",
-                            flex: 1,
-                            flexDirection: "row",
-                            display: "inline-block",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            width: "100%",
                           }}
                         >
-                          <Grid style={{ display: "inline-block" }}>
-                            {isDownloaded
-                              ? "Loaded"
-                              : isDownloading
-                              ? "Loading..."
-                              : "Remote"}
-                          </Grid>
-                          <Grid
-                            style={{
-                              display: "inline-block",
-                            }}
-                          >
-                            <Grid
-                              style={{
-                                borderRadius: "100%",
-                                width: 13,
-                                height: 13,
-                                position: "relative",
-                                top: 2,
-                                marginLeft: 10,
-                                backgroundColor: isDownloaded
-                                  ? "green"
-                                  : isDownloading
-                                  ? "#66d"
-                                  : "#d66",
-                              }}
-                            />
-                          </Grid>
-                        </Grid>
-                        {isDownloaded === false ? (
-                          <Button
-                            style={{
-                              backgroundColor: "#66d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
-                            }}
-                            disabled={isDownloading}
-                            onClick={() =>
-                              onSetControl(fileMetadata.id, isDownloading)
-                            }
-                          >
-                            {isDownloading ? (
-                              <CircularProgress
+                          <div style={{ display: "flex" }}>
+                            <Tooltip
+                              title={
+                                fileMetadata.label.length > 45
+                                  ? fileMetadata?.label
+                                  : ""
+                              }
+                            >
+                              <p
                                 style={{
-                                  color: "white",
-                                  width: 23,
-                                  height: 23,
+                                  width: 400,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
                                 }}
-                              />
-                            ) : props.selectedFile === fileMetadata.id ? (
-                              "Selected As Control"
-                            ) : (
-                              "Set As Control"
-                            )}
-                          </Button>
-                        ) : null}
-                        {isDownloaded ? (
-                          <Button
+                              >
+                                <b>{"Title: "}</b>
+
+                                {fileMetadata.label}
+                              </p>
+                            </Tooltip>
+                            <p
+                              style={{
+                                marginLeft: 5,
+                                width: 100,
+                              }}
+                            >
+                              <b>{"Events: "}</b>
+                              <span>{fileMetadata.eventCount}</span>
+                            </p>
+                          </div>
+                          <div
                             style={{
-                              backgroundColor: isDownloaded ? "#66d" : "#99d",
-                              color: "white",
-                              fontSize: 13,
-                              marginLeft: 20,
+                              marginBottom: 10,
+                              marginLeft: -60,
+                              textAlign: "right",
                             }}
-                            onClick={() =>
-                              onSetControl(fileMetadata.id, isDownloaded)
-                            }
-                            disabled={isDownloading}
                           >
-                            {props.selectedFile === fileMetadata.id
-                              ? "Selected As Control"
-                              : "Set As Control"}
-                          </Button>
-                        ) : null}
-                      </div>
+                            <Button
+                              style={{
+                                backgroundColor: "#66d",
+                                color: "white",
+                                fontSize: 13,
+                                width: 180,
+                              }}
+                              onClick={() => onSetControl(fileMetadata.id)}
+                            >
+                              {props.selectedFile === fileMetadata.id
+                                ? "Selected As Control"
+                                : "Set As Control"}
+                            </Button>
+                          </div>
+                        </div>
+                      </Grid>
                     </div>
                     {divider}
                   </div>

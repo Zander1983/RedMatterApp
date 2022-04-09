@@ -25,10 +25,11 @@ const getPlans = async () => {
       Token: userManager.getToken(),
     },
   });
-  if (response && response.data && response.data.data)
-    return response.data.data;
+  if (response && response.data && response.data.data) {
+      return {data:response.data.data, total: response.data.totalFilesUploaded};
+    }
 
-  return [];
+  return {};
 };
 
 export { updateUserStripeDetails, getPlans };

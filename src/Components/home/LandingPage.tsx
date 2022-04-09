@@ -109,16 +109,6 @@ const AppLandingPage = () => {
             can access them with a click on the button below.
           </DialogContentText> */}
         </DialogContent>
-        {/* <DialogActions>
-          <Button
-            onClick={() => {
-              window.open("https://old.redmatterapp.com", "_blank").focus();
-            }}
-            color="primary"
-          >
-            Load old redmatter
-          </Button>
-        </DialogActions> */}
       </Grid>
     </Grid>
   );

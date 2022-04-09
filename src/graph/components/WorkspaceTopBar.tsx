@@ -14,7 +14,7 @@ import { saveWorkspaceStateToServer } from "../utils/workspace";
 import { Typography } from "antd";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
 import IOSSwitch from "../../Components/common/Switch";
-import ShareIcon from "@material-ui/core/SvgIcon/SvgIcon";
+import ShareIcon from "assets/images/share.png";
 import MessageModal from "./modals/MessageModal";
 import AddFileModal from "./modals/AddFileModal";
 import axios from "axios";
@@ -32,6 +32,7 @@ import {
   formatEnrichedFiles,
   superAlgorithm,
   getMedian,
+  DEFAULT_PLOT_TYPE,
 } from "graph/mark-app/Helper";
 import { File } from "graph/resources/types";
 
@@ -122,6 +123,9 @@ interface Props {
   setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
   setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+const TIME_INTERVAL = 35000;
+
 const WorkspaceTopBarComponent = ({
   sharedWorkspace,
   experimentId,
@@ -140,8 +144,11 @@ const WorkspaceTopBarComponent = ({
   const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
   const [pipeLineModalOpen, setPipeLineModalOpen] = React.useState(false);
   const [clearModal, setClearModal] = React.useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(
+    !sharedWorkspace
+  );
   const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
+  const [isSaveNeeded, setSaveNeeded] = React.useState(false);
   const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
   const [activePipelineId, setActivePipelineId] = React.useState("");
   const [pipelines, setPipelines] = React.useState([]);
@@ -167,21 +174,26 @@ const WorkspaceTopBarComponent = ({
   // }, [plotLength]);
 
   useEffect(() => {
+    setSaveNeeded(false);
     setTimeout(() => {
       //@ts-ignore
-      setActivePipelineId(activePipeline?.activePipelineId);
-      setPipelines(getWorkspace()?.pipelines);
-      // setAutoSaveEnabled(true);
+      setActivePipelineId(
+        getWorkspace().activePipelineId || workState?.pipelineId
+      );
+      //setSaveNeeded(false);
+      //setPipelines(getWorkspace()?.pipelines);
     }, 1000);
-  }, [activePipeline]);
+  }, [workState]);
 
   useEffect(() => {
     setTimeout(() => {
+      if (!isSaveNeeded) setSaveNeeded(true);
       //@ts-ignore
-      setActivePipelineId(workState?.pipelineId || workspace.activePipelineId);
       setPipelines(getWorkspace()?.pipelines);
+      setActivePipelineId(getWorkspace()?.activePipelineId);
+      setSaveNeeded(false);
     }, 1000);
-  }, [workState]);
+  }, [activePipeline]);
 
   const handleOpen = (func: Function) => {
     func(true);
@@ -192,90 +204,110 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onPipelineChanged = async (event: any) => {
+    setSaveNeeded(false);
     const selectedPipeline = event.target.value;
     // if(window.confirm("After continue you lost last work if you don't save yet. Are you continue?")){
-    setActivePipelineId(selectedPipeline);
     if (selectedPipeline !== "" && activePipelineId !== selectedPipeline) {
       if (selectedPipeline) {
+        setActivePipelineId(selectedPipeline);
+        setSaveNeeded(false);
         setLoader(true);
         let response = null;
 
-        if(!sharedWorkspace) {
-          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}`, {headers: {token: userManager.getToken()}});
-        }else {
-          response = await axios.get(`/api/${experimentId}/pipeline/${selectedPipeline}/shared`,
-          );
-        }
-
-        if (response?.status === 200) {
-          const workspace = response.data.state;
-          if (workspace && Object.keys(workspace).length > 0) {
-            const workspaceObj = JSON.parse(workspace || "{}");
-            await WorkspaceDispatch.SetPlotStates(workspaceObj);
-            await WorkspaceDispatch.UpdateSelectedFile(
-              workspaceObj.selectedFile
+        setTimeout(async () => {
+          if (!sharedWorkspace) {
+            response = await axios.get(
+              `/api/${experimentId}/pipeline/${selectedPipeline}`,
+              { headers: { token: userManager.getToken() } }
             );
-            await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-            setActivePipelineId(selectedPipeline);
-            await showMessageBox({
-              message: response.data.message,
-              saverity: "success",
-            });
           } else {
-            const workspaceObj = response.data;
-            //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
-            const filesInNewOrder: File[] = [];
-            let files = getAllFiles();
-            let selectedFile = null;
-            for (let i = 0; i < files.length; i++) {
-              if (files[i].id === workspaceObj.pipeline.controlFileId) {
-                files[i].view = false;
-                selectedFile = files[i];
-                filesInNewOrder.unshift(files[i]);
-              } else {
-                filesInNewOrder.push(files[i]);
-              }
-            }
-            WorkspaceDispatch.SetFiles(filesInNewOrder);
-            const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-              getPlotChannelAndPosition(selectedFile);
-            const plotState = createDefaultPlotSnapShot(
-              selectedFile.id,
-              experimentId,
-              xAxisLabel,
-              yAxisLabel,
-              xAxisIndex,
-              yAxisIndex,
-              selectedPipeline,
-              workspaceObj.pipeline.name
+            response = await axios.get(
+              `/api/${experimentId}/pipeline/${selectedPipeline}/shared`
             );
-            await WorkspaceDispatch.SetPlotStates(plotState);
-            await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
-            await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-            setActivePipelineId(selectedPipeline);
-            await showMessageBox({
-              message: "Plot init success",
-              saverity: "success",
-            });
           }
 
-          if (!renderPlotController) {
-            setRenderPlotController(true);
+          if (response?.status === 200) {
+            setSaveNeeded(false);
+            const workspace = response.data.state;
+            if (workspace && Object.keys(workspace).length > 0) {
+              const workspaceObj = JSON.parse(workspace || "{}");
+
+              await WorkspaceDispatch.SetPlotStates(workspaceObj);
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              await WorkspaceDispatch.UpdateSelectedFile(
+                workspaceObj.selectedFile
+              );
+
+              //setActivePipelineId(selectedPipeline);
+              await showMessageBox({
+                message: response.data.message,
+                saverity: "success",
+              });
+            } else {
+              const workspaceObj = response.data;
+              //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
+              const filesInNewOrder: File[] = [];
+              let files = getAllFiles();
+              let selectedFile = null;
+              for (let i = 0; i < files.length; i++) {
+                if (files[i].id === workspaceObj.pipeline.controlFileId) {
+                  files[i].view = false;
+                  selectedFile = files[i];
+                  filesInNewOrder.unshift(files[i]);
+                } else {
+                  filesInNewOrder.push(files[i]);
+                }
+              }
+              WorkspaceDispatch.SetFiles(filesInNewOrder);
+              const {
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                xAxisScaleType,
+                yAxisScaleType,
+              } = getPlotChannelAndPosition(selectedFile);
+              const plotState = createDefaultPlotSnapShot(
+                selectedFile.id,
+                experimentId,
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                selectedPipeline,
+                workspaceObj.pipeline.name
+              );
+
+              await WorkspaceDispatch.SetPlotStates(plotState);
+              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
+              await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+              setActivePipelineId(selectedPipeline);
+
+              await showMessageBox({
+                message: "Plot init success",
+                saverity: "success",
+              });
+            }
+
+            if (!renderPlotController) {
+              setRenderPlotController(true);
+            }
+            setPlotCallNeeded(false);
+            if (renderPlotController) {
+              setPlotCallNeeded(true);
+            }
+            setLoader(false);
+          } else {
+            setLoader(false);
+            await handleError({
+              message: "Information missing",
+              saverity: "error",
+            });
           }
-          setPlotCallNeeded(false);
-          if (renderPlotController) {
-            setPlotCallNeeded(true);
-          }
-          setLoader(false);
-        } else {
-          setLoader(false);
-          await handleError({
-            message: "Information missing",
-            saverity: "error",
-          });
-        }
+        }, 5);
       }
     } else {
+      setSaveNeeded(false);
       await showMessageBox({
         message: "Already you here",
         saverity: "success",
@@ -285,90 +317,103 @@ const WorkspaceTopBarComponent = ({
   };
 
   const onSavePipeline = async (name: any, controlFileId: any) => {
-    const response = await axios.post(
-      "/api/pipeline/create",
-      {
-        organisationId: userManager.getOrganiztionID(),
-        experimentId: experimentId,
-        name: name,
-        controlFileId: controlFileId,
-      },
-      {
-        headers: {
-          token: userManager.getToken(),
-        },
-      }
-    );
-    if (response?.status === 200) {
-      let pipelines = getWorkspace()?.pipelines || [];
-      // @ts-ignore
-      pipelines.push(response.data);
-      // if(pipelines?.length === 1 && response?.data?.isDefault){
-      if (pipelines?.length >= 1) {
-        const pipelineId = response.data._id;
-        setActivePipelineId(pipelineId);
-        const filesInNewOrder: File[] = [];
-        let files = getAllFiles();
-        let selectedFile = null;
-        for (let i = 0; i < files.length; i++) {
-          if (files[i].id === controlFileId) {
-            files[i].view = false;
-            selectedFile = files[i];
-            filesInNewOrder.unshift(files[i]);
-          } else {
-            filesInNewOrder.push(files[i]);
-          }
-        }
-        WorkspaceDispatch.SetFiles(filesInNewOrder);
-        const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-          getPlotChannelAndPosition(selectedFile);
-        const plotState = createDefaultPlotSnapShot(
-          selectedFile.id,
-          experimentId,
-          xAxisLabel,
-          yAxisLabel,
-          xAxisIndex,
-          yAxisIndex,
-          pipelineId,
-          name
-        );
-        await WorkspaceDispatch.SetPlotStates(plotState);
-        await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
-        await WorkspaceDispatch.UpdatePipelineId(pipelineId);
-
-        if (pipelines?.length === 1)
-          setTimeout(
-            () =>
-              saveWorkspace(
-                false,
-                null,
-                pipelineId ? pipelineId : activePipelineId
-              ),
-            5
-          );
-
-        if (!renderPlotController) {
-          setRenderPlotController(true);
-        }
-        setPlotCallNeeded(false);
-        if (renderPlotController) {
-          setPlotCallNeeded(true);
-        }
-        setLoader(false);
-      }
-      setPipelines(pipelines);
-      WorkspaceDispatch.SetPipeLines(pipelines);
-      await showMessageBox({
-        message: "Created Success",
-        saverity: "success",
-      });
-    } else {
-      await handleError({
-        message: "Information missing",
-        saverity: "error",
-      });
-    }
     onQuite();
+    setLoader(true);
+    setTimeout(async () => {
+      const response = await axios.post(
+        "/api/pipeline/create",
+        {
+          organisationId: userManager.getOrganiztionID(),
+          experimentId: experimentId,
+          name: name,
+          controlFileId: controlFileId,
+        },
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
+      );
+      if (response?.status === 200) {
+        let pipelines = getWorkspace()?.pipelines || [];
+        // @ts-ignore
+        pipelines.push(response.data);
+        // if(pipelines?.length === 1 && response?.data?.isDefault){
+        if (pipelines?.length >= 1) {
+          const pipelineId = response.data._id;
+          setActivePipelineId(pipelineId);
+          const filesInNewOrder: File[] = [];
+          let files = getAllFiles();
+          let selectedFile = null;
+          for (let i = 0; i < files.length; i++) {
+            if (files[i].id === controlFileId) {
+              files[i].view = false;
+              selectedFile = files[i];
+              filesInNewOrder.unshift(files[i]);
+            } else {
+              filesInNewOrder.push(files[i]);
+            }
+          }
+          WorkspaceDispatch.SetFiles(filesInNewOrder);
+          const {
+            xAxisLabel,
+            yAxisLabel,
+            xAxisIndex,
+            yAxisIndex,
+            xAxisScaleType,
+            yAxisScaleType,
+          } = getPlotChannelAndPosition(selectedFile);
+          const plotState = createDefaultPlotSnapShot(
+            selectedFile.id,
+            experimentId,
+            xAxisLabel,
+            yAxisLabel,
+            xAxisIndex,
+            yAxisIndex,
+            pipelineId,
+            name,
+            DEFAULT_PLOT_TYPE,
+            xAxisScaleType,
+            yAxisScaleType
+          );
+          await WorkspaceDispatch.SetPlotStates(plotState);
+          await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
+          await WorkspaceDispatch.UpdatePipelineId(pipelineId);
+
+          if (pipelines?.length === 1)
+            setTimeout(
+              () =>
+                saveWorkspace(
+                  false,
+                  null,
+                  pipelineId ? pipelineId : activePipelineId
+                ),
+              5
+            );
+
+          if (!renderPlotController) {
+            setRenderPlotController(true);
+          }
+          setPlotCallNeeded(false);
+          if (renderPlotController) {
+            setPlotCallNeeded(true);
+          }
+          setLoader(false);
+        }
+        setPipelines(pipelines);
+        WorkspaceDispatch.SetPipeLines(pipelines);
+        await showMessageBox({
+          message: "Created Success",
+          saverity: "success",
+        });
+      } else {
+        setLoader(false);
+        await handleError({
+          message: "Information missing",
+          saverity: "error",
+        });
+      }
+    }, 5);
   };
 
   const handleClose = (func: Function) => {
@@ -403,6 +448,7 @@ const WorkspaceTopBarComponent = ({
     pipelineId = ""
   ) => {
     setSavingWorkspace(true);
+    setSaveNeeded(false);
     // @ts-ignore
     if (
       getWorkspace().selectedFile &&
@@ -422,10 +468,7 @@ const WorkspaceTopBarComponent = ({
         await handleError(err);
       }
     } else {
-      await showMessageBox({
-        message: "Plot not available for save",
-        saverity: "success",
-      });
+      // console.log("TEMP-MESSAGE: Work state empty");
     }
     setSavingWorkspace(false);
   };
@@ -441,10 +484,10 @@ const WorkspaceTopBarComponent = ({
       });
     } else if (error?.response) {
       if (error.response?.status == 401 || error.response.status == 419) {
-        // setTimeout(() => {
-        //   userManager.logout();
-        //   history.replace("/login");
-        // }, 3000);
+        setTimeout(() => {
+          userManager.logout();
+          history.replace("/login");
+        }, 3000);
         showMessageBox({
           message: "Authentication Failed Or Session Time out",
           saverity: "error",
@@ -523,6 +566,7 @@ const WorkspaceTopBarComponent = ({
     }
     setHeaderForCSV(headers);
   };
+
   const downloadCSV = () => {
     let workspaceState = getWorkspace().workspaceState;
     // @ts-ignore
@@ -534,8 +578,14 @@ const WorkspaceTopBarComponent = ({
     let copyOfFiles: any[] = getWorkspace().files;
     if (plots === null || plots === undefined) {
       const defaultFile = copyOfFiles?.[0];
-      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-        getPlotChannelAndPosition(defaultFile);
+      const {
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType,
+      } = getPlotChannelAndPosition(defaultFile);
       workspaceState = createDefaultPlotSnapShot(
         defaultFile?.id,
         experimentId,
@@ -568,28 +618,28 @@ const WorkspaceTopBarComponent = ({
     const csvData = [];
     const eventsSeparatedByChannels: any = {};
     for (let i = 0; i < enrichedFiles.length; i++) {
-      eventsSeparatedByChannels[enrichedFiles[i].fileId] = {};
+      eventsSeparatedByChannels[enrichedFiles[i].fileId] = [];
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      const channelsObj: any = {};
-      for (let i = 0; i < channels.length; i++) {
-        channelsObj[channels[i]] = {
-          array: [],
-          sum: 0,
-          mean: 0,
-          median: 0,
-        };
-      }
-      channelsObj.percentage = 0;
-      channelsObj.gateName = "";
-      channelsObj.xChannel = "";
-      channelsObj.gateName = "";
       for (
         let statsIndex = 0;
         statsIndex < enrichedFiles[fileIndex].gateStats.length;
         statsIndex++
       ) {
+        let channelsObj: any = {};
+        for (let i = 0; i < channels.length; i++) {
+          channelsObj[channels[i]] = {
+            array: [],
+            sum: 0,
+            mean: 0,
+            median: 0,
+          };
+        }
+        channelsObj.percentage = 0;
+        channelsObj.gateName = "";
+        channelsObj.xChannel = "";
+        channelsObj.gateName = "";
         if (enrichedFiles[fileIndex]?.gateStats[statsIndex]?.percentage) {
           const events =
             enrichedFiles[fileIndex]?.gateStats[statsIndex]?.eventsInsideGate;
@@ -601,6 +651,7 @@ const WorkspaceTopBarComponent = ({
             enrichedFiles[fileIndex].plots[statsIndex].xAxisLabel;
           channelsObj.yChannel =
             enrichedFiles[fileIndex].plots[statsIndex].yAxisLabel;
+
           for (
             let eventsIndex = 0;
             eventsIndex < events.length;
@@ -621,313 +672,102 @@ const WorkspaceTopBarComponent = ({
             }
           }
 
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId] =
-            channelsObj;
-        }
-      }
-    }
-
-    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      for (
-        let channelIndex = 0;
-        channelIndex < channels.length;
-        channelIndex++
-      ) {
-        if (
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.array.length > 0
-        ) {
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].mean = (
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.sum /
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ]?.array.length
-          ).toFixed(2);
-
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ].median = getMedian(
-            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-              channels[channelIndex]
-            ].array
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].push(
+            JSON.parse(JSON.stringify(channelsObj))
           );
         }
+        channelsObj = {};
       }
     }
 
     for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
-      const stats: any = {
-        fileName: enrichedFiles[fileIndex]?.label,
-        gateName:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.gateName,
-        percentage:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]
-            ?.percentage,
-        xChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.xChannel,
-        yChannel:
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId]?.yChannel,
-      };
       for (
         let channelIndex = 0;
         channelIndex < channels.length;
         channelIndex++
       ) {
-        const median = `channel${channelIndex}Median`;
-        const mean = `channel${channelIndex}Mean`;
-        stats[median] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.median;
+        for (
+          let statsIndex = 0;
+          statsIndex <
+          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+          statsIndex++
+        ) {
+          if (
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.array.length > 0
+          ) {
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].mean = (
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.sum /
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]]?.array.length
+            ).toFixed(2);
 
-        stats[mean] =
-          eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
-            channels[channelIndex]
-          ]?.mean;
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]].median = getMedian(
+              eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+                statsIndex
+              ][channels[channelIndex]].array
+            );
+          }
+        }
       }
-      csvData.push(stats);
     }
-    setData(csvData);
-  };
-  const _renderToolbar = () => {
-    return (
-      <Grid
-        style={{
-          position: "fixed",
-          zIndex: 100,
-          top: 64,
-          backgroundColor: "white",
-          paddingTop: 4,
-          paddingBottom: 6,
-          WebkitBorderBottomLeftRadius: 0,
-          WebkitBorderBottomRightRadius: 0,
-          minHeight: "43px",
-        }}
-        container
-      >
-        <Grid container>
-          {workspace.editWorkspace ? (
-            <span
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                background: "white",
-              }}
-            >
-              <div>
-                <Button
-                  disabled={!plotCallNeeded && !renderPlotController}
-                  size="small"
-                  variant="contained"
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                  className={classes.topButton}
-                  startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                  onClick={() => {
-                    history.goBack();
-                  }}
-                >
-                  Back
-                </Button>
 
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpen(setAddFileModalOpen)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  {/*// disabled={!!(workspace?.selectedFile)}>*/}
-                  New Analysis
-                </Button>
-                <Button
-                  disabled={true}
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpen(setClearModal)}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  Clear
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => downloadCSV()}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <CSVLink
-                    headers={heeaderForCSV}
-                    data={data}
-                    filename="WorkspaceReport.csv"
-                    className={classes.downloadBtnLayout}
-                  >
-                    <GetAppIcon
-                      fontSize="small"
-                      style={{ marginRight: 10 }}
-                    ></GetAppIcon>
-                    Download Stats
-                  </CSVLink>
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                    Analyses:
-                    <Select
-                      disableUnderline
-                      value={activePipelineId}
-                      name="pipeline"
-                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                      onChange={onPipelineChanged}
-                    >
-                      <MenuItem value="">Select Pipeline</MenuItem>
-                      {pipelines &&
-                        pipelines?.map((pipeline: any, index: any) => (
-                          <MenuItem key={index} value={pipeline?._id}>
-                            {pipeline?.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </span>
-                </Button>
-                <span>
-                  <Button
-                    disabled={
-                      (!plotCallNeeded && !renderPlotController) ||
-                      activePipelineId === ""
-                    }
-                    variant="contained"
-                    size="small"
-                    onClick={() => saveWorkspace()}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                      width: 137,
-                    }}
-                  >
-                    {savingWorkspace ? (
-                      <CircularProgress style={{ width: 20, height: 20 }} />
-                    ) : (
-                      <Typography
-                        style={{
-                          color:
-                            !plotCallNeeded && !renderPlotController
-                              ? "rgba(0, 0, 0, 0.26)"
-                              : "black",
-                        }}
-                      >
-                        Save Analysis
-                      </Typography>
-                    )}
-                  </Button>
-                  <FormControlLabel
-                    style={{
-                      marginLeft: 0,
-                      height: 20,
-                      marginTop: 4,
-                      color: "#333",
-                    }}
-                    label={"Autosave"}
-                    control={
-                      <IOSSwitch
-                        disabled={!plotCallNeeded && !renderPlotController}
-                        checked={autoSaveEnabled}
-                        onChange={() => setAutoSaveEnabled(!autoSaveEnabled)}
-                      />
-                    }
-                  />
-                </span>
-                {lastSavedTime ? (
-                  <span
-                    style={{
-                      height: "100%",
-                      display: "inline-flex",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "#333",
-                        fontStyle: "italic",
-                      }}
-                    >
-                      saved at {lastSavedTime}
-                    </span>
-                  </span>
-                ) : null}
-              </div>
-              <div>
-                <Button
-                  disabled={(!plotCallNeeded && !renderPlotController) || activePipelineId === ""}
-                  variant="contained"
-                  size="small"
-                  onClick={() => onLinkShareClick()}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                    marginRight: 10,
-                  }}
-                >
-                  <ShareIcon fontSize="small" style={{ marginRight: 10 }} />
-                  Share Workspace
-                </Button>
-              </div>
-            </span>
-          ) : (
-              <div>
-              <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                  PipeLine:
-                  <select
-                      value={activePipelineId}
-                      name="pipeline"
-                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                      onChange={onPipelineChanged}>
-                    <option value="">Select Pipeline</option>
-                    {pipelines &&
-                    pipelines?.map((pipeline: any, index: any) => (
-                        <option key={index} value={pipeline?._id}>
-                          {pipeline?.name}
-                        </option>
-                    ))}
-                  </select>
-                {/*<Button*/}
-                {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
-                {/*    variant="contained"*/}
-                {/*    size="small"*/}
-                {/*    onClick={() => setPipeLineModalOpen(true)}*/}
-                {/*    className={classes.topButton}*/}
-                {/*    style={{*/}
-                {/*      backgroundColor: "#fafafa",*/}
-                {/*      width: 137,*/}
-                {/*    }}>*/}
-                {/*  +New*/}
-                {/*</Button>*/}
-                </span>
-                <span className={classes.sharedHeader}>Shared Workspace</span>
-              </div>
-          )}
-        </Grid>
-      </Grid>
-    );
+    for (let fileIndex = 0; fileIndex < enrichedFiles.length; fileIndex++) {
+      for (
+        let statsIndex = 0;
+        statsIndex <
+        eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId].length;
+        statsIndex++
+      ) {
+        const stats: any = {
+          fileName: enrichedFiles[fileIndex]?.label,
+          gateName:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.gateName,
+          percentage:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.percentage,
+          xChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.xChannel,
+          yChannel:
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ]?.yChannel,
+        };
+        for (
+          let channelIndex = 0;
+          channelIndex < channels.length;
+          channelIndex++
+        ) {
+          const median = `channel${channelIndex}Median`;
+          const mean = `channel${channelIndex}Mean`;
+          stats[median] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.median;
+
+          stats[mean] =
+            eventsSeparatedByChannels[enrichedFiles[fileIndex].fileId][
+              statsIndex
+            ][channels[channelIndex]]?.mean;
+        }
+        csvData.push(stats);
+      }
+    }
+
+    setData(csvData);
   };
 
   const clearWorkStateFromServer = async () => {
@@ -935,18 +775,14 @@ const WorkspaceTopBarComponent = ({
     // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
     // console.log(defaultFile);
     // console.log(selectedFileID);
-    //  const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+    //  const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } = getPlotChannelAndPosition(defaultFile);
     // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
     WorkspaceDispatch.ResetWorkspaceExceptFiles();
     await saveWorkspace(false);
   };
 
-  if (autoSaveEnabled) {
-    //console.log("== gate save updated 3 =====");
-    // if (plotCallNeeded) {
-    //console.log("== gate save updated 4 =====");
-    Debounce(() => saveWorkspace(), 2000);
-    // }
+  if (autoSaveEnabled && isSaveNeeded) {
+    Debounce(() => saveWorkspace(), 4000);
   }
 
   const renderModal = () => {
@@ -1008,6 +844,255 @@ const WorkspaceTopBarComponent = ({
           closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
         />
       </>
+    );
+  };
+
+  const _renderToolbar = () => {
+    return (
+      <Grid
+        style={{
+          position: "fixed",
+          zIndex: 100,
+          top: 64,
+          backgroundColor: "white",
+          paddingTop: 4,
+          paddingBottom: 6,
+          WebkitBorderBottomLeftRadius: 0,
+          WebkitBorderBottomRightRadius: 0,
+          minHeight: "43px",
+        }}
+        container
+      >
+        <Grid container>
+          {workspace.editWorkspace ? (
+            <span
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "white",
+              }}
+            >
+              <div>
+                <Button
+                  disabled={!plotCallNeeded && !renderPlotController}
+                  size="small"
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                  className={classes.topButton}
+                  startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
+                  onClick={() => {
+                    history.goBack();
+                  }}
+                >
+                  Back
+                </Button>
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleOpen(setAddFileModalOpen)}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  {/*// disabled={!!(workspace?.selectedFile)}>*/}
+                  New Gate Pipeline
+                </Button>
+                {/*<Button*/}
+                {/*  disabled={true}*/}
+                {/*  variant="contained"*/}
+                {/*  size="small"*/}
+                {/*  onClick={() => handleOpen(setClearModal)}*/}
+                {/*  className={classes.topButton}*/}
+                {/*  style={{*/}
+                {/*    backgroundColor: "#fafafa",*/}
+                {/*  }}*/}
+                {/*>*/}
+                {/*  Clear*/}
+                {/*</Button>*/}
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => downloadCSV()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <CSVLink
+                    headers={heeaderForCSV}
+                    data={data}
+                    filename="WorkspaceReport.csv"
+                    className={classes.downloadBtnLayout}
+                  >
+                    <GetAppIcon
+                      fontSize="small"
+                      style={{ marginRight: 10 }}
+                    ></GetAppIcon>
+                    Download Stats
+                  </CSVLink>
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
+                    Gate Pipelines:
+                    <Select
+                      disableUnderline
+                      value={activePipelineId}
+                      name="pipeline"
+                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                      onChange={onPipelineChanged}
+                    >
+                      <MenuItem value="">Select Pipeline</MenuItem>
+                      {pipelines &&
+                        pipelines?.map((pipeline: any, index: any) => (
+                          <MenuItem key={index} value={pipeline?._id}>
+                            {pipeline?.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </span>
+                </Button>
+                <span>
+                  <Button
+                    disabled={
+                      (!plotCallNeeded && !renderPlotController) ||
+                      activePipelineId === ""
+                    }
+                    variant="contained"
+                    size="small"
+                    onClick={() => saveWorkspace()}
+                    className={classes.topButton}
+                    style={{
+                      backgroundColor: "#fafafa",
+                      width: 160,
+                    }}
+                  >
+                    {savingWorkspace ? (
+                      <CircularProgress style={{ width: 20, height: 20 }} />
+                    ) : (
+                      <Typography
+                        style={{
+                          color:
+                            !plotCallNeeded && !renderPlotController
+                              ? "rgba(0, 0, 0, 0.26)"
+                              : "black",
+                        }}
+                      >
+                        Save Gate Pipeline
+                      </Typography>
+                    )}
+                  </Button>
+                  {/* <FormControlLabel
+                    style={{
+                      marginLeft: 0,
+                      height: 20,
+                      marginTop: 4,
+                      color: "#333",
+                    }}
+                    label={"Autosave"}
+                    control={
+                      <IOSSwitch
+                        disabled={!plotCallNeeded && !renderPlotController}
+                        checked={autoSaveEnabled}
+                        onChange={() => {
+                          setAutoSaveEnabled(!autoSaveEnabled);
+                          setSaveNeeded(false);
+                        }}
+                      />
+                    }
+                  /> */}
+                </span>
+                {/* {lastSavedTime ? (
+                  <span
+                    style={{
+                      height: "100%",
+                      display: "inline-flex",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#333",
+                        fontStyle: "italic",
+                        fontSize: 9,
+                      }}
+                    >
+                      saved at {lastSavedTime}
+                    </span>
+                  </span>
+                ) : null} */}
+              </div>
+              <div>
+                <Button
+                  disabled={
+                    (!plotCallNeeded && !renderPlotController) ||
+                    activePipelineId === ""
+                  }
+                  variant="contained"
+                  // size="small"
+                  onClick={() => onLinkShareClick()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                    marginRight: 10,
+                    width: 200,
+                  }}
+                >
+                  <img
+                    src={ShareIcon}
+                    alt="shareicon"
+                    style={{ width: 15, height: 15, marginRight: 10 }}
+                  />
+                  Share Workspace
+                </Button>
+              </div>
+            </span>
+          ) : (
+            <div>
+              <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
+                PipeLine:
+                <select
+                  value={activePipelineId}
+                  name="pipeline"
+                  style={{ width: 200 + "px", marginLeft: 2 + "px" }}
+                  onChange={onPipelineChanged}
+                >
+                  <option value="">Select Pipeline</option>
+                  {pipelines &&
+                    pipelines?.map((pipeline: any, index: any) => (
+                      <option key={index} value={pipeline?._id}>
+                        {pipeline?.name}
+                      </option>
+                    ))}
+                </select>
+                {/*<Button*/}
+                {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
+                {/*    variant="contained"*/}
+                {/*    size="small"*/}
+                {/*    onClick={() => setPipeLineModalOpen(true)}*/}
+                {/*    className={classes.topButton}*/}
+                {/*    style={{*/}
+                {/*      backgroundColor: "#fafafa",*/}
+                {/*      width: 137,*/}
+                {/*    }}>*/}
+                {/*  +New*/}
+                {/*</Button>*/}
+              </span>
+              <span className={classes.sharedHeader}>Shared Workspace</span>
+            </div>
+          )}
+        </Grid>
+      </Grid>
     );
   };
 

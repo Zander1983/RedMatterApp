@@ -18,16 +18,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noImplicitAny": true,
-    "baseUrl": "src", // Relative imports from src folder are now enabled
-
-    // Settings to remove specific transpile annoying rules
-    "strict": true,
+    "baseUrl": "src",
     "strictPropertyInitialization": false,
     "strictNullChecks": false,
-
-    // Risky new features of typescript
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "strict": true
   },
   "include": [
     "src"

@@ -16,7 +16,10 @@ import {
 import { store } from "redux/store";
 import { dowloadAllFileEvents } from "services/FileService";
 import { snackbarService } from "uno-material-ui";
-import {createDefaultPlotSnapShot, getPlotChannelAndPosition} from "../mark-app/Helper";
+import {
+  createDefaultPlotSnapShot,
+  getPlotChannelAndPosition,
+} from "../mark-app/Helper";
 
 export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
@@ -90,15 +93,16 @@ export const getGate = (gateID: GateID): Gate => {
   return gates.length > 0 ? gates[0] : null;
 };
 
-
 export const saveWorkspaceStateToServer = async (
-    shared: boolean,
-    experimentId: string,
-    pipelineId: string,
-    stateData?:any
+  shared: boolean,
+  experimentId: string,
+  pipelineId: string,
+  stateData?: any
 ): Promise<boolean> => {
   //let stateJson = JSON.stringify(getWorkspace().workspaceState);
-  let stateJson = stateData ?  JSON.stringify(stateData) : JSON.stringify(getWorkspace().workspaceState || {});
+  let stateJson = stateData
+    ? JSON.stringify(stateData)
+    : JSON.stringify(getWorkspace().workspaceState || {});
   const updateWorkSpace = WorkspacesApiFetchParamCreator({
     accessToken: userManager.getToken(),
   }).upsertWorkSpace(userManager.getToken(), {
@@ -110,16 +114,16 @@ export const saveWorkspaceStateToServer = async (
 
   try {
     const response = await axios.put(
-        `/api/experiment/${experimentId}/pipeline`,
-        updateWorkSpace.options.body,
-        updateWorkSpace.options
+      `/api/experiment/${experimentId}/pipeline`,
+      updateWorkSpace.options.body,
+      updateWorkSpace.options
     );
     await WorkspaceDispatch.SetId(response.data.workspaceId);
     return true;
   } catch (err) {
     snackbarService.showSnackbar(
-        "Could not save the workspace, reload the page and try again!",
-        "error"
+      "Could not save the workspace, reload the page and try again!",
+      "error"
     );
   }
   return false;
@@ -240,8 +244,8 @@ const loadSavedWorkspace = async (
 };
 
 export const getWorkspaceStateFromServer = async (
-    shared: boolean,
-    experimentId: string
+  shared: boolean,
+  experimentId: string
 ): Promise<{
   loaded: boolean;
   requestSuccess: boolean;
@@ -249,25 +253,33 @@ export const getWorkspaceStateFromServer = async (
   let workspaceData;
   try {
     if (shared) {
-      workspaceData = await axios.get(`/api/experiment/${experimentId}/verifyPipeline`);
+      workspaceData = await axios.get(
+        `/api/experiment/${experimentId}/verifyPipeline`
+      );
     } else {
       workspaceData = await axios.get(
-          `/api/experiment/${experimentId}/pipeline`,
-          {
-            headers: {
-              token: userManager.getToken(),
-            },
-          }
+        `/api/experiment/${experimentId}/pipeline`,
+        {
+          headers: {
+            token: userManager.getToken(),
+          },
+        }
       );
     }
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
       await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);
       return { loaded: true, requestSuccess: true };
-    }else if(workspaceData.data.pipelines?.length > 0) {
-        await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
-        await WorkspaceDispatch.UpdatePipelineId(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?._id);
-        await WorkspaceDispatch.UpdateSelectedFile(workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]?.controlFileId);
+    } else if (workspaceData.data.pipelines?.length > 0) {
+      await WorkspaceDispatch.SetPipeLines(workspaceData.data.pipelines);
+      await WorkspaceDispatch.UpdatePipelineId(
+        workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]
+          ?._id
+      );
+      await WorkspaceDispatch.UpdateSelectedFile(
+        workspaceData.data.pipelines?.filter((pipe: any) => pipe.isDefault)?.[0]
+          ?.controlFileId
+      );
     }
   } catch (err) {
     throw err;
@@ -276,24 +288,23 @@ export const getWorkspaceStateFromServer = async (
 };
 
 const saveWorkspaceStateToRedux = async (
-    workspace: string,
-    pipelines:any[]
+  workspace: string,
+  pipelines: any[]
 ) => {
-   const workspaceObj = JSON.parse(workspace || "{}");
+  const workspaceObj = JSON.parse(workspace || "{}");
   // if(getWorkspace().workspaceState?.length === 0) {
   //   let selectedFileID:any = getWorkspace().selectedFile;
   //   const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
-  //   const {xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex} = getPlotChannelAndPosition(defaultFile);
+  //   const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } = getPlotChannelAndPosition(defaultFile);
   //   const workspaceState = createDefaultPlotSnapShot(selectedFileID, workspaceObj.experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
   //   const newWorkspace: Workspace = {...workspaceObj, ...workspaceState};
   //   await WorkspaceDispatch.SetPlotStates(newWorkspace);
   //   await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
   // }else {
-    const newWorkspaceState: Workspace = {...workspaceObj};
-    await WorkspaceDispatch.SetPipeLines(pipelines);
-    await WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
-    await WorkspaceDispatch.UpdatePipelineId(workspaceObj.pipelineId);
+  const newWorkspaceState: Workspace = { ...workspaceObj };
+  await WorkspaceDispatch.SetPipeLines(pipelines);
+  await WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+  await WorkspaceDispatch.UpdateSelectedFile(workspaceObj.selectedFile);
+  await WorkspaceDispatch.UpdatePipelineId(workspaceObj.pipelineId);
   //}
-
 };

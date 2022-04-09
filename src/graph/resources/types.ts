@@ -156,23 +156,33 @@ export interface Population {
   parentPopulationId: PopulationID;
   gates: PopulationGateType[];
 }
+export interface Pipeline {
+  isDefault: boolean;
+  _id: string;
+  experimentId: string;
+  userId: string;
+  name: string;
+  organisationId: string;
+  controlFileId: string;
+}
 
 export interface Workspace {
   id: WorkspaceID;
   notifications: Notification[];
   gates: Gate[];
   files: File[];
-  pipelines: File[];
+  pipelines: Pipeline[];
   plots: Plot[];
   populations: Population[];
   previousStates: Workspace[];
-  workspaceState: {},
+  workspaceState: {};
   sharedWorkspace: boolean;
   editWorkspace: boolean;
   selectedFile: string;
-  activePipelineId:string,
+  activePipelineId: string;
   clearOpenFiles: boolean;
   updateType: string;
+  fileIds: string[];
 }
 
 export interface PlotSpecificWorkspaceData {

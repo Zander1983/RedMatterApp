@@ -8,9 +8,10 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
-  // isCursorNearAPolygonPoint
+  getRealRange,
 } from "./PlotHelper";
 import Modal from "react-modal";
+import { isGateShowing } from "./Helper";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
 import { getWorkspace } from "graph/utils/workspace";
@@ -218,10 +219,9 @@ function Plot(props) {
   const onClickGateButton = (plot, plotIndex) => {};
 
   const onAddGate = (plot, plotIndex) => {
-    let points = newGatePointsCanvas;
+    let pointsReal = JSON.parse(JSON.stringify(newGatePointsCanvas));
 
-    // Here im generating a random gate, which is a triangle
-    points.forEach((point) => {
+    pointsReal.forEach((point) => {
       // the scale the gate is created on is important hear - linear very different to logicle
       if (localPlot.xScaleType === "lin") {
         // if linear, convert to the "real" value
@@ -271,8 +271,8 @@ function Plot(props) {
       gateType: "polygon",
       // need to ask for gate name
       name: gateName.name,
-      points: points,
-      xAxisLabel: plot.xAxisIndex,
+      points: pointsReal,
+      xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
       yScaleType: plot.yScaleType,
@@ -401,15 +401,11 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
-    const xDivisor =
-      props.enrichedFile.channels[localPlot.xAxisIndex].maximum / 200;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
-    const yDivisor =
-      props.enrichedFile.channels[localPlot.yAxisIndex].maximum / 200;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -423,26 +419,29 @@ function Plot(props) {
       props.enrichedFile.logicles[localPlot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 20, 20);
+    contextX.clearRect(0, 0, localPlot.width + 50, 20);
+
+    let prevLabelPos = null;
+
     for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        localPlot,
+        props.enrichedFile.logicles
+      );
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
       }
-      let xPos =
-        xLabels[i].pos / xDivisor + 20 > localPlot.width
-          ? localPlot.width - 2
-          : xLabels[i].pos / xDivisor + 20;
-      if (tooClose) {
-        xPos += 8;
-      }
+
+      prevLabelPos = xPos;
       drawText(
         {
           x: xPos,
@@ -466,16 +465,30 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 20, localPlot.height + 20);
+    contextY.clearRect(0, 0, 25, localPlot.height);
+    prevLabelPos = null;
+    //let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
-      let yPos =
-        yLabels[i].pos / yDivisor + 20 > localPlot.height
-          ? localPlot.height
-          : yLabels[i].pos / yDivisor + 20;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        null,
+        yLabels[i].pos,
+        localPlot,
+        props.enrichedFile.logicles
+      );
+
+      if (i == yLabels.length - 1) {
+        yPos = yPos + 9;
+      }
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos <= yPos + 5) {
+        continue;
+      }
+      prevLabelPos = yPos;
       drawText(
         {
           x: 0,
-          y: localPlot.height + 20 - yPos,
+          y: yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
@@ -597,7 +610,6 @@ function Plot(props) {
         plotIndex: props.plotIndex.split("-")[1],
         fileId: props.enrichedFile.fileId,
       };
-
       props.onEditGate(change);
     } else {
       // so its a new gate
@@ -640,7 +652,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate()) {
+    if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
@@ -749,7 +761,11 @@ function Plot(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (hasGate() && props?.plot?.gate?.gateType === "polygon") {
+    if (
+      hasGate() &&
+      isGateShowing(localPlot) &&
+      props?.plot?.gate?.gateType === "polygon"
+    ) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
@@ -762,12 +778,35 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      // const isDraggingGatePoint = isCursorNearAPolygonPoint(localPlot, newPointsReal);
-      // document.body.style.cursor = isDraggingGatePoint?.dragging ? 'nesw-resize' :  isInside ? 'grab' : 'auto';
-      document.body.style.cursor = isInside ? "grab" : "auto";
+      let gateCanvasPoints = localPlot.gate.points.map((point) => {
+        let canvasPoint = getPointOnCanvas(
+          props.enrichedFile.channels,
+          point[0],
+          point[1],
+          // TODO make sure can only change gate when on correct channels
+          // this is important, make sure they can only edit gate when the gate channels match prop channels
+          localPlot,
+          props.enrichedFile.logicles
+        );
+
+        return canvasPoint;
+      });
+      let near = false;
+      gateCanvasPoints.find((point) => {
+        let isNear =
+          point[0] + 5 >= event.offsetX &&
+          point[0] - 5 <= event.offsetX &&
+          point[1] + 5 >= event.offsetY &&
+          point[1] - 5 <= event.offsetY;
+        if (isNear) near = isNear;
+        return isNear;
+      });
+
+      document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
-        props.enrichedFile.fileId === getWorkspace().selectedFile
+        props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !localPlot?.gate
           ? "crosshair"
           : "auto";
     }
@@ -845,6 +884,7 @@ function Plot(props) {
                   marginLeft: 5,
                   border: "none",
                   borderRadius: 5,
+                  outline: "none",
                 }}
                 onChange={(e) => gateNameHandler(e.target.value)}
               />
@@ -867,13 +907,31 @@ function Plot(props) {
             </div>
             <div style={{ margin: "auto" }}>
               <button
-                style={{ marginRight: 5 }}
+                style={{
+                  marginRight: 5,
+                  backgroundColor:
+                    gateName.error || !gateName.name ? "#f3f3f3" : "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: gateName.error || !gateName.name ? "auto" : "pointer",
+                  color: gateName.error || !gateName.name ? "gray" : "black",
+                }}
                 disabled={gateName.error || !gateName.name}
                 onClick={() => onSetGateName()}
               >
                 Ok
               </button>
-              <button onClick={() => onCancelGateName()}>Cancel</button>
+              <button
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => onCancelGateName()}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </Modal>
@@ -938,11 +996,12 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 20}
+                width={localPlot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
                   background: "#FAFAFA",
+                  marginLeft: 25,
                 }}
               />
             </div>

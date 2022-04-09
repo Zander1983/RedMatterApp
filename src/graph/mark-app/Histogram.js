@@ -9,9 +9,10 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  getRealRange,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins } from "./Helper";
+import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
 import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
@@ -80,7 +81,8 @@ const paintHist = (
   plot,
   minimum,
   color,
-  maxCountPlusTenPercent
+  maxCountPlusTenPercent,
+  fill = true
 ) => {
   // TODO get ratio correctly, function below
   // minimum, maximum, width, scaleType
@@ -134,8 +136,10 @@ const paintHist = (
 
   context.lineTo(plot.width, plot.height);
   context.closePath();
-  context.fillStyle = color;
-  context.fill();
+  if (fill) {
+    context.fillStyle = color;
+    context.fill();
+  }
   context.stroke();
 };
 
@@ -177,6 +181,7 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
+  console.log("hist props is ", props);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   let [startCanvasPoint, setStartCanvasPoint] = useState(null);
@@ -206,13 +211,26 @@ function Histogram(props) {
 
   useEffect(() => {
     //setLocalPlot(props.plot);
+    let paintHistArr = [];
     let context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, props.plot.width, props.plot.height);
     context.fillStyle = "white";
 
     let color = props.plot.color || "#000";
 
-    let data = props.enrichedFile.enrichedEvents.flatMap(
+    let bins;
+    if (props.plot.xScaleType === "bi") {
+      bins = linspace(0, 1, props.plot.width / 4);
+    } else {
+      bins = linspace(
+        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+        props.plot.width / 4
+      );
+    }
+
+    // enrichedFileData will be for the control file
+    let enrichedFileData = props.enrichedFile.enrichedEvents.flatMap(
       (enrichedEvent, index) => {
         if (
           props.plot.population == "All" ||
@@ -230,36 +248,88 @@ function Histogram(props) {
       }
     );
 
-    let bins;
-    if (props.plot.xScaleType === "bi") {
-      bins = linspace(0, 1, props.plot.width);
-    } else {
-      bins = linspace(
-        props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-        props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        props.plot.width
-      );
-    }
-
     const hists = histogram({
-      data: data,
+      data: enrichedFileData,
       bins: bins,
     });
 
     let countYMinMax = getMultiArrayMinMax(hists, "y");
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
+
+    paintHistArr.push({
+      context: context,
+      histsObj: hists,
+      enrichedFile: props.enrichedFile,
+      plot: props.plot,
+      minimum: props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      color: color,
+      fill: true,
+    });
+
+    // at this point, the histogram for the control file will have been draw on the canvas
+    if (props.plot.overlays && props.plot.overlays.length > 0) {
+      let overlayFileIndex = 0;
+
+      for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
+        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
+          (enrichedEvent, index) => {
+            if (
+              props.plot.population == "All" ||
+              enrichedEvent["isInGate" + props.plot.population]
+            ) {
+              if (props.plot.xScaleType == "lin") {
+                return enrichedEvent[props.plot.xAxisIndex];
+              } else {
+                let logicle =
+                  props.enrichedOverlayFiles[overlayFileIndex].logicles[
+                    props.plot.xAxisIndex
+                  ];
+                return logicle.scale(enrichedEvent[props.plot.xAxisIndex]);
+              }
+            } else {
+              return [];
+            }
+          }
+        );
+
+        const overlayHists = histogram({
+          data: overlayEnrichedFileData,
+          bins: bins,
+        });
+        let countYMinMax = getMultiArrayMinMax(overlayHists, "y");
+        let tempMaxCountPlusTenPercent = countYMinMax.max * 1.1;
+        if (tempMaxCountPlusTenPercent > maxCountPlusTenPercent)
+          maxCountPlusTenPercent = tempMaxCountPlusTenPercent;
+        let overlayColor = props.plot.overlays.find(
+          (x) => x.id == enrichedOverlayFile.fileId
+        ).color;
+        paintHistArr.push({
+          context: context,
+          histsObj: overlayHists,
+          enrichedFile: enrichedOverlayFile,
+          plot: props.plot,
+          minimum: enrichedOverlayFile.channels[props.plot.xAxisIndex].minimum,
+          color: overlayColor,
+          fill: false,
+        });
+        overlayFileIndex = overlayFileIndex + 1;
+      }
+    }
     drawLabel(maxCountPlusTenPercent);
 
-    paintHist(
-      context,
-      hists,
-      props.enrichedFile,
-      props.plot,
-      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-      color,
-      maxCountPlusTenPercent
-    );
+    for (let i = 0; i < paintHistArr.length; i++) {
+      paintHist(
+        paintHistArr[i].context,
+        paintHistArr[i].histsObj,
+        paintHistArr[i].enrichedFile,
+        paintHistArr[i].plot,
+        paintHistArr[i].minimum,
+        paintHistArr[i].color,
+        maxCountPlusTenPercent,
+        paintHistArr[i].fill
+      );
+    }
 
     if (props.plot.gate && shouldDrawGate(props.plot)) {
       drawGateLine(context, props.plot);
@@ -328,15 +398,6 @@ function Histogram(props) {
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
     ];
-    const xDivisor =
-      props.enrichedFile.channels[props.plot.xAxisIndex].maximum / 200;
-
-    let yRange = [
-      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
-      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
-    ];
-    const yDivisor =
-      props.enrichedFile.channels[props.plot.yAxisIndex].maximum / 200;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       props.plot.width,
@@ -350,27 +411,29 @@ function Histogram(props) {
       props.enrichedFile.logicles[props.plot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, props.plot.width + 20, 20);
+    contextX.clearRect(0, 0, props.plot.width + 50, 20);
+
+    let prevLabelPos = null;
+
     for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        props.plot,
+        props.enrichedFile.logicles
+      );
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
       }
-      let xPos =
-        xLabels[i].pos / xDivisor + 20 > props.plot.width
-          ? props.plot.width - 2
-          : xLabels[i].pos / xDivisor + 20;
-      // to avoid overlapping between the labels
-      if (tooClose) {
-        xPos += 8;
-      }
+
+      prevLabelPos = xPos;
       drawText(
         {
           x: xPos,
@@ -394,7 +457,7 @@ function Histogram(props) {
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 20, props.plot.height + 20);
+    contextY.clearRect(0, 0, 30, props.plot.height + 20);
 
     for (let i = 0; i < values.length; i++) {
       const yPos = ((props.plot.height + 20) / 4) * i;
@@ -411,24 +474,35 @@ function Histogram(props) {
     }
   };
 
-  const onChangeScale = (e, axis, plotIndex) => {
-    let channeIndex = props.plot.xAxisIndex;
-    let channelLabel = props.plot.xAxisLabel;
-    let channelScale = e.scale;
-    if (axis == "y") {
-      channeIndex = props.plot.yAxisIndex;
-      channelLabel = props.plot.yAxisLabel;
-    }
+  // const onChangeScale = (e, axis, plotIndex) => {
+  //   let channeIndex = props.plot.xAxisIndex;
+  //   let channelLabel = props.plot.xAxisLabel;
+  //   let channelScale = e.scale;
+  //   if (axis == "y") {
+  //     channeIndex = props.plot.yAxisIndex;
+  //     channelLabel = props.plot.yAxisLabel;
+  //   }
 
+  //   let change = {
+  //     type: "ChannelIndexChange",
+  //     plotIndex: plotIndex,
+  //     axis: axis,
+  //     axisIndex: channeIndex,
+  //     axisLabel: channelLabel,
+  //     scaleType: channelScale,
+  //   };
+
+  //   props.onChangeChannel(change);
+  // };
+
+  const onChangeScale = (e, axis, plotIndex) => {
     let change = {
-      type: "ChannelIndexChange",
+      type: "ChangePlotScale",
       plotIndex: plotIndex,
       axis: axis,
-      axisIndex: channeIndex,
-      axisLabel: channelLabel,
-      scaleType: channelScale,
+      scale: e.scale,
+      fileId: props.enrichedFile.fileId,
     };
-
     props.onChangeChannel(change);
   };
 
@@ -506,7 +580,7 @@ function Histogram(props) {
       gateType: "histogram",
       name: gateName.name,
       points: points,
-      xAxisLabel: props.plot.xAxisIndex,
+      xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
       parent: props.plot.population,
@@ -575,19 +649,27 @@ function Histogram(props) {
     isMouseDown = true;
 
     // draw histogram gate only if it is selected file
-    props.enrichedFile.fileId === getWorkspace().selectedFile &&
-      setStartCanvasPoint(event.offsetX);
+    if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+      if (!props?.plot?.gate) {
+        // if there is no gate
+        setStartCanvasPoint(event.offsetX);
+      } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
+        // if there is gate and same channel and scale
+        setStartCanvasPoint(event.offsetX);
+      }
+    }
   };
 
   const handleMouseUp = (event) => {
     isMouseDown = false;
-    if (hasGate(props.plot)) {
+    if (hasGate(props.plot) && isGateShowing(props?.plot)) {
       onEditGate();
       setStartCanvasPoint(null);
       setEndCanvasPoint(null);
     } else {
-      // draw histogram gate only if it is selected file
+      // show histogram gate creation modal only if it is selected file and it doesn't have any gate
       props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !props?.plot?.gate &&
         setModalIsOpen(true);
 
       // // so its a new gate
@@ -622,10 +704,10 @@ function Histogram(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (props?.plot?.plotType === "histogram") {
+    if (props?.plot?.plotType === "histogram" && !props?.plot?.gate) {
       document.body.style.cursor =
         props.enrichedFile.fileId === getWorkspace().selectedFile
-          ? "text"
+          ? "col-resize"
           : "auto";
     }
   };
@@ -692,6 +774,7 @@ function Histogram(props) {
                   marginLeft: 5,
                   border: "none",
                   borderRadius: 5,
+                  outline: "none",
                 }}
                 onChange={(e) => gateNameHandler(e.target.value)}
               />
@@ -714,13 +797,31 @@ function Histogram(props) {
             </div>
             <div style={{ margin: "auto" }}>
               <button
-                style={{ marginRight: 5 }}
+                style={{
+                  marginRight: 5,
+                  backgroundColor:
+                    gateName.error || !gateName.name ? "#f3f3f3" : "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: gateName.error || !gateName.name ? "auto" : "pointer",
+                  color: gateName.error || !gateName.name ? "gray" : "black",
+                }}
                 disabled={gateName.error || !gateName.name}
                 onClick={() => onSetGateName()}
               >
                 Ok
               </button>
-              <button onClick={() => onCancelGateName()}>Cancel</button>
+              <button
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 5,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                onClick={() => onCancelGateName()}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </Modal>
@@ -728,8 +829,12 @@ function Histogram(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
+          addOverlay={props.addOverlay}
+          onDeleteGate={props.onDeleteGate}
           plot={props.plot}
+          enrichedFile={props.enrichedFile}
           plotIndex={props.plotIndex}
+          allFileMinObj={props.allFileMinObj}
           downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
             <div
@@ -738,6 +843,7 @@ function Histogram(props) {
             >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
+
                 <canvas
                   height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
@@ -793,14 +899,22 @@ function Histogram(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
+
+                  {/* checkbox here with selector of <br />
+                  allFileIds OnClick on a fileId,
+                  <br />
+                  propagate back up to top level <br />
+                  component and add to the State eg
+                  <br />
+                  plots[3].overlay.push(theSelectedFileId) */}
                 </div>
               </div>
               {/* X-axis */}
               <canvas
-                width={props.plot.width + 20}
+                width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
-                style={{ background: "#FAFAFA" }}
+                style={{ background: "#FAFAFA", marginLeft: 25 }}
               />
             </div>
           }
