@@ -1386,7 +1386,7 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            {/* <div
+                          <div
                               style={{
                                 display: "flex",
                                 float: "right",
@@ -1403,66 +1403,66 @@ const Experiment = (props: any) => {
                                 alt={`${e.id}-delete-icon`}
                                 className={classes.delete}
                               />
-                              <Button
-                                disabled={reportStatus}
-                                variant="contained"
-                                style={{
-                                  background: "#66a",
-                                  margin: 0,
-                                  padding: 0,
-                                  width: 150,
-                                  float: "right",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <input
-                                  type={"button"}
-                                  data-id={e.id}
-                                  data-link={e.link || "http://www.google.com"}
-                                  value={
-                                    reportStatus && reportName === e.label
-                                      ? "Generating Report..."
-                                      : "Generate Report"
-                                  }
-                                  style={{
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    color: "white",
-                                    fontWeight: 500,
-                                    padding: "2px 5px",
-                                  }}
-                                  onClick={(event) =>
-                                    GenOrView(event, e.id, e.label)
-                                  }
-                                />
-                              </Button>
-                              <p
-                                style={{
-                                  fontSize: 14,
-                                  color: "#66a",
-                                  textDecoration: "underline",
-                                }}
-                              >
-                                {reports &&
-                                  reports.length > 0 &&
-                                  reports.find(
-                                    (report) => report.fileId === e.id
-                                  ) && (
-                                    <a
-                                      target="_blank"
-                                      rel="noopener"
-                                      href={
-                                        reports.find(
-                                          (report) => report.fileId === e.id
-                                        ).link
-                                      }
-                                    >
-                                      {"View Report"}
-                                    </a>
-                                  )}
-                              </p>
-                            </div> */}
+                              {/*<Button*/}
+                              {/*  disabled={reportStatus}*/}
+                              {/*  variant="contained"*/}
+                              {/*  style={{*/}
+                              {/*    background: "#66a",*/}
+                              {/*    margin: 0,*/}
+                              {/*    padding: 0,*/}
+                              {/*    width: 150,*/}
+                              {/*    float: "right",*/}
+                              {/*    cursor: "pointer",*/}
+                              {/*  }}*/}
+                              {/*>*/}
+                              {/*  <input*/}
+                              {/*    type={"button"}*/}
+                              {/*    data-id={e.id}*/}
+                              {/*    data-link={e.link || "http://www.google.com"}*/}
+                              {/*    value={*/}
+                              {/*      reportStatus && reportName === e.label*/}
+                              {/*        ? "Generating Report..."*/}
+                              {/*        : "Generate Report"*/}
+                              {/*    }*/}
+                              {/*    style={{*/}
+                              {/*      backgroundColor: "transparent",*/}
+                              {/*      border: "none",*/}
+                              {/*      cursor: "pointer",*/}
+                              {/*      color: "white",*/}
+                              {/*      fontWeight: 500,*/}
+                              {/*      padding: "2px 5px",*/}
+                              {/*    }}*/}
+                              {/*    onClick={(event) =>*/}
+                              {/*      GenOrView(event, e.id, e.label)*/}
+                              {/*    }*/}
+                              {/*  />*/}
+                              {/*</Button>*/}
+                              {/*<p*/}
+                              {/*  style={{*/}
+                              {/*    fontSize: 14,*/}
+                              {/*    color: "#66a",*/}
+                              {/*    textDecoration: "underline",*/}
+                              {/*  }}*/}
+                              {/*>*/}
+                              {/*  {reports &&*/}
+                              {/*    reports.length > 0 &&*/}
+                              {/*    reports.find(*/}
+                              {/*      (report) => report.fileId === e.id*/}
+                              {/*    ) && (*/}
+                              {/*      <a*/}
+                              {/*        target="_blank"*/}
+                              {/*        rel="noopener"*/}
+                              {/*        href={*/}
+                              {/*          reports.find(*/}
+                              {/*            (report) => report.fileId === e.id*/}
+                              {/*          ).link*/}
+                              {/*        }*/}
+                              {/*      >*/}
+                              {/*        {"View Report"}*/}
+                              {/*      </a>*/}
+                              {/*    )}*/}
+                              {/*</p>*/}
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (

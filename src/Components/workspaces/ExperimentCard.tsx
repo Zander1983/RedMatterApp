@@ -41,7 +41,7 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
       accessToken: userManager.getToken(),
     }).deleteExperiment(props.data.id, userManager.getToken());
     axios
-      .delete(fetchArgs.url, fetchArgs.options)
+      .delete(`/api/experiment/${props.data.id}/delete`, fetchArgs.options)
       .then((e) => {
         props.update(props.data.id);
         snackbarService.showSnackbar("Experiment deleted", "success");
@@ -175,29 +175,29 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
               </div>
             </CardContent>
           </NavLink>
-          <CardActions style={{ display: "flex", justifyContent: "center" }}>
-            {/* Delete Button */}
-            <Tooltip
-              title={
-                rules?.experiment?.delete
-                  ? "Delete experiment"
-                  : "The Delete Button is disabled, upgrade your plan to enable it"
-              }
-            >
-              <span>
-                <Button
-                  size="small"
-                  color="secondary"
-                  startIcon={<DeleteIcon />}
-                  variant="outlined"
-                  onClick={() => setDeleteConfirmModal(true)}
-                  disabled={!rules?.experiment?.delete}
-                >
-                  Delete
-                </Button>
-              </span>
-            </Tooltip>
-          </CardActions>
+          {/*{props.data.fileCount > 0 && <CardActions style={{ display: "flex", justifyContent: "center" }}>*/}
+          {/*  /!* Delete Button *!/*/}
+          {/*  <Tooltip*/}
+          {/*      title={*/}
+          {/*        rules?.experiment?.delete*/}
+          {/*            ? "Delete experiment"*/}
+          {/*            : "The Delete Button is disabled, upgrade your plan to enable it"*/}
+          {/*      }*/}
+          {/*  >*/}
+          {/*    <span>*/}
+          {/*      <Button*/}
+          {/*          size="small"*/}
+          {/*          color="secondary"*/}
+          {/*          startIcon={<DeleteIcon />}*/}
+          {/*          variant="outlined"*/}
+          {/*          onClick={() => setDeleteConfirmModal(true)}*/}
+          {/*          disabled={!rules?.experiment?.delete}*/}
+          {/*      >*/}
+          {/*        Delete*/}
+          {/*      </Button>*/}
+          {/*    </span>*/}
+          {/*  </Tooltip>*/}
+          {/*</CardActions> }*/}
         </Card>
       </Grid>
     </Grid>
