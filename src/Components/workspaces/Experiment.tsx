@@ -805,15 +805,20 @@ const Experiment = (props: any) => {
           token: userManager.getToken(),
         },
       });
-      if (response.status === 200) {
+
+      if (response?.data?.level === "success") {
         await handleResponse({ ...response.data, fileId: fileId }, true, true);
-      } else
-        await handleError({
-          message:
-            response?.data?.message ||
-            "Request not completed. Due to Time out Or Unable To Allocation",
+      } else if (response?.data?.level === "danger") {
+        showMessageBox({
+          message: response?.data?.message || "Request Not Completed",
           saverity: "error",
         });
+      }else {
+        await handleError({
+          message: "Information Missing",
+          saverity: "error",
+        });
+      }
     } catch (error) {
       await handleError(error);
     }
