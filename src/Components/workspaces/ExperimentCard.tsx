@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { snackbarService } from "uno-material-ui";
+import { useHistory } from "react-router-dom";
 import axios from "axios";
 import userManager from "Components/users/userManager";
 import {
@@ -32,6 +33,8 @@ const styles = {
 };
 
 export default function ExperimentCard(props: { data: any; update: Function }) {
+  const history = useHistory();
+
   const getTimeCal = (date: string) => {
     return getHumanReadableTimeDifference(new Date(date), new Date());
   };
@@ -42,17 +45,70 @@ export default function ExperimentCard(props: { data: any; update: Function }) {
     }).deleteExperiment(props.data.id, userManager.getToken());
     axios
       .delete(`/api/experiment/${props.data.id}/delete`, fetchArgs.options)
-      .then((e) => {
-        props.update(props.data.id);
-        snackbarService.showSnackbar("Experiment deleted", "success");
+      .then(async (response:any) => {
+        if (response?.data?.level === "success") {
+          props.update(props.data.id);
+          showMessageBox({
+              message: response?.data?.message || "Report Generating Success",
+              saverity: "success",
+            });
+
+        } else if (response?.data?.level === "danger") {
+          showMessageBox({
+            message: response?.data?.message || "Request Not Completed",
+            saverity: "error",
+          });
+        }else {
+          await handleError({
+            message: "Information Missing",
+            saverity: "error",
+          });
+        }
+
       })
-      .catch((e) => {
-        snackbarService.showSnackbar(
-          "Failure deleting experiment, refresh the page and try again!",
-          "error"
-        );
-        userManager.logout();
+      .catch(async (err) => {
+        await handleError(err);
       });
+  };
+
+  const handleError = async (error: any) => {
+    if (
+        error?.name === "Error" ||
+        error?.message.toString() === "Network Error"
+    ) {
+      showMessageBox({
+        message: "Connectivity Problem, please check your internet connection",
+        saverity: "error",
+      });
+    } else if (error?.response) {
+      if (error.response?.status == 401 || error.response.status == 419) {
+        setTimeout(() => {
+          userManager.logout();
+        }, 3000);
+        showMessageBox({
+          message: "Authentication Failed Or Session Time out",
+          saverity: "error",
+        });
+      }
+    } else {
+      showMessageBox({
+        message: error?.message || "Request Failed. May be Time out",
+        saverity: error.saverity || "error",
+      });
+    }
+  };
+
+  const showMessageBox = (response: any) => {
+    switch (response.saverity) {
+      case "error":
+        snackbarService.showSnackbar(response?.message, "error");
+        break;
+      case "success":
+        snackbarService.showSnackbar(response?.message, "success");
+        break;
+      default:
+        break;
+    }
   };
 
   const [deleteConfirmModal, setDeleteConfirmModal] = React.useState(false);
