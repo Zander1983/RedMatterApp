@@ -202,18 +202,27 @@ const router = [
       />
     ),
   },
+
   { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
   {
     path: "/experiment/:experimentId",
     component: ({ match }: any) => (
-      <Experiment id={match.params.experimentId} poke={false} />
+      <>
+        {/* 
+            // @ts-ignore */}
+        <Experiment id={match.params.experimentId} poke={false} />
+      </>
     ),
   },
   {
     path: "/experiment/:experimentId/poke",
     component: ({ match }: any) => (
-      <Experiment id={match.params.experimentId} poke={true} />
+      <>
+        {/* 
+            // @ts-ignore */}
+        <Experiment id={match.params.experimentId} poke={false} />
+      </>
     ),
   },
   {
@@ -383,6 +392,8 @@ const App = () => {
             <Switch>
               <Route key={1001} exact path="/" component={AppLandingPage} />
             </Switch>
+            {/* 
+            // @ts-ignore */}
             <ErrorBoundaryMain mainScreen={false} appScreen={true}>
               <Switch>
                 {router.map((e, number) => (
