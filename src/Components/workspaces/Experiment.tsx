@@ -82,7 +82,7 @@ const Experiment = (props: any) => {
   );
   const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
   // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
-
+    
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
@@ -824,6 +824,8 @@ const Experiment = (props: any) => {
     }
   };
 
+
+
   return (
     <>
       {deleteFileModal && (
@@ -1051,18 +1053,21 @@ const Experiment = (props: any) => {
                     Your Plan limit:{" "}
                     <b>
                       {experimentData !== null
-                        ? userManager.getSubscriptionType() === "" ||
-                          userManager.getSubscriptionType() === "Free" ||
-                          userManager.getSubscriptionType() === "free"
-                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                          : "Unlimited"
+                        ? (userManager.getSubscriptionType() === ""
+                              || userManager.getSubscriptionType() === undefined
+                              || userManager.getSubscriptionType() === null
+                              || userManager.getSubscriptionType() === "Free"
+                              || userManager.getSubscriptionType() === "free")
+                              ? FREE_PLAN_FILE_UPLOAD_LIMIT
+                              : "Unlimited"
                         : null}
                     </b>
                     <br />
-                    {
-                      userManager.getSubscriptionType() === "" ||
-                      userManager.getSubscriptionType() === "Free" ||
-                      userManager.getSubscriptionType() === "free" ? (
+                    {(userManager.getSubscriptionType() === ""
+                            || userManager.getSubscriptionType() === undefined
+                            || userManager.getSubscriptionType() === null
+                            || userManager.getSubscriptionType() === "Free"
+                            || userManager.getSubscriptionType() === "free") ? (
                         <>
                         Current Uploaded:{" "}
                         <b>{ experimentData !== null ? totalFilesUploaded : 0}</b>
