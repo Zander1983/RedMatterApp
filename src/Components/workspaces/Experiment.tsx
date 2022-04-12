@@ -260,7 +260,8 @@ const Experiment = (props: any) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments =
+        data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -339,10 +340,8 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let {
-      requiredUpdateExperiments,
-      targetExperiment,
-    } = await getTargetExperiments(data, expId);
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -371,10 +370,8 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let {
-      requiredUpdateExperiments,
-      targetExperiment,
-    } = await getTargetExperiments(data, expId);
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -648,7 +645,6 @@ const Experiment = (props: any) => {
     let availableReports = reports.slice();
     if (availableReports && availableReports.length <= 0) {
       availableReports.push({ fileId: data.fileId, link: data.link });
-      console.log("availableReports", availableReports);
       setTimeout(() => {
         setReport(availableReports);
       }, 50);
@@ -667,13 +663,11 @@ const Experiment = (props: any) => {
           ...availableReports.slice(index + 1),
         ];
         setTimeout(() => {
-          console.log("updatedReports", updatedReports);
           setReport(updatedReports);
         }, 50);
       } else {
         availableReports.push({ fileId: data.fileId, link: data.link });
         setTimeout(() => {
-          console.log("availableReports", availableReports);
           setReport(availableReports);
         }, 50);
       }
@@ -1055,29 +1049,24 @@ const Experiment = (props: any) => {
                   <>
                     Your Plan limit:{" "}
                     <b>
-                      {experimentData !== null
-                        ? (userManager.getSubscriptionType() === ""
-                              || userManager.getSubscriptionType() === undefined
-                              || userManager.getSubscriptionType() === null
-                              || userManager.getSubscriptionType() === "Free"
-                              || userManager.getSubscriptionType() === "free")
-                              ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                              : "Unlimited"
-                        : null}
+                        {experimentData !== null
+                            ? !userManager.getSubscriptionType()
+                            || userManager.getSubscriptionType() === "Free"
+                            || userManager.getSubscriptionType() === "free"
+                                ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited"
+                            : null}
                     </b>
                     <br />
-                    {(userManager.getSubscriptionType() === ""
-                            || userManager.getSubscriptionType() === undefined
-                            || userManager.getSubscriptionType() === null
-                            || userManager.getSubscriptionType() === "Free"
-                            || userManager.getSubscriptionType() === "free") ? (
-                        <>
-                        Current Uploaded:{" "}
-                        <b>
-                          {experimentData !== null ? totalFilesUploaded : 0}
-                        </b>
-                      </>
-                    ) : null}
+                      {!userManager.getSubscriptionType()
+                      || userManager.getSubscriptionType() === "Free"
+                      || userManager.getSubscriptionType() === "free" ? (
+                          <>
+                              Current Uploaded:{" "}
+                              <b>
+                                  {experimentData !== null ? totalFilesUploaded : 0}
+                              </b>
+                          </>
+                      ) : null}
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
                   </>
