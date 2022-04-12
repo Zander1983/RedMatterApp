@@ -262,16 +262,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots = (
-        newWorkspaceState as any
-      ).files[fileIds[i]].plots.map((plt: any) => {
-        if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plt;
-          return plotWithOutGate;
-        } else {
-          return plt;
+      (newWorkspaceState as any).files[
+        fileIds[i]
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
+        (plt: any) => {
+          if (plt.population === plot.population) {
+            const { gate, ...plotWithOutGate } = plt;
+            return plotWithOutGate;
+          } else {
+            return plt;
+          }
         }
-      });
+      );
     }
 
     let copyOfFiles: any[] = getWorkspace().files;
@@ -297,8 +299,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[
+        plotIndex
+      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -319,8 +322,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
-      JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[
+      change.plotIndex
+    ] = JSON.parse(JSON.stringify(change.plot));
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
