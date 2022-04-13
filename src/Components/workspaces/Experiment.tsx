@@ -82,7 +82,7 @@ const Experiment = (props: any) => {
   );
   const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
   // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
-
+    
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
@@ -645,7 +645,6 @@ const Experiment = (props: any) => {
     let availableReports = reports.slice();
     if (availableReports && availableReports.length <= 0) {
       availableReports.push({ fileId: data.fileId, link: data.link });
-      console.log("availableReports", availableReports);
       setTimeout(() => {
         setReport(availableReports);
       }, 50);
@@ -664,13 +663,11 @@ const Experiment = (props: any) => {
           ...availableReports.slice(index + 1),
         ];
         setTimeout(() => {
-          console.log("updatedReports", updatedReports);
           setReport(updatedReports);
         }, 50);
       } else {
         availableReports.push({ fileId: data.fileId, link: data.link });
         setTimeout(() => {
-          console.log("availableReports", availableReports);
           setReport(availableReports);
         }, 50);
       }
@@ -823,6 +820,8 @@ const Experiment = (props: any) => {
       await handleError(error);
     }
   };
+
+
 
   return (
     <>
@@ -1050,25 +1049,24 @@ const Experiment = (props: any) => {
                   <>
                     Your Plan limit:{" "}
                     <b>
-                      {experimentData !== null
-                        ? !userManager.getSubscriptionType() ||
-                          userManager.getSubscriptionType() === "Free" ||
-                          userManager.getSubscriptionType() === "free"
-                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                          : "Unlimited"
-                        : null}
+                        {experimentData !== null
+                            ? !userManager.getSubscriptionType()
+                            || userManager.getSubscriptionType() === "Free"
+                            || userManager.getSubscriptionType() === "free"
+                                ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited"
+                            : null}
                     </b>
                     <br />
-                    {!userManager.getSubscriptionType() ||
-                    userManager.getSubscriptionType() === "Free" ||
-                    userManager.getSubscriptionType() === "free" ? (
-                      <>
-                        Current Uploaded:{" "}
-                        <b>
-                          {experimentData !== null ? totalFilesUploaded : 0}
-                        </b>
-                      </>
-                    ) : null}
+                      {!userManager.getSubscriptionType()
+                      || userManager.getSubscriptionType() === "Free"
+                      || userManager.getSubscriptionType() === "free" ? (
+                          <>
+                              Current Uploaded:{" "}
+                              <b>
+                                  {experimentData !== null ? totalFilesUploaded : 0}
+                              </b>
+                          </>
+                      ) : null}
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
                   </>
