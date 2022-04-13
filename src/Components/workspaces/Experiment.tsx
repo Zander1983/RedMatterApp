@@ -117,8 +117,8 @@ const Experiment = (props: any) => {
   useEffect(() => {
     if (
       fileTempIdMap &&
-      Object.keys(fileTempIdMap).length > 0 &&
-      uploadingFiles.length > 0
+      Object.keys(fileTempIdMap)?.length > 0 &&
+      uploadingFiles?.length > 0
     ) {
       let keys = Object.keys(fileTempIdMap)
         .map((x) => {
@@ -150,7 +150,7 @@ const Experiment = (props: any) => {
         fetchExperiments.options
       );
 
-      if (response?.status) {
+      if (response?.status === 200) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
         setTotalFilesUploaded(response.data.totalFilesUploaded);
@@ -291,6 +291,7 @@ const Experiment = (props: any) => {
           ],
           userExperiments: [...updatedExperiments],
         };
+
         sessionStorage.setItem(
           "experimentData",
           SecurityUtil.encryptData(
@@ -704,7 +705,6 @@ const Experiment = (props: any) => {
                     process.env.REACT_APP_DATA_SECRET_SOLD
                 )
             );
-
             await updateExperimentFileCount(props.id, updatedFiles?.length, true);
           } else await reload();
         } else {
