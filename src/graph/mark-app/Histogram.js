@@ -272,8 +272,8 @@ function Histogram(props) {
       let overlayFileIndex = 0;
 
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
-        let overlayEnrichedFileData =
-          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
+        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
+          (enrichedEvent, index) => {
             if (
               props.plot.population == "All" ||
               enrichedEvent["isInGate" + props.plot.population]
@@ -290,7 +290,8 @@ function Histogram(props) {
             } else {
               return [];
             }
-          });
+          }
+        );
 
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
