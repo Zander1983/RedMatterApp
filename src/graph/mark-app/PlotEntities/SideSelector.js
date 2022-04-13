@@ -156,6 +156,21 @@ function SideSelector(props) {
             />
           )}
         </div>
+        <p
+          style={{
+            height: 8,
+            margin: 0,
+            fontSize: 8,
+            color: "red",
+            textAlign: "left",
+            width: "100%",
+            marginLeft: "20%",
+            marginBottom: 3,
+          }}
+        >
+          {props.eventsOutOfCanvasPercentage !== "0" &&
+            `Warning: ${props.eventsOutOfCanvasPercentage}% of the events are on chart edges!`}
+        </p>
         {props.canvasComponent}
         <div
           style={{
