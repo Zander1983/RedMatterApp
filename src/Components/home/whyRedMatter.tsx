@@ -8,11 +8,9 @@ const WhyRedMatter = () => {
     <>
       {/* Why Red Matter? */}
       <DialogTitle id="form-dialog-title">
-        <div>
-          <span>Why Red Matter?</span>
-        </div>
+        <div style={{ textAlign: "center" }}>Why Red Matter?</div>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent style={{ textAlign: "center" }}>
         <DialogContentText component={"p"}>
           Upload all your flow cytometry files to the cloud, making them
           accessible from anywhere.
