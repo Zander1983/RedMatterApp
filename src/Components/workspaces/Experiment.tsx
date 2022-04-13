@@ -675,39 +675,43 @@ const Experiment = (props: any) => {
   };
 
   const deleteFromCache = async (fileId: any) => {
-    const activeOrg: string = sessionStorage.getItem("activeOrg");
-    if (activeOrg && activeOrg === props.id) {
-      const expFileInfo = SecurityUtil.decryptData(
-        sessionStorage.getItem("experimentFiles"),
-        process.env.REACT_APP_DATA_SECRET_SOLD
-      );
-      if (expFileInfo) {
-        let updatedFiles = expFileInfo?.files?.files?.filter(
-          (file: any) => file.id !== fileId
+    if (sessionStorage.getItem("experimentFiles") !== null
+        || sessionStorage.getItem("experimentFiles") !== undefined) {
+
+      const activeOrg: string = sessionStorage.getItem("activeOrg");
+      if (activeOrg && activeOrg === props.id) {
+        const expFileInfo = SecurityUtil.decryptData(
+            sessionStorage.getItem("experimentFiles"),
+            process.env.REACT_APP_DATA_SECRET_SOLD
         );
-        //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
-        if (updatedFiles) {
-          const newFiles = {
-            ...expFileInfo.files,
-            ...{ files: [...updatedFiles] },
-          };
-          setExperimentData(newFiles);
-          setExperiment(expFileInfo?.files?.experimentDetails);
-
-          sessionStorage.setItem(
-            "experimentFiles",
-            SecurityUtil.encryptData(
-              { files: newFiles },
-              process.env.REACT_APP_DATA_SECRET_SOLD
-            )
+        if (expFileInfo) {
+          let updatedFiles = expFileInfo?.files?.files?.filter(
+              (file: any) => file.id !== fileId
           );
+          //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+          if (updatedFiles) {
+            const newFiles = {
+              ...expFileInfo.files,
+              ...{files: [...updatedFiles]},
+            };
+            setExperimentData(newFiles);
+            setExperiment(expFileInfo?.files?.experimentDetails);
 
-          await updateExperimentFileCount(props.id, updatedFiles?.length, true);
-        } else await reload();
-      } else {
-        await reload();
-      }
-    } else await reload();
+            sessionStorage.setItem(
+                "experimentFiles",
+                SecurityUtil.encryptData(
+                    {files: newFiles},
+                    process.env.REACT_APP_DATA_SECRET_SOLD
+                )
+            );
+
+            await updateExperimentFileCount(props.id, updatedFiles?.length, true);
+          } else await reload();
+        } else {
+          await reload();
+        }
+      } else await reload();
+    }else await reload()
   };
 
   const handleResponse = async (
