@@ -206,6 +206,7 @@ export const superAlgorithm = (
 
     Files[fileIndex].gateStats = gateStats;
   }
+  console.log(Files);
   return Files;
 };
 
