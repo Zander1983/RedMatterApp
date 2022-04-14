@@ -260,8 +260,7 @@ const Experiment = (props: any) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments =
-        data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -341,8 +340,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -371,8 +372,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -1017,7 +1020,7 @@ const Experiment = (props: any) => {
                 }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
-                Workspace
+                Begin Analysis
               </Button>
             </Grid>
             <Grid
@@ -1175,7 +1178,7 @@ const Experiment = (props: any) => {
                             uploadFiles(e.target.files);
                           }}
                         />
-                        Upload File
+                        Upload Files
                       </Button>
                     </div>
                   </Grid>
