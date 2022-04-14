@@ -808,7 +808,8 @@ const Experiment = (props: any) => {
       });
 
       if (response?.data?.level === "success") {
-        await handleResponse({ ...response.data, fileId: fileId }, true, true);
+          setTotalFilesUploaded(response.data?.totalFilesUploaded || 0);
+          await handleResponse({ ...response.data, fileId: fileId }, true, true);
       } else if (response?.data?.level === "danger") {
         showMessageBox({
           message: response?.data?.message || "Request Not Completed",
