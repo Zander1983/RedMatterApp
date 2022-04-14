@@ -831,10 +831,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           ) : (
             <span>
               <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                Click on "NEW ANALYSIS" to visualize
+                Begin analysis by clicking on "NEW GATE PIPELINE" in the top
+                left
               </h3>
               <h4 style={{ marginBottom: 70, color: "#777" }}>
-                Create a plot from one of your samples to start your analysis
+                You can add as many gate pipelines as you want
               </h4>
             </span>
           )}

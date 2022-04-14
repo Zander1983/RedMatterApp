@@ -135,7 +135,7 @@ const AddFileModal = React.memo(
         }}
       >
         <div className={classes.fileSelectModal}>
-          <h2 style={{ margin: 0 }}>{"Name Your Gate Pipeline"}</h2>
+          <h2 style={{ margin: 0 }}>{"Gate Pipeline"}</h2>
           <p
             style={{
               color: "#777",
@@ -144,7 +144,7 @@ const AddFileModal = React.memo(
               margin: 0,
             }}
           >
-            {"Each analysis consists of a pipeline of gates."}
+            {"Name your Gate Pipeline & select the Control File"}
           </p>
 
           <Grid container direction="row">
@@ -190,7 +190,7 @@ const AddFileModal = React.memo(
                 />
               </div>
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <div>
                 <TextField
                   style={{
@@ -209,7 +209,7 @@ const AddFileModal = React.memo(
                   }}
                 />
               </div>
-            </Grid>
+            </Grid> */}
           </Grid>
 
           {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (

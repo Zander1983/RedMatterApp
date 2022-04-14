@@ -897,6 +897,7 @@ const WorkspaceTopBarComponent = ({
                   className={classes.topButton}
                   style={{
                     backgroundColor: "#fafafa",
+                    fontWeight: "bold",
                   }}
                 >
                   {/*// disabled={!!(workspace?.selectedFile)}>*/}
@@ -914,7 +915,7 @@ const WorkspaceTopBarComponent = ({
                 {/*>*/}
                 {/*  Clear*/}
                 {/*</Button>*/}
-                <Button
+                {/* <Button
                   variant="contained"
                   size="small"
                   onClick={() => downloadCSV()}
@@ -935,7 +936,7 @@ const WorkspaceTopBarComponent = ({
                     ></GetAppIcon>
                     Download Stats
                   </CSVLink>
-                </Button>
+                </Button> */}
                 <Button
                   variant="contained"
                   size="small"
@@ -1033,6 +1034,28 @@ const WorkspaceTopBarComponent = ({
                 ) : null} */}
               </div>
               <div>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => downloadCSV()}
+                  className={classes.topButton}
+                  style={{
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <CSVLink
+                    headers={heeaderForCSV}
+                    data={data}
+                    filename="WorkspaceReport.csv"
+                    className={classes.downloadBtnLayout}
+                  >
+                    <GetAppIcon
+                      fontSize="small"
+                      style={{ marginRight: 10 }}
+                    ></GetAppIcon>
+                    Download Stats
+                  </CSVLink>
+                </Button>
                 <Button
                   disabled={
                     (!plotCallNeeded && !renderPlotController) ||
