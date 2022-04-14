@@ -46,6 +46,10 @@ export const superAlgorithm = (
     }
 
     plots.forEach((plot) => {
+      if (plot?.gate?.name !== undefined) {
+        gateStatsObj[plot.gate.name + "_count"] = 0;
+      }
+
       if (plot.gate && plot.gate["xScaleType"] === "bi") {
         let xLogicle = new MarkLogicle(
           plot.gate.xAxisOriginalRanges[0],
@@ -179,6 +183,10 @@ export const superAlgorithm = (
           : gateStatsObj[gateKeys[index - 1]];
 
       let percentage = ((gateStatsObj[gateKey] * 100) / divider).toFixed(2);
+
+      if (isNaN(percentage)) {
+        percentage = Number(0).toFixed(2);
+      }
 
       if (calculateMedianAndMean) {
         gateStats.push({
