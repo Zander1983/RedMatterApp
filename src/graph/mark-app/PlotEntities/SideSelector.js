@@ -130,7 +130,7 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          {/* <img
+          <img
             src={cameraIcon}
             alt={props.plot.id}
             style={{
@@ -141,7 +141,7 @@ function SideSelector(props) {
             onClick={() =>
               props.downloadPlotAsImage(props.plot, props.plotIndex)
             }
-          /> */}
+          />
           {props.plot.gate && props.onDeleteGate && (
             <img
               src={deleteIcon}
