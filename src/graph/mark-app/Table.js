@@ -102,10 +102,7 @@ function Table(props) {
           <tr>
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
-                <th
-                  id={`entire-canvas-0-${plotIindex}`}
-                  key={`td-${plotIindex}`}
-                >
+                <th key={`td-${plotIindex}`}>
                   <Tooltip
                     title={
                       plot.population === "All" &&
@@ -181,6 +178,7 @@ function Table(props) {
                           }
                         );
                       }
+
                       return (
                         <Histogram
                           key={`plot-${plotIindex}`}
@@ -353,7 +351,6 @@ function Table(props) {
                   return (
                     <td
                       key={`td-${plotIindex + 1}`}
-                      id={`entire-canvas-${fileIndex + 1}-${plotIindex}`}
                       style={{ padding: 5, borderInline: "1px solid gray" }}
                     >
                       <div
