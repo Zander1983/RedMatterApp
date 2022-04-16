@@ -947,19 +947,13 @@ function Plot(props) {
           handleResizeMouseUp={handleResizeMouseUp}
           downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
-            <div
-              id={`entire-canvas-${props.plotIndex}`}
-              style={{ display: "flex", flexDirection: "column" }}
-            >
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
                   height={localPlot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
                   width={25}
-                  style={{
-                    background: "#FAFAFA",
-                  }}
                 />
                 {/* main canvas */}
                 <div
@@ -1000,7 +994,6 @@ function Plot(props) {
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
-                  background: "#FAFAFA",
                   marginLeft: 25,
                 }}
               />
