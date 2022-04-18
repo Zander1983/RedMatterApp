@@ -33,7 +33,6 @@ interface IState {
   testParam: string;
   controlFileId: string;
   activePipelineId: string;
-  isForceToUpdate: boolean
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -88,7 +87,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       testParam: "some value",
       controlFileId: "",
       activePipelineId: "",
-      isForceToUpdate: false
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -686,27 +684,26 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onResize = (change: any) => {
-    console.log("== change == ");
-    console.log(change);
     let newWorkspaceState: any = this.state.workspaceState;
-    console.log("== newWorkspaceState ==");
-    console.log(newWorkspaceState);
-    Object.keys((newWorkspaceState as any).files).forEach(
-        (fileId, index) => {
-          console.log(fileId," ", change.fileId);
-          if (fileId == change.fileId) {
-            //@ts-ignore
-            newWorkspaceState.files[fileId].plots[+change.plotIndex].width = +change.width;
-            newWorkspaceState.files[fileId].plots[+change.plotIndex].height = +change.height;
-          }
-        }
-    );
 
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 10);
+    Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
+      if (fileId == change.fileId) {
+        //@ts-ignore
+        newWorkspaceState.files[fileId].plots[+change.plotIndex].width =
+          +change.width;
+        newWorkspaceState.files[fileId].plots[+change.plotIndex].height =
+          +change.height;
+      }
+    });
 
-    this.setState({workspaceState: newWorkspaceState, isForceToUpdate: true});
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
   };
 
   // shouldComponentUpdate(nextProps: Readonly<PlotControllerProps>, nextState: Readonly<IState>, nextContext: any): boolean {
@@ -757,12 +754,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ) {
       this.onInitState();
     } else {
-      if(this.state.isForceToUpdate) {
-        this.setState({isForceToUpdate:false});
-        this.onInitState();
-      }else {
-        //console.log("did update false=======");
-      }
+      this.onInitState();
+
+      //console.log("did update false=======");
     }
   }
 

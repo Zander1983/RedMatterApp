@@ -31,6 +31,8 @@ function SideSelector(props) {
         style={{
           display: "flex",
           alignItems: "center",
+          width: "60px",
+          justifyContent: "center",
         }}
       >
         <div

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
-import { useResizeDetector } from 'react-resize-detector';
+import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -52,7 +52,7 @@ let polygonComplete = false;
 let resizeStartPoints;
 
 let lastPlot = null;
-
+let interval = null;
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
 function useTraceUpdate(props) {
@@ -77,44 +77,41 @@ function Plot(props) {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [gateName, setGateName] = useState({
-        name: "",
-        error: false,
-    });
+    name: "",
+    error: false,
+  });
   const [gateColor, setGateColor] = useState(
-        `#${Math.floor(Math.random() * 16777215).toString(16)}`
+    `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
 
   const onResize = useCallback((w, h) => {
-    console.log("== on resize ==");
-    let tempPlot = {...localPlot, ...{width:w, height:h}};
+    if (w == localPlot.width && h == localPlot.height) return;
+    if (interval) clearTimeout(interval);
+    interval = setTimeout(() => {
+      drawLabel();
+      let tempPlot = { ...localPlot, ...{ width: w, height: h } };
       let change = {
-          type: tempPlot.plotType,
-          height: tempPlot.height,
-          width: tempPlot.width,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
+        type: tempPlot.plotType,
+        height: tempPlot.height,
+        width: tempPlot.width,
+        plotIndex: props.plotIndex.split("-")[1],
+        fileId: props.enrichedFile.fileId,
       };
-      setSize({ w: props.plot.width, h: props.plot.height });
       props.onResize(change);
+    }, 1500);
   }, []);
 
-  const { ref } = useResizeDetector({ onResize,
-    // handleHeight: false,
-    refreshMode: 'debounce',
-    refreshRate: 1500
+  const { ref } = useResizeDetector({
+    onResize,
+    skipOnMount: true,
   });
-
-  const [size, setSize] = useState({ w: props.plot.width, h: props.plot.height });
-
-  //useTraceUpdate({ ...props, localPlot });
 
   useEffect(() => {
     setLocalPlot(props.plot);
   }, [props.plot]);
 
   useEffect(() => {
-
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -135,7 +132,6 @@ function Plot(props) {
     if (localPlot.gate && shouldDrawGate(localPlot)) {
       drawGateLine(context, localPlot);
     }
-
   }, [localPlot]);
 
   const drawGateLine = (context, plot) => {
@@ -990,7 +986,7 @@ function Plot(props) {
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
-                  height={size.h}
+                  height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
                   width={25}
                   style={{
@@ -1001,12 +997,15 @@ function Plot(props) {
                 <div
                   style={{
                     border: "1px solid #32a1ce",
-                    width: `${size.w}px`,
-                    height: `${size.h}px`,
-                    resize: 'both',
-                    overflow: 'hidden'
+                    minHeight: 250,
+                    minWidth: 236,
+                    width: `${props.plot.width}px`,
+                    height: `${props.plot.height}px`,
+                    resize: "both",
+                    overflow: "hidden",
                   }}
-                  ref={ref}>
+                  ref={ref}
+                >
                   <canvas
                     className="canvas"
                     id={`canvas-${props.plotIndex}`}
@@ -1033,7 +1032,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={size.w + 20}
+                width={props.plot.width + 20}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
