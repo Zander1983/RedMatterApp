@@ -406,27 +406,31 @@ const Experiment = (props: any) => {
     }).editExperimentName(props.id, experiment.name, userManager.getToken());
 
     axios
-      .put(updateExperiment.url, {}, updateExperiment.options)
-      .then(async (e) => {
-        if (
-          sessionStorage.getItem("experimentData") !== null ||
-          sessionStorage.getItem("experimentData") !== undefined
-        ) {
-          await updateExperimentCache(props.id, experiment.name);
+      .put(`/api/experiment/${props.id}/edit/name`, {experimentName:experiment.name}, updateExperiment.options)
+      .then(async (response:any) => {
+        if (response?.data?.level === "success") {
+          if (sessionStorage.getItem("experimentData") !== null
+              || sessionStorage.getItem("experimentData") !== undefined) {
+            await updateExperimentCache(props.id, experiment.name);
+          } else {
+            sessionStorage.removeItem("experimentData");
+          }
+          if (snack)
+            showMessageBox({
+              message: "Experiment updated",
+              saverity: "success",
+            });
         } else {
-          sessionStorage.removeItem("experimentData");
-        }
-        if (snack)
           showMessageBox({
-            message: "Experiment updated",
-            saverity: "success",
+            message: response?.data?.message || "Request Not Completed",
+            saverity: "error",
           });
+        }
       })
       .catch((e) => {
         if (snack)
           showMessageBox({
-            message:
-              "Failed to update this experiment, reload the page to try again!",
+            message: "Failed to update this experiment, reload the page to try again!",
             saverity: "error",
           });
       });
@@ -627,6 +631,7 @@ const Experiment = (props: any) => {
           token: userManager.getToken(),
         },
       });
+
       if (response.status === 200) await handleResponse(response.data, true);
       else
         await handleError({
@@ -810,14 +815,9 @@ const Experiment = (props: any) => {
       if (response?.data?.level === "success") {
           setTotalFilesUploaded(response.data?.totalFilesUploaded || 0);
           await handleResponse({ ...response.data, fileId: fileId }, true, true);
-      } else if (response?.data?.level === "danger") {
+      }else{
         showMessageBox({
           message: response?.data?.message || "Request Not Completed",
-          saverity: "error",
-        });
-      }else {
-        await handleError({
-          message: "Information Missing",
           saverity: "error",
         });
       }
@@ -825,8 +825,6 @@ const Experiment = (props: any) => {
       await handleError(error);
     }
   };
-
-
 
   return (
     <>
