@@ -50,14 +50,19 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
   };
   const [organizationExperiments, setExperiments] = useState([]);
   const [privateExperiments, setPrivateExperiments] = useState([]);
-  const [fetchExperimentsComplete, setFetchExperimentsComplete] =
-    useState<boolean>(false);
-  const [createExperimentModal, setCreateExperimentModal] =
-    useState<boolean>(false);
-  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] =
-    useState<boolean>(true);
-  const [organizationExperimentsSwitch, setOrganizationExperimentsSwitch] =
-    useState<boolean>(false);
+  const [fetchExperimentsComplete, setFetchExperimentsComplete] = useState<
+    boolean
+  >(false);
+  const [createExperimentModal, setCreateExperimentModal] = useState<boolean>(
+    false
+  );
+  const [privateExperimentsSwitch, setPrivateExperimentsSwitch] = useState<
+    boolean
+  >(true);
+  const [
+    organizationExperimentsSwitch,
+    setOrganizationExperimentsSwitch,
+  ] = useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [displayExperiments, setDisplayExperiments] = useState([]);
   const [oldExperiments, setOldExperiments] = useState([]);
@@ -76,8 +81,10 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
 
   const doStaff = async (data: any, expId: any) => {
     //link view code here
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       const updatedExperiments = requiredUpdateExperiments.filter(
         (experiment: any) => experiment.id !== expId
@@ -145,8 +152,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments =
-        data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -421,7 +427,7 @@ const Experiments = (props: { backFromQuestions?: boolean }) => {
                     disabled={disabled}
                     onClick={() => setCreateExperimentModal(true)}
                   >
-                    Create
+                    Create Experiment
                   </Button>
                 </span>
               </Tooltip>

@@ -8,6 +8,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  getRealRange,
 } from "./PlotHelper";
 import Modal from "react-modal";
 import { isGateShowing } from "./Helper";
@@ -422,20 +423,11 @@ function Plot(props) {
       props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
     ];
-    const xDivisor =
-      (props.enrichedFile.channels[localPlot.xAxisIndex].maximum -
-        props.enrichedFile.channels[localPlot.xAxisIndex].minimum) /
-      localPlot.width;
 
     let yRange = [
       props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
       props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
     ];
-
-    const yDivisor =
-      (props.enrichedFile.channels[localPlot.yAxisIndex].maximum -
-        props.enrichedFile.channels[localPlot.yAxisIndex].minimum) /
-      localPlot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       localPlot.width,
@@ -454,31 +446,27 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 20, 20);
-    for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
-      }
-      let xPos =
-        xLabels[i].pos / xDivisor + 20 > localPlot.width
-          ? localPlot.width - 2
-          : xLabels[i].pos / xDivisor + 20;
+    contextX.clearRect(0, 0, localPlot.width + 50, 20);
 
-      if (tooClose && i > 0) {
-        xPos +=
-          xLabels[i - 1].name.length === 4
-            ? 20
-            : xLabels[i - 1].name.length === 3
-            ? 15
-            : 8;
+    let prevLabelPos = null;
+
+    for (let i = 0; i < xLabels.length; i++) {
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        localPlot,
+        props.enrichedFile.logicles
+      );
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
       }
+
+      prevLabelPos = xPos;
       drawText(
         {
-          x: i === 0 ? 20 : xPos,
+          x: xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",
@@ -499,28 +487,30 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 20, localPlot.height + 20);
+    contextY.clearRect(0, 0, 25, localPlot.height);
+    prevLabelPos = null;
+    //let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        yLabels[i].pos / yDivisor - yLabels[i - 1].pos / yDivisor < 15
-      ) {
-        tooClose = true;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        null,
+        yLabels[i].pos,
+        localPlot,
+        props.enrichedFile.logicles
+      );
+
+      if (i == yLabels.length - 1) {
+        yPos = yPos + 9;
       }
 
-      let yPos =
-        yLabels[i].pos / yDivisor + 20 > localPlot.height
-          ? localPlot.height
-          : yLabels[i].pos / yDivisor + 20;
-
-      if (tooClose) {
-        yPos += 10;
+      if (prevLabelPos != null && i != 0 && prevLabelPos <= yPos + 5) {
+        continue;
       }
+      prevLabelPos = yPos;
       drawText(
         {
           x: 0,
-          y: i === 0 ? localPlot.height : localPlot.height + 20 - yPos,
+          y: yPos,
           text: yLabels[i].name,
           font: "10px Arial",
           fillColor: "black",
@@ -1032,11 +1022,12 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={props.plot.width + 20}
+                width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
                   background: "#FAFAFA",
+                  marginLeft: 25,
                 }}
               />
             </div>

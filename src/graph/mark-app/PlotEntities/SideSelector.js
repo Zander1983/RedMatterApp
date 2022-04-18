@@ -132,7 +132,7 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          <img
+          {/* <img
             src={cameraIcon}
             alt={props.plot.id}
             style={{
@@ -143,7 +143,7 @@ function SideSelector(props) {
             onClick={() =>
               props.downloadPlotAsImage(props.plot, props.plotIndex)
             }
-          />
+          /> */}
           {props.plot.gate && props.onDeleteGate && (
             <img
               src={deleteIcon}
@@ -243,7 +243,7 @@ function SideSelector(props) {
               .filter((x) => x.id != props.enrichedFile.fileId)
               .map((x) => {
                 return (
-                  <MenuItem>
+                  <MenuItem key={x?.id}>
                     <div
                       class="form-check"
                       style={{

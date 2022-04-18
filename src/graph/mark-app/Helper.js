@@ -1,10 +1,11 @@
 import MarkLogicle from "./logicleMark";
 import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
+import { pow } from "mathjs";
 
 const minLabelPadding = 30;
 
-const DEFAULT_PLOT_TYPE = "scatter";
+export const DEFAULT_PLOT_TYPE = "scatter";
 const DEFAULT_X_AXIS_LABEL = "FSC-A";
 const DEFAULT_Y_AXIS_LABEL = "SSC-A";
 const DEFAULT_PLOT_WIDTH = 200;
@@ -45,6 +46,10 @@ export const superAlgorithm = (
     }
 
     plots.forEach((plot) => {
+      if (plot?.gate?.name !== undefined) {
+        gateStatsObj[plot.gate.name + "_count"] = 0;
+      }
+
       if (plot.gate && plot.gate["xScaleType"] === "bi") {
         let xLogicle = new MarkLogicle(
           plot.gate.xAxisOriginalRanges[0],
@@ -178,6 +183,10 @@ export const superAlgorithm = (
           : gateStatsObj[gateKeys[index - 1]];
 
       let percentage = ((gateStatsObj[gateKey] * 100) / divider).toFixed(2);
+
+      if (isNaN(percentage)) {
+        percentage = Number(0).toFixed(2);
+      }
 
       if (calculateMedianAndMean) {
         gateStats.push({
@@ -496,18 +505,21 @@ export const graphLine = (params, ctx) => {
 };
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
+  let selectedFileId = workspaceState.selectedFile;
+  let controlFile = enrichedFiles.find((x) => x.fileId == selectedFileId);
+
   return enrichedFiles.map((file) => {
-    let logicles = file.channels.map((channel) => {
+    let logicles = file.channels.map((channel, index) => {
       return new MarkLogicle(
-        channel.biexponentialMinimum,
-        channel.biexponentialMaximum
+        controlFile.channels[index].biexponentialMinimum,
+        controlFile.channels[index].biexponentialMaximum
       );
     });
 
-    let channels = file.channels.map((channel) => {
+    let channels = file.channels.map((channel, index) => {
       return {
-        minimum: channel.biexponentialMinimum,
-        maximum: channel.biexponentialMaximum,
+        minimum: controlFile.channels[index].biexponentialMinimum,
+        maximum: controlFile.channels[index].biexponentialMaximum,
         name: channel.label || channel.value,
         defaultScale: channel.display,
       };
@@ -588,7 +600,17 @@ export const getPlotChannelAndPosition = (file) => {
   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
 
-  return { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex };
+  let xAxisScaleType = defaultFileChannels[xAxisIndex]?.display;
+  let yAxisScaleType = defaultFileChannels[yAxisIndex]?.display;
+
+  return {
+    xAxisLabel,
+    yAxisLabel,
+    xAxisIndex,
+    yAxisIndex,
+    xAxisScaleType,
+    yAxisScaleType,
+  };
 };
 
 export const createDefaultPlotSnapShot = (
@@ -600,7 +622,9 @@ export const createDefaultPlotSnapShot = (
   yAxisIndex = 1,
   pipelineId = "",
   name = "",
-  plotType = DEFAULT_PLOT_TYPE
+  plotType = DEFAULT_PLOT_TYPE,
+  xScaleType = DEFAULT_X_SCALE_TYPE,
+  yScaleType = DEFAULT_Y_SCALE_TYPE
 ) => {
   return {
     experimentId: experimentId,
@@ -620,8 +644,8 @@ export const createDefaultPlotSnapShot = (
             xAxisIndex: xAxisIndex,
             yAxisIndex: yAxisIndex,
             plotScale: 2,
-            xScaleType: DEFAULT_X_SCALE_TYPE,
-            yScaleType: DEFAULT_Y_SCALE_TYPE,
+            xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
+            yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
             histogramAxis: "",
             label: "",
             dimensions: {
@@ -692,7 +716,7 @@ export const drawText = (params, ctx) => {
 export const linLabel = (num) => {
   let snum = "";
   if (num < 2) {
-    snum = numeral(num.toFixed(2)).format("0.0a");
+    snum = numeral(num.toFixed(2)).format("0a");
   } else {
     snum = num.toFixed(2);
     snum = numeral(snum).format("0a");
@@ -711,7 +735,7 @@ export const pot10Label = (pot10Indx) => {
 export const getAxisLabels = (format, linRange, logicle, binsCount) => {
   let labels = [];
   if (format === "lin") {
-    const binSize = (linRange[1] - linRange[0]) / binsCount;
+    const binSize = (Math.abs(linRange[1]) - linRange[0]) / binsCount;
 
     for (let i = linRange[0], j = 0; j <= binsCount; i += binSize, j++)
       labels.push({
@@ -720,16 +744,50 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
       });
   }
   if (format === "bi") {
-    const baseline = Math.max(Math.abs(linRange[0]), Math.abs(linRange[1]));
-    let pot10 = 1;
+    let originalBinsCount = binsCount;
+    binsCount = 2;
+    const baseline = Math.abs(linRange[1]);
+
+    const baselineMin = linRange[0];
+    const baselineMax = linRange[1];
+
+    //-1000 to 1000
+    let pot10 = baselineMin || 1;
     let pot10Exp = 0;
+
+    if (baselineMin > 0) {
+      let min = baselineMin;
+      while (min > 9) {
+        min = Math.floor(min / 10);
+        pot10Exp++;
+      }
+    }
+
     const fow = () => {
-      pot10 *= 10;
-      pot10Exp++;
+      if (Math.ceil(pot10) == 0) {
+        pot10 = 1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 / Math.pow(10, binsCount - 1);
+      } else {
+        pot10 *= 10;
+        pot10Exp++;
+      }
     };
     const back = () => {
-      pot10 /= 10;
-      pot10Exp--;
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+      }
+      if (pot10 < 0) {
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      } else {
+        pot10 /= Math.pow(10, binsCount - 1);
+      }
+      if (Math.floor(pot10) == 0) {
+        pot10 = -1;
+        pot10 = pot10 * Math.pow(10, binsCount - 1);
+      }
+      pot10Exp = pot10Exp - (binsCount - 1);
     };
     const add = (x, p) => {
       if (
@@ -740,42 +798,20 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
           pos: x,
           name: pot10Label(p),
         });
+        // if (originalBinsCount) {
+        //   binsCount = originalBinsCount;
+        //   originalBinsCount = 0;
+        // }
       }
     };
     while (pot10 <= baseline) fow();
-    while (pot10 >= 1) {
+    while (pot10 >= baselineMin) {
       add(pot10, pot10Exp);
-      add(-pot10, -pot10Exp);
+
       back();
     }
 
-    let newPos = labels.map((e) => logicle.scale(e.pos));
-
-    newPos = newPos.map((e) => (linRange[1] - linRange[0]) * e + linRange[0]);
-    labels = labels.map((e, i) => {
-      e.pos = newPos[i];
-      return e;
-    });
-    labels = labels.sort((a, b) => a.pos - b.pos);
-
-    const distTolerance = 0.03;
-    let lastAdded = null;
-    labels = labels.filter((e, i) => {
-      if (i === 0) {
-        lastAdded = i;
-        return true;
-      }
-      if (
-        (e.pos - labels[lastAdded].pos) /
-          (Math.max(linRange[0], linRange[1]) -
-            Math.min(linRange[0], linRange[1])) >=
-        distTolerance
-      ) {
-        lastAdded = i;
-        return true;
-      }
-      return false;
-    });
+    labels.sort((a, b) => a.pos - b.pos);
   }
   return labels;
 };

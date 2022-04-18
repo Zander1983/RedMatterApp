@@ -58,7 +58,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //   let copyOfFiles: any[] = getWorkspace().files;
     //   if (plots === null || plots === undefined) {
     //       const defaultFile = copyOfFiles?.[0];
-    //       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
+    //       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } =
     //           getPlotChannelAndPosition(defaultFile);
     //       workspaceState = createDefaultPlotSnapShot(
     //           defaultFile?.id,
@@ -128,8 +128,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             )?.[0]
           : null;
 
-      const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex } =
-        getPlotChannelAndPosition(defaultFile);
+      const {
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType,
+      } = getPlotChannelAndPosition(defaultFile);
 
       workspaceState = createDefaultPlotSnapShot(
         defaultFile?.id,
@@ -256,16 +262,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots = (
-        newWorkspaceState as any
-      ).files[fileIds[i]].plots.map((plt: any) => {
-        if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plt;
-          return plotWithOutGate;
-        } else {
-          return plt;
+      (newWorkspaceState as any).files[
+        fileIds[i]
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
+        (plt: any) => {
+          if (plt.population === plot.population) {
+            const { gate, ...plotWithOutGate } = plt;
+            return plotWithOutGate;
+          } else {
+            return plt;
+          }
         }
-      });
+      );
     }
 
     let copyOfFiles: any[] = getWorkspace().files;
@@ -291,8 +299,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[
+        plotIndex
+      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -313,8 +322,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
-      JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[
+      change.plotIndex
+    ] = JSON.parse(JSON.stringify(change.plot));
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
@@ -635,18 +645,26 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
 
       if (sortType === ASC_SORT) {
-        if (gateStat1.count > gateStat2.count) {
+        if (
+          parseFloat(gateStat1.percentage) > parseFloat(gateStat2.percentage)
+        ) {
           return 1;
-        } else if (gateStat1.count < gateStat2.count) {
+        } else if (
+          parseFloat(gateStat1.percentage) < parseFloat(gateStat2.percentage)
+        ) {
           return -1;
         } else {
           return 0;
         }
       } else {
         // do desc
-        if (gateStat1.count < gateStat2.count) {
+        if (
+          parseFloat(gateStat1.percentage) < parseFloat(gateStat2.percentage)
+        ) {
           return 1;
-        } else if (gateStat1.count > gateStat2.count) {
+        } else if (
+          parseFloat(gateStat1.percentage) > parseFloat(gateStat2.percentage)
+        ) {
           return -1;
         } else {
           return 0;
@@ -837,10 +855,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           ) : (
             <span>
               <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                Click on "NEW ANALYSIS" to visualize
+                Begin analysis by clicking on "NEW GATE PIPELINE" in the top
+                left
               </h3>
               <h4 style={{ marginBottom: 70, color: "#777" }}>
-                Create a plot from one of your samples to start your analysis
+                You can add as many gate pipelines as you want
               </h4>
             </span>
           )}

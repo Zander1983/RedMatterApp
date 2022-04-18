@@ -9,6 +9,7 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  getRealRange,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
 import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
@@ -271,8 +272,8 @@ function Histogram(props) {
       let overlayFileIndex = 0;
 
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
-        let overlayEnrichedFileData =
-          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
+        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
+          (enrichedEvent, index) => {
             if (
               props.plot.population == "All" ||
               enrichedEvent["isInGate" + props.plot.population]
@@ -289,7 +290,8 @@ function Histogram(props) {
             } else {
               return [];
             }
-          });
+          }
+        );
 
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
@@ -396,18 +398,6 @@ function Histogram(props) {
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
       props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
     ];
-    const xDivisor =
-      (props.enrichedFile.channels[props.plot.xAxisIndex].maximum -
-        props.enrichedFile.channels[props.plot.xAxisIndex].minimum) /
-      props.plot.width;
-
-    let yRange = [
-      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
-      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
-    ];
-    const yDivisor =
-      props.enrichedFile.channels[props.plot.yAxisIndex].maximum /
-      props.plot.height;
 
     let [horizontalBinCount, verticalBinCount] = getBins(
       props.plot.width,
@@ -421,35 +411,32 @@ function Histogram(props) {
       props.enrichedFile.logicles[props.plot.xAxisIndex],
       horizontalBinCount
     );
+
     let contextX = document
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, props.plot.width + 20, 20);
+    contextX.clearRect(0, 0, props.plot.width + 50, 20);
+
+    let prevLabelPos = null;
+
     for (let i = 0; i < xLabels.length; i++) {
-      let tooClose = false;
-      if (
-        i > 0 &&
-        xLabels[i].pos / xDivisor - xLabels[i - 1].pos / xDivisor < 15
-      ) {
-        tooClose = true;
+      let [xPos, yPos] = getPointOnCanvas(
+        props.enrichedFile.channels,
+        xLabels[i].pos,
+        null,
+        props.plot,
+        props.enrichedFile.logicles
+      );
+
+      if (prevLabelPos != null && i != 0 && prevLabelPos >= xPos - 10) {
+        continue;
       }
-      let xPos =
-        xLabels[i].pos / xDivisor + 20 > props.plot.width
-          ? props.plot.width - 2
-          : xLabels[i].pos / xDivisor + 20;
-      // to avoid overlapping between the labels
-      if (tooClose && i > 0) {
-        xPos +=
-          xLabels[i - 1].name.length === 4
-            ? 20
-            : xLabels[i - 1].name.length === 3
-            ? 15
-            : 8;
-      }
+
+      prevLabelPos = xPos;
       drawText(
         {
-          x: i === 0 ? 20 : xPos,
+          x: xPos,
           y: 12,
           text: xLabels[i].name,
           font: "10px Arial",
@@ -924,10 +911,10 @@ function Histogram(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={props.plot.width + 20}
+                width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
-                style={{ background: "#FAFAFA" }}
+                style={{ background: "#FAFAFA", marginLeft: 25 }}
               />
             </div>
           }

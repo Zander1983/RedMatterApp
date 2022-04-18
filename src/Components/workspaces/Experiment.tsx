@@ -82,7 +82,7 @@ const Experiment = (props: any) => {
   );
   const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
   // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
-
+    
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
@@ -117,8 +117,8 @@ const Experiment = (props: any) => {
   useEffect(() => {
     if (
       fileTempIdMap &&
-      Object.keys(fileTempIdMap).length > 0 &&
-      uploadingFiles.length > 0
+      Object.keys(fileTempIdMap)?.length > 0 &&
+      uploadingFiles?.length > 0
     ) {
       let keys = Object.keys(fileTempIdMap)
         .map((x) => {
@@ -150,7 +150,7 @@ const Experiment = (props: any) => {
         fetchExperiments.options
       );
 
-      if (response?.status) {
+      if (response?.status === 200) {
         setExperimentData(response?.data);
         setExperiment(response?.data?.experimentDetails);
         setTotalFilesUploaded(response.data.totalFilesUploaded);
@@ -260,8 +260,7 @@ const Experiment = (props: any) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments =
-        data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -291,6 +290,7 @@ const Experiment = (props: any) => {
           ],
           userExperiments: [...updatedExperiments],
         };
+
         sessionStorage.setItem(
           "experimentData",
           SecurityUtil.encryptData(
@@ -340,8 +340,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -370,8 +372,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -405,27 +409,31 @@ const Experiment = (props: any) => {
     }).editExperimentName(props.id, experiment.name, userManager.getToken());
 
     axios
-      .put(updateExperiment.url, {}, updateExperiment.options)
-      .then(async (e) => {
-        if (
-          sessionStorage.getItem("experimentData") !== null ||
-          sessionStorage.getItem("experimentData") !== undefined
-        ) {
-          await updateExperimentCache(props.id, experiment.name);
+      .put(`/api/experiment/${props.id}/edit/name`, {experimentName:experiment.name}, updateExperiment.options)
+      .then(async (response:any) => {
+        if (response?.data?.level === "success") {
+          if (sessionStorage.getItem("experimentData") !== null
+              || sessionStorage.getItem("experimentData") !== undefined) {
+            await updateExperimentCache(props.id, experiment.name);
+          } else {
+            sessionStorage.removeItem("experimentData");
+          }
+          if (snack)
+            showMessageBox({
+              message: "Experiment updated",
+              saverity: "success",
+            });
         } else {
-          sessionStorage.removeItem("experimentData");
-        }
-        if (snack)
           showMessageBox({
-            message: "Experiment updated",
-            saverity: "success",
+            message: response?.data?.message || "Request Not Completed",
+            saverity: "error",
           });
+        }
       })
       .catch((e) => {
         if (snack)
           showMessageBox({
-            message:
-              "Failed to update this experiment, reload the page to try again!",
+            message: "Failed to update this experiment, reload the page to try again!",
             saverity: "error",
           });
       });
@@ -626,6 +634,7 @@ const Experiment = (props: any) => {
           token: userManager.getToken(),
         },
       });
+
       if (response.status === 200) await handleResponse(response.data, true);
       else
         await handleError({
@@ -645,7 +654,6 @@ const Experiment = (props: any) => {
     let availableReports = reports.slice();
     if (availableReports && availableReports.length <= 0) {
       availableReports.push({ fileId: data.fileId, link: data.link });
-      console.log("availableReports", availableReports);
       setTimeout(() => {
         setReport(availableReports);
       }, 50);
@@ -664,13 +672,11 @@ const Experiment = (props: any) => {
           ...availableReports.slice(index + 1),
         ];
         setTimeout(() => {
-          console.log("updatedReports", updatedReports);
           setReport(updatedReports);
         }, 50);
       } else {
         availableReports.push({ fileId: data.fileId, link: data.link });
         setTimeout(() => {
-          console.log("availableReports", availableReports);
           setReport(availableReports);
         }, 50);
       }
@@ -678,39 +684,42 @@ const Experiment = (props: any) => {
   };
 
   const deleteFromCache = async (fileId: any) => {
-    const activeOrg: string = sessionStorage.getItem("activeOrg");
-    if (activeOrg && activeOrg === props.id) {
-      const expFileInfo = SecurityUtil.decryptData(
-        sessionStorage.getItem("experimentFiles"),
-        process.env.REACT_APP_DATA_SECRET_SOLD
-      );
-      if (expFileInfo) {
-        let updatedFiles = expFileInfo?.files?.files?.filter(
-          (file: any) => file.id !== fileId
+    if (sessionStorage.getItem("experimentFiles") !== null
+        || sessionStorage.getItem("experimentFiles") !== undefined) {
+
+      const activeOrg: string = sessionStorage.getItem("activeOrg");
+      if (activeOrg && activeOrg === props.id) {
+        const expFileInfo = SecurityUtil.decryptData(
+            sessionStorage.getItem("experimentFiles"),
+            process.env.REACT_APP_DATA_SECRET_SOLD
         );
-        //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
-        if (updatedFiles) {
-          const newFiles = {
-            ...expFileInfo.files,
-            ...{ files: [...updatedFiles] },
-          };
-          setExperimentData(newFiles);
-          setExperiment(expFileInfo?.files?.experimentDetails);
-
-          sessionStorage.setItem(
-            "experimentFiles",
-            SecurityUtil.encryptData(
-              { files: newFiles },
-              process.env.REACT_APP_DATA_SECRET_SOLD
-            )
+        if (expFileInfo) {
+          let updatedFiles = expFileInfo?.files?.files?.filter(
+              (file: any) => file.id !== fileId
           );
+          //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
+          if (updatedFiles) {
+            const newFiles = {
+              ...expFileInfo.files,
+              ...{files: [...updatedFiles]},
+            };
+            setExperimentData(newFiles);
+            setExperiment(expFileInfo?.files?.experimentDetails);
 
-          await updateExperimentFileCount(props.id, updatedFiles?.length, true);
-        } else await reload();
-      } else {
-        await reload();
-      }
-    } else await reload();
+            sessionStorage.setItem(
+                "experimentFiles",
+                SecurityUtil.encryptData(
+                    {files: newFiles},
+                    process.env.REACT_APP_DATA_SECRET_SOLD
+                )
+            );
+            await updateExperimentFileCount(props.id, updatedFiles?.length, true);
+          } else await reload();
+        } else {
+          await reload();
+        }
+      } else await reload();
+    }else await reload()
   };
 
   const handleResponse = async (
@@ -805,15 +814,16 @@ const Experiment = (props: any) => {
           token: userManager.getToken(),
         },
       });
-      if (response.status === 200) {
-        await handleResponse({ ...response.data, fileId: fileId }, true, true);
-      } else
-        await handleError({
-          message:
-            response?.data?.message ||
-            "Request not completed. Due to Time out Or Unable To Allocation",
+
+      if (response?.data?.level === "success") {
+          setTotalFilesUploaded(response.data?.totalFilesUploaded || 0);
+          await handleResponse({ ...response.data, fileId: fileId }, true, true);
+      }else{
+        showMessageBox({
+          message: response?.data?.message || "Request Not Completed",
           saverity: "error",
         });
+      }
     } catch (error) {
       await handleError(error);
     }
@@ -1008,7 +1018,7 @@ const Experiment = (props: any) => {
                 }}
                 endIcon={<ArrowRightOutlined style={{ fontSize: 15 }} />}
               >
-                Workspace
+                Begin Analysis
               </Button>
             </Grid>
             <Grid
@@ -1045,24 +1055,24 @@ const Experiment = (props: any) => {
                   <>
                     Your Plan limit:{" "}
                     <b>
-                      {experimentData !== null
-                        ? userManager.getSubscriptionType() === "" ||
-                          userManager.getSubscriptionType() === "Free" ||
-                          userManager.getSubscriptionType() === "free"
-                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
-                          : "Unlimited"
-                        : null}
+                        {experimentData !== null
+                            ? !userManager.getSubscriptionType()
+                            || userManager.getSubscriptionType() === "Free"
+                            || userManager.getSubscriptionType() === "free"
+                                ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited"
+                            : null}
                     </b>
                     <br />
-                    {
-                      userManager.getSubscriptionType() === "" ||
-                      userManager.getSubscriptionType() === "Free" ||
-                      userManager.getSubscriptionType() === "free" ? (
-                        <>
-                        Current Uploaded:{" "}
-                        <b>{ experimentData !== null ? totalFilesUploaded : 0}</b>
-                        </>
-                    ):( null)}
+                      {!userManager.getSubscriptionType()
+                      || userManager.getSubscriptionType() === "Free"
+                      || userManager.getSubscriptionType() === "free" ? (
+                          <>
+                              Current Uploaded:{" "}
+                              <b>
+                                  {experimentData !== null ? totalFilesUploaded : 0}
+                              </b>
+                          </>
+                      ) : null}
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
                   </>
@@ -1166,7 +1176,7 @@ const Experiment = (props: any) => {
                             uploadFiles(e.target.files);
                           }}
                         />
-                        Upload File
+                        Upload Files
                       </Button>
                     </div>
                   </Grid>
@@ -1386,7 +1396,7 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                            {/* <div
+                          <div
                               style={{
                                 display: "flex",
                                 float: "right",
@@ -1403,66 +1413,66 @@ const Experiment = (props: any) => {
                                 alt={`${e.id}-delete-icon`}
                                 className={classes.delete}
                               />
-                              <Button
-                                disabled={reportStatus}
-                                variant="contained"
-                                style={{
-                                  background: "#66a",
-                                  margin: 0,
-                                  padding: 0,
-                                  width: 150,
-                                  float: "right",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <input
-                                  type={"button"}
-                                  data-id={e.id}
-                                  data-link={e.link || "http://www.google.com"}
-                                  value={
-                                    reportStatus && reportName === e.label
-                                      ? "Generating Report..."
-                                      : "Generate Report"
-                                  }
-                                  style={{
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    color: "white",
-                                    fontWeight: 500,
-                                    padding: "2px 5px",
-                                  }}
-                                  onClick={(event) =>
-                                    GenOrView(event, e.id, e.label)
-                                  }
-                                />
-                              </Button>
-                              <p
-                                style={{
-                                  fontSize: 14,
-                                  color: "#66a",
-                                  textDecoration: "underline",
-                                }}
-                              >
-                                {reports &&
-                                  reports.length > 0 &&
-                                  reports.find(
-                                    (report) => report.fileId === e.id
-                                  ) && (
-                                    <a
-                                      target="_blank"
-                                      rel="noopener"
-                                      href={
-                                        reports.find(
-                                          (report) => report.fileId === e.id
-                                        ).link
-                                      }
-                                    >
-                                      {"View Report"}
-                                    </a>
-                                  )}
-                              </p>
-                            </div> */}
+                              {/*<Button*/}
+                              {/*  disabled={reportStatus}*/}
+                              {/*  variant="contained"*/}
+                              {/*  style={{*/}
+                              {/*    background: "#66a",*/}
+                              {/*    margin: 0,*/}
+                              {/*    padding: 0,*/}
+                              {/*    width: 150,*/}
+                              {/*    float: "right",*/}
+                              {/*    cursor: "pointer",*/}
+                              {/*  }}*/}
+                              {/*>*/}
+                              {/*  <input*/}
+                              {/*    type={"button"}*/}
+                              {/*    data-id={e.id}*/}
+                              {/*    data-link={e.link || "http://www.google.com"}*/}
+                              {/*    value={*/}
+                              {/*      reportStatus && reportName === e.label*/}
+                              {/*        ? "Generating Report..."*/}
+                              {/*        : "Generate Report"*/}
+                              {/*    }*/}
+                              {/*    style={{*/}
+                              {/*      backgroundColor: "transparent",*/}
+                              {/*      border: "none",*/}
+                              {/*      cursor: "pointer",*/}
+                              {/*      color: "white",*/}
+                              {/*      fontWeight: 500,*/}
+                              {/*      padding: "2px 5px",*/}
+                              {/*    }}*/}
+                              {/*    onClick={(event) =>*/}
+                              {/*      GenOrView(event, e.id, e.label)*/}
+                              {/*    }*/}
+                              {/*  />*/}
+                              {/*</Button>*/}
+                              {/*<p*/}
+                              {/*  style={{*/}
+                              {/*    fontSize: 14,*/}
+                              {/*    color: "#66a",*/}
+                              {/*    textDecoration: "underline",*/}
+                              {/*  }}*/}
+                              {/*>*/}
+                              {/*  {reports &&*/}
+                              {/*    reports.length > 0 &&*/}
+                              {/*    reports.find(*/}
+                              {/*      (report) => report.fileId === e.id*/}
+                              {/*    ) && (*/}
+                              {/*      <a*/}
+                              {/*        target="_blank"*/}
+                              {/*        rel="noopener"*/}
+                              {/*        href={*/}
+                              {/*          reports.find(*/}
+                              {/*            (report) => report.fileId === e.id*/}
+                              {/*          ).link*/}
+                              {/*        }*/}
+                              {/*      >*/}
+                              {/*        {"View Report"}*/}
+                              {/*      </a>*/}
+                              {/*    )}*/}
+                              {/*</p>*/}
+                            </div>
                           </h3>
                         </Grid>
                         {i !== experimentData.files.length - 1 ? (
