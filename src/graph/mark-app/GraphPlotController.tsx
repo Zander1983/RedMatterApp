@@ -700,6 +700,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onResize = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
 
+    if (!(newWorkspaceState as any).files[change.fileId]) {
+      // so its a non-control gate being edited, copy plots from control
+      //@ts-ignore
+      (newWorkspaceState as any).files[fileKey] = {
+        plots: JSON.parse(
+          JSON.stringify(
+            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+              .plots
+          )
+        ),
+      };
+    }
+
     Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
       if (fileId == change.fileId) {
         //@ts-ignore
