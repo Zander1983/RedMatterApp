@@ -1011,8 +1011,8 @@ function Plot(props) {
                 <div
                   style={{
                     border: "1px solid #32a1ce",
-                    minHeight: 250,
-                    minWidth: 236,
+                    minHeight: 200,
+                    minWidth: 200,
                     width: `${props.plot.width}px`,
                     height: `${props.plot.height}px`,
                     resize: "both",
