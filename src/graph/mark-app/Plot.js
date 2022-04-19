@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
-
+import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -51,6 +51,7 @@ let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
+let interval = null;
 
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
@@ -85,6 +86,51 @@ function Plot(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
+
+  const [size, setSize] = useState({
+    w: props.plot.width,
+    h: props.plot.height,
+  });
+
+  useEffect(() => {}, [props.plot.width, props.plot.height]);
+
+  const onResizeDiv = useCallback(
+    (w, h) => {
+      if (w == size.w && h == size.h) return;
+      if (interval) clearTimeout(interval);
+      interval = setTimeout(() => {
+        drawLabel();
+        let tempPlot = { ...localPlot, ...{ width: w, height: h } };
+        let change = {
+          type: tempPlot.plotType,
+          height: tempPlot.height,
+          width: tempPlot.width,
+          plotIndex: props.plotIndex.split("-")[1],
+          fileId: props.enrichedFile.fileId,
+        };
+        let setW = w;
+        if (props.plot.width != w) setW = setW - 2;
+        let setH = h;
+        if (props.plot.height != h) setH = setH - 2;
+
+        setSize({ w: setW, h: setH });
+        props.onResize(change);
+        clearTimeout(interval);
+      }, 1500);
+    },
+    [size]
+  );
+
+  const { ref } = useResizeDetector({
+    onResize: onResizeDiv,
+    skipOnMount: true,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(interval);
+    };
+  }, []);
 
   useEffect(() => {
     setLocalPlot(props.plot);
@@ -542,7 +588,7 @@ function Plot(props) {
       plotIndex: props.plotIndex.split("-")[1],
     };
 
-    props.onResize(change);
+    //props.onResize(change);
   };
 
   const handleResizeMouseMove = (event) => {
@@ -954,7 +1000,7 @@ function Plot(props) {
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
-                  height={localPlot.height}
+                  height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
                   width={25}
                   style={{
@@ -965,16 +1011,20 @@ function Plot(props) {
                 <div
                   style={{
                     border: "1px solid #32a1ce",
-                    width: `${localPlot.width}px`,
-                    height: `${localPlot.height}px`,
+                    minHeight: 250,
+                    minWidth: 236,
+                    width: `${props.plot.width}px`,
+                    height: `${props.plot.height}px`,
+                    resize: "both",
+                    overflow: "hidden",
                   }}
-                  // ref={ref}
+                  ref={ref}
                 >
                   <canvas
                     className="canvas"
                     id={`canvas-${props.plotIndex}`}
-                    width={localPlot.width}
-                    height={localPlot.height}
+                    width={props.plot.width}
+                    height={props.plot.height}
                     onMouseDown={(e) => {
                       let nativeEvent = e.nativeEvent;
                       handleMouseDown(nativeEvent);
@@ -996,7 +1046,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 50}
+                width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{
