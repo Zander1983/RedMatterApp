@@ -51,7 +51,7 @@ let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
-
+let interval = null;
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
 function useTraceUpdate(props) {
@@ -86,32 +86,31 @@ function Plot(props) {
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
 
-  const [size, setSize] = useState({
-    w: props.plot.width,
-    h: props.plot.height,
-  });
+  const [resizing, setResizing] = useState(false);
 
   const onResizeDiv = useCallback(
     (w, h) => {
       if (w == props.plot.width && h == props.plot.height) return;
       drawLabel();
-      let tempPlot = { ...props.plot, ...{ width: w, height: h } };
-      let change = {
-        type: tempPlot.plotType,
-        height: tempPlot.height,
-        width: tempPlot.width,
-        plotIndex: props.plotIndex.split("-")[1],
-        fileId: props.enrichedFile.fileId,
-      };
-      props.onResize(change);
+      setResizing(true);
+      if (interval) clearTimeout(interval);
+      interval = setTimeout(() => {
+        let tempPlot = { ...props.plot, ...{ width: w, height: h } };
+        let change = {
+          type: tempPlot.plotType,
+          height: tempPlot.height,
+          width: tempPlot.width,
+          plotIndex: props.plotIndex.split("-")[1],
+          fileId: props.enrichedFile.fileId,
+        };
+        props.onResize(change);
+      }, 1500);
     },
     [props.plot]
   );
 
   const { ref } = useResizeDetector({
     onResize: onResizeDiv,
-    refreshMode: "debounce",
-    refreshRate: 1500,
     skipOnMount: true,
   });
 
@@ -120,6 +119,13 @@ function Plot(props) {
   }, [props.plot]);
 
   useEffect(() => {
+    return () => {
+      clearTimeout(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (resizing) setResizing(false);
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -643,7 +649,10 @@ function Plot(props) {
     } else {
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
-      if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+      if (
+        props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        !resizing
+      ) {
         newGatePointsCanvas.forEach((newGatePointCanvas) => {
           if (
             inRange(
