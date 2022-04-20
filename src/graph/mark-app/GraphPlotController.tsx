@@ -575,18 +575,26 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
 
       if (sortType === ASC_SORT) {
-        if (gateStat1.count > gateStat2.count) {
+        if (
+          parseFloat(gateStat1.percentage) > parseFloat(gateStat2.percentage)
+        ) {
           return 1;
-        } else if (gateStat1.count < gateStat2.count) {
+        } else if (
+          parseFloat(gateStat1.percentage) < parseFloat(gateStat2.percentage)
+        ) {
           return -1;
         } else {
           return 0;
         }
       } else {
         // do desc
-        if (gateStat1.count < gateStat2.count) {
+        if (
+          parseFloat(gateStat1.percentage) < parseFloat(gateStat2.percentage)
+        ) {
           return 1;
-        } else if (gateStat1.count > gateStat2.count) {
+        } else if (
+          parseFloat(gateStat1.percentage) > parseFloat(gateStat2.percentage)
+        ) {
           return -1;
         } else {
           return 0;

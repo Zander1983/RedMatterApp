@@ -126,25 +126,13 @@ function Table(props) {
                       }}
                     >
                       {plot.population !== "All"
-                        ? `${
-                            controlEnrichedFile?.gateStats
-                              .filter((gateStat) => {
-                                return gateStat.gateName === plot.population;
-                              })
-                              .map((gateStat) => {
-                                return gateStat && gateStat.percentage;
-                              }).length === 0
-                              ? "0.00"
-                              : controlEnrichedFile?.gateStats
-                                  .filter((gateStat) => {
-                                    return (
-                                      gateStat.gateName === plot.population
-                                    );
-                                  })
-                                  .map((gateStat) => {
-                                    return gateStat && gateStat.percentage;
-                                  })
-                          }%`
+                        ? `${controlEnrichedFile?.gateStats
+                            .filter((gateStat) => {
+                              return gateStat.gateName === plot.population;
+                            })
+                            .map((gateStat) => {
+                              return gateStat && gateStat.percentage;
+                            })}%`
                         : controlEnrichedFile?.label}
                     </div>
                   </Tooltip>
@@ -383,30 +371,15 @@ function Table(props) {
                             }}
                           >
                             {plot.population !== "All"
-                              ? `${
-                                  enrichedFile.gateStats
-                                    .filter((gateStat) => {
-                                      return (
-                                        gateStat.gateName === plot.population
-                                      );
-                                    })
-                                    .map((gateStat) => {
-                                      return gateStat && gateStat.percentage;
-                                    }).length === 0
-                                    ? "0.00"
-                                    : enrichedFile.gateStats
-                                        .filter((gateStat) => {
-                                          return (
-                                            gateStat.gateName ===
-                                            plot.population
-                                          );
-                                        })
-                                        .map((gateStat) => {
-                                          return (
-                                            gateStat && gateStat.percentage
-                                          );
-                                        })
-                                }%`
+                              ? `${enrichedFile.gateStats
+                                  .filter((gateStat) => {
+                                    return (
+                                      gateStat.gateName === plot.population
+                                    );
+                                  })
+                                  .map((gateStat) => {
+                                    return gateStat && gateStat.percentage;
+                                  })}%`
                               : enrichedFile.label}
                           </div>
                         </Tooltip>
