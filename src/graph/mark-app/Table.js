@@ -98,8 +98,8 @@ function Table(props) {
         ></div>
       </div>
       <table className="workspace">
-        <tbody style={{ width: "100%" }}>
-          <tr>
+        <tbody style={{ maxWidth: "100%" }}>
+          <tr style={{ display: "flex", flexWrap: "wrap" }}>
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th
@@ -259,6 +259,11 @@ function Table(props) {
           <tr
             style={{
               border: "1px solid gray",
+              margin: 1,
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+              marginBottom: 5,
             }}
           >
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
@@ -268,9 +273,10 @@ function Table(props) {
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
-                    minWidth: 275,
+                    minWidth: plot.width + 170,
                     padding: 5,
-                    borderInline: "1px solid gray",
+                    margin: 0.5,
+                    border: "1px solid gray",
                   }}
                 >
                   <div
@@ -331,10 +337,12 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
-                  // border: editedFileIds.includes(enrichedFile.fileId)
-                  //   ? "4px solid #FCBA05"
-                  //   : "1px solid gray",
                   border: "1px solid gray",
+                  margin: 1,
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  marginBottom: 5,
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
@@ -342,13 +350,16 @@ function Table(props) {
                     <td
                       key={`td-${plotIindex + 1}`}
                       id={`entire-canvas-${fileIndex + 1}-${plotIindex}`}
-                      style={{ padding: 5, borderInline: "1px solid gray" }}
+                      style={{
+                        margin: 0.5,
+                        border: "1px solid gray",
+                        minWidth: plot.width + 170,
+                      }}
                     >
                       <div
                         style={{
                           textAlign: "center",
                           fontWeight: "bold",
-                          minWidth: 275,
                         }}
                       >
                         <Tooltip
