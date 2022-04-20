@@ -72,13 +72,13 @@ const AddFileModal = React.memo(
 
     const onSetControl = (FileId: any, isDownloading = false) => {
       // eventStacker(`A plot added on experimentID: ${props.experimentId} from file ${FileId}.`);
-      if (name?.length === 0) {
+      if (!name) {
         setErrorMessage("Name is Required.");
         setNameError(true);
-      } else if (name?.length <= 1) {
+      } else if (name && name.length < 1) {
         setErrorMessage("Name must be greater than 1 char.");
         setNameError(true);
-      } else {
+      } else if (name) {
         let isSavePermitted = true;
         if (getWorkspace()?.pipelines?.length > 1) {
           const isHasIndex = getWorkspace()?.pipelines?.findIndex(
