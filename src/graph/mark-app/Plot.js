@@ -77,6 +77,8 @@ function Plot(props) {
   //useTraceUpdate({ ...props, localPlot });
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [eventsOutOfCanvasPercentage, setEventsOutOfCanvasPercentage] =
+    useState(0);
   const [gateName, setGateName] = useState({
     name: "",
     error: false,
@@ -85,26 +87,47 @@ function Plot(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
-
+  let pointsOutsideCanvasCount = 0;
   useEffect(() => {
     setLocalPlot(props.plot);
   }, [props.plot]);
 
+  const pointsOutside = [];
   useEffect(() => {
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
-
     props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
       if (context) {
         getFormattedEvents(enrichedEvent, localPlot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
             context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
+            if (
+              formattedEvent[0] > localPlot.width ||
+              formattedEvent[0] < 2 ||
+              formattedEvent[1] > localPlot.height ||
+              formattedEvent[1] < 2
+            ) {
+              pointsOutside.push([formattedEvent[0], formattedEvent[1]]);
+              pointsOutsideCanvasCount++;
+            }
           }
         );
       }
     });
+
+    try {
+      setEventsOutOfCanvasPercentage(
+        (
+          (pointsOutsideCanvasCount /
+            props.enrichedFile.enrichedEvents.length) *
+          100
+        ).toFixed(0)
+      );
+    } catch (e) {
+      setEventsOutOfCanvasPercentage(0);
+    }
 
     drawLabel();
 
@@ -946,6 +969,7 @@ function Plot(props) {
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
           downloadPlotAsImage={props.downloadPlotAsImage}
+          eventsOutOfCanvasPercentage={eventsOutOfCanvasPercentage}
           canvasComponent={
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex" }}>
