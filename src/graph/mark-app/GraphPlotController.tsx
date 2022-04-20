@@ -703,7 +703,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (!(newWorkspaceState as any).files[change.fileId]) {
       // so its a non-control gate being edited, copy plots from control
       //@ts-ignore
-      (newWorkspaceState as any).files[fileKey] = {
+      (newWorkspaceState as any).files[change.fileId] = {
         plots: JSON.parse(
           JSON.stringify(
             (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
@@ -716,10 +716,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
       if (fileId == change.fileId) {
         //@ts-ignore
-        newWorkspaceState.files[fileId].plots[+change.plotIndex].width =
-          +change.width;
-        newWorkspaceState.files[fileId].plots[+change.plotIndex].height =
-          +change.height;
+        newWorkspaceState.files[fileId].plots[change.plotIndex].width =
+          change.width;
+        newWorkspaceState.files[fileId].plots[change.plotIndex].height =
+          change.height;
       }
     });
 

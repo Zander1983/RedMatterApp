@@ -51,7 +51,6 @@ let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
-let interval = null;
 
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
@@ -92,45 +91,29 @@ function Plot(props) {
     h: props.plot.height,
   });
 
-  useEffect(() => {}, [props.plot.width, props.plot.height]);
-
   const onResizeDiv = useCallback(
     (w, h) => {
-      if (w == size.w && h == size.h) return;
-      if (interval) clearTimeout(interval);
-      interval = setTimeout(() => {
-        drawLabel();
-        let tempPlot = { ...localPlot, ...{ width: w, height: h } };
-        let change = {
-          type: tempPlot.plotType,
-          height: tempPlot.height,
-          width: tempPlot.width,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
-        };
-        let setW = w;
-        if (props.plot.width != w) setW = setW - 2;
-        let setH = h;
-        if (props.plot.height != h) setH = setH - 2;
-
-        setSize({ w: setW, h: setH });
-        props.onResize(change);
-        clearTimeout(interval);
-      }, 1500);
+      if (w == props.plot.width && h == props.plot.height) return;
+      drawLabel();
+      let tempPlot = { ...props.plot, ...{ width: w, height: h } };
+      let change = {
+        type: tempPlot.plotType,
+        height: tempPlot.height,
+        width: tempPlot.width,
+        plotIndex: props.plotIndex.split("-")[1],
+        fileId: props.enrichedFile.fileId,
+      };
+      props.onResize(change);
     },
-    [size]
+    [props.plot]
   );
 
   const { ref } = useResizeDetector({
     onResize: onResizeDiv,
+    refreshMode: "debounce",
+    refreshRate: 1500,
     skipOnMount: true,
   });
-
-  useEffect(() => {
-    return () => {
-      clearTimeout(interval);
-    };
-  }, []);
 
   useEffect(() => {
     setLocalPlot(props.plot);
@@ -1009,12 +992,15 @@ function Plot(props) {
                 />
                 {/* main canvas */}
                 <div
+                  id={"div-resize-" + props.plotIndex}
+                  name={"div-resize-" + props.plotIndex}
+                  key={"div-resize-" + props.plotIndex}
                   style={{
                     border: "1px solid #32a1ce",
-                    minHeight: 200,
-                    minWidth: 200,
-                    width: `${props.plot.width}px`,
-                    height: `${props.plot.height}px`,
+                    minHeight: 202,
+                    minWidth: 202,
+                    width: `${props.plot.width + 2}px`,
+                    height: `${props.plot.height + 2}px`,
                     resize: "both",
                     overflow: "hidden",
                   }}
