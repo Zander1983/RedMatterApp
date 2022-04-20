@@ -262,18 +262,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[
-        fileIds[i]
-      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
-        (plt: any) => {
-          if (plt.population === plot.population) {
-            const { gate, ...plotWithOutGate } = plt;
-            return plotWithOutGate;
-          } else {
-            return plt;
-          }
+      (newWorkspaceState as any).files[fileIds[i]].plots = (
+        newWorkspaceState as any
+      ).files[fileIds[i]].plots.map((plt: any) => {
+        if (plt.population === plot.population) {
+          const { gate, ...plotWithOutGate } = plt;
+          return plotWithOutGate;
+        } else {
+          return plt;
         }
-      );
+      });
     }
 
     let copyOfFiles: any[] = getWorkspace().files;
@@ -299,9 +297,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[
-        plotIndex
-      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -322,9 +319,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[
-      change.plotIndex
-    ] = JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
+      JSON.parse(JSON.stringify(change.plot));
 
     let copyOfFiles: any[] = getWorkspace().files;
     // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
@@ -345,79 +341,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   downloadPlotAsImage = async (plot: any, plotIndex: any) => {
-    // selecting the canvas from dom
-    const canvas: HTMLCanvasElement = document.getElementById(
-      "canvas-" + plotIndex
-    ) as HTMLCanvasElement;
-
-    const context: CanvasRenderingContext2D = canvas.getContext("2d");
-    context.fillStyle = "blue";
-    // x-axis
-    context.fillStyle = "white";
-    context.fillRect(20, 185, plot.xAxisLabel.length * 7, 10);
-    context.font = "12px Roboto";
-    context.fillStyle = "black";
-    context.fillText(`${plot.xAxisLabel}`, 20, 195);
-
-    context.fillStyle = "white";
-    context.fillRect(150, 185, 40, 10);
-    context.font = "12px Roboto";
-    context.fillStyle = "black";
-    context.fillText(
-      `${plot.xScaleType === "lin" ? "Linear" : "Logicle"}`,
-      150,
-      195
-    );
-    // plot name
-    context.fillStyle = "white";
-    context.fillRect(50, 10, (plot.population.length + 9) * 7, 10);
-    context.font = "12px Roboto";
-    context.fillStyle = "black";
-    context.fillText(`Plot Name: ${plot.population}`, 50, 20);
-    context.save();
-
-    // y-axis
-    context.translate(10, 50);
-    context.rotate(-0.5 * Math.PI);
-    context.fillStyle = "white";
-    context.fillRect(0, -10, 40, 10);
-    context.font = "12px Roboto";
-    context.fillStyle = "black";
-    context.fillText(
-      `${plot.yScaleType === "lin" ? "Linear" : "Logicle"}`,
-      0,
-      0
-    );
-    context.restore();
-    context.save();
-    context.translate(10, 180);
-    context.rotate(-0.5 * Math.PI);
-    context.fillStyle = "white";
-    context.fillRect(0, -10, plot.yAxisLabel.length * 7, 10);
-    context.font = "12px Roboto";
-    context.fillStyle = "black";
-    context.fillText(`${plot.yAxisLabel}`, 0, 0);
-    context.restore();
-
     // downloading functionality
-    const dataUrl = await htmlToImage.toPng(
-      document.getElementById(`entire-canvas-${plotIndex}`)
-    );
+    const plotElement = document.getElementById(`entire-canvas-${plotIndex}`);
+    const dataUrl = await htmlToImage.toSvg(plotElement);
     var link = document.createElement("a");
     link.download = `${plot.population}`;
     link.href = dataUrl;
     link.click();
-
-    // re-draw
-    let newWorkspaceState: any = this.state.workspaceState;
-    let copyOfFiles: any[] = getWorkspace().files;
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
-    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    this.setState({
-      enrichedFiles: enrichedFiles,
-      workspaceState: newWorkspaceState,
-    });
   };
 
   onResetToControl = (fileId: string) => {
