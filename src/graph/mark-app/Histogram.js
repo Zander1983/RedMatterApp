@@ -63,7 +63,6 @@ const getMultiArrayMinMax = (data, prop) => {
 
 const linspace = (a, b, n) => {
   if (typeof n === "undefined") n = Math.max(Math.round(b - a) + 1, 1);
-  n = Math.round(n);
   if (n < 2) {
     return n === 1 ? [a] : [];
   }
@@ -313,8 +312,8 @@ function Histogram(props) {
       let overlayFileIndex = 0;
 
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
-        let overlayEnrichedFileData =
-          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
+        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
+          (enrichedEvent, index) => {
             if (
               props.plot.population == "All" ||
               enrichedEvent["isInGate" + props.plot.population]
@@ -331,7 +330,8 @@ function Histogram(props) {
             } else {
               return [];
             }
-          });
+          }
+        );
 
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
@@ -879,7 +879,10 @@ function Histogram(props) {
           allFileMinObj={props.allFileMinObj}
           downloadPlotAsImage={props.downloadPlotAsImage}
           canvasComponent={
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              id={`entire-canvas-${props.plotIndex}`}
+              style={{ display: "flex", flexDirection: "column" }}
+            >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
 
@@ -887,6 +890,9 @@ function Histogram(props) {
                   height={props.plot.height}
                   id={`canvas-${props.plotIndex}-yAxis`}
                   width={25}
+                  style={{
+                    background: "#FAFAFA",
+                  }}
                 />
                 {/* main canvas */}
                 <div
@@ -958,7 +964,7 @@ function Histogram(props) {
                 width={props.plot.width + 50}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
-                style={{ marginLeft: 25 }}
+                style={{ background: "#FAFAFA", marginLeft: 25 }}
               />
             </div>
           }
