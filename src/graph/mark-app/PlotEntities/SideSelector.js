@@ -17,6 +17,7 @@ function SideSelector(props) {
     else return "transparent";
   };
 
+  console.log(props?.eventsOutOfCanvasPercentage);
   return (
     <div
       style={{
@@ -162,7 +163,7 @@ function SideSelector(props) {
             </Tooltip>
           )}
         </div>
-        <p
+        {/* <p
           style={{
             height: 8,
             margin: 0,
@@ -174,9 +175,9 @@ function SideSelector(props) {
             marginBottom: 3,
           }}
         >
-          {props.eventsOutOfCanvasPercentage !== "0" &&
-            `Warning: ${props.eventsOutOfCanvasPercentage}% of the events are on chart edges!`}
-        </p>
+          {props?.eventsOutOfCanvasPercentage !== "0" &&
+            `Warning: ${props?.eventsOutOfCanvasPercentage}% of the events are on chart edges!`}
+        </p> */}
         {props.canvasComponent}
         <div
           style={{
