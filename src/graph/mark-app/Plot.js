@@ -1007,8 +1007,8 @@ function Plot(props) {
                   key={"div-resize-" + props.plotIndex}
                   style={{
                     border: "1px solid #32a1ce",
-                    minHeight: 202,
-                    minWidth: 202,
+                    minHeight: 200,
+                    minWidth: 200,
                     width: `${props.plot.width + 2}px`,
                     height: `${props.plot.height + 2}px`,
                     resize: "both",

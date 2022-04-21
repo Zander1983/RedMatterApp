@@ -195,7 +195,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     newPlot.population = change.plot.gate.name;
     // for histograms
     newPlot.color = change.plot.gate.color;
-
+    newPlot.width = 200;
+    newPlot.height = 200;
     // set the passed up plot to be in the state
     let gatedPlot = JSON.parse(JSON.stringify(change.plot));
 
