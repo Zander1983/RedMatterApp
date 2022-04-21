@@ -1031,6 +1031,7 @@ function Plot(props) {
                     }}
                     onMouseUp={(e) => {
                       let nativeEvent = e.nativeEvent;
+
                       handleMouseUp(nativeEvent);
                     }}
                     onMouseLeave={(e) => {
