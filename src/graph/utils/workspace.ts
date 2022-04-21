@@ -99,20 +99,23 @@ export const saveWorkspaceStateToServer = async (
   pipelineId: string,
   stateData?: any
 ): Promise<boolean> => {
-  //let stateJson = JSON.stringify(getWorkspace().workspaceState);
-  let stateJson = stateData
-    ? JSON.stringify(stateData)
-    : JSON.stringify(getWorkspace().workspaceState || {});
-  const updateWorkSpace = WorkspacesApiFetchParamCreator({
-    accessToken: userManager.getToken(),
-  }).upsertWorkSpace(userManager.getToken(), {
-    experimentId: experimentId,
-    pipelineId: pipelineId,
-    state: stateJson,
-    isShared: shared,
-  });
-
   try {
+    if (!pipelineId || !experimentId) {
+      throw null;
+    }
+    //let stateJson = JSON.stringify(getWorkspace().workspaceState);
+    let stateJson = stateData
+      ? JSON.stringify(stateData)
+      : JSON.stringify(getWorkspace().workspaceState || {});
+    const updateWorkSpace = WorkspacesApiFetchParamCreator({
+      accessToken: userManager.getToken(),
+    }).upsertWorkSpace(userManager.getToken(), {
+      experimentId: experimentId,
+      pipelineId: pipelineId,
+      state: stateJson,
+      isShared: shared,
+    });
+
     const response = await axios.put(
       `/api/experiment/${experimentId}/pipeline`,
       updateWorkSpace.options.body,
