@@ -374,7 +374,8 @@ function Table(props) {
                           <div
                             style={{
                               whiteSpace: "nowrap",
-                              minWidth: plot.width + 170,
+                              width: plot.width + 170,
+                              maxWidth: plot.width + 170,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               textAlign: "center",

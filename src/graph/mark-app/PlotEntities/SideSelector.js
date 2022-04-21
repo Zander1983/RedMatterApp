@@ -16,8 +16,6 @@ function SideSelector(props) {
     if (color) return color;
     else return "transparent";
   };
-
-  console.log(props?.eventsOutOfCanvasPercentage);
   return (
     <div
       style={{
