@@ -596,6 +596,7 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    if (resizing) return;
     isMouseDown = true;
 
     if (hasGate()) {
@@ -636,6 +637,7 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (resizing) return;
     isMouseDown = false;
     dragPointIndex = false;
     if (hasGate()) {
@@ -649,10 +651,7 @@ function Plot(props) {
     } else {
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
-      if (
-        props.enrichedFile.fileId === getWorkspace().selectedFile &&
-        !resizing
-      ) {
+      if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
         newGatePointsCanvas.forEach((newGatePointCanvas) => {
           if (
             inRange(
@@ -690,6 +689,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
+    if (resizing) return;
     if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
