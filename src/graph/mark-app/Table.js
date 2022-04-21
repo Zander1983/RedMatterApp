@@ -178,6 +178,7 @@ function Table(props) {
                           addOverlay={props.addOverlay}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
+                          onResize={props.onResize}
                           enrichedFile={controlEnrichedFile}
                           enrichedOverlayFiles={enrichedOverlayFiles}
                           allFileMinObj={allFileMinObj}
@@ -448,6 +449,7 @@ function Table(props) {
                                 onAddGate={props.onAddGate}
                                 onEditGate={props.onEditGate}
                                 addOverlay={props.addOverlay}
+                                onResize={props.onResize}
                                 enrichedFile={enrichedFile}
                                 allFileMinObj={allFileMinObj}
                                 enrichedOverlayFiles={enrichedOverlayFiles}
