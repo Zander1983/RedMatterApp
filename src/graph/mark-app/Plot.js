@@ -93,6 +93,7 @@ function Plot(props) {
       if (w == props.plot.width && h == props.plot.height) return;
       drawLabel();
       setResizing(true);
+      isMouseDown = false;
       if (interval) clearTimeout(interval);
       interval = setTimeout(() => {
         let tempPlot = { ...props.plot, ...{ width: w, height: h } };
@@ -691,13 +692,6 @@ function Plot(props) {
   const handleMouseMove = (event) => {
     if (resizing) return;
     if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
-      startPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       let newPointsReal = getRealPointFromCanvasPoints(
