@@ -260,7 +260,8 @@ const Experiment = (props: any) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments =
+        data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -340,10 +341,8 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let {
-      requiredUpdateExperiments,
-      targetExperiment,
-    } = await getTargetExperiments(data, expId);
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -372,10 +371,8 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let {
-      requiredUpdateExperiments,
-      targetExperiment,
-    } = await getTargetExperiments(data, expId);
+    let { requiredUpdateExperiments, targetExperiment } =
+      await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -1532,7 +1529,7 @@ const Experiment = (props: any) => {
                     </div>
                   );
                 })}
-                {Object.keys(experiment).length > 0 ? (
+                {Object.keys(experiment)?.length > 0 ? (
                   <>
                     <Divider style={{ marginBottom: 10 }}></Divider>
                     <Grid
@@ -1546,34 +1543,34 @@ const Experiment = (props: any) => {
                         <h1 style={{ fontWeight: 600, marginBottom: 0 }}>
                           Experiment Details
                         </h1>
-                        {experiment.details.device !== undefined ? (
-                          <h4>• Device: {experiment.details.device}</h4>
+                        {experiment?.details?.device !== undefined ? (
+                          <h4>• Device: {experiment?.details?.device}</h4>
                         ) : null}
-                        {experiment.details.cellType !== undefined ? (
-                          <h4>• Cell type: {experiment.details.cellType}</h4>
+                        {experiment?.details?.cellType !== undefined ? (
+                          <h4>• Cell type: {experiment?.details?.cellType}</h4>
                         ) : null}
-                        {experiment.details.particleSize !== undefined ? (
+                        {experiment?.details?.particleSize !== undefined ? (
                           <h4>
-                            • Particle size: {experiment.details.particleSize}
+                            • Particle size: {experiment?.details?.particleSize}
                           </h4>
                         ) : null}
-                        {experiment.details.fluorophoresCategory !==
+                        {experiment?.details?.fluorophoresCategory !==
                         undefined ? (
                           <h4>
                             • Fluorophores category:{" "}
-                            {experiment.details.fluorophoresCategory}
+                            {experiment?.details?.fluorophoresCategory}
                           </h4>
                         ) : null}
-                        {experiment.details.description !== undefined ? (
+                        {experiment?.details?.description !== undefined ? (
                           <h4>
-                            • Description: {experiment.details.description}
+                            • Description: {experiment?.details?.description}
                           </h4>
                         ) : null}
                       </div>
                     </Grid>
                   </>
                 ) : null}
-                {getExperimentChannels().length > 0 ? (
+                {getExperimentChannels()?.length > 0 ? (
                   <>
                     <Divider style={{ marginBottom: 10 }}></Divider>
                     <Grid
