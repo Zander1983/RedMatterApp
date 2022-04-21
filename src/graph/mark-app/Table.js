@@ -351,7 +351,11 @@ function Table(props) {
                     <td
                       key={`td-${plotIindex + 1}`}
                       id={`entire-canvas-${fileIndex + 1}-${plotIindex}`}
-                      style={{ padding: 5, borderInline: "1px solid gray" }}
+                      style={{
+                        padding: 4,
+                        border: "1px solid gray",
+                        margin: 0.5,
+                      }}
                     >
                       <div
                         style={{
