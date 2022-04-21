@@ -132,30 +132,34 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          <img
-            src={cameraIcon}
-            alt={props.plot.id}
-            style={{
-              width: 15,
-              height: 15,
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              props.downloadPlotAsImage(props.plot, props.plotIndex)
-            }
-          />
-          {props.plot.gate && props.onDeleteGate && (
+          <Tooltip title={"download plot as svg"}>
             <img
-              src={deleteIcon}
+              src={cameraIcon}
               alt={props.plot.id}
               style={{
                 width: 15,
                 height: 15,
-                marginLeft: 30,
                 cursor: "pointer",
               }}
-              onClick={() => props.onDeleteGate(props.plot)}
+              onClick={() =>
+                props.downloadPlotAsImage(props.plot, props.plotIndex)
+              }
             />
+          </Tooltip>
+          {props.plot.gate && props.onDeleteGate && (
+            <Tooltip title={"delete the plot gate"}>
+              <img
+                src={deleteIcon}
+                alt={props.plot.id}
+                style={{
+                  width: 15,
+                  height: 15,
+                  marginLeft: 30,
+                  cursor: "pointer",
+                }}
+                onClick={() => props.onDeleteGate(props.plot)}
+              />
+            </Tooltip>
           )}
         </div>
         <p

@@ -274,7 +274,7 @@ function Table(props) {
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
-                    minWidth: plot.width + 170,
+                    minWidth: plot.width + 180,
                     padding: 5,
                     margin: 0.5,
                     border: "1px solid gray",
@@ -370,7 +370,7 @@ function Table(props) {
                           <div
                             style={{
                               whiteSpace: "nowrap",
-                              maxWidth: plot.width,
+                              minWidth: plot.width + 170,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               textAlign: "center",
