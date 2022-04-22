@@ -125,18 +125,21 @@ function CreateExperimentModal({
     );
     axios
       .post(req.url, req.options.body, req.options)
-      .then((response:any) => {
+      .then((response: any) => {
         if (response?.data?.level === "success") {
-          showMessageBox({message: "Experiment updated", saverity: "success"});
+          showMessageBox({
+            message: "Experiment updated",
+            saverity: "success",
+          });
           closeCall.f(closeCall.ref);
           created(response.data.id);
           // Clearing Data Can also be done here too...
           eventStacker(
-              "An experiment has been created.",
-              `The name of the experiment is ${name}`
+            "An experiment has been created.",
+            `The name of the experiment is ${name}`
           );
           setName("");
-        } else{
+        } else {
           showMessageBox({
             message: response?.data?.message || "Request Not Completed",
             saverity: "error",
@@ -150,8 +153,8 @@ function CreateExperimentModal({
 
   const handleError = async (error: any) => {
     if (
-        error?.name === "Error" ||
-        error?.message.toString() === "Network Error"
+      error?.name === "Error" ||
+      error?.message.toString() === "Network Error"
     ) {
       showMessageBox({
         message: "Connectivity Problem, please check your internet connection",
@@ -246,7 +249,9 @@ function CreateExperimentModal({
                         : "This Field is Required"
                     }
                     label="Experiment Name"
-                    onChange={(e) => onChangeValidator(e.target.value)}
+                    onChange={(e) =>
+                      onChangeValidator(e.target.value.trimLeft())
+                    }
                     onBlur={(e) => onBlurValidator(e.target.value)}
                     value={name}
                     className={classes.inputWidth}
