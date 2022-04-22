@@ -16,6 +16,9 @@ const WhyRedMatter = () => {
           accessible from anywhere.
         </DialogContentText>
         <DialogContentText component={"p"}>
+          Catalog, refer back to and re-analyse historic flow data.
+        </DialogContentText>
+        <DialogContentText component={"p"}>
           Upload all your old FlowJo workspace files - instantly bring all your
           old analysis online.
         </DialogContentText>
