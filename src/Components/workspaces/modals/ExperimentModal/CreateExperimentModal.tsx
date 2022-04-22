@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { deviceData } from "assets/staticData/CreateExperimentModalData";
-
+import { useHistory } from "react-router-dom";
 import userManager from "Components/users/userManager";
 import useGAEventTrackers from "hooks/useGAEvents";
 import { ExperimentApiFetchParamCreator } from "api_calls/nodejsback";
@@ -36,7 +36,7 @@ function CreateExperimentModal({
   userExperimentName,
 }: CreateExperimentType): JSX.Element {
   const classes = useStyles();
-
+  const history = useHistory();
   const [formData, setFormData] = useState(null);
   const rules: any = userManager.getRules();
 
@@ -125,23 +125,71 @@ function CreateExperimentModal({
     );
     axios
       .post(req.url, req.options.body, req.options)
-      .then((e) => {
-        closeCall.f(closeCall.ref);
-        created(e.data.id);
-        // Clearing Data Can also be done here too...
-        eventStacker(
-          "An experiment has been created.",
-          `The name of the experiment is ${name}`
-        );
-        setName("");
+      .then((response: any) => {
+        if (response?.data?.level === "success") {
+          showMessageBox({
+            message: "Experiment updated",
+            saverity: "success",
+          });
+          closeCall.f(closeCall.ref);
+          created(response.data.id);
+          // Clearing Data Can also be done here too...
+          eventStacker(
+            "An experiment has been created.",
+            `The name of the experiment is ${name}`
+          );
+          setName("");
+        } else {
+          showMessageBox({
+            message: response?.data?.message || "Request Not Completed",
+            saverity: "error",
+          });
+        }
       })
-      .catch((e) => {
-        console.log(e);
-        snackbarService.showSnackbar(
-          "Could not create experiment, reload the page and try again!",
-          "error"
-        );
+      .catch(async (err) => {
+        await handleError(err);
       });
+  };
+
+  const handleError = async (error: any) => {
+    if (
+      error?.name === "Error" ||
+      error?.message.toString() === "Network Error"
+    ) {
+      showMessageBox({
+        message: "Connectivity Problem, please check your internet connection",
+        saverity: "error",
+      });
+    } else if (error?.response) {
+      if (error.response?.status == 401 || error.response.status == 419) {
+        setTimeout(() => {
+          userManager.logout();
+          history.replace("/login");
+        }, 3000);
+        showMessageBox({
+          message: "Authentication Failed Or Session Time out",
+          saverity: "error",
+        });
+      }
+    } else {
+      showMessageBox({
+        message: error?.message || "Request Failed. May be Time out",
+        saverity: error.saverity || "error",
+      });
+    }
+  };
+
+  const showMessageBox = (response: any) => {
+    switch (response.saverity) {
+      case "error":
+        snackbarService.showSnackbar(response?.message, "error");
+        break;
+      case "success":
+        snackbarService.showSnackbar(response?.message, "success");
+        break;
+      default:
+        break;
+    }
   };
 
   //THIS FUNCTION VALIDATES THAT REQUIRED FIELDS ARE NOT EMPTY AND OPENS THE SUMMARY DIALOG
@@ -201,7 +249,9 @@ function CreateExperimentModal({
                         : "This Field is Required"
                     }
                     label="Experiment Name"
-                    onChange={(e) => onChangeValidator(e.target.value)}
+                    onChange={(e) =>
+                      onChangeValidator(e.target.value.trimLeft())
+                    }
                     onBlur={(e) => onBlurValidator(e.target.value)}
                     value={name}
                     className={classes.inputWidth}
