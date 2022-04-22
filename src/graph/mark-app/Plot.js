@@ -1030,7 +1030,7 @@ function Plot(props) {
                     minWidth: 200,
                     width: `${props.plot.width + 2}px`,
                     height: `${props.plot.height + 2}px`,
-                    // resize: "both",
+                    resize: "both",
                     overflow: "hidden",
                   }}
                   ref={ref}
