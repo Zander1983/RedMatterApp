@@ -900,7 +900,7 @@ function Histogram(props) {
                     border: "1px solid #32a1ce",
                     width: props.plot.width + 2,
                     height: props.plot.height + 2,
-                    resize: "both",
+                    // resize: "both",
                     overflow: "hidden",
                   }}
                   ref={ref}
