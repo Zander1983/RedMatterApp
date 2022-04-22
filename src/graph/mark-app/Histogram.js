@@ -202,22 +202,22 @@ function Histogram(props) {
 
   const onResizeDiv = useCallback(
     (w, h) => {
-      if (w == props.plot.width && h == props.plot.height) return;
-      if (maxCountPlusTenPercent_Value) drawLabel(maxCountPlusTenPercent_Value);
-      setResizing(true);
-      isMouseDown = false;
-      if (interval) clearTimeout(interval);
-      interval = setTimeout(() => {
-        let tempPlot = { ...props.plot, ...{ width: w, height: h } };
-        let change = {
-          type: tempPlot.plotType,
-          height: tempPlot.height,
-          width: tempPlot.width,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
-        };
-        props.onResize(change);
-      }, 1500);
+      // if (w == props.plot.width && h == props.plot.height) return;
+      // if (maxCountPlusTenPercent_Value) drawLabel(maxCountPlusTenPercent_Value);
+      // setResizing(true);
+      // isMouseDown = false;
+      // if (interval) clearTimeout(interval);
+      // interval = setTimeout(() => {
+      //   let tempPlot = { ...props.plot, ...{ width: w, height: h } };
+      //   let change = {
+      //     type: tempPlot.plotType,
+      //     height: tempPlot.height,
+      //     width: tempPlot.width,
+      //     plotIndex: props.plotIndex.split("-")[1],
+      //     fileId: props.enrichedFile.fileId,
+      //   };
+      //   props.onResize(change);
+      // }, 1500);
     },
     [props.plot]
   );
