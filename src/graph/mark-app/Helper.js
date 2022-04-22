@@ -830,7 +830,7 @@ export const getBins = (width, height, scale) => {
   horizontalBinCount = Math.max(2, horizontalBinCount);
   verticalBinCount = Math.max(2, verticalBinCount);
 
-  return [verticalBinCount, horizontalBinCount];
+  return [horizontalBinCount, verticalBinCount];
 };
 
 export const isGateShowing = (plot) => {
