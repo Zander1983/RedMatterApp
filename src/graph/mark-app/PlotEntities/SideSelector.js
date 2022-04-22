@@ -1,7 +1,6 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
 import cameraIcon from "./../../../assets/images/camera.png";
-import { getPointColors } from "graph/resources/plots";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -161,7 +160,7 @@ function SideSelector(props) {
             </Tooltip>
           )}
         </div>
-        {/* <p
+        <p
           style={{
             height: 8,
             margin: 0,
@@ -173,9 +172,10 @@ function SideSelector(props) {
             marginBottom: 3,
           }}
         >
-          {props?.eventsOutOfCanvasPercentage !== "0" &&
+          {props?.eventsOutOfCanvasPercentage &&
+            props?.eventsOutOfCanvasPercentage !== "Not Defined" &&
             `Warning: ${props?.eventsOutOfCanvasPercentage}% of the events are on chart edges!`}
-        </p> */}
+        </p>
         {props.canvasComponent}
         <div
           style={{

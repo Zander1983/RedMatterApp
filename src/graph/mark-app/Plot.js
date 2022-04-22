@@ -155,15 +155,15 @@ function Plot(props) {
     });
 
     try {
+      const percentage = (
+        (pointsOutsideCanvasCount / props.enrichedFile.enrichedEvents.length) *
+        100
+      ).toFixed(2);
       setEventsOutOfCanvasPercentage(
-        (
-          (pointsOutsideCanvasCount /
-            props.enrichedFile.enrichedEvents.length) *
-          100
-        ).toFixed(0)
+        percentage === "0.00" ? "Not Defined" : percentage
       );
     } catch (e) {
-      setEventsOutOfCanvasPercentage(0);
+      setEventsOutOfCanvasPercentage("Not Defined");
     }
 
     drawLabel();
