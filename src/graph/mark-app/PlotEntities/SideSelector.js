@@ -1,6 +1,7 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
 import cameraIcon from "./../../../assets/images/camera.png";
+import { getPointColors } from "graph/resources/plots";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -15,6 +16,7 @@ function SideSelector(props) {
     if (color) return color;
     else return "transparent";
   };
+
   return (
     <div
       style={{
@@ -29,8 +31,6 @@ function SideSelector(props) {
         style={{
           display: "flex",
           alignItems: "center",
-          width: "60px",
-          justifyContent: "center",
         }}
       >
         <div
@@ -53,7 +53,7 @@ function SideSelector(props) {
             <Select
               disableUnderline
               style={{
-                width: props.plot.height * 0.6,
+                width: props.plot.width * 0.6,
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
@@ -90,7 +90,7 @@ function SideSelector(props) {
           <Select
             disableUnderline
             style={{
-              width: props.plot.height * 0.35,
+              width: props.plot.width * 0.35,
               textAlign: "center",
               flex: "1 1 auto",
               fontSize: 12,
@@ -130,52 +130,32 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          <Tooltip title={"download plot as svg"}>
+          <img
+            src={cameraIcon}
+            alt={props.plot.id}
+            style={{
+              width: 15,
+              height: 15,
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              props.downloadPlotAsImage(props.plot, props.plotIndex)
+            }
+          />
+          {props.plot.gate && props.onDeleteGate && (
             <img
-              src={cameraIcon}
+              src={deleteIcon}
               alt={props.plot.id}
               style={{
                 width: 15,
                 height: 15,
+                marginLeft: 30,
                 cursor: "pointer",
               }}
-              onClick={() =>
-                props.downloadPlotAsImage(props.plot, props.plotIndex)
-              }
+              onClick={() => props.onDeleteGate(props.plot)}
             />
-          </Tooltip>
-          {props.plot.gate && props.onDeleteGate && (
-            <Tooltip title={"delete the plot gate"}>
-              <img
-                src={deleteIcon}
-                alt={props.plot.id}
-                style={{
-                  width: 15,
-                  height: 15,
-                  marginLeft: 30,
-                  cursor: "pointer",
-                }}
-                onClick={() => props.onDeleteGate(props.plot)}
-              />
-            </Tooltip>
           )}
         </div>
-        <p
-          style={{
-            height: 8,
-            margin: 0,
-            fontSize: 8,
-            color: "red",
-            textAlign: "left",
-            width: "100%",
-            marginLeft: "20%",
-            marginBottom: 3,
-          }}
-        >
-          {props?.eventsOutOfCanvasPercentage &&
-            props?.eventsOutOfCanvasPercentage !== "Not Defined" &&
-            `Warning: ${props?.eventsOutOfCanvasPercentage}% of the events are on chart edges!`}
-        </p>
         {props.canvasComponent}
         <div
           style={{

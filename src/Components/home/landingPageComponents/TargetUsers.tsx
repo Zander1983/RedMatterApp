@@ -37,14 +37,7 @@ const TargetUsers = () => {
   return (
     <Grid container className={classes.mainContainer} spacing={3}>
       {targetUserList.map((targetUser, i) => (
-        <Grid
-          key={i}
-          item
-          container
-          xs={12}
-          md={4}
-          className={classes.cardContainer}
-        >
+        <Grid key={i} item container xs={12} md={4} className={classes.cardContainer}>
           <Grid className={classes.imageContainer}>
             <img
               alt={targetUser.title}
@@ -66,20 +59,17 @@ const targetUserList = [
   {
     img: researcher,
     title: "Researchers",
-    text:
-      "Researchers can analyse their FCS files on any device, instantly share, and collaborate with other researchers.",
+    text: "Researchers can analyse their FCS files on any device, instantly share, and collaborate with other researchers.",
   },
   {
     img: lab,
     title: "Laboratories",
-    text:
-      "Laboratories can catalog and store all their historic flow data in the cloud. Red Matter provides smart algorithms to makes analysis of large amounts of files much more efficient.",
+    text: "Laboratories can access their data from any device (stored securely in the cloud) and analyse data remotely. Red Matter provides smart algorithms to makes analysis of large amounts of files much more efficient.",
   },
   {
     img: uni,
     title: "Universities",
-    text:
-      "Red Matter is designed to flatten the steep learning curve of flow cytometry data analysis, and so makes for a perfect tool for users starting out their journey with flow cytometry.",
+    text: "Red Matter is designed to flatten the steep learning curve of flow cytometry data analysis, and so makes for a perfect tool for users starting out their journey with flow cytometry.",
   },
 ];
 

@@ -1,8 +1,7 @@
 import { histogram } from "./HistogramHelper";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
 import Modal from "react-modal";
-import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -18,7 +17,7 @@ import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
 let dragPointIndex = false;
-let interval = null;
+
 const hasGate = (plot) => {
   return !!plot.gate;
 };
@@ -63,7 +62,6 @@ const getMultiArrayMinMax = (data, prop) => {
 
 const linspace = (a, b, n) => {
   if (typeof n === "undefined") n = Math.max(Math.round(b - a) + 1, 1);
-  n = Math.round(n);
   if (n < 2) {
     return n === 1 ? [a] : [];
   }
@@ -196,36 +194,6 @@ function Histogram(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
-  const [maxCountPlusTenPercent_Value, setMaxCountPlusTenPercent_Value] =
-    useState();
-  const [resizing, setResizing] = useState(false);
-
-  const onResizeDiv = useCallback(
-    (w, h) => {
-      if (w == props.plot.width && h == props.plot.height) return;
-      if (maxCountPlusTenPercent_Value) drawLabel(maxCountPlusTenPercent_Value);
-      setResizing(true);
-      isMouseDown = false;
-      if (interval) clearTimeout(interval);
-      interval = setTimeout(() => {
-        let tempPlot = { ...props.plot, ...{ width: w, height: h } };
-        let change = {
-          type: tempPlot.plotType,
-          height: tempPlot.height,
-          width: tempPlot.width,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
-        };
-        props.onResize(change);
-      }, 1500);
-    },
-    [props.plot]
-  );
-
-  const { ref } = useResizeDetector({
-    onResize: onResizeDiv,
-    skipOnMount: true,
-  });
 
   useEffect(() => {
     if (startCanvasPoint && endCanvasPoint) {
@@ -242,13 +210,6 @@ function Histogram(props) {
   }, [startCanvasPoint, endCanvasPoint]);
 
   useEffect(() => {
-    return () => {
-      clearTimeout(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (resizing) setResizing(false);
     //setLocalPlot(props.plot);
     let paintHistArr = [];
     let context = getContext("canvas-" + props.plotIndex);
@@ -295,8 +256,6 @@ function Histogram(props) {
     let countYMinMax = getMultiArrayMinMax(hists, "y");
 
     let maxCountPlusTenPercent = countYMinMax.max * 1.1;
-
-    setMaxCountPlusTenPercent_Value(maxCountPlusTenPercent);
 
     paintHistArr.push({
       context: context,
@@ -357,7 +316,7 @@ function Histogram(props) {
       }
     }
     drawLabel(maxCountPlusTenPercent);
-    setMaxCountPlusTenPercent_Value(maxCountPlusTenPercent);
+
     for (let i = 0; i < paintHistArr.length; i++) {
       paintHist(
         paintHistArr[i].context,
@@ -686,7 +645,6 @@ function Histogram(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
-    if (resizing) return;
     isMouseDown = true;
 
     // draw histogram gate only if it is selected file
@@ -702,7 +660,6 @@ function Histogram(props) {
   };
 
   const handleMouseUp = (event) => {
-    if (resizing) return;
     isMouseDown = false;
     if (hasGate(props.plot) && isGateShowing(props?.plot)) {
       onEditGate();
@@ -890,20 +847,11 @@ function Histogram(props) {
                 />
                 {/* main canvas */}
                 <div
-                  id={"div-resize-" + props.plotIndex}
-                  name={"div-resize-" + props.plotIndex}
-                  key={"div-resize-" + props.plotIndex}
                   style={{
-                    minHeight: 200,
-                    minWidth: 200,
                     position: "relative",
-                    border: "1px solid #32a1ce",
-                    width: props.plot.width + 2,
-                    height: props.plot.height + 2,
-                    resize: "both",
-                    overflow: "hidden",
+                    width: props.plot.width,
+                    height: props.plot.height,
                   }}
-                  ref={ref}
                 >
                   <canvas
                     style={{
@@ -921,6 +869,7 @@ function Histogram(props) {
                     width={props.plot.width}
                     height={props.plot.height}
                     style={{
+                      border: "1px solid #32a1ce",
                       position: "absolute",
                       left: 0,
                       top: 0,

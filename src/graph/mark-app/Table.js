@@ -98,8 +98,8 @@ function Table(props) {
         ></div>
       </div>
       <table className="workspace">
-        <tbody style={{ maxWidth: "100%" }}>
-          <tr style={{ display: "flex", flexWrap: "wrap" }}>
+        <tbody style={{ width: "100%" }}>
+          <tr>
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th
@@ -178,7 +178,6 @@ function Table(props) {
                           addOverlay={props.addOverlay}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
-                          onResize={props.onResize}
                           enrichedFile={controlEnrichedFile}
                           enrichedOverlayFiles={enrichedOverlayFiles}
                           allFileMinObj={allFileMinObj}
@@ -260,11 +259,6 @@ function Table(props) {
           <tr
             style={{
               border: "1px solid gray",
-              margin: 1,
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginBottom: 5,
             }}
           >
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
@@ -274,10 +268,9 @@ function Table(props) {
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
-                    minWidth: plot.width + 180,
+                    minWidth: 275,
                     padding: 5,
-                    margin: 0.5,
-                    border: "1px solid gray",
+                    borderInline: "1px solid gray",
                   }}
                 >
                   <div
@@ -338,12 +331,10 @@ function Table(props) {
               <tr
                 key={`tr-${fileIndex}`}
                 style={{
+                  // border: editedFileIds.includes(enrichedFile.fileId)
+                  //   ? "4px solid #FCBA05"
+                  //   : "1px solid gray",
                   border: "1px solid gray",
-                  margin: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginBottom: 5,
                 }}
               >
                 {enrichedFile.plots.map((plot, plotIindex) => {
@@ -351,16 +342,13 @@ function Table(props) {
                     <td
                       key={`td-${plotIindex + 1}`}
                       id={`entire-canvas-${fileIndex + 1}-${plotIindex}`}
-                      style={{
-                        padding: 4,
-                        border: "1px solid gray",
-                        margin: 0.5,
-                      }}
+                      style={{ padding: 5, borderInline: "1px solid gray" }}
                     >
                       <div
                         style={{
                           textAlign: "center",
                           fontWeight: "bold",
+                          minWidth: 275,
                         }}
                       >
                         <Tooltip
@@ -374,8 +362,7 @@ function Table(props) {
                           <div
                             style={{
                               whiteSpace: "nowrap",
-                              width: plot.width + 170,
-                              maxWidth: plot.width + 170,
+                              maxWidth: plot.width,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               textAlign: "center",
@@ -454,7 +441,6 @@ function Table(props) {
                                 onAddGate={props.onAddGate}
                                 onEditGate={props.onEditGate}
                                 addOverlay={props.addOverlay}
-                                onResize={props.onResize}
                                 enrichedFile={enrichedFile}
                                 allFileMinObj={allFileMinObj}
                                 enrichedOverlayFiles={enrichedOverlayFiles}

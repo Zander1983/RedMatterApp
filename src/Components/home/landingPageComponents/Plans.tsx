@@ -112,7 +112,6 @@ export default function Plans(props: any) {
 
   const setValues = () => {
     let subscriptionDetails = userManager.getSubscriptionDetails();
-
     setSubscriptionDetails(subscriptionDetails);
   };
 
@@ -233,6 +232,7 @@ export default function Plans(props: any) {
                             plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
                           flex: 1,
                         }}
+                        disabled={plan.name === "Enterprise"}
                         onClick={() => {
                           handleUpdateSubscription(plan);
                         }}
@@ -250,14 +250,20 @@ export default function Plans(props: any) {
                       variant="contained"
                       className={classes.planButton}
                       style={{
-                        backgroundColor: "#6666A9",
+                        backgroundColor:
+                          plan.name === "Enterprise" ? "#8888BA" : "#6666A9",
                         flex: 1,
                       }}
+                      disabled={plan.name === "Enterprise"}
                       onClick={() => {
                         handleGetStarted(plan);
                       }}
                     >
-                      <b className={classes.white}>{"Get Started"}</b>
+                      <b className={classes.white}>
+                        {plan.name === "Enterprise"
+                          ? "Coming soon..."
+                          : "Get Started"}
+                      </b>
                     </Button>
                   )}
                 </Grid>

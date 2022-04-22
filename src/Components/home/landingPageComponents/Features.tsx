@@ -73,9 +73,8 @@ const featureList = [
     icon: <Cloud fontSize="large" style={{ color: "#66d" }} />,
   },
   {
-    title: "Catalogue",
-    description:
-      "All flow data is cataloged and stored in one place. This makes it easier for new laboratory workers to refer back to historic data, and for re-analysis of historic data.",
+    title: "Shared experiments",
+    description: "You may share your experiments with other researchers",
     icon: <Language fontSize="large" style={{ color: "#8a27b3" }} />,
   },
   {
