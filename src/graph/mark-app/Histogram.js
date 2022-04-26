@@ -201,7 +201,12 @@ function Histogram(props) {
   const [resizing, setResizing] = useState(false);
 
   const onResizeDiv = useCallback(
-    (w, h) => {
+    (wid, hei) => {
+      let node = document.getElementById(`div-resize-${props.plotIndex}`);
+      let widthStr = node.style.width;
+      let heightStr = node.style.height;
+      let w = parseInt(widthStr.substring(0, widthStr.length - 2));
+      let h = parseInt(heightStr.substring(0, heightStr.length - 2));
       if (w == props.plot.width && h == props.plot.height) return;
       if (maxCountPlusTenPercent_Value) drawLabel(maxCountPlusTenPercent_Value);
       setResizing(true);
@@ -904,8 +909,8 @@ function Histogram(props) {
                     minWidth: 200,
                     position: "relative",
                     border: "1px solid #32a1ce",
-                    width: props.plot.width + 2,
-                    height: props.plot.height + 2,
+                    width: props.plot.width,
+                    height: props.plot.height,
                     resize: "both",
                     overflow: "hidden",
                   }}

@@ -89,11 +89,19 @@ function Plot(props) {
   const [resizing, setResizing] = useState(false);
 
   const onResizeDiv = useCallback(
-    (w, h) => {
+    (wid, hei) => {
+      let node = document.getElementById(`div-resize-${props.plotIndex}`);
+      let widthStr = node.style.width;
+      let heightStr = node.style.height;
+      let w = parseInt(widthStr.substring(0, widthStr.length - 2));
+      let h = parseInt(heightStr.substring(0, heightStr.length - 2));
+
       if (w == props.plot.width && h == props.plot.height) return;
+
       drawLabel();
       setResizing(true);
       isMouseDown = false;
+
       if (interval) clearTimeout(interval);
       interval = setTimeout(() => {
         let tempPlot = { ...props.plot, ...{ width: w, height: h } };
@@ -1009,8 +1017,8 @@ function Plot(props) {
                     border: "1px solid #32a1ce",
                     minHeight: 200,
                     minWidth: 200,
-                    width: `${props.plot.width + 2}px`,
-                    height: `${props.plot.height + 2}px`,
+                    width: props.plot.width,
+                    height: props.plot.height,
                     resize: "both",
                     overflow: "hidden",
                   }}
