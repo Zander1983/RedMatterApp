@@ -632,11 +632,39 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onResize = (change: any) => {
-    // this.state.workspaceState.plots[change.plotIndex].width = change.width;
-    // this.state.workspaceState.plots[change.plotIndex].height = change.height;
-    // this.setState({
-    //   workspaceState: JSON.parse(JSON.stringify(this.state.workspaceState)),
-    // });
+    let newWorkspaceState: any = this.state.workspaceState;
+
+    if (!(newWorkspaceState as any).files[change.fileId]) {
+      // so its a non-control gate being edited, copy plots from control
+      //@ts-ignore
+      (newWorkspaceState as any).files[change.fileId] = {
+        plots: JSON.parse(
+          JSON.stringify(
+            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+              .plots
+          )
+        ),
+      };
+    }
+
+    Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
+      if (fileId == change.fileId) {
+        //@ts-ignore
+        newWorkspaceState.files[fileId].plots[change.plotIndex].width =
+          change.width;
+        newWorkspaceState.files[fileId].plots[change.plotIndex].height =
+          change.height;
+      }
+    });
+
+    let copyOfFiles: any[] = getWorkspace().files;
+    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: newWorkspaceState,
+    });
   };
 
   // shouldComponentUpdate(nextProps: Readonly<PlotControllerProps>, nextState: Readonly<IState>, nextContext: any): boolean {

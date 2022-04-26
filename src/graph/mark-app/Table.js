@@ -178,6 +178,7 @@ function Table(props) {
                           addOverlay={props.addOverlay}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
+                          onResize={props.onResize}
                           enrichedFile={controlEnrichedFile}
                           enrichedOverlayFiles={enrichedOverlayFiles}
                           allFileMinObj={allFileMinObj}
@@ -454,6 +455,7 @@ function Table(props) {
                                 addOverlay={props.addOverlay}
                                 enrichedFile={enrichedFile}
                                 allFileMinObj={allFileMinObj}
+                                onResize={props.onResize}
                                 enrichedOverlayFiles={enrichedOverlayFiles}
                                 plotIndex={`${fileIndex + 1}-${plotIindex}`}
                                 downloadPlotAsImage={props.downloadPlotAsImage}

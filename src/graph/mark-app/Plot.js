@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
-
+import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -51,7 +51,7 @@ let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
-
+let interval = null;
 // useful function to trace what props reacting is updating
 // use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
 function useTraceUpdate(props) {
@@ -86,11 +86,55 @@ function Plot(props) {
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
 
+  const [resizing, setResizing] = useState(false);
+
+  const onResizeDiv = useCallback(
+    (wid, hei) => {
+      let node = document.getElementById(`div-resize-${props.plotIndex}`);
+      let widthStr = node.style.width;
+      let heightStr = node.style.height;
+      let w = parseInt(widthStr.substring(0, widthStr.length - 2));
+      let h = parseInt(heightStr.substring(0, heightStr.length - 2));
+
+      if (w == props.plot.width && h == props.plot.height) return;
+
+      drawLabel();
+      setResizing(true);
+      isMouseDown = false;
+
+      if (interval) clearTimeout(interval);
+      interval = setTimeout(() => {
+        let tempPlot = { ...props.plot, ...{ width: w, height: h } };
+        let change = {
+          type: tempPlot.plotType,
+          height: tempPlot.height,
+          width: tempPlot.width,
+          plotIndex: props.plotIndex.split("-")[1],
+          fileId: props.enrichedFile.fileId,
+        };
+        props.onResize(change);
+      }, 1500);
+    },
+    [props.plot]
+  );
+
+  const { ref } = useResizeDetector({
+    onResize: onResizeDiv,
+    skipOnMount: true,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(interval);
+    };
+  }, []);
+
   useEffect(() => {
     setLocalPlot(props.plot);
   }, [props.plot]);
 
   useEffect(() => {
+    if (resizing) setResizing(false);
     const context = getContext(props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
@@ -561,6 +605,7 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    if (resizing) return;
     isMouseDown = true;
 
     if (hasGate()) {
@@ -601,6 +646,7 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (resizing) return;
     isMouseDown = false;
     dragPointIndex = false;
     if (hasGate()) {
@@ -652,6 +698,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
+    if (resizing) return;
     if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
@@ -957,12 +1004,19 @@ function Plot(props) {
                 />
                 {/* main canvas */}
                 <div
+                  id={"div-resize-" + props.plotIndex}
+                  name={"div-resize-" + props.plotIndex}
+                  key={"div-resize-" + props.plotIndex}
                   style={{
                     border: "1px solid #32a1ce",
-                    width: `${localPlot.width}px`,
-                    height: `${localPlot.height}px`,
+                    minHeight: 200,
+                    minWidth: 200,
+                    width: props.plot.width,
+                    height: props.plot.height,
+                    resize: "both",
+                    overflow: "hidden",
                   }}
-                  // ref={ref}
+                  ref={ref}
                 >
                   <canvas
                     className="canvas"

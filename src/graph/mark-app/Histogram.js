@@ -1,7 +1,8 @@
 import { histogram } from "./HistogramHelper";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
 import Modal from "react-modal";
+import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -17,6 +18,7 @@ import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
 let dragPointIndex = false;
+let interval = null;
 
 const hasGate = (plot) => {
   return !!plot.gate;
@@ -194,6 +196,41 @@ function Histogram(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
+  const [maxCountPlusTenPercent_Value, setMaxCountPlusTenPercent_Value] =
+    useState();
+  const [resizing, setResizing] = useState(false);
+
+  const onResizeDiv = useCallback(
+    (wid, hei) => {
+      let node = document.getElementById(`div-resize-${props.plotIndex}`);
+      let widthStr = node.style.width;
+      let heightStr = node.style.height;
+      let w = parseInt(widthStr.substring(0, widthStr.length - 2));
+      let h = parseInt(heightStr.substring(0, heightStr.length - 2));
+      if (w == props.plot.width && h == props.plot.height) return;
+      if (maxCountPlusTenPercent_Value) drawLabel(maxCountPlusTenPercent_Value);
+      setResizing(true);
+      isMouseDown = false;
+      if (interval) clearTimeout(interval);
+      interval = setTimeout(() => {
+        let tempPlot = { ...props.plot, ...{ width: w, height: h } };
+        let change = {
+          type: tempPlot.plotType,
+          height: tempPlot.height,
+          width: tempPlot.width,
+          plotIndex: props.plotIndex.split("-")[1],
+          fileId: props.enrichedFile.fileId,
+        };
+        props.onResize(change);
+      }, 1500);
+    },
+    [props.plot]
+  );
+
+  const { ref } = useResizeDetector({
+    onResize: onResizeDiv,
+    skipOnMount: true,
+  });
 
   useEffect(() => {
     if (startCanvasPoint && endCanvasPoint) {
@@ -210,6 +247,13 @@ function Histogram(props) {
   }, [startCanvasPoint, endCanvasPoint]);
 
   useEffect(() => {
+    return () => {
+      clearTimeout(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (resizing) setResizing(false);
     //setLocalPlot(props.plot);
     let paintHistArr = [];
     let context = getContext("canvas-" + props.plotIndex);
@@ -645,6 +689,7 @@ function Histogram(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    if (resizing) return;
     isMouseDown = true;
 
     // draw histogram gate only if it is selected file
@@ -660,6 +705,7 @@ function Histogram(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (resizing) return;
     isMouseDown = false;
     if (hasGate(props.plot) && isGateShowing(props?.plot)) {
       onEditGate();
