@@ -3,7 +3,8 @@ import { getWorkspace } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
-//import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
+import { MenuItem, Select, Button } from "@material-ui/core";
+import ShowAllPlots from "./ShowAllPlots";
 import * as htmlToImage from "html-to-image";
 import {
   superAlgorithm,
@@ -685,10 +686,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(prevState.workspaceState)?.length !==
         JSON.stringify(workspaceState)?.length
     ) {
-      //console.log(" did update true=======");
       this.onInitState();
     } else {
-      //console.log("did update false=======");
     }
   }
 
@@ -700,8 +699,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   }
 
   renderTable = () => {
-    if (this.state.isTableRenderCall && this.state.enrichedFiles?.length > 0) {
-      //console.log("== call table ==");
+    if (
+      this.state.isTableRenderCall &&
+      this.state.enrichedFiles?.length > 0 &&
+      this.state.sortBy === "file"
+    ) {
       return (
         <PlotTableComponent
           enrichedFiles={this.state.enrichedFiles}
@@ -718,10 +720,40 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           testParam={this.state.testParam}
         />
       );
-    } else return null;
+    } else if (
+      this.state.isTableRenderCall &&
+      this.state.enrichedFiles?.length > 0 &&
+      this.state.sortBy === "gate"
+    ) {
+      return (
+        <ShowAllPlots
+          plots={this.state.enrichedFiles
+            .map((file) =>
+              file?.plots?.map((plot: any) => {
+                return {
+                  plot,
+                  fileId: file?.fileId,
+                };
+              })
+            )
+            .flat(1)}
+          enrichedFiles={this.state.enrichedFiles}
+          onChangeChannel={this.onChangeChannel}
+          addOverlay={this.addOverlay}
+          onAddGate={this.onAddGate}
+          onDeleteGate={this.onDeleteGate}
+          onEditGate={this.onEditGate}
+          onResize={this.onResize}
+          sortByGate={this.sortByGate}
+          downloadPlotAsImage={this.downloadPlotAsImage}
+          onResetToControl={this.onResetToControl}
+        />
+      );
+    }
   };
 
   render() {
+    console.log(this.state.sortBy);
     const workState = getWorkspace().workspaceState;
     // @ts-ignoreconst
     const plots =
@@ -748,7 +780,41 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               <span>Wait Loading...</span>
             </Grid>
           ) : (
-            getWorkspace().selectedFile !== "" && this.renderTable()
+            <>
+              <Button
+                variant="contained"
+                size="small"
+                style={{
+                  position: "absolute",
+                  right: 15,
+                  marginTop: 30,
+                  backgroundColor: "#fafafa",
+                  marginBottom: 10,
+                  height: "1.5rem",
+                }}
+              >
+                <span>
+                  Sort By:
+                  <Select
+                    style={{
+                      marginLeft: 15,
+                      flex: "1 1 auto",
+                      fontSize: 14,
+                    }}
+                    value={this.state.sortBy}
+                    disableUnderline
+                    onChange={(e: any) =>
+                      this.setState({ sortBy: e.target.value })
+                    }
+                  >
+                    <MenuItem value={"file"}>File</MenuItem>
+                    <MenuItem value={"gate"}>Gate</MenuItem>
+                  </Select>
+                </span>
+              </Button>
+
+              {getWorkspace().selectedFile !== "" && this.renderTable()}
+            </>
           )}
         </div>
       );

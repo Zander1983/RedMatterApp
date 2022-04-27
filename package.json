@@ -44,6 +44,7 @@
     "portable-fetch": "^3.0.0",
     "q": "*",
     "react": "^17.0.1",
+    "react-beautiful-dnd": "^13.1.0",
     "react-chartjs-2": "^2.11.1",
     "react-color": "^2.19.3",
     "react-csv": "^2.0.3",
