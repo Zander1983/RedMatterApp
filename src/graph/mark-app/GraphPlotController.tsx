@@ -85,7 +85,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       enrichedFiles: [],
       workspaceState: {},
       enrichedEvents: [],
-      testParam: "some value",
+      testParam: "some  value",
       controlFileId: "",
       activePipelineId: "",
     };
