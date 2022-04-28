@@ -191,6 +191,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
+    newPlot.width = 200;
+    newPlot.height = 200;
     delete newPlot.gate;
     newPlot.population = change.plot.gate.name;
     // for histograms
