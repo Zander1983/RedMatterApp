@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import SecurityUtil from "../../utils/Security.js";
+import { store } from "redux/store";
 
 import {
   Grid,
@@ -82,7 +83,7 @@ const Experiment = (props: any) => {
   );
   const maxFileCount = parseInt(process.env.REACT_APP_MAX_FILE_COUNT);
   // const maxFileSize = parseInt(process.env.REACT_APP_MAX_FILE_SIZE_IN_BYTES);
-    
+
   const { classes } = props;
   const history = useHistory();
   const inputFile = React.useRef(null);
@@ -260,8 +261,7 @@ const Experiment = (props: any) => {
         (e: any) => e.id === expId
       ) > -1
     ) {
-      requiredUpdateExperiments =
-        data?.experiments?.organisationExperiments?.slice();
+      requiredUpdateExperiments = data?.experiments?.organisationExperiments?.slice();
       targetExperiment = "org";
     } else if (
       data?.experiments?.userExperiments.length > 0 &&
@@ -341,8 +341,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -371,8 +373,10 @@ const Experiment = (props: any) => {
       sessionStorage.getItem("experimentData"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    let { requiredUpdateExperiments, targetExperiment } =
-      await getTargetExperiments(data, expId);
+    let {
+      requiredUpdateExperiments,
+      targetExperiment,
+    } = await getTargetExperiments(data, expId);
     let targetIndex = -1;
     if (requiredUpdateExperiments && requiredUpdateExperiments.length > 0) {
       targetIndex = requiredUpdateExperiments.findIndex(
@@ -406,11 +410,17 @@ const Experiment = (props: any) => {
     }).editExperimentName(props.id, experiment.name, userManager.getToken());
 
     axios
-      .put(`/api/experiment/${props.id}/edit/name`, {experimentName:experiment.name}, updateExperiment.options)
-      .then(async (response:any) => {
+      .put(
+        `/api/experiment/${props.id}/edit/name`,
+        { experimentName: experiment.name },
+        updateExperiment.options
+      )
+      .then(async (response: any) => {
         if (response?.data?.level === "success") {
-          if (sessionStorage.getItem("experimentData") !== null
-              || sessionStorage.getItem("experimentData") !== undefined) {
+          if (
+            sessionStorage.getItem("experimentData") !== null ||
+            sessionStorage.getItem("experimentData") !== undefined
+          ) {
             await updateExperimentCache(props.id, experiment.name);
           } else {
             sessionStorage.removeItem("experimentData");
@@ -430,7 +440,8 @@ const Experiment = (props: any) => {
       .catch((e) => {
         if (snack)
           showMessageBox({
-            message: "Failed to update this experiment, reload the page to try again!",
+            message:
+              "Failed to update this experiment, reload the page to try again!",
             saverity: "error",
           });
       });
@@ -488,6 +499,16 @@ const Experiment = (props: any) => {
           return e;
         });
       });
+      console.log(">>> fcsFile is ", fcsFile);
+      store.dispatch({
+        type: "ADD_FCS_FILE",
+        payload: fcsFile,
+      });
+
+      setTimeout(function () {
+        console.log(">>> store.getState() is ", store.getState());
+      }, 2000);
+
       if (channelSet.size === 0) {
         if (getExperimentChannels().length === 0) {
           channelSet = new Set(fcsFile.channels);
@@ -506,6 +527,7 @@ const Experiment = (props: any) => {
             " don't match experiments channels",
           "error"
         );
+
         filesUpload = filesUpload.filter((x) => x.id !== file.tempId);
       } else {
         finalFileList.push(file);
@@ -681,42 +703,47 @@ const Experiment = (props: any) => {
   };
 
   const deleteFromCache = async (fileId: any) => {
-    if (sessionStorage.getItem("experimentFiles") !== null
-        || sessionStorage.getItem("experimentFiles") !== undefined) {
-
+    if (
+      sessionStorage.getItem("experimentFiles") !== null ||
+      sessionStorage.getItem("experimentFiles") !== undefined
+    ) {
       const activeOrg: string = sessionStorage.getItem("activeOrg");
       if (activeOrg && activeOrg === props.id) {
         const expFileInfo = SecurityUtil.decryptData(
-            sessionStorage.getItem("experimentFiles"),
-            process.env.REACT_APP_DATA_SECRET_SOLD
+          sessionStorage.getItem("experimentFiles"),
+          process.env.REACT_APP_DATA_SECRET_SOLD
         );
         if (expFileInfo) {
           let updatedFiles = expFileInfo?.files?.files?.filter(
-              (file: any) => file.id !== fileId
+            (file: any) => file.id !== fileId
           );
           //setExperimentData({files: {...expFileInfo.files, ...{files:[...updatedFiles]}}});
           if (updatedFiles) {
             const newFiles = {
               ...expFileInfo.files,
-              ...{files: [...updatedFiles]},
+              ...{ files: [...updatedFiles] },
             };
             setExperimentData(newFiles);
             setExperiment(expFileInfo?.files?.experimentDetails);
 
             sessionStorage.setItem(
-                "experimentFiles",
-                SecurityUtil.encryptData(
-                    {files: newFiles},
-                    process.env.REACT_APP_DATA_SECRET_SOLD
-                )
+              "experimentFiles",
+              SecurityUtil.encryptData(
+                { files: newFiles },
+                process.env.REACT_APP_DATA_SECRET_SOLD
+              )
             );
-            await updateExperimentFileCount(props.id, updatedFiles?.length, true);
+            await updateExperimentFileCount(
+              props.id,
+              updatedFiles?.length,
+              true
+            );
           } else await reload();
         } else {
           await reload();
         }
       } else await reload();
-    }else await reload()
+    } else await reload();
   };
 
   const handleResponse = async (
@@ -813,9 +840,9 @@ const Experiment = (props: any) => {
       });
 
       if (response?.data?.level === "success") {
-          setTotalFilesUploaded(response.data?.totalFilesUploaded || 0);
-          await handleResponse({ ...response.data, fileId: fileId }, true, true);
-      }else{
+        setTotalFilesUploaded(response.data?.totalFilesUploaded || 0);
+        await handleResponse({ ...response.data, fileId: fileId }, true, true);
+      } else {
         showMessageBox({
           message: response?.data?.message || "Request Not Completed",
           saverity: "error",
@@ -1052,24 +1079,25 @@ const Experiment = (props: any) => {
                   <>
                     Your Plan limit:{" "}
                     <b>
-                        {experimentData !== null
-                            ? !userManager.getSubscriptionType()
-                            || userManager.getSubscriptionType() === "Free"
-                            || userManager.getSubscriptionType() === "free"
-                                ? FREE_PLAN_FILE_UPLOAD_LIMIT : "Unlimited"
-                            : null}
+                      {experimentData !== null
+                        ? !userManager.getSubscriptionType() ||
+                          userManager.getSubscriptionType() === "Free" ||
+                          userManager.getSubscriptionType() === "free"
+                          ? FREE_PLAN_FILE_UPLOAD_LIMIT
+                          : "Unlimited"
+                        : null}
                     </b>
                     <br />
-                      {!userManager.getSubscriptionType()
-                      || userManager.getSubscriptionType() === "Free"
-                      || userManager.getSubscriptionType() === "free" ? (
-                          <>
-                              Current Uploaded:{" "}
-                              <b>
-                                  {experimentData !== null ? totalFilesUploaded : 0}
-                              </b>
-                          </>
-                      ) : null}
+                    {!userManager.getSubscriptionType() ||
+                    userManager.getSubscriptionType() === "Free" ||
+                    userManager.getSubscriptionType() === "free" ? (
+                      <>
+                        Current Uploaded:{" "}
+                        <b>
+                          {experimentData !== null ? totalFilesUploaded : 0}
+                        </b>
+                      </>
+                    ) : null}
                     <br />
                     {/*Remaining: { experimentData !== null ? <b>{FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded <= 0 ? 0 : FREE_PLAN_FILE_UPLOAD_LIMIT - totalFilesUploaded}</b> : 0}*/}
                   </>
@@ -1393,7 +1421,7 @@ const Experiment = (props: any) => {
                             >
                               {e.eventCount + " events"}
                             </b>
-                          <div
+                            <div
                               style={{
                                 display: "flex",
                                 float: "right",

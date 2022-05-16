@@ -154,6 +154,7 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 
     case graphActions.SET_FILES:
       const files = action.payload.files;
+      console.log(">>> files is ", files);
       return {
         ...state,
         files: files,

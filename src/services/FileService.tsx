@@ -318,6 +318,7 @@ export const downloadEvent = async (
     }
 
     WorkspaceDispatch.SetFileIds(newFileArray.map((file) => file.id));
+    // this is where files are set
     WorkspaceDispatch.SetFiles(newFileArray);
 
     return files;

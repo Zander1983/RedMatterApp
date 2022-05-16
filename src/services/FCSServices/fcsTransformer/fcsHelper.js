@@ -1,9 +1,8 @@
-/* eslint-disable*/
-import percentileHelper from "./percentileHelper";
-import generalHelper from "./generalHelper";
-import Logicle from "./logicle";
+var percentileHelper = require("./percentileHelper");
+var generalHelper = require("./generalHelper");
+var Logicle = require("./logicle");
 
-export const getParamMax = (fcs, param) => {
+module.exports.getParamMax = (fcs, param) => {
   var maxArray = fcs.get$PnX("R");
 
   maxArray = generalHelper.removeNulls(maxArray);
@@ -11,65 +10,35 @@ export const getParamMax = (fcs, param) => {
   return maxArray[param];
 };
 
-export const getLogicles = (params) => {
+module.exports.getLogicles = (params) => {
   var logicles = {};
   var fcs = params.fcs;
-  var fcsFileDb = params.fcsFileDb;
   var self = this;
-  var scale = params.scale;
-
-  //fcsFileDb.paramsAnaylsis.forEach(function(paramsAnaylsisElement, paramIndex){
+  var minMax = params.minMax;
 
   fcs.getParams().forEach(function (paramsAnaylsisElement, paramIndex) {
-    logicles[paramIndex] = self.getLogicle({
-      fcsFileDb: fcsFileDb,
-      paramIndex: paramIndex,
-      fcs: fcs,
-      scale: scale,
-    });
+    logicles[paramIndex] = self.getLogicle(minMax);
   });
 
   return logicles;
 };
 
-export const getLogicle = (params) => {
-  var fcs = params.fcs;
-  var fcsFileDb = params.fcsFileDb;
-  var paramIndex = params.paramIndex;
-  var scale = params.scale;
-  var minMax = params.minMax;
+module.exports.getLogicle = (biexponentialAxisLimits) => {
+  var transformParams = this.getTMWA(biexponentialAxisLimits);
 
-  var transformParams = this.getTMWA({
-    fcs: fcs,
-    fcsFileDb: fcsFileDb,
-    paramIndex: paramIndex,
-    scale: scale,
-    minMax: minMax,
-  });
+  console.log("Logicle is ", Logicle);
 
   return new Logicle(transformParams.T, transformParams.W);
 };
 
-export const getTMWA = (params) => {
-  var fcs = params.fcs;
-  var fcsFileDb = params.fcsFileDb;
-  var paramIndex = params.paramIndex;
-  var scale = params.scale;
-  var minMax = params.minMax;
-
-  if (!minMax) {
-    minMax = scale.getMinMax({
-      fcs: fcs,
-      fcsFileDb: fcsFileDb,
-      paramIndex: paramIndex,
-      scaleType: "bi",
-    });
-  }
-
-  var T = minMax.max;
+module.exports.getTMWA = (biexponentialAxisLimits) => {
+  var T = biexponentialAxisLimits.biexponentialMaximum;
   var M = 4.5;
   var A = 0;
-  var W = percentileHelper.calculateW(minMax.min, T);
+  var W = percentileHelper.calculateW(
+    biexponentialAxisLimits.biexponentialMinimum,
+    T
+  );
 
   return {
     T: T,
@@ -79,30 +48,35 @@ export const getTMWA = (params) => {
   };
 };
 
-export const getMaxForParam = (params) => {
+module.exports.getMaxForParam = (params) => {
   var fcs = params.fcs;
-  var param = params.param;
+  var paramIndex = params.paramIndex;
 
   var maxArray = fcs.get$PnX("R");
   maxArray = generalHelper.removeNulls(maxArray);
-  var maxInHeader = maxArray[param];
+  var maxInHeader = maxArray[paramIndex];
 
   // IF WANT TO USE MAX FROM DB, WILL NEED TO RUN A SCRIPT AS ALL THE MAXES ARE SLIGHTLY WRONG
   // SO JUST USE MAX FORM THE FILE
-  // var maxInDb = fcsFileDb.paramsAnaylsis[param].max;
-
-  // if(maxInDb > maxInHeader){
-  // 	return parseFloat(maxInDb);
-  // }
 
   return parseFloat(maxInHeader);
 };
 
-export const getMinForParam = (params) => {
-  return 0;
+module.exports.getMinForParam = (params) => {
+  // TODO: this should be used
+
+  var paramsAnaylsis = params.paramsAnaylsis;
+  var param = params.param;
+  var scaleType = params.scaleType;
+
+  if (scaleType === "bi") {
+    return paramsAnaylsis[param].scaledMinBi;
+  } else {
+    return paramsAnaylsis[param].scaledMinLin;
+  }
 };
 
-export const getMaxesFromDb = function (params) {
+module.exports.getMaxesFromDb = function (params) {
   var fcsFileDb = params.fcsFileDb;
   var param = params.param;
 
@@ -111,19 +85,19 @@ export const getMaxesFromDb = function (params) {
   });
 };
 
-export const getMaxesFromFile = function (fcs) {
+module.exports.getMaxesFromFile = function (fcs) {
   var maxArray = fcs.get$PnX("R");
 
   return generalHelper.removeNulls(maxArray);
 };
 
-export default {
-  getParamMax,
-  getLogicles,
-  getLogicle,
-  getTMWA,
-  getMaxForParam,
-  getMinForParam,
-  getMaxesFromDb,
-  getMaxesFromFile,
+module.exports.getLengthIncrement = function (params) {
+  var length = params.length;
+  const limit = params.limit;
+
+  if (length <= limit) {
+    return 1;
+  }
+
+  return length / limit;
 };

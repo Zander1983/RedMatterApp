@@ -1,9 +1,6 @@
-/* eslint-disable*/
-/* eslint-disable import/no-anonymous-default-export */
-
 // Returns the value at a given percentile in a sorted numeric array.
 // "Linear interpolation between closest ranks" method
-const percentile = (arr, p) => {
+module.exports.percentile = (arr, p) => {
   if (arr.length === 0) return 0;
   if (typeof p !== "number") throw new TypeError("p must be a number");
   if (p <= 0) return arr[0];
@@ -18,7 +15,7 @@ const percentile = (arr, p) => {
   return arr[lower] * (1 - weight) + arr[upper] * weight;
 };
 
-const calculateW = (r, T) => {
+module.exports.calculateW = (r, T) => {
   // if (r === 0) {
   //     return 0;
   // }
@@ -32,9 +29,4 @@ const calculateW = (r, T) => {
   }
 
   return W;
-};
-
-export default {
-  calculateW,
-  percentile,
 };

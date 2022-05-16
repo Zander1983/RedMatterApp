@@ -1,26 +1,39 @@
 import fcsModel from "./fcsTransformer/fcsModel";
 import LogicleAPI from "./logicle-js/logicleApi";
 import MarkLogicle from "./logicleMark";
+import { parseAndUpload } from "./fcsTransformer/node-handler";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
     return fcsModel
       .getFCS({
         file: file,
-        eventsToRead: 1,
+        eventsToRead: -1,
       })
       .then(function (fcsFile) {
+        console.log("parseAndUpload is ", parseAndUpload);
+
+        // // event,
+        // // fcs,
+        // // fileId,
+        // // experimentId,
+        // // upload
+
+        let res = parseAndUpload({}, fcsFile, 123456, 987654, false);
+
+        console.log("!!!! res is ", res);
+
         const channelsHeaders = Object.entries(fcsFile.text)
           .filter((e) => {
             const header = e[0];
             return header.match(/\$P[0-9]*N/gm) !== null;
           })
           .map((e) => e[1]);
-        delete fcsFile.dataAsNumbers;
-        delete fcsFile.dataAsStrings;
-        delete fcsFile.databufReadFn2;
-        delete fcsFile.bytesRead;
-        delete fcsFile.analysis;
+        // delete fcsFile.dataAsNumbers;
+        // delete fcsFile.dataAsStrings;
+        // delete fcsFile.databufReadFn2;
+        // delete fcsFile.bytesRead;
+        // delete fcsFile.analysis;
         return {
           ...fcsFile,
           channels: channelsHeaders,
