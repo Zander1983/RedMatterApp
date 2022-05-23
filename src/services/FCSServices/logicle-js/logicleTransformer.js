@@ -53,8 +53,8 @@ const logicleTransformer = (event) => {
     let channelEvents = [];
 
     let biexponentialAxisLimits = {
-      biexponentialMinimum: paramsAnalysis[paramIndex].biexponentialMinimum,
-      biexponentialMaximum: paramsAnalysis[paramIndex].biexponentialMaximum,
+      minimum: paramsAnalysis[paramIndex].minimum,
+      maximum: paramsAnalysis[paramIndex].maximum,
     };
 
     const logicle = fcsHelper.getLogicle(biexponentialAxisLimits);
@@ -103,17 +103,17 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
   ) {
     let linearLimitsSet = false;
     let biexponentialLimitsSet = false;
-    let linearMinimum = 0;
-    let linearMaximum = 0;
-    let biexponentialMinimum = 0;
-    let biexponentialMaximum = 0;
+    let minimum = 0;
+    let maximum = 0;
+    let minimum = 0;
+    let maximum = 0;
     let linearLimits = scale.getRangeFromPnD(paramIndex, "lin");
 
     if (linearLimits) {
       linearLimitsSet = true;
 
-      linearMinimum = linearLimits.min;
-      linearMaximum = linearLimits.max;
+      minimum = linearLimits.min;
+      maximum = linearLimits.max;
     }
 
     let biexponentialLimits = scale.getRangeFromPnD(paramIndex, "bi");
@@ -121,14 +121,14 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
     if (biexponentialLimits) {
       biexponentialLimitsSet = true;
 
-      biexponentialMinimum = biexponentialLimits.min;
-      biexponentialMaximum = biexponentialLimits.max;
+      minimum = biexponentialLimits.min;
+      maximum = biexponentialLimits.max;
     } else {
       biexponentialLimits = scale.getRangeFromPnE(paramIndex);
 
       if (biexponentialLimits) {
-        biexponentialMinimum = biexponentialLimits.min;
-        biexponentialMaximum = biexponentialLimits.max;
+        minimum = biexponentialLimits.min;
+        maximum = biexponentialLimits.max;
       }
     }
 
@@ -216,14 +216,14 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
           }
 
           if (!linearLimitsSet) {
-            if (scaledLin < linearMinimum) {
-              linearMinimum = scaledLin;
+            if (scaledLin < minimum) {
+              minimum = scaledLin;
             }
           }
 
           if (!biexponentialLimitsSet) {
-            if (scaledBi < biexponentialMinimum) {
-              biexponentialMinimum = scaledBi;
+            if (scaledBi < minimum) {
+              minimum = scaledBi;
             }
           }
         }
@@ -231,7 +231,7 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
 
       // if still no max, get recommnded from file header and scale
 
-      if (biexponentialMaximum == 0) {
+      if (maximum == 0) {
         max = fcsHelper.getMaxForParam({
           fcs: fcs,
           paramIndex: paramIndex,
@@ -246,10 +246,10 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
           f2: f2,
         });
 
-        biexponentialMaximum = scaledBi;
+        maximum = scaledBi;
       }
 
-      if (linearMaximum == 0) {
+      if (maximum == 0) {
         scaledLin = scale.scaleValueAccordingToFile({
           value: channelMaximums[paramIndex],
           paramIndex: paramIndex,
@@ -259,15 +259,15 @@ const getParamsAnalysis = (fcs, scale, channelNames) => {
           f2: f2,
         });
 
-        linearMaximum = scaledLin;
+        maximum = scaledLin;
       }
     }
 
     paramsAnalysis[paramIndex] = {
-      linearMinimum: linearMinimum,
-      linearMaximum: linearMaximum,
-      biexponentialMinimum: biexponentialMinimum,
-      biexponentialMaximum: biexponentialMaximum,
+      minimum: minimum,
+      maximum: maximum,
+      minimum: minimum,
+      maximum: maximum,
       paramName: channelNames[paramIndex],
     };
 

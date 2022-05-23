@@ -10,7 +10,7 @@ import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 
 function Table(props) {
-  console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
+  //console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -57,9 +57,6 @@ function Table(props) {
 
   return (
     <div>
-      <p style={{ margin: 0, marginBottom: 5, marginTop: 5 }}>
-        <strong> {"Analysis based on sampling of 10,000 events"} </strong>
-      </p>
       <div
         style={{
           color: "#fff",
@@ -75,11 +72,11 @@ function Table(props) {
             order: 1,
           }}
         >
-          {
+          {/* {
             getWorkspace()?.pipelines?.find(
               (pipeline) => pipeline._id === getWorkspace()?.activePipelineId
             ).name
-          }
+          } */}
         </div>
         <div
           style={{

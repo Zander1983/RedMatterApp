@@ -32,13 +32,10 @@ module.exports.getLogicle = (biexponentialAxisLimits) => {
 };
 
 module.exports.getTMWA = (biexponentialAxisLimits) => {
-  var T = biexponentialAxisLimits.biexponentialMaximum;
+  var T = biexponentialAxisLimits.maximum;
   var M = 4.5;
   var A = 0;
-  var W = percentileHelper.calculateW(
-    biexponentialAxisLimits.biexponentialMinimum,
-    T
-  );
+  var W = percentileHelper.calculateW(biexponentialAxisLimits.minimum, T);
 
   return {
     T: T,

@@ -7,6 +7,7 @@ const oldBackFileUploader = (
   file0?: Blob,
   options?: any
 ) => {
+  debugger;
   if (token === null || token === undefined) {
     throw new Error("No token no request... what did you expect???");
   }

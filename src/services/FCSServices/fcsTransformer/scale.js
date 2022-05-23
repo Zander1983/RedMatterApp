@@ -56,7 +56,6 @@ Scale.prototype.scaleValue = function (params) {
   var scaleType = params.scaleType;
   var hasSpilloverForParam = params.hasSpilloverForParam;
   var arrayOfOneEvent = params.arrayOfOneEvent;
-  var logicle = params.logicle;
   var indexOfSpilloverParam = params.indexOfSpilloverParam;
   var maxFromFile = params.maxFromFile;
   var skipLogicleScale = params.skipLogicleScale;
@@ -78,10 +77,6 @@ Scale.prototype.scaleValue = function (params) {
       indexOfSpilloverParam: indexOfSpilloverParam,
       channelMaximums: channelMaximums,
     });
-  }
-
-  if (!skipLogicleScale && scaleType === "bi" && false) {
-    scaled = logicle.scale(scaled);
   }
 
   return scaled;
@@ -398,6 +393,10 @@ Scale.prototype.setSpillover = function (params) {
     this.spilloverParams = spilloverObj.spilloverParams;
     this.invertedMatrix = spilloverObj.invertedMatrix;
     this.indexesOfSpilloverParams = spilloverObj.indexesOfSpilloverParams;
+    console.log(
+      "spilloverObj.invertedMatrix; is ",
+      spilloverObj.invertedMatrix._data
+    );
   }
 };
 

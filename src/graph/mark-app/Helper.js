@@ -506,20 +506,21 @@ export const graphLine = (params, ctx) => {
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
   let selectedFileId = workspaceState.selectedFile;
-  let controlFile = enrichedFiles.find((x) => x.fileId == selectedFileId);
+  let controlFile =
+    enrichedFiles.find((x) => x.name == selectedFileId) || enrichedFiles[0];
 
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel, index) => {
       return new MarkLogicle(
-        controlFile.channels[index].biexponentialMinimum,
-        controlFile.channels[index].biexponentialMaximum
+        controlFile.channels[index].minimum,
+        controlFile.channels[index].maximum
       );
     });
 
     let channels = file.channels.map((channel, index) => {
       return {
-        minimum: controlFile.channels[index].biexponentialMinimum,
-        maximum: controlFile.channels[index].biexponentialMaximum,
+        minimum: controlFile.channels[index].minimum,
+        maximum: controlFile.channels[index].maximum,
         name: channel.label || channel.value,
         defaultScale: channel.display,
       };
@@ -537,14 +538,15 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       logicles: logicles,
       gateStats: file.gateStats,
       plots: plots,
-      fileId: file.id,
+      fileId: file.name,
       isControlFile: file.id == controlFileId ? 1 : 0,
-      label: file.label,
+      label: file.name,
     };
   });
 };
 
 export const getPlotChannelAndPosition = (file) => {
+  console.log("file is ", file);
   const defaultFileChannels = file?.channels;
 
   const expectedXChannels = ["FSC-A", "FSC.A", "FSC-H", "FSC.H"];

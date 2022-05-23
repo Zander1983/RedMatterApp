@@ -78,14 +78,17 @@ function Logicle(max, calculatedW) {
   if (!this instanceof Logicle) return new Logicle();
 
   this.taylor = [];
-  this.a, this.b, this.c, this.d, this.f, this.w, this.x0, this.x1, this.x2;
+  //this.a, this.b, this.c, this.d, this.f, this.w, this.x0, this.x1, this.x2;
 
-  (this.T = max), (M = 4.5), (A = 0), (W = calculatedW);
+  this.T = max;
+  this.M = 4.5;
+  this.A = 0;
+  this.W = calculatedW;
 
-  this.b = (M + A) * Math.log(10);
-  this.w = W / (M + A);
+  this.b = (this.M + this.A) * Math.log(10);
+  this.w = this.W / (this.M + this.A);
 
-  this.x2 = A / (M + A);
+  this.x2 = this.A / (this.M + this.A);
   this.x1 = this.x2 + this.w;
   this.x0 = this.x1 + this.w;
 
@@ -304,7 +307,7 @@ Logicle.prototype.inverse = function (scale) {
  * @return the var dynamic range
  */
 Logicle.prototype.dynamicRange = function () {
-  return slope(1) / slope(this.x1);
+  return this.slope(1) / this.slope(this.x1);
 };
 
 /**
@@ -314,7 +317,7 @@ Logicle.prototype.dynamicRange = function () {
  */
 Logicle.prototype.axisLabels = function () {
   // number of decades in the positive logarithmic region
-  var p = M - 2 * W;
+  var p = this.M - 2 * this.W;
   // smallest power of 10 in the region
   var log10x = Math.ceil(Math.log(this.T) / Math.LN10 - p);
   // data value at that point
@@ -348,34 +351,34 @@ Logicle.prototype.axisLabels = function () {
 
   return label;
 };
-calculateW = (r, T) => {
-  // if (r === 0) {
-  //     return 0;
-  // }
+// calculateW = (r, T) => {
+//   // if (r === 0) {
+//   //     return 0;
+//   // }
 
-  var M = 4.5;
+//   var M = 4.5;
 
-  var W = (M - Math.log10(T / Math.abs(r))) / 2;
+//   var W = (M - Math.log10(T / Math.abs(r))) / 2;
 
-  if (W < 0) {
-    return 0;
-  }
+//   if (W < 0) {
+//     return 0;
+//   }
 
-  return W;
-};
+//   return W;
+// };
 
-getTMWA = (biexponentialMinimum, biexponentialMaximum) => {
-  var T = biexponentialMaximum;
-  var M = 4.42;
-  var A = 0;
-  var W = this.calculateW(biexponentialMinimum, T);
+// getTMWA = (minimum, maximum) => {
+//   var T = maximum;
+//   var M = 4.42;
+//   var A = 0;
+//   var W = this.calculateW(minimum, T);
 
-  return {
-    T: T,
-    M: M,
-    A: A,
-    W: W,
-  };
-};
+//   return {
+//     T: T,
+//     M: M,
+//     A: A,
+//     W: W,
+//   };
+// };
 
 module.exports = Logicle;

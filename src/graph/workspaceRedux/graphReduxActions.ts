@@ -161,10 +161,14 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
       };
     case graphActions.ADD_FILE:
       const newFile: File = action.payload.file;
+      console.log("newFile is ", newFile);
       if (state.files.find((e) => e.id === newFile.id)) {
-        //console.error("[workspace.ADD_FILE] File already in workspace");
+        console.error("[workspace.ADD_FILE] File already in workspace");
         return state;
       }
+
+      console.log("[...state.files, newFile] is ", [...state.files, newFile]);
+
       return {
         ...state,
         files: [...state.files, newFile],
@@ -246,6 +250,9 @@ const graphReducers = (state: Workspace = initialState, action: any) => {
 
     case graphActions.SET_PLOT_STATE:
       const plots = action.payload;
+
+      console.log(">>>plots is ", plots);
+
       return {
         ...state,
         workspaceState: plots,

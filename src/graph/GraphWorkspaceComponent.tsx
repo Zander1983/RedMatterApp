@@ -83,10 +83,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const NewWorkspaceInnerComponent = (props: {
+const GraphWorkspaceComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
+  console.log(">>>in GraphWorkspaceComponent");
   const classes = useStyles();
   const history = useHistory();
 
@@ -95,13 +96,15 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] =
-    React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<
+    boolean
+  >(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
 
   useEffect(() => {
+    console.log("in use Effect");
     pageLoaderSubscription = setTimeout(function run() {
       setOpen(false);
       if (pageLoaderSubscription) {
@@ -112,6 +115,7 @@ const NewWorkspaceInnerComponent = (props: {
 
     (async () => {
       try {
+        console.log("before getAll");
         await getAll(props.shared, props.experimentId);
       } catch (e) {
         await handleError(e);
@@ -162,35 +166,38 @@ const NewWorkspaceInnerComponent = (props: {
   };
 
   const handlePrivateWorkspace = async () => {
-    let files = SecurityUtil.decryptData(
-      sessionStorage.getItem("experimentFiles"),
-      process.env.REACT_APP_DATA_SECRET_SOLD
-    );
-    if (files && files?.files?.files?.length > 0) {
-      let fileIds = files?.files?.files?.map((file: any) => file.id);
-      if (fileIds.length > 0) {
-        WorkspaceDispatch.SetFiles(files?.files?.files);
-        try {
-          let result = await downloadEvents(
-            props.shared,
-            props.experimentId,
-            fileIds
-          );
-          if (result?.length > 0) {
-            setReloadMessage("Workspace prepared successfully.");
-            setTimeout(() => {
-              setPlotCallNeeded(true);
-            }, 1000);
-          } else {
-            setMessage(
-              "Your Action is Processing. please try after few later Or wait "
-            );
-          }
-        } catch (err) {
-          await handleRequestError(err);
-        }
-      }
+    console.log("in handlePrivateWorkspace");
+    // let files = SecurityUtil.decryptData(
+    //   sessionStorage.getItem("experimentFiles"),
+    //   process.env.REACT_APP_DATA_SECRET_SOLD
+    // );
+    // if (files && files?.files?.files?.length > 0) {
+    //let fileIds = files?.files?.files?.map((file: any) => file.id);
+    //if (fileIds.length > 0) {
+    //console.log("SETFILES and files is ", files);
+
+    //WorkspaceDispatch.SetFiles(files?.files?.files);
+    try {
+      // let result = await downloadEvents(
+      //   props.shared,
+      //   props.experimentId,
+      //   fileIds
+      // );
+      //if (result?.length > 0) {
+      setReloadMessage("Workspace prepared successfully.");
+      setTimeout(() => {
+        setPlotCallNeeded(true);
+      }, 1000);
+      // } else {
+      //   setMessage(
+      //     "Your Action is Processing. please try after few later Or wait "
+      //   );
+      // }
+    } catch (err) {
+      await handleRequestError(err);
     }
+    //}
+    // }
   };
 
   const handleSharedWorkspace = async (shared: boolean, experimentId: any) => {
@@ -218,37 +225,46 @@ const NewWorkspaceInnerComponent = (props: {
   };
 
   const getAll = async (shared: boolean, experimentId: any) => {
-    WorkspaceDispatch.ResetWorkspace();
-    if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-    WorkspaceDispatch.SetWorkspaceShared(props.shared);
-    setSharedWorkspace(props.shared);
-    setReloadMessage("Loading...");
-    getWorkspaceStateFromServer(shared, experimentId)
-      .then(async (response: any) => {
-        setReloadMessage("Loading Done. wait preparing....");
-        if (response.requestSuccess && !props.shared) {
-          await handlePrivateWorkspace();
-        } else if (response.requestSuccess && props.shared) {
-          await handleSharedWorkspace(shared, experimentId);
-        } else {
-          await handleError({
-            message:
-              "Workspace Loading Failed.Due to Invalid Request. try again",
-            saverity: "error",
-          });
-        }
-      })
-      .catch(async (err) => {
-        setPlotCallNeeded(false);
-        await handleError(err);
-      })
-      .finally(() => {
-        if (pageLoaderSubscription) {
-          setOpen(false);
-          clearTimeout(pageLoaderSubscription);
-          pageLoaderSubscription = null;
-        }
-      });
+    console.log("in getAll");
+    await handlePrivateWorkspace();
+
+    if (pageLoaderSubscription) {
+      setOpen(false);
+      clearTimeout(pageLoaderSubscription);
+      pageLoaderSubscription = null;
+    }
+
+    // WorkspaceDispatch.ResetWorkspace();
+    // if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
+    // WorkspaceDispatch.SetWorkspaceShared(props.shared);
+    // setSharedWorkspace(props.shared);
+    // setReloadMessage("Loading...");
+    // getWorkspaceStateFromServer(shared, experimentId)
+    //   .then(async (response: any) => {
+    //     setReloadMessage("Loading Done. wait preparing....");
+    //     if (response.requestSuccess && !props.shared) {
+    //       await handlePrivateWorkspace();
+    //     } else if (response.requestSuccess && props.shared) {
+    //       //await handleSharedWorkspace(shared, experimentId);
+    //     } else {
+    //       await handleError({
+    //         message:
+    //           "Workspace Loading Failed.Due to Invalid Request. try again",
+    //         saverity: "error",
+    //       });
+    //     }
+    //   })
+    //   .catch(async (err) => {
+    //     setPlotCallNeeded(false);
+    //     await handleError(err);
+    //   })
+    //   .finally(() => {
+    //     if (pageLoaderSubscription) {
+    //       setOpen(false);
+    //       clearTimeout(pageLoaderSubscription);
+    //       pageLoaderSubscription = null;
+    //     }
+    //   });
   };
 
   const handleError = async (error: any) => {
@@ -297,13 +313,13 @@ const NewWorkspaceInnerComponent = (props: {
   const _renderToolbar = () => {
     return (
       <WorkspaceTopBar
-          setLoader={setOpen}
-          sharedWorkspace={props.shared}
-          experimentId={props.experimentId}
-          plotCallNeeded={plotCallNeeded}
-          renderPlotController={renderPlotController}
-          setRenderPlotController={setRenderPlotController}
-          setPlotCallNeeded={setPlotCallNeeded}
+        setLoader={setOpen}
+        sharedWorkspace={props.shared}
+        experimentId={props.experimentId}
+        plotCallNeeded={plotCallNeeded}
+        renderPlotController={renderPlotController}
+        setRenderPlotController={setRenderPlotController}
+        setPlotCallNeeded={setPlotCallNeeded}
       />
     );
   };
@@ -505,7 +521,7 @@ class NewWorkspaceComponent extends React.Component<WorkspaceProps> {
         experimentId={this.props.experimentId}
         shared={this.props.shared}
       >
-        <NewWorkspaceInnerComponent
+        <GraphWorkspaceComponent
           experimentId={this.props.experimentId}
           shared={this.props.shared}
         />

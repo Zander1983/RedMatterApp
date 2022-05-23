@@ -1,5 +1,5 @@
 import React from "react";
-import { getWorkspace } from "graph/utils/workspace";
+import { getWorkspace, getFiles } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
@@ -38,44 +38,6 @@ interface IState {
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
-    // let copyOfFiles: any[] = JSON.parse(JSON.stringify(Files21));
-    // console.log(JSON.parse(JSON.stringify(Files21)));
-    // console.log("== work space file ====");
-    // let copyOfFiles: any[] = getWorkspace().files;
-    // console.log(copyOfFiles);
-    // console.log("===== get from server =====");
-    // console.log(getWorkspace().workspaceState);
-    // let workspaceState = initTemporaryDynamicPlot(copyOfFiles[0]);
-    // WorkspaceDispatch.UpdatePlotStates(workspaceState);
-    // console.log(enrichedFiles);
-    //   let workspaceState = getWorkspace().workspaceState;
-    //   // @ts-ignore
-    //   const plots =
-    //       workspaceState &&
-    //       // @ts-ignore
-    //       workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-    //   let isSnapShotCreated = false;
-    //   let copyOfFiles: any[] = getWorkspace().files;
-    //   if (plots === null || plots === undefined) {
-    //       const defaultFile = copyOfFiles?.[0];
-    //       const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } =
-    //           getPlotChannelAndPosition(defaultFile);
-    //       workspaceState = createDefaultPlotSnapShot(
-    //           defaultFile?.id,
-    //           this.props.experimentId,
-    //           xAxisLabel,
-    //           yAxisLabel,
-    //           xAxisIndex,
-    //           yAxisIndex
-    //       );
-    //       isSnapShotCreated = true;
-    //   }
-    //
-    //   let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
-    //
-    //   enrichedFiles = this.formatEnrichedFiles(enrichedFiles, workspaceState);
-    //
-    //   if (isSnapShotCreated) WorkspaceDispatch.UpdatePlotStates(workspaceState);
 
     this.state = {
       sortByChanged: false,
@@ -102,23 +64,30 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onInitState = () => {
     //console.log("init====");
     let workspaceState = getWorkspace().workspaceState;
+
+    console.log("workspaceState is ", workspaceState);
+
     // @ts-ignore
     const plots = workspaceState
       ? // @ts-ignore
         workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots
       : [];
     let isSnapShotCreated = false;
-    let copyOfFiles: any[] = getWorkspace().files;
+    let copyOfFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = getFiles();
+
+    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
+    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
 
     let defaultFile = null;
     let pipeline = null;
     if (plots?.length === 0 && getWorkspace()?.pipelines?.length > 0) {
-      // const defaultFile = copyOfFiles?.[0];
+      // const defaultFile = copyOfLocalFiles?.[0];
       defaultFile = getWorkspace()?.selectedFile
-        ? copyOfFiles?.filter(
+        ? copyOfLocalFiles?.filter(
             (file) => file.id === getWorkspace()?.selectedFile
           )?.[0]
-        : copyOfFiles?.[0];
+        : copyOfLocalFiles?.[0];
       // @ts-ignore
       pipeline =
         getWorkspace()?.pipelines?.length > 0
@@ -138,7 +107,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       } = getPlotChannelAndPosition(defaultFile);
 
       workspaceState = createDefaultPlotSnapShot(
-        defaultFile?.id,
+        defaultFile?.name,
         this.props.experimentId,
         xAxisLabel,
         yAxisLabel,
@@ -150,17 +119,20 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       isSnapShotCreated = true;
     }
 
+    console.log("Default workspaceState is ", workspaceState);
+
     // @ts-ignore
     if (workspaceState?.length > 0 || plots?.length > 0) {
-      let enrichedFiles: any[] = superAlgorithm(copyOfFiles, workspaceState);
-
+      let enrichedFiles: any[] = superAlgorithm(
+        copyOfLocalFiles,
+        workspaceState
+      );
+      console.log("enrichedFiles is ", enrichedFiles);
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
-
       if (isSnapShotCreated) {
         WorkspaceDispatch.UpdatePlotStates(workspaceState);
         if (defaultFile) WorkspaceDispatch.UpdateSelectedFile(defaultFile?.id);
       }
-
       this.setState({
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
@@ -179,8 +151,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   getEnrichedEvents = () => {
-    let copyOfFiles: any[] = getWorkspace().files;
-    let enrichedEvents = superAlgorithm(copyOfFiles, this.state.workspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    let enrichedEvents = superAlgorithm(
+      copyOfLocalFiles,
+      this.state.workspaceState
+    );
     enrichedEvents = enrichedEvents.map((events: any[]) => {
       return events;
     });
@@ -188,6 +163,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
+    debugger;
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
@@ -230,9 +206,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let copyOfFiles: any[] = getWorkspace().files;
-    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     // set new gate to redux
@@ -263,21 +239,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots = (
-        newWorkspaceState as any
-      ).files[fileIds[i]].plots.map((plt: any) => {
-        if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plt;
-          return plotWithOutGate;
-        } else {
-          return plt;
+      (newWorkspaceState as any).files[
+        fileIds[i]
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
+        (plt: any) => {
+          if (plt.population === plot.population) {
+            const { gate, ...plotWithOutGate } = plt;
+            return plotWithOutGate;
+          } else {
+            return plt;
+          }
         }
-      });
+      );
     }
 
-    let copyOfFiles: any[] = getWorkspace().files;
-    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     // set new gate to redux
@@ -298,8 +276,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[
+        plotIndex
+      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -320,12 +299,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
-      JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[
+      change.plotIndex
+    ] = JSON.parse(JSON.stringify(change.plot));
 
-    let copyOfFiles: any[] = getWorkspace().files;
-    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
@@ -356,8 +336,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(getWorkspace().workspaceState)
     );
     delete newWorkspaceState.files[fileId];
-    let copyOfFiles: any[] = getWorkspace().files;
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
@@ -411,8 +391,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceStatePlot.overlays.splice(deleteIndex, 1);
     }
 
-    let copyOfFiles: any[] = getWorkspace().files;
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
@@ -504,10 +484,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         break;
     }
 
-    // let copyOfFiles = JSON.parse(JSON.stringify(Files21));
-    let copyOfFiles: any[] = getWorkspace().files;
+    // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    let copyOfLocalFiles: any[] = getFiles();
     // TODO dont need to run Super algoithm
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     setTimeout(() => {
@@ -603,7 +583,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let originalFiles: any[] = getWorkspace().files;
+    let originalFiles: any[] = getFiles();
     let sortedFiles = [];
 
     for (
@@ -658,8 +638,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let copyOfFiles: any[] = getWorkspace().files;
-    let enrichedFiles = superAlgorithm(copyOfFiles, newWorkspaceState);
+    let copyOfLocalFiles: any[] = getFiles();
+    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
