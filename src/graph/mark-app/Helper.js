@@ -669,9 +669,7 @@ export const createDefaultPlotSnapShot = (
     selectedFile: fileId,
     clearOpenFiles: "false",
     isShared: "false",
-    openFiles: getWorkspace()
-      ?.files?.filter((file) => file?.id !== fileId && file?.id)
-      ?.map((file) => file?.id),
+    openFiles: [],
   };
 };
 

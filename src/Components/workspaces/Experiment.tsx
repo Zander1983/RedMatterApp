@@ -1193,9 +1193,9 @@ const Experiment = (props: any) => {
                           marginTop: 5,
                           color: "white",
                         }}
-                        onClick={() => {
-                          inputFile.current.click();
-                        }}
+                        // onClick={() => {
+                        //   inputFile.current.click();
+                        // }}
                       >
                         <input
                           type="file"
@@ -1249,47 +1249,7 @@ const Experiment = (props: any) => {
                     </Grid>
                   </>
                 ) : null}
-                {/* {uploadingFiles &&
-                  uploadingFiles.length > 0 &&
-                  uploadingFiles?.map((e: any, i: number) => {
-                    return (
-                      <div key={`uploadingFiles-${i}`}>
-                        <Grid
-                          item
-                          xs={12}
-                          style={{
-                            textAlign: "left",
-                            marginTop: 15,
-                            marginLeft: 10,
-                          }}
-                        >
-                          <h3>
-                            <b
-                              style={{
-                                backgroundColor: "#dfd",
-                                border: "solid 1px #ddd",
-                                borderRadius: 5,
-                                padding: 5,
-                                marginRight: 10,
-                              }}
-                            >
-                              file
-                            </b>
-                            {e.name}
-                            {"   "}•{"   "}
-                            <CircularProgress />
-                          </h3>
-                        </Grid>
-                        {i !== uploadingFiles?.length - 1 ? (
-                          <Divider
-                            style={{ marginTop: 15, marginBottom: 15 }}
-                          ></Divider>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                
-                 */}
+
                 {parsedFiles &&
                   parsedFiles?.map((e: any, i: number) => {
                     return (

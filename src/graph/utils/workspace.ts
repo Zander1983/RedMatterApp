@@ -25,7 +25,7 @@ export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
 };
 
-export const getFiles = (): Workspace => {
+export const getFiles = (): any[] => {
   return store.getState().fcsFiles.files;
 };
 

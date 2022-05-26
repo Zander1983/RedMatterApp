@@ -1,10 +1,12 @@
 import React from "react";
 import { getWorkspace, getFiles } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
-import Grid from "@material-ui/core/Grid";
 import PlotTableComponent from "./Table";
-//import WorkspaceState4Plots from "./WorkspaceState4Plots.json";
+import { snackbarService } from "uno-material-ui";
 import * as htmlToImage from "html-to-image";
+import FCSServices from "services/FCSServices/FCSServices";
+import { store } from "redux/store";
+import { Grid, Button } from "@material-ui/core";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -33,6 +35,9 @@ interface IState {
   testParam: string;
   controlFileId: string;
   activePipelineId: string;
+  parsedFiles: any[];
+  uploadingFiles: any[];
+  currentParsingFile: string;
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -49,6 +54,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       testParam: "some value",
       controlFileId: "",
       activePipelineId: "",
+      parsedFiles: [],
+      uploadingFiles: [],
+      currentParsingFile: "",
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -59,7 +67,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onInitState = this.onInitState.bind(this);
     this.onResetToControl = this.onResetToControl.bind(this);
     this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
+    this.inputFile = React.createRef();
   }
+
+  // const [uploadingFiles, setUploadingFiles] = useState(Object);
+
+  // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
+  // const [parsedFiles, setParsedFiles] = useState([]);
 
   onInitState = () => {
     //console.log("init====");
@@ -73,7 +87,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots
       : [];
     let isSnapShotCreated = false;
-    let copyOfFiles: any[] = getFiles();
+
+    // @ts-ignore
     let copyOfLocalFiles: any[] = getFiles();
 
     console.log("copyOfLocalFiles is ", copyOfLocalFiles);
@@ -648,29 +663,120 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  // shouldComponentUpdate(nextProps: Readonly<PlotControllerProps>, nextState: Readonly<IState>, nextContext: any): boolean {
-  //       if(!this.state.isTableRenderCall) return true;
-  //       return false;
-  //       // else {
-  //       //     let workspaceState = this.state.workspaceState;
-  //       //     // @ts-ignore
-  //       //     const newPlots =
-  //       //         workspaceState &&
-  //       //         // @ts-ignore
-  //       //         workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-  //       //     const oldPlots = nextState.workspaceState;
-  //       //
-  //       //     console.log(JSON.stringify(oldPlots)?.length, JSON.stringify(workspaceState)?.length);
-  //       //
-  //       //     if(JSON.stringify(oldPlots)?.length !== JSON.stringify(workspaceState)?.length){
-  //       //         console.log("shuld true=======");
-  //       //         return true;
-  //       //     }else {
-  //       //         console.log("shuld false=======");
-  //       //         return false;
-  //       //     }
-  //       // }
-  //   }
+  uploadFiles = async (files: FileList) => {
+    const fileList: { tempId: string; file: File }[] = [];
+    const allowedExtensions = ["fcs", "lmd"];
+
+    let listSize = 0;
+    for (const file of Array.from(files)) {
+      listSize += file.size;
+      if (
+        !allowedExtensions.includes(file.name.split(".").pop().toLowerCase())
+      ) {
+        snackbarService.showSnackbar(
+          file.name.substring(0, 20) +
+            (file.name.length > 20 ? "..." : "") +
+            '"' +
+            'Is not a .fcs or .lmd file: "',
+          "error"
+        );
+        continue;
+      }
+      const id = Math.random().toString(36).substring(7);
+      fileList.push({ tempId: id, file });
+    }
+
+    // let filesUpload = uploadingFiles
+    //   ? uploadingFiles.concat(
+    //       fileList.map((e) => {
+    //         return { name: e.file.name, id: e.tempId };
+    //       })
+    //     )
+    //   : fileList.map((e) => {
+    //       return { name: e.file.name, id: e.tempId };
+    //     });
+    // setUploadingFiles(filesUpload);
+    // console.log(">>> filesUpload is ", filesUpload);
+    let filesUpload = [];
+    const fcsservice = new FCSServices();
+    let channelSet = new Set();
+    let finalFileList = [];
+    for (const file of fileList) {
+      this.setState({
+        ...this.state,
+        currentParsingFile: file.file.name,
+      });
+
+      //setcurrentParsingFile(file.file.name);
+
+      //fileTempIdMap[file.tempId] = "";
+      let fcsFile = await file.file.arrayBuffer().then(async (e) => {
+        const buf = Buffer.from(e);
+        return await fcsservice.loadFileMetadata(buf).then((e) => {
+          return e;
+        });
+      });
+      fcsFile.name = file.file.name;
+      fcsFile.fileId = file.file.name;
+      //@ts-ignore
+      fcsFile.id = file.file.name;
+      //@ts-ignore
+      fcsFile.label = file.file.label;
+
+      // filesUpload.push({
+      //   name: file.file.name,
+      //   eventCount: fcsFile.jsonEventCount,
+      //   uploading: true
+      // });
+
+      let currentParsedFiles = this.state.parsedFiles || [];
+      currentParsedFiles.push({
+        name: file.file.name,
+        eventCount: fcsFile.jsonEventCount,
+      });
+
+      this.setState({
+        ...this.state,
+        parsedFiles: JSON.parse(JSON.stringify(currentParsedFiles)),
+      });
+
+      this.setState({
+        ...this.state,
+        currentParsingFile: "",
+      });
+
+      store.dispatch({
+        type: "ADD_FCS_FILE",
+        payload: fcsFile,
+      });
+
+      // if (channelSet.size === 0) {
+      //   if (getExperimentChannels().length === 0) {
+      //     channelSet = new Set(fcsFile.channels);
+      //   } else {
+      //     channelSet = new Set(getExperimentChannels());
+      //   }
+      // }
+
+      // if (
+      //   channelSet.size > 0 &&
+      //   !setContaineSet(new Set(fcsFile.channels), new Set(channelSet))
+      // ) {
+      //   snackbarService.showSnackbar(
+      //     "Channels of uploaded file " +
+      //       file.file.name +
+      //       " don't match experiments channels",
+      //     "error"
+      //   );
+
+      //   filesUpload = filesUpload.filter((x) => x.id !== file.tempId);
+      // } else {
+      //   finalFileList.push(file);
+      // }
+    }
+    // console.log("setting filesUpload to ", filesUpload);
+    // setUploadingFiles(filesUpload);
+  };
 
   componentDidUpdate(
     prevProps: Readonly<PlotControllerProps>,
@@ -768,12 +874,110 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             textAlign: "center",
           }}
         >
-          {this.props.sharedWorkspace ? (
+          {this.state.currentParsingFile?.length > 0 ? (
+            <>
+              <Grid
+                item
+                xs={12}
+                style={{
+                  textAlign: "left",
+                  marginTop: 15,
+                  marginLeft: 10,
+                }}
+              >
+                <h3>
+                  <b
+                    style={{
+                      backgroundColor: "#ff8080",
+                      border: "solid 1px #ddd",
+                      borderRadius: 5,
+                      padding: 5,
+                      marginRight: 10,
+                    }}
+                  >
+                    Parsing files, please wait....
+                  </b>
+                  {this.currentParsingFile}
+
+                  <div className="fancy-spinner">
+                    <div className="ring"></div>
+                    <div className="ring"></div>
+                    <div className="dot"></div>
+                  </div>
+                </h3>
+              </Grid>
+            </>
+          ) : null}
+          {this.state.parsedFiles &&
+            this.state.parsedFiles?.map((e: any, i: number) => {
+              return (
+                <div key={`uploadingFiles-${i}`}>
+                  <Grid
+                    item
+                    xs={12}
+                    style={{
+                      textAlign: "left",
+                      marginTop: 15,
+                      marginLeft: 10,
+                    }}
+                  >
+                    <h3>
+                      <b
+                        style={{
+                          backgroundColor: "#dfd",
+                          border: "solid 1px #ddd",
+                          borderRadius: 5,
+                          padding: 5,
+                          marginRight: 10,
+                        }}
+                      >
+                        file
+                      </b>
+                      {e.name}
+                      {"   "}•{"   "}{" "}
+                      <b
+                        style={{
+                          fontSize: 15,
+                          fontWeight: 500,
+                          color: "#777",
+                        }}
+                      >
+                        {e.eventCount + " events"}
+                      </b>
+                    </h3>
+                  </Grid>
+                </div>
+              );
+            })}
+          {getFiles()?.length < 1 ? (
             <span>
-              <h4 style={{ marginBottom: 70, marginTop: 100, color: "#777" }}>
-                If nothing is loaded, either this experiment is not shared or it
-                doesn't exist.
-              </h4>
+              <Button
+                variant="contained"
+                style={{
+                  backgroundColor: "#6666AA",
+                  maxHeight: 50,
+                  marginTop: 20,
+                  marginBottom: 25,
+                  color: "white",
+                }}
+                onClick={() => {
+                  this.inputFile.current.click();
+                }}
+              >
+                <input
+                  type="file"
+                  id="file"
+                  ref={this.inputFile}
+                  // value={fileUploadInputValue}
+                  multiple
+                  accept=".fcs, .lmd"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    this.uploadFiles(e.target.files);
+                  }}
+                />
+                Upload Files
+              </Button>
             </span>
           ) : (
             <span>

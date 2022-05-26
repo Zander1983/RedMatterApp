@@ -911,7 +911,7 @@ const WorkspaceTopBarComponent = ({
                   {/*// disabled={!!(workspace?.selectedFile)}>*/}
                   New Gate Pipeline
                 </Button>
-                <Button
+                {/* <Button
                   variant="contained"
                   size="small"
                   className={classes.topButton}
@@ -937,8 +937,8 @@ const WorkspaceTopBarComponent = ({
                         ))}
                     </Select>
                   </span>
-                </Button>
-                <span>
+                </Button> */}
+                {/* <span>
                   <Button
                     disabled={
                       (!plotCallNeeded && !renderPlotController) ||
@@ -968,44 +968,7 @@ const WorkspaceTopBarComponent = ({
                       </Typography>
                     )}
                   </Button>
-                  {/* <FormControlLabel
-                    style={{
-                      marginLeft: 0,
-                      height: 20,
-                      marginTop: 4,
-                      color: "#333",
-                    }}
-                    label={"Autosave"}
-                    control={
-                      <IOSSwitch
-                        disabled={!plotCallNeeded && !renderPlotController}
-                        checked={autoSaveEnabled}
-                        onChange={() => {
-                          setAutoSaveEnabled(!autoSaveEnabled);
-                          setSaveNeeded(false);
-                        }}
-                      />
-                    }
-                  /> */}
-                </span>
-                {/* {lastSavedTime ? (
-                  <span
-                    style={{
-                      height: "100%",
-                      display: "inline-flex",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "#333",
-                        fontStyle: "italic",
-                        fontSize: 9,
-                      }}
-                    >
-                      saved at {lastSavedTime}
-                    </span>
-                  </span>
-                ) : null} */}
+                </span> */}
               </div>
               <div>
                 <Button
