@@ -170,7 +170,7 @@ const router = [
     ),
   },
   {
-    path: "/graph-workspace/:experimentId/plots",
+    path: "/graph-workspace",
     component: ({ match }: any) => (
       <GraphWorkspaceComponent
         experimentId={match.params.experimentId}

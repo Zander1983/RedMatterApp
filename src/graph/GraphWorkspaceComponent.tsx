@@ -400,7 +400,6 @@ const GraphWorkspaceComponent = (props: {
           <div>
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 43 }}>
-              <PrototypeNotice experimentId={props.experimentId} />
               {plotCallNeeded || renderPlotController ? (
                 <NewPlotController
                   sharedWorkspace={sharedWorkspace}

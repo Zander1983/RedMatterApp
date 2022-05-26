@@ -125,7 +125,7 @@ const LandingHeader = () => {
                 </div>
               ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <div>
-                  <NavLink to="/experiments">
+                  <NavLink to="/graph-workspace">
                     <Button
                       variant="contained"
                       size="large"

@@ -70,6 +70,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.inputFile = React.createRef();
   }
 
+  inputFile = {
+    current: {
+      click: function () {},
+    },
+  };
+
   // const [uploadingFiles, setUploadingFiles] = useState(Object);
 
   // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
@@ -707,6 +713,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         currentParsingFile: file.file.name,
       });
 
+      console.log(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>this.state.currentParsingFile is now ",
+        this.state.currentParsingFile
+      );
+
       //setcurrentParsingFile(file.file.name);
 
       //fileTempIdMap[file.tempId] = "";
@@ -895,10 +906,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                       marginRight: 10,
                     }}
                   >
-                    Parsing files, please wait....
+                    Parsing file, please wait....
                   </b>
-                  {this.currentParsingFile}
-
+                  {this.state.currentParsingFile}
                   <div className="fancy-spinner">
                     <div className="ring"></div>
                     <div className="ring"></div>
@@ -967,8 +977,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 <input
                   type="file"
                   id="file"
+                  //@ts-ignore
                   ref={this.inputFile}
-                  // value={fileUploadInputValue}
                   multiple
                   accept=".fcs, .lmd"
                   style={{ display: "none" }}
