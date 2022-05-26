@@ -579,7 +579,7 @@ const WorkspaceTopBarComponent = ({
       // @ts-ignore
       workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
     let isSnapShotCreated = false;
-    let copyOfFiles: any[] = getWorkspace().files;
+    let copyOfFiles: any[] = getFiles();
     if (plots === null || plots === undefined) {
       const defaultFile = copyOfFiles?.[0];
       const {
@@ -791,7 +791,7 @@ const WorkspaceTopBarComponent = ({
   // }
 
   const renderModal = () => {
-    console.log(">>> workspace is ", workspace);
+    console.log(">>> rebdering WorkspaceTop Bar, workspace is ", workspace);
     return (
       <>
         {/*<GateNamePrompt />*/}
@@ -1062,7 +1062,7 @@ const WorkspaceTopBarComponent = ({
                     Download Stats
                   </CSVLink>
                 </Button>
-                <Button
+                {/* <Button
                   disabled={
                     (!plotCallNeeded && !renderPlotController) ||
                     activePipelineId === ""
@@ -1083,7 +1083,7 @@ const WorkspaceTopBarComponent = ({
                     style={{ width: 15, height: 15, marginRight: 10 }}
                   />
                   Share Workspace
-                </Button>
+                </Button> */}
               </div>
             </span>
           ) : (
