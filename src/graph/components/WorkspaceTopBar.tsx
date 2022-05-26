@@ -461,7 +461,6 @@ const WorkspaceTopBarComponent = ({
     ) {
       setLastSavedTime(new Date().toLocaleString());
       try {
-        debugger;
         await saveWorkspaceStateToServer(
           shared,
           experimentId,
@@ -775,7 +774,6 @@ const WorkspaceTopBarComponent = ({
   };
 
   const clearWorkStateFromServer = async () => {
-    debugger;
     // let selectedFileID:any = getWorkspace()?.selectedFile;
     // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
     // console.log(defaultFile);
@@ -791,7 +789,6 @@ const WorkspaceTopBarComponent = ({
   // }
 
   const renderModal = () => {
-    console.log(">>> rebdering WorkspaceTop Bar, workspace is ", workspace);
     return (
       <>
         {/*<GateNamePrompt />*/}
@@ -854,6 +851,11 @@ const WorkspaceTopBarComponent = ({
   };
 
   const _renderToolbar = () => {
+    let hasGate =
+      // @ts-ignore
+      getWorkspace().workspaceState?.files?.[getWorkspace()?.selectedFile]
+        ?.plots?.length > 1;
+
     return (
       <Grid
         style={{
@@ -909,40 +911,6 @@ const WorkspaceTopBarComponent = ({
                   {/*// disabled={!!(workspace?.selectedFile)}>*/}
                   New Gate Pipeline
                 </Button>
-                {/*<Button*/}
-                {/*  disabled={true}*/}
-                {/*  variant="contained"*/}
-                {/*  size="small"*/}
-                {/*  onClick={() => handleOpen(setClearModal)}*/}
-                {/*  className={classes.topButton}*/}
-                {/*  style={{*/}
-                {/*    backgroundColor: "#fafafa",*/}
-                {/*  }}*/}
-                {/*>*/}
-                {/*  Clear*/}
-                {/*</Button>*/}
-                {/* <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => downloadCSV()}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <CSVLink
-                    headers={heeaderForCSV}
-                    data={data}
-                    filename="WorkspaceReport.csv"
-                    className={classes.downloadBtnLayout}
-                  >
-                    <GetAppIcon
-                      fontSize="small"
-                      style={{ marginRight: 10 }}
-                    ></GetAppIcon>
-                    Download Stats
-                  </CSVLink>
-                </Button> */}
                 <Button
                   variant="contained"
                   size="small"
@@ -1048,6 +1016,7 @@ const WorkspaceTopBarComponent = ({
                   style={{
                     backgroundColor: "#fafafa",
                   }}
+                  disabled={!hasGate}
                 >
                   <CSVLink
                     headers={heeaderForCSV}
