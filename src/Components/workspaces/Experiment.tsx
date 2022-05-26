@@ -39,6 +39,7 @@ import {
   getAllFiles,
   getFiles,
 } from "./../../graph/utils/workspace";
+import "./styles.scss";
 
 const styles = {
   input: {
@@ -1238,6 +1239,12 @@ const Experiment = (props: any) => {
                           Parsing files, please wait....
                         </b>
                         {parsingFile}
+
+                        <div className="fancy-spinner">
+                          <div className="ring"></div>
+                          <div className="ring"></div>
+                          <div className="dot"></div>
+                        </div>
                       </h3>
                     </Grid>
                   </>

@@ -127,6 +127,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         copyOfLocalFiles,
         workspaceState
       );
+
       console.log("enrichedFiles is ", enrichedFiles);
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
       if (isSnapShotCreated) {
@@ -163,7 +164,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
-    debugger;
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));

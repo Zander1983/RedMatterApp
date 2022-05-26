@@ -77,8 +77,10 @@ function Plot(props) {
   //useTraceUpdate({ ...props, localPlot });
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [eventsOutOfCanvasPercentage, setEventsOutOfCanvasPercentage] =
-    useState(0);
+  const [
+    eventsOutOfCanvasPercentage,
+    setEventsOutOfCanvasPercentage,
+  ] = useState(0);
   const [gateName, setGateName] = useState({
     name: "",
     error: false,
@@ -210,6 +212,7 @@ function Plot(props) {
 
   const getFormattedEvents = (enrichedEvent, plot) => {
     const events = [];
+    //debugger;
 
     // if population is not "All", isInGate{gateName} is true. Remember, plot.population is the same as the gate name
     if (

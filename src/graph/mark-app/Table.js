@@ -94,9 +94,12 @@ function Table(props) {
           }}
         ></div>
       </div>
-      <table className="workspace">
-        <tbody style={{ maxWidth: "100%" }}>
-          <tr style={{ display: "flex", flexWrap: "wrap" }}>
+      <table
+        style={{ maxWidth: "100%", overflowX: "auto", display: "block" }}
+        className="workspace"
+      >
+        <tbody>
+          <tr>
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th
@@ -189,81 +192,73 @@ function Table(props) {
               );
             })}
           </tr>
-        </tbody>
-      </table>
-      {
-        <div
-          style={{
-            color: "#000",
-            backgroundColor: "#ffff99",
-            border: "1px solid #000",
-            textAlign: "center",
-            fontWeight: "bold",
-            marginBottom: 5,
-          }}
-        >
-          OTHER FILES
-          <span
-            style={{
-              float: "right",
-              marginRight: 20,
-              cursor: shouldFileRender.length && "pointer",
-              color: shouldFileRender.length ? "#000" : "gray",
-              fontWeight: shouldFileRender.length ? "bolder" : "bold",
-            }}
-            onClick={() => {
-              if (shouldFileRender.length) {
-                setShouldFileRender([]);
-                WorkspaceDispatch.UpdateOpenFiles("", "close");
-              }
-            }}
-          >
-            {"Close All"}
-          </span>
-          <span
-            style={{
-              float: "right",
-              marginRight: 20,
-              cursor:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1 &&
-                "pointer",
-              color:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1
-                  ? "#000"
-                  : "gray",
-              fontWeight:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1
-                  ? "bolder"
-                  : "bold",
-            }}
-            onClick={() => {
-              setShouldFileRender(
-                getWorkspace()
-                  ?.files?.map((file) => file?.id)
-                  .filter(
-                    (fileId) =>
-                      fileId !== getWorkspace()?.workspaceState?.controlFileId
-                  )
-              );
-              WorkspaceDispatch.UpdateOpenFiles("", "view");
-            }}
-          >
-            {"View All"}
-          </span>
-        </div>
-      }
-      <table>
-        <tbody>
-          <tr
-            style={{
-              border: "1px solid gray",
-              margin: 1,
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginBottom: 5,
-            }}
-          >
+          <tr>
+            <td colSpan="100">
+              <div
+                style={{
+                  color: "#000",
+                  backgroundColor: "#ffff99",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  marginBottom: 5,
+                  border: "1px solid #000",
+                }}
+              >
+                <span
+                  style={{
+                    float: "left",
+                    marginLeft: 20,
+                    cursor: shouldFileRender.length && "pointer",
+                    color: shouldFileRender.length ? "#000" : "gray",
+                    fontWeight: shouldFileRender.length ? "bolder" : "bold",
+                  }}
+                  onClick={() => {
+                    if (shouldFileRender.length) {
+                      setShouldFileRender([]);
+                      WorkspaceDispatch.UpdateOpenFiles("", "close");
+                    }
+                  }}
+                >
+                  {"Close All"}
+                </span>
+                <span
+                  style={{
+                    float: "left",
+                    marginLeft: 20,
+                    cursor:
+                      shouldFileRender.length !==
+                        getWorkspace()?.files.length - 1 && "pointer",
+                    color:
+                      shouldFileRender.length !==
+                      getWorkspace()?.files.length - 1
+                        ? "#000"
+                        : "gray",
+                    fontWeight:
+                      shouldFileRender.length !==
+                      getWorkspace()?.files.length - 1
+                        ? "bolder"
+                        : "bold",
+                  }}
+                  onClick={() => {
+                    setShouldFileRender(
+                      getWorkspace()
+                        ?.files?.map((file) => file?.id)
+                        .filter(
+                          (fileId) =>
+                            fileId !==
+                            getWorkspace()?.workspaceState?.controlFileId
+                        )
+                    );
+                    WorkspaceDispatch.UpdateOpenFiles("", "view");
+                  }}
+                >
+                  {"View All"}
+                </span>
+                OTHER FILES
+              </div>
+            </td>
+          </tr>
+          <tr>
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
               return (
                 <td
@@ -332,17 +327,7 @@ function Table(props) {
           {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
             // LOOPING THROUGH NON-CONTROL FILES
             return (
-              <tr
-                key={`tr-${fileIndex}`}
-                style={{
-                  border: "1px solid gray",
-                  margin: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginBottom: 5,
-                }}
-              >
+              <tr key={`tr-${fileIndex}`}>
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
                     <td

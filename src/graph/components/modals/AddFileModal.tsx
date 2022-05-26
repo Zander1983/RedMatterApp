@@ -253,7 +253,7 @@ const AddFileModal = React.memo(
               </Grid>
             ) : (
               props.files.map((fileMetadata: any, i: number) => {
-                console.log(">> fileMetadata is ", fileMetadata);
+                //console.log(">> fileMetadata is ", fileMetadata);
                 const divider =
                   i === filesMetadata.length - 1 ? null : (
                     <Divider className={classes.fileSelectDivider} />
