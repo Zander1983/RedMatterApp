@@ -12,7 +12,7 @@ import { AuthenticationApiFetchParamCreator } from "api_calls/nodejsback";
 import useGAEventTrackers from "hooks/useGAEvents";
 
 import userManager from "./../users/userManager";
-import SecurityUtil from '../../utils/Security.js';
+import SecurityUtil from "../../utils/Security.js";
 
 const useStyles = makeStyles((theme) => ({
   paperStyle: {
@@ -98,8 +98,11 @@ const Login = (props: any) => {
     isUserLoggedin && window.location.replace("/");
   }, []);
 
-  const enableCache = async (items:any) => {
-    sessionStorage.setItem("experimentData", SecurityUtil.encryptData(items, process.env.REACT_APP_DATA_SECRET_SOLD));
+  const enableCache = async (items: any) => {
+    sessionStorage.setItem(
+      "experimentData",
+      SecurityUtil.encryptData(items, process.env.REACT_APP_DATA_SECRET_SOLD)
+    );
     sessionStorage.setItem("e_cache_version", "1");
   };
 
@@ -133,17 +136,22 @@ const Login = (props: any) => {
         organisationId: res.data.organisationId,
         rules: userDetails.data?.rules,
       };
-      if(sessionStorage.getItem("experimentData") === null
-          || sessionStorage.getItem("experimentData") === undefined ) {
-        await enableCache({experiments: userDetails.data?.data});
+      if (
+        sessionStorage.getItem("experimentData") === null ||
+        sessionStorage.getItem("experimentData") === undefined
+      ) {
+        await enableCache({ experiments: userDetails.data?.data });
       }
-      dispatch({type: "LOGIN", payload: { user: { profile: loginData } }});
-      eventStacker("A user has LoggedIn", `User's subscription type is ${loginData.subscriptionType}.`);
+      dispatch({ type: "LOGIN", payload: { user: { profile: loginData } } });
+      eventStacker(
+        "A user has LoggedIn",
+        `User's subscription type is ${loginData.subscriptionType}.`
+      );
       snackbarService.showSnackbar("Logged in!", "success");
       if (process.env.REACT_APP_NO_WORKSPACES === "true") {
         props.history.push("/analyse");
       } else {
-        props.history.push("/experiments");
+        props.history.push("/graph-workspace");
       }
     } catch (err) {
       setLoading(false);

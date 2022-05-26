@@ -97,7 +97,7 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v3.0.1"}
+                  {"v3.0.2"}
                 </b>
               </NavLink>
             </Typography>
@@ -108,14 +108,14 @@ const AppHeader = (props: any) => {
             ) : null}
             {isLoggedIn ? (
               <>
-                {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                {/* {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <NavLink className={classes.topBarLink} to="/experiments">
                     Experiments
                   </NavLink>
-                )}
-                <NavLink className={classes.topBarLink} to="/plans">
+                )} */}
+                {/* <NavLink className={classes.topBarLink} to="/plans">
                   Plans
-                </NavLink>
+                </NavLink> */}
                 <NavLink className={classes.topBarLink} to="/user-profile">
                   Profile
                 </NavLink>

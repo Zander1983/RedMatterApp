@@ -82,7 +82,7 @@ export default function Plans(props: { session_id: any }) {
         <h1>Thank you, your payment has been received!</h1>
         <h2>
           Go to
-          <NavLink to="/experiments" style={{ marginInline: 5 }}>
+          <NavLink to="/graph-workspace" style={{ marginInline: 5 }}>
             Experiments
           </NavLink>
           to begin analysing your files.
