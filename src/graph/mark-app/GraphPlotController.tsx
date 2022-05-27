@@ -6,7 +6,7 @@ import { snackbarService } from "uno-material-ui";
 import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import { store } from "redux/store";
-import { Grid, Button } from "@material-ui/core";
+import { Grid, Button, TextField } from "@material-ui/core";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -71,6 +71,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onInitState = this.onInitState.bind(this);
     this.onResetToControl = this.onResetToControl.bind(this);
     this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
+    this.setNewSpillover = this.setNewSpillover.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -801,6 +802,30 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }, 1000);
   }
 
+  setNewSpillover = (rowI, colI, newColumnData) => {
+    console.log("in update spillover, ", rowI, colI, newColumnData);
+    this.state.controlFileSpillover.invertedMatrix.data[rowI][
+      colI
+    ] = newColumnData;
+
+    console.log(
+      ">>>>>>> ",
+      this.state.controlFileSpillover.invertedMatrix.data[rowI][colI]
+    );
+
+    this.setState({
+      ...this.state,
+      controlFileSpillover: this.state.controlFileSpillover,
+    });
+  };
+
+  updateSpillover = () => {
+    console.log(
+      ">>>>>>> ",
+      this.state.controlFileSpillover.invertedMatrix.data
+    );
+  };
+
   renderTable = () => {
     if (this.state.isTableRenderCall && this.state.enrichedFiles?.length > 0) {
       return (
@@ -825,61 +850,146 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             </Button>
 
             {this.state.showSpillover && (
-              <table
-                style={{
-                  color: "#000",
-                  //backgroundColor: "#ffff99",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  marginBottom: 5,
-                  border: "1px solid #e0e0eb",
-                }}
-              >
-                <tbody>
-                  <tr>
-                    <th></th>
-                    {this.state.controlFileSpillover?.spilloverParamLabels.map(
-                      (label, i) => {
-                        return <th key={`th--${i}`}>{label}</th>;
+              <>
+                <table
+                  style={{
+                    color: "#000",
+                    //backgroundColor: "#ffff99",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    marginBottom: 5,
+                    border: "1px solid #e0e0eb",
+                  }}
+                >
+                  <tbody>
+                    <tr>
+                      <th></th>
+                      {this.state.controlFileSpillover?.spilloverParamLabels.map(
+                        (label, i) => {
+                          return <th key={`th--${i}`}>{label}</th>;
+                        }
+                      )}
+                    </tr>
+                    {this.state.controlFileSpillover?.invertedMatrix.data.map(
+                      (rowData: any, rowI: number) => {
+                        return (
+                          <tr key={`tr--${rowI}`}>
+                            <td
+                              key={`td--${rowI}`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 15,
+                              }}
+                            >
+                              {
+                                this.state.controlFileSpillover
+                                  ?.spilloverParamLabels[rowI]
+                              }
+                            </td>
+
+                            {rowData.map((columnData: any, colI: number) => {
+                              console.log(">> columnData is ", columnData);
+                              return (
+                                <td
+                                  key={`th-${rowI}-${colI}`}
+                                  style={{
+                                    border: "1px solid #e0e0eb",
+                                    padding: 15,
+                                  }}
+                                >
+                                  <TextField
+                                    style={
+                                      {
+                                        //width: "20%",
+                                      }
+                                    }
+                                    value={columnData}
+                                    onChange={(newColumnData: any) => {
+                                      console.log(
+                                        "newName.target.value is ",
+                                        newColumnData.target.value
+                                      );
+
+                                      this.setNewSpillover(
+                                        rowI,
+                                        colI,
+                                        newColumnData.target.value
+                                      );
+                                    }}
+                                  />
+
+                                  {/* <TextField
+                                  style={{
+                                    width: "20%",
+                                  }}
+                                  value={{ columnData }}
+                                  onChange={(newColumnData: any) => {
+                                    console.log(
+                                      "newColumnData is ",
+                                      newColumnData
+                                    );
+                                  }}
+                                />
+
+                                <button
+                                  onClick={(val) => {}}
+                                  style={{
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "white",
+                                    fontWeight: 500,
+                                    padding: "2px 5px",
+                                    background: "#66a",
+                                    width: 50,
+                                    margin: "0px 8px",
+                                    borderRadius: 5,
+                                  }}
+                                >
+                                  {"Save"}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    //setEditingFileName(null);
+                                  }}
+                                  style={{
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "white",
+                                    fontWeight: 500,
+                                    padding: "2px 5px",
+                                    background: "#66a",
+                                    width: 70,
+                                    borderRadius: 5,
+                                  }}
+                                >
+                                  {"Cancel"}
+                                </button> */}
+
+                                  {/* {columnData} */}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
                       }
                     )}
-                  </tr>
-                  {this.state.controlFileSpillover?.invertedMatrix.data.map(
-                    (rowData: any, i: number) => {
-                      return (
-                        <tr key={`tr--${i}`}>
-                          <td
-                            key={`td--${i}`}
-                            style={{
-                              border: "1px solid #e0e0eb",
-                              padding: 15,
-                            }}
-                          >
-                            {
-                              this.state.controlFileSpillover
-                                ?.spilloverParamLabels[i]
-                            }
-                          </td>
+                  </tbody>
+                </table>
 
-                          {rowData.map((columnData: any, colI: number) => {
-                            return (
-                              <td
-                                key={`th-${i}-${colI}`}
-                                style={{
-                                  border: "1px solid #e0e0eb",
-                                  padding: 15,
-                                }}
-                              >
-                                {columnData}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    }
-                  )}
-                </tbody>
-              </table>
+                <Button
+                  variant="outlined"
+                  style={{
+                    // backgroundColor: "#6666AA",
+                    marginLeft: 5,
+                    marginBottom: 3,
+                    // color: "white",
+                  }}
+                  onClick={(e) => this.updateSpillover()}
+                >
+                  Update
+                </Button>
+              </>
             )}
           </div>
           <PlotTableComponent

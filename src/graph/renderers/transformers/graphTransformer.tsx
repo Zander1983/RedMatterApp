@@ -3,7 +3,7 @@ import { getPlotAxisRangeString, getXandYRanges } from "graph/resources/plots";
 import { Plot, Point } from "graph/resources/types";
 import { maxHeaderSize } from "http";
 import numeral from "numeral";
-import FCSServices from "services/FCSServices/FCSServices";
+import FCSServices from "graph/mark-app/FCSServices/FCSServices";
 import {
   bottomPadding,
   leftPadding,
@@ -189,7 +189,10 @@ export default class GraphTransformer extends Transformer {
           ((this.y1 / this.scale - number) / plotRange) * abstractRange;
   }
 
-  abstractLinearToLogicle(p: { x: number; y: number }): {
+  abstractLinearToLogicle(p: {
+    x: number;
+    y: number;
+  }): {
     x: number;
     y: number;
   } {
@@ -215,7 +218,10 @@ export default class GraphTransformer extends Transformer {
     return p;
   }
 
-  abstractLogicleToLinear(p: { x: number; y: number }): {
+  abstractLogicleToLinear(p: {
+    x: number;
+    y: number;
+  }): {
     x: number;
     y: number;
   } {

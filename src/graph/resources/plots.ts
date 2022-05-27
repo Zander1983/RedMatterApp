@@ -1,5 +1,5 @@
 import { ColorSchema, generateColor } from "graph/utils/color";
-import FCSServices from "services/FCSServices/FCSServices";
+import FCSServices from "graph/mark-app/FCSServices/FCSServices";
 import {
   AxisName,
   Plot,
