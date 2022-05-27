@@ -26,8 +26,6 @@ module.exports.getLogicles = (params) => {
 module.exports.getLogicle = (biexponentialAxisLimits) => {
   var transformParams = this.getTMWA(biexponentialAxisLimits);
 
-  console.log("Logicle is ", Logicle);
-
   return new Logicle(transformParams.T, transformParams.W);
 };
 

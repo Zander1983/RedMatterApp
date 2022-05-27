@@ -128,6 +128,8 @@ const AddFileModal = React.memo(
       setFiles(fileArray);
     }, [searchingText]);
 
+    console.log(">>> props.open is ", props.open);
+
     return (
       <Modal
         open={props.open}
@@ -149,30 +151,6 @@ const AddFileModal = React.memo(
           </p>
 
           <Grid container direction="row">
-            {/* <Grid item xs={4} style={{ paddingRight: 20 }}>
-              <Button
-                size="large"
-                variant="contained"
-                style={{
-                  backgroundColor: "#66d",
-                  color: "white",
-                  width: "100%",
-                  height: 30,
-                  marginBottom: 15,
-                }}
-                startIcon={
-                  everythingDownloaded ? null : (
-                    <DownloadOutlined
-                      style={{ fontSize: 15, color: "white" }}
-                    />
-                  )
-                }
-                onClick={downloadAll}
-                // disabled={everythingDownloaded}
-              >
-                Plot all samples
-              </Button>
-            </Grid> */}
             <Grid item xs={12}>
               <div>
                 <TextField
@@ -191,26 +169,6 @@ const AddFileModal = React.memo(
                 />
               </div>
             </Grid>
-            {/* <Grid item xs={12}>
-              <div>
-                <TextField
-                  style={{
-                    width: "100%",
-                    padding: 0,
-                    marginTop: 5,
-                    marginBottom: 5,
-                  }}
-                  value={searchingText}
-                  margin="dense"
-                  id="gate-name-textinput"
-                  label="Search By File Title"
-                  type="text"
-                  onChange={(e: any) => {
-                    setSearchingText(e.target.value);
-                  }}
-                />
-              </div>
-            </Grid> */}
           </Grid>
 
           {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (

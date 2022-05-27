@@ -4,7 +4,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
 import * as htmlToImage from "html-to-image";
-import FCSServices from "services/FCSServices/FCSServices";
+import FCSServices from "./FCSServices/FCSServices";
 import { store } from "redux/store";
 import { Grid, Button } from "@material-ui/core";
 import {
@@ -38,6 +38,8 @@ interface IState {
   parsedFiles: any[];
   uploadingFiles: any[];
   currentParsingFile: string;
+  controlFileSpillover: {};
+  showSpillover: boolean;
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -57,6 +59,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       parsedFiles: [],
       uploadingFiles: [],
       currentParsingFile: "",
+      controlFileSpillover: {},
+      showSpillover: false,
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -85,8 +89,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //console.log("init====");
     let workspaceState = getWorkspace().workspaceState;
 
-    console.log("workspaceState is ", workspaceState);
-
     // @ts-ignore
     const plots = workspaceState
       ? // @ts-ignore
@@ -98,7 +100,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfLocalFiles: any[] = getFiles();
 
     console.log("copyOfLocalFiles is ", copyOfLocalFiles);
-    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
+    console.log("workspaceState is ", workspaceState);
 
     let defaultFile = null;
     let pipeline = null;
@@ -140,8 +142,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       isSnapShotCreated = true;
     }
 
-    console.log("Default workspaceState is ", workspaceState);
-
     // @ts-ignore
     if (workspaceState?.length > 0 || plots?.length > 0) {
       let enrichedFiles: any[] = superAlgorithm(
@@ -149,13 +149,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         workspaceState
       );
 
-      console.log("enrichedFiles is ", enrichedFiles);
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
+
+      let controlEnrichedFile = enrichedFiles.find(
+        (enrichedFile) => enrichedFile.isControlFile
+      );
+
       if (isSnapShotCreated) {
         WorkspaceDispatch.UpdatePlotStates(workspaceState);
         if (defaultFile) WorkspaceDispatch.UpdateSelectedFile(defaultFile?.id);
       }
+
+      console.log(
+        ">>>>> controlEnrichedFile.spilloverObj is ",
+        controlEnrichedFile.spilloverObj
+      );
       this.setState({
+        controlFileSpillover: controlEnrichedFile.spilloverObj,
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
         controlFileId:
@@ -275,6 +285,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     let copyOfLocalFiles: any[] = getFiles();
+
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
@@ -515,8 +526,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     }, 10);
 
-    console.log(">>> newWorkspaceState is ", newWorkspaceState);
-
     this.setState({
       workspaceState: newWorkspaceState,
       enrichedFiles: enrichedFiles,
@@ -713,11 +722,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         currentParsingFile: file.file.name,
       });
 
-      console.log(
-        ">>>>>>>>>>>>>>>>>>>>>>>>>this.state.currentParsingFile is now ",
-        this.state.currentParsingFile
-      );
-
       //setcurrentParsingFile(file.file.name);
 
       //fileTempIdMap[file.tempId] = "";
@@ -760,33 +764,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         type: "ADD_FCS_FILE",
         payload: fcsFile,
       });
-
-      // if (channelSet.size === 0) {
-      //   if (getExperimentChannels().length === 0) {
-      //     channelSet = new Set(fcsFile.channels);
-      //   } else {
-      //     channelSet = new Set(getExperimentChannels());
-      //   }
-      // }
-
-      // if (
-      //   channelSet.size > 0 &&
-      //   !setContaineSet(new Set(fcsFile.channels), new Set(channelSet))
-      // ) {
-      //   snackbarService.showSnackbar(
-      //     "Channels of uploaded file " +
-      //       file.file.name +
-      //       " don't match experiments channels",
-      //     "error"
-      //   );
-
-      //   filesUpload = filesUpload.filter((x) => x.id !== file.tempId);
-      // } else {
-      //   finalFileList.push(file);
-      // }
     }
-    // console.log("setting filesUpload to ", filesUpload);
-    // setUploadingFiles(filesUpload);
   };
 
   componentDidUpdate(
@@ -811,10 +789,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       JSON.stringify(prevState.workspaceState)?.length !==
         JSON.stringify(workspaceState)?.length
     ) {
-      //console.log(" did update true=======");
       this.onInitState();
     } else {
-      //console.log("did update false=======");
     }
   }
 
@@ -827,22 +803,100 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   renderTable = () => {
     if (this.state.isTableRenderCall && this.state.enrichedFiles?.length > 0) {
-      //console.log("== call table ==");
       return (
-        <PlotTableComponent
-          enrichedFiles={this.state.enrichedFiles}
-          className="workspace"
-          onChangeChannel={this.onChangeChannel}
-          addOverlay={this.addOverlay}
-          onAddGate={this.onAddGate}
-          onDeleteGate={this.onDeleteGate}
-          onEditGate={this.onEditGate}
-          onResize={this.onResize}
-          sortByGate={this.sortByGate}
-          downloadPlotAsImage={this.downloadPlotAsImage}
-          onResetToControl={this.onResetToControl}
-          testParam={this.state.testParam}
-        />
+        <>
+          <div>
+            <Button
+              variant="outlined"
+              style={{
+                // backgroundColor: "#6666AA",
+                marginLeft: 5,
+                marginBottom: 3,
+                // color: "white",
+              }}
+              onClick={(e) =>
+                this.setState({
+                  ...this.state,
+                  showSpillover: !this.state.showSpillover,
+                })
+              }
+            >
+              Compensation
+            </Button>
+
+            {this.state.showSpillover && (
+              <table
+                style={{
+                  color: "#000",
+                  //backgroundColor: "#ffff99",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  marginBottom: 5,
+                  border: "1px solid #e0e0eb",
+                }}
+              >
+                <tbody>
+                  <tr>
+                    <th></th>
+                    {this.state.controlFileSpillover?.spilloverParamLabels.map(
+                      (label, i) => {
+                        return <th key={`th--${i}`}>{label}</th>;
+                      }
+                    )}
+                  </tr>
+                  {this.state.controlFileSpillover?.invertedMatrix.data.map(
+                    (rowData: any, i: number) => {
+                      return (
+                        <tr key={`tr--${i}`}>
+                          <td
+                            key={`td--${i}`}
+                            style={{
+                              border: "1px solid #e0e0eb",
+                              padding: 15,
+                            }}
+                          >
+                            {
+                              this.state.controlFileSpillover
+                                ?.spilloverParamLabels[i]
+                            }
+                          </td>
+
+                          {rowData.map((columnData: any, colI: number) => {
+                            return (
+                              <td
+                                key={`th-${i}-${colI}`}
+                                style={{
+                                  border: "1px solid #e0e0eb",
+                                  padding: 15,
+                                }}
+                              >
+                                {columnData}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    }
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <PlotTableComponent
+            enrichedFiles={this.state.enrichedFiles}
+            className="workspace"
+            onChangeChannel={this.onChangeChannel}
+            addOverlay={this.addOverlay}
+            onAddGate={this.onAddGate}
+            onDeleteGate={this.onDeleteGate}
+            onEditGate={this.onEditGate}
+            onResize={this.onResize}
+            sortByGate={this.sortByGate}
+            downloadPlotAsImage={this.downloadPlotAsImage}
+            onResetToControl={this.onResetToControl}
+            testParam={this.state.testParam}
+          />
+        </>
       );
     } else return null;
   };
@@ -856,7 +910,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (getWorkspace()?.selectedFile && plots?.length > 0) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return (
-        <div style={{ padding: 10 }}>
+        <div>
           {!this.state.isTableRenderCall ? (
             <Grid
               container

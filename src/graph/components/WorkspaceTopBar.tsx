@@ -196,11 +196,12 @@ const WorkspaceTopBarComponent = ({
   }, [activePipeline]);
 
   const handleOpen = (func: Function) => {
-    console.log("in handleOpen");
+    console.log("in handleOpen, addFileModalOpen is ", addFileModalOpen);
     func(true);
   };
 
   const onQuite = () => {
+    console.log("in onQuite");
     setAddFileModalOpen(false);
   };
 
@@ -774,32 +775,13 @@ const WorkspaceTopBarComponent = ({
   };
 
   const clearWorkStateFromServer = async () => {
-    // let selectedFileID:any = getWorkspace()?.selectedFile;
-    // const defaultFile = selectedFileID ? getWorkspace()?.files?.filter(file => file.id === selectedFileID)?.[0] : getWorkspace()?.files?.[0];
-    // console.log(defaultFile);
-    // console.log(selectedFileID);
-    //  const { xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex, xAxisScaleType, yAxisScaleType } = getPlotChannelAndPosition(defaultFile);
-    // const resetState = createDefaultPlotSnapShot(selectedFileID || defaultFile?.id, experimentId, xAxisLabel, yAxisLabel, xAxisIndex, yAxisIndex);
     WorkspaceDispatch.ResetWorkspaceExceptFiles();
     await saveWorkspace(false);
   };
 
-  // if (autoSaveEnabled && isSaveNeeded) {
-  //   Debounce(() => saveWorkspace(), 4000);
-  // }
-
   const renderModal = () => {
     return (
       <>
-        {/*<GateNamePrompt />*/}
-        {/*<PipeLineNamePrompt*/}
-        {/*    open={pipeLineModalOpen}*/}
-        {/*    pipelines={pipelines}*/}
-        {/*    setOpen={setPipeLineModalOpen}*/}
-        {/*    closeCall={{*/}
-        {/*      quit: onQuite,*/}
-        {/*      save: onSavePipeline,*/}
-        {/*    }}/>*/}
         {getFiles()?.length > 0 && (
           <AddFileModal
             open={addFileModalOpen}
@@ -840,7 +822,6 @@ const WorkspaceTopBarComponent = ({
             },
           }}
         />
-
         <LinkShareModal
           open={linkShareModalOpen}
           workspaceId={newWorkspaceId}
@@ -859,7 +840,7 @@ const WorkspaceTopBarComponent = ({
     return (
       <Grid
         style={{
-          position: "fixed",
+          //position: "fixed",
           zIndex: 100,
           top: 64,
           backgroundColor: "white",
@@ -908,67 +889,8 @@ const WorkspaceTopBarComponent = ({
                     fontWeight: "bold",
                   }}
                 >
-                  {/*// disabled={!!(workspace?.selectedFile)}>*/}
                   New Gate Pipeline
                 </Button>
-                {/* <Button
-                  variant="contained"
-                  size="small"
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                    Gate Pipelines:
-                    <Select
-                      disableUnderline
-                      value={activePipelineId ? activePipelineId : ""}
-                      name="pipeline"
-                      style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                      onChange={onPipelineChanged}
-                    >
-                      <MenuItem value="">Select Pipeline</MenuItem>
-                      {pipelines &&
-                        pipelines?.map((pipeline: any, index: any) => (
-                          <MenuItem key={index} value={pipeline?._id}>
-                            {pipeline?.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </span>
-                </Button> */}
-                {/* <span>
-                  <Button
-                    disabled={
-                      (!plotCallNeeded && !renderPlotController) ||
-                      activePipelineId === ""
-                    }
-                    variant="contained"
-                    size="small"
-                    onClick={() => saveWorkspace()}
-                    className={classes.topButton}
-                    style={{
-                      backgroundColor: "#fafafa",
-                      width: 160,
-                    }}
-                  >
-                    {savingWorkspace ? (
-                      <CircularProgress style={{ width: 20, height: 20 }} />
-                    ) : (
-                      <Typography
-                        style={{
-                          color:
-                            !plotCallNeeded && !renderPlotController
-                              ? "rgba(0, 0, 0, 0.26)"
-                              : "black",
-                        }}
-                      >
-                        Save Gate Pipeline
-                      </Typography>
-                    )}
-                  </Button>
-                </span> */}
               </div>
               <div>
                 <Button
@@ -994,28 +916,6 @@ const WorkspaceTopBarComponent = ({
                     Download Stats
                   </CSVLink>
                 </Button>
-                {/* <Button
-                  disabled={
-                    (!plotCallNeeded && !renderPlotController) ||
-                    activePipelineId === ""
-                  }
-                  variant="contained"
-                  // size="small"
-                  onClick={() => onLinkShareClick()}
-                  className={classes.topButton}
-                  style={{
-                    backgroundColor: "#fafafa",
-                    marginRight: 10,
-                    width: 200,
-                  }}
-                >
-                  <img
-                    src={ShareIcon}
-                    alt="shareicon"
-                    style={{ width: 15, height: 15, marginRight: 10 }}
-                  />
-                  Share Workspace
-                </Button> */}
               </div>
             </span>
           ) : (
@@ -1036,18 +936,6 @@ const WorkspaceTopBarComponent = ({
                       </option>
                     ))}
                 </select>
-                {/*<Button*/}
-                {/*    disabled={!plotCallNeeded && !renderPlotController}*/}
-                {/*    variant="contained"*/}
-                {/*    size="small"*/}
-                {/*    onClick={() => setPipeLineModalOpen(true)}*/}
-                {/*    className={classes.topButton}*/}
-                {/*    style={{*/}
-                {/*      backgroundColor: "#fafafa",*/}
-                {/*      width: 137,*/}
-                {/*    }}>*/}
-                {/*  +New*/}
-                {/*</Button>*/}
               </span>
               <span className={classes.sharedHeader}>Shared Workspace</span>
             </div>

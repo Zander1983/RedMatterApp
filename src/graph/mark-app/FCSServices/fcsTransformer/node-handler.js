@@ -6,7 +6,7 @@ const fcsHelper = require("./fcsHelper");
 const generalHelper = require("./generalHelper");
 
 export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
-  let { channelsEvents, paramsAnalysis, channels } = parse(fcs);
+  let { channelsEvents, paramsAnalysis, channels, spilloverObj } = parse(fcs);
 
   // 1. Turn data into the expected file format
   const fileData = getFileInExpectedFormat(channelsEvents);
@@ -31,8 +31,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
   //promises.push(saveFileToS3(fileName, fileBuffer));
 
   console.log("[INFO] STEP 3 => SAVING METADATA TO DYNAMO");
-
-  console.log("!!!! paramsAnalysis is ", paramsAnalysis);
 
   channels = channels.map((c) => {
     let paramAnalysis;
@@ -59,6 +57,7 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
     channels: channels,
     jsonEventCount: fileData.length,
     events: fileData,
+    spilloverObj: spilloverObj,
   };
 
   // 3. Save metadata of file to dynamo with link to S3 file
@@ -154,9 +153,10 @@ const parse = (fcs) => {
     };
   }
 
-  console.log(">>>> new paramsAnalysis is ", paramsAnalysis);
+  console.log("sclae.spilloverObj is ", scale.spilloverObj);
+  let spilloverObj = scale.spilloverObj;
 
-  return { channelsEvents, paramsAnalysis, channels };
+  return { channelsEvents, paramsAnalysis, channels, spilloverObj };
 };
 
 // const getParamsAnalysis = (fcs, scale, channelNames) => {

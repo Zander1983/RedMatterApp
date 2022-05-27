@@ -384,19 +384,15 @@ Scale.prototype.getNearestPower = function (v) {
 };
 
 Scale.prototype.setSpillover = function (params) {
-  var spilloverObj = params.fcs.parseSpillover({
+  this.spilloverObj = params.fcs.parseSpillover({
     spillover: this.spillover,
   });
 
-  if (spilloverObj) {
-    this.spilloverValues = spilloverObj.spilloverValues;
-    this.spilloverParams = spilloverObj.spilloverParams;
-    this.invertedMatrix = spilloverObj.invertedMatrix;
-    this.indexesOfSpilloverParams = spilloverObj.indexesOfSpilloverParams;
-    console.log(
-      "spilloverObj.invertedMatrix; is ",
-      spilloverObj.invertedMatrix._data
-    );
+  if (this.spilloverObj) {
+    this.spilloverValues = this.spilloverObj.spilloverValues;
+    this.spilloverParams = this.spilloverObj.spilloverParams;
+    this.invertedMatrix = this.spilloverObj.invertedMatrix;
+    this.indexesOfSpilloverParams = this.spilloverObj.indexesOfSpilloverParams;
   }
 };
 

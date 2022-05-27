@@ -399,7 +399,7 @@ const GraphWorkspaceComponent = (props: {
         >
           <div>
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
-            <Grid style={{ marginTop: 43 }}>
+            <Grid style={{ marginTop: 5 }}>
               {plotCallNeeded || renderPlotController ? (
                 <NewPlotController
                   sharedWorkspace={sharedWorkspace}

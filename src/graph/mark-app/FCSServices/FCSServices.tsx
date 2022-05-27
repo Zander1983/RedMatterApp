@@ -1,6 +1,6 @@
 import fcsModel from "./fcsTransformer/fcsModel";
 import LogicleAPI from "./logicle-js/logicleApi";
-import MarkLogicle from "./logicleMark";
+import MarkLogicle from "../logicleMark";
 import { parseAndUpload } from "./fcsTransformer/node-handler";
 
 class FCSServices {
@@ -11,14 +11,7 @@ class FCSServices {
         eventsToRead: -1,
       })
       .then(function (fcsFile) {
-        // // event,
-        // // fcs,
-        // // fileId,
-        // // experimentId,
-        // // upload
-
         let fileEvents = parseAndUpload({}, fcsFile, 123456, 987654, false);
-
         return fileEvents;
       })
       .catch(function (err) {
