@@ -126,7 +126,7 @@ interface Props {
 
 const TIME_INTERVAL = 35000;
 
-const WorkspaceTopBarComponent = ({
+const WorkspaceTopBar = ({
   sharedWorkspace,
   experimentId,
   plotCallNeeded,
@@ -959,4 +959,4 @@ const WorkspaceTopBarComponent = ({
   return renderToolBarUI();
 };
 
-export default WorkspaceTopBarComponent;
+export default WorkspaceTopBar;

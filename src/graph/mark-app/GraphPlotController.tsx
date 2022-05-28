@@ -40,6 +40,7 @@ interface IState {
   currentParsingFile: string;
   controlFileSpillover: {};
   showSpillover: boolean;
+  fcsFiles: any[];
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -61,6 +62,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       currentParsingFile: "",
       controlFileSpillover: {},
       showSpillover: false,
+      fcsFiles: [],
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -702,21 +704,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fileList.push({ tempId: id, file });
     }
 
-    // let filesUpload = uploadingFiles
-    //   ? uploadingFiles.concat(
-    //       fileList.map((e) => {
-    //         return { name: e.file.name, id: e.tempId };
-    //       })
-    //     )
-    //   : fileList.map((e) => {
-    //       return { name: e.file.name, id: e.tempId };
-    //     });
-    // setUploadingFiles(filesUpload);
-    // console.log(">>> filesUpload is ", filesUpload);
-    let filesUpload = [];
     const fcsservice = new FCSServices();
-    let channelSet = new Set();
-    let finalFileList = [];
     for (const file of fileList) {
       this.setState({
         ...this.state,
@@ -732,18 +720,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           return e;
         });
       });
+
       fcsFile.name = file.file.name;
       fcsFile.fileId = file.file.name;
       //@ts-ignore
       fcsFile.id = file.file.name;
       //@ts-ignore
       fcsFile.label = file.file.label;
-
-      // filesUpload.push({
-      //   name: file.file.name,
-      //   eventCount: fcsFile.jsonEventCount,
-      //   uploading: true
-      // });
 
       let currentParsedFiles = this.state.parsedFiles || [];
       currentParsedFiles.push({
@@ -759,6 +742,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.setState({
         ...this.state,
         currentParsingFile: "",
+      });
+
+      let fcsFiles = this.state.fcsFiles || [];
+      fcsFiles.push(fcsFile);
+      this.setState({
+        ...this.state,
+        fcsFiles: fcsFiles,
       });
 
       store.dispatch({

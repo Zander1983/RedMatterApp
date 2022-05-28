@@ -326,10 +326,16 @@ class CustomFCS extends FCS {
         paramIndex: index,
       });
 
+      let indexOfSpilloverParam = scale.getMatrixSpilloverIndex({
+        paramName: paramName,
+        paramIndex: index,
+      });
+
       paramNameHasSpillover.push({
         paramName: paramName,
         paramIndex: index,
         hasSpillover: hasSpillover,
+        indexOfSpilloverParam: indexOfSpilloverParam,
       });
     });
 

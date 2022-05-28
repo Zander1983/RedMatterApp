@@ -214,6 +214,8 @@ function Plot(props) {
     const events = [];
     //debugger;
 
+    //console.log("enrichedEvent is ", enrichedEvent);
+
     // if population is not "All", isInGate{gateName} is true. Remember, plot.population is the same as the gate name
     if (
       plot.population === "All" ||

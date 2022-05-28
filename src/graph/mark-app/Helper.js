@@ -26,6 +26,8 @@ export const superAlgorithm = (
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
+  //console.log("OriginalFiles is ", OriginalFiles);
+
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
   let controlFileId = WorkspaceState.controlFileId;
@@ -66,12 +68,45 @@ export const superAlgorithm = (
       }
     });
 
+    //eventIndex < Files[fileIndex].events
+
+    //let adjustedEvents = Files[fileIndex].events.map((event, eventIndex) => {});
+
     for (
       let eventIndex = 0;
       eventIndex < Files[fileIndex].events.length;
+      //eventIndex < 1;
       eventIndex++
     ) {
       let event = Files[fileIndex].events[eventIndex];
+
+      event.forEach((eventChannelValue, paramIndex) => {
+        let hasSpilloverForParam =
+          file.paramNamesHasSpillover[paramIndex].hasSpillover;
+        if (hasSpilloverForParam) {
+          let matrixSpilloverIndex =
+            file.scale.matrixSpilloverIndexes[paramIndex];
+
+          //console.log(">>> matrixSpilloverIndex is ", matrixSpilloverIndex);
+
+          //debugger;
+
+          //console.log("event[paramIndex] is ", event[paramIndex]);
+
+          let scaled = OriginalFiles[fileIndex].scale.adjustSpillover({
+            // paramIndex: paramIndex,
+            // paramName: paramName,
+            eventValues: event,
+            scaleType: file.channels[paramIndex].display,
+            matrixSpilloverIndex: matrixSpilloverIndex,
+            channelMaximums: file.channels.map((channel) => channel.maximum),
+          });
+
+          //event[paramIndex] = scaled;
+        }
+      });
+
+      //event = [150000, 150000, 150000, 150000, 150000, 150000];
 
       // if the file has its own plots, use that, otherwise use control file plots
 
@@ -84,6 +119,16 @@ export const superAlgorithm = (
         }
         if (gate) {
           let pointX = event[gate["xAxisIndex"]];
+
+          // scaled = file.scale.adjustSpillover({
+          //   // paramIndex: paramIndex,
+          //   // paramName: paramName,
+          //   values: event,
+          //   scaleType: scaleType,
+          //   indexOfSpilloverParam: indexOfSpilloverParam,
+          //   channelMaximums: channelMaximums,
+          // });
+
           let pointY = event[gate["yAxisIndex"]];
           let tranformedPoints = [];
 
@@ -547,7 +592,6 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
 };
 
 export const getPlotChannelAndPosition = (file) => {
-  console.log("file is ", file);
   const defaultFileChannels = file?.channels;
 
   const expectedXChannels = ["FSC-A", "FSC.A", "FSC-H", "FSC.H"];

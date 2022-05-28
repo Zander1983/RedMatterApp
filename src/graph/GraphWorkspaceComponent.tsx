@@ -23,7 +23,7 @@ import { Typography } from "antd";
 import { memResetDatasetCache } from "./resources/dataset";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-import NewPlotController from "./mark-app/GraphPlotController";
+import GraphPlotController from "./mark-app/GraphPlotController";
 import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
 
 const useStyles = makeStyles((theme) => ({
@@ -401,7 +401,7 @@ const GraphWorkspaceComponent = (props: {
             {(plotCallNeeded || renderPlotController) && _renderToolbar()}
             <Grid style={{ marginTop: 5 }}>
               {plotCallNeeded || renderPlotController ? (
-                <NewPlotController
+                <GraphPlotController
                   sharedWorkspace={sharedWorkspace}
                   experimentId={props.experimentId}
                   //workspace={workspace}
