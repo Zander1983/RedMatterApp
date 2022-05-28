@@ -16,7 +16,8 @@ import {
   ASC_SORT,
 } from "./Helper";
 import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
-
+import upArrow from "assets/images/up_arrow.png";
+import downArrow from "assets/images/down_arrow.png";
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
@@ -271,18 +272,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[
-        fileIds[i]
-      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
-        (plt: any) => {
-          if (plt.population === plot.population) {
-            const { gate, ...plotWithOutGate } = plt;
-            return plotWithOutGate;
-          } else {
-            return plt;
-          }
+      (newWorkspaceState as any).files[fileIds[i]].plots = (
+        newWorkspaceState as any
+      ).files[fileIds[i]].plots.map((plt: any) => {
+        if (plt.population === plot.population) {
+          const { gate, ...plotWithOutGate } = plt;
+          return plotWithOutGate;
+        } else {
+          return plt;
         }
-      );
+      });
     }
 
     let copyOfLocalFiles: any[] = getFiles();
@@ -309,9 +308,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[
-        plotIndex
-      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -332,9 +330,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[
-      change.plotIndex
-    ] = JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
+      JSON.parse(JSON.stringify(change.plot));
 
     let copyOfLocalFiles: any[] = getFiles();
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
@@ -804,9 +801,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   setNewSpillover = (rowI, colI, newColumnData) => {
     console.log("in update spillover, ", rowI, colI, newColumnData);
-    this.state.controlFileSpillover.invertedMatrix.data[rowI][
-      colI
-    ] = newColumnData;
+    this.state.controlFileSpillover.invertedMatrix.data[rowI][colI] =
+      newColumnData;
 
     console.log(
       ">>>>>>> ",
@@ -847,6 +843,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               }
             >
               Compensation
+              <img
+                src={!this.state?.showSpillover ? downArrow : upArrow}
+                alt="arrow-icon"
+                style={{ width: 10, height: 10, marginLeft: 10 }}
+              />
             </Button>
 
             {this.state.showSpillover && (

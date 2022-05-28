@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
@@ -38,6 +38,8 @@ function Table(props) {
     setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
   };
 
+  const tableRef = useRef(null);
+
   useEffect(() => {
     setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
     if (getWorkspace()?.workspaceState?.sortingState?.sortingState) {
@@ -54,6 +56,14 @@ function Table(props) {
       WorkspaceDispatch.SetFiles(newFiles);
     }
   }, [getWorkspace()?.activePipelineId]);
+
+  useEffect(() => {
+    tableRef.current.scrollBy({
+      top: 0,
+      left: +500,
+      behavior: "smooth",
+    });
+  }, [controlEnrichedFile?.plots?.length]);
 
   return (
     <div>
@@ -95,8 +105,14 @@ function Table(props) {
         ></div>
       </div>
       <table
-        style={{ maxWidth: "100%", overflowX: "auto", display: "block" }}
+        style={{
+          maxWidth: "100%",
+          overflowX: "auto",
+          scrollBhavior: "smooth",
+          display: "block",
+        }}
         className="workspace"
+        ref={tableRef}
       >
         <tbody>
           <tr>
