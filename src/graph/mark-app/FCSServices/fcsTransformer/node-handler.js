@@ -110,8 +110,6 @@ const parse = (fcs) => {
     scale: scale,
   });
 
-  console.log("paramNamesHasSpillover is ", paramNamesHasSpillover);
-
   const channelMaximums = fcsHelper.getMaxesFromFile(fcs);
 
   let paramsAnalysis = {};
@@ -122,13 +120,6 @@ const parse = (fcs) => {
       paramIndex: paramIndex,
     });
 
-    console.log(
-      "paramIndex is ",
-      paramIndex,
-      ", indexOfSpilloverParamX is ",
-      indexOfSpilloverParamX
-    );
-
     let channelEvents = [];
 
     let roundedEvent;
@@ -137,6 +128,7 @@ const parse = (fcs) => {
     let maximum = channelMaximums[paramIndex];
     for (
       let event = 0;
+      // Math.round(event) < 10;
       Math.round(event) < dataAsNumbers.length;
       event = event + 1
     ) {
@@ -177,7 +169,6 @@ const parse = (fcs) => {
     };
   }
 
-  console.log("sclae.spilloverObj is ", scale.spilloverObj);
   let spilloverObj = scale.spilloverObj;
 
   return {

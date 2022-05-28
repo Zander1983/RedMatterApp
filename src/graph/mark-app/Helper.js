@@ -80,6 +80,7 @@ export const superAlgorithm = (
     ) {
       let event = Files[fileIndex].events[eventIndex];
 
+      let cachedEvent = JSON.parse(JSON.stringify(event));
       event.forEach((eventChannelValue, paramIndex) => {
         let hasSpilloverForParam =
           file.paramNamesHasSpillover[paramIndex].hasSpillover;
@@ -87,22 +88,16 @@ export const superAlgorithm = (
           let matrixSpilloverIndex =
             file.scale.matrixSpilloverIndexes[paramIndex];
 
-          //console.log(">>> matrixSpilloverIndex is ", matrixSpilloverIndex);
-
-          //debugger;
-
-          //console.log("event[paramIndex] is ", event[paramIndex]);
-
           let scaled = OriginalFiles[fileIndex].scale.adjustSpillover({
             // paramIndex: paramIndex,
             // paramName: paramName,
-            eventValues: event,
+            eventValues: cachedEvent,
             scaleType: file.channels[paramIndex].display,
             matrixSpilloverIndex: matrixSpilloverIndex,
             channelMaximums: file.channels.map((channel) => channel.maximum),
           });
 
-          //event[paramIndex] = scaled;
+          event[paramIndex] = scaled;
         }
       });
 

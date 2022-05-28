@@ -73,7 +73,7 @@ function Scale(fcs) {
     var adjusted = 0;
 
     for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
-      if (this.invertedMatrix._data[i][matrixSpilloverIndex] != 0) {
+      if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
         var scaled = this.scaleValueAccordingToFile({
           value: eventValues[this.indexesOfSpilloverParams[i]],
           paramIndex: this.indexesOfSpilloverParams[i],
@@ -81,7 +81,7 @@ function Scale(fcs) {
           channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
         });
 
-        let after = scaled * this.invertedMatrix._data[i][matrixSpilloverIndex];
+        let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
 
         adjusted = adjusted + after;
       }
@@ -267,6 +267,10 @@ function Scale(fcs) {
 
     return value;
   };
+
+  this.setSpilloverInvertedMatrix = function (invertedMatrix) {
+    this.invertedMatrix = invertedMatrix;
+  };
 }
 
 Scale.prototype.scaleValue = function (params) {
@@ -289,7 +293,6 @@ Scale.prototype.scaleValue = function (params) {
   });
 
   // if (hasSpilloverForParam) {
-  //   debugger;
   //   let spilloverAdjusted = this.adjustSpillover({
   //     // paramIndex: paramIndex,
   //     // paramName: paramName,
@@ -299,7 +302,7 @@ Scale.prototype.scaleValue = function (params) {
   //     channelMaximums: channelMaximums,
   //   });
 
-  //   console.log("scaled, spilloverAdjusted is ", scaled, spilloverAdjusted);
+  //   // console.log("scaled, spilloverAdjusted is ", scaled, spilloverAdjusted);
 
   //   return spilloverAdjusted;
   // }
@@ -674,9 +677,8 @@ Scale.prototype.adjustSpillover = function (params) {
 
   var adjusted = 0;
 
-  debugger;
   for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
-    if (this.invertedMatrix._data[i][matrixSpilloverIndex] != 0) {
+    if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
       var scaled = this.scaleValueAccordingToFile({
         value: eventValues[this.indexesOfSpilloverParams[i]],
         paramIndex: this.indexesOfSpilloverParams[i],
@@ -684,7 +686,7 @@ Scale.prototype.adjustSpillover = function (params) {
         channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
       });
 
-      let after = scaled * this.invertedMatrix._data[i][matrixSpilloverIndex];
+      let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
 
       adjusted = adjusted + after;
     }
