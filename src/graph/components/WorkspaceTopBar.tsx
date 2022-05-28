@@ -782,7 +782,7 @@ const WorkspaceTopBar = ({
   const renderModal = () => {
     return (
       <>
-        {getFiles()?.length > 0 && (
+        {addFileModalOpen && (
           <AddFileModal
             open={addFileModalOpen}
             closeCall={{
