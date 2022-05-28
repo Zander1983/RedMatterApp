@@ -26,7 +26,11 @@ export const superAlgorithm = (
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
-  //console.log("OriginalFiles is ", OriginalFiles);
+  let controlOriginalFile = OriginalFiles.find((file) => {
+    if (file.id == OriginalWorkspaceState.selectedFile) {
+      return file;
+    }
+  });
 
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
@@ -88,7 +92,7 @@ export const superAlgorithm = (
           let matrixSpilloverIndex =
             file.scale.matrixSpilloverIndexes[paramIndex];
 
-          let scaled = OriginalFiles[fileIndex].scale.adjustSpillover({
+          let scaled = controlOriginalFile.scale.adjustSpillover({
             // paramIndex: paramIndex,
             // paramName: paramName,
             eventValues: cachedEvent,
