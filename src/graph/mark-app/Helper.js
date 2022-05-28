@@ -581,7 +581,7 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       fileId: file.name,
       isControlFile: file.id == controlFileId ? 1 : 0,
       label: file.name,
-      spilloverObj: file.spilloverObj,
+      scale: file.scale,
     };
   });
 };

@@ -10,7 +10,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
     channelsEvents,
     paramsAnalysis,
     channels,
-    spilloverObj,
     scale,
     paramNamesHasSpillover,
   } = parse(fcs);
@@ -64,7 +63,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
     channels: channels,
     jsonEventCount: fileData.length,
     events: fileData,
-    spilloverObj: spilloverObj,
     scale: scale,
     paramNamesHasSpillover: paramNamesHasSpillover,
   };
@@ -169,13 +167,10 @@ const parse = (fcs) => {
     };
   }
 
-  let spilloverObj = scale.spilloverObj;
-
   return {
     channelsEvents,
     paramsAnalysis,
     channels,
-    spilloverObj,
     scale,
     paramNamesHasSpillover,
   };

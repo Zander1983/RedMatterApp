@@ -38,7 +38,7 @@ interface IState {
   parsedFiles: any[];
   uploadingFiles: any[];
   currentParsingFile: string;
-  controlFileSpillover: {};
+  controlFileScale: {};
   showSpillover: boolean;
   fcsFiles: any[];
 }
@@ -60,7 +60,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       parsedFiles: [],
       uploadingFiles: [],
       currentParsingFile: "",
-      controlFileSpillover: {},
+      controlFileScale: {},
       showSpillover: false,
       fcsFiles: [],
     };
@@ -147,7 +147,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // @ts-ignore
     if (workspaceState?.length > 0 || plots?.length > 0) {
-      console.log("controlFileSpillover is ", this.state.controlFileSpillover);
+      console.log("controlFileScale is ", this.state.controlFileScale);
 
       copyOfLocalFiles = copyOfLocalFiles;
 
@@ -170,12 +170,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // controlEnrichedFile.scale.setSpilloverInvertedMatrix(
       //   controlEnrichedFile.spilloverObj
       // );
-      console.log(
-        ">>>>> controlEnrichedFile.spilloverObj is ",
-        controlEnrichedFile.spilloverObj
-      );
+      console.log(">>>>> controlEnrichedFile is ", controlEnrichedFile);
+
       this.setState({
-        controlFileSpillover: controlEnrichedFile.spilloverObj,
+        controlFileScale: controlEnrichedFile.scale,
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
         controlFileId:
@@ -801,25 +799,25 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   updateSpillover = (rowI, colI, newColumnData) => {
     console.log("in update spillover, ", rowI, colI, newColumnData);
-    this.state.controlFileSpillover.invertedMatrix.data[rowI][
-      colI
-    ] = parseFloat(newColumnData);
+    this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
+      newColumnData
+    );
 
     console.log(
       ">>>>>>>invertedMatrix is now ",
-      this.state.controlFileSpillover.invertedMatrix.data
+      this.state.controlFileScale.invertedMatrix.data
     );
 
     this.setState({
       ...this.state,
-      controlFileSpillover: this.state.controlFileSpillover,
+      controlFileScale: this.state.controlFileScale,
     });
   };
 
   setNewSpillover = () => {
     console.log(
       "in setNewSpillover >>>>>>> ",
-      this.state.controlFileSpillover.invertedMatrix.data
+      this.state.controlFileScale.invertedMatrix.data
     );
 
     let files = getFiles();
@@ -827,20 +825,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     files.find((file) => {
       if (file.id == workspace.selectedFile) {
         file.scale.setSpilloverInvertedMatrix(
-          this.state.controlFileSpillover.invertedMatrix
+          this.state.controlFileScale.invertedMatrix
         );
       }
     });
 
     // this.setState({
     //   ...this.state,
-    //   controlFileSpillover: this.state.controlFileSpillover,
+    //   controlFileScale: this.state.controlFileScale,
     // });
 
     this.onInitState();
   };
 
   renderTable = () => {
+    // let controlEnrichedFile = enrichedFiles.find(
+    //   (enrichedFile) => enrichedFile.isControlFile
+    // );
     if (this.state.isTableRenderCall && this.state.enrichedFiles?.length > 0) {
       return (
         <>
@@ -878,13 +879,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   <tbody>
                     <tr>
                       <th>Fluorochrome</th>
-                      {this.state.controlFileSpillover?.spilloverParamLabels.map(
+                      {this.state.controlFileScale?.spilloverParams.map(
                         (label, i) => {
                           return <th key={`th--${i}`}>{label}</th>;
                         }
                       )}
                     </tr>
-                    {this.state.controlFileSpillover?.invertedMatrix.data.map(
+                    {this.state.controlFileScale?.invertedMatrix.data.map(
                       (rowData: any, rowI: number) => {
                         return (
                           <tr key={`tr--${rowI}`}>
@@ -896,13 +897,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                               }}
                             >
                               {
-                                this.state.controlFileSpillover
-                                  ?.spilloverParamLabels[rowI]
+                                this.state.controlFileScale?.spilloverParams[
+                                  rowI
+                                ]
                               }
                             </td>
 
                             {rowData.map((columnData: any, colI: number) => {
-                              console.log(">> columnData is ", columnData);
                               return (
                                 <td
                                   key={`th-${rowI}-${colI}`}
