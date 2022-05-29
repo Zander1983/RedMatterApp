@@ -72,6 +72,7 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
+  console.log("IN PLOT,props are ", props);
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -212,7 +213,7 @@ function Plot(props) {
 
   const getFormattedEvents = (enrichedEvent, plot) => {
     const events = [];
-    //debugger;
+    //edebugger;
 
     //console.log("enrichedEvent is ", enrichedEvent);
 
@@ -681,7 +682,7 @@ function Plot(props) {
     } else {
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
-      if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
+      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
         newGatePointsCanvas.forEach((newGatePointCanvas) => {
           if (
             inRange(
@@ -873,7 +874,7 @@ function Plot(props) {
       document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
     } else {
       document.body.style.cursor =
-        props.enrichedFile.fileId === getWorkspace().selectedFile &&
+        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
         !localPlot?.gate
           ? "crosshair"
           : "auto";

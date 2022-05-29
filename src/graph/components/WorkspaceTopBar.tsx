@@ -119,9 +119,9 @@ interface Props {
   sharedWorkspace: boolean;
   plotCallNeeded: boolean;
   renderPlotController: boolean;
-  setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
-  setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
-  setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
+  // setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
+  // setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
+  // setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TIME_INTERVAL = 35000;
@@ -131,351 +131,16 @@ const WorkspaceTopBar = ({
   experimentId,
   plotCallNeeded,
   renderPlotController,
-  setRenderPlotController,
-  setPlotCallNeeded,
-  setLoader,
-}: Props) => {
+}: // setRenderPlotController,
+// setPlotCallNeeded,
+// setLoader,
+Props) => {
   const classes = useStyles();
   const history = useHistory();
   const workspace = getWorkspace();
-  const isLoggedIn = userManager.isLoggedIn();
-  const [lastSavedTime, setLastSavedTime] = React.useState("");
-  const [savingWorkspace, setSavingWorkspace] = React.useState(false);
-  const [addFileModalOpen, setAddFileModalOpen] = React.useState(false);
-  const [pipeLineModalOpen, setPipeLineModalOpen] = React.useState(false);
-  const [clearModal, setClearModal] = React.useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = React.useState(
-    !sharedWorkspace
-  );
-  const [linkShareModalOpen, setLinkShareModalOpen] = React.useState(false);
-  const [isSaveNeeded, setSaveNeeded] = React.useState(false);
-  const [newWorkspaceId, setNewWorkspaceId] = React.useState("");
-  const [activePipelineId, setActivePipelineId] = React.useState("");
-  const [pipelines, setPipelines] = React.useState([]);
-  const didMount = useDidMount();
 
   const [data, setData] = React.useState<any[]>([]);
   const [heeaderForCSV, setHeaderForCSV] = React.useState<any[]>([]);
-
-  useEffect(() => {
-    updateHeaders();
-  }, []);
-
-  //@ts-ignore
-  const activePipeline = useSelector((state) => state.workspace);
-
-  //@ts-ignore
-  const workState = useSelector((state) => state.workspace.workspaceState);
-
-  // useEffect(() => {
-  //   if (didMount && plotLength === 0) {
-  //     setRenderPlotController(true);
-  //   }
-  // }, [plotLength]);
-
-  useEffect(() => {
-    setSaveNeeded(false);
-    setTimeout(() => {
-      //@ts-ignore
-      setActivePipelineId(
-        getWorkspace().activePipelineId || workState?.pipelineId
-      );
-      //setSaveNeeded(false);
-      //setPipelines(getWorkspace()?.pipelines);
-    }, 1000);
-  }, [workState]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (!isSaveNeeded) setSaveNeeded(true);
-      //@ts-ignore
-      setPipelines(getWorkspace()?.pipelines);
-      setActivePipelineId(getWorkspace()?.activePipelineId);
-      setSaveNeeded(false);
-    }, 1000);
-  }, [activePipeline]);
-
-  const handleOpen = (func: Function) => {
-    console.log("in handleOpen, addFileModalOpen is ", addFileModalOpen);
-    func(true);
-  };
-
-  const onQuite = () => {
-    console.log("in onQuite");
-    setAddFileModalOpen(false);
-  };
-
-  const onPipelineChanged = async (event: any) => {
-    setSaveNeeded(false);
-    const selectedPipeline = event.target.value;
-    // if(window.confirm("After continue you lost last work if you don't save yet. Are you continue?")){
-    if (selectedPipeline !== "" && activePipelineId !== selectedPipeline) {
-      if (selectedPipeline) {
-        setActivePipelineId(selectedPipeline);
-        setSaveNeeded(false);
-        setLoader(true);
-        let response = null;
-
-        setTimeout(async () => {
-          if (!sharedWorkspace) {
-            response = await axios.get(
-              `/api/${experimentId}/pipeline/${selectedPipeline}`,
-              { headers: { token: userManager.getToken() } }
-            );
-          } else {
-            response = await axios.get(
-              `/api/${experimentId}/pipeline/${selectedPipeline}/shared`
-            );
-          }
-
-          if (response?.status === 200) {
-            setSaveNeeded(false);
-            const workspace = response.data.state;
-            if (workspace && Object.keys(workspace).length > 0) {
-              const workspaceObj = JSON.parse(workspace || "{}");
-
-              await WorkspaceDispatch.SetPlotStates(workspaceObj);
-              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-              await WorkspaceDispatch.UpdateSelectedFile(
-                workspaceObj.selectedFile
-              );
-
-              //setActivePipelineId(selectedPipeline);
-              await showMessageBox({
-                message: response.data.message,
-                saverity: "success",
-              });
-            } else {
-              const workspaceObj = response.data;
-              //const selectedFile = getWorkspace()?.files?.filter(file => file.id === workspaceObj.pipeline.controlFileId)[0];
-              const filesInNewOrder: File[] = [];
-              let files = getAllFiles();
-              let selectedFile = null;
-              for (let i = 0; i < files.length; i++) {
-                if (files[i].id === workspaceObj.pipeline.controlFileId) {
-                  files[i].view = false;
-                  selectedFile = files[i];
-                  filesInNewOrder.unshift(files[i]);
-                } else {
-                  filesInNewOrder.push(files[i]);
-                }
-              }
-              WorkspaceDispatch.SetFiles(filesInNewOrder);
-              const {
-                xAxisLabel,
-                yAxisLabel,
-                xAxisIndex,
-                yAxisIndex,
-                xAxisScaleType,
-                yAxisScaleType,
-              } = getPlotChannelAndPosition(selectedFile);
-              const plotState = createDefaultPlotSnapShot(
-                selectedFile.id,
-                experimentId,
-                xAxisLabel,
-                yAxisLabel,
-                xAxisIndex,
-                yAxisIndex,
-                selectedPipeline,
-                workspaceObj.pipeline.name
-              );
-
-              await WorkspaceDispatch.SetPlotStates(plotState);
-              await WorkspaceDispatch.UpdatePipelineId(selectedPipeline);
-              await WorkspaceDispatch.UpdateSelectedFile(selectedFile.id);
-              setActivePipelineId(selectedPipeline);
-
-              await showMessageBox({
-                message: "Plot init success",
-                saverity: "success",
-              });
-            }
-
-            if (!renderPlotController) {
-              setRenderPlotController(true);
-            }
-            setPlotCallNeeded(false);
-            if (renderPlotController) {
-              setPlotCallNeeded(true);
-            }
-            setLoader(false);
-          } else {
-            setLoader(false);
-            await handleError({
-              message: "Information missing",
-              saverity: "error",
-            });
-          }
-        }, 5);
-      }
-    } else {
-      setSaveNeeded(false);
-      await showMessageBox({
-        message: "Already you here",
-        saverity: "success",
-      });
-    }
-    //}
-  };
-
-  const onSavePipeline = async (name: any, controlFileId: any) => {
-    onQuite();
-    setLoader(true);
-    setTimeout(async () => {
-      console.log("controlFileId is ", controlFileId);
-
-      // const response = await axios.post(
-      //   "/api/pipeline/create",
-      //   {
-      //     organisationId: userManager.getOrganiztionID(),
-      //     experimentId: experimentId,
-      //     name: name,
-      //     controlFileId: controlFileId,
-      //   },
-      //   {
-      //     headers: {
-      //       token: userManager.getToken(),
-      //     },
-      //   }
-      // );
-      //if (response?.status === 200) {
-      let pipelines = getWorkspace()?.pipelines || [];
-      // @ts-ignore
-      //pipelines.push(response.data);
-      // if(pipelines?.length === 1 && response?.data?.isDefault){
-      //if (pipelines?.length >= 1) {
-      //const pipelineId = response.data._id;
-      setActivePipelineId(controlFileId);
-      const filesInNewOrder: File[] = [];
-      let files = getFiles();
-      let selectedFile = null;
-      for (let i = 0; i < files.length; i++) {
-        if (files[i].name === controlFileId) {
-          files[i].view = false;
-          selectedFile = files[i];
-          filesInNewOrder.unshift(files[i]);
-        } else {
-          filesInNewOrder.push(files[i]);
-        }
-      }
-      WorkspaceDispatch.SetFiles(filesInNewOrder);
-      const {
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        xAxisScaleType,
-        yAxisScaleType,
-      } = getPlotChannelAndPosition(selectedFile);
-      const plotState = createDefaultPlotSnapShot(
-        selectedFile.name,
-        experimentId,
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        controlFileId,
-        name,
-        DEFAULT_PLOT_TYPE,
-        xAxisScaleType,
-        yAxisScaleType
-      );
-      await WorkspaceDispatch.SetPlotStates(plotState);
-      await WorkspaceDispatch.UpdateSelectedFile(selectedFile.name);
-      await WorkspaceDispatch.UpdatePipelineId(controlFileId);
-
-      // if (pipelines?.length === 1)
-      //   setTimeout(
-      //     () =>
-      //       saveWorkspace(
-      //         false,
-      //         null,
-      //         pipelineId ? pipelineId : activePipelineId
-      //       ),
-      //     5
-      //   );
-
-      if (!renderPlotController) {
-        setRenderPlotController(true);
-      }
-      setPlotCallNeeded(false);
-      if (renderPlotController) {
-        setPlotCallNeeded(true);
-      }
-      setLoader(false);
-      //}
-      setPipelines(pipelines);
-      WorkspaceDispatch.SetPipeLines(pipelines);
-      await showMessageBox({
-        message: "Created Success",
-        saverity: "success",
-      });
-      // } else {
-      //   setLoader(false);
-      //   await handleError({
-      //     message: "Information missing",
-      //     saverity: "error",
-      //   });
-      // }
-    }, 5);
-  };
-
-  const handleClose = (func: Function) => {
-    func(false);
-  };
-
-  const handleCloseAndMakePlotControllerTrue = (func: Function) => {
-    if (!renderPlotController) {
-      setRenderPlotController(true);
-    }
-    setPlotCallNeeded(false);
-    if (renderPlotController) {
-      setPlotCallNeeded(true);
-    }
-    func(false);
-  };
-
-  const handleCloseClearWorkspace = (func: Function) => {
-    if (!renderPlotController) {
-      setRenderPlotController(true);
-    }
-    setPlotCallNeeded(false);
-    if (renderPlotController) {
-      setPlotCallNeeded(true);
-    }
-    func(false);
-  };
-
-  const saveWorkspace = async (
-    shared: boolean = false,
-    currentState: any = null,
-    pipelineId = ""
-  ) => {
-    setSavingWorkspace(true);
-    setSaveNeeded(false);
-    // @ts-ignore
-    if (
-      getWorkspace().selectedFile &&
-      // @ts-ignore
-      getWorkspace().workspaceState?.files?.[getWorkspace().selectedFile]?.plots
-        ?.length > 0
-    ) {
-      setLastSavedTime(new Date().toLocaleString());
-      try {
-        await saveWorkspaceStateToServer(
-          shared,
-          experimentId,
-          pipelineId ? pipelineId : activePipelineId,
-          currentState
-        );
-      } catch (err) {
-        await handleError(err);
-      }
-    } else {
-      // console.log("TEMP-MESSAGE: Work state empty");
-    }
-    setSavingWorkspace(false);
-  };
 
   const handleError = async (error: any) => {
     if (
@@ -516,33 +181,6 @@ const WorkspaceTopBar = ({
       default:
         break;
     }
-  };
-
-  var onLinkShareClick = async () => {
-    if (isLoggedIn) {
-      await saveWorkspace(true);
-    } else if (sharedWorkspace) {
-      // let stateJson = JSON.stringify(workState);
-      // let newWorkspaceDB;
-      // try {
-      //   newWorkspaceDB = await axios.post(
-      //     "/api/upsertSharedWorkspace",
-      //     {
-      //       //workspaceId: newWorkspaceId,
-      //       experimentId: experimentId,
-      //       state: stateJson,
-      //     },
-      //     {}
-      //   );
-      //   setNewWorkspaceId(newWorkspaceDB.data);
-      // } catch (e) {
-      //   snackbarService.showSnackbar(
-      //     "Could not save shared workspace, reload the page and try again!",
-      //     "error"
-      //   );
-      // }
-    }
-    handleOpen(setLinkShareModalOpen);
   };
 
   const updateHeaders = () => {
@@ -774,63 +412,6 @@ const WorkspaceTopBar = ({
     setData(csvData);
   };
 
-  const clearWorkStateFromServer = async () => {
-    WorkspaceDispatch.ResetWorkspaceExceptFiles();
-    await saveWorkspace(false);
-  };
-
-  const renderModal = () => {
-    return (
-      <>
-        {addFileModalOpen && (
-          <AddFileModal
-            open={addFileModalOpen}
-            closeCall={{
-              f: handleCloseAndMakePlotControllerTrue,
-              ref: setAddFileModalOpen,
-            }}
-            onPipeline={{ save: onSavePipeline }}
-            isShared={sharedWorkspace}
-            experimentId={experimentId}
-            pipelineId={getWorkspace().activePipelineId || activePipelineId}
-            files={getFiles()}
-            selectedFile={getWorkspace()?.selectedFile}
-          />
-        )}
-        <MessageModal
-          open={clearModal}
-          closeCall={{
-            f: handleCloseClearWorkspace,
-            ref: setClearModal,
-          }}
-          message={
-            <div>
-              <h2>Are you sure you want to delete the entire workspace?</h2>
-              <p style={{ marginLeft: 100, marginRight: 100 }}>
-                The links you've shared with "share workspace" will still work,
-                if you want to access this in the future, make sure to store
-                them.
-              </p>
-            </div>
-          }
-          options={{
-            yes: () => {
-              //clearWorkStateFromServer();
-            },
-            no: () => {
-              handleClose(setClearModal);
-            },
-          }}
-        />
-        <LinkShareModal
-          open={linkShareModalOpen}
-          workspaceId={newWorkspaceId}
-          closeCall={{ f: handleClose, ref: setLinkShareModalOpen }}
-        />
-      </>
-    );
-  };
-
   const _renderToolbar = () => {
     let hasGate =
       // @ts-ignore
@@ -863,22 +444,6 @@ const WorkspaceTopBar = ({
               }}
             >
               <div>
-                <Button
-                  disabled={!plotCallNeeded && !renderPlotController}
-                  size="small"
-                  variant="contained"
-                  style={{
-                    backgroundColor: "#fafafa",
-                  }}
-                  className={classes.topButton}
-                  startIcon={<ArrowLeftOutlined style={{ fontSize: 15 }} />}
-                  onClick={() => {
-                    history.goBack();
-                  }}
-                >
-                  Back
-                </Button>
-
                 <Button
                   variant="contained"
                   size="small"
@@ -919,44 +484,12 @@ const WorkspaceTopBar = ({
               </div>
             </span>
           ) : (
-            <div>
-              <span style={{ margin: 5 + "px", padding: 5 + "px" }}>
-                PipeLine:
-                <select
-                  value={activePipelineId}
-                  name="pipeline"
-                  style={{ width: 200 + "px", marginLeft: 2 + "px" }}
-                  onChange={onPipelineChanged}
-                >
-                  <option value="">Select Pipeline</option>
-                  {pipelines &&
-                    pipelines?.map((pipeline: any, index: any) => (
-                      <option key={index} value={pipeline?._id}>
-                        {pipeline?.name}
-                      </option>
-                    ))}
-                </select>
-              </span>
-              <span className={classes.sharedHeader}>Shared Workspace</span>
-            </div>
+            <></>
           )}
         </Grid>
       </Grid>
     );
   };
-
-  const renderToolBarUI = () => {
-    return (
-      <>
-        {/* == MODALS == */}
-        {renderModal()}
-        {/* == MAIN PANEL == */}
-        {_renderToolbar()}
-      </>
-    );
-  };
-
-  return renderToolBarUI();
 };
 
 export default WorkspaceTopBar;

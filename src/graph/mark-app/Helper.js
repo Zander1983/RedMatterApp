@@ -26,11 +26,9 @@ export const superAlgorithm = (
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
-  let controlOriginalFile = OriginalFiles.find((file) => {
-    if (file.id == OriginalWorkspaceState.selectedFile) {
-      return file;
-    }
-  });
+  let controlOriginalFile = OriginalFiles.find(
+    (file) => (file.id = OriginalWorkspaceState.controlFileId)
+  );
 
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
@@ -591,7 +589,7 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
 };
 
 export const getPlotChannelAndPosition = (file) => {
-  const defaultFileChannels = file?.channels;
+  const defaultFileChannels = file.channels;
 
   const expectedXChannels = ["FSC-A", "FSC.A", "FSC-H", "FSC.H"];
   let xAxisLabel = "";
@@ -613,36 +611,6 @@ export const getPlotChannelAndPosition = (file) => {
   else
     yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
 
-  // if(defaultFileChannels.includes("FSC-H")) {
-  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-H");
-  //     xAxisLabel = "FSC-H";
-  // }else if(defaultFileChannels.includes("FSC.H")){
-  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.H");
-  //     xAxisLabel = "FSC.H";
-  // } else if(defaultFileChannels.includes("FSC-A")) {
-  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC-A");
-  //     xAxisLabel = "FSC-A";
-  // } else if(defaultFileChannels.includes("FSC.A")){
-  //     xAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "FSC.A");
-  //     xAxisLabel = "FSC.A";
-  // } else
-  //     xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-  //
-  // if(defaultFileChannels.includes("SSC-H")) {
-  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-H");
-  //     yAxisLabel = "SSC-H"
-  // }else if(defaultFileChannels.includes("SSC.H")) {
-  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.H");
-  //     yAxisLabel = "SSC.H"
-  // } else if(defaultFileChannels.includes("SSC.A")) {
-  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC.A");
-  //     yAxisLabel = "SSC.A"
-  // } else if(defaultFileChannels.includes("SSC-A")) {
-  //     yAxisIndex = defaultFileChannels.findIndex((ch) => ch?.value?.toUpperCase() === "SSC-A");
-  //     yAxisLabel = "SSC-A"
-  // }else
-  //     yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
-
   xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
   yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
 
@@ -661,22 +629,16 @@ export const getPlotChannelAndPosition = (file) => {
 
 export const createDefaultPlotSnapShot = (
   fileId,
-  experimentId,
   xAxisLabel = DEFAULT_X_AXIS_LABEL,
   yAxisLabel = DEFAULT_Y_AXIS_LABEL,
   xAxisIndex = 0,
   yAxisIndex = 1,
-  pipelineId = "",
-  name = "",
-  plotType = DEFAULT_PLOT_TYPE,
   xScaleType = DEFAULT_X_SCALE_TYPE,
   yScaleType = DEFAULT_Y_SCALE_TYPE
 ) => {
+  let plotType = DEFAULT_PLOT_TYPE;
   return {
-    experimentId: experimentId,
     controlFileId: fileId,
-    pipelineId: pipelineId,
-    name: name,
     files: {
       [fileId]: {
         plots: [
@@ -710,7 +672,6 @@ export const createDefaultPlotSnapShot = (
     },
     sharedWorkspace: "false",
     editWorkspace: "true",
-    selectedFile: fileId,
     clearOpenFiles: "false",
     isShared: "false",
     openFiles: [],

@@ -3,14 +3,13 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 
 function Table(props) {
-  //console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
+  console.log(">>> IN TABLE props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -19,14 +18,14 @@ function Table(props) {
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  let editedFiles = getWorkspace().workspaceState?.files;
-  let editedFileIds = Object.keys(editedFiles);
+  // let editedFiles = getWorkspace().workspaceState?.files;
+  // let editedFileIds = Object.keys(editedFiles);
 
   let allFileMinObj = props.enrichedFiles.map((enrichedFile) => {
     return { id: enrichedFile.fileId, name: enrichedFile.label };
   });
   const [shouldFileRender, setShouldFileRender] = useState(
-    getWorkspace()?.workspaceState?.openFiles || []
+    props.workspaceState?.openFiles || []
   );
 
   const fileViewHideHandler = (fileId) => {
@@ -39,21 +38,21 @@ function Table(props) {
   };
 
   useEffect(() => {
-    setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
-    if (getWorkspace()?.workspaceState?.sortingState?.sortingState) {
+    setShouldFileRender(props.workspaceState.openFiles || []);
+    if (props.workspaceState.sortingState?.sortingState) {
       props.sortByGate(
-        getWorkspace()?.workspaceState?.sortingState?.gateName,
-        getWorkspace()?.workspaceState?.sortingState?.sortingState
+        props.workspaceState.sortingState?.gateName,
+        props.workspaceState.sortingState?.sortingState
       );
     } else {
-      const files = getWorkspace()?.files;
-      const newFiles = [];
-      for (const id of getWorkspace()?.fileIds) {
-        newFiles.push(files.find((file) => file.id === id));
-      }
-      WorkspaceDispatch.SetFiles(newFiles);
+      // const files = props.workspaceState.files;
+      // const newFiles = [];
+      // for (const id of props.workspaceState.fileIds) {
+      //   newFiles.push(files.find((file) => file.id === id));
+      // }
+      // WorkspaceDispatch.SetFiles(newFiles);
     }
-  }, [getWorkspace()?.activePipelineId]);
+  }, []);
 
   return (
     <div>
@@ -71,13 +70,7 @@ function Table(props) {
             width: "20%",
             order: 1,
           }}
-        >
-          {/* {
-            getWorkspace()?.pipelines?.find(
-              (pipeline) => pipeline._id === getWorkspace()?.activePipelineId
-            ).name
-          } */}
-        </div>
+        ></div>
         <div
           style={{
             width: "60%",
@@ -145,6 +138,7 @@ function Table(props) {
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
+                          workspaceState={props.workspaceState}
                           onAddGate={props.onAddGate}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
@@ -227,26 +221,25 @@ function Table(props) {
                     marginLeft: 20,
                     cursor:
                       shouldFileRender.length !==
-                        getWorkspace()?.files.length - 1 && "pointer",
+                        props.workspaceState.files.length - 1 && "pointer",
                     color:
                       shouldFileRender.length !==
-                      getWorkspace()?.files.length - 1
+                      props.workspaceState.files.length - 1
                         ? "#000"
                         : "gray",
                     fontWeight:
                       shouldFileRender.length !==
-                      getWorkspace()?.files.length - 1
+                      props.workspaceState.files.length - 1
                         ? "bolder"
                         : "bold",
                   }}
                   onClick={() => {
                     setShouldFileRender(
-                      getWorkspace()
-                        ?.files?.map((file) => file?.id)
+                      props.workspaceState.files
+                        ?.map((file) => file?.id)
                         .filter(
                           (fileId) =>
-                            fileId !==
-                            getWorkspace()?.workspaceState?.controlFileId
+                            fileId !== props.workspaceState.controlFileId
                         )
                     );
                     WorkspaceDispatch.UpdateOpenFiles("", "view");
@@ -372,6 +365,7 @@ function Table(props) {
                                       gateStat.gateName === plot.population
                                     );
                                   })
+
                                   .map((gateStat) => {
                                     return gateStat && gateStat.percentage;
                                   })}%`
@@ -379,7 +373,7 @@ function Table(props) {
                           </div>
                         </Tooltip>
 
-                        {plot.population === "All" &&
+                        {/* {plot.population === "All" &&
                           editedFileIds.includes(enrichedFile.fileId) && (
                             <Button
                               size="small"
@@ -393,7 +387,7 @@ function Table(props) {
                             >
                               Reset To Control
                             </Button>
-                          )}
+                          )} */}
                       </div>
 
                       {shouldFileRender.includes(enrichedFile?.fileId) &&
@@ -405,6 +399,7 @@ function Table(props) {
                                 key={`plot-${plotIindex + 1}`}
                                 plot={plot}
                                 enrichedFile={enrichedFile}
+                                workspaceState={props.workspaceState}
                                 onAddGate={props.onAddGate}
                                 onEditGate={props.onEditGate}
                                 onResize={props.onResize}
