@@ -27,7 +27,7 @@ export const superAlgorithm = (
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
   let controlOriginalFile = OriginalFiles.find(
-    (file) => (file.id = OriginalWorkspaceState.controlFileId)
+    (file) => file.id == OriginalWorkspaceState.controlFileId
   );
 
   let Files = JSON.parse(JSON.stringify(OriginalFiles));

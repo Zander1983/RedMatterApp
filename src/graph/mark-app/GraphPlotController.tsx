@@ -1,6 +1,7 @@
 import React from "react";
 import { getWorkspace, getFiles } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
@@ -8,6 +9,8 @@ import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import { store } from "redux/store";
 import { Grid, Button, TextField } from "@material-ui/core";
+import { CSVLink } from "react-csv";
+import WorkspaceTopBar from "../components/WorkspaceTopBar";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -90,9 +93,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
   // const [parsedFiles, setParsedFiles] = useState([]);
 
-  onInitState = () => {
-    let workspaceState = this.state.workspaceState;
-
+  onInitState = (workspaceState) => {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
@@ -107,7 +108,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       copyOfLocalFiles.length > 0
     ) {
       let controlFile = copyOfLocalFiles.find(
-        (file) => (file.id = workspaceState.controlFileId)
+        (file) => file.id == workspaceState.controlFileId
       );
       console.log("controlFileScale is ", this.state.controlFileScale);
 
@@ -719,10 +720,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       ...this.state,
       controlFileId: fcsFiles[0].id,
       fcsFiles: fcsFiles,
-      workspaceState: workspaceState,
+      //workspaceState: workspaceState,
     });
 
-    this.onInitState();
+    this.onInitState(workspaceState);
   };
 
   componentDidUpdate(
@@ -739,7 +740,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   componentDidMount() {
     console.log(">>>> in componentDidMount");
-    this.onInitState();
+    //this.onInitState();
   }
 
   updateSpillover = (rowI, colI, newColumnData) => {
@@ -780,7 +781,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //   controlFileScale: this.state.controlFileScale,
     // });
 
-    this.onInitState();
+    this.onInitState(this.state.workspaceState);
   };
 
   renderTable = () => {
@@ -789,40 +790,77 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // );
     //debugger;
     console.log(
-      "rendering the MAin table, this.state.enrichedFiles?.length is ",
-      this.state.enrichedFiles?.length
+      "rendering the MAin table, this.state.enrichedFiles is ",
+      this.state.enrichedFiles
     );
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
-          {/* <Select
-            disableUnderline
-            style={{}}
-            onChange={(e) => {
-              console.log("e is ", e);
-            }}
-            // value={getYAxisValue()}
-          >
-            {this.state.enrichedFiles.map((file) => (
-              <MenuItem key={file.id} value={file.id}>
-                {file.name}
-              </MenuItem>
-            ))}
-            <MenuItem
-              // style={{
-              //   backgroundColor: `${
-              //     props.plot.plotType == "histogram"
-              //       ? "rgb(236 235 235)"
-              //       : "unset"
-              //   }`,
-              // }}
-              // key={`${props.plotIndex}-hist`}
-              value="histogram"
+          <>
+            <span
+              style={{
+                marginRight: 5,
+                fontWeight: "bold",
+              }}
             >
-              Control file
-            </MenuItem>
-          </Select> */}
-          {/* {this.state.controlFileScale?.spilloverParams && (
+              Set Control File:
+            </span>
+            <Select
+              //disableUnderline
+              style={{
+                marginRight: 10,
+              }}
+              value={this.state.workspaceState.controlFileId}
+              onChange={(e) => {
+                console.log(">>> e is", e);
+
+                let controlFile = this.state.fcsFiles.find(
+                  (file) => file.id == e.target.value
+                );
+                const {
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType,
+                } = getPlotChannelAndPosition(controlFile);
+
+                let workspaceState = createDefaultPlotSnapShot(
+                  controlFile.id,
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType
+                );
+
+                // this.setState(
+                //   {
+                //     ...this.state,
+                //     controlFileId: controlFile.id,
+                //     workspaceState: JSON.parse(JSON.stringify(workspaceState)),
+                //   },
+                //   () => {
+                //     console.log(this.state.workspaceState);
+                //   }
+                // );
+
+                // let work2 = this.state.workspaceState;
+
+                this.onInitState(workspaceState);
+              }}
+            >
+              {this.state.enrichedFiles.map((file) => (
+                <MenuItem key={file.fileId} value={file.fileId}>
+                  {file.fileId}
+                </MenuItem>
+              ))}
+            </Select>
+          </>
+
+          {this.state.controlFileScale?.spilloverParams && (
             <Button
               variant="outlined"
               style={{
@@ -840,10 +878,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             >
               Compensation
             </Button>
-          )} */}
-          {/* {this.state.showSpillover && (
+          )}
+          {this.state.showSpillover && (
             <div>
-      
               <>
                 <table
                   style={{
@@ -936,7 +973,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               </>
             </div>
           )}
-          ; */}
+
+          <WorkspaceTopBar
+            fcsFiles={this.state.fcsFiles}
+            workspaceState={this.state.workspaceState}
+          />
+
           <PlotTableComponent
             enrichedFiles={this.state.enrichedFiles}
             workspaceState={this.state.workspaceState}
