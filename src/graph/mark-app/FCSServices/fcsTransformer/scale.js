@@ -47,6 +47,229 @@ function Scale(fcs) {
   // }
 
   this.paramArrayCorrectIndex = generalHelper.removeNulls(this.n);
+
+  // matrixSpilloverIndexX = scale.getmatrixSpilloverIndex({
+  //   paramName: paramNamesHasSpillover[paramIndex].paramName,
+  //   paramIndex: paramIndex,
+  // });
+
+  this.matrixSpilloverIndexes = this.n.map((paramName, paramIndex) => {
+    let matrixSpilloverIndex = this.getMatrixSpilloverIndex({
+      paramName: paramName,
+      paramIndex: paramIndex,
+    });
+
+    return matrixSpilloverIndex;
+  });
+
+  this.adjustSpillover = function (params) {
+    // this will be an array of values, one for each param
+    var eventValues = params.eventValues;
+    var scaleType = params.scaleType;
+    var matrixSpilloverIndex = params.matrixSpilloverIndex;
+    var channelMaximums = params.channelMaximums;
+
+    var adjusted = 0;
+
+    for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
+      if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
+        var scaled = this.scaleValueAccordingToFile({
+          value: eventValues[this.indexesOfSpilloverParams[i]],
+          paramIndex: this.indexesOfSpilloverParams[i],
+          scaleType: scaleType,
+          channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
+        });
+
+        let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
+
+        adjusted = adjusted + after;
+      }
+    }
+
+    return adjusted;
+  };
+
+  this.scaleValueAccordingToFile = function (params) {
+    let scaleType = params.scaleType;
+    let value = params.value;
+    let paramIndex = params.paramIndex;
+    let g = params.g;
+    let r = params.r;
+    let f1 = params.f1;
+    let f2 = params.f2;
+    // used as a check, not that important
+    let channelMaximum = params.channelMaximum;
+
+    // only scale with gain (PnG) is its linera, see doumentation
+    if (scaleType == "lin") {
+      value = this.scaleWithGain({
+        value: value,
+        param: paramIndex,
+        g: g,
+        f1: f1,
+        f2: f2,
+      });
+    } else {
+      value = this.scaleWithAmplify({
+        value: value,
+        scaleType: scaleType,
+        paramIndex: paramIndex,
+        r: r,
+        f1: f1,
+        f2: f2,
+        channelMaximum: channelMaximum,
+      });
+    }
+
+    return value;
+  };
+
+  this.scaleWithGain = function (params) {
+    // N>B THIS SEEMS TO BE IGNORED BY OTHER SOFTWARE
+
+    var value = params.value;
+    var param = params.param;
+    var g = params.g;
+    var f1 = params.f1;
+    var f2 = params.f2;
+
+    // $PnG/f/ $P2G/10.0/
+    // This keyword specifies the gain that was used to amplify the signal for parameter n. This example
+    // shows that parameter 2 was amplified 10.0-fold before digitization. The gain shall not be used in
+    // combination with logarithmic amplification, i.e.,$PnG/f/, f not equal to 1, shall not be used together
+    // with $PnE different from $PnE/0,0/.
+    // Converting linearly amplified data from channel values to scale values. For $P1G/g/, g>0,
+    // $PnE/0,0/: A channel value xc can be converted to a scale value xs as xs = xc / g.
+    // Example of converting from channel to scale values:
+    // $P1R/1024/, $P1E/0,0/, $P1G/8/: This is a parameter with channel values going from 0 to 1023,
+    // and scale values from 0 to approximately 128. In this case, a channel value xc can be converted
+    // to a scale value xs as xs = xc / 8.
+
+    var g, f1, f2, n;
+
+    if (!g) {
+      g = this.g[param];
+    }
+
+    if (!f1) {
+      f1 = this.getEF1({
+        param: param,
+      });
+    }
+
+    if (!f1) {
+      f2 = this.getEF2({
+        param: param,
+      });
+    }
+
+    if (g > 0 && f1 == 0 && f2 == 0) {
+      return value / g;
+    }
+
+    return value;
+  };
+
+  this.getEF1 = function (params) {
+    var param = params.param;
+
+    if (Array.isArray(this.e) && this.e[param]) {
+      return parseInt(this.e[param].split(",")[0]);
+    }
+
+    return false;
+  };
+
+  this.getEF2 = function (params) {
+    var param = params.param;
+
+    if (Array.isArray(this.e) && this.e[param]) {
+      return parseInt(this.e[param].split(",")[1]);
+    }
+
+    return false;
+  };
+
+  this.scaleWithAmplify = function (params) {
+    // $PnE/f1,f2/ $P3E/4.0,0.01/ [REQUIRED]
+
+    // This keyword specifies whether parameter number n is stored on linear or logarithmic scale and
+    // includes details about the logarithmic amplification if logarithmic scale is used.
+    // When linear scale is used, $PnE/0,0/ shall be entered. If the floating point data type is used
+    // (either $DATATYPE/F/ or $DATATYPE/D/), then all parameters shall be stored as linear with
+    // $PnE/0,0/.
+    // When logarithmic scale is used, the value of f1 specifies the number of logarithmic decades and
+    // f2 represents the linear value that would have been obtained for a signal with a log value of 0. In
+    // the example above, the data for parameter 3 were collected using a four-decade logarithmic
+    // amplifier and the 0 channel represents the linear value, 0.01.
+    // ISAC Recommendation FCS 3.1 – Data File Standards for Flow Cytometry
+    // 23/34
+    // Note that both the values f1 and f2 shall either be zero or positive numbers. Especially,
+    // $PnE/f1,0/ with f1 > 0 is not a valid entry and shall not be written. If this entry is found in an FCS
+    // file, it is recommended to handle it as $PnE/f1,1/.
+    // Explanation: Entries such as $PnE/4,0/ have never been correct. Unfortunately, the lack of clear
+    // explanation made these widely used. For $PnE/f1,f2/, f1 specifies the number of logarithmic
+    // decades and f2 represents the minimum on the log scale, which cannot be 0 since the logarithm
+    // of zero is not defined. For example, $PnE/4,1/ means 4 decades log reaching from 1 to 10000;
+    // $PnE/5,0.01/ means 5 decades log reaching from 0.01 to 1000.
+    // Converting from channel values on logarithmic scale to linear scale values:
+    // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with channel values going
+    // from 0 to r-1, and scale values going from f2 to f2*10^f1. A channel value xc can be converted to
+    // a scale value xs as xs = 10^(f1 * xc /(r)) * f2.
+    // Examples of converting from channel to scale values:
+    // $P1R/1024/, $P1E/4,1/: This is a logarithmic parameter with channel values going from 0 to 1023,
+    // and scale values going from 1 to approximately 10000. A channel value xc can be converted to a
+    // scale value xs as xs = 10^(4 * xc / 1024) * 1.
+    // $P2R/256/, $P2E/4.5,0.1/: This is a logarithmic parameter with channel values going from 0 to
+    // 255, and scale values going from 0.1 to approximately 10^3.5 (~3162). A channel value xc can be
+    // converted to a scale value xs as xs = 10^(4.5 * xc / 256) * 0.1.
+
+    // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with scale
+    // values reaching from f2 to 10^(f1+log(f2)). A channel value xc can be converted to a scale value
+    // xs as xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1.
+
+    var param = params.param;
+    var value = params.value;
+
+    var r = params.r;
+    var f1 = params.f1;
+    var f2 = params.f2;
+
+    var channelMaximum = params.channelMaximum;
+
+    if (!r) {
+      r = this.r[param];
+    }
+
+    if (!f1) {
+      f1 = this.getEF1({
+        param: param,
+      });
+    }
+
+    if (!f2) {
+      f2 = this.getEF2({
+        param: param,
+      });
+    }
+
+    // channelMaximum > f1 is for when some values are already scaled at this point and the max db value is below f1 e.g. https://www.redmatterapp.com/analyse/59ad5c4b59accd1775e185be/59ad5c6f59accd1775e185bf/
+    if (r > 0 && f1 > 0 && channelMaximum > f1) {
+      // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
+
+      if (f2 === 0) {
+        f2 = 1;
+      }
+
+      return Math.pow(10, (f1 * value) / r) * f2;
+    }
+
+    return value;
+  };
+
+  this.setSpilloverInvertedMatrix = function (invertedMatrix) {
+    this.invertedMatrix = invertedMatrix;
+  };
 }
 
 Scale.prototype.scaleValue = function (params) {
@@ -56,7 +279,7 @@ Scale.prototype.scaleValue = function (params) {
   var scaleType = params.scaleType;
   var hasSpilloverForParam = params.hasSpilloverForParam;
   var arrayOfOneEvent = params.arrayOfOneEvent;
-  var indexOfSpilloverParam = params.indexOfSpilloverParam;
+  var matrixSpilloverIndex = params.matrixSpilloverIndex;
   var maxFromFile = params.maxFromFile;
   var skipLogicleScale = params.skipLogicleScale;
   let channelMaximums = params.channelMaximums;
@@ -68,16 +291,20 @@ Scale.prototype.scaleValue = function (params) {
     channelMaximum: channelMaximums[paramIndex],
   });
 
-  if (hasSpilloverForParam) {
-    scaled = this.adjustSpillover({
-      paramIndex: paramIndex,
-      paramName: paramName,
-      values: arrayOfOneEvent,
-      scaleType: scaleType,
-      indexOfSpilloverParam: indexOfSpilloverParam,
-      channelMaximums: channelMaximums,
-    });
-  }
+  // if (hasSpilloverForParam) {
+  //   let spilloverAdjusted = this.adjustSpillover({
+  //     // paramIndex: paramIndex,
+  //     // paramName: paramName,
+  //     eventValues: arrayOfOneEvent,
+  //     scaleType: scaleType,
+  //     matrixSpilloverIndex: matrixSpilloverIndex,
+  //     channelMaximums: channelMaximums,
+  //   });
+
+  //   // console.log("scaled, spilloverAdjusted is ", scaled, spilloverAdjusted);
+
+  //   return spilloverAdjusted;
+  // }
 
   return scaled;
 };
@@ -415,7 +642,7 @@ Scale.prototype.hasSpilloverForParam = function (params) {
   return false;
 };
 
-Scale.prototype.getIndexOfSpilloverParam = function (params) {
+Scale.prototype.getMatrixSpilloverIndex = function (params) {
   var indexOfParam;
   if (Array.isArray(this.spilloverParams) && isNaN(this.spilloverParams[0])) {
     indexOfParam = this.spilloverParams.indexOf(params.paramName);
@@ -441,33 +668,66 @@ Scale.prototype.memoizedScaleValueAccordingToFile = memoize(
 );
 
 Scale.prototype.adjustSpillover = function (params) {
-  // $SPILL or $COMP and standard keyword is $SPILLOVER
-  var param = params.param;
-  var paramName = params.paramName;
-
   // this will be an array of values, one for each param
-  var values = params.values;
+  var eventValues = params.eventValues;
   var scaleType = params.scaleType;
-  var indexOfSpilloverParam = params.indexOfSpilloverParam;
-
+  var matrixSpilloverIndex = params.matrixSpilloverIndex;
   var channelMaximums = params.channelMaximums;
 
   var adjusted = 0;
+
   for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
-    if (this.invertedMatrix._data[i][indexOfSpilloverParam] != 0) {
+    if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
       var scaled = this.scaleValueAccordingToFile({
-        value: values[this.indexesOfSpilloverParams[i]],
+        value: eventValues[this.indexesOfSpilloverParams[i]],
         paramIndex: this.indexesOfSpilloverParams[i],
         scaleType: scaleType,
         channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
       });
 
-      adjusted += scaled * this.invertedMatrix._data[i][indexOfSpilloverParam];
+      let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
+
+      adjusted = adjusted + after;
     }
   }
 
   return adjusted;
 };
+
+//Scale.prototype.reverseSpillover = function (params) {
+//   // $SPILL or $COMP and standard keyword is $SPILLOVER
+//   var param = params.param;
+//   var paramName = params.paramName;
+
+//   // this will be an array of values, one for each param
+//   var values = params.values;
+//   var ajusted = params.ajusted;
+//   var scaleType = params.scaleType;
+//   var matrixSpilloverIndex = params.matrixSpilloverIndex;
+
+//   var channelMaximums = params.channelMaximums;
+
+//   var reAdjusted = ajusted;
+//   for (var i = this.indexesOfSpilloverParams.length; i >= 0; i--) {
+//     if (this.invertedMatrix._data[i][matrixSpilloverIndex] != 0) {
+//       // var scaled = this.scaleValueAccordingToFile({
+//       //   value: values[this.indexesOfSpilloverParams[i]],
+//       //   paramIndex: this.indexesOfSpilloverParams[i],
+//       //   scaleType: scaleType,
+//       //   channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
+//       // });
+
+//       let scalerVal = reAdjusted / this.invertedMatrix._data[i][matrixSpilloverIndex];
+
+//       reAdjusted = reAdjusted - scalerVal;
+
+//       // adjusted =
+//       //   adjusted + scaled * this.invertedMatrix._data[i][matrixSpilloverIndex];
+//     }
+//   }
+
+//   return reA;
+// };
 
 Scale.prototype.getEF1 = function (params) {
   var param = params.param;

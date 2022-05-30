@@ -1,12 +1,16 @@
 import React from "react";
 import { getWorkspace, getFiles } from "graph/utils/workspace";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
+import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import { store } from "redux/store";
 import { Grid, Button, TextField } from "@material-ui/core";
+import { CSVLink } from "react-csv";
+import WorkspaceTopBar from "../components/WorkspaceTopBar";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -34,13 +38,14 @@ interface IState {
   workspaceState: any;
   enrichedEvents: any[];
   testParam: string;
-  controlFileId: string;
   activePipelineId: string;
   parsedFiles: any[];
   uploadingFiles: any[];
   currentParsingFile: string;
-  controlFileSpillover: {};
+  controlFileScale: {};
   showSpillover: boolean;
+  fcsFiles: any[];
+  controlFileId: string;
 }
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -55,13 +60,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceState: {},
       enrichedEvents: [],
       testParam: "some value",
-      controlFileId: "",
       activePipelineId: "",
       parsedFiles: [],
       uploadingFiles: [],
       currentParsingFile: "",
-      controlFileSpillover: {},
+      controlFileScale: {},
       showSpillover: false,
+      fcsFiles: [],
+      controlFileId: "",
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -73,6 +79,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onResetToControl = this.onResetToControl.bind(this);
     this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
     this.setNewSpillover = this.setNewSpillover.bind(this);
+    this.uploadFiles = this.uploadFiles.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -87,65 +94,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
   // const [parsedFiles, setParsedFiles] = useState([]);
 
-  onInitState = () => {
-    //console.log("init====");
-    let workspaceState = getWorkspace().workspaceState;
+  onInitState = (workspaceState) => {
+    // @ts-ignore
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
     // @ts-ignore
-    const plots = workspaceState
-      ? // @ts-ignore
-        workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots
-      : [];
-    let isSnapShotCreated = false;
-
-    // @ts-ignore
-    let copyOfLocalFiles: any[] = getFiles();
-
-    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
-    console.log("workspaceState is ", workspaceState);
-
-    let defaultFile = null;
-    let pipeline = null;
-    if (plots?.length === 0 && getWorkspace()?.pipelines?.length > 0) {
-      // const defaultFile = copyOfLocalFiles?.[0];
-      defaultFile = getWorkspace()?.selectedFile
-        ? copyOfLocalFiles?.filter(
-            (file) => file.id === getWorkspace()?.selectedFile
-          )?.[0]
-        : copyOfLocalFiles?.[0];
-      // @ts-ignore
-      pipeline =
-        getWorkspace()?.pipelines?.length > 0
-          ? getWorkspace()?.pipelines?.filter(
-              (pipeline: any) =>
-                pipeline.controlFileId === getWorkspace()?.selectedFile
-            )?.[0]
-          : null;
-
-      const {
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        xAxisScaleType,
-        yAxisScaleType,
-      } = getPlotChannelAndPosition(defaultFile);
-
-      workspaceState = createDefaultPlotSnapShot(
-        defaultFile?.name,
-        this.props.experimentId,
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        pipeline._id,
-        pipeline.name
-      );
-      isSnapShotCreated = true;
-    }
-
-    // @ts-ignore
-    if (workspaceState?.length > 0 || plots?.length > 0) {
+    if (
+      workspaceState &&
+      Object.keys(workspaceState).length > 0 &&
+      copyOfLocalFiles &&
+      copyOfLocalFiles.length > 0
+    ) {
       let enrichedFiles: any[] = superAlgorithm(
         copyOfLocalFiles,
         workspaceState
@@ -157,35 +116,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         (enrichedFile) => enrichedFile.isControlFile
       );
 
-      if (isSnapShotCreated) {
-        WorkspaceDispatch.UpdatePlotStates(workspaceState);
-        if (defaultFile) WorkspaceDispatch.UpdateSelectedFile(defaultFile?.id);
-      }
-
-      console.log(
-        ">>>>> controlEnrichedFile.spilloverObj is ",
-        controlEnrichedFile.spilloverObj
-      );
       this.setState({
-        controlFileSpillover: controlEnrichedFile.spilloverObj,
+        ...this.state,
+        controlFileScale: controlEnrichedFile.scale,
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
-        controlFileId:
-          isSnapShotCreated && defaultFile
-            ? defaultFile?.id
-            : getWorkspace()?.selectedFile,
-        // @ts-ignore
-        activePipelineId:
-          isSnapShotCreated && pipeline
-            ? // @ts-ignore
-              pipeline._id
-            : getWorkspace()?.activePipelineId,
       });
     }
   };
 
   getEnrichedEvents = () => {
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedEvents = superAlgorithm(
       copyOfLocalFiles,
       this.state.workspaceState
@@ -239,7 +180,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
@@ -272,19 +213,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots = (
-        newWorkspaceState as any
-      ).files[fileIds[i]].plots.map((plt: any) => {
-        if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plt;
-          return plotWithOutGate;
-        } else {
-          return plt;
+      (newWorkspaceState as any).files[
+        fileIds[i]
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
+        (plt: any) => {
+          if (plt.population === plot.population) {
+            const { gate, ...plotWithOutGate } = plt;
+            return plotWithOutGate;
+          } else {
+            return plt;
+          }
         }
-      });
+      );
     }
 
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
@@ -308,8 +251,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[
+        plotIndex
+      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -330,10 +274,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
-      JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[
+      change.plotIndex
+    ] = JSON.parse(JSON.stringify(change.plot));
 
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
@@ -363,10 +308,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   onResetToControl = (fileId: string) => {
     let newWorkspaceState: any = JSON.parse(
-      JSON.stringify(getWorkspace().workspaceState)
+      JSON.stringify(this.state.workspaceState)
     );
     delete newWorkspaceState.files[fileId];
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
@@ -382,7 +327,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndex: number,
     checked: boolean
   ) => {
-    let workspace = getWorkspace();
+    let workspace = this.state.workspaceState;
     let newWorkspaceState: any = JSON.parse(
       JSON.stringify(workspace.workspaceState)
     );
@@ -421,7 +366,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceStatePlot.overlays.splice(deleteIndex, 1);
     }
 
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
@@ -515,7 +460,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
@@ -611,7 +556,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let originalFiles: any[] = getFiles();
+    let originalFiles: any[] = this.state.fcsFiles;
     let sortedFiles = [];
 
     for (
@@ -666,7 +611,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    let copyOfLocalFiles: any[] = getFiles();
+    let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
     WorkspaceDispatch.SetPlotStates(newWorkspaceState);
@@ -699,21 +644,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fileList.push({ tempId: id, file });
     }
 
-    // let filesUpload = uploadingFiles
-    //   ? uploadingFiles.concat(
-    //       fileList.map((e) => {
-    //         return { name: e.file.name, id: e.tempId };
-    //       })
-    //     )
-    //   : fileList.map((e) => {
-    //       return { name: e.file.name, id: e.tempId };
-    //     });
-    // setUploadingFiles(filesUpload);
-    // console.log(">>> filesUpload is ", filesUpload);
-    let filesUpload = [];
     const fcsservice = new FCSServices();
-    let channelSet = new Set();
-    let finalFileList = [];
+    let fcsFiles = this.state.fcsFiles || [];
     for (const file of fileList) {
       this.setState({
         ...this.state,
@@ -729,18 +661,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           return e;
         });
       });
+
       fcsFile.name = file.file.name;
       fcsFile.fileId = file.file.name;
       //@ts-ignore
       fcsFile.id = file.file.name;
       //@ts-ignore
       fcsFile.label = file.file.label;
-
-      // filesUpload.push({
-      //   name: file.file.name,
-      //   eventCount: fcsFile.jsonEventCount,
-      //   uploading: true
-      // });
 
       let currentParsedFiles = this.state.parsedFiles || [];
       currentParsedFiles.push({
@@ -758,75 +685,146 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         currentParsingFile: "",
       });
 
-      store.dispatch({
-        type: "ADD_FCS_FILE",
-        payload: fcsFile,
-      });
+      fcsFiles.push(fcsFile);
     }
+
+    let controlFile = fcsFiles[0];
+    const {
+      xAxisLabel,
+      yAxisLabel,
+      xAxisIndex,
+      yAxisIndex,
+      xAxisScaleType,
+      yAxisScaleType,
+    } = getPlotChannelAndPosition(controlFile);
+
+    let workspaceState = createDefaultPlotSnapShot(
+      controlFile.id,
+      xAxisLabel,
+      yAxisLabel,
+      xAxisIndex,
+      yAxisIndex,
+      xAxisScaleType,
+      yAxisScaleType
+    );
+
+    this.setState({
+      ...this.state,
+      controlFileId: fcsFiles[0].id,
+      fcsFiles: fcsFiles,
+      //workspaceState: workspaceState,
+    });
+
+    this.onInitState(workspaceState);
   };
 
   componentDidUpdate(
     prevProps: Readonly<PlotControllerProps>,
     prevState: Readonly<IState>,
     snapshot?: any
-  ): void {
-    //console.log("did update ===");
-    let workspaceState = this.state.workspaceState;
-    // @ts-ignore
-    const newPlots =
-      workspaceState &&
-      // @ts-ignore
-      workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-    const oldPlots =
-      prevState.workspaceState?.files?.[getWorkspace()?.selectedFile]?.plots;
-    // if(!this.state.isTableRenderCall || JSON.stringify(oldPlots)?.length !== JSON.stringify(newPlots)?.length){
+  ): void {}
 
-    if (
-      getWorkspace()?.selectedFile !== prevState.controlFileId ||
-      getWorkspace()?.activePipelineId !== prevState?.activePipelineId ||
-      JSON.stringify(prevState.workspaceState)?.length !==
-        JSON.stringify(workspaceState)?.length
-    ) {
-      this.onInitState();
-    } else {
+  componentDidMount() {}
+
+  updateSpillover = (rowI, colI, newColumnData) => {
+    if (!isNaN(parseFloat(newColumnData))) {
+      this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
+        newColumnData
+      );
+
+      this.setState({
+        ...this.state,
+        controlFileScale: this.state.controlFileScale,
+      });
     }
-  }
-
-  componentDidMount() {
-    this.onInitState();
-    setTimeout(() => {
-      this.setState({ isTableRenderCall: true });
-    }, 1000);
-  }
-
-  setNewSpillover = (rowI, colI, newColumnData) => {
-    console.log("in update spillover, ", rowI, colI, newColumnData);
-    this.state.controlFileSpillover.invertedMatrix.data[rowI][colI] =
-      newColumnData;
-
-    console.log(
-      ">>>>>>> ",
-      this.state.controlFileSpillover.invertedMatrix.data[rowI][colI]
-    );
-
-    this.setState({
-      ...this.state,
-      controlFileSpillover: this.state.controlFileSpillover,
-    });
   };
 
-  updateSpillover = () => {
-    console.log(
-      ">>>>>>> ",
-      this.state.controlFileSpillover.invertedMatrix.data
-    );
+  setNewSpillover = () => {
+    let files = this.state.fcsFiles;
+    let workspace = this.state.workspaceState;
+    files.find((file) => {
+      if (file.id == workspace.controlFileId) {
+        file.scale.setSpilloverInvertedMatrix(
+          this.state.controlFileScale.invertedMatrix
+        );
+      }
+    });
+
+    // this.setState({
+    //   ...this.state,
+    //   controlFileScale: this.state.controlFileScale,
+    // });
+
+    this.onInitState(this.state.workspaceState);
   };
 
   renderTable = () => {
-    if (this.state.isTableRenderCall && this.state.enrichedFiles?.length > 0) {
+    if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
-          <div>
+          <>
+            <span
+              style={{
+                marginRight: 5,
+                fontWeight: "bold",
+              }}
+            >
+              Set Control File:
+            </span>
+            <Select
+              //disableUnderline
+              style={{
+                marginRight: 10,
+              }}
+              value={this.state.workspaceState.controlFileId}
+              onChange={(e) => {
+                let controlFile = this.state.fcsFiles.find(
+                  (file) => file.id == e.target.value
+                );
+                const {
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType,
+                } = getPlotChannelAndPosition(controlFile);
+
+                let workspaceState = createDefaultPlotSnapShot(
+                  controlFile.id,
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType
+                );
+
+                // this.setState(
+                //   {
+                //     ...this.state,
+                //     controlFileId: controlFile.id,
+                //     workspaceState: JSON.parse(JSON.stringify(workspaceState)),
+                //   },
+                //   () => {
+                //     console.log(this.state.workspaceState);
+                //   }
+                // );
+
+                // let work2 = this.state.workspaceState;
+
+                this.onInitState(workspaceState);
+              }}
+            >
+              {this.state.enrichedFiles.map((file) => (
+                <MenuItem key={file.fileId} value={file.fileId}>
+                  {file.fileId}
+                </MenuItem>
+              ))}
+            </Select>
+          </>
+
+          {this.state.controlFileScale?.spilloverParams && (
             <Button
               variant="outlined"
               style={{
@@ -849,8 +847,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 style={{ width: 10, height: 10, marginLeft: 10 }}
               />
             </Button>
-
-            {this.state.showSpillover && (
+          )}
+          {this.state.showSpillover && (
+            <div>
               <>
                 <table
                   style={{
@@ -864,14 +863,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 >
                   <tbody>
                     <tr>
-                      <th></th>
-                      {this.state.controlFileSpillover?.spilloverParamLabels.map(
+                      <th>Fluorochrome</th>
+                      {this.state.controlFileScale?.spilloverParams.map(
                         (label, i) => {
                           return <th key={`th--${i}`}>{label}</th>;
                         }
                       )}
                     </tr>
-                    {this.state.controlFileSpillover?.invertedMatrix.data.map(
+                    {this.state.controlFileScale?.invertedMatrix.data.map(
                       (rowData: any, rowI: number) => {
                         return (
                           <tr key={`tr--${rowI}`}>
@@ -883,13 +882,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                               }}
                             >
                               {
-                                this.state.controlFileSpillover
-                                  ?.spilloverParamLabels[rowI]
+                                this.state.controlFileScale?.spilloverParams[
+                                  rowI
+                                ]
                               }
                             </td>
 
                             {rowData.map((columnData: any, colI: number) => {
-                              console.log(">> columnData is ", columnData);
                               return (
                                 <td
                                   key={`th-${rowI}-${colI}`}
@@ -906,68 +905,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                     }
                                     value={columnData}
                                     onChange={(newColumnData: any) => {
-                                      console.log(
-                                        "newName.target.value is ",
-                                        newColumnData.target.value
-                                      );
-
-                                      this.setNewSpillover(
+                                      this.updateSpillover(
                                         rowI,
                                         colI,
                                         newColumnData.target.value
                                       );
                                     }}
                                   />
-
-                                  {/* <TextField
-                                  style={{
-                                    width: "20%",
-                                  }}
-                                  value={{ columnData }}
-                                  onChange={(newColumnData: any) => {
-                                    console.log(
-                                      "newColumnData is ",
-                                      newColumnData
-                                    );
-                                  }}
-                                />
-
-                                <button
-                                  onClick={(val) => {}}
-                                  style={{
-                                    border: "none",
-                                    cursor: "pointer",
-                                    color: "white",
-                                    fontWeight: 500,
-                                    padding: "2px 5px",
-                                    background: "#66a",
-                                    width: 50,
-                                    margin: "0px 8px",
-                                    borderRadius: 5,
-                                  }}
-                                >
-                                  {"Save"}
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    //setEditingFileName(null);
-                                  }}
-                                  style={{
-                                    border: "none",
-                                    cursor: "pointer",
-                                    color: "white",
-                                    fontWeight: 500,
-                                    padding: "2px 5px",
-                                    background: "#66a",
-                                    width: 70,
-                                    borderRadius: 5,
-                                  }}
-                                >
-                                  {"Cancel"}
-                                </button> */}
-
-                                  {/* {columnData} */}
                                 </td>
                               );
                             })}
@@ -986,15 +930,22 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     marginBottom: 3,
                     // color: "white",
                   }}
-                  onClick={(e) => this.updateSpillover()}
+                  onClick={(e) => this.setNewSpillover()}
                 >
                   Update
                 </Button>
               </>
-            )}
-          </div>
+            </div>
+          )}
+
+          <WorkspaceTopBar
+            fcsFiles={this.state.fcsFiles}
+            workspaceState={this.state.workspaceState}
+          />
+
           <PlotTableComponent
             enrichedFiles={this.state.enrichedFiles}
+            workspaceState={this.state.workspaceState}
             className="workspace"
             onChangeChannel={this.onChangeChannel}
             addOverlay={this.addOverlay}
@@ -1013,36 +964,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-    const workState = getWorkspace().workspaceState;
-    // @ts-ignoreconst
-    const plots =
-      // @ts-ignore
-      workState && workState?.files?.[getWorkspace().selectedFile]?.plots;
-    if (getWorkspace()?.selectedFile && plots?.length > 0) {
+    if (this.state.workspaceState.controlFileId) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
-      return (
-        <div>
-          {!this.state.isTableRenderCall ? (
-            <Grid
-              container
-              style={{
-                height: 100,
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-                textAlign: "center",
-              }}
-              justify="center"
-              alignItems="center"
-              alignContent="center"
-            >
-              <CircularProgress style={{ padding: "10px" }} />
-              <span>Wait Loading...</span>
-            </Grid>
-          ) : (
-            getWorkspace().selectedFile !== "" && this.renderTable()
-          )}
-        </div>
-      );
+      return this.renderTable();
     } else {
       return (
         <div
@@ -1124,7 +1048,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 </div>
               );
             })}
-          {getFiles()?.length < 1 ? (
+          {this.state.fcsFiles?.length < 1 ? (
             <span>
               <Button
                 variant="contained"

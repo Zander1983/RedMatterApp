@@ -169,7 +169,7 @@ const NewWorkspaceInnerComponent = (props: {
       sessionStorage.getItem("experimentFiles"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    debugger;
+
     if (files && files?.files?.files?.length > 0) {
       let fileIds = files?.files?.files?.map((file: any) => file.id);
       if (fileIds.length > 0) {
@@ -363,9 +363,9 @@ const NewWorkspaceInnerComponent = (props: {
         padding: 0,
       }}
     >
-      <Backdrop className={classes.backdrop} open={open}>
+      {/* <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop> */}
       <SideMenus workspace={getWorkspace()} />
       <Grid
         style={{

@@ -23,7 +23,7 @@ import { Typography } from "antd";
 import { memResetDatasetCache } from "./resources/dataset";
 import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
 import SecurityUtil from "../utils/Security";
-import NewPlotController from "./mark-app/GraphPlotController";
+import GraphPlotController from "./mark-app/GraphPlotController";
 import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
 
 const useStyles = makeStyles((theme) => ({
@@ -103,227 +103,6 @@ const GraphWorkspaceComponent = (props: {
 
   let pageLoaderSubscription: any = null;
 
-  useEffect(() => {
-    console.log("in use Effect");
-    pageLoaderSubscription = setTimeout(function run() {
-      setOpen(false);
-      if (pageLoaderSubscription) {
-        clearTimeout(pageLoaderSubscription);
-        pageLoaderSubscription = null;
-      }
-    }, 120000);
-
-    (async () => {
-      try {
-        console.log("before getAll");
-        await getAll(props.shared, props.experimentId);
-      } catch (e) {
-        await handleError(e);
-      }
-    })();
-
-    return () => {
-      WorkspaceDispatch.ResetWorkspace();
-      memResetDatasetCache();
-    };
-  }, []);
-
-  const handleRequestError = async (err: any) => {
-    setPlotCallNeeded(false);
-    setReloadMessage("");
-    if (err.toString().indexOf("FILE-MISSING") !== -1) {
-      await handleError({
-        message: "File downloading failed. due to file missing",
-        saverity: "error",
-      });
-      setMessage("File downloading failed. due to file missing");
-    } else if (err.toString().indexOf("RETRY-FAILED") !== -1) {
-      await handleError({
-        message: "File downloading failed. due to re try completed",
-        saverity: "error",
-      });
-      setMessage(
-        "Your Action is Processing. please try after few later Or wait "
-      );
-    } else if (err.toString().indexOf("DUPLICATE-FILE") !== -1) {
-      await handleError({
-        message:
-          "File downloading failed. due to multiple files with the same ID present in workspace",
-        saverity: "error",
-      });
-      setMessage(
-        "Your Action is Processing. please try after few later Or wait "
-      );
-    } else if (err.toString().indexOf("DOWNLOADED-FILE") !== -1) {
-      await handleError({
-        message: "File downloading failed. due to File already downloaded",
-        saverity: "error",
-      });
-      setMessage(
-        "Your Action is Processing. please try after few later Or wait "
-      );
-    } else throw err;
-  };
-
-  const handlePrivateWorkspace = async () => {
-    console.log("in handlePrivateWorkspace");
-    // let files = SecurityUtil.decryptData(
-    //   sessionStorage.getItem("experimentFiles"),
-    //   process.env.REACT_APP_DATA_SECRET_SOLD
-    // );
-    // if (files && files?.files?.files?.length > 0) {
-    //let fileIds = files?.files?.files?.map((file: any) => file.id);
-    //if (fileIds.length > 0) {
-    //console.log("SETFILES and files is ", files);
-
-    //WorkspaceDispatch.SetFiles(files?.files?.files);
-    try {
-      // let result = await downloadEvents(
-      //   props.shared,
-      //   props.experimentId,
-      //   fileIds
-      // );
-      //if (result?.length > 0) {
-      setReloadMessage("Workspace prepared successfully.");
-      setTimeout(() => {
-        setPlotCallNeeded(true);
-      }, 1000);
-      // } else {
-      //   setMessage(
-      //     "Your Action is Processing. please try after few later Or wait "
-      //   );
-      // }
-    } catch (err) {
-      await handleRequestError(err);
-    }
-    //}
-    // }
-  };
-
-  const handleSharedWorkspace = async (shared: boolean, experimentId: any) => {
-    try {
-      await downloadFileMetadata(shared, experimentId);
-      let fileIds = getWorkspace().files.map((file) => file.id);
-      let result = await downloadEvents(
-        props.shared,
-        props.experimentId,
-        fileIds
-      );
-      if (result?.length > 0) {
-        setReloadMessage("Workspace prepared successfully.");
-        setTimeout(() => {
-          setPlotCallNeeded(true);
-        }, 1000);
-      } else {
-        setMessage(
-          "Your Action is Processing. please try after few later Or wait "
-        );
-      }
-    } catch (err: any) {
-      await handleRequestError(err);
-    }
-  };
-
-  const getAll = async (shared: boolean, experimentId: any) => {
-    console.log("in getAll");
-    await handlePrivateWorkspace();
-
-    if (pageLoaderSubscription) {
-      setOpen(false);
-      clearTimeout(pageLoaderSubscription);
-      pageLoaderSubscription = null;
-    }
-
-    // WorkspaceDispatch.ResetWorkspace();
-    // if (props.shared) WorkspaceDispatch.SetEditWorkspace(false);
-    // WorkspaceDispatch.SetWorkspaceShared(props.shared);
-    // setSharedWorkspace(props.shared);
-    // setReloadMessage("Loading...");
-    // getWorkspaceStateFromServer(shared, experimentId)
-    //   .then(async (response: any) => {
-    //     setReloadMessage("Loading Done. wait preparing....");
-    //     if (response.requestSuccess && !props.shared) {
-    //       await handlePrivateWorkspace();
-    //     } else if (response.requestSuccess && props.shared) {
-    //       //await handleSharedWorkspace(shared, experimentId);
-    //     } else {
-    //       await handleError({
-    //         message:
-    //           "Workspace Loading Failed.Due to Invalid Request. try again",
-    //         saverity: "error",
-    //       });
-    //     }
-    //   })
-    //   .catch(async (err) => {
-    //     setPlotCallNeeded(false);
-    //     await handleError(err);
-    //   })
-    //   .finally(() => {
-    //     if (pageLoaderSubscription) {
-    //       setOpen(false);
-    //       clearTimeout(pageLoaderSubscription);
-    //       pageLoaderSubscription = null;
-    //     }
-    //   });
-  };
-
-  const handleError = async (error: any) => {
-    if (
-      error?.name === "Error" ||
-      error?.message.toString() === "Network Error"
-    ) {
-      showMessageBox({
-        message: "Connectivity Problem, please check your internet connection",
-        saverity: "error",
-      });
-      setConnectivity(false);
-      setReloadMessage("");
-    } else if (error?.response) {
-      if (error.response?.status == 401 || error.response.status == 419) {
-        setTimeout(() => {
-          userManager.logout();
-          history.replace("/login");
-        }, 3000);
-        showMessageBox({
-          message: "Authentication Failed Or Session Time out",
-          saverity: "error",
-        });
-      }
-    } else {
-      showMessageBox({
-        message: error?.message || "Request Failed. May be Time out Or Invalid",
-        saverity: error.saverity || "error",
-      });
-    }
-  };
-
-  const showMessageBox = (response: any) => {
-    switch (response.saverity) {
-      case "error":
-        snackbarService.showSnackbar(response?.message, "error");
-        break;
-      case "success":
-        snackbarService.showSnackbar(response?.message, "success");
-        break;
-      default:
-        break;
-    }
-  };
-
-  const _renderToolbar = () => {
-    return (
-      <WorkspaceTopBar
-        setLoader={setOpen}
-        sharedWorkspace={props.shared}
-        experimentId={props.experimentId}
-        plotCallNeeded={plotCallNeeded}
-        renderPlotController={renderPlotController}
-        setRenderPlotController={setRenderPlotController}
-        setPlotCallNeeded={setPlotCallNeeded}
-      />
-    );
-  };
-
   const _renderPageMessage = () => {
     return (
       <Grid
@@ -375,9 +154,9 @@ const GraphWorkspaceComponent = (props: {
         padding: 0,
       }}
     >
-      <Backdrop className={classes.backdrop} open={open}>
+      {/* <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop> */}
       {/* <SideMenus workspace={getWorkspace()} /> */}
       <Grid
         style={{
@@ -398,19 +177,24 @@ const GraphWorkspaceComponent = (props: {
           }}
         >
           <div>
-            {(plotCallNeeded || renderPlotController) && _renderToolbar()}
+            {plotCallNeeded || renderPlotController}
+
+            {/* <WorkspaceTopBar
+              // setLoader={setOpen}
+              sharedWorkspace={props.shared}
+              experimentId={props.experimentId}
+
+              // controlFileId={setPlotCallNeeded}
+            /> */}
+
             <Grid style={{ marginTop: 5 }}>
-              {plotCallNeeded || renderPlotController ? (
-                <NewPlotController
-                  sharedWorkspace={sharedWorkspace}
-                  experimentId={props.experimentId}
-                  //workspace={workspace}
-                  workspaceLoading={plotCallNeeded}
-                  // customPlotRerender={customPlotRerender}
-                />
-              ) : (
-                _renderPageMessage()
-              )}
+              <GraphPlotController
+                sharedWorkspace={sharedWorkspace}
+                experimentId={props.experimentId}
+                //workspace={workspace}
+                workspaceLoading={plotCallNeeded}
+                // customPlotRerender={customPlotRerender}
+              />
             </Grid>
           </div>
         </Grid>
@@ -447,65 +231,67 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
     //@ts-ignore
     if (this.state.hasError) {
       return (
-        <Grid
-          justify="center"
-          alignItems="center"
-          alignContent="center"
-          style={{
-            textAlign: "center",
-            width: "100%",
-            marginTop: 20,
-            justifyContent: "center",
-            justifyItems: "center",
-          }}
-        >
-          <h2>Sorry, there was an error on our end!</h2>
-          <br />
-          Here's what you can do to recover:
-          <br />
-          <br />
-          <Button
-            style={{ backgroundColor: "#66d", color: "white", width: 400 }}
-            onClick={() => window.location.reload()}
-          >
-            1. Reload the page
-          </Button>
-          <br />
-          <Button
+        <>
+          <Grid
+            justify="center"
+            alignItems="center"
+            alignContent="center"
             style={{
-              backgroundColor: "#66d",
-              color: "white",
-              width: 400,
+              textAlign: "center",
+              width: "100%",
               marginTop: 20,
-            }}
-            onClick={async () => {
-              snackbarService.showSnackbar("Clearing workspace...", "info");
-              await saveWorkspaceToRemote(
-                this.props.shared,
-                this.props.experimentId
-              );
-              snackbarService.showSnackbar("Workspace cleared", "success");
-              window.location.reload();
+              justifyContent: "center",
+              justifyItems: "center",
             }}
           >
-            2. Clear the current workspace
-          </Button>
-          <br />
-          <Button
-            style={{
-              backgroundColor: "#66d",
-              color: "white",
-              width: 400,
-              marginTop: 20,
-            }}
-            onClick={() => {
-              document.location.href =
-                document.location.href.split("experiment")[0] + "experiments";
-            }}
-          >
-            3. Create a new workspace
-          </Button>
-        </Grid>
+            <h2>Sorry, there was an error on our end!</h2>
+            <br />
+            Here's what you can do to recover:
+            <br />
+            <br />
+            <Button
+              style={{ backgroundColor: "#66d", color: "white", width: 400 }}
+              onClick={() => window.location.reload()}
+            >
+              1. Reload the page
+            </Button>
+            <br />
+            <Button
+              style={{
+                backgroundColor: "#66d",
+                color: "white",
+                width: 400,
+                marginTop: 20,
+              }}
+              onClick={async () => {
+                snackbarService.showSnackbar("Clearing workspace...", "info");
+                await saveWorkspaceToRemote(
+                  this.props.shared,
+                  this.props.experimentId
+                );
+                snackbarService.showSnackbar("Workspace cleared", "success");
+                window.location.reload();
+              }}
+            >
+              2. Clear the current workspace
+            </Button>
+            <br />
+            <Button
+              style={{
+                backgroundColor: "#66d",
+                color: "white",
+                width: 400,
+                marginTop: 20,
+              }}
+              onClick={() => {
+                document.location.href =
+                  document.location.href.split("experiment")[0] + "experiments";
+              }}
+            >
+              3. Create a new workspace
+            </Button>
+          </Grid>
+        </>
       );
     }
 

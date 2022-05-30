@@ -326,10 +326,16 @@ class CustomFCS extends FCS {
         paramIndex: index,
       });
 
+      let indexOfSpilloverParam = scale.getMatrixSpilloverIndex({
+        paramName: paramName,
+        paramIndex: index,
+      });
+
       paramNameHasSpillover.push({
         paramName: paramName,
         paramIndex: index,
         hasSpillover: hasSpillover,
+        indexOfSpilloverParam: indexOfSpilloverParam,
       });
     });
 
@@ -377,6 +383,9 @@ class CustomFCS extends FCS {
 
       if (determinant != 0) {
         var invertedMatrix = math.inv(matrix);
+        invertedMatrix.data = invertedMatrix._data;
+        invertedMatrix.datatype = invertedMatrix._datatype;
+        invertedMatrix.size = invertedMatrix._size;
 
         var spilloverParams = split.slice(1, numParams + 1);
         var indexesOfSpilloverParams;

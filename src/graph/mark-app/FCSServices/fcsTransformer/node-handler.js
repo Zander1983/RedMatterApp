@@ -6,17 +6,16 @@ const fcsHelper = require("./fcsHelper");
 const generalHelper = require("./generalHelper");
 
 export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
-  let { channelsEvents, paramsAnalysis, channels, spilloverObj } = parse(fcs);
+  let {
+    channelsEvents,
+    paramsAnalysis,
+    channels,
+    scale,
+    paramNamesHasSpillover,
+  } = parse(fcs);
 
   // 1. Turn data into the expected file format
   const fileData = getFileInExpectedFormat(channelsEvents);
-
-  console.log("[INFO] Events file has", fileData.length, "events");
-  if (fileData.length > 0) {
-    console.log("[INFO] Each event has", fileData[0].length, "channels");
-  } else {
-    console.log("[ERROR] No events!");
-  }
 
   let fileName = "";
   try {
@@ -24,13 +23,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
   } catch (e) {
     console.log("[ERROR] Error finding filename");
   }
-
-  console.log("[INFO] STEP 2 => SAVING EVENTS TO S3");
-
-  // 2. Save the file to S3
-  //promises.push(saveFileToS3(fileName, fileBuffer));
-
-  console.log("[INFO] STEP 3 => SAVING METADATA TO DYNAMO");
 
   channels = channels.map((c) => {
     let paramAnalysis;
@@ -47,8 +39,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
     };
   });
 
-  console.log(">>> channels is ", channels);
-
   const metadata = {
     name: experimentId,
     fileId: "",
@@ -57,7 +47,8 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
     channels: channels,
     jsonEventCount: fileData.length,
     events: fileData,
-    spilloverObj: spilloverObj,
+    scale: scale,
+    paramNamesHasSpillover: paramNamesHasSpillover,
   };
 
   // 3. Save metadata of file to dynamo with link to S3 file
@@ -105,6 +96,12 @@ const parse = (fcs) => {
 
   let paramsAnalysis = {};
   for (let paramIndex = 0; paramIndex < dataAsNumbers[0].length; paramIndex++) {
+    // debugger;
+    indexOfSpilloverParamX = scale.getMatrixSpilloverIndex({
+      paramName: paramNamesHasSpillover[paramIndex].paramName,
+      paramIndex: paramIndex,
+    });
+
     let channelEvents = [];
 
     let roundedEvent;
@@ -113,16 +110,17 @@ const parse = (fcs) => {
     let maximum = channelMaximums[paramIndex];
     for (
       let event = 0;
+      // Math.round(event) < 10;
       Math.round(event) < dataAsNumbers.length;
       event = event + 1
     ) {
       roundedEvent = Math.round(event);
       eventData = dataAsNumbers[roundedEvent][paramIndex];
 
-      indexOfSpilloverParamX = scale.getIndexOfSpilloverParam({
-        paramName: paramNamesHasSpillover[paramIndex].paramName,
-        paramIndex: paramIndex,
-      });
+      // console.log(
+      //   ">>>dataAsNumbers[roundedEvent] is ",
+      //   dataAsNumbers[roundedEvent]
+      // );
 
       scaledX = scale.scaleValue({
         value: eventData,
@@ -131,11 +129,11 @@ const parse = (fcs) => {
         scaleType: channels[paramIndex].display,
         hasSpilloverForParam: paramNamesHasSpillover[paramIndex].hasSpillover,
         arrayOfOneEvent: dataAsNumbers[roundedEvent],
-        indexOfSpilloverParam: indexOfSpilloverParamX,
+        matrixSpilloverIndex: indexOfSpilloverParamX,
         channelMaximums: channelMaximums,
       });
 
-      scaledX = Math.round(scaledX);
+      //scaledX = Math.round(scaledX);
 
       channelEvents.push(scaledX);
 
@@ -153,10 +151,13 @@ const parse = (fcs) => {
     };
   }
 
-  console.log("sclae.spilloverObj is ", scale.spilloverObj);
-  let spilloverObj = scale.spilloverObj;
-
-  return { channelsEvents, paramsAnalysis, channels, spilloverObj };
+  return {
+    channelsEvents,
+    paramsAnalysis,
+    channels,
+    scale,
+    paramNamesHasSpillover,
+  };
 };
 
 // const getParamsAnalysis = (fcs, scale, channelNames) => {

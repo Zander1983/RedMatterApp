@@ -273,7 +273,7 @@ export const getWorkspaceStateFromServer = async (
         }
       );
     }
-    debugger;
+
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
       await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);

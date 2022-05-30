@@ -183,7 +183,7 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
-  console.log("hist props is ", props);
+  console.log("in HISTOGRAM, props are ", props);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   let [startCanvasPoint, setStartCanvasPoint] = useState(null);
@@ -196,8 +196,10 @@ function Histogram(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
-  const [maxCountPlusTenPercent_Value, setMaxCountPlusTenPercent_Value] =
-    useState();
+  const [
+    maxCountPlusTenPercent_Value,
+    setMaxCountPlusTenPercent_Value,
+  ] = useState();
   const [resizing, setResizing] = useState(false);
 
   const onResizeDiv = useCallback(
@@ -228,6 +230,7 @@ function Histogram(props) {
   });
 
   useEffect(() => {
+    console.log("in the useEffect....");
     if (startCanvasPoint && endCanvasPoint) {
       let context = getContext("covering-canvas-" + props.plotIndex);
 
@@ -313,8 +316,8 @@ function Histogram(props) {
       let overlayFileIndex = 0;
 
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
-        let overlayEnrichedFileData =
-          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
+        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
+          (enrichedEvent, index) => {
             if (
               props.plot.population == "All" ||
               enrichedEvent["isInGate" + props.plot.population]
@@ -331,7 +334,8 @@ function Histogram(props) {
             } else {
               return [];
             }
-          });
+          }
+        );
 
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
@@ -689,16 +693,25 @@ function Histogram(props) {
     if (resizing) return;
     isMouseDown = true;
 
-    // draw histogram gate only if it is selected file
-    if (props.enrichedFile.fileId === getWorkspace().selectedFile) {
-      if (!props?.plot?.gate) {
-        // if there is no gate
-        setStartCanvasPoint(event.offsetX);
-      } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
-        // if there is gate and same channel and scale
+    if (!hasGate(props.plot)) {
+      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
         setStartCanvasPoint(event.offsetX);
       }
+    } else {
+      // so there is a gate
+      setStartCanvasPoint(event.offsetX);
     }
+
+    // // draw histogram gate only if it is selected file
+    // if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+    //   if (!props?.plot?.gate) {
+    //     // if there is no gate
+    //     setStartCanvasPoint(event.offsetX);
+    //   } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
+    //     // if there is gate and same channel and scale
+    //     setStartCanvasPoint(event.offsetX);
+    //   }
+    // }
   };
 
   const handleMouseUp = (event) => {
@@ -710,7 +723,7 @@ function Histogram(props) {
       setEndCanvasPoint(null);
     } else {
       // show histogram gate creation modal only if it is selected file and it doesn't have any gate
-      props.enrichedFile.fileId === getWorkspace().selectedFile &&
+      props.enrichedFile.fileId === props.workspaceState.controlFileId &&
         !props?.plot?.gate &&
         setModalIsOpen(true);
 
@@ -748,7 +761,7 @@ function Histogram(props) {
   const handleCursorProperty = (event) => {
     if (props?.plot?.plotType === "histogram" && !props?.plot?.gate) {
       document.body.style.cursor =
-        props.enrichedFile.fileId === getWorkspace().selectedFile
+        props.enrichedFile.fileId === props.workspaceState.controlFileId
           ? "col-resize"
           : "auto";
     }
