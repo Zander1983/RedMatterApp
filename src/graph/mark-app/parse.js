@@ -76,9 +76,6 @@ readModuleFile("./Files.json", function (err, files) {
 
       readModuleFile("./Files" + count + ".json", function (err, files) {
         var filesParsed = JSON.parse(files);
-        for (var i = 0; i < filesParsed.length; i++) {
-          console.log("filesParsed[title] is ", filesParsed[i]["title"]);
-        }
       });
     }
   );

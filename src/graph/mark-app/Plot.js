@@ -21,8 +21,8 @@ export const rightPadding = 20;
 export const topPadding = 40;
 export const bottomPadding = 5;
 
-const getContext = (plotIndex) => {
-  const canvas = document.getElementById("canvas-" + plotIndex);
+const getContext = (id) => {
+  const canvas = document.getElementById(id);
   if (canvas) {
     const context = canvas.getContext("2d");
 
@@ -46,7 +46,6 @@ const shouldDrawGate = (plot) => {
 };
 
 let isMouseDown = false;
-let startPointsReal;
 let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
@@ -72,7 +71,9 @@ function useTraceUpdate(props) {
 }
 
 function Plot(props) {
-  console.log("IN PLOT,props are ", props);
+  let [startPointsReal, setStartPointsReal] = useState(null);
+  let [isInsideGate, setIsInsideGate] = useState(null);
+  let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
 
   //useTraceUpdate({ ...props, localPlot });
@@ -121,6 +122,25 @@ function Plot(props) {
   });
 
   let pointsOutsideCanvasCount = 0;
+
+  useEffect(() => {
+    let context = getContext("covering-canvas-" + props.plotIndex);
+    context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+    // draw here
+    if (localPlot && localPlot.gate && newPoints.length > 0) {
+      if (context) {
+        drawGateLine(context, localPlot, newPoints);
+
+        //drawTemporaryGateLine(context, props.plot);
+      }
+    } else {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+      context.clearRect(0, 0, props.plot.width, props.plot.height);
+      context.fillStyle = "white";
+    }
+  }, [newPoints, localPlot]);
+
   useEffect(() => {
     setLocalPlot(props.plot);
   }, [props.plot]);
@@ -134,7 +154,7 @@ function Plot(props) {
 
   useEffect(() => {
     if (resizing) setResizing(false);
-    const context = getContext(props.plotIndex);
+    const context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
     props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
@@ -172,16 +192,20 @@ function Plot(props) {
     drawLabel();
 
     if (localPlot.gate && shouldDrawGate(localPlot)) {
-      drawGateLine(context, localPlot);
+      drawGateLine(
+        getContext("covering-canvas-" + props.plotIndex),
+        localPlot,
+        localPlot.gate.points
+      );
     }
   }, [localPlot]);
 
-  const drawGateLine = (context, plot) => {
+  const drawGateLine = (context, plot, realPoints) => {
     context.strokeStyle = "red";
     context.lineWidth = 1;
     context.beginPath();
 
-    let pointsOnCanvas = plot.gate.points.map((point) => {
+    let pointsOnCanvas = realPoints.map((point) => {
       return getPointOnCanvas(
         props.enrichedFile.channels,
         point[0],
@@ -447,7 +471,7 @@ function Plot(props) {
   };
 
   const drawPolygon = () => {
-    let context = getContext(props.plotIndex);
+    let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "#df4b26";
     context.lineWidth = 1;
@@ -565,7 +589,8 @@ function Plot(props) {
   };
 
   const drawPoints = () => {
-    let context = getContext(props.plotIndex);
+    //"covering-canvas-" + props.plotIndex
+    let context = getContext("covering-canvas-" + props.plotIndex);
 
     context.strokeStyle = "#df4b26";
     context.lineJoin = "round";
@@ -657,12 +682,28 @@ function Plot(props) {
         return isNear;
       });
 
-      startPointsReal = getRealPointFromCanvasPoints(
+      setStartPointsReal(
+        getRealPointFromCanvasPoints(
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
+        )
+      );
+
+      let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
         [event.offsetX, event.offsetY],
         props.enrichedFile.logicles
       );
+      const isInside = isPointInPolygon(
+        newPointsReal[0],
+        newPointsReal[1],
+        localPlot.gate.points
+      );
+
+      setIsInsideGate(isInside);
     } else {
     }
   };
@@ -672,6 +713,23 @@ function Plot(props) {
     isMouseDown = false;
     dragPointIndex = false;
     if (hasGate()) {
+      let newPointsReal = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        localPlot,
+        [event.offsetX, event.offsetY],
+        props.enrichedFile.logicles
+      );
+
+      const isInside = isPointInPolygon(
+        newPointsReal[0],
+        newPointsReal[1],
+        localPlot.gate.points
+      );
+
+      setIsInsideGate(isInside);
+
+      localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
+
       let change = {
         type: "EditGate",
         plot: localPlot,
@@ -724,20 +782,7 @@ function Plot(props) {
     if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-
-      const isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
-
-      if (isInside || typeof dragPointIndex == "number") {
+      if (isInsideGate || typeof dragPointIndex == "number") {
         // this code will run when a user will drag the entire polygon gate
         let moveX = getMoveValue(
           startPointsReal[0],
@@ -813,18 +858,21 @@ function Plot(props) {
         localPlot.gate.xAxisOriginalRanges = xRange;
         localPlot.gate.yAxisOriginalRanges = yRange;
 
-        setLocalPlot({
-          ...localPlot,
-          gate: { ...localPlot.gate, points: points },
-        });
+        setNewPoints(points);
+        // setLocalPlot({
+        //   ...localPlot,
+        //   gate: { ...localPlot.gate, points: points },
+        // });
 
         // IMPORTANT - reset start points
-        startPointsReal = getRealPointFromCanvasPoints(
-          props.enrichedFile.channels,
-          localPlot,
-          [event.offsetX, event.offsetY],
-          props.enrichedFile.logicles
-        );
+        // setStartPointsReal(
+        //   getRealPointFromCanvasPoints(
+        //     props.enrichedFile.channels,
+        //     localPlot,
+        //     [event.offsetX, event.offsetY],
+        //     props.enrichedFile.logicles
+        //   )
+        // );
       }
     }
   };
@@ -1038,6 +1086,7 @@ function Plot(props) {
                     height: `${props.plot.height + 2}px`,
                     resize: "both",
                     overflow: "hidden",
+                    position: "relative",
                   }}
                   ref={ref}
                 >
@@ -1046,6 +1095,39 @@ function Plot(props) {
                     id={`canvas-${props.plotIndex}`}
                     width={props.plot.width}
                     height={props.plot.height}
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                    }}
+                    // onMouseDown={(e) => {
+                    //   let nativeEvent = e.nativeEvent;
+                    //   handleMouseDown(nativeEvent);
+                    // }}
+                    // onMouseMove={(e) => {
+                    //   let nativeEvent = e.nativeEvent;
+                    //   handleCursorProperty(nativeEvent);
+                    //   handleMouseMove(nativeEvent);
+                    // }}
+                    // onMouseUp={(e) => {
+                    //   let nativeEvent = e.nativeEvent;
+                    //   handleMouseUp(nativeEvent);
+                    // }}
+                    // onMouseLeave={(e) => {
+                    //   document.body.style.cursor = "auto";
+                    // }}
+                  />
+
+                  <canvas
+                    id={`covering-canvas-${props.plotIndex}`}
+                    width={props.plot.width}
+                    height={props.plot.height}
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      // display: "block" : "none",
+                    }}
                     onMouseDown={(e) => {
                       let nativeEvent = e.nativeEvent;
                       handleMouseDown(nativeEvent);

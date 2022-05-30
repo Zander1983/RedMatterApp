@@ -17,26 +17,12 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
   // 1. Turn data into the expected file format
   const fileData = getFileInExpectedFormat(channelsEvents);
 
-  console.log("[INFO] Events file has", fileData.length, "events");
-  if (fileData.length > 0) {
-    console.log("[INFO] Each event has", fileData[0].length, "channels");
-  } else {
-    console.log("[ERROR] No events!");
-  }
-
   let fileName = "";
   try {
     fileName = event.Records[0].s3.object.key;
   } catch (e) {
     console.log("[ERROR] Error finding filename");
   }
-
-  console.log("[INFO] STEP 2 => SAVING EVENTS TO S3");
-
-  // 2. Save the file to S3
-  //promises.push(saveFileToS3(fileName, fileBuffer));
-
-  console.log("[INFO] STEP 3 => SAVING METADATA TO DYNAMO");
 
   channels = channels.map((c) => {
     let paramAnalysis;
@@ -52,8 +38,6 @@ export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
       ...paramAnalysis,
     };
   });
-
-  console.log(">>> channels is ", channels);
 
   const metadata = {
     name: experimentId,

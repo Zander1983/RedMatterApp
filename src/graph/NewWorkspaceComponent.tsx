@@ -169,7 +169,7 @@ const NewWorkspaceInnerComponent = (props: {
       sessionStorage.getItem("experimentFiles"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
-    debugger;
+
     if (files && files?.files?.files?.length > 0) {
       let fileIds = files?.files?.files?.map((file: any) => file.id);
       if (fileIds.length > 0) {

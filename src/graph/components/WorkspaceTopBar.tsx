@@ -86,7 +86,6 @@ const WorkspaceTopBar = (props) => {
   };
 
   const downloadCSV = () => {
-    debugger;
     let workspaceState = props.workspaceState;
     // @ts-ignore
     const plots =

@@ -97,9 +97,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
-    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
-    console.log("workspaceState is ", workspaceState);
-
     // @ts-ignore
     if (
       workspaceState &&
@@ -107,11 +104,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       copyOfLocalFiles &&
       copyOfLocalFiles.length > 0
     ) {
-      let controlFile = copyOfLocalFiles.find(
-        (file) => file.id == workspaceState.controlFileId
-      );
-      console.log("controlFileScale is ", this.state.controlFileScale);
-
       let enrichedFiles: any[] = superAlgorithm(
         copyOfLocalFiles,
         workspaceState
@@ -197,7 +189,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     }, 10);
 
-    console.log("setting new gate....");
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -730,28 +721,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     prevProps: Readonly<PlotControllerProps>,
     prevState: Readonly<IState>,
     snapshot?: any
-  ): void {
-    console.log("in componentDidUpdate!!!!. prevProps is ", prevProps);
+  ): void {}
 
-    console.log("prevState is ", prevState);
-
-    //this.onInitState();
-  }
-
-  componentDidMount() {
-    console.log(">>>> in componentDidMount");
-    //this.onInitState();
-  }
+  componentDidMount() {}
 
   updateSpillover = (rowI, colI, newColumnData) => {
-    console.log("in update spillover, ", rowI, colI, newColumnData);
     this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
       newColumnData
-    );
-
-    console.log(
-      ">>>>>>>invertedMatrix is now ",
-      this.state.controlFileScale.invertedMatrix.data
     );
 
     this.setState({
@@ -761,11 +737,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   setNewSpillover = () => {
-    console.log(
-      "in setNewSpillover >>>>>>> ",
-      this.state.controlFileScale.invertedMatrix.data
-    );
-
     let files = this.state.fcsFiles;
     let workspace = this.state.workspaceState;
     files.find((file) => {
@@ -785,14 +756,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   renderTable = () => {
-    // let controlEnrichedFile = enrichedFiles.find(
-    //   (enrichedFile) => enrichedFile.isControlFile
-    // );
-    //debugger;
-    console.log(
-      "rendering the MAin table, this.state.enrichedFiles is ",
-      this.state.enrichedFiles
-    );
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
@@ -812,8 +775,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               }}
               value={this.state.workspaceState.controlFileId}
               onChange={(e) => {
-                console.log(">>> e is", e);
-
                 let controlFile = this.state.fcsFiles.find(
                   (file) => file.id == e.target.value
                 );
@@ -936,11 +897,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                     }
                                     value={columnData}
                                     onChange={(newColumnData: any) => {
-                                      console.log(
-                                        "newName.target.value is ",
-                                        newColumnData.target.value
-                                      );
-
                                       this.updateSpillover(
                                         rowI,
                                         colI,
@@ -1000,10 +956,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-    console.log(
-      "rendering ain app table...this.state.controlFileId is ",
-      this.state.workspaceState.controlFileId
-    );
     if (this.state.workspaceState.controlFileId) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return this.renderTable();

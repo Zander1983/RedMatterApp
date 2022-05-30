@@ -59,7 +59,6 @@ function Scale(fcs) {
       paramIndex: paramIndex,
     });
 
-    console.log("!!!!!!! matrixSpilloverIndexX is ", matrixSpilloverIndex);
     return matrixSpilloverIndex;
   });
 

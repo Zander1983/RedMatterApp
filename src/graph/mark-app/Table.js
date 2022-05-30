@@ -9,7 +9,6 @@ import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 
 function Table(props) {
-  console.log(">>> IN TABLE props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -174,6 +173,7 @@ function Table(props) {
                           onEditGate={props.onEditGate}
                           onResize={props.onResize}
                           enrichedFile={controlEnrichedFile}
+                          workspaceState={props.workspaceState}
                           enrichedOverlayFiles={enrichedOverlayFiles}
                           allFileMinObj={allFileMinObj}
                           plotIndex={`0-${plotIindex}`}
@@ -198,7 +198,7 @@ function Table(props) {
                   border: "1px solid #000",
                 }}
               >
-                <span
+                {/* <span
                   style={{
                     float: "left",
                     marginLeft: 20,
@@ -234,6 +234,7 @@ function Table(props) {
                         : "bold",
                   }}
                   onClick={() => {
+  
                     setShouldFileRender(
                       props.workspaceState.files
                         ?.map((file) => file?.id)
@@ -246,7 +247,7 @@ function Table(props) {
                   }}
                 >
                   {"View All"}
-                </span>
+                </span> */}
                 OTHER FILES
               </div>
             </td>
@@ -433,6 +434,7 @@ function Table(props) {
                                 addOverlay={props.addOverlay}
                                 onResize={props.onResize}
                                 enrichedFile={enrichedFile}
+                                workspaceState={props.workspaceState}
                                 allFileMinObj={allFileMinObj}
                                 enrichedOverlayFiles={enrichedOverlayFiles}
                                 plotIndex={`${fileIndex + 1}-${plotIindex}`}
