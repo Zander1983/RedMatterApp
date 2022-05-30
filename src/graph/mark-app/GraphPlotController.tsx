@@ -726,14 +726,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   componentDidMount() {}
 
   updateSpillover = (rowI, colI, newColumnData) => {
-    this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
-      newColumnData
-    );
+    if (!isNaN(parseFloat(newColumnData))) {
+      this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
+        newColumnData
+      );
 
-    this.setState({
-      ...this.state,
-      controlFileScale: this.state.controlFileScale,
-    });
+      this.setState({
+        ...this.state,
+        controlFileScale: this.state.controlFileScale,
+      });
+    }
   };
 
   setNewSpillover = () => {
