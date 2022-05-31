@@ -101,37 +101,18 @@ const footerData = [
             </li>
             <li>
               <b>Dr. Tomaz Einfalt</b>
-              <br /> Chief Product Officer
-              <br />
-              <br />
-            </li>
-            <li>
-              <b>Dr. Alfonso Blanco</b>
-              <br /> Science Advisor
-              <br />
-              <br />
-            </li>
-            <li>
-              <b>Keshav Agrawal</b>
-              <br /> Sr. Software Developer
-              <br />
-              <br />
-            </li>
-            <li>
-              <b>Riyasaat Ahmed Rahul</b>
-              <br /> Sr.Front-end Software engineer
-              <br />
-              <br />
-            </li>
-            <li>
-              <b>Md Eyasin</b>
-              <br /> Sr. Backend Software Engineer(Mentor)
+              <br /> Chief Science Officer
               <br />
               <br />
             </li>
           </ul>
         ),
       },
+    ],
+  },
+  {
+    title: "History",
+    description: [
       {
         name: "History",
         open: false,
@@ -145,47 +126,43 @@ const footerData = [
           </div>
         ),
       },
+      // {
+      //   name: "Terms of use",
+      //   open: false,
+      //   description: (
+      //     <div>
+      //       Any FCS data uploaded to Red Matter may be used by Red Matter in an
+      //       anonymised form. Red Matter defines anonymised FCS data as data that
+      //       excludes any file metadata, labels, or any other infromation that
+      //       would identify the FCS file or its source.
+      //     </div>
+      //   ),
+      // },
+      // {
+      //   name: "Credits",
+      //   path: "/credits",
+      // },
     ],
   },
-  {
-    title: "Legal",
-    description: [
-      {
-        name: "Terms of use",
-        open: false,
-        description: (
-          <div>
-            Any FCS data uploaded to Red Matter may be used by Red Matter in an
-            anonymised form. Red Matter defines anonymised FCS data as data that
-            excludes any file metadata, labels, or any other infromation that
-            would identify the FCS file or its source.
-          </div>
-        ),
-      },
-      {
-        name: "Credits",
-        path: "/credits",
-      },
-    ],
-  },
-  {
-    title: "Contact",
-    description: [
-      {
-        name: "Contact us",
-        open: false,
-        description: (
-          <div>
-            Send us an email at <b>support@redmatterapp.com</b>
-          </div>
-        ),
-      },
-      {
-        name: "Join our team",
-        path: "/jobs",
-      },
-    ],
-  },
+
+  // {
+  //   title: "Contact",
+  //   description: [
+  //     {
+  //       name: "Contact us",
+  //       open: false,
+  //       description: (
+  //         <div>
+  //           Send us an email at <b>support@redmatterapp.com</b>
+  //         </div>
+  //       ),
+  //     },
+  //     {
+  //       name: "Join our team",
+  //       path: "/jobs",
+  //     },
+  //   ],
+  // },
 ];
 export default function Footer(props: any) {
   const forceUpdate = useForceUpdate();
