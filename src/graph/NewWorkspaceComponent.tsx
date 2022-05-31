@@ -97,8 +97,9 @@ const NewWorkspaceInnerComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] =
-    React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<
+    boolean
+  >(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
@@ -168,6 +169,7 @@ const NewWorkspaceInnerComponent = (props: {
       sessionStorage.getItem("experimentFiles"),
       process.env.REACT_APP_DATA_SECRET_SOLD
     );
+
     if (files && files?.files?.files?.length > 0) {
       let fileIds = files?.files?.files?.map((file: any) => file.id);
       if (fileIds.length > 0) {
@@ -361,9 +363,9 @@ const NewWorkspaceInnerComponent = (props: {
         padding: 0,
       }}
     >
-      <Backdrop className={classes.backdrop} open={open}>
+      {/* <Backdrop className={classes.backdrop} open={open}>
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop> */}
       <SideMenus workspace={getWorkspace()} />
       <Grid
         style={{

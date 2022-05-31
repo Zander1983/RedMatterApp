@@ -71,7 +71,7 @@ const LandingHeader = () => {
         <Grid item container xs={10} sm={9} md={6} lg={4} xl={3}>
           <Card className={classes.card} variant="outlined">
             <CardContent component={"div"}>
-              <Typography variant="h6" component={'p'}>
+              <Typography variant="h6" component={"p"}>
                 <img
                   src={icon}
                   alt="Red matter logo"
@@ -96,7 +96,7 @@ const LandingHeader = () => {
                 <b style={{ color: "#eee" }}>Your flow analysis tool</b>
               </p>
               <p style={{ color: "#eee", marginTop: -15 }}>
-                Analysing FCS files has never been easier
+                Analysing FCS files in your browser
               </p>
               {!isLoggedIn ? (
                 <div>
@@ -125,14 +125,14 @@ const LandingHeader = () => {
                 </div>
               ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                 <div>
-                  <NavLink to="/experiments">
+                  <NavLink to="/graph-workspace">
                     <Button
                       variant="contained"
                       size="large"
                       color="primary"
                       className={classes.marginButton}
                     >
-                      Experiments
+                      Analyse
                     </Button>
                   </NavLink>
                 </div>

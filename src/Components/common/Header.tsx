@@ -97,7 +97,7 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v2.5"}
+                  {"v3.0.7"}
                 </b>
               </NavLink>
             </Typography>
@@ -108,32 +108,32 @@ const AppHeader = (props: any) => {
             ) : null}
             {isLoggedIn ? (
               <>
-                {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
+                {/* {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
                   <NavLink className={classes.topBarLink} to="/experiments">
                     Experiments
                   </NavLink>
-                )}
-                <NavLink className={classes.topBarLink} to="/plans">
+                )} */}
+                {/* <NavLink className={classes.topBarLink} to="/plans">
                   Plans
-                </NavLink>
-                <NavLink className={classes.topBarLink} to="/user-profile">
+                </NavLink> */}
+                {/* <NavLink className={classes.topBarLink} to="/user-profile">
                   Profile
-                </NavLink>
+                </NavLink> */}
                 {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
                 Browse
               </NavLink> */}
-                <NavLink className={classes.topBarLink} to="/why-red-matter">
+                {/* <NavLink className={classes.topBarLink} to="/why-red-matter">
                   Why Red Matter
-                </NavLink>
+                </NavLink> */}
                 <a className={classes.topBarLink} onClick={onLogout} href="/">
                   Logout
                 </a>
               </>
             ) : (
               <>
-                <NavLink className={classes.topBarLink} to="/why-red-matter">
+                {/* <NavLink className={classes.topBarLink} to="/why-red-matter">
                   Why Red Matter
-                </NavLink>
+                </NavLink> */}
                 <NavLink className={classes.topBarLink} to="/login">
                   Login
                 </NavLink>

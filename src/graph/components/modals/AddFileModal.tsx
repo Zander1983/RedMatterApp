@@ -62,6 +62,7 @@ const AddFileModal = React.memo(
     const classes = useStyles();
 
     const filesMetadata = props.files;
+
     const [onHover, setOnHover] = React.useState(-1);
     const [files, setFiles] = React.useState<any[]>([]);
     const [errorMessage, setErrorMessage] = useState("");
@@ -127,6 +128,8 @@ const AddFileModal = React.memo(
       setFiles(fileArray);
     }, [searchingText]);
 
+    console.log(">>> props.open is ", props.open);
+
     return (
       <Modal
         open={props.open}
@@ -148,30 +151,6 @@ const AddFileModal = React.memo(
           </p>
 
           <Grid container direction="row">
-            {/* <Grid item xs={4} style={{ paddingRight: 20 }}>
-              <Button
-                size="large"
-                variant="contained"
-                style={{
-                  backgroundColor: "#66d",
-                  color: "white",
-                  width: "100%",
-                  height: 30,
-                  marginBottom: 15,
-                }}
-                startIcon={
-                  everythingDownloaded ? null : (
-                    <DownloadOutlined
-                      style={{ fontSize: 15, color: "white" }}
-                    />
-                  )
-                }
-                onClick={downloadAll}
-                // disabled={everythingDownloaded}
-              >
-                Plot all samples
-              </Button>
-            </Grid> */}
             <Grid item xs={12}>
               <div>
                 <TextField
@@ -190,26 +169,6 @@ const AddFileModal = React.memo(
                 />
               </div>
             </Grid>
-            {/* <Grid item xs={12}>
-              <div>
-                <TextField
-                  style={{
-                    width: "100%",
-                    padding: 0,
-                    marginTop: 5,
-                    marginBottom: 5,
-                  }}
-                  value={searchingText}
-                  margin="dense"
-                  id="gate-name-textinput"
-                  label="Search By File Title"
-                  type="text"
-                  onChange={(e: any) => {
-                    setSearchingText(e.target.value);
-                  }}
-                />
-              </div>
-            </Grid> */}
           </Grid>
 
           {process.env.REACT_APP_ENABLE_ANONYMOUS_FILE_UPLOAD === "true" ? (
@@ -246,12 +205,13 @@ const AddFileModal = React.memo(
               borderWidth: 0.3,
             }}
           >
-            {files.length === 0 ? (
+            {props.files.length === 0 ? (
               <Grid style={{ textAlign: "center" }}>
                 No files found with search term '{searchingText}'
               </Grid>
             ) : (
-              files.map((fileMetadata: any, i: number) => {
+              props.files.map((fileMetadata: any, i: number) => {
+                //console.log(">> fileMetadata is ", fileMetadata);
                 const divider =
                   i === filesMetadata.length - 1 ? null : (
                     <Divider className={classes.fileSelectDivider} />
@@ -279,8 +239,8 @@ const AddFileModal = React.memo(
                           <div style={{ display: "flex" }}>
                             <Tooltip
                               title={
-                                fileMetadata.label.length > 45
-                                  ? fileMetadata?.label
+                                fileMetadata?.name.length > 45
+                                  ? fileMetadata.name
                                   : ""
                               }
                             >
@@ -294,7 +254,7 @@ const AddFileModal = React.memo(
                               >
                                 <b>{"Title: "}</b>
 
-                                {fileMetadata.label}
+                                {fileMetadata.name}
                               </p>
                             </Tooltip>
                             <p
@@ -304,7 +264,7 @@ const AddFileModal = React.memo(
                               }}
                             >
                               <b>{"Events: "}</b>
-                              <span>{fileMetadata.eventCount}</span>
+                              <span>{fileMetadata.jsonEventCount}</span>
                             </p>
                           </div>
                           <div
@@ -321,9 +281,9 @@ const AddFileModal = React.memo(
                                 fontSize: 13,
                                 width: 180,
                               }}
-                              onClick={() => onSetControl(fileMetadata.id)}
+                              onClick={() => onSetControl(fileMetadata.name)}
                             >
-                              {props.selectedFile === fileMetadata.id
+                              {props.selectedFile === fileMetadata.name
                                 ? "Selected As Control"
                                 : "Set As Control"}
                             </Button>

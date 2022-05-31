@@ -111,10 +111,8 @@ export interface EventsRequestResponse {
     value: AxisName;
     label: string;
     display: PlotType;
-    linearMinimum: number;
-    linearMaximum: number;
-    biexponentialMinimum: number;
-    biexponentialMaximum: number;
+    minimum: number;
+    maximum: number;
   }[];
   $locals: {};
   $op: null;

@@ -52,6 +52,9 @@ export const downloadFileMetadata = async (
     newFilesIds.push(file.id);
   }
   WorkspaceDispatch.SetFileIds(allFiles.map((file) => file.id));
+
+  console.log("1 calling SetFiles...allFiles is ", allFiles);
+
   WorkspaceDispatch.SetFiles(allFiles);
   return newFilesIds;
   //return  allFiles;
@@ -151,6 +154,8 @@ export const downloadFileEvent = async (
       newFileArray.push(newFile);
       killNoti = true;
     }
+
+    console.log("2 calling SetFiles...newFileArray is ", newFileArray);
 
     WorkspaceDispatch.SetFileIds(newFileArray.map((file) => file.id));
     WorkspaceDispatch.SetFiles(newFileArray);
@@ -318,6 +323,10 @@ export const downloadEvent = async (
     }
 
     WorkspaceDispatch.SetFileIds(newFileArray.map((file) => file.id));
+    // this is where files are set
+
+    console.log("HERE IS WHERE file-events ARE SAVED TO REDUX");
+
     WorkspaceDispatch.SetFiles(newFileArray);
 
     return files;

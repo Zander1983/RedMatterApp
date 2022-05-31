@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-import { getWorkspace } from "graph/utils/workspace";
 import { Button } from "@material-ui/core";
 import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 
 function Table(props) {
-  console.log(">>> props.enrichedFiles is ", props.enrichedFiles);
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -19,14 +17,14 @@ function Table(props) {
     (enrichedFile) => !enrichedFile.isControlFile
   );
 
-  let editedFiles = getWorkspace().workspaceState?.files;
-  let editedFileIds = Object.keys(editedFiles);
+  // let editedFiles = getWorkspace().workspaceState?.files;
+  // let editedFileIds = Object.keys(editedFiles);
 
   let allFileMinObj = props.enrichedFiles.map((enrichedFile) => {
     return { id: enrichedFile.fileId, name: enrichedFile.label };
   });
   const [shouldFileRender, setShouldFileRender] = useState(
-    getWorkspace()?.workspaceState?.openFiles || []
+    props.workspaceState?.openFiles || []
   );
 
   const fileViewHideHandler = (fileId) => {
@@ -38,28 +36,35 @@ function Table(props) {
     setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
   };
 
+  const tableRef = useRef(null);
+
   useEffect(() => {
-    setShouldFileRender(getWorkspace()?.workspaceState?.openFiles || []);
-    if (getWorkspace()?.workspaceState?.sortingState?.sortingState) {
+    setShouldFileRender(props.workspaceState.openFiles || []);
+    if (props.workspaceState.sortingState?.sortingState) {
       props.sortByGate(
-        getWorkspace()?.workspaceState?.sortingState?.gateName,
-        getWorkspace()?.workspaceState?.sortingState?.sortingState
+        props.workspaceState.sortingState?.gateName,
+        props.workspaceState.sortingState?.sortingState
       );
     } else {
-      const files = getWorkspace()?.files;
-      const newFiles = [];
-      for (const id of getWorkspace()?.fileIds) {
-        newFiles.push(files.find((file) => file.id === id));
-      }
-      WorkspaceDispatch.SetFiles(newFiles);
+      // const files = props.workspaceState.files;
+      // const newFiles = [];
+      // for (const id of props.workspaceState.fileIds) {
+      //   newFiles.push(files.find((file) => file.id === id));
+      // }
+      // WorkspaceDispatch.SetFiles(newFiles);
     }
-  }, [getWorkspace()?.activePipelineId]);
+  }, []);
+
+  useEffect(() => {
+    tableRef.current.scrollBy({
+      top: 0,
+      left: +500,
+      behavior: "smooth",
+    });
+  }, [controlEnrichedFile?.plots?.length]);
 
   return (
     <div>
-      <p style={{ margin: 0, marginBottom: 5, marginTop: 5 }}>
-        <strong> {"Analysis based on sampling of 10,000 events"} </strong>
-      </p>
       <div
         style={{
           color: "#fff",
@@ -74,13 +79,7 @@ function Table(props) {
             width: "20%",
             order: 1,
           }}
-        >
-          {
-            getWorkspace()?.pipelines?.find(
-              (pipeline) => pipeline._id === getWorkspace()?.activePipelineId
-            ).name
-          }
-        </div>
+        ></div>
         <div
           style={{
             width: "60%",
@@ -97,9 +96,18 @@ function Table(props) {
           }}
         ></div>
       </div>
-      <table className="workspace">
-        <tbody style={{ maxWidth: "100%" }}>
-          <tr style={{ display: "flex", flexWrap: "wrap" }}>
+      <table
+        style={{
+          maxWidth: "100%",
+          overflowX: "auto",
+          scrollBhavior: "smooth",
+          display: "block",
+        }}
+        className="workspace"
+        ref={tableRef}
+      >
+        <tbody>
+          <tr>
             {controlEnrichedFile?.plots?.map((plot, plotIindex) => {
               return (
                 <th
@@ -145,6 +153,7 @@ function Table(props) {
                           key={`plot-${plotIindex}`}
                           plot={plot}
                           enrichedFile={controlEnrichedFile}
+                          workspaceState={props.workspaceState}
                           onAddGate={props.onAddGate}
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
@@ -179,6 +188,7 @@ function Table(props) {
                           onDeleteGate={props.onDeleteGate}
                           onEditGate={props.onEditGate}
                           enrichedFile={controlEnrichedFile}
+                          workspaceState={props.workspaceState}
                           enrichedOverlayFiles={enrichedOverlayFiles}
                           allFileMinObj={allFileMinObj}
                           plotIndex={`0-${plotIindex}`}
@@ -191,81 +201,73 @@ function Table(props) {
               );
             })}
           </tr>
-        </tbody>
-      </table>
-      {
-        <div
-          style={{
-            color: "#000",
-            backgroundColor: "#ffff99",
-            border: "1px solid #000",
-            textAlign: "center",
-            fontWeight: "bold",
-            marginBottom: 5,
-          }}
-        >
-          OTHER FILES
-          <span
-            style={{
-              float: "right",
-              marginRight: 20,
-              cursor: shouldFileRender.length && "pointer",
-              color: shouldFileRender.length ? "#000" : "gray",
-              fontWeight: shouldFileRender.length ? "bolder" : "bold",
-            }}
-            onClick={() => {
-              if (shouldFileRender.length) {
-                setShouldFileRender([]);
-                WorkspaceDispatch.UpdateOpenFiles("", "close");
-              }
-            }}
-          >
-            {"Close All"}
-          </span>
-          <span
-            style={{
-              float: "right",
-              marginRight: 20,
-              cursor:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1 &&
-                "pointer",
-              color:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1
-                  ? "#000"
-                  : "gray",
-              fontWeight:
-                shouldFileRender.length !== getWorkspace()?.files.length - 1
-                  ? "bolder"
-                  : "bold",
-            }}
-            onClick={() => {
-              setShouldFileRender(
-                getWorkspace()
-                  ?.files?.map((file) => file?.id)
-                  .filter(
-                    (fileId) =>
-                      fileId !== getWorkspace()?.workspaceState?.controlFileId
-                  )
-              );
-              WorkspaceDispatch.UpdateOpenFiles("", "view");
-            }}
-          >
-            {"View All"}
-          </span>
-        </div>
-      }
-      <table>
-        <tbody>
-          <tr
-            style={{
-              border: "1px solid gray",
-              margin: 1,
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginBottom: 5,
-            }}
-          >
+          <tr>
+            <td colSpan="100">
+              <div
+                style={{
+                  color: "#000",
+                  backgroundColor: "#ffff99",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  marginBottom: 5,
+                  border: "1px solid #000",
+                }}
+              >
+                {/* <span
+                  style={{
+                    float: "left",
+                    marginLeft: 20,
+                    cursor: shouldFileRender.length && "pointer",
+                    color: shouldFileRender.length ? "#000" : "gray",
+                    fontWeight: shouldFileRender.length ? "bolder" : "bold",
+                  }}
+                  onClick={() => {
+                    if (shouldFileRender.length) {
+                      setShouldFileRender([]);
+                      WorkspaceDispatch.UpdateOpenFiles("", "close");
+                    }
+                  }}
+                >
+                  {"Close All"}
+                </span>
+                <span
+                  style={{
+                    float: "left",
+                    marginLeft: 20,
+                    cursor:
+                      shouldFileRender.length !==
+                        props.workspaceState.files.length - 1 && "pointer",
+                    color:
+                      shouldFileRender.length !==
+                      props.workspaceState.files.length - 1
+                        ? "#000"
+                        : "gray",
+                    fontWeight:
+                      shouldFileRender.length !==
+                      props.workspaceState.files.length - 1
+                        ? "bolder"
+                        : "bold",
+                  }}
+                  onClick={() => {
+  
+                    setShouldFileRender(
+                      props.workspaceState.files
+                        ?.map((file) => file?.id)
+                        .filter(
+                          (fileId) =>
+                            fileId !== props.workspaceState.controlFileId
+                        )
+                    );
+                    WorkspaceDispatch.UpdateOpenFiles("", "view");
+                  }}
+                >
+                  {"View All"}
+                </span> */}
+                OTHER FILES
+              </div>
+            </td>
+          </tr>
+          <tr>
             {controlEnrichedFile.plots.map((plot, plotIindex) => {
               return (
                 <td
@@ -334,17 +336,7 @@ function Table(props) {
           {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
             // LOOPING THROUGH NON-CONTROL FILES
             return (
-              <tr
-                key={`tr-${fileIndex}`}
-                style={{
-                  border: "1px solid gray",
-                  margin: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginBottom: 5,
-                }}
-              >
+              <tr key={`tr-${fileIndex}`}>
                 {enrichedFile.plots.map((plot, plotIindex) => {
                   return (
                     <td
@@ -388,6 +380,7 @@ function Table(props) {
                                       gateStat.gateName === plot.population
                                     );
                                   })
+
                                   .map((gateStat) => {
                                     return gateStat && gateStat.percentage;
                                   })}%`
@@ -395,7 +388,7 @@ function Table(props) {
                           </div>
                         </Tooltip>
 
-                        {plot.population === "All" &&
+                        {/* {plot.population === "All" &&
                           editedFileIds.includes(enrichedFile.fileId) && (
                             <Button
                               size="small"
@@ -409,7 +402,7 @@ function Table(props) {
                             >
                               Reset To Control
                             </Button>
-                          )}
+                          )} */}
                       </div>
 
                       {shouldFileRender.includes(enrichedFile?.fileId) &&
@@ -421,6 +414,7 @@ function Table(props) {
                                 key={`plot-${plotIindex + 1}`}
                                 plot={plot}
                                 enrichedFile={enrichedFile}
+                                workspaceState={props.workspaceState}
                                 onAddGate={props.onAddGate}
                                 onEditGate={props.onEditGate}
                                 onResize={props.onResize}
@@ -453,6 +447,7 @@ function Table(props) {
                                 onEditGate={props.onEditGate}
                                 addOverlay={props.addOverlay}
                                 enrichedFile={enrichedFile}
+                                workspaceState={props.workspaceState}
                                 allFileMinObj={allFileMinObj}
                                 enrichedOverlayFiles={enrichedOverlayFiles}
                                 plotIndex={`${fileIndex + 1}-${plotIindex}`}

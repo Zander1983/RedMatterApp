@@ -370,11 +370,11 @@ class Logicle {
     return W;
   };
 
-  getTMWA = (biexponentialMinimum: number, biexponentialMaximum: number) => {
-    var T = biexponentialMaximum;
+  getTMWA = (minimum: number, maximum: number) => {
+    var T = maximum;
     var M = 4.42;
     var A = 0;
-    var W = this.calculateW(biexponentialMinimum, T);
+    var W = this.calculateW(minimum, T);
 
     return {
       T: T,

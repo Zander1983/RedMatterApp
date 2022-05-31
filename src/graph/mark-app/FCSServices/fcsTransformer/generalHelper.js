@@ -1,12 +1,12 @@
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable  */
-const removeNulls = (array) => {
+module.exports.removeNulls = (array) => {
   return array.filter(function (val) {
     return val !== null;
   });
 };
 
-const compareTwoArrays = (array1, array2) => {
+module.exports.compareTwoArrays = (array1, array2) => {
   // if the other array1 is a falsy value, return
   if (!array1 || !array2) return false;
 
@@ -26,7 +26,7 @@ const compareTwoArrays = (array1, array2) => {
   return true;
 };
 
-const getMaxForParam = (params) => {
+module.exports.getMaxForParam = (params) => {
   var maxArray = params.fcs.get$PnX("R");
   maxArray = this.removeNulls(maxArray);
   var maxInHeader = maxArray[params.param];
@@ -40,10 +40,4 @@ const getMaxForParam = (params) => {
   // }
 
   return parseFloat(maxInHeader);
-};
-
-export default {
-  removeNulls,
-  compareTwoArrays,
-  getMaxForParam,
 };

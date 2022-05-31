@@ -41,14 +41,8 @@ export const createFile = async ({
     requestData.channels.forEach((e) => {
       newFile.axes.push(e.value);
       newFile.labels.push(e.label);
-      newFile.defaultRanges[e.value + "-lin"] = [
-        e.linearMinimum,
-        e.linearMaximum,
-      ];
-      newFile.defaultRanges[e.value + "-bi"] = [
-        e.biexponentialMinimum,
-        e.biexponentialMaximum,
-      ];
+      newFile.defaultRanges[e.value + "-lin"] = [e.minimum, e.maximum];
+      newFile.defaultRanges[e.value + "-bi"] = [e.minimum, e.maximum];
       newFile.defaultAxisPlotTypes[e.value] = e.display;
     });
     newFile.id = requestData.id;

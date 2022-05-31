@@ -25,6 +25,10 @@ export const getWorkspace = (): Workspace => {
   return store.getState().workspace;
 };
 
+export const getFiles = (): any[] => {
+  return store.getState().fcsFiles.files;
+};
+
 export const getFile = (fileID: FileID): File => {
   const workspace = getWorkspace();
   const files = workspace.files.filter((file) => {
@@ -266,6 +270,7 @@ export const getWorkspaceStateFromServer = async (
         }
       );
     }
+
     const workspace = workspaceData.data.state;
     if (workspace && Object.keys(workspace).length > 0) {
       await saveWorkspaceStateToRedux(workspace, workspaceData.data.pipelines);

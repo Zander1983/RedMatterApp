@@ -13,6 +13,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.loading {
+  margin: 20px;
+  font-size: 36px;
+  font-family: sans-serif;
+}
+
+.loading:after {
+  display: inline-block;
+  animation: dotty steps(1, end) 1s infinite;
+  content: "";
+}
+
+@keyframes dotty {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+  100% {
+    content: "";
+  }
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

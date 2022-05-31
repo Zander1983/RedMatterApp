@@ -38,7 +38,7 @@ const WorkspaceDispatch = {
       payload: { files },
     });
   },
-  AddFile: (file: File) => {
+  AddFile: (file: any) => {
     return store.dispatch({
       type: graphActions.ADD_FILE,
       payload: { file },
