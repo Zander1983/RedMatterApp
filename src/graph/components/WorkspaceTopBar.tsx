@@ -4,6 +4,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, FormControlLabel, MenuItem, Select } from "@material-ui/core";
+import * as htmlToImage from "html-to-image";
 import Grid from "@material-ui/core/Grid";
 import { snackbarService } from "uno-material-ui";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -42,6 +43,7 @@ interface Props {
   sharedWorkspace: boolean;
   plotCallNeeded: boolean;
   renderPlotController: boolean;
+  //downloadPlotAsImage: fun
   // setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
   // setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
   // setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -85,7 +87,19 @@ const WorkspaceTopBar = (props) => {
     setHeaderForCSV(headers);
   };
 
+  // const downloadPlotAsImage = async () => {
+  //   console.log("in downloadPlotAsImage");
+  //   // downloading functionality
+  //   const plotElement = document.getElementById("entire-table");
+  //   const dataUrl = await htmlToImage.toSvg(plotElement);
+  //   var link = document.createElement("a");
+  //   //link.download = `${plot.population}`;
+  //   link.href = dataUrl;
+  //   link.click();
+  // };
+
   const downloadCSV = () => {
+    console.log("in downwload CSV");
     let workspaceState = props.workspaceState;
     // @ts-ignore
     const plots =
@@ -286,28 +300,52 @@ const WorkspaceTopBar = (props) => {
         ?.length > 1;
 
     return (
-      <Button
-        variant="contained"
-        size="small"
-        onClick={() => downloadCSV()}
-        // className={classes.topButton}
-        style={{
-          backgroundColor: "#fafafa",
-          float: "right",
-          marginRight: 10,
-        }}
-        //disabled={!hasGate}
-      >
-        <CSVLink
-          headers={heeaderForCSV}
-          data={data}
-          filename="WorkspaceReport.csv"
-          // className={classes.downloadBtnLayout}
+      <span>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => downloadCSV()}
+          // className={classes.topButton}
+          style={{
+            backgroundColor: "#fafafa",
+            color: "#1890ff",
+            float: "right",
+            marginRight: 10,
+          }}
+          //disabled={!hasGate}
+        >
+          <CSVLink
+            headers={heeaderForCSV}
+            data={data}
+            filename="WorkspaceReport.csv"
+            // className={classes.downloadBtnLayout}
+          >
+            <GetAppIcon
+              fontSize="small"
+              style={{ marginRight: 10 }}
+            ></GetAppIcon>
+            Download Stats
+          </CSVLink>
+        </Button>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => {
+            props.downloadPlotAsImage();
+          }}
+          // className={classes.topButton}
+          style={{
+            backgroundColor: "#fafafa",
+            color: "#1890ff",
+            float: "right",
+            marginRight: 10,
+          }}
+          //disabled={!hasGate}
         >
           <GetAppIcon fontSize="small" style={{ marginRight: 10 }}></GetAppIcon>
-          Download Stats
-        </CSVLink>
-      </Button>
+          Download SVG
+        </Button>
+      </span>
     );
   };
 

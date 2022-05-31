@@ -87,7 +87,6 @@ const GraphWorkspaceComponent = (props: {
   experimentId: string;
   shared: boolean;
 }) => {
-  console.log(">>>in GraphWorkspaceComponent");
   const classes = useStyles();
   const history = useHistory();
 

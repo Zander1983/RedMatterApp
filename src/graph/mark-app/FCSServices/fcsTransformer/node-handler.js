@@ -104,22 +104,21 @@ const parse = (fcs) => {
 
     let channelEvents = [];
 
-    let roundedEvent;
+    let event;
 
     let minimum = 0;
     let maximum = channelMaximums[paramIndex];
     for (
       let event = 0;
-      // Math.round(event) < 10;
+      //Math.round(event) < 10;
       Math.round(event) < dataAsNumbers.length;
       event = event + 1
     ) {
-      roundedEvent = Math.round(event);
-      eventData = dataAsNumbers[roundedEvent][paramIndex];
+      eventData = Math.round(dataAsNumbers[event][paramIndex]);
 
       // console.log(
-      //   ">>>dataAsNumbers[roundedEvent] is ",
-      //   dataAsNumbers[roundedEvent]
+      //   ">>>dataAsNumbers[event] is ",
+      //   dataAsNumbers[event]
       // );
 
       scaledX = scale.scaleValue({
@@ -128,12 +127,12 @@ const parse = (fcs) => {
         paramName: paramNamesHasSpillover[paramIndex].paramName,
         scaleType: channels[paramIndex].display,
         hasSpilloverForParam: paramNamesHasSpillover[paramIndex].hasSpillover,
-        arrayOfOneEvent: dataAsNumbers[roundedEvent],
+        arrayOfOneEvent: dataAsNumbers[event],
         matrixSpilloverIndex: indexOfSpilloverParamX,
         channelMaximums: channelMaximums,
       });
-
-      //scaledX = Math.round(scaledX);
+      //console.log("scaledX is ", scaledX);
+      scaledX = Math.round(scaledX);
 
       channelEvents.push(scaledX);
 

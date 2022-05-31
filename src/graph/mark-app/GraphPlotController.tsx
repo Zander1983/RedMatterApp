@@ -298,10 +298,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   downloadPlotAsImage = async (plot: any, plotIndex: any) => {
     // downloading functionality
-    const plotElement = document.getElementById(`entire-canvas-${plotIndex}`);
+    const plotElement = document.getElementById("entire-table");
     const dataUrl = await htmlToImage.toSvg(plotElement);
     var link = document.createElement("a");
-    link.download = `${plot.population}`;
+    link.download = "workspace";
     link.href = dataUrl;
     link.click();
   };
@@ -766,6 +766,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             <span
               style={{
                 marginRight: 5,
+                marginLeft: 5,
                 fontWeight: "bold",
               }}
             >
@@ -800,19 +801,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   yAxisScaleType
                 );
 
-                // this.setState(
-                //   {
-                //     ...this.state,
-                //     controlFileId: controlFile.id,
-                //     workspaceState: JSON.parse(JSON.stringify(workspaceState)),
-                //   },
-                //   () => {
-                //     console.log(this.state.workspaceState);
-                //   }
-                // );
-
-                // let work2 = this.state.workspaceState;
-
                 this.onInitState(workspaceState);
               }}
             >
@@ -823,6 +811,44 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               ))}
             </Select>
           </>
+
+          <Button
+            variant="outlined"
+            style={{
+              // backgroundColor: "#6666AA",
+              marginLeft: 5,
+              marginBottom: 3,
+              // color: "white",
+            }}
+            onClick={(e) => {
+              console.log("resettting...");
+              let controlFile = this.state.fcsFiles.find(
+                (file) => file.id == this.state.workspaceState.controlFileId
+              );
+              const {
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                xAxisScaleType,
+                yAxisScaleType,
+              } = getPlotChannelAndPosition(controlFile);
+
+              let workspaceState = createDefaultPlotSnapShot(
+                controlFile.id,
+                xAxisLabel,
+                yAxisLabel,
+                xAxisIndex,
+                yAxisIndex,
+                xAxisScaleType,
+                yAxisScaleType
+              );
+
+              this.onInitState(workspaceState);
+            }}
+          >
+            Reset
+          </Button>
 
           {this.state.controlFileScale?.spilloverParams && (
             <Button
@@ -941,23 +967,26 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           <WorkspaceTopBar
             fcsFiles={this.state.fcsFiles}
             workspaceState={this.state.workspaceState}
+            downloadPlotAsImage={this.downloadPlotAsImage}
           />
 
-          <PlotTableComponent
-            enrichedFiles={this.state.enrichedFiles}
-            workspaceState={this.state.workspaceState}
-            className="workspace"
-            onChangeChannel={this.onChangeChannel}
-            addOverlay={this.addOverlay}
-            onAddGate={this.onAddGate}
-            onDeleteGate={this.onDeleteGate}
-            onEditGate={this.onEditGate}
-            onResize={this.onResize}
-            sortByGate={this.sortByGate}
-            downloadPlotAsImage={this.downloadPlotAsImage}
-            onResetToControl={this.onResetToControl}
-            testParam={this.state.testParam}
-          />
+          <div id="entire-table">
+            <PlotTableComponent
+              enrichedFiles={this.state.enrichedFiles}
+              workspaceState={this.state.workspaceState}
+              className="workspace"
+              onChangeChannel={this.onChangeChannel}
+              addOverlay={this.addOverlay}
+              onAddGate={this.onAddGate}
+              onDeleteGate={this.onDeleteGate}
+              onEditGate={this.onEditGate}
+              onResize={this.onResize}
+              sortByGate={this.sortByGate}
+              downloadPlotAsImage={this.downloadPlotAsImage}
+              onResetToControl={this.onResetToControl}
+              testParam={this.state.testParam}
+            />
+          </div>
         </>
       );
     } else return null;
@@ -1049,35 +1078,46 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               );
             })}
           {this.state.fcsFiles?.length < 1 ? (
-            <span>
-              <Button
-                variant="contained"
+            <div>
+              <span>
+                <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#6666AA",
+                    maxHeight: 50,
+                    marginTop: 20,
+                    marginBottom: 25,
+                    color: "white",
+                  }}
+                  onClick={() => {
+                    this.inputFile.current.click();
+                  }}
+                >
+                  <input
+                    type="file"
+                    id="file"
+                    //@ts-ignore
+                    ref={this.inputFile}
+                    multiple
+                    accept=".fcs, .lmd"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      this.uploadFiles(e.target.files);
+                    }}
+                  />
+                  Upload Files
+                </Button>
+              </span>
+              <p
                 style={{
-                  backgroundColor: "#6666AA",
-                  maxHeight: 50,
-                  marginTop: 20,
+                  color: "#ff4d4d",
+                  fontWeight: "bold",
                   marginBottom: 25,
-                  color: "white",
-                }}
-                onClick={() => {
-                  this.inputFile.current.click();
                 }}
               >
-                <input
-                  type="file"
-                  id="file"
-                  //@ts-ignore
-                  ref={this.inputFile}
-                  multiple
-                  accept=".fcs, .lmd"
-                  style={{ display: "none" }}
-                  onChange={(e) => {
-                    this.uploadFiles(e.target.files);
-                  }}
-                />
-                Upload Files
-              </Button>
-            </span>
+                Files must have the same channels
+              </p>
+            </div>
           ) : (
             <span>
               <h3 style={{ marginTop: 100, marginBottom: 10 }}>
