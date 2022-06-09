@@ -154,28 +154,69 @@ function Plot(props) {
 
   useEffect(() => {
     if (resizing) setResizing(false);
+    var arr = new Array(props.plot.length); // create an empty array of length `M`
+    for (var i = 0; i < props.plot.width; i++) {
+      arr[i] = new Array(props.plot.width); // make each element an array
+    }
+    var most = 0;
+    let pointHitUnique = 0,
+      pointHitTotal = 0;
+
     const context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
-    props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
-      if (context) {
+
+    if (context) {
+      props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, localPlot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
             context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
             if (
-              formattedEvent[0] > localPlot.width ||
+              formattedEvent[0] >= localPlot.width ||
               formattedEvent[0] < 2 ||
-              formattedEvent[1] > localPlot.height ||
+              formattedEvent[1] >= localPlot.height ||
               formattedEvent[1] < 2
             ) {
               pointsOutside.push([formattedEvent[0], formattedEvent[1]]);
               pointsOutsideCanvasCount++;
+            } else {
+              if (arr[formattedEvent[0]][formattedEvent[1]] == undefined) {
+                arr[formattedEvent[0]][formattedEvent[1]] = 1;
+                pointHitUnique = pointHitUnique + 1;
+              } else {
+                arr[formattedEvent[0]][formattedEvent[1]] =
+                  arr[formattedEvent[0]][formattedEvent[1]] + 1;
+
+                if (arr[formattedEvent[0]][formattedEvent[1]] > most) {
+                  most++;
+                }
+              }
+
+              pointHitTotal = pointHitTotal + 1;
             }
           }
         );
+      });
+
+      if (props.plot.population === "All") {
+        let mean = pointHitTotal / pointHitUnique;
+        for (let i = 0; i < arr.length; i++) {
+          for (let x = 0; x < arr[i].length; x++) {
+            if (arr[i][x] >= Math.round(mean * 4)) {
+              context.fillStyle = "red";
+              context.fillRect(i, x, 1, 1);
+            } else if (arr[i][x] >= Math.round(mean * 2)) {
+              context.fillStyle = "yellow";
+              context.fillRect(i, x, 1, 1);
+            } else if (arr[i][x] >= Math.round(mean)) {
+              context.fillStyle = "green";
+              context.fillRect(i, x, 1, 1);
+            }
+          } // make each element an array
+        }
       }
-    });
+    }
 
     try {
       const percentage = (
@@ -201,7 +242,7 @@ function Plot(props) {
   }, [localPlot]);
 
   const drawGateLine = (context, plot, realPoints) => {
-    context.strokeStyle = "red";
+    context.strokeStyle = "CornflowerBlue";
     context.lineWidth = 1;
     context.beginPath();
 
@@ -229,7 +270,7 @@ function Plot(props) {
     for (const point of pointsOnCanvas) {
       context.beginPath();
       context.arc(point[0], point[1], 2, 0, 2 * Math.PI, false);
-      context.fillStyle = "red";
+      context.fillStyle = "CornflowerBlue";
       context.fill();
       context.stroke();
     }
@@ -473,7 +514,7 @@ function Plot(props) {
   const drawPolygon = () => {
     let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
-    context.strokeStyle = "#df4b26";
+    context.strokeStyle = "CornflowerBlue";
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(newGatePointsCanvas[0][0], newGatePointsCanvas[0][1]);
@@ -592,7 +633,7 @@ function Plot(props) {
     //"covering-canvas-" + props.plotIndex
     let context = getContext("covering-canvas-" + props.plotIndex);
 
-    context.strokeStyle = "#df4b26";
+    context.strokeStyle = "CornflowerBlue";
     context.lineJoin = "round";
     context.lineWidth = 5;
 

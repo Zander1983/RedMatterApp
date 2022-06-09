@@ -112,7 +112,7 @@ export const getPointOnCanvas = (
     canvasYValue = plot.height - (plot.height * realValueInRange) / range;
   }
 
-  return [canvasXValue, canvasYValue];
+  return [Math.round(canvasXValue), Math.round(canvasYValue)];
 };
 
 export const getRealRange = (minimum, maximum) => {
