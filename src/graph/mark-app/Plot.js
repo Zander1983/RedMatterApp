@@ -180,7 +180,6 @@ function Plot(props) {
               formattedEvent[1] >= localPlot.height ||
               formattedEvent[1] < 2
             ) {
-              pointsOutside.push([formattedEvent[0], formattedEvent[1]]);
               pointsOutsideCanvasCount++;
             } else {
               if (arr[formattedEvent[0]][formattedEvent[1]] == undefined) {
