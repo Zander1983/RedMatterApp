@@ -775,8 +775,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     controlEnrichedFile.channels[rowI][minOrMax] = newRange;
     //});
 
-    console.log("this.state.fcsFiles is ", this.state.fcsFiles);
-
     this.setState({
       ...this.state,
       fcsFiles: this.state.fcsFiles,
@@ -792,7 +790,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let workspace = this.state.workspaceState;
     files.find((file) => {
       if (file.id == workspace.controlFileId) {
-        console.log("file is ", file);
         file.channels.forEach((channel, index) => {
           channel.minimum = parseFloat(
             controlEnrichedFile.channels[index].minimum
@@ -804,19 +801,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    console.log("files is now ", files);
-
-    // let controlEnrichedFile = this.state.enrichedFiles.find(
-    //   (enrichedFile) => enrichedFile.isControlFile
-    // );
-
-    // //this.state.fcsFiles.forEach((fcsFile) => {
-    // controlEnrichedFile.channels.forEach((channel) => {
-    //   channel.minimum = parseFloat(channel.minimum);
-    //   channel.minimum = parseFloat(channel.maximum);
-    // });
-
-    //console.log("controlEnrichedFile isn now ", controlEnrichedFile);
+    this.setState({
+      ...this.state,
+      showRanges: false,
+    });
 
     this.onInitState(this.state.workspaceState);
   };
@@ -1021,7 +1009,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     // backgroundColor: "#6666AA",
                     marginLeft: 5,
                     marginBottom: 3,
-                    // color: "white",
+                    backgroundColor: "#6666AA",
+                    color: "white",
                   }}
                   onClick={(e) => this.setNewSpillover()}
                 >
@@ -1147,7 +1136,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     // backgroundColor: "#6666AA",
                     marginLeft: 5,
                     marginBottom: 3,
-                    // color: "white",
+                    backgroundColor: "#6666AA",
+                    color: "white",
                   }}
                   onClick={(e) => this.setNewRanges()}
                 >
