@@ -114,7 +114,7 @@ export const getPointOnCanvas = (
     }
   }
 
-  return [canvasXValue, canvasYValue];
+  return [Math.round(canvasXValue), Math.round(canvasYValue)];
 };
 
 export const getRealRange = (minimum, maximum) => {
