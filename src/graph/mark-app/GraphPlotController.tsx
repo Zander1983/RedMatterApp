@@ -44,6 +44,7 @@ interface IState {
   currentParsingFile: string;
   controlFileScale: {};
   showSpillover: boolean;
+  showRanges: boolean;
   fcsFiles: any[];
   controlFileId: string;
 }
@@ -66,6 +67,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       currentParsingFile: "",
       controlFileScale: {},
       showSpillover: false,
+      showRanges: false,
       fcsFiles: [],
       controlFileId: "",
     };
@@ -115,6 +117,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       let controlEnrichedFile = enrichedFiles.find(
         (enrichedFile) => enrichedFile.isControlFile
       );
+
+      console.log("controlEnrichedFile is ", controlEnrichedFile);
 
       this.setState({
         ...this.state,
@@ -750,15 +754,78 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    // this.setState({
-    //   ...this.state,
-    //   controlFileScale: this.state.controlFileScale,
+    this.onInitState(this.state.workspaceState);
+  };
+
+  updateRanges = (rowI, minOrMax, newRange) => {
+    console.log("newRange is ", newRange);
+    //newRange = parseFloat(newRange) || 0;
+
+    console.log("parseFloat(newRange) is ", newRange);
+
+    this.state.fcsFiles.forEach((fcsFile) => {
+      fcsFile.channels[rowI][minOrMax] = newRange;
+    });
+
+    let controlEnrichedFile = this.state.enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+
+    //this.state.fcsFiles.forEach((fcsFile) => {
+    controlEnrichedFile.channels[rowI][minOrMax] = newRange;
+    //});
+
+    console.log("this.state.fcsFiles is ", this.state.fcsFiles);
+
+    this.setState({
+      ...this.state,
+      fcsFiles: this.state.fcsFiles,
+    });
+  };
+
+  setNewRanges = () => {
+    let controlEnrichedFile = this.state.enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+
+    let files = this.state.fcsFiles;
+    let workspace = this.state.workspaceState;
+    files.find((file) => {
+      if (file.id == workspace.controlFileId) {
+        console.log("file is ", file);
+        file.channels.forEach((channel, index) => {
+          channel.minimum = parseFloat(
+            controlEnrichedFile.channels[index].minimum
+          );
+          channel.maximum = parseFloat(
+            controlEnrichedFile.channels[index].maximum
+          );
+        });
+      }
+    });
+
+    console.log("files is now ", files);
+
+    // let controlEnrichedFile = this.state.enrichedFiles.find(
+    //   (enrichedFile) => enrichedFile.isControlFile
+    // );
+
+    // //this.state.fcsFiles.forEach((fcsFile) => {
+    // controlEnrichedFile.channels.forEach((channel) => {
+    //   channel.minimum = parseFloat(channel.minimum);
+    //   channel.minimum = parseFloat(channel.maximum);
     // });
+
+    //console.log("controlEnrichedFile isn now ", controlEnrichedFile);
 
     this.onInitState(this.state.workspaceState);
   };
 
   renderTable = () => {
+    let controlEnrichedFile = this.state.enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
@@ -957,6 +1024,132 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     // color: "white",
                   }}
                   onClick={(e) => this.setNewSpillover()}
+                >
+                  Update
+                </Button>
+              </>
+            </div>
+          )}
+
+          <Button
+            variant="outlined"
+            style={{
+              // backgroundColor: "#6666AA",
+              marginLeft: 5,
+              marginBottom: 3,
+              // color: "white",
+            }}
+            onClick={(e) =>
+              this.setState({
+                ...this.state,
+                showRanges: !this.state.showRanges,
+              })
+            }
+          >
+            Ranges
+            <img
+              src={!this.state?.showRanges ? downArrow : upArrow}
+              alt="arrow-icon"
+              style={{ width: 10, height: 10, marginLeft: 10 }}
+            />
+          </Button>
+
+          {this.state.showRanges && (
+            <div>
+              <>
+                <table
+                  style={{
+                    color: "#000",
+                    //backgroundColor: "#ffff99",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    marginBottom: 5,
+                    border: "1px solid #e0e0eb",
+                  }}
+                >
+                  <tbody>
+                    <tr>
+                      <th></th>
+                      <th>Min</th>
+                      <th>Max</th>
+                    </tr>
+                    {controlEnrichedFile.channels.map(
+                      (rowData: any, rowI: number) => {
+                        return (
+                          <tr key={`tr--${rowI}`}>
+                            <td
+                              key={`td--${rowI}-2`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 15,
+                              }}
+                            >
+                              {rowData.name}
+                            </td>
+
+                            <td
+                              key={`td--${rowI}-3`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 15,
+                              }}
+                            >
+                              <TextField
+                                style={
+                                  {
+                                    //width: "20%",
+                                  }
+                                }
+                                value={rowData.minimum}
+                                onChange={(newColumnData: any) => {
+                                  this.updateRanges(
+                                    rowI,
+                                    "minimum",
+                                    newColumnData.target.value
+                                  );
+                                }}
+                              />
+                            </td>
+
+                            <td
+                              key={`td--${rowI}-4`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 15,
+                              }}
+                            >
+                              <TextField
+                                style={
+                                  {
+                                    //width: "20%",
+                                  }
+                                }
+                                value={rowData.maximum}
+                                onChange={(newColumnData: any) => {
+                                  this.updateRanges(
+                                    rowI,
+                                    "maximum",
+                                    newColumnData.target.value
+                                  );
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+                  </tbody>
+                </table>
+
+                <Button
+                  variant="outlined"
+                  style={{
+                    // backgroundColor: "#6666AA",
+                    marginLeft: 5,
+                    marginBottom: 3,
+                    // color: "white",
+                  }}
+                  onClick={(e) => this.setNewRanges()}
                 >
                   Update
                 </Button>
