@@ -61,6 +61,61 @@ export const getRealPointFromCanvasPoints = (
   return [x, y];
 };
 
+export const getPointOnCanvasNew = (
+  range,
+  channels,
+  realXValue,
+  realYValue,
+  xAxisIndex,
+  yAxisIndex,
+  xScaleType,
+  yScaleType,
+  width,
+  height,
+  xLogicle,
+  yLogicle,
+  plot,
+  logicles
+) => {
+  let canvasXValue, canvasYValue;
+  if (plot.xScaleType === "bi") {
+    //console.log(">>> logicles[plot.xAxisIndex] is ", logicles[plot.xAxisIndex]);
+    const logicle = logicles[plot.xAxisIndex];
+    realXValue = logicle.scale(realXValue);
+    canvasXValue = Math.floor(realXValue * plot.width);
+  } else {
+    let realValueInRange =
+      realXValue + Math.abs(channels[plot.xAxisIndex].minimum);
+
+    if (channels[plot.xAxisIndex].minimum > 0) {
+      realValueInRange =
+        realXValue - Math.abs(channels[plot.xAxisIndex].minimum);
+    }
+
+    canvasXValue = (plot.width * realValueInRange) / range;
+  }
+
+  if (realYValue) {
+    if (plot.yScaleType === "bi") {
+      const logicle = logicles[plot.yAxisIndex];
+      realYValue = logicle.scale(realYValue);
+      canvasYValue = plot.height - Math.floor(realYValue * plot.height);
+    } else {
+      let realValueInRange =
+        realYValue + Math.abs(channels[plot.yAxisIndex].minimum);
+
+      if (channels[plot.yAxisIndex].minimum > 0) {
+        realValueInRange =
+          realYValue - Math.abs(channels[plot.yAxisIndex].minimum);
+      }
+
+      canvasYValue = plot.height - (plot.height * realValueInRange) / range;
+    }
+  }
+
+  return [canvasXValue, canvasYValue];
+};
+
 export const getPointOnCanvas = (
   channels,
   realXValue,

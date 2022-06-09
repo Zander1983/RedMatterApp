@@ -5,6 +5,7 @@ import { useResizeDetector } from "react-resize-detector";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
+  getPointOnCanvasNew,
   getRealXAxisValueFromCanvasPointOnLinearScale,
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
@@ -16,6 +17,8 @@ import { isGateShowing } from "./Helper";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
 import { getWorkspace } from "graph/utils/workspace";
+
+const memoize = require("fast-memoize");
 
 export const leftPadding = 55;
 export const rightPadding = 20;
@@ -159,15 +162,30 @@ function Plot(props) {
     if (resizing) setResizing(false);
     const context = getContext("canvas-" + props.plotIndex);
 
+    const drawOnCanvas = (x, y, color) => {
+      context.fillStyle = color;
+      context.fillRect(x, y, 1, 1);
+    };
+
+    const memoized = memoize(drawOnCanvas);
+
     context.clearRect(0, 0, localPlot.width, localPlot.height);
     context.fillStyle = "white";
 
+    let range = getRealRange(
+      props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
+      props.enrichedFile.channels[localPlot.xAxisIndex].maximum
+    );
+
     props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
       if (context) {
-        getFormattedEvents(enrichedEvent, localPlot).forEach(
+        getFormattedEvents(enrichedEvent, localPlot, range).forEach(
           (formattedEvent) => {
-            context.fillStyle = formattedEvent.color;
-            context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
+            memoized(
+              formattedEvent[0],
+              formattedEvent[1],
+              formattedEvent.color
+            );
           }
         );
       }
@@ -219,18 +237,23 @@ function Plot(props) {
     }
   };
 
-  const getFormattedEvents = (enrichedEvent, plot) => {
+  const getFormattedEvents = (enrichedEvent, plot, range) => {
     const events = [];
+    const pastEvents = [];
     //edebugger;
 
     //console.log("enrichedEvent is ", enrichedEvent);
-
     // if population is not "All", isInGate{gateName} is true. Remember, plot.population is the same as the gate name
     if (
       plot.population === "All" ||
       enrichedEvent["isInGate" + plot.population]
     ) {
-      let pointOnCanvas = getPointOnCanvas(
+      pastEvents.push([
+        enrichedEvent[plot.xAxisIndex],
+        enrichedEvent[plot.yAxisIndex],
+      ]);
+      let pointOnCanvas = getPointOnCanvasNew(
+        range,
         props.enrichedFile.channels,
         enrichedEvent[plot.xAxisIndex],
         enrichedEvent[plot.yAxisIndex],
