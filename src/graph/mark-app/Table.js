@@ -145,6 +145,14 @@ function Table(props) {
                     </div>
                   </Tooltip>
 
+                  <span
+                    style={{
+                      fontSize: "10px",
+                    }}
+                  >
+                    {"" + controlEnrichedFile.enrichedEvents.length + " events"}
+                  </span>
+
                   {(() => {
                     if (plot?.plotType === "scatter") {
                       return (
@@ -390,6 +398,14 @@ function Table(props) {
                           </div>
                         </Tooltip>
 
+                        <span
+                          style={{
+                            fontSize: "10px",
+                          }}
+                        >
+                          {"" + enrichedFile.enrichedEvents.length + " events"}
+                        </span>
+
                         {/* {plot.population === "All" &&
                           editedFileIds.includes(enrichedFile.fileId) && (
                             <Button
@@ -406,7 +422,6 @@ function Table(props) {
                             </Button>
                           )} */}
                       </div>
-
                       {shouldFileRender.includes(enrichedFile?.fileId) &&
                         (() => {
                           if (plot.plotType === "scatter") {

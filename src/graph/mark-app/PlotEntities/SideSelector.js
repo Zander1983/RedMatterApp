@@ -130,7 +130,7 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          <Tooltip title={"download plot as svg"}>
+          {/* <Tooltip title={"download plot as svg"}>
             <img
               src={cameraIcon}
               alt={props.plot.id}
@@ -143,7 +143,7 @@ function SideSelector(props) {
                 props.downloadPlotAsImage(props.plot, props.plotIndex)
               }
             />
-          </Tooltip>
+          </Tooltip> */}
           {props.plot.gate && props.onDeleteGate && (
             <Tooltip title={"delete the plot gate"}>
               <img
