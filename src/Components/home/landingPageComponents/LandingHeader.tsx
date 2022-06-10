@@ -98,45 +98,20 @@ const LandingHeader = () => {
               <p style={{ color: "#eee", marginTop: -15 }}>
                 Analysing FCS files in your browser
               </p>
-              {!isLoggedIn ? (
-                <div>
-                  <div>
-                    <NavLink to="/login">
-                      <Button
-                        variant="contained"
-                        size="large"
-                        color="primary"
-                        className={classes.marginButton}
-                      >
-                        Login
-                      </Button>
-                    </NavLink>{" "}
-                    <NavLink to="/register">
-                      <Button
-                        variant="contained"
-                        size="large"
-                        color="primary"
-                        className={classes.marginButton}
-                      >
-                        Register
-                      </Button>
-                    </NavLink>
-                  </div>
-                </div>
-              ) : process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                <div>
-                  <NavLink to="/graph-workspace">
-                    <Button
-                      variant="contained"
-                      size="large"
-                      color="primary"
-                      className={classes.marginButton}
-                    >
-                      Analyse
-                    </Button>
-                  </NavLink>
-                </div>
-              )}
+
+              <div>
+                <NavLink to="/graph-workspace">
+                  <Button
+                    variant="contained"
+                    size="large"
+                    color="primary"
+                    className={classes.marginButton}
+                  >
+                    Analyse
+                  </Button>
+                </NavLink>
+              </div>
+
               {/* <br />
               <NavLink to="/mailing-list">
                 <p

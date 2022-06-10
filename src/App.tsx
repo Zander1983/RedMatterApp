@@ -10,13 +10,10 @@ import { SnackbarContainer } from "uno-material-ui";
 import { Layout } from "antd";
 
 import AppHeader from "./Components/common/Header";
-import Experiments from "./Components/workspaces/Experiments";
 import AppLandingPage from "./Components/home/LandingPage";
-import Experiment from "./Components/workspaces/Experiment";
+
 import About from "./Components/home/About";
 
-import Plots from "./graph/WorkspaceComponent";
-import WorkSpaceComponent from "./graph/NewWorkspaceComponent";
 import GraphWorkspaceComponent from "./graph/GraphWorkspaceComponent";
 import Login from "./Components/users/Login";
 import Register from "./Components/users/Register";
@@ -146,29 +143,7 @@ const router = [
     path: "/verify/:verifyStr",
     component: VerifyEmail,
   },
-  {
-    path:
-      "/" +
-      (process.env.REACT_APP_NO_WORKSPACES === "true"
-        ? "analyse"
-        : "test-red-matter"),
-    component: Plots,
-  },
-  {
-    path: "/experiment/:experimentId/plots",
-    component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} shared={false} />
-    ),
-  },
-  {
-    path: "/workspace/:experimentId/plots",
-    component: ({ match }: any) => (
-      <WorkSpaceComponent
-        experimentId={match.params.experimentId}
-        shared={false}
-      />
-    ),
-  },
+
   {
     path: "/graph-workspace",
     component: ({ match }: any) => (
@@ -178,21 +153,7 @@ const router = [
       />
     ),
   },
-  {
-    path: "/experiment/:experimentId/plots/public",
-    component: ({ match }: any) => (
-      <Plots experimentId={match.params.experimentId} shared={true} />
-    ),
-  },
-  {
-    path: "/workspace/:experimentId/plots/public",
-    component: ({ match }: any) => (
-      <WorkSpaceComponent
-        experimentId={match.params.experimentId}
-        shared={true}
-      />
-    ),
-  },
+
   {
     path: "/graph-workspace/:experimentId/plots/public",
     component: ({ match }: any) => (
@@ -202,29 +163,7 @@ const router = [
       />
     ),
   },
-
-  { path: "/experiments", component: Experiments },
   { path: "/terms", component: Terms },
-  {
-    path: "/experiment/:experimentId",
-    component: ({ match }: any) => (
-      <>
-        {/* 
-            // @ts-ignore */}
-        <Experiment id={match.params.experimentId} poke={false} />
-      </>
-    ),
-  },
-  {
-    path: "/experiment/:experimentId/poke",
-    component: ({ match }: any) => (
-      <>
-        {/* 
-            // @ts-ignore */}
-        <Experiment id={match.params.experimentId} poke={false} />
-      </>
-    ),
-  },
   {
     path: "/mailing-list",
     component: About,

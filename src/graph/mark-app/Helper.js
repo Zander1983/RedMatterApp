@@ -1,7 +1,5 @@
 import MarkLogicle from "./logicleMark";
-import { getWorkspace } from "graph/utils/workspace";
 import numeral from "numeral";
-import { pow } from "mathjs";
 
 const minLabelPadding = 30;
 
