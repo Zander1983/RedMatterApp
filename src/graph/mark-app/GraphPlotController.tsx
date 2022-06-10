@@ -691,6 +691,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       ...this.state,
       controlFileId: fcsFiles[0].id,
       fcsFiles: fcsFiles,
+      parsedFiles: [],
       //workspaceState: workspaceState,
     });
 
@@ -875,7 +876,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           >
             Reset
           </Button>
-
           {/* @ts-ignore */}
           {this.state.controlFileScale?.spilloverParams && (
             <Button
@@ -1141,9 +1141,140 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               testParam={this.state.testParam}
             />
           </div>
+          {/* {1==1 && (
+            return this.renderUploadPanel();
+          )
+          } */}
+          {this.renderUploadPanel()}
         </>
       );
     } else return null;
+  };
+
+  renderUploadPanel = () => {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+        }}
+      >
+        {this.state.currentParsingFile?.length > 0 ? (
+          <>
+            <Grid
+              item
+              xs={12}
+              style={{
+                textAlign: "left",
+                marginTop: 15,
+                marginLeft: 10,
+              }}
+            >
+              <h3>
+                <b
+                  style={{
+                    backgroundColor: "#ff8080",
+                    border: "solid 1px #ddd",
+                    borderRadius: 5,
+                    padding: 5,
+                    marginRight: 10,
+                  }}
+                >
+                  Parsing file, please wait....
+                </b>
+                {this.state.currentParsingFile}
+                <div className="fancy-spinner">
+                  <div className="ring"></div>
+                  <div className="ring"></div>
+                  <div className="dot"></div>
+                </div>
+              </h3>
+            </Grid>
+          </>
+        ) : null}
+        {this.state.parsedFiles &&
+          this.state.parsedFiles?.map((e: any, i: number) => {
+            return (
+              <div key={`uploadingFiles-${i}`}>
+                <Grid
+                  item
+                  xs={12}
+                  style={{
+                    textAlign: "left",
+                    marginTop: 15,
+                    marginLeft: 10,
+                  }}
+                >
+                  <h3>
+                    <b
+                      style={{
+                        backgroundColor: "#dfd",
+                        border: "solid 1px #ddd",
+                        borderRadius: 5,
+                        padding: 5,
+                        marginRight: 10,
+                      }}
+                    >
+                      file
+                    </b>
+                    {e.name}
+                    {"   "}•{"   "}{" "}
+                    <b
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 500,
+                        color: "#777",
+                      }}
+                    >
+                      {e.eventCount + " events"}
+                    </b>
+                  </h3>
+                </Grid>
+              </div>
+            );
+          })}
+
+        <div>
+          <span>
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "#6666AA",
+                maxHeight: 50,
+                marginTop: 20,
+                marginBottom: 25,
+                color: "white",
+              }}
+              onClick={() => {
+                this.inputFile.current.click();
+              }}
+            >
+              <input
+                type="file"
+                id="file"
+                //@ts-ignore
+                ref={this.inputFile}
+                multiple
+                accept=".fcs, .lmd"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  this.uploadFiles(e.target.files);
+                }}
+              />
+              Upload Files
+            </Button>
+          </span>
+          <p
+            style={{
+              color: "#ff4d4d",
+              fontWeight: "bold",
+              marginBottom: 25,
+            }}
+          >
+            Files must have the same channels
+          </p>
+        </div>
+      </div>
+    );
   };
 
   render() {
@@ -1151,140 +1282,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return this.renderTable();
     } else {
-      return (
-        <div
-          style={{
-            textAlign: "center",
-          }}
-        >
-          {this.state.currentParsingFile?.length > 0 ? (
-            <>
-              <Grid
-                item
-                xs={12}
-                style={{
-                  textAlign: "left",
-                  marginTop: 15,
-                  marginLeft: 10,
-                }}
-              >
-                <h3>
-                  <b
-                    style={{
-                      backgroundColor: "#ff8080",
-                      border: "solid 1px #ddd",
-                      borderRadius: 5,
-                      padding: 5,
-                      marginRight: 10,
-                    }}
-                  >
-                    Parsing file, please wait....
-                  </b>
-                  {this.state.currentParsingFile}
-                  <div className="fancy-spinner">
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="dot"></div>
-                  </div>
-                </h3>
-              </Grid>
-            </>
-          ) : null}
-          {this.state.parsedFiles &&
-            this.state.parsedFiles?.map((e: any, i: number) => {
-              return (
-                <div key={`uploadingFiles-${i}`}>
-                  <Grid
-                    item
-                    xs={12}
-                    style={{
-                      textAlign: "left",
-                      marginTop: 15,
-                      marginLeft: 10,
-                    }}
-                  >
-                    <h3>
-                      <b
-                        style={{
-                          backgroundColor: "#dfd",
-                          border: "solid 1px #ddd",
-                          borderRadius: 5,
-                          padding: 5,
-                          marginRight: 10,
-                        }}
-                      >
-                        file
-                      </b>
-                      {e.name}
-                      {"   "}•{"   "}{" "}
-                      <b
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 500,
-                          color: "#777",
-                        }}
-                      >
-                        {e.eventCount + " events"}
-                      </b>
-                    </h3>
-                  </Grid>
-                </div>
-              );
-            })}
-          {this.state.fcsFiles?.length < 1 ? (
-            <div>
-              <span>
-                <Button
-                  variant="contained"
-                  style={{
-                    backgroundColor: "#6666AA",
-                    maxHeight: 50,
-                    marginTop: 20,
-                    marginBottom: 25,
-                    color: "white",
-                  }}
-                  onClick={() => {
-                    this.inputFile.current.click();
-                  }}
-                >
-                  <input
-                    type="file"
-                    id="file"
-                    //@ts-ignore
-                    ref={this.inputFile}
-                    multiple
-                    accept=".fcs, .lmd"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      this.uploadFiles(e.target.files);
-                    }}
-                  />
-                  Upload Files
-                </Button>
-              </span>
-              <p
-                style={{
-                  color: "#ff4d4d",
-                  fontWeight: "bold",
-                  marginBottom: 25,
-                }}
-              >
-                Files must have the same channels
-              </p>
-            </div>
-          ) : (
-            <span>
-              <h3 style={{ marginTop: 100, marginBottom: 10 }}>
-                Begin analysis by clicking on "NEW GATE PIPELINE" in the top
-                left
-              </h3>
-              <h4 style={{ marginBottom: 70, color: "#777" }}>
-                You can add as many gate pipelines as you want
-              </h4>
-            </span>
-          )}
-        </div>
-      );
+      return this.renderUploadPanel();
     }
   }
 }
