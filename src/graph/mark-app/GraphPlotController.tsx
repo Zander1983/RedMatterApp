@@ -1,7 +1,4 @@
 import React from "react";
-import { getWorkspace, getFiles } from "graph/utils/workspace";
-import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
-import GetAppIcon from "@material-ui/icons/GetApp";
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
@@ -10,7 +7,7 @@ import FCSServices from "./FCSServices/FCSServices";
 import { store } from "redux/store";
 import { Grid, Button, TextField } from "@material-ui/core";
 import { CSVLink } from "react-csv";
-import WorkspaceTopBar from "../components/WorkspaceTopBar";
+import WorkspaceTopBar from "./WorkspaceTopBar";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
@@ -95,7 +92,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
   // const [parsedFiles, setParsedFiles] = useState([]);
 
-  onInitState = (workspaceState) => {
+  onInitState = (workspaceState: any) => {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
@@ -188,11 +185,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    // set new gate to redux
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 10);
-
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -216,16 +208,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots = (
-        newWorkspaceState as any
-      ).files[fileIds[i]].plots.map((plt: any) => {
-        if (plt.population === plot.population) {
-          const { gate, ...plotWithOutGate } = plt;
-          return plotWithOutGate;
-        } else {
-          return plt;
+      (newWorkspaceState as any).files[
+        fileIds[i]
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
+        (plt: any) => {
+          if (plt.population === plot.population) {
+            const { gate, ...plotWithOutGate } = plt;
+            return plotWithOutGate;
+          } else {
+            return plt;
+          }
         }
-      });
+      );
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -233,11 +227,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-
-    // set new gate to redux
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 10);
 
     //set state
     this.setState({
@@ -252,8 +241,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[
+        plotIndex
+      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -274,19 +264,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex] =
-      JSON.parse(JSON.stringify(change.plot));
+    (newWorkspaceState as any).files[fileKey].plots[
+      change.plotIndex
+    ] = JSON.parse(JSON.stringify(change.plot));
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-
-    //WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 10);
 
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -313,7 +299,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
@@ -369,7 +355,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
@@ -463,10 +448,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // TODO dont need to run Super algoithm
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-
-    setTimeout(() => {
-      WorkspaceDispatch.SetPlotStates(newWorkspaceState);
-    }, 10);
 
     this.setState({
       workspaceState: newWorkspaceState,
@@ -577,8 +558,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         }
       }
     }
-    WorkspaceDispatch.SetSortingState(sortType, gateName);
-    WorkspaceDispatch.SetFiles(sortedFiles);
+
     this.setState({
       enrichedFiles: enrichedFiles,
     });
@@ -613,7 +593,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-    WorkspaceDispatch.SetPlotStates(newWorkspaceState);
+
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
@@ -725,10 +705,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   componentDidMount() {}
 
-  updateSpillover = (rowI, colI, newColumnData) => {
+  updateSpillover = (rowI: any, colI: any, newColumnData: any) => {
     if (!isNaN(parseFloat(newColumnData))) {
-      this.state.controlFileScale.invertedMatrix.data[rowI][colI] =
-        parseFloat(newColumnData);
+      //@ts-ignore
+      this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
+        newColumnData
+      );
 
       this.setState({
         ...this.state,
@@ -743,6 +725,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     files.find((file) => {
       if (file.id == workspace.controlFileId) {
         file.scale.setSpilloverInvertedMatrix(
+          //@ts-ignore
           this.state.controlFileScale.invertedMatrix
         );
       }
@@ -751,12 +734,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onInitState(this.state.workspaceState);
   };
 
-  updateRanges = (rowI, minOrMax, newRange) => {
-    console.log("newRange is ", newRange);
-    //newRange = parseFloat(newRange) || 0;
-
-    console.log("parseFloat(newRange) is ", newRange);
-
+  updateRanges = (rowI: any, minOrMax: any, newRange: any) => {
     this.state.fcsFiles.forEach((fcsFile) => {
       fcsFile.channels[rowI][minOrMax] = newRange;
     });
@@ -784,7 +762,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let workspace = this.state.workspaceState;
     files.find((file) => {
       if (file.id == workspace.controlFileId) {
-        file.channels.forEach((channel, index) => {
+        file.channels.forEach((channel: any, index: any) => {
           channel.minimum = parseFloat(
             controlEnrichedFile.channels[index].minimum
           );
@@ -860,7 +838,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               ))}
             </Select>
           </>
-
           <Button
             variant="outlined"
             style={{
@@ -899,6 +876,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             Reset
           </Button>
 
+          {/* @ts-ignore */}
           {this.state.controlFileScale?.spilloverParams && (
             <Button
               variant="outlined"
@@ -939,12 +917,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   <tbody>
                     <tr>
                       <th>Fluorochrome</th>
+                      {/* @ts-ignore */}
                       {this.state.controlFileScale?.spilloverParams.map(
-                        (label, i) => {
+                        (label: any, i: any) => {
                           return <th key={`th--${i}`}>{label}</th>;
                         }
                       )}
                     </tr>
+                    {/* @ts-ignore */}
                     {this.state.controlFileScale?.invertedMatrix.data.map(
                       (rowData: any, rowI: number) => {
                         return (
@@ -957,6 +937,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                               }}
                             >
                               {
+                                /* @ts-ignore */
                                 this.state.controlFileScale?.spilloverParams[
                                   rowI
                                 ]
@@ -1013,7 +994,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               </>
             </div>
           )}
-
           <Button
             variant="outlined"
             style={{
@@ -1036,7 +1016,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               style={{ width: 10, height: 10, marginLeft: 10 }}
             />
           </Button>
-
           {this.state.showRanges && (
             <div>
               <>
@@ -1140,13 +1119,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               </>
             </div>
           )}
-
           <WorkspaceTopBar
             fcsFiles={this.state.fcsFiles}
             workspaceState={this.state.workspaceState}
             downloadPlotAsImage={this.downloadPlotAsImage}
           />
-
           <div id="entire-table">
             <PlotTableComponent
               enrichedFiles={this.state.enrichedFiles}

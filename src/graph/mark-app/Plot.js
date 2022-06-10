@@ -8,13 +8,11 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
-  getRealRange,
 } from "./PlotHelper";
 import Modal from "react-modal";
 import { isGateShowing } from "./Helper";
 import SideSelector from "./PlotEntities/SideSelector";
 import { CompactPicker } from "react-color";
-import { getWorkspace } from "graph/utils/workspace";
 
 export const leftPadding = 55;
 export const rightPadding = 20;

@@ -214,6 +214,7 @@ export default function Footer(props: any) {
                           />
                         </>
                       ) : (
+                        /* @ts-ignore */
                         <Button onClick={() => history.push(item.path)}>
                           {item.name}
                         </Button>
