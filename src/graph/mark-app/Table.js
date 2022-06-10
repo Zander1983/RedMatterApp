@@ -4,7 +4,7 @@ import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { Button } from "@material-ui/core";
-import WorkspaceDispatch from "graph/workspaceRedux/workspaceDispatchers";
+
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 
@@ -33,7 +33,7 @@ function Table(props) {
     } else {
       setShouldFileRender((prev) => [...prev, fileId]);
     }
-    setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
+    //setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
   };
 
   const tableRef = useRef(null);
@@ -144,6 +144,14 @@ function Table(props) {
                         : controlEnrichedFile?.label}
                     </div>
                   </Tooltip>
+
+                  <span
+                    style={{
+                      fontSize: "10px",
+                    }}
+                  >
+                    {"" + controlEnrichedFile.enrichedEvents.length + " events"}
+                  </span>
 
                   {(() => {
                     if (plot?.plotType === "scatter") {
@@ -388,6 +396,14 @@ function Table(props) {
                           </div>
                         </Tooltip>
 
+                        <span
+                          style={{
+                            fontSize: "10px",
+                          }}
+                        >
+                          {"" + enrichedFile.enrichedEvents.length + " events"}
+                        </span>
+
                         {/* {plot.population === "All" &&
                           editedFileIds.includes(enrichedFile.fileId) && (
                             <Button
@@ -404,7 +420,6 @@ function Table(props) {
                             </Button>
                           )} */}
                       </div>
-
                       {shouldFileRender.includes(enrichedFile?.fileId) &&
                         (() => {
                           if (plot.plotType === "scatter") {

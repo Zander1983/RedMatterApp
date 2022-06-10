@@ -3,28 +3,11 @@ import { useHistory } from "react-router";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
-import { snackbarService } from "uno-material-ui";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Backdrop from "@material-ui/core/Backdrop";
 import { green } from "@material-ui/core/colors";
-import userManager from "Components/users/userManager";
-import PrototypeNotice from "./PrototypeNotice";
-// import SideMenus from "./components/static/SideMenus";
-
-import { downloadEvents, downloadFileMetadata } from "services/FileService";
-import {
-  getWorkspace,
-  loadWorkspaceFromRemoteIfExists,
-  getWorkspaceStateFromServer,
-  saveWorkspaceToRemote,
-} from "./utils/workspace";
-
 import { Typography } from "antd";
-import { memResetDatasetCache } from "./resources/dataset";
-import WorkspaceDispatch from "./workspaceRedux/workspaceDispatchers";
-import SecurityUtil from "../utils/Security";
 import GraphPlotController from "./mark-app/GraphPlotController";
-import WorkspaceTopBar from "../graph/components/WorkspaceTopBar";
+
+import "./styles.scss";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -177,15 +160,6 @@ const GraphWorkspaceComponent = (props: {
         >
           <div>
             {plotCallNeeded || renderPlotController}
-
-            {/* <WorkspaceTopBar
-              // setLoader={setOpen}
-              sharedWorkspace={props.shared}
-              experimentId={props.experimentId}
-
-              // controlFileId={setPlotCallNeeded}
-            /> */}
-
             <Grid style={{ marginTop: 5 }}>
               <GraphPlotController
                 sharedWorkspace={sharedWorkspace}
@@ -211,13 +185,6 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
   constructor(props: any) {
     super(props);
     this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: any) {
-    console.error("[Critical] Render failed");
-    console.error(error);
-    WorkspaceDispatch.ResetWorkspace();
-    return { hasError: true };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
@@ -255,40 +222,6 @@ class ErrorBoundary extends React.Component<WorkspaceProps> {
               1. Reload the page
             </Button>
             <br />
-            <Button
-              style={{
-                backgroundColor: "#66d",
-                color: "white",
-                width: 400,
-                marginTop: 20,
-              }}
-              onClick={async () => {
-                snackbarService.showSnackbar("Clearing workspace...", "info");
-                await saveWorkspaceToRemote(
-                  this.props.shared,
-                  this.props.experimentId
-                );
-                snackbarService.showSnackbar("Workspace cleared", "success");
-                window.location.reload();
-              }}
-            >
-              2. Clear the current workspace
-            </Button>
-            <br />
-            <Button
-              style={{
-                backgroundColor: "#66d",
-                color: "white",
-                width: 400,
-                marginTop: 20,
-              }}
-              onClick={() => {
-                document.location.href =
-                  document.location.href.split("experiment")[0] + "experiments";
-              }}
-            >
-              3. Create a new workspace
-            </Button>
           </Grid>
         </>
       );

@@ -3,21 +3,11 @@ import { useEffect, useState, useCallback } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
 import Modal from "react-modal";
 import { useResizeDetector } from "react-resize-detector";
-import {
-  getRealPointFromCanvasPoints,
-  getPointOnCanvas,
-  getRealXAxisValueFromCanvasPointOnLinearScale,
-  getRealYAxisValueFromCanvasPointOnLinearScale,
-  getRealXAxisValueFromCanvasPointOnLogicleScale,
-  getRealYAxisValueFromCanvasPointOnLogicleScale,
-  getRealRange,
-} from "./PlotHelper";
+import { getRealPointFromCanvasPoints, getPointOnCanvas } from "./PlotHelper";
 import { CompactPicker } from "react-color";
 import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
-import { getWorkspace } from "graph/utils/workspace";
 
 let isMouseDown = false;
-let dragPointIndex = false;
 let interval = null;
 
 const hasGate = (plot) => {

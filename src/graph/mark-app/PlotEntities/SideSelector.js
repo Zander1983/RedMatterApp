@@ -1,7 +1,6 @@
 import { MenuItem, Select, Tooltip } from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
 import cameraIcon from "./../../../assets/images/camera.png";
-import { getPointColors } from "graph/resources/plots";
 
 function SideSelector(props) {
   const getYAxisValue = () => {
@@ -130,19 +129,8 @@ function SideSelector(props) {
             marginBottom: 10,
           }}
         >
-          <img
-            src={cameraIcon}
-            alt={props.plot.id}
-            style={{
-              width: 15,
-              height: 15,
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              props.downloadPlotAsImage(props.plot, props.plotIndex)
-            }
-          />
-          {props.plot.gate && props.onDeleteGate && (
+          {/* <Tooltip title={"download plot as svg"}>
+
             <img
               src={deleteIcon}
               alt={props.plot.id}
@@ -154,6 +142,22 @@ function SideSelector(props) {
               }}
               onClick={() => props.onDeleteGate(props.plot)}
             />
+
+          </Tooltip> */}
+          {props.plot.gate && props.onDeleteGate && (
+            <Tooltip title={"delete the plot gate"}>
+              <img
+                src={deleteIcon}
+                alt={props.plot.id}
+                style={{
+                  width: 15,
+                  height: 15,
+                  marginLeft: 30,
+                  cursor: "pointer",
+                }}
+                onClick={() => props.onDeleteGate(props.plot)}
+              />
+            </Tooltip>
           )}
         </div>
         {props.canvasComponent}

@@ -2,56 +2,26 @@ import React, { useEffect } from "react";
 import { CSVLink } from "react-csv";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
-import { makeStyles } from "@material-ui/core/styles";
-import { Button, FormControlLabel, MenuItem, Select } from "@material-ui/core";
-import * as htmlToImage from "html-to-image";
-import Grid from "@material-ui/core/Grid";
-import { snackbarService } from "uno-material-ui";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import { green } from "@material-ui/core/colors";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import userManager from "Components/users/userManager";
-import { saveWorkspaceStateToServer } from "../utils/workspace";
+import { Button } from "@material-ui/core";
 
-import { Typography } from "antd";
-import WorkspaceDispatch from "../workspaceRedux/workspaceDispatchers";
-import IOSSwitch from "../../Components/common/Switch";
-import ShareIcon from "assets/images/share.png";
-import MessageModal from "./modals/MessageModal";
-import AddFileModal from "./modals/AddFileModal";
-import axios from "axios";
-import { Debounce } from "../../services/Dbouncer";
-import LinkShareModal from "./modals/linkShareModal";
-//import GateNamePrompt from "./modals/GateNamePrompt";
-// @ts-ignore
-//import PipeLineNamePrompt from "./modals/PipelineNamePrompt";
-import { getWorkspace, getAllFiles, getFiles } from "graph/utils/workspace";
-import { useSelector } from "react-redux";
-import useDidMount from "hooks/useDidMount";
 import {
   createDefaultPlotSnapShot,
   getPlotChannelAndPosition,
   formatEnrichedFiles,
   superAlgorithm,
   getMedian,
-  DEFAULT_PLOT_TYPE,
 } from "graph/mark-app/Helper";
-import { File } from "graph/resources/types";
 
 interface Props {
   experimentId: string;
   sharedWorkspace: boolean;
   plotCallNeeded: boolean;
   renderPlotController: boolean;
-  //downloadPlotAsImage: fun
-  // setRenderPlotController: React.Dispatch<React.SetStateAction<boolean>>;
-  // setPlotCallNeeded: React.Dispatch<React.SetStateAction<boolean>>;
-  // setLoader?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TIME_INTERVAL = 35000;
 
-const WorkspaceTopBar = (props) => {
+const WorkspaceTopBar = (props: any) => {
   const history = useHistory();
 
   const [data, setData] = React.useState<any[]>([]);
@@ -294,11 +264,6 @@ const WorkspaceTopBar = (props) => {
   };
 
   const _renderToolbar = () => {
-    let hasGate =
-      // @ts-ignore
-      props.workspaceState?.files?.[getWorkspace()?.controlFileId]?.plots
-        ?.length > 1;
-
     return (
       <span>
         <Button
