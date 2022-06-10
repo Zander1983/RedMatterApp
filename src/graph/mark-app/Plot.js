@@ -49,32 +49,12 @@ let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 let interval = null;
-// useful function to trace what props reacting is updating
-// use with useTraceUpdate({...props, localPlot}); in function Plot.js(){}
-function useTraceUpdate(props) {
-  const prev = useRef(props);
-  useEffect(() => {
-    const changedProps = Object.entries(props).reduce(
-      (lookup, [key, value]) => {
-        if (prev.current[key] !== value) {
-          lookup[key] = [prev.current[key], value];
-        }
-        return lookup;
-      },
-      {}
-    );
-
-    prev.current = props;
-  });
-}
 
 function Plot(props) {
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
-
-  //useTraceUpdate({ ...props, localPlot });
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [
@@ -690,9 +670,11 @@ function Plot(props) {
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
     if (resizing) return;
-    isMouseDown = true;
 
     if (hasGate()) {
+      if (!shouldDrawGate(localPlot)) return;
+
+      isMouseDown = true;
       // check if on point
       // convert real points to canvas points and check if within 5 points of canvas points
       let gateCanvasPoints = localPlot.gate.points.map((point) => {
@@ -740,13 +722,19 @@ function Plot(props) {
         localPlot.gate.points
       );
 
+      if (isInside) {
+        isMouseDown = true;
+      }
+
       setIsInsideGate(isInside);
     } else {
+      isMouseDown = true;
     }
   };
 
   const handleMouseUp = (event) => {
     if (resizing) return;
+    if (!isMouseDown) return;
     isMouseDown = false;
     dragPointIndex = false;
     if (hasGate()) {
@@ -766,6 +754,8 @@ function Plot(props) {
       setIsInsideGate(isInside);
 
       localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
+
+      setNewPoints([]);
 
       let change = {
         type: "EditGate",
