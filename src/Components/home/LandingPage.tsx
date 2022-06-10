@@ -82,33 +82,11 @@ const AppLandingPage = () => {
         component={"div"}
       >
         <TargetUsers />
-        <Divider />
-        <Features />
-        <Divider />
         {/* <Partners /> */}
         <Divider />
         <Universities />
         {/* <Divider></Divider>
         <Plans /> */}
-        <DialogTitle id="form-dialog-title">
-          <div>
-            <span>Version updates </span>
-          </div>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText component={"p"}>
-            This is the new version of red matter, which is a significant
-            upgrade of the previous one.
-          </DialogContentText>
-          <DialogContentText component={"p"}>
-            We encourage you to use the new version currently. It does not hold
-            the previous version data, but on-demand, we can make that happen.
-          </DialogContentText>
-          {/* <DialogContentText component={"p"}>
-            Your old workspace is now available in a different domain, and you
-            can access them with a click on the button below.
-          </DialogContentText> */}
-        </DialogContent>
       </Grid>
     </Grid>
   );
