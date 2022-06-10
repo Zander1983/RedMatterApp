@@ -4,10 +4,10 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { green } from "@material-ui/core/colors";
-
 import { Typography } from "antd";
-import SecurityUtil from "../utils/Security";
 import GraphPlotController from "./mark-app/GraphPlotController";
+
+import "./styles.scss";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -78,8 +78,9 @@ const GraphWorkspaceComponent = (props: {
   const [isConnectivity, setConnectivity] = React.useState(true);
   const [isReloadMessage, setReloadMessage] = React.useState("");
   const [isMessage, setMessage] = React.useState("");
-  const [renderPlotController, setRenderPlotController] =
-    React.useState<boolean>(false);
+  const [renderPlotController, setRenderPlotController] = React.useState<
+    boolean
+  >(false);
   const [sharedWorkspace, setSharedWorkspace] = React.useState(false);
 
   let pageLoaderSubscription: any = null;
