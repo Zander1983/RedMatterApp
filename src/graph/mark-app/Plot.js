@@ -246,9 +246,6 @@ function Plot(props) {
 
   const getFormattedEvents = (enrichedEvent, plot) => {
     const events = [];
-    //edebugger;
-
-    //console.log("enrichedEvent is ", enrichedEvent);
 
     // if population is not "All", isInGate{gateName} is true. Remember, plot.population is the same as the gate name
     if (
@@ -683,24 +680,19 @@ function Plot(props) {
         return canvasPoint;
       });
 
+      let isNearAPoint = false;
       gateCanvasPoints.find((point, index) => {
         let isNear =
           point[0] + 5 >= event.offsetX &&
           point[0] - 5 <= event.offsetX &&
           point[1] + 5 >= event.offsetY &&
           point[1] - 5 <= event.offsetY;
-        if (isNear) dragPointIndex = index;
+        if (isNear) {
+          dragPointIndex = index;
+          isNearAPoint = true;
+        }
         return isNear;
       });
-
-      setStartPointsReal(
-        getRealPointFromCanvasPoints(
-          props.enrichedFile.channels,
-          localPlot,
-          [event.offsetX, event.offsetY],
-          props.enrichedFile.logicles
-        )
-      );
 
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
@@ -714,11 +706,18 @@ function Plot(props) {
         localPlot.gate.points
       );
 
-      if (isInside) {
-        isMouseDown = true;
-      }
-
       setIsInsideGate(isInside);
+
+      if (isInside || isNearAPoint) {
+        setStartPointsReal(
+          getRealPointFromCanvasPoints(
+            props.enrichedFile.channels,
+            localPlot,
+            [event.offsetX, event.offsetY],
+            props.enrichedFile.logicles
+          )
+        );
+      }
     } else {
       isMouseDown = true;
     }
@@ -746,17 +745,19 @@ function Plot(props) {
 
       setIsInsideGate(isInside);
 
-      localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
+      if (newPoints && newPoints.length > 1) {
+        localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
 
-      setNewPoints([]);
+        setNewPoints([]);
 
-      let change = {
-        type: "EditGate",
-        plot: localPlot,
-        plotIndex: props.plotIndex.split("-")[1],
-        fileId: props.enrichedFile.fileId,
-      };
-      props.onEditGate(change);
+        let change = {
+          type: "EditGate",
+          plot: localPlot,
+          plotIndex: props.plotIndex.split("-")[1],
+          fileId: props.enrichedFile.fileId,
+        };
+        props.onEditGate(change);
+      }
     } else {
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
@@ -803,6 +804,7 @@ function Plot(props) {
 
       if (isInsideGate || typeof dragPointIndex == "number") {
         // this code will run when a user will drag the entire polygon gate
+
         let moveX = getMoveValue(
           startPointsReal[0],
           newPointsCanvas[0],

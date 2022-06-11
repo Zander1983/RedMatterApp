@@ -1,13 +1,12 @@
 import React from "react";
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
-import { MenuItem, Select, Tooltip } from "@material-ui/core";
+import { MenuItem, Select } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
-import { store } from "redux/store";
 import { Grid, Button, TextField } from "@material-ui/core";
-import { CSVLink } from "react-csv";
 import WorkspaceTopBar from "./WorkspaceTopBar";
+import ReactGA from "react-ga";
 import {
   superAlgorithm,
   createDefaultPlotSnapShot,
