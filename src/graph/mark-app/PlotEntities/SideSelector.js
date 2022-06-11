@@ -247,7 +247,7 @@ function SideSelector(props) {
                 return (
                   <MenuItem key={x?.id}>
                     <div
-                      class="form-check"
+                      className="form-check"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -256,7 +256,7 @@ function SideSelector(props) {
                       }}
                     >
                       <input
-                        class="form-check-input"
+                        className="form-check-input"
                         type="checkbox"
                         value={x.id}
                         checked={
@@ -264,7 +264,7 @@ function SideSelector(props) {
                             ? true
                             : false
                         }
-                        onClick={(e) => {
+                        onChange={(e) => {
                           props.addOverlay(
                             props.enrichedFile.fileId,
                             e.target.value,
@@ -275,9 +275,9 @@ function SideSelector(props) {
                         id={props.plotIndex + x.id}
                       ></input>
                       <label
-                        class="form-check-label"
+                        className="form-check-label"
                         style={{ wordBreak: "break-all", marginLeft: 3 }}
-                        for={props.plotIndex + x.id}
+                        key={props.plotIndex + x.id}
                       >
                         {`${
                           x.name.length > 50
@@ -297,10 +297,14 @@ function SideSelector(props) {
               maxWidth: 230,
             }}
           >
-            {props.plot?.overlays?.map((x) => {
+            {props.plot?.overlays?.map((x, index) => {
               return (
-                <div style={{ alignItems: "center", display: "flex" }}>
+                <div
+                  key={"outer" + index}
+                  style={{ alignItems: "center", display: "flex" }}
+                >
                   <div
+                    key={"inner" + index}
                     style={{
                       userSelect: "none",
                       backgroundColor: x.color,

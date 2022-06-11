@@ -150,7 +150,11 @@ function Table(props) {
                       fontSize: "10px",
                     }}
                   >
-                    {"" + controlEnrichedFile.enrichedEvents.length + " events"}
+                    {plot.population === "All"
+                      ? "" +
+                        controlEnrichedFile.enrichedEvents.length +
+                        " events"
+                      : ""}
                   </span>
 
                   {(() => {
@@ -401,7 +405,11 @@ function Table(props) {
                             fontSize: "10px",
                           }}
                         >
-                          {"" + enrichedFile.enrichedEvents.length + " events"}
+                          {plot.population === "All"
+                            ? "" +
+                              enrichedFile.enrichedEvents.length +
+                              " events"
+                            : ""}
                         </span>
 
                         {/* {plot.population === "All" &&

@@ -6,6 +6,7 @@ const fcsHelper = require("./fcsHelper");
 const generalHelper = require("./generalHelper");
 
 export const parseAndUpload = (event, fcs, fileId, experimentId, upload) => {
+  console.log("fcs is ", fcs);
   let {
     channelsEvents,
     paramsAnalysis,

@@ -78,6 +78,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setNewSpillover = this.setNewSpillover.bind(this);
     this.uploadFiles = this.uploadFiles.bind(this);
     this.inputFile = React.createRef();
+
+    console.log(">>>process.env is ", process.env);
+
+    ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
   }
 
   inputFile = {
@@ -310,10 +314,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndex: number,
     checked: boolean
   ) => {
-    let workspace = this.state.workspaceState;
-    let newWorkspaceState: any = JSON.parse(
-      JSON.stringify(workspace.workspaceState)
-    );
+    let workspaceState = this.state.workspaceState;
+    let newWorkspaceState: any = JSON.parse(JSON.stringify(workspaceState));
 
     let foundEnrichedFile = this.state.enrichedFiles.find(
       (x: any) => x.fileId == fileId
@@ -639,12 +641,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         });
       });
 
+      console.log("fcsFile is ", fcsFile);
+
       fcsFile.name = file.file.name;
       fcsFile.fileId = file.file.name;
       //@ts-ignore
       fcsFile.id = file.file.name;
       //@ts-ignore
       fcsFile.label = file.file.label;
+
+      ReactGA.event({
+        category: "File",
+        action:
+          "File with  " +
+          fcsFile.jsonEventCount +
+          "events and " +
+          fcsFile.channels.length +
+          " channels uploaded",
+      });
 
       let currentParsedFiles = this.state.parsedFiles || [];
       currentParsedFiles.push({

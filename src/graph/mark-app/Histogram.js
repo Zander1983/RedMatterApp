@@ -244,12 +244,12 @@ function Histogram(props) {
 
     let bins;
     if (props.plot.xScaleType === "bi") {
-      bins = linspace(0, 1, props.plot.width / 4);
+      bins = linspace(0, 1, Math.round(props.plot.width / 4));
     } else {
       bins = linspace(
         props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
         props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        props.plot.width / 4
+        Math.round(props.plot.width / 4)
       );
     }
 

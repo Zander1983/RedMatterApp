@@ -52,8 +52,6 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  console.log("props is ", props);
-
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
