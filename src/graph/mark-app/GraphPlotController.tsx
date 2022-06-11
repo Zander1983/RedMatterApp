@@ -79,9 +79,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.uploadFiles = this.uploadFiles.bind(this);
     this.inputFile = React.createRef();
 
-    console.log(">>>process.env is ", process.env);
-
-    ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
+    }
   }
 
   inputFile = {
@@ -641,8 +641,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         });
       });
 
-      console.log("fcsFile is ", fcsFile);
-
       fcsFile.name = file.file.name;
       fcsFile.fileId = file.file.name;
       //@ts-ignore
@@ -650,15 +648,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //@ts-ignore
       fcsFile.label = file.file.label;
 
-      ReactGA.event({
-        category: "File",
-        action:
-          "File with  " +
-          fcsFile.jsonEventCount +
-          "events and " +
-          fcsFile.channels.length +
-          " channels uploaded",
-      });
+      if (process.env.REACT_APP_ENV == "production") {
+        console.log("logging event...");
+        ReactGA.event({
+          category: "File",
+          action:
+            "File with  " +
+            fcsFile.jsonEventCount +
+            " events and " +
+            fcsFile.channels.length +
+            " channels uploaded",
+        });
+      }
 
       let currentParsedFiles = this.state.parsedFiles || [];
       currentParsedFiles.push({
