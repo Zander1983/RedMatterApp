@@ -52,6 +52,8 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  console.log("props is ", props);
+
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
@@ -776,6 +778,12 @@ function Plot(props) {
             ) &&
             newGatePointsCanvas.length >= 3
           ) {
+            const suggestedGateName =
+              props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
+            setGateName({
+              name: suggestedGateName,
+            });
+
             setModalIsOpen(true);
             polygonComplete = true;
           }
@@ -1017,6 +1025,7 @@ function Plot(props) {
               Gate Name:
               <input
                 type="text"
+                value={gateName.name}
                 style={{
                   width: 200,
                   marginLeft: 5,

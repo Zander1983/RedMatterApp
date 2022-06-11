@@ -701,32 +701,17 @@ function Histogram(props) {
       setEndCanvasPoint(null);
     } else {
       // show histogram gate creation modal only if it is selected file and it doesn't have any gate
-      props.enrichedFile.fileId === props.workspaceState.controlFileId &&
-        !props?.plot?.gate &&
-        setModalIsOpen(true);
+      if (
+        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
+        !props?.plot?.gate
+      ) {
+        const suggestedGateName = props.plot.xAxisLabel + " subset";
+        setGateName({
+          name: suggestedGateName,
+        });
 
-      // // so its a new gate
-      // newGatePointsCanvas.forEach((newGatePointCanvas) => {
-      //   if (
-      //     inRange(
-      //       event.offsetX,
-      //       newGatePointCanvas[0] - 10,
-      //       newGatePointCanvas[0] + 10
-      //     ) &&
-      //     inRange(
-      //       event.offsetY,
-      //       newGatePointCanvas[1] - 10,
-      //       newGatePointCanvas[1] + 10
-      //     )
-      //   ) {
-      //     setModalIsOpen(true);
-      //     polygonComplete = true;
-      //   }
-      // });
-      // if (!polygonComplete) {
-      //   newGatePointsCanvas.push([event.offsetX, event.offsetY]);
-      // }
-      // redraw();
+        setModalIsOpen(true);
+      }
     }
   };
 
@@ -802,6 +787,7 @@ function Histogram(props) {
               Gate Name:
               <input
                 type="text"
+                value={gateName.name}
                 style={{
                   width: 200,
                   marginLeft: 5,
