@@ -465,9 +465,9 @@ function Plot(props) {
       let newValueCanvas = canvasX + moveBy;
       let newValueLogicle = newValueCanvas / length;
       let newValueReal = logicle.inverse(newValueLogicle);
-      return newValueReal;
+      return Math.round(newValueReal);
     } else {
-      return value + moveBy;
+      return Math.round(value + moveBy);
     }
   };
 

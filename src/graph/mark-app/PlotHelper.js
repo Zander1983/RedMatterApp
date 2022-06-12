@@ -91,7 +91,7 @@ export const getPointOnCanvas = (
     canvasXValue = (plot.width * realValueInRange) / range;
   }
 
-  if (realYValue) {
+  if (!isNaN(realYValue)) {
     if (plot.yScaleType === "bi") {
       const logicle = logicles[plot.yAxisIndex];
       realYValue = logicle.scale(realYValue);

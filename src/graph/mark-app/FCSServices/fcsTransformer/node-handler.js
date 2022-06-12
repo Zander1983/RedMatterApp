@@ -110,8 +110,8 @@ const parse = (fcs) => {
     let maximum = channelMaximums[paramIndex];
     for (
       let event = 0;
-      //Math.round(event) < 10;
-      Math.round(event) < dataAsNumbers.length;
+      //      Math.round(event) < 10;
+      event < dataAsNumbers.length;
       event = event + 1
     ) {
       eventData = Math.round(dataAsNumbers[event][paramIndex]);
@@ -131,7 +131,7 @@ const parse = (fcs) => {
         matrixSpilloverIndex: indexOfSpilloverParamX,
         channelMaximums: channelMaximums,
       });
-      //console.log("scaledX is ", scaledX);
+      //
       scaledX = Math.round(scaledX);
 
       channelEvents.push(scaledX);

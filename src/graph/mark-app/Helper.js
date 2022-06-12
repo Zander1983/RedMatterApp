@@ -97,7 +97,7 @@ export const superAlgorithm = (
             channelMaximums: file.channels.map((channel) => channel.maximum),
           });
 
-          event[paramIndex] = scaled;
+          event[paramIndex] = Math.round(scaled);
         }
       });
 
