@@ -545,9 +545,9 @@ export const graphLine = (params, ctx) => {
 };
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
-  let selectedFileId = workspaceState.selectedFile;
+  let controlFileId = workspaceState.controlFileId;
   let controlFile =
-    enrichedFiles.find((x) => x.name == selectedFileId) || enrichedFiles[0];
+    enrichedFiles.find((x) => x.name == controlFileId) || enrichedFiles[0];
 
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel, index) => {
@@ -561,8 +561,8 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       return {
         minimum: controlFile.channels[index].minimum,
         maximum: controlFile.channels[index].maximum,
-        name: channel.label || channel.value,
-        defaultScale: channel.display,
+        name: channel.label || channel.value || channel.name,
+        defaultScale: channel.display || channel.defaultScale,
       };
     });
 
@@ -573,14 +573,14 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
 
     return {
-      enrichedEvents: file.events,
+      enrichedEvents: file.events || file.enrichedEvents,
       channels: channels,
       logicles: logicles,
       gateStats: file.gateStats,
       plots: plots,
-      fileId: file.name,
-      isControlFile: file.id == controlFileId ? 1 : 0,
-      label: file.name,
+      fileId: file.name || file.fileId,
+      isControlFile: (file.id || file.fileId) == controlFileId ? 1 : 0,
+      label: file.name || file.label,
       scale: file.scale,
     };
   });

@@ -117,8 +117,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         (enrichedFile) => enrichedFile.isControlFile
       );
 
-      console.log("controlEnrichedFile is ", controlEnrichedFile);
-
       this.setState({
         ...this.state,
         controlFileScale: controlEnrichedFile.scale,
@@ -443,11 +441,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         break;
     }
 
-    // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    // TODO dont need to run Super algoithm
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
-    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    let enrichedFiles = formatEnrichedFiles(
+      this.state.enrichedFiles,
+      newWorkspaceState
+    );
 
     this.setState({
       workspaceState: newWorkspaceState,
@@ -861,7 +858,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               // color: "white",
             }}
             onClick={(e) => {
-              console.log("resettting...");
               let controlFile = this.state.fcsFiles.find(
                 (file) => file.id == this.state.workspaceState.controlFileId
               );

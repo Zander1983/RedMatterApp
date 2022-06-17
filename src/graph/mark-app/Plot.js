@@ -120,7 +120,7 @@ function Plot(props) {
       context.clearRect(0, 0, props.plot.width, props.plot.height);
       context.fillStyle = "white";
     }
-  }, [newPoints, localPlot]);
+  }, [newPoints]);
 
   useEffect(() => {
     setLocalPlot(props.plot);
@@ -149,14 +149,14 @@ function Plot(props) {
 
     if (context) {
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
-        getFormattedEvents(enrichedEvent, localPlot).forEach(
+        getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
             context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
             if (
-              formattedEvent[0] >= localPlot.width ||
+              formattedEvent[0] >= props.plot.width ||
               formattedEvent[0] < 2 ||
-              formattedEvent[1] >= localPlot.height ||
+              formattedEvent[1] >= props.plot.height ||
               formattedEvent[1] < 2
             ) {
               pointsOutsideCanvasCount++;
@@ -200,14 +200,19 @@ function Plot(props) {
 
     drawLabel();
 
-    if (localPlot.gate && shouldDrawGate(localPlot)) {
+    if (props.plot.gate && shouldDrawGate(props.plot)) {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
-        localPlot,
-        localPlot.gate.points
+        props.plot,
+        props.plot.gate.points
       );
     }
-  }, [localPlot]);
+  }, [
+    props.plot,
+    props.workspaceState.files[props.enrichedFile.fileId]?.plots[
+      props.plotIndex.split("-")[1]
+    ],
+  ]);
 
   const drawGateLine = (context, plot, realPoints) => {
     context.strokeStyle = "CornflowerBlue";
