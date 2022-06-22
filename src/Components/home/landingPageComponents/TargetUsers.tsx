@@ -4,6 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import lab from "assets/images/lab2.png";
 import researcher from "assets/images/researcher.png";
 import uni from "assets/images/uni3.png";
+import integration from "assets/images/integration.png";
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
@@ -37,7 +38,14 @@ const TargetUsers = () => {
   return (
     <Grid container className={classes.mainContainer} spacing={3}>
       {targetUserList.map((targetUser, i) => (
-        <Grid key={i} item container xs={12} md={4} className={classes.cardContainer}>
+        <Grid
+          key={i}
+          item
+          container
+          xs={12}
+          md={12}
+          className={classes.cardContainer}
+        >
           <Grid className={classes.imageContainer}>
             <img
               alt={targetUser.title}
@@ -56,21 +64,22 @@ const TargetUsers = () => {
 };
 
 const targetUserList = [
+  // {
+  //   img: researcher,
+  //   title: "Researchers",
+  //   text: "Researchers can analyse their FCS files on any device, instantly share, and collaborate with other researchers.",
+  // },
   {
-    img: researcher,
-    title: "Researchers",
-    text: "Researchers can analyse their FCS files on any device, instantly share, and collaborate with other researchers.",
+    img: integration,
+    title: "Integrate On Any Site",
+    text:
+      "A white-label version of the Red Matter software can be run on any website by simply dropping in the Red Matter Javascript library. For more email me at mark.kelly@redmatterapp.com",
   },
-  {
-    img: lab,
-    title: "Laboratories",
-    text: "Laboratories can access their data from any device (stored securely in the cloud) and analyse data remotely. Red Matter provides smart algorithms to makes analysis of large amounts of files much more efficient.",
-  },
-  {
-    img: uni,
-    title: "Universities",
-    text: "Red Matter is designed to flatten the steep learning curve of flow cytometry data analysis, and so makes for a perfect tool for users starting out their journey with flow cytometry.",
-  },
+  // {
+  //   img: uni,
+  //   title: "Universities",
+  //   text: "Red Matter is designed to flatten the steep learning curve of flow cytometry data analysis, and so makes for a perfect tool for users starting out their journey with flow cytometry.",
+  // },
 ];
 
 export default TargetUsers;
