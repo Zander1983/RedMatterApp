@@ -17,6 +17,8 @@ import {
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
+import ChatBox from "./../../Components/common/ChatBox/ChatBox";
+
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
@@ -1150,6 +1152,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               testParam={this.state.testParam}
             />
           </div>
+
           {/* {1==1 && (
             return this.renderUploadPanel();
           )
@@ -1269,7 +1272,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   this.uploadFiles(e.target.files);
                 }}
               />
-              Upload Files
+              Add Files
             </Button>
           </span>
           <p
@@ -1282,6 +1285,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             Files must have the same channels
           </p>
         </div>
+        <ChatBox />
       </div>
     );
   };

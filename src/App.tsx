@@ -33,7 +33,6 @@ import BrowseExperiments from "Components/home/BrowseExperiments";
 import WhyRedMatter from "Components/home/whyRedMatter";
 
 import Jobs from "Components/home/Jobs";
-import ChatBox from "./Components/common/ChatBox/ChatBox";
 import { useSelector } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
@@ -348,7 +347,6 @@ const App = () => {
             </ErrorBoundaryMain>
           </Content>
         )}
-        <ChatBox />
       </ThemeProvider>
     </Layout>
   );

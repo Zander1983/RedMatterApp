@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import { snackbarService } from "uno-material-ui";
 import { Tooltip } from "@material-ui/core";
@@ -23,6 +23,13 @@ const ChatBox = () => {
   const SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID;
   const TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
   const USER_ID = process.env.REACT_APP_EMAILJS_USER_ID;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowChatBox(true);
+    }, 20000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const sendEmail = (e: any) => {
     e.preventDefault();
@@ -77,9 +84,9 @@ const ChatBox = () => {
             onClick={() => setShowChatBox(false)}
           />
           <div>
-            <h3 className={classes.chatBoxHeaderTitle}> Support Team </h3>
+            <h3 className={classes.chatBoxHeaderTitle}> Feedback</h3>
             <p className={classes.headerMessage}>
-              Bugs, Feature Requests, Custom Support...
+              Send Feature Requests & Feedback
             </p>
           </div>
         </div>
