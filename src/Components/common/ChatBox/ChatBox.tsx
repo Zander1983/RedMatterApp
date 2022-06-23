@@ -20,9 +20,9 @@ const ChatBox = () => {
   const [showChatBox, setShowChatBox] = useState(false);
 
   // EmailJS Credentials
-  const SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID;
-  const TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
-  const USER_ID = process.env.REACT_APP_EMAILJS_USER_ID;
+  const SERVICE_ID = "service_y5igv03";
+  const TEMPLATE_ID = "template_g92ud5l";
+  const USER_ID = "UCv_p-ftFj9rxKnn0";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -97,11 +97,23 @@ const ChatBox = () => {
           ref={form}
           onSubmit={sendEmail}
         >
+          {/* <div className="field">
+    <label for="from_name">You Email</label>
+    <input type="text" name="from_name" id="from_name">
+  </div>
+
+  <div class="field">
+    <label for="message">message</label>
+    <input type="text" name="message" id="message">
+  </div>
+
+  <input type="submit" id="button" value="Send Email" > */}
+
           <input
             type="text"
-            placeholder="support@redmatterapp.com"
+            placeholder="Your email address"
             className={classes.mailInput}
-            name="gmail"
+            name="from_name"
           />
           <textarea
             name="message"
@@ -110,13 +122,6 @@ const ChatBox = () => {
             className={classes.messageInput}
             ref={message}
           ></textarea>
-          <input
-            type="text"
-            name="pageLink"
-            value={window.location.href}
-            readOnly
-            style={{ display: "none" }}
-          />
 
           <button type="submit" className={classes.sendButton}>
             <SendOutlined className={classes.sendIcon} />
