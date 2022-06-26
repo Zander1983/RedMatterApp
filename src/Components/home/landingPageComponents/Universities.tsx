@@ -21,10 +21,7 @@ const Universities = () => {
   return (
     <Grid container>
       <Grid item className={classes.mainContainer}>
-        <h1>
-          Users all over the world trust{" "}
-          <b style={{ color: "#303F9F" }}>Red Matter</b> for flow cytometry
-        </h1>
+        <h1>Users registered in over 2,000 Institutues</h1>
         <Grid container className={classes.universitiesContainer}>
           <Grid item className={classes.back}>
             <LogosSlider content={universities} />

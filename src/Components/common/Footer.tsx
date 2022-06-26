@@ -11,19 +11,6 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import useForceUpdate from "hooks/forceUpdate";
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
-        Red Matter Technologies LTD, CRO 690667
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
 const useStyles = makeStyles((theme) => ({
   "@global": {
     ul: {
@@ -224,9 +211,6 @@ export default function Footer(props: any) {
                 </ul>
               </Grid>
             ))}
-            <Box mt={1}>
-              <Copyright />
-            </Box>
           </Grid>
         </Grid>
       </div>

@@ -62,9 +62,9 @@ const LandingHeader = () => {
   return (
     <div className={classes.topDialogBar}>
       <div className={classes.topDialogVisualContentBar}>
-        <video autoPlay muted loop className={classes.video}>
+        {/* <video autoPlay muted loop className={classes.video}>
           <source src={loop_analytics} type="video/mp4" />
-        </video>
+        </video> */}
       </div>
 
       <div className={classes.topDialogContent}>
@@ -93,10 +93,10 @@ const LandingHeader = () => {
                 </b>
               </Typography>
               <p style={{ marginTop: 10 }}>
-                <b style={{ color: "#eee" }}>Your flow analysis tool</b>
+                <b style={{ color: "#eee" }}>free flow cytometry software</b>
               </p>
               <p style={{ color: "#eee", marginTop: -15 }}>
-                Analysing FCS files in your browser
+                Instant facs analysis software in the web
               </p>
 
               <div>
@@ -107,7 +107,7 @@ const LandingHeader = () => {
                     color="primary"
                     className={classes.marginButton}
                   >
-                    Analyse
+                    Analyse Now
                   </Button>
                 </NavLink>
               </div>
