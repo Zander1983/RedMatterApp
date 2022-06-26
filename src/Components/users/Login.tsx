@@ -41,6 +41,12 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: 20,
     paddingRight: 20,
   },
+  gridContainer: {
+    paddingTop: 30,
+    paddingBottom: 50,
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
   innerGridContainer: {
     backgroundColor: "#fafafa",
     padding: 20,
@@ -48,7 +54,6 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: "1px 1px 1px 1px #ddd",
     border: "solid 1px #ddd",
     textAlign: "center",
-    width: "50%",
   },
   forgetPass: {
     float: "right",
@@ -174,14 +179,9 @@ const Login = (props: any) => {
       container
       alignContent="center"
       justify="center"
-      className={classes.outerGridContainer}
+      className={classes.gridContainer}
     >
-      <Grid
-        container
-        justify="center"
-        direction="column"
-        className={classes.innerGridContainer}
-      >
+      <Grid item lg={6} md={9} sm={12} className={classes.innerGridContainer}>
         <LockFilled />
 
         {/* Title */}
@@ -222,6 +222,7 @@ const Login = (props: any) => {
             <p className={classes.forgetPass}> Forget Password? </p>
           </Link>
 
+          <br />
           {/* Submit Button */}
           <Grid justify="center" container className={classes.btnContainer}>
             <Button type="submit" className={classes.btn} disabled={loading}>
@@ -235,6 +236,7 @@ const Login = (props: any) => {
         </ValidatorForm>
 
         {/* Go to registration page */}
+        <br />
         <div>
           <Link to="/register">
             <h3 className={classes.registration}>Not registred yet?</h3>
