@@ -17,7 +17,7 @@ import {
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-import ChatBox from "./../../Components/common/ChatBox/ChatBox";
+// import ChatBox from "./../../Components/common/ChatBox/ChatBox";
 
 interface PlotControllerProps {
   sharedWorkspace: boolean;
@@ -1285,7 +1285,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             Files must have the same channels
           </p>
         </div>
-        <ChatBox />
+        {/* <ChatBox /> */}
       </div>
     );
   };
