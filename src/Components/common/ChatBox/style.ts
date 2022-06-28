@@ -20,7 +20,7 @@ export const useStyles = makeStyles((theme) => ({
   chatBox: {
     width: 350,
     background: "white",
-    position: "absolute",
+    // position: "absolute",
     bottom: 50,
     right: 0,
     zIndex: 50,
