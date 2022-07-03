@@ -11,7 +11,14 @@ let isMouseDown = false;
 let interval = null;
 
 const hasGate = (plot) => {
-  return !!plot.gate;
+  console.log("props.plot is ", plot);
+  let hasGate = !!plot.gate;
+  console.log("hasGate is ", hasGate);
+  return hasGate;
+};
+
+const isOnGate = (plot) => {
+  return plot.gate.xAxisIndex == plot.xAxisIndex;
 };
 
 const shouldDrawGate = (plot) => {
@@ -672,13 +679,16 @@ function Histogram(props) {
   const handleMouseDown = (event) => {
     isMouseDown = true;
 
-    if (!hasGate(props.plot)) {
-      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+    if (hasGate(props.plot)) {
+      if (isOnGate(props.plot)) {
+        console.log("setting startPoint...");
         setStartCanvasPoint(event.offsetX);
       }
     } else {
-      // so there is a gate
-      setStartCanvasPoint(event.offsetX);
+      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+        console.log("setting startPoint...");
+        setStartCanvasPoint(event.offsetX);
+      }
     }
 
     // // draw histogram gate only if it is selected file
@@ -901,6 +911,7 @@ function Histogram(props) {
                     }}
                     onMouseMove={(e) => {
                       let nativeEvent = e.nativeEvent;
+
                       handleCursorProperty(nativeEvent);
                       handleMouseMove(nativeEvent);
                     }}

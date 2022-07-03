@@ -123,6 +123,9 @@ function Plot(props) {
   }, [newPoints]);
 
   useEffect(() => {
+    let context = getContext("covering-canvas-" + props.plotIndex);
+    context.clearRect(0, 0, localPlot.width, localPlot.height);
+
     setLocalPlot(props.plot);
   }, [props.plot]);
 

@@ -24,13 +24,6 @@ const ChatBox = () => {
   const TEMPLATE_ID = "template_g92ud5l";
   const USER_ID = "UCv_p-ftFj9rxKnn0";
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowChatBox(true);
-    }, 20000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const sendEmail = (e: any) => {
     e.preventDefault();
     if (message.current.value.trim().length) {
