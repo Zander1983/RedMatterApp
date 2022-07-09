@@ -74,26 +74,7 @@
           "plotScale": 2,
           "xScaleType": "lin",
           "yScaleType": "lin",
-          "histogramAxis": "",
-          "gates": [
-            {
-              "color": "yellow",
-              "gateType": "polygon",
-              "name": "population3",
-              "xAxisLabel": "FSC-A",
-              "yAxisLabel": "SSC-A",
-              "xScaleType": "lin",
-              "yScaleType": "lin",
-              "xAxisIndex": 0,
-              "yAxisIndex": 1,
-              "points": [
-                [170000, 170000],
-                [170000, 210000],
-                [210000, 210000],
-                [210000, 170000]
-              ]
-            }
-          ]
+          "histogramAxis": ""
         },
         {
           "population": "population2",
@@ -107,82 +88,7 @@
           "xAxisIndex": 0,
           "yAxisIndex": 1,
           "xScaleType": "lin",
-          "yScaleType": "lin",
-          "gates": [
-            {
-              "color": "blue",
-              "gateType": "polygon",
-              "name": "population4",
-              "points": [
-                [90000, 40000],
-                [90000, 100000],
-                [120000, 90000],
-                [120000, 70000]
-              ],
-              "xAxisLabel": "FSC-A",
-              "yAxisLabel": "SSC-A",
-              "xScaleType": "lin",
-              "yScaleType": "lin",
-              "xAxisIndex": 0,
-              "yAxisIndex": 1,
-              "xAxisOriginalRanges": [0, 262144],
-              "yAxisOriginalRanges": [0, 262144],
-              "parent": "All"
-            },
-            {
-              "color": "grey",
-              "gateType": "polygon",
-              "name": "population5",
-              "points": [
-                [140000, 40000],
-                [140000, 70000],
-                [170000, 170000],
-                [170000, 40000]
-              ],
-              "xAxisLabel": "FSC-A",
-              "yAxisLabel": "SSC-A",
-              "xScaleType": "lin",
-              "yScaleType": "lin",
-              "xAxisIndex": 0,
-              "yAxisIndex": 1
-            }
-          ]
-        },
-        {
-          "population": "population3",
-          "level": 2,
-          "xAxisLabel": "FSC-A",
-          "yAxisLabel": "SSC-A",
-          "xScaleType": "lin",
-          "yScaleType": "lin",
-          "xAxisIndex": 0,
-          "yAxisIndex": 1,
-          "width": 200,
-          "height": 200
-        },
-        {
-          "population": "population4",
-          "level": 2,
-          "xAxisLabel": "FSC-A",
-          "yAxisLabel": "SSC-A",
-          "xScaleType": "lin",
-          "yScaleType": "lin",
-          "xAxisIndex": 0,
-          "yAxisIndex": 1,
-          "width": 200,
-          "height": 200
-        },
-        {
-          "population": "population5",
-          "level": 2,
-          "xAxisLabel": "FSC-A",
-          "yAxisLabel": "SSC-A",
-          "xScaleType": "lin",
-          "yScaleType": "lin",
-          "xAxisIndex": 0,
-          "yAxisIndex": 1,
-          "width": 200,
-          "height": 200
+          "yScaleType": "lin"
         }
       ],
       "open": true

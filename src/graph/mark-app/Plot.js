@@ -31,12 +31,12 @@ const getContext = (id) => {
   }
 };
 
-const shouldDrawGate = (plot) => {
+const shouldDrawGate = (plot, gate) => {
   if (
-    plot.xAxisIndex === plot.gate.xAxisIndex &&
-    plot.yAxisIndex === plot.gate.yAxisIndex &&
-    plot.xScaleType === plot.gate.xScaleType &&
-    plot.yScaleType === plot.gate.yScaleType
+    plot.xAxisIndex === gate.xAxisIndex &&
+    plot.yAxisIndex === gate.yAxisIndex &&
+    plot.xScaleType === gate.xScaleType &&
+    plot.yScaleType === gate.yScaleType
   ) {
     return true;
   } else {
@@ -52,6 +52,8 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  console.log("In Plot.js, props is ", props);
+
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
@@ -155,7 +157,7 @@ function Plot(props) {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
-            context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
+            context.fillRect(formattedEvent[0], formattedEvent[1], 3, 3);
             if (
               formattedEvent[0] >= props.plot.width ||
               formattedEvent[0] < 2 ||
@@ -203,12 +205,16 @@ function Plot(props) {
 
     drawLabel();
 
-    if (props.plot.gate && shouldDrawGate(props.plot)) {
-      drawGateLine(
-        getContext("covering-canvas-" + props.plotIndex),
-        props.plot,
-        props.plot.gate.points
-      );
+    if (props.plot.gates) {
+      props.plot.gates.map((gate) => {
+        if (shouldDrawGate(props.plot, gate)) {
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            gate.points
+          );
+        }
+      });
     }
   }, [
     props.plot,
@@ -461,7 +467,7 @@ function Plot(props) {
     }
   };
 
-  const hasGate = () => {
+  const hasGates = () => {
     return !!props.plot.gate;
   };
 
@@ -668,8 +674,8 @@ function Plot(props) {
   const handleMouseDown = (event) => {
     if (resizing) return;
 
-    if (hasGate()) {
-      if (!shouldDrawGate(localPlot)) return;
+    if (hasGates()) {
+      //if (!shouldDrawGate(localPlot)) return;
 
       isMouseDown = true;
       // check if on point
@@ -737,7 +743,7 @@ function Plot(props) {
 
     isMouseDown = false;
     dragPointIndex = false;
-    if (hasGate()) {
+    if (hasGates()) {
       let newPointsReal = getRealPointFromCanvasPoints(
         props.enrichedFile.channels,
         localPlot,
@@ -813,7 +819,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
+    if (isMouseDown && hasGates() && isGateShowing(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       if (isInsideGate || typeof dragPointIndex == "number") {
@@ -914,7 +920,7 @@ function Plot(props) {
 
   const handleCursorProperty = (event) => {
     if (
-      hasGate() &&
+      hasGates() &&
       isGateShowing(localPlot) &&
       props?.plot?.gate?.gateType === "polygon"
     ) {

@@ -9,9 +9,6 @@ import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
 
-import MultiStainState from "./MultiStainState.json";
-import MultiStainState2 from "./MultiStainState2.json";
-
 // import { PlainDraggable } from "plain-draggable";
 
 import { DSC_SORT, ASC_SORT } from "./Helper";
@@ -61,29 +58,22 @@ let getLines = (els, draggables, lines, plots) => {
         const line = new LeaderLine(el1, el2, {
           color: "black",
           size: 3,
-          dash: { animation: true },
+          // dash: { animation: true },
           startPlug: "disc",
-          endPlug: "square",
-          // path: 'grid'
+          endPlug: "arrow1",
+          path: "grid",
         });
 
         linesArr.push(line);
 
         lines.current.push(line);
       });
-
-      console.log(
-        ">>> draggables.current[index] is ",
-        draggables.current[index]
-      );
     } else {
     }
 
     // it has gates so need to add lines to the draggable
     draggables.current[index].onMove = function () {
-      console.log("in on Move, linesArr is ", linesArr);
       linesArr?.forEach((l) => {
-        console.log(">>>> l is ", l);
         l.position();
       });
     };
@@ -93,23 +83,19 @@ let getLines = (els, draggables, lines, plots) => {
 function Table(props) {
   let nodes = useRef([]);
 
-  let count = getNumberOfPlots(
-    MultiStainState.files.file_key_1_control.plot,
-    nodes
-  );
-
   const draggables = useRef([]);
   const lines = useRef([]);
 
   useEffect(() => {
-    // const el1 = node1.current.resizable;
-    // const el2 = node2.current.resizable;
-    // const el3 = node3.current.resizable;
-
     let els = [];
     let draggableObjects = [];
     let levels = [];
-    MultiStainState2.files.file_key_1_control.plots.map((plot, index) => {
+
+    let controlEnrichedFile = props.enrichedFiles.find(
+      (enrichedFile) => enrichedFile.isControlFile
+    );
+
+    controlEnrichedFile.plots.map((plot, index) => {
       const el = nodes.current[index].resizable;
       els.push(el);
 
@@ -119,8 +105,11 @@ function Table(props) {
         return value === level;
       }).length;
 
-      let left = 150 * level;
-      let top = 150 * levelCount;
+      let left = 450 * level;
+      let top = 450 * (levelCount - 1);
+
+      console.log("plotn is ", plot);
+      console.log("left, top is ", left, top);
 
       const draggable = new Draggable(el, {
         left: left,
@@ -135,89 +124,7 @@ function Table(props) {
       draggables.current.push(draggable);
     });
 
-    getLines(
-      els,
-      draggables,
-      lines,
-      MultiStainState2.files.file_key_1_control.plots
-    );
-
-    // const draggable1 = new Draggable(el1, {
-    //   left: 10,
-    //   top: 50,
-    //   handle: el1.children[0],
-    //   endSocket: "right",
-    //   onMove: () => {
-    //     line1.position();
-    //   },
-    // });
-
-    // const draggable2 = new Draggable(el2, {
-    //   left: 250,
-    //   top: 100,
-    //   handle: el2.children[0],
-    //   onMove: () => {
-    //     line1.position();
-    //     line2.position();
-    //   },
-    // });
-
-    // const draggable3 = new Draggable(el3, {
-    //   left: 600,
-    //   top: 120,
-    //   handle: el3.children[0],
-    //   onMove: () => {
-    //     line2.position();
-    //   },
-    // });
-
-    // const draggable4 = new Draggable(el4, {
-    //   left: 600,
-    //   top: 200,
-    //   handle: el4.children[0],
-    //   onMove: () => {
-    //     line3.position();
-    //   },
-    // });
-
-    // const line1 = new LeaderLine(el1, el2, {
-    //   color: "black",
-    //   size: 3,
-    //   middleLabel: "/data/topic",
-    //   dash: { animation: true },
-    //   startPlug: "disc",
-    //   endPlug: "square",
-    //   // path: 'grid'
-    // });
-
-    // const line2 = new LeaderLine(el2, el3, {
-    //   color: "black",
-    //   size: 3,
-    //   middleLabel: "/data/topic",
-    //   dash: { animation: true },
-    //   startPlug: "disc",
-    //   endPlug: "arrow3",
-    //   // path: 'grid'
-    // });
-
-    // const line3 = new LeaderLine(el2, el4, {
-    //   color: "black",
-    //   size: 3,
-    //   middleLabel: "/data/topic",
-    //   dash: { animation: true },
-    //   startPlug: "disc",
-    //   endPlug: "arrow3",
-    //   // path: 'grid'
-    // });
-
-    // draggables.current.push(draggable1);
-    // draggables.current.push(draggable2);
-    // draggables.current.push(draggable3);
-    // draggables.current.push(draggable4);
-
-    // lines.current.push(line1);
-    // lines.current.push(line2);
-    // lines.current.push(line3);
+    getLines(els, draggables, lines, controlEnrichedFile.plots);
   }, []);
 
   const handleResize = () => {
@@ -225,10 +132,6 @@ function Table(props) {
       line.position();
     });
   };
-
-  let controlEnrichedFile = props.enrichedFiles.find(
-    (enrichedFile) => enrichedFile.isControlFile
-  );
 
   let nonControlEnrichedFiles = props.enrichedFiles.filter(
     (enrichedFile) => !enrichedFile.isControlFile
@@ -272,13 +175,17 @@ function Table(props) {
     }
   }, []);
 
-  useEffect(() => {
-    tableRef.current.scrollBy({
-      top: 0,
-      left: +500,
-      behavior: "smooth",
-    });
-  }, [controlEnrichedFile?.plots?.length]);
+  // useEffect(() => {
+  //   tableRef.current.scrollBy({
+  //     top: 0,
+  //     left: +500,
+  //     behavior: "smooth",
+  //   });
+  // }, [controlEnrichedFile?.plots?.length]);
+
+  let controlEnrichedFile = props.enrichedFiles.find(
+    (enrichedFile) => enrichedFile.isControlFile
+  );
 
   const renderPlots = (plotObject) => {
     if (plotObject) {
@@ -300,11 +207,11 @@ function Table(props) {
     return (
       <div
         style={{
-          width: 800,
-          height: 600,
+          width: 1600,
+          height: 1600,
         }}
       >
-        {plots?.map((plot, index) => {
+        {plots?.map((plot, plotIindex) => {
           return (
             <Resizable
               ref={(element) => {
@@ -313,9 +220,24 @@ function Table(props) {
               className="node"
               onResize={handleResize}
               id={plot.population}
-              key={"resizable-plot-" + index}
+              key={"resizable-plot-" + plotIindex}
             >
-              <div>{plot.population} </div>
+              <div>Drag Me</div>
+              <Plot
+                name="control-file"
+                key={`plot-${plotIindex}`}
+                plot={plot}
+                enrichedFile={controlEnrichedFile}
+                workspaceState={props.workspaceState}
+                onAddGate={props.onAddGate}
+                onDeleteGate={props.onDeleteGate}
+                onEditGate={props.onEditGate}
+                onResize={props.onResize}
+                onChangeChannel={props.onChangeChannel}
+                plotIndex={`0-${plotIindex}`}
+                downloadPlotAsImage={props.downloadPlotAsImage}
+                testParam={props.testParam}
+              />
             </Resizable>
           );
         })}
@@ -356,44 +278,11 @@ function Table(props) {
           }}
         ></div>
       </div>
-      {/* <div
-        style={{
-          height: "200px",
-        }}
-      >
-        <Resizable ref={node1} className="node" onResize={handleResize}>
-          <div>Input</div>
-        </Resizable>
-        <Resizable ref={node2} className="node" onResize={handleResize}>
-          <div>Processing</div>
-        </Resizable>
-        <Resizable ref={node3} className="node" onResize={handleResize}>
-          <div>Output</div>
-        </Resizable>
-
-        <Resizable ref={node4} className="node" onResize={handleResize}>
-          <div>Output 2</div>
-        </Resizable>
-      </div> */}
-      {/* <div
-        style={{
-          height: "200px",
-        }}
-      >
-        NODES jjjj:
-        {nodes.map((node, plotIindex) => {
-          return (
-            <Resizable ref={node} className="node" onResize={handleResize}>
-              <div>Input</div>
-            </Resizable>
-          );
-        })}
-      </div> */}
       Render Plots:
       {PlotRender({
-        plots: MultiStainState2.files.file_key_1_control.plots,
+        plots: controlEnrichedFile.plots,
       })}
-      <table
+      {/* <table
         style={{
           maxWidth: "100%",
           overflowX: "auto",
@@ -522,56 +411,6 @@ function Table(props) {
                   border: "1px solid #000",
                 }}
               >
-                {/* <span
-                  style={{
-                    float: "left",
-                    marginLeft: 20,
-                    cursor: shouldFileRender.length && "pointer",
-                    color: shouldFileRender.length ? "#000" : "gray",
-                    fontWeight: shouldFileRender.length ? "bolder" : "bold",
-                  }}
-                  onClick={() => {
-                    if (shouldFileRender.length) {
-                      setShouldFileRender([]);
-                      WorkspaceDispatch.UpdateOpenFiles("", "close");
-                    }
-                  }}
-                >
-                  {"Close All"}
-                </span>
-                <span
-                  style={{
-                    float: "left",
-                    marginLeft: 20,
-                    cursor:
-                      shouldFileRender.length !==
-                        props.workspaceState.files.length - 1 && "pointer",
-                    color:
-                      shouldFileRender.length !==
-                      props.workspaceState.files.length - 1
-                        ? "#000"
-                        : "gray",
-                    fontWeight:
-                      shouldFileRender.length !==
-                      props.workspaceState.files.length - 1
-                        ? "bolder"
-                        : "bold",
-                  }}
-                  onClick={() => {
-  
-                    setShouldFileRender(
-                      props.workspaceState.files
-                        ?.map((file) => file?.id)
-                        .filter(
-                          (fileId) =>
-                            fileId !== props.workspaceState.controlFileId
-                        )
-                    );
-                    WorkspaceDispatch.UpdateOpenFiles("", "view");
-                  }}
-                >
-                  {"View All"}
-                </span> */}
                 OTHER FILES
               </div>
             </td>
@@ -708,22 +547,6 @@ function Table(props) {
                               " events"
                             : ""}
                         </span>
-
-                        {/* {plot.population === "All" &&
-                          editedFileIds.includes(enrichedFile.fileId) && (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              style={{
-                                backgroundColor: "#FCBA05",
-                              }}
-                              onClick={() =>
-                                props.onResetToControl(enrichedFile.fileId)
-                              }
-                            >
-                              Reset To Control
-                            </Button>
-                          )} */}
                       </div>
                       {shouldFileRender.includes(enrichedFile?.fileId) &&
                         (() => {
@@ -804,6 +627,7 @@ function Table(props) {
           })}
         </tbody>
       </table>
+     */}
     </div>
   );
 }

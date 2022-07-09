@@ -7,6 +7,8 @@ import FCSServices from "./FCSServices/FCSServices";
 import { Grid, Button, TextField } from "@material-ui/core";
 import WorkspaceTopBar from "./WorkspaceTopBar";
 import MultiStainState from "./MultiStainState.json";
+import MultiStainState3 from "./MultiStainState3.json";
+import Files from "./Files.json";
 import ReactGA from "react-ga";
 import {
   superAlgorithm,
@@ -102,7 +104,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
-    console.log("MultiStainState is ", MultiStainState);
+    //let copyOfLocalFiles: any[] = Files;
+
+    workspaceState = MultiStainState3;
+
+    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
+    console.log("workspaceState is ", workspaceState);
 
     // @ts-ignore
     if (
@@ -115,6 +122,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         copyOfLocalFiles,
         workspaceState
       );
+
+      console.log(">>>>>>>enrichedFiles is ", enrichedFiles);
 
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 

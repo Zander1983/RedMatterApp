@@ -110,7 +110,7 @@ const parse = (fcs) => {
     let maximum = channelMaximums[paramIndex];
     for (
       let event = 0;
-      //      Math.round(event) < 10;
+      // Math.round(event) < 7;
       event < dataAsNumbers.length;
       event = event + 1
     ) {
