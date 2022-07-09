@@ -6,6 +6,7 @@ import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import { Grid, Button, TextField } from "@material-ui/core";
 import WorkspaceTopBar from "./WorkspaceTopBar";
+import MultiStainState from "./MultiStainState.json";
 import ReactGA from "react-ga";
 import {
   superAlgorithm,
@@ -100,6 +101,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onInitState = (workspaceState: any) => {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
+
+    console.log("MultiStainState is ", MultiStainState);
 
     // @ts-ignore
     if (

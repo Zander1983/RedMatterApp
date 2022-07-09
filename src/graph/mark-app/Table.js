@@ -5,10 +5,227 @@ import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { Button } from "@material-ui/core";
 
+import Draggable from "plain-draggable";
+import LeaderLine from "react-leader-line";
+import { Resizable } from "re-resizable";
+
+import MultiStainState from "./MultiStainState.json";
+import MultiStainState2 from "./MultiStainState2.json";
+
+// import { PlainDraggable } from "plain-draggable";
+
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
+import { CodeOutlined } from "@ant-design/icons";
+
+let getNumberOfPlots = (plotObject, nodes) => {
+  let count = 0;
+  let countLine = (plot) => {
+    if (plot) {
+      count++;
+
+      if (plot.gates) {
+        plot.gates?.map((p) => {
+          countLine(p.plot);
+        });
+      }
+    }
+  };
+
+  countLine(plotObject);
+
+  return count;
+};
+
+let getLines = (els, draggables, lines, plots) => {
+  let count = 0;
+  let index = 0;
+  let linesArr = [];
+
+  // const line1 = new LeaderLine(el1, el2, {
+  //   color: "black",
+  //   size: 3,
+  //   middleLabel: "/data/topic",
+  //   dash: { animation: true },
+  //   startPlug: "disc",
+  //   endPlug: "square",
+  //   // path: 'grid'
+  // });
+
+  plots.map((plot, index) => {
+    if (plot.gates) {
+      plot.gates.map((gate, index) => {
+        let el1 = els.find((el) => el.id == plot.population);
+        let el2 = els.find((el) => el.id == gate.name);
+
+        const line = new LeaderLine(el1, el2, {
+          color: "black",
+          size: 3,
+          dash: { animation: true },
+          startPlug: "disc",
+          endPlug: "square",
+          // path: 'grid'
+        });
+
+        linesArr.push(line);
+
+        lines.current.push(line);
+      });
+
+      console.log(
+        ">>> draggables.current[index] is ",
+        draggables.current[index]
+      );
+    } else {
+    }
+
+    // it has gates so need to add lines to the draggable
+    draggables.current[index].onMove = function () {
+      console.log("in on Move, linesArr is ", linesArr);
+      linesArr?.forEach((l) => {
+        console.log(">>>> l is ", l);
+        l.position();
+      });
+    };
+  });
+};
 
 function Table(props) {
+  let nodes = useRef([]);
+
+  let count = getNumberOfPlots(
+    MultiStainState.files.file_key_1_control.plot,
+    nodes
+  );
+
+  const draggables = useRef([]);
+  const lines = useRef([]);
+
+  useEffect(() => {
+    // const el1 = node1.current.resizable;
+    // const el2 = node2.current.resizable;
+    // const el3 = node3.current.resizable;
+
+    let els = [];
+    let draggableObjects = [];
+    let levels = [];
+    MultiStainState2.files.file_key_1_control.plots.map((plot, index) => {
+      const el = nodes.current[index].resizable;
+      els.push(el);
+
+      let level = plot.level;
+      levels.push(level);
+      let levelCount = levels.filter(function (value) {
+        return value === level;
+      }).length;
+
+      let left = 150 * level;
+      let top = 150 * levelCount;
+
+      const draggable = new Draggable(el, {
+        left: left,
+        top: top,
+        handle: el.children[0],
+        //endSocket: "right",
+        onMove: () => {
+          //line1.position();
+        },
+      });
+
+      draggables.current.push(draggable);
+    });
+
+    getLines(
+      els,
+      draggables,
+      lines,
+      MultiStainState2.files.file_key_1_control.plots
+    );
+
+    // const draggable1 = new Draggable(el1, {
+    //   left: 10,
+    //   top: 50,
+    //   handle: el1.children[0],
+    //   endSocket: "right",
+    //   onMove: () => {
+    //     line1.position();
+    //   },
+    // });
+
+    // const draggable2 = new Draggable(el2, {
+    //   left: 250,
+    //   top: 100,
+    //   handle: el2.children[0],
+    //   onMove: () => {
+    //     line1.position();
+    //     line2.position();
+    //   },
+    // });
+
+    // const draggable3 = new Draggable(el3, {
+    //   left: 600,
+    //   top: 120,
+    //   handle: el3.children[0],
+    //   onMove: () => {
+    //     line2.position();
+    //   },
+    // });
+
+    // const draggable4 = new Draggable(el4, {
+    //   left: 600,
+    //   top: 200,
+    //   handle: el4.children[0],
+    //   onMove: () => {
+    //     line3.position();
+    //   },
+    // });
+
+    // const line1 = new LeaderLine(el1, el2, {
+    //   color: "black",
+    //   size: 3,
+    //   middleLabel: "/data/topic",
+    //   dash: { animation: true },
+    //   startPlug: "disc",
+    //   endPlug: "square",
+    //   // path: 'grid'
+    // });
+
+    // const line2 = new LeaderLine(el2, el3, {
+    //   color: "black",
+    //   size: 3,
+    //   middleLabel: "/data/topic",
+    //   dash: { animation: true },
+    //   startPlug: "disc",
+    //   endPlug: "arrow3",
+    //   // path: 'grid'
+    // });
+
+    // const line3 = new LeaderLine(el2, el4, {
+    //   color: "black",
+    //   size: 3,
+    //   middleLabel: "/data/topic",
+    //   dash: { animation: true },
+    //   startPlug: "disc",
+    //   endPlug: "arrow3",
+    //   // path: 'grid'
+    // });
+
+    // draggables.current.push(draggable1);
+    // draggables.current.push(draggable2);
+    // draggables.current.push(draggable3);
+    // draggables.current.push(draggable4);
+
+    // lines.current.push(line1);
+    // lines.current.push(line2);
+    // lines.current.push(line3);
+  }, []);
+
+  const handleResize = () => {
+    lines.current.forEach((line) => {
+      line.position();
+    });
+  };
+
   let controlEnrichedFile = props.enrichedFiles.find(
     (enrichedFile) => enrichedFile.isControlFile
   );
@@ -63,6 +280,49 @@ function Table(props) {
     });
   }, [controlEnrichedFile?.plots?.length]);
 
+  const renderPlots = (plotObject) => {
+    if (plotObject) {
+      return (
+        <>
+          <div>{plotObject.population}</div>
+        </>
+      );
+    }
+
+    {
+      plotObject.gates.map((gate, gateIndex) => {
+        plotObject(gate.plot);
+      });
+    }
+  };
+
+  function PlotRender({ plots: plots, node: node }) {
+    return (
+      <div
+        style={{
+          width: 800,
+          height: 600,
+        }}
+      >
+        {plots?.map((plot, index) => {
+          return (
+            <Resizable
+              ref={(element) => {
+                return nodes.current.push(element);
+              }}
+              className="node"
+              onResize={handleResize}
+              id={plot.population}
+              key={"resizable-plot-" + index}
+            >
+              <div>{plot.population} </div>
+            </Resizable>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div
@@ -96,6 +356,43 @@ function Table(props) {
           }}
         ></div>
       </div>
+      {/* <div
+        style={{
+          height: "200px",
+        }}
+      >
+        <Resizable ref={node1} className="node" onResize={handleResize}>
+          <div>Input</div>
+        </Resizable>
+        <Resizable ref={node2} className="node" onResize={handleResize}>
+          <div>Processing</div>
+        </Resizable>
+        <Resizable ref={node3} className="node" onResize={handleResize}>
+          <div>Output</div>
+        </Resizable>
+
+        <Resizable ref={node4} className="node" onResize={handleResize}>
+          <div>Output 2</div>
+        </Resizable>
+      </div> */}
+      {/* <div
+        style={{
+          height: "200px",
+        }}
+      >
+        NODES jjjj:
+        {nodes.map((node, plotIindex) => {
+          return (
+            <Resizable ref={node} className="node" onResize={handleResize}>
+              <div>Input</div>
+            </Resizable>
+          );
+        })}
+      </div> */}
+      Render Plots:
+      {PlotRender({
+        plots: MultiStainState2.files.file_key_1_control.plots,
+      })}
       <table
         style={{
           maxWidth: "100%",
