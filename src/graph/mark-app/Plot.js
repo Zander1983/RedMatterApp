@@ -1,5 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
+import {
+  isPointInPolygon,
+  drawText,
+  getAxisLabels,
+  getBins,
+  getGateName,
+} from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
 
 import {
@@ -113,9 +119,18 @@ function Plot(props) {
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
     // draw here
-    if (localPlot && localPlot.gate && newPoints.length > 0) {
+    if (newPoints.length > 0) {
       if (context) {
-        drawGateLine(context, localPlot, newPoints);
+        props.plot.gates.map((gate) => {
+          let points =
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points
+          );
+        });
 
         //drawTemporaryGateLine(context, props.plot);
       }
@@ -380,7 +395,7 @@ function Plot(props) {
       color: gateColor,
       gateType: "polygon",
       // need to ask for gate name
-      name: gateName.name,
+      name: getGateName(gateName.name),
       points: pointsReal,
       xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
@@ -746,15 +761,12 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    console.log("in handleMouse Move");
-    console.log(
-      ">>> isMouseDown && hasGates() && areGatesOnPlot(localPlot) is ",
-      isMouseDown && hasGates() && areGatesOnPlot(localPlot)
-    );
     if (isMouseDown && hasGates() && areGatesOnPlot(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
-      if (isInsideGate || typeof dragPointIndex == "number") {
+      //typeof dragPointIndex == "number"
+      //gate.name == nameOfGateCursorIsInside
+      if (isInsideGate) {
         // this code will run when a user will drag the entire polygon gate
 
         let moveX = getMoveValue(
@@ -775,10 +787,32 @@ function Plot(props) {
 
         for (var i = 0; i < localPlot.gates.length; i++) {
           let gate = localPlot.gates[i];
-          let points = gate.points.map((point, index) => {
-            if (typeof dragPointIndex == "number") {
-              // TODO too much code repetition here
-              if (dragPointIndex == index) {
+          if (gate.name == nameOfGateCursorIsInside) {
+            let points = gate.points.map((point, index) => {
+              if (typeof dragPointIndex == "number") {
+                // TODO too much code repetition here
+                if (dragPointIndex == index) {
+                  let newGateValueRealX = getGateValue(
+                    point[0],
+                    localPlot.xScaleType,
+                    localPlot.xAxisIndex,
+                    localPlot.width,
+                    moveX
+                  );
+
+                  let newGateValueRealY = getGateValue(
+                    point[1],
+                    localPlot.yScaleType,
+                    localPlot.yAxisIndex,
+                    localPlot.height,
+                    moveY
+                  );
+
+                  return [newGateValueRealX, newGateValueRealY];
+                } else {
+                  return [point[0], point[1]];
+                }
+              } else {
                 let newGateValueRealX = getGateValue(
                   point[0],
                   localPlot.xScaleType,
@@ -796,44 +830,24 @@ function Plot(props) {
                 );
 
                 return [newGateValueRealX, newGateValueRealY];
-              } else {
-                return [point[0], point[1]];
               }
-            } else {
-              let newGateValueRealX = getGateValue(
-                point[0],
-                localPlot.xScaleType,
-                localPlot.xAxisIndex,
-                localPlot.width,
-                moveX
-              );
+            });
 
-              let newGateValueRealY = getGateValue(
-                point[1],
-                localPlot.yScaleType,
-                localPlot.yAxisIndex,
-                localPlot.height,
-                moveY
-              );
+            let xRange = [
+              props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+              props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+            ];
 
-              return [newGateValueRealX, newGateValueRealY];
-            }
-          });
+            let yRange = [
+              props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+              props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+            ];
 
-          let xRange = [
-            props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-            props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-          ];
+            gate.xAxisOriginalRanges = xRange;
+            gate.yAxisOriginalRanges = yRange;
 
-          let yRange = [
-            props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
-            props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
-          ];
-
-          gate.xAxisOriginalRanges = xRange;
-          gate.yAxisOriginalRanges = yRange;
-
-          setNewPoints(points);
+            setNewPoints(points);
+          }
         }
         // setLocalPlot({
         //   ...localPlot,
@@ -861,89 +875,92 @@ function Plot(props) {
     dragPointIndex = false;
     let isInsideAGate = false;
 
-    // if (hasGates()) {
-    //   for (var i = 0; i < localPlot.gates.length; i++) {
-    //     let gate = localPlot.gates[i];
+    setIsInsideGate(false);
+    setNameOfGateCursorIsInside(null);
 
-    //     console.log('');
+    if (isInsideGate) {
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
+        if (gate.name == nameOfGateCursorIsInside) {
+          // let newPointsReal = getRealPointFromCanvasPoints(
+          //   props.enrichedFile.channels,
+          //   localPlot,
+          //   [event.offsetX, event.offsetY],
+          //   props.enrichedFile.logicles
+          // );
 
-    //     let newPointsReal = getRealPointFromCanvasPoints(
-    //       props.enrichedFile.channels,
-    //       localPlot,
-    //       [event.offsetX, event.offsetY],
-    //       props.enrichedFile.logicles
-    //     );
+          // const isInside = isPointInPolygon(
+          //   newPointsReal[0],
+          //   newPointsReal[1],
+          //   gate.points
+          // );
 
-    //     const isInside = isPointInPolygon(
-    //       newPointsReal[0],
-    //       newPointsReal[1],
-    //       gate.points
-    //     );
+          setIsInsideGate(false);
 
-    //     setIsInsideGate(isInside);
+          // if (isInside) {
+          //   setNameOfGateCursorIsInside(gate.name);
+          // }
 
-    //     if (isInside) {
-    //       setNameOfGateCursorIsInside(gate.name);
-    //     }
+          if (newPoints && newPoints.length > 1) {
+            gate.points = JSON.parse(JSON.stringify(newPoints));
 
-    // if (newPoints && newPoints.length > 1) {
-    //   gate.points = JSON.parse(JSON.stringify(newPoints));
+            setNewPoints([]);
 
-    //   setNewPoints([]);
-
-    //   let change = {
-    //     type: "EditGate",
-    //     plot: localPlot,
-    //     plotIndex: props.plotIndex.split("-")[1],
-    //     fileId: props.enrichedFile.fileId,
-    //   };
-    //   props.onEditGate(change);
-    // }
-    //   }
-    // } else {
-    // so its a new gate
-    // only if the file is controlled file then it is allowed to create a new gate
-    if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
-      newGatePointsCanvas.forEach((newGatePointCanvas) => {
-        if (
-          inRange(
-            event.offsetX,
-            newGatePointCanvas[0] - 10,
-            newGatePointCanvas[0] + 10
-          ) &&
-          inRange(
-            event.offsetY,
-            newGatePointCanvas[1] - 10,
-            newGatePointCanvas[1] + 10
-          ) &&
-          newGatePointsCanvas.length >= 3
-        ) {
-          const suggestedGateName =
-            props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
-          setGateName({
-            name: suggestedGateName,
-          });
-
-          setModalIsOpen(true);
-          polygonComplete = true;
-        }
-      });
-
-      // checking if the points are unique or not
-      let uniqueGatePoint = true;
-      for (const point of newGatePointsCanvas) {
-        if (point[0] === event.offsetX && point[1] === event.offsetY) {
-          uniqueGatePoint = false;
-          break;
+            let change = {
+              type: "EditGate",
+              plot: localPlot,
+              gate: gate,
+              plotIndex: props.plotIndex.split("-")[1],
+              fileId: props.enrichedFile.fileId,
+            };
+            props.onEditGate(change);
+          }
         }
       }
+    } else {
+      // so its a new gate
+      // only if the file is controlled file then it is allowed to create a new gate
+      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+        newGatePointsCanvas.forEach((newGatePointCanvas) => {
+          if (
+            inRange(
+              event.offsetX,
+              newGatePointCanvas[0] - 10,
+              newGatePointCanvas[0] + 10
+            ) &&
+            inRange(
+              event.offsetY,
+              newGatePointCanvas[1] - 10,
+              newGatePointCanvas[1] + 10
+            ) &&
+            newGatePointsCanvas.length >= 3
+          ) {
+            const suggestedGateName =
+              props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
+            setGateName({
+              name: suggestedGateName,
+            });
 
-      if (!polygonComplete && uniqueGatePoint) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+            setModalIsOpen(true);
+            polygonComplete = true;
+          }
+        });
+
+        // checking if the points are unique or not
+        let uniqueGatePoint = true;
+        for (const point of newGatePointsCanvas) {
+          if (point[0] === event.offsetX && point[1] === event.offsetY) {
+            uniqueGatePoint = false;
+            break;
+          }
+        }
+
+        if (!polygonComplete && uniqueGatePoint) {
+          newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        }
+        redraw();
       }
-      redraw();
     }
-    //}
   };
 
   const handleCursorProperty = (event) => {

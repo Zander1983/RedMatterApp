@@ -106,10 +106,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     //let copyOfLocalFiles: any[] = Files;
 
-    workspaceState = MultiStainState3;
-
-    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
-    console.log("workspaceState is ", workspaceState);
+    //workspaceState = MultiStainState3;
 
     // @ts-ignore
     if (
@@ -122,8 +119,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         copyOfLocalFiles,
         workspaceState
       );
-
-      console.log(">>>>>>>enrichedFiles is ", enrichedFiles);
 
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 
@@ -216,8 +211,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    console.log("newWorkspaceState is ", newWorkspaceState);
-
+    console.log(">>>> newWorkspaceState is ", newWorkspaceState);
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -296,10 +290,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       };
     }
 
-    // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[
+    let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
       change.plotIndex
-    ] = JSON.parse(JSON.stringify(change.plot));
+    ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex].gates[
+      gateIndex
+    ] = JSON.parse(JSON.stringify(change.gate));
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));

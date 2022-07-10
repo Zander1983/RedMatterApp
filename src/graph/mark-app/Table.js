@@ -35,6 +35,7 @@ let getNumberOfPlots = (plotObject, nodes) => {
 };
 
 let getLines = (els, draggables, lines, plots) => {
+  console.log("in getLines , els are ", els);
   let linesArr = [];
 
   plots.map((plot, index) => {
@@ -54,7 +55,7 @@ let getLines = (els, draggables, lines, plots) => {
 
         linesArr.push(line);
 
-        lines.current.push(line);
+        lines.push(line);
       });
     } else {
     }
@@ -71,13 +72,12 @@ let getLines = (els, draggables, lines, plots) => {
 function Table(props) {
   console.log("in table and props are ", props);
 
-  let nodes = useRef([]);
-  nodes.current = [];
+  let nodes = [];
 
   let wrapper = useRef();
 
   const draggables = [];
-  const lines = useRef([]);
+  const lines = [];
 
   useEffect(() => {
     let els = [];
@@ -87,8 +87,13 @@ function Table(props) {
       (enrichedFile) => enrichedFile.isControlFile
     );
 
+    console.log("draggables.length is   ", draggables.length);
+
     controlEnrichedFile.plots.map((plot, index) => {
-      let plotNode = nodes.current.find((node) => {
+      console.log(">>>> nodes are ", nodes);
+      console.log("plot is ", plot);
+
+      let plotNode = nodes.find((node) => {
         return node?.props && node.props.id == plot.population;
       });
 
@@ -212,7 +217,7 @@ function Table(props) {
             <Resizable
               ref={(element) => {
                 if (element) {
-                  return nodes.current.push(element);
+                  return nodes.push(element);
                 }
               }}
               className="node"

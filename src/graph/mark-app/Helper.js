@@ -51,13 +51,9 @@ export const superAlgorithm = (
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
 
-  console.log("controlOriginalFile is ", controlOriginalFile);
-
   let Files = JSON.parse(JSON.stringify(OriginalFiles));
   let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
   let controlFileId = WorkspaceState.controlFileId;
-
-  console.log(">>> WorkspaceState is ", WorkspaceState);
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
@@ -678,6 +674,7 @@ export const createDefaultPlotSnapShot = (
         plots: [
           {
             population: "All",
+            level: 0,
             plotType: plotType || DEFAULT_PLOT_TYPE,
             width: DEFAULT_PLOT_WIDTH,
             height: DEFAULT_PLOT_HEIGHT,
@@ -889,4 +886,13 @@ export const isGateShowing = (plot) => {
       plot?.gate?.gateType === plot?.plotType
     );
   }
+};
+
+export const getGateName = (gateName) => {
+  return gateName.split(" ").join("_") + "timestamp" + Date.now();
+};
+
+export const getGateNameFriendly = (gateName) => {
+  gateName = gateName.split("_").join(" ") + "timestamp" + Date.now();
+  return gateName.substring(0, gateName.indexOf("timestamp"));
 };
