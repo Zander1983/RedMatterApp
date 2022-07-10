@@ -675,6 +675,8 @@ export const createDefaultPlotSnapShot = (
           {
             population: "All",
             level: 0,
+            left: 5,
+            top: 5,
             plotType: plotType || DEFAULT_PLOT_TYPE,
             width: DEFAULT_PLOT_WIDTH,
             height: DEFAULT_PLOT_HEIGHT,

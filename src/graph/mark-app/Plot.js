@@ -550,7 +550,7 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 50, 20);
+    contextX.clearRect(0, 0, localPlot.width + 20, 20);
 
     let prevLabelPos = null;
 
@@ -1245,7 +1245,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 50}
+                width={localPlot.width + 25}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{

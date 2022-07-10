@@ -154,6 +154,27 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     newPlot.level++;
     delete newPlot.gates;
 
+    //@ts-ignore
+    let newWorkspaceState: any = this.state.workspaceState;
+
+    //@ts-ignore
+    let controlFileId: string = newWorkspaceState.controlFileId;
+
+    let level = newPlot.level;
+
+    let plotsAtSameLevel = (newWorkspaceState as any).files[
+      controlFileId
+    ].plots.filter((plot: any) => plot.level == level);
+
+    let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
+
+    console.log("numAtThatLevel is ", numAtThatLevel);
+
+    newPlot.left = 450 * level;
+    newPlot.top = 450 * numAtThatLevel;
+
+    console.log("newPlot.left is ", newPlot.left);
+
     newPlot.population = change.newGate.name;
     // for histograms
     newPlot.color = change.newGate.color;
@@ -164,12 +185,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     gatedPlot.gates && gatedPlot.gates.length > 0
       ? gatedPlot.gates.push(change.newGate)
       : (gatedPlot.gates = [change.newGate]);
-
-    //@ts-ignore
-    let newWorkspaceState: any = this.state.workspaceState;
-
-    //@ts-ignore
-    let controlFileId: string = newWorkspaceState.controlFileId;
 
     // this is setting the last plot to be the gated plot on the contorl
     let origGatedPlotIndex = (newWorkspaceState as any).files[

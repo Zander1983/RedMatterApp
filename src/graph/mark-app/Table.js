@@ -34,8 +34,7 @@ let getNumberOfPlots = (plotObject, nodes) => {
   return count;
 };
 
-let getLines = (els, draggables, lines, plots) => {
-  console.log("in getLines , els are ", els);
+let getLines = (els, draggables, plots) => {
   let linesArr = [];
 
   plots.map((plot, index) => {
@@ -55,7 +54,7 @@ let getLines = (els, draggables, lines, plots) => {
 
         linesArr.push(line);
 
-        lines.push(line);
+        //lines.push(line);
       });
     } else {
     }
@@ -67,6 +66,8 @@ let getLines = (els, draggables, lines, plots) => {
       });
     };
   });
+
+  return linesArr;
 };
 
 function Table(props) {
@@ -81,18 +82,12 @@ function Table(props) {
 
   useEffect(() => {
     let els = [];
-    let levels = [];
 
     let controlEnrichedFile = props.enrichedFiles.find(
       (enrichedFile) => enrichedFile.isControlFile
     );
 
-    console.log("draggables.length is   ", draggables.length);
-
-    controlEnrichedFile.plots.map((plot, index) => {
-      console.log(">>>> nodes are ", nodes);
-      console.log("plot is ", plot);
-
+    controlEnrichedFile.plots.forEach((plot, index) => {
       let plotNode = nodes.find((node) => {
         return node?.props && node.props.id == plot.population;
       });
@@ -102,22 +97,23 @@ function Table(props) {
 
       els.push(el);
 
-      let level = plot.level;
-      levels.push(level);
-      let levelCount = levels.filter(function (value) {
-        return value === level;
-      }).length;
-
-      let left = 450 * level;
-      let top = 450 * (levelCount - 1);
-
       const draggable = new Draggable(el, {
-        left: left,
-        top: top,
+        left: plot.left,
+        top: plot.top,
         handle: el.children[0],
         //endSocket: "right",
         onMove: () => {
           //line1.position();
+        },
+        onDrag: (newPosition) => {
+          //line1.position();
+          console.log("newPosition is ", newPosition);
+          props.workspaceState.files[props.workspaceState.controlFileId].plots[
+            index
+          ].top = newPosition.top;
+          props.workspaceState.files[props.workspaceState.controlFileId].plots[
+            index
+          ].left = newPosition.left;
         },
       });
 
@@ -125,8 +121,16 @@ function Table(props) {
       //}
     });
 
-    getLines(els, draggables, lines, controlEnrichedFile.plots);
-  }, [props]);
+    let lines = getLines(els, draggables, controlEnrichedFile.plots);
+
+    return () => {
+      lines?.forEach((line) => {
+        line.remove();
+      });
+    };
+  }, [
+    props.workspaceState.files[props.workspaceState.controlFileId].plots.length,
+  ]);
 
   const handleResize = () => {
     lines.current.forEach((line) => {
