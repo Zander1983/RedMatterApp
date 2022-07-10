@@ -35,19 +35,7 @@ let getNumberOfPlots = (plotObject, nodes) => {
 };
 
 let getLines = (els, draggables, lines, plots) => {
-  let count = 0;
-  let index = 0;
   let linesArr = [];
-
-  // const line1 = new LeaderLine(el1, el2, {
-  //   color: "black",
-  //   size: 3,
-  //   middleLabel: "/data/topic",
-  //   dash: { animation: true },
-  //   startPlug: "disc",
-  //   endPlug: "square",
-  //   // path: 'grid'
-  // });
 
   plots.map((plot, index) => {
     if (plot.gates) {
@@ -56,8 +44,8 @@ let getLines = (els, draggables, lines, plots) => {
         let el2 = els.find((el) => el.id == gate.name);
 
         const line = new LeaderLine(el1, el2, {
-          color: "black",
-          size: 3,
+          color: "grey",
+          size: 2,
           // dash: { animation: true },
           startPlug: "disc",
           endPlug: "arrow1",
@@ -72,7 +60,7 @@ let getLines = (els, draggables, lines, plots) => {
     }
 
     // it has gates so need to add lines to the draggable
-    draggables.current[index].onMove = function () {
+    draggables[index].onMove = function () {
       linesArr?.forEach((l) => {
         l.position();
       });
@@ -81,14 +69,18 @@ let getLines = (els, draggables, lines, plots) => {
 };
 
 function Table(props) {
-  let nodes = useRef([]);
+  console.log("in table and props are ", props);
 
-  const draggables = useRef([]);
+  let nodes = useRef([]);
+  nodes.current = [];
+
+  let wrapper = useRef();
+
+  const draggables = [];
   const lines = useRef([]);
 
   useEffect(() => {
     let els = [];
-    let draggableObjects = [];
     let levels = [];
 
     let controlEnrichedFile = props.enrichedFiles.find(
@@ -96,7 +88,13 @@ function Table(props) {
     );
 
     controlEnrichedFile.plots.map((plot, index) => {
-      const el = nodes.current[index].resizable;
+      let plotNode = nodes.current.find((node) => {
+        return node?.props && node.props.id == plot.population;
+      });
+
+      //if (nodes.current[index]) {
+      const el = plotNode.resizable;
+
       els.push(el);
 
       let level = plot.level;
@@ -108,9 +106,6 @@ function Table(props) {
       let left = 450 * level;
       let top = 450 * (levelCount - 1);
 
-      console.log("plotn is ", plot);
-      console.log("left, top is ", left, top);
-
       const draggable = new Draggable(el, {
         left: left,
         top: top,
@@ -121,11 +116,12 @@ function Table(props) {
         },
       });
 
-      draggables.current.push(draggable);
+      draggables.push(draggable);
+      //}
     });
 
     getLines(els, draggables, lines, controlEnrichedFile.plots);
-  }, []);
+  }, [props]);
 
   const handleResize = () => {
     lines.current.forEach((line) => {
@@ -215,7 +211,9 @@ function Table(props) {
           return (
             <Resizable
               ref={(element) => {
-                return nodes.current.push(element);
+                if (element) {
+                  return nodes.current.push(element);
+                }
               }}
               className="node"
               onResize={handleResize}

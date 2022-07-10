@@ -31,17 +31,20 @@ const getContext = (id) => {
   }
 };
 
-const shouldDrawGate = (plot, gate) => {
-  if (
-    plot.xAxisIndex === gate.xAxisIndex &&
-    plot.yAxisIndex === gate.yAxisIndex &&
-    plot.xScaleType === gate.xScaleType &&
-    plot.yScaleType === gate.yScaleType
-  ) {
-    return true;
-  } else {
-    return false;
-  }
+const areGatesOnPlot = (plot) => {
+  let showGate = false;
+  plot?.gates?.map((gate) => {
+    if (
+      plot.xAxisIndex === gate.xAxisIndex &&
+      plot.yAxisIndex === gate.yAxisIndex &&
+      plot.xScaleType === gate.xScaleType &&
+      plot.yScaleType === gate.yScaleType
+    ) {
+      showGate = true;
+    }
+  });
+
+  return showGate;
 };
 
 let isMouseDown = false;
@@ -52,10 +55,9 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  console.log("In Plot.js, props is ", props);
-
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
+  let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
 
@@ -157,7 +159,7 @@ function Plot(props) {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
             context.fillStyle = formattedEvent.color;
-            context.fillRect(formattedEvent[0], formattedEvent[1], 3, 3);
+            context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
             if (
               formattedEvent[0] >= props.plot.width ||
               formattedEvent[0] < 2 ||
@@ -205,15 +207,13 @@ function Plot(props) {
 
     drawLabel();
 
-    if (props.plot.gates) {
+    if (areGatesOnPlot(props.plot)) {
       props.plot.gates.map((gate) => {
-        if (shouldDrawGate(props.plot, gate)) {
-          drawGateLine(
-            getContext("covering-canvas-" + props.plotIndex),
-            props.plot,
-            gate.points
-          );
-        }
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          gate.points
+        );
       });
     }
   }, [
@@ -376,7 +376,7 @@ function Plot(props) {
       props.enrichedFile.channels[plot.yAxisIndex].maximum,
     ];
 
-    let gate = {
+    let newGate = {
       color: gateColor,
       gateType: "polygon",
       // need to ask for gate name
@@ -393,11 +393,12 @@ function Plot(props) {
       parent: plot.population,
     };
 
-    plot.gate = gate;
+    //plot.gate = gate;
 
     let change = {
       type: "AddGate",
-      plot: plot,
+      plot: props.plot,
+      newGate: newGate,
       plotIndex: plotIndex,
       gateName: gateName.name,
     };
@@ -468,7 +469,7 @@ function Plot(props) {
   };
 
   const hasGates = () => {
-    return !!props.plot.gate;
+    return !!props.plot.gates;
   };
 
   const getGateValue = (value, scale, axisIndex, length, moveBy) => {
@@ -674,152 +675,83 @@ function Plot(props) {
   const handleMouseDown = (event) => {
     if (resizing) return;
 
+    isMouseDown = true;
+
     if (hasGates()) {
-      //if (!shouldDrawGate(localPlot)) return;
+      //if (!areGatesOnPlot(localPlot)) return;
 
-      isMouseDown = true;
-      // check if on point
-      // convert real points to canvas points and check if within 5 points of canvas points
-      let gateCanvasPoints = localPlot.gate.points.map((point) => {
-        let canvasPoint = getPointOnCanvas(
-          props.enrichedFile.channels,
-          point[0],
-          point[1],
-          // TODO make sure can only change gate when on correct channels
-          // this is important, make sure they can only edit gate when the gate channels match prop channels
-          localPlot,
-          props.enrichedFile.logicles
-        );
-
-        return canvasPoint;
-      });
-
-      let isNearAPoint = false;
-      gateCanvasPoints.find((point, index) => {
-        let isNear =
-          point[0] + 5 >= event.offsetX &&
-          point[0] - 5 <= event.offsetX &&
-          point[1] + 5 >= event.offsetY &&
-          point[1] - 5 <= event.offsetY;
-        if (isNear) {
-          dragPointIndex = index;
-          isNearAPoint = true;
-        }
-        return isNear;
-      });
-
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-      const isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
-
-      setIsInsideGate(isInside);
-
-      if (isInside || isNearAPoint) {
-        setStartPointsReal(
-          getRealPointFromCanvasPoints(
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
+        // check if on point
+        // convert real points to canvas points and check if within 5 points of canvas points
+        let gateCanvasPoints = gate.points.map((point) => {
+          let canvasPoint = getPointOnCanvas(
             props.enrichedFile.channels,
+            point[0],
+            point[1],
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
             localPlot,
-            [event.offsetX, event.offsetY],
             props.enrichedFile.logicles
-          )
-        );
-      }
-    } else {
-      isMouseDown = true;
-    }
-  };
+          );
 
-  const handleMouseUp = (event) => {
-    if (resizing) return;
-    if (!isMouseDown) return;
-
-    isMouseDown = false;
-    dragPointIndex = false;
-    if (hasGates()) {
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-
-      const isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
-
-      setIsInsideGate(isInside);
-
-      if (newPoints && newPoints.length > 1) {
-        localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
-
-        setNewPoints([]);
-
-        let change = {
-          type: "EditGate",
-          plot: localPlot,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
-        };
-        props.onEditGate(change);
-      }
-    } else {
-      // so its a new gate
-      // only if the file is controlled file then it is allowed to create a new gate
-      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
-        newGatePointsCanvas.forEach((newGatePointCanvas) => {
-          if (
-            inRange(
-              event.offsetX,
-              newGatePointCanvas[0] - 10,
-              newGatePointCanvas[0] + 10
-            ) &&
-            inRange(
-              event.offsetY,
-              newGatePointCanvas[1] - 10,
-              newGatePointCanvas[1] + 10
-            ) &&
-            newGatePointsCanvas.length >= 3
-          ) {
-            const suggestedGateName =
-              props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
-            setGateName({
-              name: suggestedGateName,
-            });
-
-            setModalIsOpen(true);
-            polygonComplete = true;
-          }
+          return canvasPoint;
         });
 
-        // checking if the points are unique or not
-        let uniqueGatePoint = true;
-        for (const point of newGatePointsCanvas) {
-          if (point[0] === event.offsetX && point[1] === event.offsetY) {
-            uniqueGatePoint = false;
-            break;
+        let isNearAPoint = false;
+        gateCanvasPoints.find((point, index) => {
+          let isNear =
+            point[0] + 5 >= event.offsetX &&
+            point[0] - 5 <= event.offsetX &&
+            point[1] + 5 >= event.offsetY &&
+            point[1] - 5 <= event.offsetY;
+          if (isNear) {
+            dragPointIndex = index;
+            isNearAPoint = true;
           }
+          return isNear;
+        });
+
+        let newPointsReal = getRealPointFromCanvasPoints(
+          props.enrichedFile.channels,
+          localPlot,
+          [event.offsetX, event.offsetY],
+          props.enrichedFile.logicles
+        );
+        const isInside = isPointInPolygon(
+          newPointsReal[0],
+          newPointsReal[1],
+          gate.points
+        );
+
+        setIsInsideGate(isInside);
+
+        if (isInside) {
+          setNameOfGateCursorIsInside(gate.name);
         }
 
-        if (!polygonComplete && uniqueGatePoint) {
-          newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        if (isInside || isNearAPoint) {
+          setStartPointsReal(
+            getRealPointFromCanvasPoints(
+              props.enrichedFile.channels,
+              localPlot,
+              [event.offsetX, event.offsetY],
+              props.enrichedFile.logicles
+            )
+          );
+          break;
         }
-        redraw();
       }
     }
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGates() && isGateShowing(localPlot)) {
+    console.log("in handleMouse Move");
+    console.log(
+      ">>> isMouseDown && hasGates() && areGatesOnPlot(localPlot) is ",
+      isMouseDown && hasGates() && areGatesOnPlot(localPlot)
+    );
+    if (isMouseDown && hasGates() && areGatesOnPlot(localPlot)) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       if (isInsideGate || typeof dragPointIndex == "number") {
@@ -841,10 +773,33 @@ function Plot(props) {
           "y"
         );
 
-        let points = localPlot.gate.points.map((point, index) => {
-          if (typeof dragPointIndex == "number") {
-            // TODO too much code repetition here
-            if (dragPointIndex == index) {
+        for (var i = 0; i < localPlot.gates.length; i++) {
+          let gate = localPlot.gates[i];
+          let points = gate.points.map((point, index) => {
+            if (typeof dragPointIndex == "number") {
+              // TODO too much code repetition here
+              if (dragPointIndex == index) {
+                let newGateValueRealX = getGateValue(
+                  point[0],
+                  localPlot.xScaleType,
+                  localPlot.xAxisIndex,
+                  localPlot.width,
+                  moveX
+                );
+
+                let newGateValueRealY = getGateValue(
+                  point[1],
+                  localPlot.yScaleType,
+                  localPlot.yAxisIndex,
+                  localPlot.height,
+                  moveY
+                );
+
+                return [newGateValueRealX, newGateValueRealY];
+              } else {
+                return [point[0], point[1]];
+              }
+            } else {
               let newGateValueRealX = getGateValue(
                 point[0],
                 localPlot.xScaleType,
@@ -862,44 +817,24 @@ function Plot(props) {
               );
 
               return [newGateValueRealX, newGateValueRealY];
-            } else {
-              return [point[0], point[1]];
             }
-          } else {
-            let newGateValueRealX = getGateValue(
-              point[0],
-              localPlot.xScaleType,
-              localPlot.xAxisIndex,
-              localPlot.width,
-              moveX
-            );
+          });
 
-            let newGateValueRealY = getGateValue(
-              point[1],
-              localPlot.yScaleType,
-              localPlot.yAxisIndex,
-              localPlot.height,
-              moveY
-            );
+          let xRange = [
+            props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+            props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+          ];
 
-            return [newGateValueRealX, newGateValueRealY];
-          }
-        });
+          let yRange = [
+            props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+            props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+          ];
 
-        let xRange = [
-          props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-          props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        ];
+          gate.xAxisOriginalRanges = xRange;
+          gate.yAxisOriginalRanges = yRange;
 
-        let yRange = [
-          props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
-          props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
-        ];
-
-        localPlot.gate.xAxisOriginalRanges = xRange;
-        localPlot.gate.yAxisOriginalRanges = yRange;
-
-        setNewPoints(points);
+          setNewPoints(points);
+        }
         // setLocalPlot({
         //   ...localPlot,
         //   gate: { ...localPlot.gate, points: points },
@@ -918,49 +853,155 @@ function Plot(props) {
     }
   };
 
+  const handleMouseUp = (event) => {
+    if (resizing) return;
+    if (!isMouseDown) return;
+
+    isMouseDown = false;
+    dragPointIndex = false;
+    let isInsideAGate = false;
+
+    // if (hasGates()) {
+    //   for (var i = 0; i < localPlot.gates.length; i++) {
+    //     let gate = localPlot.gates[i];
+
+    //     console.log('');
+
+    //     let newPointsReal = getRealPointFromCanvasPoints(
+    //       props.enrichedFile.channels,
+    //       localPlot,
+    //       [event.offsetX, event.offsetY],
+    //       props.enrichedFile.logicles
+    //     );
+
+    //     const isInside = isPointInPolygon(
+    //       newPointsReal[0],
+    //       newPointsReal[1],
+    //       gate.points
+    //     );
+
+    //     setIsInsideGate(isInside);
+
+    //     if (isInside) {
+    //       setNameOfGateCursorIsInside(gate.name);
+    //     }
+
+    // if (newPoints && newPoints.length > 1) {
+    //   gate.points = JSON.parse(JSON.stringify(newPoints));
+
+    //   setNewPoints([]);
+
+    //   let change = {
+    //     type: "EditGate",
+    //     plot: localPlot,
+    //     plotIndex: props.plotIndex.split("-")[1],
+    //     fileId: props.enrichedFile.fileId,
+    //   };
+    //   props.onEditGate(change);
+    // }
+    //   }
+    // } else {
+    // so its a new gate
+    // only if the file is controlled file then it is allowed to create a new gate
+    if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+      newGatePointsCanvas.forEach((newGatePointCanvas) => {
+        if (
+          inRange(
+            event.offsetX,
+            newGatePointCanvas[0] - 10,
+            newGatePointCanvas[0] + 10
+          ) &&
+          inRange(
+            event.offsetY,
+            newGatePointCanvas[1] - 10,
+            newGatePointCanvas[1] + 10
+          ) &&
+          newGatePointsCanvas.length >= 3
+        ) {
+          const suggestedGateName =
+            props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
+          setGateName({
+            name: suggestedGateName,
+          });
+
+          setModalIsOpen(true);
+          polygonComplete = true;
+        }
+      });
+
+      // checking if the points are unique or not
+      let uniqueGatePoint = true;
+      for (const point of newGatePointsCanvas) {
+        if (point[0] === event.offsetX && point[1] === event.offsetY) {
+          uniqueGatePoint = false;
+          break;
+        }
+      }
+
+      if (!polygonComplete && uniqueGatePoint) {
+        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      }
+      redraw();
+    }
+    //}
+  };
+
   const handleCursorProperty = (event) => {
     if (
       hasGates() &&
-      isGateShowing(localPlot) &&
-      props?.plot?.gate?.gateType === "polygon"
+      areGatesOnPlot(localPlot)
+      //&& props?.plot?.gate?.gateType === "polygon"
     ) {
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-      let isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
 
-      let gateCanvasPoints = localPlot.gate.points.map((point) => {
-        let canvasPoint = getPointOnCanvas(
+        let newPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
-          point[0],
-          point[1],
-          // TODO make sure can only change gate when on correct channels
-          // this is important, make sure they can only edit gate when the gate channels match prop channels
           localPlot,
+          [event.offsetX, event.offsetY],
           props.enrichedFile.logicles
         );
 
-        return canvasPoint;
-      });
-      let near = false;
-      gateCanvasPoints.find((point) => {
-        let isNear =
-          point[0] + 5 >= event.offsetX &&
-          point[0] - 5 <= event.offsetX &&
-          point[1] + 5 >= event.offsetY &&
-          point[1] - 5 <= event.offsetY;
-        if (isNear) near = isNear;
-        return isNear;
-      });
+        let isInside = isPointInPolygon(
+          newPointsReal[0],
+          newPointsReal[1],
+          gate.points
+        );
 
-      document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
+        let gateCanvasPoints = gate.points.map((point) => {
+          let canvasPoint = getPointOnCanvas(
+            props.enrichedFile.channels,
+            point[0],
+            point[1],
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            localPlot,
+            props.enrichedFile.logicles
+          );
+
+          return canvasPoint;
+        });
+        let near = false;
+        gateCanvasPoints.find((point) => {
+          let isNear =
+            point[0] + 5 >= event.offsetX &&
+            point[0] - 5 <= event.offsetX &&
+            point[1] + 5 >= event.offsetY &&
+            point[1] - 5 <= event.offsetY;
+          if (isNear) near = isNear;
+          return isNear;
+        });
+
+        document.body.style.cursor = near
+          ? "move"
+          : isInside
+          ? "grab"
+          : "crosshair";
+
+        if (near || isInside) {
+          break;
+        }
+      }
     } else {
       document.body.style.cursor =
         props.enrichedFile.fileId === props.workspaceState.controlFileId &&
