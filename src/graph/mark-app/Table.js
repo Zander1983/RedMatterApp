@@ -4,7 +4,7 @@ import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { Button } from "@material-ui/core";
-
+import { getGateName, getGateNameFriendly } from "./Helper";
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
@@ -210,7 +210,6 @@ function Table(props) {
     return (
       <div
         style={{
-          width: 1600,
           height: 1600,
         }}
       >
@@ -314,7 +313,7 @@ function Table(props) {
                       }}
                     ></div>
                     <div>
-                      {plot.population}
+                      {getGateNameFriendly(plot.population)}
                       <img
                         onClick={() => {
                           props.sortByGate(plot.population, ASC_SORT);
