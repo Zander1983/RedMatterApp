@@ -82,9 +82,10 @@ const AppLandingPage = () => {
         component={"div"}
       >
         <TargetUsers />
-        {/* <Partners /> */}
+
         <Divider />
         <Universities />
+        <Partners />
         {/* <Divider></Divider>
         <Plans /> */}
       </Grid>
