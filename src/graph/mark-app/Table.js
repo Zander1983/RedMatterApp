@@ -74,11 +74,8 @@ function Table(props) {
   console.log("in table and props are ", props);
 
   let nodes = [];
-
-  let wrapper = useRef();
-
-  const draggables = [];
-  const lines = [];
+  let draggables = [];
+  let lines = [];
 
   useEffect(() => {
     let els = [];
@@ -119,7 +116,7 @@ function Table(props) {
       //}
     });
 
-    let lines = getLines(els, draggables, controlEnrichedFile.plots);
+    lines = getLines(els, draggables, controlEnrichedFile.plots);
 
     return () => {
       lines?.forEach((line) => {
@@ -128,13 +125,8 @@ function Table(props) {
     };
   }, [
     props.workspaceState.files[props.workspaceState.controlFileId].plots.length,
+    props.workspaceState.onResize,
   ]);
-
-  const handleResize = () => {
-    lines.current.forEach((line) => {
-      line.position();
-    });
-  };
 
   let nonControlEnrichedFiles = props.enrichedFiles.filter(
     (enrichedFile) => !enrichedFile.isControlFile
@@ -204,6 +196,12 @@ function Table(props) {
         plotObject(gate.plot);
       });
     }
+  };
+
+  const handleResize = (pos) => {
+    lines?.forEach((line) => {
+      line.position();
+    });
   };
 
   function PlotRender({ plots: plots, node: node }) {
