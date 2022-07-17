@@ -239,12 +239,32 @@ function Histogram(props) {
         let context = getContext("covering-canvas-" + props.plotIndex);
         context.clearRect(0, 0, props.plot.width, props.plot.height);
         context.fillStyle = "white";
-        drawGateLine(context, props.plot, newPoints);
+
+        if (props.plot?.gates) {
+          props.plot?.gates?.map((gate) => {
+            let points =
+              gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+            console.log(">>> points is ", points);
+
+            drawGateLine(
+              getContext("covering-canvas-" + props.plotIndex),
+              props.plot,
+              points
+            );
+          });
+        } else {
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            newPoints
+          );
+        }
       }
     } else {
-      let context = getContext("covering-canvas-" + props.plotIndex);
-      context.clearRect(0, 0, props.plot.width, props.plot.height);
-      context.fillStyle = "white";
+      // let context = getContext("covering-canvas-" + props.plotIndex);
+      // context.clearRect(0, 0, props.plot.width, props.plot.height);
+      // context.fillStyle = "white";
     }
   }, [newPoints]);
 
@@ -777,13 +797,13 @@ function Histogram(props) {
         props.enrichedFile.logicles
       );
 
+      console.log("in mouse down, seetting point to ", [point[0], point[0]]);
+
       setNewPoints([point[0], point[0]]);
     }
   };
 
   const handleMouseMove = (event) => {
-    console.log("in handle mouse, isMouseDown is ", isMouseDown);
-
     if (!isMouseDown) return;
 
     let newPointsCanvas = [event.offsetX, event.offsetY];
@@ -853,7 +873,6 @@ function Histogram(props) {
             points = [newLeftRealValue, newRightRealValue];
           }
 
-          console.log(">>> in mouse move and points are ", points);
           setNewPoints(points);
         }
       }
@@ -864,6 +883,11 @@ function Histogram(props) {
         [event.offsetX, null],
         props.enrichedFile.logicles
       );
+
+      console.log(">>> in mouse move, now setting the points to ", [
+        newPoints[0],
+        point[0],
+      ]);
 
       setNewPoints([newPoints[0], point[0]]);
     }
