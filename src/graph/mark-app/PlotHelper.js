@@ -121,6 +121,84 @@ export const getRealRange = (minimum, maximum) => {
   return minimum > 0 ? maximum - minimum : maximum + Math.abs(minimum);
 };
 
+export const getMoveValue = (
+  plot,
+  channels,
+  logicles,
+  startValueReal,
+  newValueCanvas,
+  scale,
+  axisIndex,
+  axis
+) => {
+  if (scale == "bi") {
+    // For logicle
+    // convert startPointsReal to canvas pixels
+    // offsetX and offsetY are what the user has moved by in canvas pixels (newPointsCanvas)
+    // get the amount of pixels to move by newPointsCanvas - startPointsInCanvas
+    // convert the currect gate points (which are Real) to canvas pixels by logicle.scale() then multiply by width
+    // add the amount to move (moveX, moveY) to the current converted gate points
+    // then, convert all points back to real points by dividing by width or heigh and then logicle.inverse()
+
+    newValueCanvas =
+      axis == "y" ? plot.height - newValueCanvas : newValueCanvas;
+
+    let logicle = logicles[axisIndex];
+    let startValueScaled = logicle.scale(startValueReal);
+
+    let startValueCanvas =
+      axis == "x"
+        ? startValueScaled * plot.width
+        : startValueScaled * plot.height;
+
+    return newValueCanvas - startValueCanvas;
+  } else {
+    // For Linear
+    // get the Real values from
+    // convert startPointsReal to canvas pixels from offsetX, offsetY
+    // subtract startPointsReal from newPointsReal to get moveX, moveY
+    // add to the points
+
+    let newValueReal =
+      axis == "x"
+        ? getRealXAxisValueFromCanvasPointOnLinearScale(
+            channels,
+            plot.xAxisIndex,
+            plot.width,
+            newValueCanvas
+          )
+        : getRealYAxisValueFromCanvasPointOnLinearScale(
+            channels,
+            plot.yAxisIndex,
+            plot.height,
+            newValueCanvas
+          );
+
+    return newValueReal - startValueReal;
+  }
+};
+
+export const getGateValue = (
+  logicles,
+  value,
+  scale,
+  axisIndex,
+  length,
+  moveBy
+) => {
+  if (scale == "bi") {
+    let logicle = logicles[axisIndex];
+    let canvasX = logicle.scale(value) * length;
+
+    let newValueCanvas = canvasX + moveBy;
+    let newValueLogicle = newValueCanvas / length;
+    let newValueReal = logicle.inverse(newValueLogicle);
+    return Math.round(newValueReal);
+  } else {
+    return Math.round(value + moveBy);
+  }
+};
+
 export const getRealXAxisValueFromCanvasPointOnLinearScale = (
   channels,
   xAxisIndex,
@@ -175,6 +253,64 @@ export const getRealXAxisValueFromCanvasPointOnLogicleScale = (
   const logicle = logicles[plot.xAxisIndex]; // this is undefined
   xAxisPointOnCanvas = xAxisPointOnCanvas / plot.width;
   return logicle.inverse(xAxisPointOnCanvas);
+};
+
+export const isMousePointNearScatterPoints = (
+  gateCanvasPoints,
+  mousePointX,
+  mousePointY
+) => {
+  let near = false;
+  let pointIndex = false;
+  gateCanvasPoints.find((point, index) => {
+    let isNear =
+      point[0] + 5 >= mousePointX &&
+      point[0] - 5 <= mousePointX &&
+      point[1] + 5 >= mousePointY &&
+      point[1] - 5 <= mousePointY;
+    if (isNear) {
+      near = isNear;
+      pointIndex = index;
+    }
+    return isNear;
+  });
+  return {
+    isNear: near,
+    pointIndex: pointIndex,
+  };
+};
+
+export const isMousePointNearHistPoints = (
+  leftPoint,
+  rightPoint,
+  mousePoint
+) => {
+  let isNear = false;
+  let pointIndex = false;
+
+  if (mousePoint >= leftPoint - 3 && mousePoint <= leftPoint + 3) {
+    return {
+      isNear: true,
+      pointIndex: 0,
+    };
+  }
+
+  if (mousePoint >= rightPoint - 3 && mousePoint <= rightPoint + 3) {
+    return {
+      isNear: true,
+      pointIndex: 0,
+    };
+  }
+  return { isNear: isNear, pointIndex: pointIndex };
+};
+
+export const isMousePointInsideHistPoints = (
+  leftPoint,
+  rightPoint,
+  mousePoint
+) => {
+  let isInside = mousePoint >= leftPoint + 5 && mousePoint <= rightPoint - 5;
+  return isInside;
 };
 
 export const isCursorNearAPolygonPoint = (plot, mouseRealPoints) => {

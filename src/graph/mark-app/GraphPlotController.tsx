@@ -73,6 +73,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
+    this.onOpenFileChange = this.onOpenFileChange.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
     this.onDeleteGate = this.onDeleteGate.bind(this);
@@ -148,6 +149,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
+    console.log(">>> onAddGate change is ", change);
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
@@ -494,6 +496,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       workspaceState: newWorkspaceState,
       enrichedFiles: enrichedFiles,
+    });
+  };
+
+  onOpenFileChange = (change: any) => {
+    console.log("in onOpenFileChange, change is ", change);
+    this.state.workspaceState.openFile = change.fileId;
+    this.setState({
+      workspaceState: this.state.workspaceState,
+      enrichedFiles: this.state.enrichedFiles,
     });
   };
 
@@ -851,9 +862,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 marginRight: 5,
                 marginLeft: 5,
                 fontWeight: "bold",
+                color: "#ff8080",
+                fontSize: "17px",
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
               }}
             >
-              Set Control File:
+              CHANGE CONTROL FILE:
             </span>
             <Select
               //disableUnderline
@@ -1184,6 +1198,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               workspaceState={this.state.workspaceState}
               className="workspace"
               onChangeChannel={this.onChangeChannel}
+              onOpenFileChange={this.onOpenFileChange}
               addOverlay={this.addOverlay}
               onAddGate={this.onAddGate}
               onDeleteGate={this.onDeleteGate}

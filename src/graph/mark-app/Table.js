@@ -86,11 +86,14 @@ function Table(props) {
 
     controlEnrichedFile.plots.forEach((plot, index) => {
       let plotNode = nodes.find((node) => {
-        return node?.props && node.props.id == plot.population;
+        console.log("node is ", node);
+        return node?.id && node.id == plot.population;
       });
 
+      console.log("plotNode is ", plotNode);
+
       //if (nodes.current[index]) {
-      const el = plotNode.resizable;
+      const el = plotNode;
 
       els.push(el);
 
@@ -128,10 +131,6 @@ function Table(props) {
     props.workspaceState.onResize,
   ]);
 
-  let nonControlEnrichedFiles = props.enrichedFiles.filter(
-    (enrichedFile) => !enrichedFile.isControlFile
-  );
-
   // let editedFiles = getWorkspace().workspaceState?.files;
   // let editedFileIds = Object.keys(editedFiles);
 
@@ -143,12 +142,8 @@ function Table(props) {
   );
 
   const fileViewHideHandler = (fileId) => {
-    if (shouldFileRender.includes(fileId)) {
-      setShouldFileRender((prev) => prev.filter((item) => item !== fileId));
-    } else {
-      setShouldFileRender((prev) => [...prev, fileId]);
-    }
-    //setTimeout(() => WorkspaceDispatch.UpdateOpenFiles(fileId, false), 0);
+    console.log("fileId is ", fileId);
+    props.onOpenFileChange({ fileId: fileId });
   };
 
   const tableRef = useRef(null);
@@ -178,8 +173,8 @@ function Table(props) {
   //   });
   // }, [controlEnrichedFile?.plots?.length]);
 
-  let controlEnrichedFile = props.enrichedFiles.find(
-    (enrichedFile) => enrichedFile.isControlFile
+  let openEnrichedFile = props.enrichedFiles.find(
+    (enrichedFile) => enrichedFile.fileId == props.workspaceState.openFile
   );
 
   const renderPlots = (plotObject) => {
@@ -213,34 +208,71 @@ function Table(props) {
       >
         {plots?.map((plot, plotIindex) => {
           return (
-            <Resizable
+            <div
               ref={(element) => {
                 if (element) {
                   return nodes.push(element);
                 }
               }}
               className="node"
-              onResize={handleResize}
+              // onResize={handleResize}
               id={plot.population}
               key={"resizable-plot-" + plotIindex}
             >
               <div>Drag Me</div>
-              <Plot
-                name="control-file"
-                key={`plot-${plotIindex}`}
-                plot={plot}
-                enrichedFile={controlEnrichedFile}
-                workspaceState={props.workspaceState}
-                onAddGate={props.onAddGate}
-                onDeleteGate={props.onDeleteGate}
-                onEditGate={props.onEditGate}
-                onResize={props.onResize}
-                onChangeChannel={props.onChangeChannel}
-                plotIndex={`0-${plotIindex}`}
-                downloadPlotAsImage={props.downloadPlotAsImage}
-                testParam={props.testParam}
-              />
-            </Resizable>
+
+              {(() => {
+                if (plot.plotType === "scatter") {
+                  return (
+                    <Plot
+                      name="control-file"
+                      key={`plot-${plotIindex}`}
+                      plot={plot}
+                      enrichedFile={openEnrichedFile}
+                      workspaceState={props.workspaceState}
+                      onAddGate={props.onAddGate}
+                      onDeleteGate={props.onDeleteGate}
+                      onEditGate={props.onEditGate}
+                      onResize={props.onResize}
+                      onChangeChannel={props.onChangeChannel}
+                      plotIndex={`0-${plotIindex}`}
+                      downloadPlotAsImage={props.downloadPlotAsImage}
+                      testParam={props.testParam}
+                    />
+                  );
+                } else {
+                  let enrichedOverlayFiles;
+                  if (plot.overlays && plot.overlays.length > 0) {
+                    enrichedOverlayFiles = props.enrichedFiles.filter(
+                      (enrichedFile) => {
+                        //
+                        return (
+                          plot.overlays.findIndex(
+                            (x) => x.id == enrichedFile.fileId
+                          ) > -1
+                        );
+                      }
+                    );
+                  }
+                  return (
+                    <Histogram
+                      key={`plot-${plotIindex + 1}`}
+                      plot={plot}
+                      onChangeChannel={props.onChangeChannel}
+                      onAddGate={props.onAddGate}
+                      onEditGate={props.onEditGate}
+                      addOverlay={props.addOverlay}
+                      enrichedFile={openEnrichedFile}
+                      workspaceState={props.workspaceState}
+                      allFileMinObj={allFileMinObj}
+                      enrichedOverlayFiles={enrichedOverlayFiles}
+                      plotIndex={`0-${plotIindex}`}
+                      downloadPlotAsImage={props.downloadPlotAsImage}
+                    />
+                  );
+                }
+              })()}
+            </div>
           );
         })}
       </div>
@@ -255,36 +287,21 @@ function Table(props) {
           overflowX: "auto",
           scrollBhavior: "smooth",
           display: "block",
+          padding: "5px",
         }}
         className="workspace"
         ref={tableRef}
       >
         <tbody>
           <tr>
-            <td colSpan="100">
-              <div
-                style={{
-                  color: "#000",
-                  backgroundColor: "#ffff99",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  marginBottom: 5,
-                  border: "1px solid #000",
-                }}
-              >
-                OTHER FILES
-              </div>
-            </td>
-          </tr>
-          <tr>
-            {controlEnrichedFile.plots.map((plot, plotIindex) => {
+            {openEnrichedFile.plots.map((plot, plotIindex) => {
               return (
                 <td
                   key={`td-population-sorter-${plotIindex}`}
                   style={{
                     textAlign: "center",
                     fontWeight: "bold",
-                    minWidth: plot.width + 170,
+                    // minWidth: plot.width + 170,
                     padding: 5,
                     margin: 0.5,
                     border: "1px solid gray",
@@ -342,7 +359,7 @@ function Table(props) {
               );
             })}
           </tr>
-          {nonControlEnrichedFiles.map((enrichedFile, fileIndex) => {
+          {props.enrichedFiles.map((enrichedFile, fileIndex) => {
             // LOOPING THROUGH NON-CONTROL FILES
             return (
               <tr key={`tr-${fileIndex}`}>
@@ -354,7 +371,7 @@ function Table(props) {
                       style={{
                         margin: 0.5,
                         border: "1px solid gray",
-                        minWidth: plot.width + 170,
+                        // minWidth: plot.width + 170,
                       }}
                     >
                       <div
@@ -408,81 +425,27 @@ function Table(props) {
                               " events"
                             : ""}
                         </span>
-                      </div>
-                      {shouldFileRender.includes(enrichedFile?.fileId) &&
-                        (() => {
-                          if (plot.plotType === "scatter") {
-                            return (
-                              <Plot
-                                name="non-control-file"
-                                key={`plot-${plotIindex + 1}`}
-                                plot={plot}
-                                enrichedFile={enrichedFile}
-                                workspaceState={props.workspaceState}
-                                onAddGate={props.onAddGate}
-                                onEditGate={props.onEditGate}
-                                onResize={props.onResize}
-                                onChangeChannel={props.onChangeChannel}
-                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                                testParam={props.testParam}
-                                downloadPlotAsImage={props.downloadPlotAsImage}
-                              />
-                            );
-                          } else if (plot.plotType === "histogram") {
-                            let enrichedOverlayFiles;
-                            if (plot.overlays && plot.overlays.length > 0) {
-                              enrichedOverlayFiles = props.enrichedFiles.filter(
-                                (enrichedFile) => {
-                                  //
-                                  return (
-                                    plot.overlays.findIndex(
-                                      (x) => x.id == enrichedFile.fileId
-                                    ) > -1
-                                  );
-                                }
-                              );
+                        <br />
+
+                        {plot.population == "All" && (
+                          <span
+                            onClick={() =>
+                              fileViewHideHandler(enrichedFile?.fileId)
                             }
-                            return (
-                              <Histogram
-                                key={`plot-${plotIindex + 1}`}
-                                plot={plot}
-                                onChangeChannel={props.onChangeChannel}
-                                onAddGate={props.onAddGate}
-                                onEditGate={props.onEditGate}
-                                addOverlay={props.addOverlay}
-                                enrichedFile={enrichedFile}
-                                workspaceState={props.workspaceState}
-                                allFileMinObj={allFileMinObj}
-                                enrichedOverlayFiles={enrichedOverlayFiles}
-                                plotIndex={`${fileIndex + 1}-${plotIindex}`}
-                                downloadPlotAsImage={props.downloadPlotAsImage}
-                              />
-                            );
-                          }
-                        })()}
+                            style={{
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              paddingRight: 5,
+                              color: "#1890ff",
+                            }}
+                          >
+                            View
+                          </span>
+                        )}
+                      </div>
                     </td>
                   );
                 })}
-                <td
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <span
-                    onClick={() => fileViewHideHandler(enrichedFile?.fileId)}
-                    style={{
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      paddingRight: 5,
-                    }}
-                  >
-                    {shouldFileRender.includes(enrichedFile?.fileId)
-                      ? "Hide"
-                      : "View"}
-                  </span>
-                </td>
               </tr>
             );
           })}
@@ -490,8 +453,8 @@ function Table(props) {
       </table>
       <div
         style={{
-          color: "#fff",
-          backgroundColor: "#66ccff",
+          color: "#000",
+          backgroundColor: "#f2f2f2",
           fontWeight: "bold",
           display: "flex",
           paddingLeft: "10px",
@@ -510,7 +473,20 @@ function Table(props) {
             textAlign: "center",
           }}
         >
-          CONTROL FILE
+          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
+            <>
+              <span
+                style={{
+                  color: "#ff8080",
+                }}
+              >
+                CONTROL FILE
+              </span>
+              <span> - {openEnrichedFile.fileId}</span>
+            </>
+          ) : (
+            <span>{openEnrichedFile.fileId}</span>
+          )}
         </div>
         <div
           style={{
@@ -520,7 +496,7 @@ function Table(props) {
         ></div>
       </div>
       {PlotRender({
-        plots: controlEnrichedFile.plots,
+        plots: openEnrichedFile.plots,
       })}
     </div>
   );

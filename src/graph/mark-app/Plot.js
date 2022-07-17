@@ -15,6 +15,9 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  isMousePointNearScatterPoints,
+  getMoveValue,
+  getGateValue,
 } from "./PlotHelper";
 import Modal from "react-modal";
 import { isGateShowing } from "./Helper";
@@ -54,15 +57,16 @@ const areGatesOnPlot = (plot) => {
 };
 
 let isMouseDown = false;
-let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
+  let [isNearPoint, setIsNearPoint] = useState(null);
   let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
@@ -429,76 +433,8 @@ function Plot(props) {
     };
   });
 
-  const getMoveValue = (
-    startValueReal,
-    newValueCanvas,
-    scale,
-    axisIndex,
-    axis
-  ) => {
-    if (scale == "bi") {
-      // For logicle
-      // convert startPointsReal to canvas pixels
-      // offsetX and offsetY are what the user has moved by in canvas pixels (newPointsCanvas)
-      // get the amount of pixels to move by newPointsCanvas - startPointsInCanvas
-      // convert the currect gate points (which are Real) to canvas pixels by logicle.scale() then multiply by width
-      // add the amount to move (moveX, moveY) to the current converted gate points
-      // then, convert all points back to real points by dividing by width or heigh and then logicle.inverse()
-
-      newValueCanvas =
-        axis == "y" ? localPlot.height - newValueCanvas : newValueCanvas;
-
-      let logicle = props.enrichedFile.logicles[axisIndex];
-      let startValueScaled = logicle.scale(startValueReal);
-
-      let startValueCanvas =
-        axis == "x"
-          ? startValueScaled * localPlot.width
-          : startValueScaled * localPlot.height;
-
-      return newValueCanvas - startValueCanvas;
-    } else {
-      // For Linear
-      // get the Real values from
-      // convert startPointsReal to canvas pixels from offsetX, offsetY
-      // subtract startPointsReal from newPointsReal to get moveX, moveY
-      // add to the points
-
-      let newValueReal =
-        axis == "x"
-          ? getRealXAxisValueFromCanvasPointOnLinearScale(
-              props.enrichedFile.channels,
-              localPlot.xAxisIndex,
-              localPlot.width,
-              newValueCanvas
-            )
-          : getRealYAxisValueFromCanvasPointOnLinearScale(
-              props.enrichedFile.channels,
-              localPlot.yAxisIndex,
-              localPlot.height,
-              newValueCanvas
-            );
-
-      return newValueReal - startValueReal;
-    }
-  };
-
   const hasGates = () => {
     return !!props.plot.gates;
-  };
-
-  const getGateValue = (value, scale, axisIndex, length, moveBy) => {
-    if (scale == "bi") {
-      let logicle = props.enrichedFile.logicles[axisIndex];
-      let canvasX = logicle.scale(value) * length;
-
-      let newValueCanvas = canvasX + moveBy;
-      let newValueLogicle = newValueCanvas / length;
-      let newValueReal = logicle.inverse(newValueLogicle);
-      return Math.round(newValueReal);
-    } else {
-      return Math.round(value + moveBy);
-    }
   };
 
   const redraw = () => {
@@ -713,39 +649,45 @@ function Plot(props) {
           return canvasPoint;
         });
 
-        let isNearAPoint = false;
-        gateCanvasPoints.find((point, index) => {
-          let isNear =
-            point[0] + 5 >= event.offsetX &&
-            point[0] - 5 <= event.offsetX &&
-            point[1] + 5 >= event.offsetY &&
-            point[1] - 5 <= event.offsetY;
-          if (isNear) {
-            dragPointIndex = index;
-            isNearAPoint = true;
-          }
-          return isNear;
-        });
-
-        let newPointsReal = getRealPointFromCanvasPoints(
-          props.enrichedFile.channels,
-          localPlot,
-          [event.offsetX, event.offsetY],
-          props.enrichedFile.logicles
-        );
-        const isInside = isPointInPolygon(
-          newPointsReal[0],
-          newPointsReal[1],
-          gate.points
+        let isNearPointIndex = isMousePointNearScatterPoints(
+          gateCanvasPoints,
+          event.offsetX,
+          event.offsetY
         );
 
-        setIsInsideGate(isInside);
+        console.log("in omouse down, isNearPointIndex is ", isNearPointIndex);
+
+        setIsNearPoint(isNearPointIndex.isNear);
+
+        if (isNearPointIndex.isNear) {
+          setNameOfGateCursorIsInside(gate.name);
+          setDragPointIndex(isNearPointIndex.pointIndex);
+        }
+
+        let isInside = false;
+        if (!isNearPointIndex.isNear) {
+          let newPointsReal = getRealPointFromCanvasPoints(
+            props.enrichedFile.channels,
+            localPlot,
+            [event.offsetX, event.offsetY],
+            props.enrichedFile.logicles
+          );
+          isInside = isPointInPolygon(
+            newPointsReal[0],
+            newPointsReal[1],
+            gate.points
+          );
+
+          console.log("in mouse down, isInside is ", isInside);
+
+          setIsInsideGate(isInside);
+        }
 
         if (isInside) {
           setNameOfGateCursorIsInside(gate.name);
         }
 
-        if (isInside || isNearAPoint) {
+        if (isInside || isNearPointIndex.isNear) {
           setStartPointsReal(
             getRealPointFromCanvasPoints(
               props.enrichedFile.channels,
@@ -766,10 +708,13 @@ function Plot(props) {
 
       //typeof dragPointIndex == "number"
       //gate.name == nameOfGateCursorIsInside
-      if (isInsideGate) {
+      if (isInsideGate || isNearPoint) {
         // this code will run when a user will drag the entire polygon gate
 
         let moveX = getMoveValue(
+          props.plot,
+          props.enrichedFile.channels,
+          props.enrichedFile.logicles,
           startPointsReal[0],
           newPointsCanvas[0],
           localPlot.xScaleType,
@@ -778,6 +723,9 @@ function Plot(props) {
         );
 
         let moveY = getMoveValue(
+          props.plot,
+          props.enrichedFile.channels,
+          props.enrichedFile.logicles,
           startPointsReal[1],
           newPointsCanvas[1],
           localPlot.yScaleType,
@@ -793,6 +741,7 @@ function Plot(props) {
                 // TODO too much code repetition here
                 if (dragPointIndex == index) {
                   let newGateValueRealX = getGateValue(
+                    props.enrichedFile.logicles,
                     point[0],
                     localPlot.xScaleType,
                     localPlot.xAxisIndex,
@@ -801,6 +750,7 @@ function Plot(props) {
                   );
 
                   let newGateValueRealY = getGateValue(
+                    props.enrichedFile.logicles,
                     point[1],
                     localPlot.yScaleType,
                     localPlot.yAxisIndex,
@@ -814,6 +764,7 @@ function Plot(props) {
                 }
               } else {
                 let newGateValueRealX = getGateValue(
+                  props.enrichedFile.logicles,
                   point[0],
                   localPlot.xScaleType,
                   localPlot.xAxisIndex,
@@ -822,6 +773,7 @@ function Plot(props) {
                 );
 
                 let newGateValueRealY = getGateValue(
+                  props.enrichedFile.logicles,
                   point[1],
                   localPlot.yScaleType,
                   localPlot.yAxisIndex,
@@ -845,6 +797,8 @@ function Plot(props) {
 
             gate.xAxisOriginalRanges = xRange;
             gate.yAxisOriginalRanges = yRange;
+
+            //console.log(">>> points are ", points);
 
             setNewPoints(points);
           }
@@ -871,35 +825,16 @@ function Plot(props) {
     if (resizing) return;
     if (!isMouseDown) return;
 
-    isMouseDown = false;
-    dragPointIndex = false;
-    let isInsideAGate = false;
+    isMouseDown = true;
 
-    setIsInsideGate(false);
-    setNameOfGateCursorIsInside(null);
-
-    if (isInsideGate) {
+    if (isInsideGate || isNearPoint) {
       for (var i = 0; i < localPlot.gates.length; i++) {
         let gate = localPlot.gates[i];
         if (gate.name == nameOfGateCursorIsInside) {
-          // let newPointsReal = getRealPointFromCanvasPoints(
-          //   props.enrichedFile.channels,
-          //   localPlot,
-          //   [event.offsetX, event.offsetY],
-          //   props.enrichedFile.logicles
-          // );
-
-          // const isInside = isPointInPolygon(
-          //   newPointsReal[0],
-          //   newPointsReal[1],
-          //   gate.points
-          // );
-
           setIsInsideGate(false);
-
-          // if (isInside) {
-          //   setNameOfGateCursorIsInside(gate.name);
-          // }
+          setIsNearPoint(false);
+          setDragPointIndex(false);
+          setNameOfGateCursorIsInside(null);
 
           if (newPoints && newPoints.length > 1) {
             gate.points = JSON.parse(JSON.stringify(newPoints));
@@ -998,24 +933,19 @@ function Plot(props) {
 
           return canvasPoint;
         });
-        let near = false;
-        gateCanvasPoints.find((point) => {
-          let isNear =
-            point[0] + 5 >= event.offsetX &&
-            point[0] - 5 <= event.offsetX &&
-            point[1] + 5 >= event.offsetY &&
-            point[1] - 5 <= event.offsetY;
-          if (isNear) near = isNear;
-          return isNear;
-        });
+        let isNear = isMousePointNearScatterPoints(
+          gateCanvasPoints,
+          event.offsetX,
+          event.offsetY
+        ).isNear;
 
-        document.body.style.cursor = near
+        document.body.style.cursor = isNear
           ? "move"
           : isInside
           ? "grab"
           : "crosshair";
 
-        if (near || isInside) {
+        if (isNear || isInside) {
           break;
         }
       }
@@ -1196,22 +1126,6 @@ function Plot(props) {
                       left: 0,
                       top: 0,
                     }}
-                    // onMouseDown={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleMouseDown(nativeEvent);
-                    // }}
-                    // onMouseMove={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleCursorProperty(nativeEvent);
-                    //   handleMouseMove(nativeEvent);
-                    // }}
-                    // onMouseUp={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleMouseUp(nativeEvent);
-                    // }}
-                    // onMouseLeave={(e) => {
-                    //   document.body.style.cursor = "auto";
-                    // }}
                   />
 
                   <canvas

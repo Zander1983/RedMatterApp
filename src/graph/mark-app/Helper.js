@@ -141,36 +141,12 @@ export const superAlgorithm = (
           event["color"] = "#000";
         }
 
-        // console.log("plotIndex is ", plotIndex);
-        // console.log("plot is ", plot);
-
         if (gates) {
           gates.map((gate, index) => {
-            // console.log("gate is ", gate);
-            // console.log("plot.population is ", plot.population);
-
-            // console.log("Files[fileIndex] is ", Files[fileIndex]);
-            // console.log(
-            //   "is erica 2 ",
-            //   Files[fileIndex].name == "ERICA_BM_Tube_002_002.fcs"
-            // );
-
             if (
               plot.population == "All" ||
               event["isInGate" + plot.population] == true
             ) {
-              if (Files[fileIndex].name == "ERICA_BM_Tube_002_002.fcs") {
-                // console.log("its Erica 2");
-                // console.log("gate.name is ", gate.name);
-                // console.log("index is ", gate.name.indexOf("pop2"));
-                if (gate.name.indexOf("pop2") > -1) {
-                  console.log(
-                    "in the Erica 2 and pop2 gate, eventIndex is ",
-                    eventIndex
-                  );
-                }
-              }
-              // console.log("in the if, eventIndex is ", eventIndex);
               let pointX = event[gate["xAxisIndex"]];
 
               let pointY = event[gate["yAxisIndex"]];
@@ -254,20 +230,12 @@ export const superAlgorithm = (
     }
 
     const gateKeys = Object.keys(gateStatsObj);
-    console.log("gateKeys are ", gateKeys);
+
     let gateStats = [];
     gateKeys.forEach((gateKey, index) => {
       const gateName = gateKey.replace("_count", "");
 
-      if (Files[fileIndex].name == "ERICA_BM_Tube_002_002.fcs") {
-        console.log("erica 2, gateStatsObj is ", gateStatsObj);
-      }
-
-      console.log("gateStatsObj is ", gateStatsObj);
       let parentGate = gateStatsObj[gateKey].parent;
-      console.log("parentGate is ", parentGate);
-
-      console.log("gateStatsObj[parentGate] is ", gateStatsObj[parentGate]);
 
       const divider =
         parentGate == "All"
@@ -727,9 +695,8 @@ export const createDefaultPlotSnapShot = (
     },
     sharedWorkspace: "false",
     editWorkspace: "true",
-    clearOpenFiles: "false",
     isShared: "false",
-    openFiles: [],
+    openFile: fileId,
   };
 };
 
