@@ -97,7 +97,7 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v4.0.1"}
+                  {"v4.0.2"}
                 </b>
               </NavLink>
             </Typography>
