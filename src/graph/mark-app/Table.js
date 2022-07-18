@@ -8,6 +8,9 @@ import { getGateName, getGateNameFriendly } from "./Helper";
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
+// import AbcOutlinedIcon from "@mui/icons-material/AbcOutlined";
+// import PanToolIcon from "@mui/icons-material/PanTool";
+import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
 
 // import { PlainDraggable } from "plain-draggable";
 
@@ -71,8 +74,7 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
-  console.log("in table and props are ", props);
-
+  console.log(">>> Table props are ", props);
   let nodes = [];
   let draggables = [];
   let lines = [];
@@ -86,29 +88,39 @@ function Table(props) {
 
     controlEnrichedFile.plots.forEach((plot, index) => {
       let plotNode = nodes.find((node) => {
-        console.log("node is ", node);
         return node?.id && node.id == plot.population;
       });
-
-      console.log("plotNode is ", plotNode);
 
       //if (nodes.current[index]) {
       const el = plotNode;
 
       els.push(el);
 
+      let elDistanceToTop =
+        window.pageYOffset +
+        document.getElementById("workspace-container").getBoundingClientRect()
+          .top;
+
+      console.log("population is ", plot.population);
+      console.log("plot.top is ", plot.top, ", top.left is ", plot.left);
+      console.log(">>>> setting top to ", plot.top + elDistanceToTop);
       const draggable = new Draggable(el, {
         left: plot.left,
-        top: plot.top,
+        top: plot.top + elDistanceToTop,
         handle: el.children[0],
         //endSocket: "right",
         onMove: () => {
+          console.log("in on move");
           //line1.position();
         },
+        position: (pos) => {
+          console.log("in position, pos is ", pos);
+        },
         onDrag: (newPosition) => {
+          console.log("in on drag...");
           props.workspaceState.files[props.workspaceState.controlFileId].plots[
             index
-          ].top = newPosition.top;
+          ].top = newPosition.top - elDistanceToTop;
           props.workspaceState.files[props.workspaceState.controlFileId].plots[
             index
           ].left = newPosition.left;
@@ -142,7 +154,6 @@ function Table(props) {
   );
 
   const fileViewHideHandler = (fileId) => {
-    console.log("fileId is ", fileId);
     props.onOpenFileChange({ fileId: fileId });
   };
 
@@ -202,8 +213,10 @@ function Table(props) {
   function PlotRender({ plots: plots, node: node }) {
     return (
       <div
+        id="workspace-container"
         style={{
           height: 1600,
+          position: "relative",
         }}
       >
         {plots?.map((plot, plotIindex) => {
@@ -219,7 +232,28 @@ function Table(props) {
               id={plot.population}
               key={"resizable-plot-" + plotIindex}
             >
-              <div>Drag Me</div>
+              <div
+                style={{
+                  display: "flex",
+                }}
+              >
+                <div
+                  style={{
+                    flex: "1",
+                  }}
+                >
+                  <ZoomOutMap
+                    style={{ marginTop: 3, marginLeft: 3 }}
+                  ></ZoomOutMap>
+                </div>
+                <div
+                  style={{
+                    flex: "1",
+                  }}
+                >
+                  {getGateNameFriendly(plot.population)}
+                </div>
+              </div>
 
               {(() => {
                 if (plot.plotType === "scatter") {
@@ -495,6 +529,7 @@ function Table(props) {
           }}
         ></div>
       </div>
+
       {PlotRender({
         plots: openEnrichedFile.plots,
       })}

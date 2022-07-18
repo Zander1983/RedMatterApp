@@ -12,7 +12,7 @@ import {
   getGateValue,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
+import { drawText, getAxisLabels, getBins, getGateName } from "./Helper";
 
 let isMouseDown = false;
 let interval = null;
@@ -634,7 +634,7 @@ function Histogram(props) {
     let gate = {
       color: gateColor,
       gateType: "histogram",
-      name: gateName.name,
+      name: getGateName(gateName.name),
       points: points,
       xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
@@ -720,6 +720,7 @@ function Histogram(props) {
   const handleMouseDown = (event) => {
     if (resizing) return;
     isMouseDown = true;
+    let isNearOrInsideAnyGate;
     if (hasGates()) {
       //if (!areGatesOnPlot(props.plot)) return;
       for (var i = 0; i < props.plot.gates.length; i++) {
@@ -783,19 +784,21 @@ function Histogram(props) {
               props.enrichedFile.logicles
             )
           );
+          isNearOrInsideAnyGate = true;
           break;
-        } else {
-          // so its a new gate
-
-          let point = getRealPointFromCanvasPoints(
-            props.enrichedFile.channels,
-            props.plot,
-            [event.offsetX, null],
-            props.enrichedFile.logicles
-          );
-
-          setNewPoints([point[0], point[0]]);
         }
+      }
+
+      // so its a new gate
+      if (!isNearOrInsideAnyGate) {
+        let point = getRealPointFromCanvasPoints(
+          props.enrichedFile.channels,
+          props.plot,
+          [event.offsetX, null],
+          props.enrichedFile.logicles
+        );
+
+        setNewPoints([point[0], point[0]]);
       }
     } else {
       let point = getRealPointFromCanvasPoints(
@@ -973,11 +976,7 @@ function Histogram(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (
-      hasGates() &&
-      areGatesOnPlot(props.plot)
-      //&& props?.plot?.gate?.gateType === "polygon"
-    ) {
+    if (hasGates() && areGatesOnPlot(props.plot)) {
       for (var i = 0; i < props.plot.gates.length; i++) {
         let gate = props.plot.gates[i];
 
@@ -1002,7 +1001,7 @@ function Histogram(props) {
           )[0],
         ];
 
-        let isNear = false;
+        let isNearPointIndex = false;
         let isInside = false;
 
         isInside = isMousePointInsideHistPoints(
@@ -1012,20 +1011,20 @@ function Histogram(props) {
         );
 
         if (!isInside) {
-          isNear = isMousePointNearHistPoints(
+          isNearPointIndex = isMousePointNearHistPoints(
             gateCanvasPoints[0],
             gateCanvasPoints[1],
             event.offsetX
           );
         }
 
-        document.body.style.cursor = isNear
+        document.body.style.cursor = isNearPointIndex.isNear
           ? "move"
           : isInside
           ? "grab"
           : "col-resize";
 
-        if (isNear || isInside) {
+        if (isNearPointIndex.isNear || isInside) {
           break;
         }
       }

@@ -220,7 +220,7 @@ function SideSelector(props) {
         </div>
       </div>
 
-      {props.plot.plotType == "histogram" ? (
+      {/* {props.plot.plotType == "histogram" ? (
         <div
           style={{
             marginLeft: "10px",
@@ -323,7 +323,7 @@ function SideSelector(props) {
             })}
           </div>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }

@@ -655,8 +655,6 @@ function Plot(props) {
           event.offsetY
         );
 
-        console.log("in omouse down, isNearPointIndex is ", isNearPointIndex);
-
         setIsNearPoint(isNearPointIndex.isNear);
 
         if (isNearPointIndex.isNear) {
@@ -677,8 +675,6 @@ function Plot(props) {
             newPointsReal[1],
             gate.points
           );
-
-          console.log("in mouse down, isInside is ", isInside);
 
           setIsInsideGate(isInside);
         }

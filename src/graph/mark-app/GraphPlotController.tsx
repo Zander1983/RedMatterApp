@@ -172,8 +172,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     console.log("numAtThatLevel is ", numAtThatLevel);
 
-    newPlot.left = 450 * level;
-    newPlot.top = 450 * numAtThatLevel;
+    newPlot.left = 350 * level;
+    newPlot.top = 350 * numAtThatLevel;
 
     console.log("newPlot.left is ", newPlot.left);
 

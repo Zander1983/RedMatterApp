@@ -298,7 +298,7 @@ export const isMousePointNearHistPoints = (
   if (mousePoint >= rightPoint - 3 && mousePoint <= rightPoint + 3) {
     return {
       isNear: true,
-      pointIndex: 0,
+      pointIndex: 1,
     };
   }
   return { isNear: isNear, pointIndex: pointIndex };
