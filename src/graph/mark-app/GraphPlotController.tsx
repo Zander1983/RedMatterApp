@@ -6,6 +6,9 @@ import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import { Grid, Button, TextField } from "@material-ui/core";
 import WorkspaceTopBar from "./WorkspaceTopBar";
+import MultiStainState from "./MultiStainState.json";
+import MultiStainState3 from "./MultiStainState3.json";
+import Files from "./Files.json";
 import ReactGA from "react-ga";
 import {
   superAlgorithm,
@@ -70,6 +73,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
+    this.onOpenFileChange = this.onOpenFileChange.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
     this.onDeleteGate = this.onDeleteGate.bind(this);
@@ -100,6 +104,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onInitState = (workspaceState: any) => {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
+
+    //let copyOfLocalFiles: any[] = Files;
+
+    //workspaceState = MultiStainState3;
 
     // @ts-ignore
     if (
@@ -141,16 +149,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
+    console.log(">>> onAddGate change is ", change);
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
-    delete newPlot.gate;
-    newPlot.population = change.plot.gate.name;
-    // for histograms
-    newPlot.color = change.plot.gate.color;
-
-    // set the passed up plot to be in the state
-    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
+    newPlot.level++;
+    delete newPlot.gates;
 
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
@@ -158,10 +162,46 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //@ts-ignore
     let controlFileId: string = newWorkspaceState.controlFileId;
 
+    let level = newPlot.level;
+
+    let plotsAtSameLevel = (newWorkspaceState as any).files[
+      controlFileId
+    ].plots.filter((plot: any) => plot.level == level);
+
+    let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
+
+    console.log("numAtThatLevel is ", numAtThatLevel);
+
+    newPlot.left = 350 * level;
+    newPlot.top = 350 * numAtThatLevel;
+
+    console.log("newPlot.left is ", newPlot.left);
+
+    newPlot.population = change.newGate.name;
+    // for histograms
+    newPlot.color = change.newGate.color;
+
+    // set the passed up plot to be in the state
+    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
+
+    gatedPlot.gates && gatedPlot.gates.length > 0
+      ? gatedPlot.gates.push(change.newGate)
+      : (gatedPlot.gates = [change.newGate]);
+
     // this is setting the last plot to be the gated plot on the contorl
+    let origGatedPlotIndex = (newWorkspaceState as any).files[
+      controlFileId
+    ].plots.findIndex((plot: any) => plot.population == gatedPlot.population);
+
+    //origGatedPlot = gatedPlot;
+
+    // (newWorkspaceState as any).files[fileId].plots[
+    //   (newWorkspaceState as any).files[fileId].plots.length - 1
+    // ] = JSON.parse(JSON.stringify(gatedPlot));
+
     (newWorkspaceState as any).files[controlFileId].plots[
-      (newWorkspaceState as any).files[controlFileId].plots.length - 1
-    ] = gatedPlot;
+      origGatedPlotIndex
+    ] = JSON.parse(JSON.stringify(gatedPlot));
 
     // this is adding a new plot to the end of the plots array on the control
     (newWorkspaceState as any).files[controlFileId].plots.push(newPlot);
@@ -169,6 +209,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // new plots are only added on the control file,
     // so loop through the other fileIds - which have adjusted gates
     // and make sure to keep them
+    // TODO look at below
     let fileIds = Object.keys((newWorkspaceState as any).files);
     fileIds.forEach((fileId) => {
       if (fileId != controlFileId) {
@@ -187,6 +228,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
+    console.log(">>>> newWorkspaceState is ", newWorkspaceState);
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -265,10 +307,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       };
     }
 
-    // now change the specific plot for specific file
-    (newWorkspaceState as any).files[fileKey].plots[
+    let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
       change.plotIndex
-    ] = JSON.parse(JSON.stringify(change.plot));
+    ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex].gates[
+      gateIndex
+    ] = JSON.parse(JSON.stringify(change.gate));
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
@@ -451,6 +496,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       workspaceState: newWorkspaceState,
       enrichedFiles: enrichedFiles,
+    });
+  };
+
+  onOpenFileChange = (change: any) => {
+    console.log("in onOpenFileChange, change is ", change);
+    this.state.workspaceState.openFile = change.fileId;
+    this.setState({
+      workspaceState: this.state.workspaceState,
+      enrichedFiles: this.state.enrichedFiles,
     });
   };
 
@@ -808,9 +862,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 marginRight: 5,
                 marginLeft: 5,
                 fontWeight: "bold",
+                color: "#ff8080",
+                fontSize: "17px",
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
               }}
             >
-              Set Control File:
+              CHANGE CONTROL FILE:
             </span>
             <Select
               //disableUnderline
@@ -1141,6 +1198,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               workspaceState={this.state.workspaceState}
               className="workspace"
               onChangeChannel={this.onChangeChannel}
+              onOpenFileChange={this.onOpenFileChange}
               addOverlay={this.addOverlay}
               onAddGate={this.onAddGate}
               onDeleteGate={this.onDeleteGate}

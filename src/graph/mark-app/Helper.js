@@ -24,6 +24,29 @@ export const superAlgorithm = (
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
 
+  // OriginalFiles[0].channels[0] = {
+  //   value: "FSC-A",
+  //   display: "lin",
+  //   minimum: 0,
+  //   maximum: 100,
+  //   paramName: "FSC-A",
+  // };
+  // OriginalFiles[0].channels[1] = {
+  //   value: "FSC-A",
+  //   display: "lin",
+  //   minimum: 0,
+  //   maximum: 100,
+  //   paramName: "FSC-A",
+  // };
+  // OriginalFiles[0].events = [
+  //   [20, 20],
+  //   [20, 80],
+  //   [50, 50],
+  //   [70, 10],
+  //   [90, 90],
+  //   [40, 15],
+  // ];
+
   let controlOriginalFile = OriginalFiles.find(
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
@@ -48,24 +71,29 @@ export const superAlgorithm = (
     }
 
     plots.forEach((plot) => {
-      if (plot?.gate?.name !== undefined) {
-        gateStatsObj[plot.gate.name + "_count"] = 0;
-      }
+      plot?.gates?.map((gate, index) => {
+        if (gate?.name !== undefined) {
+          gateStatsObj[gate.name] = {
+            count: 0,
+            parent: plot.population,
+          };
+        }
 
-      if (plot.gate && plot.gate["xScaleType"] === "bi") {
-        let xLogicle = new MarkLogicle(
-          plot.gate.xAxisOriginalRanges[0],
-          plot.gate.xAxisOriginalRanges[1]
-        );
-        plot.gate.xLogicle = xLogicle;
-      }
-      if (plot.gate && plot.gate["yScaleType"] === "bi") {
-        let yLogicle = new MarkLogicle(
-          plot.gate.yAxisOriginalRanges[0],
-          plot.gate.yAxisOriginalRanges[1]
-        );
-        plot.gate.yLogicle = yLogicle;
-      }
+        if (gate && gate["xScaleType"] === "bi") {
+          let xLogicle = new MarkLogicle(
+            gate.xAxisOriginalRanges[0],
+            gate.xAxisOriginalRanges[1]
+          );
+          gate.xLogicle = xLogicle;
+        }
+        if (gate && gate["yScaleType"] === "bi") {
+          let yLogicle = new MarkLogicle(
+            gate.yAxisOriginalRanges[0],
+            gate.yAxisOriginalRanges[1]
+          );
+          gate.yLogicle = yLogicle;
+        }
+      });
     });
 
     //eventIndex < Files[fileIndex].events
@@ -108,121 +136,115 @@ export const superAlgorithm = (
       for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
         let isInGate;
         let plot = plots[plotIndex];
-        let gate = plot.gate;
+        let gates = plot.gates;
         if (!event["color"]) {
           event["color"] = "#000";
         }
-        if (gate) {
-          let pointX = event[gate["xAxisIndex"]];
 
-          // scaled = file.scale.adjustSpillover({
-          //   // paramIndex: paramIndex,
-          //   // paramName: paramName,
-          //   values: event,
-          //   scaleType: scaleType,
-          //   indexOfSpilloverParam: indexOfSpilloverParam,
-          //   channelMaximums: channelMaximums,
-          // });
+        if (gates) {
+          gates.map((gate, index) => {
+            if (
+              plot.population == "All" ||
+              event["isInGate" + plot.population] == true
+            ) {
+              let pointX = event[gate["xAxisIndex"]];
 
-          let pointY = event[gate["yAxisIndex"]];
-          let tranformedPoints = [];
+              let pointY = event[gate["yAxisIndex"]];
+              let tranformedPoints = [];
 
-          // if a gate was made on an axis with the scale logicle, we need to convert it with logicle transform
-          // same for the event point
-          // a gate can be created on a linear scale on 1 axis, and logicle on the other
-          if (gate["xScaleType"] === "bi") {
-            pointX = gate.xLogicle.scale(pointX);
+              // if a gate was made on an axis with the scale logicle, we need to convert it with logicle transform
+              // same for the event point
+              // a gate can be created on a linear scale on 1 axis, and logicle on the other
+              if (gate["xScaleType"] === "bi") {
+                pointX = gate.xLogicle.scale(pointX);
 
-            if (gate.gateType == "polygon") {
-              tranformedPoints = gate.points.map((point) => {
-                return [gate.xLogicle.scale(point[0]), point[1]];
-              });
-            } else {
-              // so histogram
-              tranformedPoints = [
-                gate.xLogicle.scale(gate.points[0]),
-                gate.xLogicle.scale(gate.points[1]),
-              ];
+                if (gate.gateType == "polygon") {
+                  tranformedPoints = gate.points.map((point) => {
+                    return [gate.xLogicle.scale(point[0]), point[1]];
+                  });
+                } else {
+                  // so histogram
+                  tranformedPoints = [
+                    gate.xLogicle.scale(gate.points[0]),
+                    gate.xLogicle.scale(gate.points[1]),
+                  ];
+                }
+              } else {
+                if (gate.gateType == "polygon") {
+                  tranformedPoints = gate.points.map((point) => {
+                    return [point[0], point[1]];
+                  });
+                } else {
+                  tranformedPoints = [gate.points[0], gate.points[1]];
+                }
+              }
+
+              if (gate["yScaleType"] === "bi") {
+                pointY = gate.yLogicle.scale(pointY);
+                // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
+                // either way this inefficient here - the logicle transform of the gate point needs only to be done once
+                tranformedPoints = tranformedPoints.map((point) => {
+                  return [point[0], gate.yLogicle.scale(point[1])];
+                });
+              }
+
+              if (gate.gateType == "polygon") {
+                tranformedPoints = tranformedPoints.map((point) => {
+                  return { x: point[0], y: point[1] };
+                });
+              }
+
+              if (gate.gateType == "polygon") {
+                isInGate = pointInsidePolygon(
+                  {
+                    x: pointX,
+                    y: pointY,
+                  },
+                  tranformedPoints
+                );
+              } else {
+                // so its histogram
+                isInGate = isInHistGate(
+                  tranformedPoints[0],
+                  tranformedPoints[1],
+                  pointX
+                );
+              }
+
+              if (isInGate) {
+                if (calculateMedianAndMean) {
+                  eventsInsideGate[plotIndex].push(event.filter(Number));
+                }
+
+                event["color"] = gate["color"];
+                event["isInGate" + gate.name] = true;
+
+                !gateStatsObj[gate.name] && !gateStatsObj[gate.name].count
+                  ? (gateStatsObj[gate.name].count = 1)
+                  : gateStatsObj[gate.name].count++;
+              }
             }
-          } else {
-            if (gate.gateType == "polygon") {
-              tranformedPoints = gate.points.map((point) => {
-                return [point[0], point[1]];
-              });
-            } else {
-              tranformedPoints = [gate.points[0], gate.points[1]];
-            }
-          }
-
-          if (gate["yScaleType"] === "bi") {
-            pointY = gate.yLogicle.scale(pointY);
-            // TODO maybe we should just store logicle axis points in logile i.e. between 0 and 1?
-            // either way this inefficient here - the logicle transform of the gate point needs only to be done once
-            tranformedPoints = tranformedPoints.map((point) => {
-              return [point[0], gate.yLogicle.scale(point[1])];
-            });
-          }
-
-          if (gate.gateType == "polygon") {
-            tranformedPoints = tranformedPoints.map((point) => {
-              return { x: point[0], y: point[1] };
-            });
-          }
-
-          if (gate.gateType == "polygon") {
-            isInGate = pointInsidePolygon(
-              {
-                x: pointX,
-                y: pointY,
-              },
-              tranformedPoints
-            );
-          } else {
-            // so its histogram
-            isInGate = isInHistGate(
-              tranformedPoints[0],
-              tranformedPoints[1],
-              pointX
-            );
-          }
-
-          if (isInGate) {
-            if (calculateMedianAndMean) {
-              eventsInsideGate[plotIndex].push(event.filter(Number));
-            }
-
-            event["color"] = gate["color"];
-            event["isInGate" + gate.name] = true;
-            !gateStatsObj[gate.name + "_count"]
-              ? (gateStatsObj[gate.name + "_count"] = 1)
-              : gateStatsObj[gate.name + "_count"]++;
-          }
-        }
-        if (!isInGate) {
-          break;
+          });
         }
       }
     }
 
-    // const gateCounts = Object.keys(gateStats);
-    // gateCounts.forEach((gateCount, index) => {
-    //   gateStats[gateCount.replace("_count", "_percentage")] = (
-    //     (gateStats[gateCount] * 100) /
-    //     Files[fileIndex].events.length
-    //   ).toFixed(2);
-    // });
-
     const gateKeys = Object.keys(gateStatsObj);
+
     let gateStats = [];
     gateKeys.forEach((gateKey, index) => {
       const gateName = gateKey.replace("_count", "");
 
-      const divider =
-        index === 0
-          ? Files[fileIndex].events.length
-          : gateStatsObj[gateKeys[index - 1]];
+      let parentGate = gateStatsObj[gateKey].parent;
 
-      let percentage = ((gateStatsObj[gateKey] * 100) / divider).toFixed(2);
+      const divider =
+        parentGate == "All"
+          ? Files[fileIndex].events.length
+          : gateStatsObj[parentGate].count;
+
+      let percentage = ((gateStatsObj[gateKey].count * 100) / divider).toFixed(
+        2
+      );
 
       if (isNaN(percentage)) {
         percentage = Number(0).toFixed(2);
@@ -642,6 +664,9 @@ export const createDefaultPlotSnapShot = (
         plots: [
           {
             population: "All",
+            level: 0,
+            left: 5,
+            top: 5,
             plotType: plotType || DEFAULT_PLOT_TYPE,
             width: DEFAULT_PLOT_WIDTH,
             height: DEFAULT_PLOT_HEIGHT,
@@ -670,9 +695,8 @@ export const createDefaultPlotSnapShot = (
     },
     sharedWorkspace: "false",
     editWorkspace: "true",
-    clearOpenFiles: "false",
     isShared: "false",
-    openFiles: [],
+    openFile: fileId,
   };
 };
 
@@ -853,4 +877,13 @@ export const isGateShowing = (plot) => {
       plot?.gate?.gateType === plot?.plotType
     );
   }
+};
+
+export const getGateName = (gateName) => {
+  return gateName.split(" ").join("_") + "timestamp" + Date.now();
+};
+
+export const getGateNameFriendly = (gateName) => {
+  gateName = gateName.split("_").join(" ") + "timestamp" + Date.now();
+  return gateName.substring(0, gateName.indexOf("timestamp"));
 };

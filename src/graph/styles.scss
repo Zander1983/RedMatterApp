@@ -39,6 +39,14 @@ $bluebell: #979fd0;
   }
 }
 
+.node {
+  display: inline-block;
+  border: 1px solid #ddcece;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @keyframes fancy {
   to {
     transform: rotate(360deg) scale(0.5);

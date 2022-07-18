@@ -1,0 +1,195 @@
+{
+  "experimentId": "61f98c2ddf76230e13f6c585",
+  "controlFileId": "ERICA_BM_Tube_001_001.fcs",
+  "files": {
+    "ERICA_BM_Tube_001_001.fcs": {
+      "plots": [
+        {
+          "population": "All",
+          "level": 0,
+          "plotType": "scatter",
+          "width": 200,
+          "height": 200,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "plotScale": 2,
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "histogramAxis": "",
+          "label": "",
+          "parentPlotId": "",
+          "gatingActive": "",
+          "gates": [
+            {
+              "color": "green",
+              "gateType": "polygon",
+              "name": "population1",
+              "points": [
+                [131000, 131000],
+                [131000, 250000],
+                [250000, 250000],
+                [250000, 131000]
+              ],
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1,
+              "xAxisOriginalRanges": [0, 262144],
+              "yAxisOriginalRanges": [0, 262144],
+              "parent": "All"
+            },
+            {
+              "color": "orange",
+              "gateType": "polygon",
+              "name": "population2",
+              "points": [
+                [40000, 80000],
+                [70000, 120000],
+                [180000, 70000],
+                [100000, 20000]
+              ],
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1
+            }
+          ]
+        },
+        {
+          "population": "population1",
+          "level": 1,
+          "plotType": "scatter",
+          "width": 200,
+          "height": 200,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "plotScale": 2,
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "histogramAxis": "",
+          "gates": [
+            {
+              "color": "yellow",
+              "gateType": "polygon",
+              "name": "population3",
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1,
+              "points": [
+                [170000, 170000],
+                [170000, 210000],
+                [210000, 210000],
+                [210000, 170000]
+              ]
+            }
+          ]
+        },
+        {
+          "population": "population2",
+          "level": 1,
+          "plotType": "scatter",
+          "width": 200,
+          "height": 200,
+          "plotScale": 2,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "gates": [
+            {
+              "color": "blue",
+              "gateType": "polygon",
+              "name": "population4",
+              "points": [
+                [90000, 40000],
+                [90000, 100000],
+                [120000, 90000],
+                [120000, 70000]
+              ],
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1,
+              "xAxisOriginalRanges": [0, 262144],
+              "yAxisOriginalRanges": [0, 262144],
+              "parent": "All"
+            },
+            {
+              "color": "grey",
+              "gateType": "polygon",
+              "name": "population5",
+              "points": [
+                [140000, 40000],
+                [140000, 70000],
+                [170000, 170000],
+                [170000, 40000]
+              ],
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "SSC-A",
+              "xScaleType": "lin",
+              "yScaleType": "lin",
+              "xAxisIndex": 0,
+              "yAxisIndex": 1
+            }
+          ]
+        },
+        {
+          "population": "population3",
+          "level": 2,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "width": 200,
+          "height": 200
+        },
+        {
+          "population": "population4",
+          "level": 2,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "width": 200,
+          "height": 200
+        },
+        {
+          "population": "population5",
+          "level": 2,
+          "xAxisLabel": "FSC-A",
+          "yAxisLabel": "SSC-A",
+          "xScaleType": "lin",
+          "yScaleType": "lin",
+          "xAxisIndex": 0,
+          "yAxisIndex": 1,
+          "width": 200,
+          "height": 200
+        }
+      ],
+      "open": true
+    }
+  },
+  "sharedWorkspace": "false",
+  "editWorkspace": "true",
+  "selectedFile": "9008c670-8396-11ec-a459-0dc7b0553594",
+  "isShared": "false"
+}

@@ -1,0 +1,124 @@
+{
+  "experimentId": "61f98c2ddf76230e13f6c585",
+  "controlFileId": "file_key_1_control",
+  "files": {
+    "file_key_1_control": {
+      "plot": {
+        "population": "All",
+        "plotType": "scatter",
+        "width": 200,
+        "height": 200,
+        "xAxisLabel": "FSC-A",
+        "yAxisLabel": "SSC-A",
+        "xAxisIndex": 0,
+        "yAxisIndex": 1,
+        "plotScale": 2,
+        "xScaleType": "lin",
+        "yScaleType": "lin",
+        "histogramAxis": "",
+        "label": "",
+        "parentPlotId": "",
+        "gatingActive": "",
+        "gates": [
+          {
+            "color": "green",
+            "gateType": "polygon",
+            "name": "population1",
+            "points": [
+              [10000, 10000],
+              [170000, 10000],
+              [170000, 170000],
+              [10000, 170000]
+            ],
+            "xAxisLabel": "FSC-A",
+            "yAxisLabel": "SSC-A",
+            "xScaleType": "lin",
+            "yScaleType": "lin",
+            "xAxisIndex": 0,
+            "yAxisIndex": 1,
+            "xAxisOriginalRanges": [0, 262144],
+            "yAxisOriginalRanges": [0, 262144],
+            "parent": "All",
+            "plot": {
+              "population": "population1",
+              "plotType": "scatter",
+              "width": 200,
+              "height": 200,
+              "xAxisLabel": "FSC-A",
+              "yAxisLabel": "APC-A",
+              "xAxisIndex": 4,
+              "yAxisIndex": 1,
+              "plotScale": 2,
+              "xScaleType": "log",
+              "yScaleType": "lin",
+              "histogramAxis": "",
+              "gates": [
+                {
+                  "color": "yellow",
+                  "gateType": "polygon",
+                  "name": "population3",
+                  "xAxisLabel": "FITC",
+                  "yAxisLabel": "SSC-A",
+                  "xScaleType": "lin",
+                  "yScaleType": "lin",
+                  "xAxisIndex": 2,
+                  "yAxisIndex": 1,
+                  "points": [
+                    [10000, 10000],
+                    [170000, 10000],
+                    [170000, 170000],
+                    [10000, 170000]
+                  ],
+                  "plot": {
+                    "population": "population3",
+                    "xAxisLabel": "FITC",
+                    "yAxisLabel": "SSC-A",
+                    "xScaleType": "lin",
+                    "yScaleType": "lin",
+                    "xAxisIndex": 2,
+                    "yAxisIndex": 1
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "color": "green",
+            "gateType": "polygon",
+            "name": "population2",
+            "points": [
+              [2000, 2000],
+              [70000, 2000],
+              [70000, 70000],
+              [2000, 70000]
+            ],
+            "xAxisLabel": "FSC-A",
+            "yAxisLabel": "SSC-A",
+            "xScaleType": "lin",
+            "yScaleType": "lin",
+            "xAxisIndex": 0,
+            "yAxisIndex": 1,
+            "plot": {
+              "population": "population2",
+              "plotType": "scatter",
+              "width": 200,
+              "height": 200,
+              "plotScale": 2,
+              "xAxisLabel": "APA-A",
+              "yAxisLabel": "FITC-A",
+              "xAxisIndex": 4,
+              "yAxisIndex": 2,
+              "xScaleType": "bi",
+              "yScaleType": "bi"
+            }
+          }
+        ]
+      },
+      "open": true
+    }
+  },
+  "sharedWorkspace": "false",
+  "editWorkspace": "true",
+  "selectedFile": "9008c670-8396-11ec-a459-0dc7b0553594",
+  "isShared": "false"
+}

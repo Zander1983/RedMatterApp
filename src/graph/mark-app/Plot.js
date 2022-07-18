@@ -1,5 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { isPointInPolygon, drawText, getAxisLabels, getBins } from "./Helper";
+import {
+  isPointInPolygon,
+  drawText,
+  getAxisLabels,
+  getBins,
+  getGateName,
+} from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
 
 import {
@@ -9,6 +15,9 @@ import {
   getRealYAxisValueFromCanvasPointOnLinearScale,
   getRealXAxisValueFromCanvasPointOnLogicleScale,
   getRealYAxisValueFromCanvasPointOnLogicleScale,
+  isMousePointNearScatterPoints,
+  getMoveValue,
+  getGateValue,
 } from "./PlotHelper";
 import Modal from "react-modal";
 import { isGateShowing } from "./Helper";
@@ -31,29 +40,34 @@ const getContext = (id) => {
   }
 };
 
-const shouldDrawGate = (plot) => {
-  if (
-    plot.xAxisIndex === plot.gate.xAxisIndex &&
-    plot.yAxisIndex === plot.gate.yAxisIndex &&
-    plot.xScaleType === plot.gate.xScaleType &&
-    plot.yScaleType === plot.gate.yScaleType
-  ) {
-    return true;
-  } else {
-    return false;
-  }
+const areGatesOnPlot = (plot) => {
+  let showGate = false;
+  plot?.gates?.map((gate) => {
+    if (
+      plot.xAxisIndex === gate.xAxisIndex &&
+      plot.yAxisIndex === gate.yAxisIndex &&
+      plot.xScaleType === gate.xScaleType &&
+      plot.yScaleType === gate.yScaleType
+    ) {
+      showGate = true;
+    }
+  });
+
+  return showGate;
 };
 
 let isMouseDown = false;
-let dragPointIndex = false;
 let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
+  let [isNearPoint, setIsNearPoint] = useState(null);
+  let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
 
@@ -109,9 +123,18 @@ function Plot(props) {
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
     // draw here
-    if (localPlot && localPlot.gate && newPoints.length > 0) {
+    if (newPoints.length > 0) {
       if (context) {
-        drawGateLine(context, localPlot, newPoints);
+        props.plot.gates.map((gate) => {
+          let points =
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points
+          );
+        });
 
         //drawTemporaryGateLine(context, props.plot);
       }
@@ -203,12 +226,14 @@ function Plot(props) {
 
     drawLabel();
 
-    if (props.plot.gate && shouldDrawGate(props.plot)) {
-      drawGateLine(
-        getContext("covering-canvas-" + props.plotIndex),
-        props.plot,
-        props.plot.gate.points
-      );
+    if (areGatesOnPlot(props.plot)) {
+      props.plot.gates.map((gate) => {
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          gate.points
+        );
+      });
     }
   }, [
     props.plot,
@@ -370,11 +395,11 @@ function Plot(props) {
       props.enrichedFile.channels[plot.yAxisIndex].maximum,
     ];
 
-    let gate = {
+    let newGate = {
       color: gateColor,
       gateType: "polygon",
       // need to ask for gate name
-      name: gateName.name,
+      name: getGateName(gateName.name),
       points: pointsReal,
       xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
@@ -387,11 +412,12 @@ function Plot(props) {
       parent: plot.population,
     };
 
-    plot.gate = gate;
+    //plot.gate = gate;
 
     let change = {
       type: "AddGate",
-      plot: plot,
+      plot: props.plot,
+      newGate: newGate,
       plotIndex: plotIndex,
       gateName: gateName.name,
     };
@@ -407,76 +433,8 @@ function Plot(props) {
     };
   });
 
-  const getMoveValue = (
-    startValueReal,
-    newValueCanvas,
-    scale,
-    axisIndex,
-    axis
-  ) => {
-    if (scale == "bi") {
-      // For logicle
-      // convert startPointsReal to canvas pixels
-      // offsetX and offsetY are what the user has moved by in canvas pixels (newPointsCanvas)
-      // get the amount of pixels to move by newPointsCanvas - startPointsInCanvas
-      // convert the currect gate points (which are Real) to canvas pixels by logicle.scale() then multiply by width
-      // add the amount to move (moveX, moveY) to the current converted gate points
-      // then, convert all points back to real points by dividing by width or heigh and then logicle.inverse()
-
-      newValueCanvas =
-        axis == "y" ? localPlot.height - newValueCanvas : newValueCanvas;
-
-      let logicle = props.enrichedFile.logicles[axisIndex];
-      let startValueScaled = logicle.scale(startValueReal);
-
-      let startValueCanvas =
-        axis == "x"
-          ? startValueScaled * localPlot.width
-          : startValueScaled * localPlot.height;
-
-      return newValueCanvas - startValueCanvas;
-    } else {
-      // For Linear
-      // get the Real values from
-      // convert startPointsReal to canvas pixels from offsetX, offsetY
-      // subtract startPointsReal from newPointsReal to get moveX, moveY
-      // add to the points
-
-      let newValueReal =
-        axis == "x"
-          ? getRealXAxisValueFromCanvasPointOnLinearScale(
-              props.enrichedFile.channels,
-              localPlot.xAxisIndex,
-              localPlot.width,
-              newValueCanvas
-            )
-          : getRealYAxisValueFromCanvasPointOnLinearScale(
-              props.enrichedFile.channels,
-              localPlot.yAxisIndex,
-              localPlot.height,
-              newValueCanvas
-            );
-
-      return newValueReal - startValueReal;
-    }
-  };
-
-  const hasGate = () => {
-    return !!props.plot.gate;
-  };
-
-  const getGateValue = (value, scale, axisIndex, length, moveBy) => {
-    if (scale == "bi") {
-      let logicle = props.enrichedFile.logicles[axisIndex];
-      let canvasX = logicle.scale(value) * length;
-
-      let newValueCanvas = canvasX + moveBy;
-      let newValueLogicle = newValueCanvas / length;
-      let newValueReal = logicle.inverse(newValueLogicle);
-      return Math.round(newValueReal);
-    } else {
-      return Math.round(value + moveBy);
-    }
+  const hasGates = () => {
+    return !!props.plot.gates;
   };
 
   const redraw = () => {
@@ -528,7 +486,7 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 50, 20);
+    contextX.clearRect(0, 0, localPlot.width + 20, 20);
 
     let prevLabelPos = null;
 
@@ -668,66 +626,194 @@ function Plot(props) {
   const handleMouseDown = (event) => {
     if (resizing) return;
 
-    if (hasGate()) {
-      if (!shouldDrawGate(localPlot)) return;
+    isMouseDown = true;
 
-      isMouseDown = true;
-      // check if on point
-      // convert real points to canvas points and check if within 5 points of canvas points
-      let gateCanvasPoints = localPlot.gate.points.map((point) => {
-        let canvasPoint = getPointOnCanvas(
-          props.enrichedFile.channels,
-          point[0],
-          point[1],
-          // TODO make sure can only change gate when on correct channels
-          // this is important, make sure they can only edit gate when the gate channels match prop channels
-          localPlot,
-          props.enrichedFile.logicles
+    if (hasGates()) {
+      //if (!areGatesOnPlot(localPlot)) return;
+
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
+        // check if on point
+        // convert real points to canvas points and check if within 5 points of canvas points
+        let gateCanvasPoints = gate.points.map((point) => {
+          let canvasPoint = getPointOnCanvas(
+            props.enrichedFile.channels,
+            point[0],
+            point[1],
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            localPlot,
+            props.enrichedFile.logicles
+          );
+
+          return canvasPoint;
+        });
+
+        let isNearPointIndex = isMousePointNearScatterPoints(
+          gateCanvasPoints,
+          event.offsetX,
+          event.offsetY
         );
 
-        return canvasPoint;
-      });
+        setIsNearPoint(isNearPointIndex.isNear);
 
-      let isNearAPoint = false;
-      gateCanvasPoints.find((point, index) => {
-        let isNear =
-          point[0] + 5 >= event.offsetX &&
-          point[0] - 5 <= event.offsetX &&
-          point[1] + 5 >= event.offsetY &&
-          point[1] - 5 <= event.offsetY;
-        if (isNear) {
-          dragPointIndex = index;
-          isNearAPoint = true;
+        if (isNearPointIndex.isNear) {
+          setNameOfGateCursorIsInside(gate.name);
+          setDragPointIndex(isNearPointIndex.pointIndex);
         }
-        return isNear;
-      });
 
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-      const isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
-
-      setIsInsideGate(isInside);
-
-      if (isInside || isNearAPoint) {
-        setStartPointsReal(
-          getRealPointFromCanvasPoints(
+        let isInside = false;
+        if (!isNearPointIndex.isNear) {
+          let newPointsReal = getRealPointFromCanvasPoints(
             props.enrichedFile.channels,
             localPlot,
             [event.offsetX, event.offsetY],
             props.enrichedFile.logicles
-          )
-        );
+          );
+          isInside = isPointInPolygon(
+            newPointsReal[0],
+            newPointsReal[1],
+            gate.points
+          );
+
+          setIsInsideGate(isInside);
+        }
+
+        if (isInside) {
+          setNameOfGateCursorIsInside(gate.name);
+        }
+
+        if (isInside || isNearPointIndex.isNear) {
+          setStartPointsReal(
+            getRealPointFromCanvasPoints(
+              props.enrichedFile.channels,
+              localPlot,
+              [event.offsetX, event.offsetY],
+              props.enrichedFile.logicles
+            )
+          );
+          break;
+        }
       }
-    } else {
-      isMouseDown = true;
+    }
+  };
+
+  const handleMouseMove = (event) => {
+    if (isMouseDown && hasGates() && areGatesOnPlot(localPlot)) {
+      let newPointsCanvas = [event.offsetX, event.offsetY];
+
+      //typeof dragPointIndex == "number"
+      //gate.name == nameOfGateCursorIsInside
+      if (isInsideGate || isNearPoint) {
+        // this code will run when a user will drag the entire polygon gate
+
+        let moveX = getMoveValue(
+          props.plot,
+          props.enrichedFile.channels,
+          props.enrichedFile.logicles,
+          startPointsReal[0],
+          newPointsCanvas[0],
+          localPlot.xScaleType,
+          localPlot.xAxisIndex,
+          "x"
+        );
+
+        let moveY = getMoveValue(
+          props.plot,
+          props.enrichedFile.channels,
+          props.enrichedFile.logicles,
+          startPointsReal[1],
+          newPointsCanvas[1],
+          localPlot.yScaleType,
+          localPlot.yAxisIndex,
+          "y"
+        );
+
+        for (var i = 0; i < localPlot.gates.length; i++) {
+          let gate = localPlot.gates[i];
+          if (gate.name == nameOfGateCursorIsInside) {
+            let points = gate.points.map((point, index) => {
+              if (typeof dragPointIndex == "number") {
+                // TODO too much code repetition here
+                if (dragPointIndex == index) {
+                  let newGateValueRealX = getGateValue(
+                    props.enrichedFile.logicles,
+                    point[0],
+                    localPlot.xScaleType,
+                    localPlot.xAxisIndex,
+                    localPlot.width,
+                    moveX
+                  );
+
+                  let newGateValueRealY = getGateValue(
+                    props.enrichedFile.logicles,
+                    point[1],
+                    localPlot.yScaleType,
+                    localPlot.yAxisIndex,
+                    localPlot.height,
+                    moveY
+                  );
+
+                  return [newGateValueRealX, newGateValueRealY];
+                } else {
+                  return [point[0], point[1]];
+                }
+              } else {
+                let newGateValueRealX = getGateValue(
+                  props.enrichedFile.logicles,
+                  point[0],
+                  localPlot.xScaleType,
+                  localPlot.xAxisIndex,
+                  localPlot.width,
+                  moveX
+                );
+
+                let newGateValueRealY = getGateValue(
+                  props.enrichedFile.logicles,
+                  point[1],
+                  localPlot.yScaleType,
+                  localPlot.yAxisIndex,
+                  localPlot.height,
+                  moveY
+                );
+
+                return [newGateValueRealX, newGateValueRealY];
+              }
+            });
+
+            let xRange = [
+              props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+              props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
+            ];
+
+            let yRange = [
+              props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+              props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
+            ];
+
+            gate.xAxisOriginalRanges = xRange;
+            gate.yAxisOriginalRanges = yRange;
+
+            //console.log(">>> points are ", points);
+
+            setNewPoints(points);
+          }
+        }
+        // setLocalPlot({
+        //   ...localPlot,
+        //   gate: { ...localPlot.gate, points: points },
+        // });
+
+        // IMPORTANT - reset start points
+        // setStartPointsReal(
+        //   getRealPointFromCanvasPoints(
+        //     props.enrichedFile.channels,
+        //     localPlot,
+        //     [event.offsetX, event.offsetY],
+        //     props.enrichedFile.logicles
+        //   )
+        // );
+      }
     }
   };
 
@@ -735,36 +821,32 @@ function Plot(props) {
     if (resizing) return;
     if (!isMouseDown) return;
 
-    isMouseDown = false;
-    dragPointIndex = false;
-    if (hasGate()) {
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
+    isMouseDown = true;
 
-      const isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
+    if (isInsideGate || isNearPoint) {
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
+        if (gate.name == nameOfGateCursorIsInside) {
+          setIsInsideGate(false);
+          setIsNearPoint(false);
+          setDragPointIndex(false);
+          setNameOfGateCursorIsInside(null);
 
-      setIsInsideGate(isInside);
+          if (newPoints && newPoints.length > 1) {
+            gate.points = JSON.parse(JSON.stringify(newPoints));
 
-      if (newPoints && newPoints.length > 1) {
-        localPlot.gate.points = JSON.parse(JSON.stringify(newPoints));
+            setNewPoints([]);
 
-        setNewPoints([]);
-
-        let change = {
-          type: "EditGate",
-          plot: localPlot,
-          plotIndex: props.plotIndex.split("-")[1],
-          fileId: props.enrichedFile.fileId,
-        };
-        props.onEditGate(change);
+            let change = {
+              type: "EditGate",
+              plot: localPlot,
+              gate: gate,
+              plotIndex: props.plotIndex.split("-")[1],
+              fileId: props.enrichedFile.fileId,
+            };
+            props.onEditGate(change);
+          }
+        }
       }
     } else {
       // so its a new gate
@@ -812,149 +894,57 @@ function Plot(props) {
     }
   };
 
-  const handleMouseMove = (event) => {
-    if (isMouseDown && hasGate() && isGateShowing(localPlot)) {
-      let newPointsCanvas = [event.offsetX, event.offsetY];
-
-      if (isInsideGate || typeof dragPointIndex == "number") {
-        // this code will run when a user will drag the entire polygon gate
-
-        let moveX = getMoveValue(
-          startPointsReal[0],
-          newPointsCanvas[0],
-          localPlot.xScaleType,
-          localPlot.xAxisIndex,
-          "x"
-        );
-
-        let moveY = getMoveValue(
-          startPointsReal[1],
-          newPointsCanvas[1],
-          localPlot.yScaleType,
-          localPlot.yAxisIndex,
-          "y"
-        );
-
-        let points = localPlot.gate.points.map((point, index) => {
-          if (typeof dragPointIndex == "number") {
-            // TODO too much code repetition here
-            if (dragPointIndex == index) {
-              let newGateValueRealX = getGateValue(
-                point[0],
-                localPlot.xScaleType,
-                localPlot.xAxisIndex,
-                localPlot.width,
-                moveX
-              );
-
-              let newGateValueRealY = getGateValue(
-                point[1],
-                localPlot.yScaleType,
-                localPlot.yAxisIndex,
-                localPlot.height,
-                moveY
-              );
-
-              return [newGateValueRealX, newGateValueRealY];
-            } else {
-              return [point[0], point[1]];
-            }
-          } else {
-            let newGateValueRealX = getGateValue(
-              point[0],
-              localPlot.xScaleType,
-              localPlot.xAxisIndex,
-              localPlot.width,
-              moveX
-            );
-
-            let newGateValueRealY = getGateValue(
-              point[1],
-              localPlot.yScaleType,
-              localPlot.yAxisIndex,
-              localPlot.height,
-              moveY
-            );
-
-            return [newGateValueRealX, newGateValueRealY];
-          }
-        });
-
-        let xRange = [
-          props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
-          props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
-        ];
-
-        let yRange = [
-          props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
-          props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
-        ];
-
-        localPlot.gate.xAxisOriginalRanges = xRange;
-        localPlot.gate.yAxisOriginalRanges = yRange;
-
-        setNewPoints(points);
-        // setLocalPlot({
-        //   ...localPlot,
-        //   gate: { ...localPlot.gate, points: points },
-        // });
-
-        // IMPORTANT - reset start points
-        // setStartPointsReal(
-        //   getRealPointFromCanvasPoints(
-        //     props.enrichedFile.channels,
-        //     localPlot,
-        //     [event.offsetX, event.offsetY],
-        //     props.enrichedFile.logicles
-        //   )
-        // );
-      }
-    }
-  };
-
   const handleCursorProperty = (event) => {
     if (
-      hasGate() &&
-      isGateShowing(localPlot) &&
-      props?.plot?.gate?.gateType === "polygon"
+      hasGates() &&
+      areGatesOnPlot(localPlot)
+      //&& props?.plot?.gate?.gateType === "polygon"
     ) {
-      let newPointsReal = getRealPointFromCanvasPoints(
-        props.enrichedFile.channels,
-        localPlot,
-        [event.offsetX, event.offsetY],
-        props.enrichedFile.logicles
-      );
-      let isInside = isPointInPolygon(
-        newPointsReal[0],
-        newPointsReal[1],
-        localPlot.gate.points
-      );
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
 
-      let gateCanvasPoints = localPlot.gate.points.map((point) => {
-        let canvasPoint = getPointOnCanvas(
+        let newPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
-          point[0],
-          point[1],
-          // TODO make sure can only change gate when on correct channels
-          // this is important, make sure they can only edit gate when the gate channels match prop channels
           localPlot,
+          [event.offsetX, event.offsetY],
           props.enrichedFile.logicles
         );
 
-        return canvasPoint;
-      });
-      let near = false;
-      gateCanvasPoints.find((point) => {
-        let isNear =
-          point[0] + 5 >= event.offsetX &&
-          point[0] - 5 <= event.offsetX &&
-          point[1] + 5 >= event.offsetY &&
-          point[1] - 5 <= event.offsetY;
-        if (isNear) near = isNear;
-        return isNear;
-      });
+        let isInside = isPointInPolygon(
+          newPointsReal[0],
+          newPointsReal[1],
+          gate.points
+        );
 
-      document.body.style.cursor = near ? "move" : isInside ? "grab" : "auto";
+        let gateCanvasPoints = gate.points.map((point) => {
+          let canvasPoint = getPointOnCanvas(
+            props.enrichedFile.channels,
+            point[0],
+            point[1],
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            localPlot,
+            props.enrichedFile.logicles
+          );
+
+          return canvasPoint;
+        });
+        let isNear = isMousePointNearScatterPoints(
+          gateCanvasPoints,
+          event.offsetX,
+          event.offsetY
+        ).isNear;
+
+        document.body.style.cursor = isNear
+          ? "move"
+          : isInside
+          ? "grab"
+          : "crosshair";
+
+        if (isNear || isInside) {
+          break;
+        }
+      }
     } else {
       document.body.style.cursor =
         props.enrichedFile.fileId === props.workspaceState.controlFileId &&
@@ -1132,22 +1122,6 @@ function Plot(props) {
                       left: 0,
                       top: 0,
                     }}
-                    // onMouseDown={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleMouseDown(nativeEvent);
-                    // }}
-                    // onMouseMove={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleCursorProperty(nativeEvent);
-                    //   handleMouseMove(nativeEvent);
-                    // }}
-                    // onMouseUp={(e) => {
-                    //   let nativeEvent = e.nativeEvent;
-                    //   handleMouseUp(nativeEvent);
-                    // }}
-                    // onMouseLeave={(e) => {
-                    //   document.body.style.cursor = "auto";
-                    // }}
                   />
 
                   <canvas
@@ -1181,7 +1155,7 @@ function Plot(props) {
               </div>
               {/* X-axis */}
               <canvas
-                width={localPlot.width + 50}
+                width={localPlot.width + 25}
                 id={`canvas-${props.plotIndex}-xAxis`}
                 height={20}
                 style={{

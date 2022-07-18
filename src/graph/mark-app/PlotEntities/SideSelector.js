@@ -21,9 +21,9 @@ function SideSelector(props) {
       style={{
         display: "flex",
         justifyContent: "center",
-        paddingLeft: 15,
-        paddingBottom: 15,
-        paddingRight: 15,
+        paddingLeft: 5,
+        paddingBottom: 5,
+        paddingRight: 5,
       }}
     >
       <div
@@ -220,7 +220,7 @@ function SideSelector(props) {
         </div>
       </div>
 
-      {props.plot.plotType == "histogram" ? (
+      {/* {props.plot.plotType == "histogram" ? (
         <div
           style={{
             marginLeft: "10px",
@@ -323,7 +323,7 @@ function SideSelector(props) {
             })}
           </div>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }

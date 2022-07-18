@@ -3,19 +3,19 @@ import { useEffect, useState, useCallback } from "react";
 import SideSelector from "./PlotEntities/SideSelector";
 import Modal from "react-modal";
 import { useResizeDetector } from "react-resize-detector";
-import { getRealPointFromCanvasPoints, getPointOnCanvas } from "./PlotHelper";
+import {
+  getRealPointFromCanvasPoints,
+  getPointOnCanvas,
+  isMousePointNearHistPoints,
+  isMousePointInsideHistPoints,
+  getMoveValue,
+  getGateValue,
+} from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins, isGateShowing } from "./Helper";
+import { drawText, getAxisLabels, getBins, getGateName } from "./Helper";
 
 let isMouseDown = false;
 let interval = null;
-
-const hasGate = (plot) => {
-  console.log("props.plot is ", plot);
-  let hasGate = !!plot.gate;
-  console.log("hasGate is ", hasGate);
-  return hasGate;
-};
 
 const isOnGate = (plot) => {
   return plot.gate.xAxisIndex == plot.xAxisIndex;
@@ -181,9 +181,14 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 
 function Histogram(props) {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-
+  let [dragPointIndex, setDragPointIndex] = useState(null);
+  let [startPointsReal, setStartPointsReal] = useState(null);
+  let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
+  let [isInsideGate, setIsInsideGate] = useState(null);
+  let [isNearPoint, setIsNearPoint] = useState(null);
   let [startCanvasPoint, setStartCanvasPoint] = useState(null);
   let [endCanvasPoint, setEndCanvasPoint] = useState(null);
+  let [newPoints, setNewPoints] = useState([]);
   const [gateName, setGateName] = useState({
     name: "",
     error: false,
@@ -227,18 +232,38 @@ function Histogram(props) {
   });
 
   useEffect(() => {
-    if (startCanvasPoint && endCanvasPoint) {
+    if (newPoints && newPoints[0] && newPoints[1]) {
       let context = getContext("covering-canvas-" + props.plotIndex);
 
       if (context) {
-        drawTemporaryGateLine(context, props.plot);
+        let context = getContext("covering-canvas-" + props.plotIndex);
+        context.clearRect(0, 0, props.plot.width, props.plot.height);
+        context.fillStyle = "white";
+
+        if (props.plot?.gates) {
+          props.plot?.gates?.map((gate) => {
+            let points =
+              gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+            drawGateLine(
+              getContext("covering-canvas-" + props.plotIndex),
+              props.plot,
+              points
+            );
+          });
+        }
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          newPoints
+        );
       }
     } else {
-      let context = getContext("covering-canvas-" + props.plotIndex);
-      context.clearRect(0, 0, props.plot.width, props.plot.height);
-      context.fillStyle = "white";
+      // let context = getContext("covering-canvas-" + props.plotIndex);
+      // context.clearRect(0, 0, props.plot.width, props.plot.height);
+      // context.fillStyle = "white";
     }
-  }, [startCanvasPoint, endCanvasPoint]);
+  }, [newPoints]);
 
   useEffect(() => {
     //setLocalPlot(props.plot);
@@ -362,26 +387,37 @@ function Histogram(props) {
       );
     }
 
-    if (props.plot.gate && shouldDrawGate(props.plot)) {
-      drawGateLine(context, props.plot);
+    // if (props.plot.gate && shouldDrawGate(props.plot)) {
+    //   drawGateLine(context, props.plot);
+    // }
+
+    if (areGatesOnPlot(props.plot)) {
+      props.plot.gates.map((gate) => {
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          gate.points
+        );
+      });
     }
   }, [props.plot]);
 
-  const drawGateLine = (context, plot) => {
+  const drawGateLine = (context, plot, points) => {
     context.strokeStyle = "red";
     context.lineWidth = 1;
     context.beginPath();
 
     let leftPointsOnCanvas = getPointOnCanvas(
       props.enrichedFile.channels,
-      plot.gate.points[0],
+      points[0],
       null,
       plot,
       props.enrichedFile.logicles
     );
+
     let rightPointsOnCanvas = getPointOnCanvas(
       props.enrichedFile.channels,
-      plot.gate.points[1],
+      points[1],
       null,
       plot,
       props.enrichedFile.logicles
@@ -412,14 +448,14 @@ function Histogram(props) {
 
     context.lineWidth = 2;
 
-    context.moveTo(startCanvasPoint, plot.height / 2);
-    context.lineTo(endCanvasPoint, plot.height / 2);
+    context.moveTo(newPoints[0], plot.height / 2);
+    context.lineTo(newPoints[1], plot.height / 2);
 
-    context.moveTo(startCanvasPoint, 0);
-    context.lineTo(startCanvasPoint, plot.height);
+    context.moveTo(newPoints[0], 0);
+    context.lineTo(newPoints[0], plot.height);
 
-    context.moveTo(endCanvasPoint, 0);
-    context.lineTo(endCanvasPoint, plot.height);
+    context.moveTo(newPoints[1], 0);
+    context.lineTo(newPoints[1], plot.height);
 
     context.stroke();
   };
@@ -580,21 +616,10 @@ function Histogram(props) {
   const onAddGate = () => {
     // Here im generating a random gate, which is a triangle
 
-    let startPoint = getRealPointFromCanvasPoints(
-      props.enrichedFile.channels,
-      props.plot,
-      [startCanvasPoint, null],
-      props.enrichedFile.logicles
-    )[0];
-    let endPoint = getRealPointFromCanvasPoints(
-      props.enrichedFile.channels,
-      props.plot,
-      [endCanvasPoint, null],
-      props.enrichedFile.logicles
-    )[0];
-
     let points =
-      endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
+      newPoints[1] > newPoints[0]
+        ? [newPoints[0], newPoints[1]]
+        : [newPoints[1], newPoints[0]];
 
     let xRange = [
       props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
@@ -609,7 +634,7 @@ function Histogram(props) {
     let gate = {
       color: gateColor,
       gateType: "histogram",
-      name: gateName.name,
+      name: getGateName(gateName.name),
       points: points,
       xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
@@ -620,11 +645,11 @@ function Histogram(props) {
     };
 
     let plot = JSON.parse(JSON.stringify(props.plot));
-    plot.gate = gate;
 
     let change = {
       type: "AddGate",
       plot: plot,
+      newGate: gate,
       plotIndex: props.plotIndex.split("-")[1],
       fileId: props.enrichedFile.fileId,
     };
@@ -633,21 +658,10 @@ function Histogram(props) {
   };
 
   const onEditGate = () => {
-    let startPoint = getRealPointFromCanvasPoints(
-      props.enrichedFile.channels,
-      props.plot,
-      [startCanvasPoint, null],
-      props.enrichedFile.logicles
-    )[0];
-    let endPoint = getRealPointFromCanvasPoints(
-      props.enrichedFile.channels,
-      props.plot,
-      [endCanvasPoint, null],
-      props.enrichedFile.logicles
-    )[0];
-
     let points =
-      endPoint > startPoint ? [startPoint, endPoint] : [endPoint, startPoint];
+      newPoints[1] > newPoints[0]
+        ? [newPoints[0], newPoints[1]]
+        : [newPoints[1], newPoints[0]];
 
     let plot = JSON.parse(JSON.stringify(props.plot));
 
@@ -676,45 +690,248 @@ function Histogram(props) {
   };
 
   /*********************MOUSE EVENTS FOR GATES********************************/
-  const handleMouseDown = (event) => {
-    isMouseDown = true;
+  // const handleMouseDown = (event) => {
+  //   isMouseDown = true;
 
-    if (hasGate(props.plot)) {
-      if (isOnGate(props.plot)) {
-        console.log("setting startPoint...");
-        setStartCanvasPoint(event.offsetX);
+  //   if (hasGate(props.plot)) {
+  //     if (isOnGate(props.plot)) {
+  //       console.log("setting startPoint...");
+  //       setStartCanvasPoint(event.offsetX);
+  //     }
+  //   } else {
+  //     if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+  //       console.log("setting startPoint...");
+  //       setStartCanvasPoint(event.offsetX);
+  //     }
+  //   }
+
+  //   // // draw histogram gate only if it is selected file
+  //   // if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+  //   //   if (!props?.plot?.gate) {
+  //   //     // if there is no gate
+  //   //     setStartCanvasPoint(event.offsetX);
+  //   //   } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
+  //   //     // if there is gate and same channel and scale
+  //   //     setStartCanvasPoint(event.offsetX);
+  //   //   }
+  //   // }
+  // };
+
+  const handleMouseDown = (event) => {
+    if (resizing) return;
+    isMouseDown = true;
+    let isNearOrInsideAnyGate;
+    if (hasGates()) {
+      //if (!areGatesOnPlot(props.plot)) return;
+      for (var i = 0; i < props.plot.gates.length; i++) {
+        let gate = props.plot.gates[i];
+
+        let gateCanvasPoints = [
+          getPointOnCanvas(
+            props.enrichedFile.channels,
+            gate.points[0],
+            null,
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            props.plot,
+            props.enrichedFile.logicles
+          )[0],
+          getPointOnCanvas(
+            props.enrichedFile.channels,
+            gate.points[1],
+            null,
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            props.plot,
+            props.enrichedFile.logicles
+          )[0],
+        ];
+
+        let isNearPointIndex = isMousePointNearHistPoints(
+          gateCanvasPoints[0],
+          gateCanvasPoints[1],
+          event.offsetX
+        );
+
+        setIsNearPoint(isNearPointIndex.isNear);
+
+        if (isNearPointIndex.isNear) {
+          setNameOfGateCursorIsInside(gate.name);
+          setDragPointIndex(isNearPointIndex.pointIndex);
+        }
+
+        let isInside = false;
+        if (!isNearPointIndex.isNear) {
+          isInside = isMousePointInsideHistPoints(
+            gateCanvasPoints[0],
+            gateCanvasPoints[1],
+            event.offsetX
+          );
+
+          setIsInsideGate(isInside);
+        }
+
+        if (isInside) {
+          setNameOfGateCursorIsInside(gate.name);
+        }
+
+        if (isInside || isNearPointIndex.isNear) {
+          setStartPointsReal(
+            getRealPointFromCanvasPoints(
+              props.enrichedFile.channels,
+              props.plot,
+              [event.offsetX, event.offsetY],
+              props.enrichedFile.logicles
+            )
+          );
+          isNearOrInsideAnyGate = true;
+          break;
+        }
+      }
+
+      // so its a new gate
+      if (!isNearOrInsideAnyGate) {
+        let point = getRealPointFromCanvasPoints(
+          props.enrichedFile.channels,
+          props.plot,
+          [event.offsetX, null],
+          props.enrichedFile.logicles
+        );
+
+        setNewPoints([point[0], point[0]]);
       }
     } else {
-      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
-        console.log("setting startPoint...");
-        setStartCanvasPoint(event.offsetX);
-      }
-    }
+      let point = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        props.plot,
+        [event.offsetX, null],
+        props.enrichedFile.logicles
+      );
 
-    // // draw histogram gate only if it is selected file
-    // if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
-    //   if (!props?.plot?.gate) {
-    //     // if there is no gate
-    //     setStartCanvasPoint(event.offsetX);
-    //   } else if (props?.plot?.gate && isGateShowing(props?.plot)) {
-    //     // if there is gate and same channel and scale
-    //     setStartCanvasPoint(event.offsetX);
-    //   }
-    // }
+      setNewPoints([point[0], point[0]]);
+    }
+  };
+
+  const handleMouseMove = (event) => {
+    if (!isMouseDown) return;
+
+    let newPointsCanvas = [event.offsetX, event.offsetY];
+
+    if (isInsideGate || isNearPoint) {
+      // this code will run when a user will drag the entire polygon gate
+
+      let moveX = getMoveValue(
+        props.plot,
+        props.enrichedFile.channels,
+        props.enrichedFile.logicles,
+        startPointsReal[0],
+        newPointsCanvas[0],
+        props.plot.xScaleType,
+        props.plot.xAxisIndex,
+        "x"
+      );
+
+      for (var i = 0; i < props.plot.gates.length; i++) {
+        let gate = props.plot.gates[i];
+        let points = [];
+        if (gate.name == nameOfGateCursorIsInside) {
+          if (typeof dragPointIndex == "number") {
+            // TODO too much code repetition here
+            if (dragPointIndex === 0) {
+              let newGateValueRealX = getGateValue(
+                props.enrichedFile.logicles,
+                gate.points[0],
+                props.plot.xScaleType,
+                props.plot.xAxisIndex,
+                props.plot.width,
+                moveX
+              );
+
+              points = [newGateValueRealX, gate.points[1]];
+            } else if (dragPointIndex === 1) {
+              let newGateValueRealX = getGateValue(
+                props.enrichedFile.logicles,
+                gate.points[1],
+                props.plot.xScaleType,
+                props.plot.xAxisIndex,
+                props.plot.width,
+                moveX
+              );
+
+              points = [gate.points[0], newGateValueRealX];
+            }
+          } else {
+            let newLeftRealValue = getGateValue(
+              props.enrichedFile.logicles,
+              gate.points[0],
+              props.plot.xScaleType,
+              props.plot.xAxisIndex,
+              props.plot.width,
+              moveX
+            );
+
+            let newRightRealValue = getGateValue(
+              props.enrichedFile.logicles,
+              gate.points[1],
+              props.plot.xScaleType,
+              props.plot.xAxisIndex,
+              props.plot.width,
+              moveX
+            );
+
+            points = [newLeftRealValue, newRightRealValue];
+          }
+
+          setNewPoints(points);
+        }
+      }
+    } else {
+      let point = getRealPointFromCanvasPoints(
+        props.enrichedFile.channels,
+        props.plot,
+        [event.offsetX, null],
+        props.enrichedFile.logicles
+      );
+
+      setNewPoints([newPoints[0], point[0]]);
+    }
   };
 
   const handleMouseUp = (event) => {
+    if (resizing) return;
+    if (!isMouseDown) return;
+
     isMouseDown = false;
-    if (hasGate(props.plot) && isGateShowing(props?.plot)) {
-      onEditGate();
-      setStartCanvasPoint(null);
-      setEndCanvasPoint(null);
+
+    if (isInsideGate || isNearPoint) {
+      for (var i = 0; i < props.plot.gates.length; i++) {
+        let gate = props.plot.gates[i];
+        if (gate.name == nameOfGateCursorIsInside) {
+          setIsInsideGate(false);
+          setIsNearPoint(false);
+          setDragPointIndex(false);
+          setNameOfGateCursorIsInside(null);
+          setNewPoints([]);
+
+          if (newPoints && newPoints.length > 1) {
+            gate.points = JSON.parse(JSON.stringify(newPoints));
+
+            setNewPoints([]);
+
+            let change = {
+              type: "EditGate",
+              plot: props.plot,
+              gate: gate,
+              plotIndex: props.plotIndex.split("-")[1],
+              fileId: props.enrichedFile.fileId,
+            };
+            props.onEditGate(change);
+          }
+        }
+      }
     } else {
-      // show histogram gate creation modal only if it is selected file and it doesn't have any gate
-      if (
-        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
-        !props?.plot?.gate
-      ) {
+      // so its a new gate
+      if (newPoints && newPoints.length > 1) {
         const suggestedGateName = props.plot.xAxisLabel + " subset";
         setGateName({
           name: suggestedGateName,
@@ -725,16 +942,96 @@ function Histogram(props) {
     }
   };
 
-  const handleMouseMove = (event) => {
-    if (isMouseDown) {
-      setEndCanvasPoint(event.offsetX);
-    }
+  // const handleMouseMove = (event) => {
+  //   if (isMouseDown) {
+  //     setEndCanvasPoint(event.offsetX);
+  //   }
+  // };
+
+  // const handleCursorProperty = (event) => {
+  //   if (props?.plot?.plotType === "histogram" && !props?.plot?.gate) {
+  //     document.body.style.cursor =
+  //       props.enrichedFile.fileId === props.workspaceState.controlFileId
+  //         ? "col-resize"
+  //         : "auto";
+  //   }
+  // };
+
+  const hasGates = () => {
+    return !!props.plot.gates;
+  };
+
+  const areGatesOnPlot = (plot) => {
+    let showGate = false;
+    plot?.gates?.map((gate) => {
+      if (
+        plot.xAxisIndex === gate.xAxisIndex &&
+        plot.xScaleType === gate.xScaleType
+      ) {
+        showGate = true;
+      }
+    });
+
+    return showGate;
   };
 
   const handleCursorProperty = (event) => {
-    if (props?.plot?.plotType === "histogram" && !props?.plot?.gate) {
+    if (hasGates() && areGatesOnPlot(props.plot)) {
+      for (var i = 0; i < props.plot.gates.length; i++) {
+        let gate = props.plot.gates[i];
+
+        let gateCanvasPoints = [
+          getPointOnCanvas(
+            props.enrichedFile.channels,
+            gate.points[0],
+            null,
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            props.plot,
+            props.enrichedFile.logicles
+          )[0],
+          getPointOnCanvas(
+            props.enrichedFile.channels,
+            gate.points[1],
+            null,
+            // TODO make sure can only change gate when on correct channels
+            // this is important, make sure they can only edit gate when the gate channels match prop channels
+            props.plot,
+            props.enrichedFile.logicles
+          )[0],
+        ];
+
+        let isNearPointIndex = false;
+        let isInside = false;
+
+        isInside = isMousePointInsideHistPoints(
+          gateCanvasPoints[0],
+          gateCanvasPoints[1],
+          event.offsetX
+        );
+
+        if (!isInside) {
+          isNearPointIndex = isMousePointNearHistPoints(
+            gateCanvasPoints[0],
+            gateCanvasPoints[1],
+            event.offsetX
+          );
+        }
+
+        document.body.style.cursor = isNearPointIndex.isNear
+          ? "move"
+          : isInside
+          ? "grab"
+          : "col-resize";
+
+        if (isNearPointIndex.isNear || isInside) {
+          break;
+        }
+      }
+    } else {
       document.body.style.cursor =
-        props.enrichedFile.fileId === props.workspaceState.controlFileId
+        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
+        !props.plot?.gate
           ? "col-resize"
           : "auto";
     }
@@ -743,8 +1040,11 @@ function Histogram(props) {
   const onSetGateName = () => {
     onAddGate();
     setModalIsOpen(false);
-    setStartCanvasPoint(null);
-    setEndCanvasPoint(null);
+    setIsInsideGate(false);
+    setIsNearPoint(false);
+    setDragPointIndex(false);
+    setNameOfGateCursorIsInside(null);
+    setNewPoints([]);
   };
 
   const onCancelGateName = () => {
