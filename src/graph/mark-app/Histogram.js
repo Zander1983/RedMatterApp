@@ -245,21 +245,18 @@ function Histogram(props) {
             let points =
               gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
 
-            console.log(">>> points is ", points);
-
             drawGateLine(
               getContext("covering-canvas-" + props.plotIndex),
               props.plot,
               points
             );
           });
-        } else {
-          drawGateLine(
-            getContext("covering-canvas-" + props.plotIndex),
-            props.plot,
-            newPoints
-          );
         }
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          newPoints
+        );
       }
     } else {
       // let context = getContext("covering-canvas-" + props.plotIndex);
@@ -787,6 +784,17 @@ function Histogram(props) {
             )
           );
           break;
+        } else {
+          // so its a new gate
+
+          let point = getRealPointFromCanvasPoints(
+            props.enrichedFile.channels,
+            props.plot,
+            [event.offsetX, null],
+            props.enrichedFile.logicles
+          );
+
+          setNewPoints([point[0], point[0]]);
         }
       }
     } else {
@@ -796,8 +804,6 @@ function Histogram(props) {
         [event.offsetX, null],
         props.enrichedFile.logicles
       );
-
-      console.log("in mouse down, seetting point to ", [point[0], point[0]]);
 
       setNewPoints([point[0], point[0]]);
     }
@@ -884,11 +890,6 @@ function Histogram(props) {
         props.enrichedFile.logicles
       );
 
-      console.log(">>> in mouse move, now setting the points to ", [
-        newPoints[0],
-        point[0],
-      ]);
-
       setNewPoints([newPoints[0], point[0]]);
     }
   };
@@ -899,13 +900,6 @@ function Histogram(props) {
 
     isMouseDown = false;
 
-    console.log(
-      "in handle mouse move, isInsideGate is ",
-      isInsideGate,
-      ", isNearPoint is ",
-      isNearPoint
-    );
-
     if (isInsideGate || isNearPoint) {
       for (var i = 0; i < props.plot.gates.length; i++) {
         let gate = props.plot.gates[i];
@@ -914,6 +908,7 @@ function Histogram(props) {
           setIsNearPoint(false);
           setDragPointIndex(false);
           setNameOfGateCursorIsInside(null);
+          setNewPoints([]);
 
           if (newPoints && newPoints.length > 1) {
             gate.points = JSON.parse(JSON.stringify(newPoints));
@@ -1046,8 +1041,11 @@ function Histogram(props) {
   const onSetGateName = () => {
     onAddGate();
     setModalIsOpen(false);
-    setStartCanvasPoint(null);
-    setEndCanvasPoint(null);
+    setIsInsideGate(false);
+    setIsNearPoint(false);
+    setDragPointIndex(false);
+    setNameOfGateCursorIsInside(null);
+    setNewPoints([]);
   };
 
   const onCancelGateName = () => {
