@@ -96,28 +96,23 @@ function Table(props) {
 
       els.push(el);
 
-      let elDistanceToTop =
-        window.pageYOffset +
-        document.getElementById("workspace-container").getBoundingClientRect()
-          .top;
+      // let elDistanceToTop =
+      //   window.pageYOffset +
+      //   document.getElementById("workspace-container").getBoundingClientRect()
+      //     .top;
 
-      console.log("population is ", plot.population);
-      console.log("plot.top is ", plot.top, ", top.left is ", plot.left);
-      console.log(">>>> setting top to ", plot.top + elDistanceToTop);
+      let elDistanceToTop = 120;
+
       const draggable = new Draggable(el, {
         left: plot.left,
         top: plot.top + elDistanceToTop,
         handle: el.children[0],
         //endSocket: "right",
         onMove: () => {
-          console.log("in on move");
           //line1.position();
         },
-        position: (pos) => {
-          console.log("in position, pos is ", pos);
-        },
+        position: (pos) => {},
         onDrag: (newPosition) => {
-          console.log("in on drag...");
           props.workspaceState.files[props.workspaceState.controlFileId].plots[
             index
           ].top = newPosition.top - elDistanceToTop;
@@ -211,11 +206,14 @@ function Table(props) {
   };
 
   function PlotRender({ plots: plots, node: node }) {
+    const mappedPlots = plots.map((plot) => plot.top);
+    const maxTop = Math.max.apply(null, mappedPlots);
+
     return (
       <div
         id="workspace-container"
         style={{
-          height: 1600,
+          height: 350 + maxTop,
           position: "relative",
         }}
       >
@@ -315,6 +313,55 @@ function Table(props) {
 
   return (
     <div>
+      <div
+        style={{
+          color: "#000",
+          backgroundColor: "#f2f2f2",
+          fontWeight: "bold",
+          display: "flex",
+          paddingLeft: "10px",
+        }}
+      >
+        <div
+          style={{
+            width: "20%",
+            order: 1,
+          }}
+        ></div>
+        <div
+          style={{
+            width: "60%",
+            order: 2,
+            textAlign: "center",
+          }}
+        >
+          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
+            <>
+              <span
+                style={{
+                  color: "#ff8080",
+                }}
+              >
+                CONTROL FILE
+              </span>
+              <span> - {openEnrichedFile.fileId}</span>
+            </>
+          ) : (
+            <span>{openEnrichedFile.fileId}</span>
+          )}
+        </div>
+        <div
+          style={{
+            width: "20%",
+            order: 3,
+          }}
+        ></div>
+      </div>
+
+      {PlotRender({
+        plots: openEnrichedFile.plots,
+      })}
+
       <table
         style={{
           maxWidth: "100%",
@@ -398,6 +445,14 @@ function Table(props) {
             return (
               <tr key={`tr-${fileIndex}`}>
                 {enrichedFile.plots.map((plot, plotIindex) => {
+                  let backgroundColor =
+                    enrichedFile.fileId == props.workspaceState.openFile
+                      ? "#f2f2f2"
+                      : "#fff";
+                  let disableView =
+                    enrichedFile.fileId == props.workspaceState.openFile
+                      ? true
+                      : false;
                   return (
                     <td
                       key={`td-${plotIindex + 1}`}
@@ -405,6 +460,7 @@ function Table(props) {
                       style={{
                         margin: 0.5,
                         border: "1px solid gray",
+                        backgroundColor: backgroundColor,
                         // minWidth: plot.width + 170,
                       }}
                     >
@@ -414,14 +470,70 @@ function Table(props) {
                           fontWeight: "bold",
                         }}
                       >
-                        <Tooltip
-                          title={
-                            plot.population === "All" &&
-                            enrichedFile?.label.length > 21
-                              ? enrichedFile?.label
-                              : ""
-                          }
-                        >
+                        {plot.population == "All" && (
+                          <Tooltip
+                            title={
+                              plot.population === "All" &&
+                              enrichedFile?.label.length > 21
+                                ? enrichedFile?.label
+                                : ""
+                            }
+                          >
+                            <div>
+                              <div
+                                style={{
+                                  whiteSpace: "nowrap",
+                                  maxWidth: plot.width,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  textAlign: "center",
+                                  fontWeight: "bold",
+                                  margin: "auto",
+                                }}
+                              >
+                                {props.workspaceState.controlFileId ==
+                                  enrichedFile.fileId && (
+                                  <span
+                                    style={{
+                                      color: "#ff8080",
+                                    }}
+                                  >
+                                    (C)
+                                  </span>
+                                )}
+
+                                {enrichedFile.label}
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: "10px",
+                                }}
+                              >
+                                {" " +
+                                  enrichedFile.enrichedEvents.length +
+                                  " events"}
+                              </span>
+                              <br />
+
+                              <span
+                                onClick={() =>
+                                  fileViewHideHandler(enrichedFile?.fileId)
+                                }
+                                style={{
+                                  cursor: "pointer",
+                                  fontWeight: "bold",
+                                  paddingRight: 5,
+                                  color: "#1890ff",
+                                }}
+                                disabled={disableView}
+                              >
+                                View
+                              </span>
+                            </div>
+                          </Tooltip>
+                        )}
+
+                        {plot.population != "All" && (
                           <div
                             style={{
                               whiteSpace: "nowrap",
@@ -433,48 +545,16 @@ function Table(props) {
                               margin: "auto",
                             }}
                           >
-                            {plot.population !== "All"
-                              ? `${enrichedFile.gateStats
-                                  .filter((gateStat) => {
-                                    return (
-                                      gateStat.gateName === plot.population
-                                    );
-                                  })
+                            {enrichedFile.gateStats
+                              .filter((gateStat) => {
+                                return gateStat.gateName === plot.population;
+                              })
 
-                                  .map((gateStat) => {
-                                    return gateStat && gateStat.percentage;
-                                  })}%`
-                              : enrichedFile.label}
+                              .map((gateStat) => {
+                                return gateStat && gateStat.percentage;
+                              })}
+                            %
                           </div>
-                        </Tooltip>
-
-                        <span
-                          style={{
-                            fontSize: "10px",
-                          }}
-                        >
-                          {plot.population === "All"
-                            ? "" +
-                              enrichedFile.enrichedEvents.length +
-                              " events"
-                            : ""}
-                        </span>
-                        <br />
-
-                        {plot.population == "All" && (
-                          <span
-                            onClick={() =>
-                              fileViewHideHandler(enrichedFile?.fileId)
-                            }
-                            style={{
-                              cursor: "pointer",
-                              fontWeight: "bold",
-                              paddingRight: 5,
-                              color: "#1890ff",
-                            }}
-                          >
-                            View
-                          </span>
                         )}
                       </div>
                     </td>
@@ -485,54 +565,6 @@ function Table(props) {
           })}
         </tbody>
       </table>
-      <div
-        style={{
-          color: "#000",
-          backgroundColor: "#f2f2f2",
-          fontWeight: "bold",
-          display: "flex",
-          paddingLeft: "10px",
-        }}
-      >
-        <div
-          style={{
-            width: "20%",
-            order: 1,
-          }}
-        ></div>
-        <div
-          style={{
-            width: "60%",
-            order: 2,
-            textAlign: "center",
-          }}
-        >
-          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
-            <>
-              <span
-                style={{
-                  color: "#ff8080",
-                }}
-              >
-                CONTROL FILE
-              </span>
-              <span> - {openEnrichedFile.fileId}</span>
-            </>
-          ) : (
-            <span>{openEnrichedFile.fileId}</span>
-          )}
-        </div>
-        <div
-          style={{
-            width: "20%",
-            order: 3,
-          }}
-        ></div>
-      </div>
-
-      {PlotRender({
-        plots: openEnrichedFile.plots,
-      })}
     </div>
   );
 }

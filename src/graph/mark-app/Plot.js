@@ -1078,6 +1078,7 @@ function Plot(props) {
             </div>
           </div>
         </Modal>
+
         <SideSelector
           channelOptions={channelOptions}
           onChange={onChangeChannel}

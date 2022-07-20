@@ -1178,9 +1178,14 @@ function Histogram(props) {
                 {/* main canvas */}
                 <div
                   style={{
+                    border: "1px solid #32a1ce",
+                    minHeight: 200,
+                    minWidth: 200,
+                    width: `${props.plot.width + 2}px`,
+                    height: `${props.plot.height + 2}px`,
+                    resize: "both",
+                    overflow: "hidden",
                     position: "relative",
-                    width: props.plot.width,
-                    height: props.plot.height,
                   }}
                 >
                   <canvas
