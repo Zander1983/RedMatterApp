@@ -283,7 +283,7 @@ const WorkspaceTopBar = (props: any) => {
             headers={heeaderForCSV}
             data={data}
             filename="WorkspaceReport.csv"
-            // className={classes.downloadBtnLayout}
+            style={{ display: "flex", alignItems: "center" }}
           >
             <GetAppIcon
               fontSize="small"
@@ -304,6 +304,8 @@ const WorkspaceTopBar = (props: any) => {
             color: "#1890ff",
             float: "right",
             marginRight: 10,
+            display: "flex",
+            alignItems: "center",
           }}
           //disabled={!hasGate}
         >
