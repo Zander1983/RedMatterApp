@@ -121,6 +121,7 @@ function Plot(props) {
   useEffect(() => {
     let context = getContext("covering-canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
+    context.fillStyle = "white";
 
     // draw here
     if (newPoints.length > 0) {
@@ -965,6 +966,7 @@ function Plot(props) {
     setModalIsOpen(false);
     newGatePointsCanvas = [];
     polygonComplete = false;
+    setNewPoints([]);
     setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
   };
 
@@ -1107,8 +1109,8 @@ function Plot(props) {
                     minWidth: 200,
                     width: `${props.plot.width + 2}px`,
                     height: `${props.plot.height + 2}px`,
-                    resize: "both",
-                    overflow: "hidden",
+                    // resize: "both",
+                    // overflow: "hidden",
                     position: "relative",
                   }}
                   ref={ref}

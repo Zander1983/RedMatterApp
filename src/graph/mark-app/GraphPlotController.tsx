@@ -149,7 +149,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
-    console.log(">>> onAddGate change is ", change);
+    console.log("in onAddGate and change is ", change);
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
@@ -170,12 +170,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
-    console.log("numAtThatLevel is ", numAtThatLevel);
-
     newPlot.left = 350 * level;
     newPlot.top = 350 * numAtThatLevel;
-
-    console.log("newPlot.left is ", newPlot.left);
 
     newPlot.population = change.newGate.name;
     // for histograms
@@ -228,7 +224,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    console.log(">>>> newWorkspaceState is ", newWorkspaceState);
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -292,19 +287,29 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
+    console.log(">>> in onEditGate, change is ", change);
     let fileKey = change.fileId;
     let newWorkspaceState: any = this.state.workspaceState;
     if (!(newWorkspaceState as any).files[fileKey]) {
       // so its a non-control gate being edited, copy plots from control
+      let plotsCopy = JSON.parse(
+        JSON.stringify(
+          (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+            .plots
+        )
+      );
+
+      let plot = plotsCopy.find(
+        (plot: any) => plot.population == change.gate.name
+      );
+
+      plot.edited = true;
       (newWorkspaceState as any).files[fileKey] = {
         //@ts-ignore
-        plots: JSON.parse(
-          JSON.stringify(
-            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
-              .plots
-          )
-        ),
+        plots: plotsCopy,
       };
+
+      console.log("!!!! setting edited to true, plotsCopy is ", plotsCopy);
     }
 
     let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
@@ -320,6 +325,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
+    console.log(">>>newWorkspaceState is ", newWorkspaceState);
 
     this.setState({
       enrichedFiles: enrichedFiles,

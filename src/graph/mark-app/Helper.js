@@ -20,6 +20,7 @@ export const superAlgorithm = (
   OriginalWorkspaceState,
   calculateMedianAndMean = false
 ) => {
+  console.log("!!!! in super algorithm");
   // event 1 is not in any gate, it will have color black
   // event 2 is in both gate, it will have the color of the last gate
   // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
@@ -590,8 +591,8 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
 
     let controlFileId = workspaceState.controlFileId;
 
-    let plots = workspaceState.files[file.id]
-      ? JSON.parse(JSON.stringify(workspaceState.files[file.id].plots))
+    let plots = workspaceState.files[file.fileId]
+      ? JSON.parse(JSON.stringify(workspaceState.files[file.fileId].plots))
       : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
 
     return {
@@ -697,6 +698,7 @@ export const createDefaultPlotSnapShot = (
     editWorkspace: "true",
     isShared: "false",
     openFile: fileId,
+    workspaceContainerHeight: 350,
   };
 };
 

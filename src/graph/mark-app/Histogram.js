@@ -180,14 +180,13 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
+  console.log("in Histogram, props are ", props);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
   let [isNearPoint, setIsNearPoint] = useState(null);
-  let [startCanvasPoint, setStartCanvasPoint] = useState(null);
-  let [endCanvasPoint, setEndCanvasPoint] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [gateName, setGateName] = useState({
     name: "",
@@ -232,31 +231,33 @@ function Histogram(props) {
   });
 
   useEffect(() => {
-    if (newPoints && newPoints[0] && newPoints[1]) {
-      let context = getContext("covering-canvas-" + props.plotIndex);
+    console.log("in the useEffect for newPoints....");
+    let context = getContext("covering-canvas-" + props.plotIndex);
 
-      if (context) {
-        let context = getContext("covering-canvas-" + props.plotIndex);
-        context.clearRect(0, 0, props.plot.width, props.plot.height);
-        context.fillStyle = "white";
+    if (context) {
+      context.clearRect(0, 0, props.plot.width, props.plot.height);
+      context.fillStyle = "white";
 
-        if (props.plot?.gates) {
-          props.plot?.gates?.map((gate) => {
-            let points =
-              gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
-
-            drawGateLine(
-              getContext("covering-canvas-" + props.plotIndex),
-              props.plot,
-              points
-            );
-          });
-        }
+      if (newPoints && newPoints[0] && newPoints[1]) {
+        console.log("drawing the gate for newPoints....");
         drawGateLine(
           getContext("covering-canvas-" + props.plotIndex),
           props.plot,
           newPoints
         );
+      }
+      if (props.plot?.gates) {
+        props.plot?.gates?.map((gate) => {
+          let points =
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+          console.log("drawing the gate for plot.gates....");
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            points
+          );
+        });
       }
     } else {
       // let context = getContext("covering-canvas-" + props.plotIndex);
@@ -391,18 +392,19 @@ function Histogram(props) {
     //   drawGateLine(context, props.plot);
     // }
 
+    context = getContext("covering-canvas-" + props.plotIndex);
+    context.clearRect(0, 0, props.plot.width, props.plot.height);
+    context.fillStyle = "white";
+
     if (areGatesOnPlot(props.plot)) {
       props.plot.gates.map((gate) => {
-        drawGateLine(
-          getContext("covering-canvas-" + props.plotIndex),
-          props.plot,
-          gate.points
-        );
+        drawGateLine(context, props.plot, gate.points);
       });
     }
   }, [props.plot]);
 
   const drawGateLine = (context, plot, points) => {
+    console.log(">>> in drawGateLine");
     context.strokeStyle = "red";
     context.lineWidth = 1;
     context.beginPath();
@@ -1045,12 +1047,14 @@ function Histogram(props) {
     setDragPointIndex(false);
     setNameOfGateCursorIsInside(null);
     setNewPoints([]);
+    setStartPointsReal(null);
   };
 
   const onCancelGateName = () => {
+    console.log("in onCancelGateName.....");
     setModalIsOpen(false);
-    setStartCanvasPoint(null);
-    setEndCanvasPoint(null);
+    setNewPoints([]);
+    setStartPointsReal(null);
   };
 
   const gateNameHandler = (name) => {
