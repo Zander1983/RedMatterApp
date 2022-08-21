@@ -78,8 +78,11 @@ function Table(props) {
   let [containerHeight, setContainerheight] = useState(355);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
-
-  //
+  const workspaceRef = useRef(null);
+  const scrollToElement = () =>
+    workspaceRef.current.scrollIntoView({
+      behavior: "smooth",
+    });
 
   let nodes = [];
   let draggables = [];
@@ -378,6 +381,20 @@ function Table(props) {
           }}
           // setContainerheight(newHeight);
           onMouseLeave={(e) => {
+            let workspaceContainer = document.getElementById(
+              "workspace-container"
+            );
+
+            let containerNewHeight = parseFloat(
+              workspaceContainer.style.height.substring(
+                0,
+                workspaceContainer.style.height.length - 2
+              )
+            );
+
+            setContainerheight(containerNewHeight);
+
+            setDraggingContainer(false);
             setDraggingContainer(false);
           }}
         ></div>
@@ -395,6 +412,7 @@ function Table(props) {
           display: "flex",
           paddingLeft: "10px",
         }}
+        ref={workspaceRef}
       >
         <div
           style={{
@@ -431,11 +449,10 @@ function Table(props) {
           }}
         ></div>
       </div>
-
       {PlotRender({
         plots: openEnrichedFile.plots,
       })}
-
+      above table
       <table
         style={{
           maxWidth: "100%",
@@ -590,9 +607,11 @@ function Table(props) {
                               <br />
 
                               <span
-                                onClick={() =>
-                                  fileViewHideHandler(enrichedFile?.fileId)
-                                }
+                                onClick={() => {
+                                  fileViewHideHandler(enrichedFile?.fileId);
+                                  console.log("Calling scrollToElement!!!!");
+                                  scrollToElement();
+                                }}
                                 style={{
                                   cursor: "pointer",
                                   fontWeight: "bold",

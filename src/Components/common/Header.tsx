@@ -66,7 +66,7 @@ const AppHeader = (props: any) => {
   const renderHeader = () => {
     return (
       <div>
-        <AppBar className={classes.toolbar} position="fixed">
+        <AppBar className={classes.toolbar} position="relative">
           <Toolbar>
             <Typography className={classes.headertitle}>
               <NavLink style={{ color: "#fafafa" }} to="/">
@@ -101,50 +101,8 @@ const AppHeader = (props: any) => {
                 </b>
               </NavLink>
             </Typography>
-            {process.env.REACT_APP_NO_WORKSPACES === "true" && isLoggedIn ? (
-              <NavLink className={classes.topBarLink} to="/analyse">
-                Start Analysing
-              </NavLink>
-            ) : null}
-            {isLoggedIn ? (
-              <>
-                {/* {process.env.REACT_APP_NO_WORKSPACES === "true" ? null : (
-                  <NavLink className={classes.topBarLink} to="/experiments">
-                    Experiments
-                  </NavLink>
-                )} */}
-                {/* <NavLink className={classes.topBarLink} to="/plans">
-                  Plans
-                </NavLink> */}
-                {/* <NavLink className={classes.topBarLink} to="/user-profile">
-                  Profile
-                </NavLink> */}
-                {/* <NavLink className={classes.topBarLink} to="/browse-experiments">
-                Browse
-              </NavLink> */}
-                {/* <NavLink className={classes.topBarLink} to="/why-red-matter">
-                  Why Red Matter
-                </NavLink> */}
-                <a className={classes.topBarLink} onClick={onLogout} href="/">
-                  Logout
-                </a>
-              </>
-            ) : (
-              <>
-                {/* <NavLink className={classes.topBarLink} to="/why-red-matter">
-                  Why Red Matter
-                </NavLink> */}
-                <NavLink className={classes.topBarLink} to="/login">
-                  Login
-                </NavLink>
-                <NavLink className={classes.topBarLink} to="/register">
-                  Register
-                </NavLink>
-              </>
-            )}
           </Toolbar>
         </AppBar>
-        <Toolbar />
       </div>
     );
   };

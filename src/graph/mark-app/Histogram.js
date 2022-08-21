@@ -243,7 +243,8 @@ function Histogram(props) {
         drawGateLine(
           getContext("covering-canvas-" + props.plotIndex),
           props.plot,
-          newPoints
+          newPoints,
+          "red"
         );
       }
       if (props.plot?.gates) {
@@ -255,7 +256,8 @@ function Histogram(props) {
           drawGateLine(
             getContext("covering-canvas-" + props.plotIndex),
             props.plot,
-            points
+            points,
+            "red"
           );
         });
       }
@@ -398,14 +400,14 @@ function Histogram(props) {
 
     if (areGatesOnPlot(props.plot)) {
       props.plot.gates.map((gate) => {
-        drawGateLine(context, props.plot, gate.points);
+        drawGateLine(context, props.plot, gate.points, gate.color);
       });
     }
   }, [props.plot]);
 
-  const drawGateLine = (context, plot, points) => {
+  const drawGateLine = (context, plot, points, color) => {
     console.log(">>> in drawGateLine");
-    context.strokeStyle = "red";
+    context.strokeStyle = color;
     context.lineWidth = 1;
     context.beginPath();
 

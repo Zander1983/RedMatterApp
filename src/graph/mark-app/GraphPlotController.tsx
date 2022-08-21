@@ -149,7 +149,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onAddGate = (change: any) => {
-    console.log("in onAddGate and change is ", change);
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
     let newPlot = JSON.parse(JSON.stringify(change.plot));
@@ -178,16 +177,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     newPlot.color = change.newGate.color;
 
     // set the passed up plot to be in the state
-    let gatedPlot = JSON.parse(JSON.stringify(change.plot));
-
-    gatedPlot.gates && gatedPlot.gates.length > 0
-      ? gatedPlot.gates.push(change.newGate)
-      : (gatedPlot.gates = [change.newGate]);
+    // let gatedPlot = JSON.parse(JSON.stringify(change.plot));
+    // let gates: any[] = [];
+    // if (gatedPlot.gates && gatedPlot.gates.length > 0) {
+    //   gates = JSON.parse(JSON.stringify(gatedPlot.gates));
+    //   gates.push(change.newGate);
+    // } else {
+    //   gates = [change.newGate];
+    // }
 
     // this is setting the last plot to be the gated plot on the contorl
-    let origGatedPlotIndex = (newWorkspaceState as any).files[
-      controlFileId
-    ].plots.findIndex((plot: any) => plot.population == gatedPlot.population);
+    // let origGatedPlotIndex = (newWorkspaceState as any).files[
+    //   controlFileId
+    // ].plots.findIndex((plot: any) => plot.population == gatedPlot.population);
 
     //origGatedPlot = gatedPlot;
 
@@ -195,28 +197,51 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //   (newWorkspaceState as any).files[fileId].plots.length - 1
     // ] = JSON.parse(JSON.stringify(gatedPlot));
 
-    (newWorkspaceState as any).files[controlFileId].plots[
-      origGatedPlotIndex
-    ] = JSON.parse(JSON.stringify(gatedPlot));
+    // (newWorkspaceState as any).files[controlFileId].plots[
+    //   origGatedPlotIndex
+    // ] = JSON.parse(JSON.stringify(gatedPlot));
 
     // this is adding a new plot to the end of the plots array on the control
-    (newWorkspaceState as any).files[controlFileId].plots.push(newPlot);
+    // (newWorkspaceState as any).files[controlFileId].plots.push(newPlot);
 
     // new plots are only added on the control file,
     // so loop through the other fileIds - which have adjusted gates
     // and make sure to keep them
     // TODO look at below
+
     let fileIds = Object.keys((newWorkspaceState as any).files);
     fileIds.forEach((fileId) => {
-      if (fileId != controlFileId) {
-        (newWorkspaceState as any).files[fileId].plots[
-          (newWorkspaceState as any).files[fileId].plots.length - 1
-        ] = JSON.parse(JSON.stringify(gatedPlot));
+      //if (fileId != controlFileId) {
+      let origGatedPlotIndex = (newWorkspaceState as any).files[
+        fileId
+      ].plots.findIndex(
+        (plot: any) => plot.population == change.plot.population
+      );
 
-        (newWorkspaceState as any).files[fileId].plots.push(
-          JSON.parse(JSON.stringify(newPlot))
-        );
+      let gates = (newWorkspaceState as any).files[fileId].plots[
+        origGatedPlotIndex
+      ].gates;
+
+      if (gates && gates.length > 0) {
+        (newWorkspaceState as any).files[fileId].plots[
+          origGatedPlotIndex
+        ].gates.push(change.newGate);
+      } else {
+        (newWorkspaceState as any).files[fileId].plots[
+          origGatedPlotIndex
+        ].gates = [change.newGate];
       }
+
+      (newWorkspaceState as any).files[fileId].plots.push(newPlot);
+
+      // (newWorkspaceState as any).files[fileId].plots[
+      //   (newWorkspaceState as any).files[fileId].plots.length - 1
+      // ] = JSON.parse(JSON.stringify(gatedPlot));
+
+      // (newWorkspaceState as any).files[fileId].plots.push(
+      //   JSON.parse(JSON.stringify(newPlot))
+      // );
+      //}
     });
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -287,11 +312,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
-    console.log(">>> in onEditGate, change is ", change);
     let fileKey = change.fileId;
     let newWorkspaceState: any = this.state.workspaceState;
+
+    let isEditingControlFile = fileKey == newWorkspaceState.controlFileId;
+    //newWorkspaceState.controlFileId
+
     if (!(newWorkspaceState as any).files[fileKey]) {
-      // so its a non-control gate being edited, copy plots from control
+      // so its a non-control gate being edited
+      // copy plots from control
       let plotsCopy = JSON.parse(
         JSON.stringify(
           (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
@@ -308,25 +337,80 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         //@ts-ignore
         plots: plotsCopy,
       };
-
-      console.log("!!!! setting edited to true, plotsCopy is ", plotsCopy);
     }
 
-    let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-      change.plotIndex
-    ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+    let fileIds = Object.keys((newWorkspaceState as any).files);
+    fileIds.forEach((fileId) => {
+      if (isEditingControlFile) {
+        // so editing the control file
+        // change for a file if that gate and its popuation havent been edited
+        if (fileId != newWorkspaceState.controlFileId) {
+          let plot = (newWorkspaceState as any).files[fileId].plots.find(
+            (plot: any) => plot.population == change.gate.name
+          );
 
-    (newWorkspaceState as any).files[fileKey].plots[change.plotIndex].gates[
-      gateIndex
-    ] = JSON.parse(JSON.stringify(change.gate));
+          if (plot.edited != true) {
+            let gateIndex = (newWorkspaceState as any).files[fileId].plots[
+              change.plotIndex
+            ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+            (newWorkspaceState as any).files[fileId].plots[
+              change.plotIndex
+            ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+          }
+        } else {
+          // so its the control file being edited
+          let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+          (newWorkspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+        }
+      } else {
+        // so editing a non-control file
+        if (fileId == fileKey) {
+          let plot = (newWorkspaceState as any).files[fileKey].plots.find(
+            (plot: any) => plot.population == change.gate.name
+          );
+          plot.edited = true;
+
+          let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+          (newWorkspaceState as any).files[fileKey].plots[
+            change.plotIndex
+          ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+        }
+      }
+      // if (fileId == newWorkspaceState.controlFileId) {
+      //   let origGatedPlotIndex = (newWorkspaceState as any).files[
+      //     fileId
+      //   ].plots.findIndex(
+      //     (plot: any) => plot.population == change.plot.population
+      //   );
+
+      //   let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+      //     change.plotIndex
+      //   ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+      // }
+    });
+
+    // let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+    //   change.plotIndex
+    // ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    // (newWorkspaceState as any).files[fileKey].plots[change.plotIndex].gates[
+    //   gateIndex
+    // ] = JSON.parse(JSON.stringify(change.gate));
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-
-    console.log(">>>newWorkspaceState is ", newWorkspaceState);
 
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -507,7 +591,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onOpenFileChange = (change: any) => {
-    console.log("in onOpenFileChange, change is ", change);
     this.state.workspaceState.openFile = change.fileId;
     this.setState({
       workspaceState: this.state.workspaceState,
@@ -740,29 +823,33 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fcsFiles.push(fcsFile);
     }
 
-    let controlFile = fcsFiles[0];
-    const {
-      xAxisLabel,
-      yAxisLabel,
-      xAxisIndex,
-      yAxisIndex,
-      xAxisScaleType,
-      yAxisScaleType,
-    } = getPlotChannelAndPosition(controlFile);
+    let workspaceState = this.state.workspaceState;
 
-    let workspaceState = createDefaultPlotSnapShot(
-      controlFile.id,
-      xAxisLabel,
-      yAxisLabel,
-      xAxisIndex,
-      yAxisIndex,
-      xAxisScaleType,
-      yAxisScaleType
-    );
+    if (!workspaceState || Object.keys(workspaceState).length == 0) {
+      let controlFile = fcsFiles[0];
+      const {
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType,
+      } = getPlotChannelAndPosition(controlFile);
+
+      workspaceState = createDefaultPlotSnapShot(
+        controlFile.id,
+        xAxisLabel,
+        yAxisLabel,
+        xAxisIndex,
+        yAxisIndex,
+        xAxisScaleType,
+        yAxisScaleType
+      );
+    }
 
     this.setState({
       ...this.state,
-      controlFileId: fcsFiles[0].id,
+      controlFileId: this.state.controlFileId || fcsFiles[0].id,
       fcsFiles: fcsFiles,
       parsedFiles: [],
       //workspaceState: workspaceState,
