@@ -116,12 +116,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       copyOfLocalFiles &&
       copyOfLocalFiles.length > 0
     ) {
+      console.log(">> starting SuperALgo");
       let enrichedFiles: any[] = superAlgorithm(
         copyOfLocalFiles,
         workspaceState
       );
 
+      console.log("Finished SuperAlgo");
+
+      console.log(">>> starting Format Enriched Files");
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
+
+      console.log("Finished Format Enriched Files");
 
       let controlEnrichedFile = enrichedFiles.find(
         (enrichedFile) => enrichedFile.isControlFile
@@ -784,7 +790,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         });
       });
 
+      console.log(">>>>fcsFile is ", fcsFile);
+
+      //@ts-ignore
       fcsFile.name = file.file.name;
+      //@ts-ignore
       fcsFile.fileId = file.file.name;
       //@ts-ignore
       fcsFile.id = file.file.name;
@@ -797,6 +807,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           category: "File",
           action:
             "File with  " +
+            //@ts-ignore
             fcsFile.jsonEventCount +
             " events and " +
             fcsFile.channels.length +
@@ -807,6 +818,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       let currentParsedFiles = this.state.parsedFiles || [];
       currentParsedFiles.push({
         name: file.file.name,
+        //@ts-ignore
         eventCount: fcsFile.jsonEventCount,
       });
 

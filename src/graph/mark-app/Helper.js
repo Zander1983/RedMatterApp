@@ -101,6 +101,7 @@ export const superAlgorithm = (
 
     //let adjustedEvents = Files[fileIndex].events.map((event, eventIndex) => {});
 
+    console.log(">>> started looping through events....");
     for (
       let eventIndex = 0;
       eventIndex < Files[fileIndex].events.length;
@@ -109,6 +110,7 @@ export const superAlgorithm = (
     ) {
       let event = Files[fileIndex].events[eventIndex];
 
+      // commenting out this reduces from 40 seconds to 19 seconds
       let cachedEvent = JSON.parse(JSON.stringify(event));
       event.forEach((eventChannelValue, paramIndex) => {
         let hasSpilloverForParam =
@@ -129,8 +131,6 @@ export const superAlgorithm = (
           event[paramIndex] = Math.round(scaled);
         }
       });
-
-      //event = [150000, 150000, 150000, 150000, 150000, 150000];
 
       // if the file has its own plots, use that, otherwise use control file plots
 
@@ -229,6 +229,8 @@ export const superAlgorithm = (
         }
       }
     }
+
+    console.log("finsihed looping through events");
 
     const gateKeys = Object.keys(gateStatsObj);
 

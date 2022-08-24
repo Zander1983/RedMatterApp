@@ -71,6 +71,11 @@ function Scale(fcs) {
 
     var adjusted = 0;
 
+    // console.log(
+    //   "in adjust spillover, matrixSpilloverIndex is ",
+    //   matrixSpilloverIndex
+    // );
+
     for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
       if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
         var scaled = this.scaleValueAccordingToFile({
@@ -104,7 +109,7 @@ function Scale(fcs) {
     if (scaleType == "lin") {
       value = this.scaleWithGain({
         value: value,
-        param: paramIndex,
+        paramIndex: paramIndex,
         g: g,
         f1: f1,
         f2: f2,
@@ -128,7 +133,7 @@ function Scale(fcs) {
     // N>B THIS SEEMS TO BE IGNORED BY OTHER SOFTWARE
 
     var value = params.value;
-    var param = params.param;
+    var paramIndex = params.paramIndex;
     var g = params.g;
     var f1 = params.f1;
     var f2 = params.f2;
@@ -148,21 +153,23 @@ function Scale(fcs) {
     var g, f1, f2, n;
 
     if (!g) {
-      g = this.g[param];
+      g = this.g[paramIndex];
     }
 
     if (!f1) {
-      f1 = this.getEF1({
-        param: param,
-      });
+      f1 = this.getEF1(paramIndex);
     }
 
     if (!f1) {
-      f2 = this.getEF2({
-        param: param,
-      });
+      f2 = this.getEF2(paramIndex);
     }
 
+    // console.log("in scaleWithGain******");
+    // console.log("g is ", g, "f1 is ", f1, "f2 is ", f2);
+    // console.log(
+    //   ">>>g > 0 && f1 == 0 && f2 == 0 is ",
+    //   g > 0 && f1 == 0 && f2 == 0
+    // );
     if (g > 0 && f1 == 0 && f2 == 0) {
       return value / g;
     }
@@ -170,21 +177,17 @@ function Scale(fcs) {
     return value;
   };
 
-  this.getEF1 = function (params) {
-    var param = params.param;
-
-    if (Array.isArray(this.e) && this.e[param]) {
-      return parseInt(this.e[param].split(",")[0]);
+  this.getEF1 = function (paramIndex) {
+    if (Array.isArray(this.e) && this.e[paramIndex]) {
+      return parseInt(this.e[paramIndex].split(",")[0]);
     }
 
     return false;
   };
 
-  this.getEF2 = function (params) {
-    var param = params.param;
-
-    if (Array.isArray(this.e) && this.e[param]) {
-      return parseInt(this.e[param].split(",")[1]);
+  this.getEF2 = function (paramIndex) {
+    if (Array.isArray(this.e) && this.e[paramIndex]) {
+      return parseInt(this.e[paramIndex].split(",")[1]);
     }
 
     return false;
@@ -228,8 +231,10 @@ function Scale(fcs) {
     // values reaching from f2 to 10^(f1+log(f2)). A channel value xc can be converted to a scale value
     // xs as xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1.
 
-    var param = params.param;
+    var paramIndex = params.paramIndex;
     var value = params.value;
+
+    // console.log("in scaleWithAmplify****, paramIndex is ", paramIndex);
 
     var r = params.r;
     var f1 = params.f1;
@@ -238,21 +243,18 @@ function Scale(fcs) {
     var channelMaximum = params.channelMaximum;
 
     if (!r) {
-      r = this.r[param];
+      r = this.r[paramIndex];
     }
 
     if (!f1) {
-      f1 = this.getEF1({
-        param: param,
-      });
+      f1 = this.getEF1(paramIndex);
     }
 
     if (!f2) {
-      f2 = this.getEF2({
-        param: param,
-      });
+      f2 = this.getEF2(paramIndex);
     }
 
+    // console.log(" channelMaximum is ", channelMaximum, ", f1 is  ", f1);
     // channelMaximum > f1 is for when some values are already scaled at this point and the max db value is below f1 e.g. https://www.redmatterapp.com/analyse/59ad5c4b59accd1775e185be/59ad5c6f59accd1775e185bf/
     if (r > 0 && f1 > 0 && channelMaximum > f1) {
       // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
@@ -261,6 +263,7 @@ function Scale(fcs) {
         f2 = 1;
       }
 
+      // console.log("!!!!!!!!!!!!!!working out the power....");
       return Math.pow(10, (f1 * value) / r) * f2;
     }
 
@@ -324,7 +327,7 @@ Scale.prototype.scaleValueAccordingToFile = function (params) {
   if (scaleType == "lin") {
     value = this.scaleWithGain({
       value: value,
-      param: paramIndex,
+      paramIndex: paramIndex,
       g: g,
       f1: f1,
       f2: f2,
@@ -348,7 +351,7 @@ Scale.prototype.scaleWithGain = function (params) {
   // N>B THIS SEEMS TO BE IGNORED BY OTHER SOFTWARE
 
   var value = params.value;
-  var param = params.param;
+  var paramIndex = params.paramIndex;
   var g = params.g;
   var f1 = params.f1;
   var f2 = params.f2;
@@ -368,19 +371,15 @@ Scale.prototype.scaleWithGain = function (params) {
   var g, f1, f2, n;
 
   if (!g) {
-    g = this.g[param];
+    g = this.g[paramIndex];
   }
 
   if (!f1) {
-    f1 = this.getEF1({
-      param: param,
-    });
+    f1 = this.getEF1(paramIndex);
   }
 
   if (!f1) {
-    f2 = this.getEF2({
-      param: param,
-    });
+    f2 = this.getEF2(paramIndex);
   }
 
   if (g > 0 && f1 == 0 && f2 == 0) {
@@ -390,93 +389,89 @@ Scale.prototype.scaleWithGain = function (params) {
   return value;
 };
 
-Scale.prototype.scaleWithAmplify = function (params) {
-  // $PnE/f1,f2/ $P3E/4.0,0.01/ [REQUIRED]
+// Scale.prototype.scaleWithAmplify = function (params) {
+//   // $PnE/f1,f2/ $P3E/4.0,0.01/ [REQUIRED]
 
-  // This keyword specifies whether parameter number n is stored on linear or logarithmic scale and
-  // includes details about the logarithmic amplification if logarithmic scale is used.
-  // When linear scale is used, $PnE/0,0/ shall be entered. If the floating point data type is used
-  // (either $DATATYPE/F/ or $DATATYPE/D/), then all parameters shall be stored as linear with
-  // $PnE/0,0/.
-  // When logarithmic scale is used, the value of f1 specifies the number of logarithmic decades and
-  // f2 represents the linear value that would have been obtained for a signal with a log value of 0. In
-  // the example above, the data for parameter 3 were collected using a four-decade logarithmic
-  // amplifier and the 0 channel represents the linear value, 0.01.
-  // ISAC Recommendation FCS 3.1 – Data File Standards for Flow Cytometry
-  // 23/34
-  // Note that both the values f1 and f2 shall either be zero or positive numbers. Especially,
-  // $PnE/f1,0/ with f1 > 0 is not a valid entry and shall not be written. If this entry is found in an FCS
-  // file, it is recommended to handle it as $PnE/f1,1/.
-  // Explanation: Entries such as $PnE/4,0/ have never been correct. Unfortunately, the lack of clear
-  // explanation made these widely used. For $PnE/f1,f2/, f1 specifies the number of logarithmic
-  // decades and f2 represents the minimum on the log scale, which cannot be 0 since the logarithm
-  // of zero is not defined. For example, $PnE/4,1/ means 4 decades log reaching from 1 to 10000;
-  // $PnE/5,0.01/ means 5 decades log reaching from 0.01 to 1000.
-  // Converting from channel values on logarithmic scale to linear scale values:
-  // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with channel values going
-  // from 0 to r-1, and scale values going from f2 to f2*10^f1. A channel value xc can be converted to
-  // a scale value xs as xs = 10^(f1 * xc /(r)) * f2.
-  // Examples of converting from channel to scale values:
-  // $P1R/1024/, $P1E/4,1/: This is a logarithmic parameter with channel values going from 0 to 1023,
-  // and scale values going from 1 to approximately 10000. A channel value xc can be converted to a
-  // scale value xs as xs = 10^(4 * xc / 1024) * 1.
-  // $P2R/256/, $P2E/4.5,0.1/: This is a logarithmic parameter with channel values going from 0 to
-  // 255, and scale values going from 0.1 to approximately 10^3.5 (~3162). A channel value xc can be
-  // converted to a scale value xs as xs = 10^(4.5 * xc / 256) * 0.1.
+//   // This keyword specifies whether parameter number n is stored on linear or logarithmic scale and
+//   // includes details about the logarithmic amplification if logarithmic scale is used.
+//   // When linear scale is used, $PnE/0,0/ shall be entered. If the floating point data type is used
+//   // (either $DATATYPE/F/ or $DATATYPE/D/), then all parameters shall be stored as linear with
+//   // $PnE/0,0/.
+//   // When logarithmic scale is used, the value of f1 specifies the number of logarithmic decades and
+//   // f2 represents the linear value that would have been obtained for a signal with a log value of 0. In
+//   // the example above, the data for parameter 3 were collected using a four-decade logarithmic
+//   // amplifier and the 0 channel represents the linear value, 0.01.
+//   // ISAC Recommendation FCS 3.1 – Data File Standards for Flow Cytometry
+//   // 23/34
+//   // Note that both the values f1 and f2 shall either be zero or positive numbers. Especially,
+//   // $PnE/f1,0/ with f1 > 0 is not a valid entry and shall not be written. If this entry is found in an FCS
+//   // file, it is recommended to handle it as $PnE/f1,1/.
+//   // Explanation: Entries such as $PnE/4,0/ have never been correct. Unfortunately, the lack of clear
+//   // explanation made these widely used. For $PnE/f1,f2/, f1 specifies the number of logarithmic
+//   // decades and f2 represents the minimum on the log scale, which cannot be 0 since the logarithm
+//   // of zero is not defined. For example, $PnE/4,1/ means 4 decades log reaching from 1 to 10000;
+//   // $PnE/5,0.01/ means 5 decades log reaching from 0.01 to 1000.
+//   // Converting from channel values on logarithmic scale to linear scale values:
+//   // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with channel values going
+//   // from 0 to r-1, and scale values going from f2 to f2*10^f1. A channel value xc can be converted to
+//   // a scale value xs as xs = 10^(f1 * xc /(r)) * f2.
+//   // Examples of converting from channel to scale values:
+//   // $P1R/1024/, $P1E/4,1/: This is a logarithmic parameter with channel values going from 0 to 1023,
+//   // and scale values going from 1 to approximately 10000. A channel value xc can be converted to a
+//   // scale value xs as xs = 10^(4 * xc / 1024) * 1.
+//   // $P2R/256/, $P2E/4.5,0.1/: This is a logarithmic parameter with channel values going from 0 to
+//   // 255, and scale values going from 0.1 to approximately 10^3.5 (~3162). A channel value xc can be
+//   // converted to a scale value xs as xs = 10^(4.5 * xc / 256) * 0.1.
 
-  // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with scale
-  // values reaching from f2 to 10^(f1+log(f2)). A channel value xc can be converted to a scale value
-  // xs as xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1.
+//   // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with scale
+//   // values reaching from f2 to 10^(f1+log(f2)). A channel value xc can be converted to a scale value
+//   // xs as xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1.
 
-  var param = params.param;
-  var value = params.value;
+//   var param = params.param;
+//   var value = params.value;
 
-  var r = params.r;
-  var f1 = params.f1;
-  var f2 = params.f2;
+//   var r = params.r;
+//   var f1 = params.f1;
+//   var f2 = params.f2;
 
-  var channelMaximum = params.channelMaximum;
+//   var channelMaximum = params.channelMaximum;
 
-  if (!r) {
-    r = this.r[param];
-  }
+//   if (!r) {
+//     r = this.r[param];
+//   }
 
-  if (!f1) {
-    f1 = this.getEF1({
-      param: param,
-    });
-  }
+//   if (!f1) {
+//     f1 = this.getEF1({
+//       param: param,
+//     });
+//   }
 
-  if (!f2) {
-    f2 = this.getEF2({
-      param: param,
-    });
-  }
+//   if (!f2) {
+//     f2 = this.getEF2({
+//       param: param,
+//     });
+//   }
 
-  // channelMaximum > f1 is for when some values are already scaled at this point and the max db value is below f1 e.g. https://www.redmatterapp.com/analyse/59ad5c4b59accd1775e185be/59ad5c6f59accd1775e185bf/
-  if (r > 0 && f1 > 0 && channelMaximum > f1) {
-    // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
+//   // channelMaximum > f1 is for when some values are already scaled at this point and the max db value is below f1 e.g. https://www.redmatterapp.com/analyse/59ad5c4b59accd1775e185be/59ad5c6f59accd1775e185bf/
+//   if (r > 0 && f1 > 0 && channelMaximum > f1) {
+//     // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
 
-    if (f2 === 0) {
-      f2 = 1;
-    }
+//     if (f2 === 0) {
+//       f2 = 1;
+//     }
 
-    return Math.pow(10, (f1 * value) / r) * f2;
-  }
+//     return Math.pow(10, (f1 * value) / r) * f2;
+//   }
 
-  return value;
-};
+//   return value;
+// };
 
 Scale.prototype.getRangeFromPnE = function (paramIndex) {
   // For $PnR/r/, r>0, $PnE/f1,f2/, f1>0, f2>0: n is a logarithmic parameter with scale
   // values reaching from f2 to 10^(f1+log(f2)).
 
-  var f1 = this.getEF1({
-    param: paramIndex,
-  });
-  var f2 = this.getEF2({
-    param: paramIndex,
-  });
+  var f1 = this.getEF1(paramIndex);
+  var f2 = this.getEF2(paramIndex);
 
   if (f1 > 0) {
     // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
@@ -729,21 +724,17 @@ Scale.prototype.adjustSpillover = function (params) {
 //   return reA;
 // };
 
-Scale.prototype.getEF1 = function (params) {
-  var param = params.param;
-
-  if (Array.isArray(this.e) && this.e[param]) {
-    return parseInt(this.e[param].split(",")[0]);
+Scale.prototype.getEF1 = function (paramIndex) {
+  if (Array.isArray(this.e) && this.e[paramIndex]) {
+    return parseInt(this.e[paramIndex].split(",")[0]);
   }
 
   return false;
 };
 
-Scale.prototype.getEF2 = function (params) {
-  var param = params.param;
-
-  if (Array.isArray(this.e) && this.e[param]) {
-    return parseInt(this.e[param].split(",")[1]);
+Scale.prototype.getEF2 = function (paramIndex) {
+  if (Array.isArray(this.e) && this.e[paramIndex]) {
+    return parseInt(this.e[paramIndex].split(",")[1]);
   }
 
   return false;

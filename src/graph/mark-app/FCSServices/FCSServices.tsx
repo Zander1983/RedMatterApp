@@ -5,14 +5,31 @@ import { parseAndUpload } from "./fcsTransformer/node-handler";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
+    console.log(">>> starting parse of buffer, buffer is ", file);
     return fcsModel
       .getFCS({
         file: file,
         eventsToRead: -1,
+        skip: 100,
       })
-      .then(function (fcsFile) {
-        let fileEvents = parseAndUpload({}, fcsFile, 123456, 987654, false);
-        return fileEvents;
+      .then(function (parsedFcsFile) {
+        console.log("parsedFcsFile is.....", parsedFcsFile);
+
+        //let fileEvents = parseAndUpload({}, fcsFile, 123456, 987654, false);
+
+        // channels: channels,
+        // jsonEventCount: fileData.length,
+        // events: fileData,
+        // scale: scale,
+        // paramNamesHasSpillover: paramNamesHasSpillover,
+        let fileData = {
+          channels: parsedFcsFile.channels,
+          events: parsedFcsFile.events,
+          scale: parsedFcsFile.scale,
+          paramNamesHasSpillover: parsedFcsFile.paramNamesHasSpillover,
+        };
+
+        return fileData;
       })
       .catch(function (err) {
         throw err;

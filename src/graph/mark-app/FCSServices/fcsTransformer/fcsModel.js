@@ -4,7 +4,6 @@ import FCS from "fcs";
 import FS from "fs";
 import Q from "q";
 import * as math from "mathjs";
-
 import generalHelper from "./generalHelper";
 import Scale from "./scale";
 
@@ -15,6 +14,8 @@ class CustomFCS extends FCS {
     else if ("1,2,3,4" === this.text.$BYTEORD) isBE = false;
 
     var options = this.meta;
+
+    console.log("???options are ", options);
 
     var readParameters = {
       asNumber:
@@ -39,6 +40,7 @@ class CustomFCS extends FCS {
     )
       readParameters.eventsToRead = this.meta.eventCount;
 
+    console.log(">>> this.text is ", this.text);
     switch (this.text.$DATATYPE) {
       case "D":
         readParameters.fn = isBE ? databuf.readDoubleBE : databuf.readDoubleLE;
@@ -71,6 +73,7 @@ class CustomFCS extends FCS {
 
     readParameters.bytesPerEvent = readParameters.bytes * this.meta.$PAR;
 
+    console.log(">>>>>options.skip is ", options.skip);
     if (options.skip && readParameters.eventsToRead < this.meta.eventCount) {
       var events2Skip;
       if (isFinite(options.skip)) events2Skip = options.skip;
@@ -79,6 +82,8 @@ class CustomFCS extends FCS {
           Math.floor(this.meta.eventCount / readParameters.eventsToRead) - 1;
         this.meta.eventSkip = options.skip + " -> " + events2Skip;
       }
+
+      console.log(">>>events2Skip is ", events2Skip);
       readParameters.bigSkip = events2Skip * readParameters.bytesPerEvent;
     }
 
@@ -86,6 +91,16 @@ class CustomFCS extends FCS {
   }
 
   _readDataGroupByEvent(databuf, readParameters) {
+    this.channels = {};
+    this.scale = {};
+    this.events = {};
+
+    this.scale = new Scale(this);
+    const paramNamesHasSpillover = this.getParamNameHasSpillover(this.scale);
+    const channelMaximums = generalHelper.removeNulls(this.get$PnX("R"));
+    this.channels = this.getParamsAndScales();
+    //eneralHelper.removeNulls(fcs.get$PnX("R"));
+
     // determine if these are ints, floats, etc...
     readParameters = readParameters || this._prepareReadParameters(databuf);
 
@@ -114,38 +129,85 @@ class CustomFCS extends FCS {
 
     var dataStrings = readParameters.asString ? new Array(eventsToRead) : null;
     var eventString;
+    var indexOfSpilloverParamX;
+    let minimums = new Array(numParams);
+
+    for (p = 0; p < numParams; p++) {
+      minimums[p] = 0;
+    }
 
     // loop over each event
+
+    for (p = 0; p < numParams; p++) {
+      indexOfSpilloverParamX = this.scale.getMatrixSpilloverIndex({
+        paramName: paramNamesHasSpillover[p].paramName,
+        paramIndex: p,
+      });
+    }
+
+    console.log(">>>> starting to convert buffer to numbers ");
+
+    let scaledX;
+    //eventsToRead
     for (e = 0; e < eventsToRead; e++) {
       if (dataStrings) {
         eventString = "[";
       }
       var dataE = dataNumbers ? dataNumbers[e] : null; // efficiency
 
+      //console.log("dataE is ", dataE);
+      //console.log("decimalsToPrint is ", decimalsToPrint);
+
       // loop over each parameter
-      for (p = 0; p < numParams; p++) {
+      for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
         v = databufReadFn.call(databuf, offset, bytesPerMeasurement);
+
         offset += bytesPerMeasurement;
 
-        if (dataStrings) {
-          if (p > 0) eventString += ",";
-          if (decimalsToPrint >= 0) eventString += v.toFixed(decimalsToPrint);
-          else eventString += v;
-        }
+        // if (dataStrings) {
+        //   if (paramIndex > 0) eventString += ",";
+        //   if (decimalsToPrint >= 0) eventString += v.toFixed(decimalsToPrint);
+        //   else eventString += v;
+        // }
 
-        if (dataE) dataE[p] = v;
+        if (dataE) dataE[paramIndex] = v;
+
+        if (v < minimums[paramIndex]) {
+          minimums[paramIndex] = v;
+        }
       }
 
-      if (dataStrings) {
-        eventString += "]";
-        dataStrings[e] = eventString;
+      for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
+        scaledX = this.scale.scaleValue({
+          value: dataE[paramIndex],
+          paramIndex: paramIndex,
+          paramName: paramNamesHasSpillover[paramIndex].paramName,
+          scaleType: this.channels[paramIndex].display,
+          hasSpilloverForParam: paramNamesHasSpillover[paramIndex].hasSpillover,
+          arrayOfOneEvent: dataE,
+          matrixSpilloverIndex: indexOfSpilloverParamX,
+          channelMaximums: channelMaximums,
+        });
+
+        if (dataE) dataE[paramIndex] = scaledX;
+        if (scaledX < minimums[paramIndex]) {
+          minimums[paramIndex] = scaledX;
+        }
       }
 
       offset += readParameters.bigSkip;
     }
 
-    this.dataAsNumbers = dataNumbers;
-    this.dataAsStrings = dataStrings;
+    console.log(">>>> FINISHED converting buffer to numbers ");
+
+    this.channels.forEach((channel, index) => {
+      channel.minimum = minimums[index];
+      channel.maximum = parseInt(channelMaximums[index]);
+    });
+
+    this.events = dataNumbers;
+    this.paramNamesHasSpillover = paramNamesHasSpillover;
+    // this.dataAsStrings = dataStrings;
     return this;
   }
 
@@ -191,6 +253,8 @@ class CustomFCS extends FCS {
     var paramArray = [];
     var range;
 
+    console.log(">>>>>>>!!!!!!! this is ", this);
+
     sArray = generalHelper.removeNulls(sArray);
 
     for (var x = 0; x < nArray.length; x++) {
@@ -227,24 +291,61 @@ class CustomFCS extends FCS {
             display = self.getText("P" + (index + 1) + "D");
 
             if (!display) {
-              // if this returns anything, should be log
-              range = scale.getRangeFromPnE({
-                param: index,
-              });
+              let PnS = self.getText("$P" + (index + 1) + "S");
 
-              if (range) {
-                display = "LOG";
+              console.log("index is ", index, " and PnS is ", PnS);
+
+              if (!PnS) {
+                PnS = self.getText("P" + (index + 1) + "S");
+              }
+
+              if (PnS) {
+                if (PnS.toLowerCase().indexOf("log") > -1) {
+                  display = "LOG";
+                } else if (PnS.toLowerCase().indexOf("lin") > -1)
+                  display = "LIN";
               }
 
               if (!display) {
-                if (entry && entry.toLowerCase().indexOf("log") > -1) {
+                let PnS = self.getText("P" + (index + 1) + "S");
+
+                console.log("index is ", index, " and PnS is ", PnS);
+
+                if (PnS) {
                   display = "LOG";
-                } else if (entry && entry.toLowerCase().indexOf("fs") > -1) {
-                  display = "LIN";
-                } else if (entry && entry.toLowerCase().indexOf("ss") > -1) {
-                  display = "LIN";
-                } else {
-                  display = "LOG";
+                }
+
+                if (!display) {
+                  // if this returns anything, should be log
+                  range = scale.getRangeFromPnE({
+                    param: index,
+                  });
+
+                  console.log(">>> range is ", range);
+                  if (range) {
+                    display = "LOG";
+                  }
+
+                  if (!display) {
+                    if (entry && entry.toLowerCase().indexOf("log") > -1) {
+                      display = "LOG";
+                    } else if (
+                      entry &&
+                      entry.toLowerCase().indexOf("fs") > -1
+                    ) {
+                      display = "LIN";
+                    } else if (
+                      entry &&
+                      entry.toLowerCase().indexOf("ss") > -1
+                    ) {
+                      display = "LIN";
+                    } else {
+                      display = "LOG";
+                    }
+                  }
+
+                  console.log("entry is ", entry);
+                  console.log("returning display ", display);
                 }
               }
             }
@@ -257,6 +358,8 @@ class CustomFCS extends FCS {
       } else {
         display = "lin";
       }
+
+      console.log("for index ", index, " returning ", display);
 
       json.push({
         key: index,
@@ -311,16 +414,10 @@ class CustomFCS extends FCS {
     return false;
   }
 
-  getParamNameHasSpillover(params) {
-    var self = this;
+  getParamNameHasSpillover(scale) {
     var paramNameHasSpillover = [];
-    var scale = params.scale;
 
-    this.dataAsNumbers[0].forEach(function (val, index) {
-      var paramName = self.getParamNameFromIndex({
-        index: index,
-      });
-
+    scale.n.forEach(function (paramName, index) {
       var hasSpillover = scale.hasSpilloverForParam({
         paramName: paramName,
         paramIndex: index,
@@ -444,6 +541,7 @@ var getFCS = function (params) {
   return getFcsFromDataBuf({
     databuf: params.file,
     eventsToRead: params.eventsToRead,
+    skip: params.skip,
   });
 };
 
@@ -452,11 +550,14 @@ var getFcsFromDataBuf = function (params) {
   var options = {
     dataFormat: "asNumber",
     eventsToRead: params.eventsToRead,
+    skip: params.skip,
   };
 
   return new Promise(function (resolve, reject) {
+    console.log("before CustomFCS");
     var fcs = new CustomFCS(options, params.databuf);
     if (fcs) {
+      console.log("resolving....fcs.dataAsNumbers is ", fcs.dataAsNumbers);
       resolve(fcs);
     } else {
       reject(fcs);
