@@ -461,25 +461,25 @@ function Plot(props) {
 
   const drawLabel = () => {
     let xRange = [
-      props.enrichedFile.channels[localPlot.xAxisIndex].minimum,
-      props.enrichedFile.channels[localPlot.xAxisIndex].maximum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.xAxisIndex].maximum,
     ];
 
     let yRange = [
-      props.enrichedFile.channels[localPlot.yAxisIndex].minimum,
-      props.enrichedFile.channels[localPlot.yAxisIndex].maximum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].minimum,
+      props.enrichedFile.channels[props.plot.yAxisIndex].maximum,
     ];
 
     let [horizontalBinCount, verticalBinCount] = getBins(
-      localPlot.width,
-      localPlot.height,
-      localPlot.plotScale
+      props.plot.width,
+      props.plot.height,
+      props.plot.plotScale
     );
 
     let xLabels = getAxisLabels(
-      localPlot.xScaleType,
+      props.plot.xScaleType,
       xRange,
-      props.enrichedFile.logicles[localPlot.xAxisIndex],
+      props.enrichedFile.logicles[props.plot.xAxisIndex],
       horizontalBinCount
     );
 
@@ -487,7 +487,7 @@ function Plot(props) {
       .getElementById("canvas-" + props.plotIndex + "-xAxis")
       .getContext("2d");
 
-    contextX.clearRect(0, 0, localPlot.width + 20, 20);
+    contextX.clearRect(0, 0, props.plot.width + 20, 20);
 
     let prevLabelPos = null;
 
@@ -496,7 +496,7 @@ function Plot(props) {
         props.enrichedFile.channels,
         xLabels[i].pos,
         null,
-        localPlot,
+        props.plot,
         props.enrichedFile.logicles
       );
 
@@ -518,17 +518,18 @@ function Plot(props) {
     }
 
     let yLabels = getAxisLabels(
-      localPlot.yScaleType,
+      props.plot.yScaleType,
       yRange,
-      props.enrichedFile.logicles[localPlot.yAxisIndex],
+      props.enrichedFile.logicles[props.plot.yAxisIndex],
       verticalBinCount
     );
 
+    console.log("in draw label, before yAxis");
     let contextY = document
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");
 
-    contextY.clearRect(0, 0, 25, localPlot.height);
+    contextY.clearRect(0, 0, 25, props.plot.height);
     prevLabelPos = null;
     //let shiftUp = Math.abs(yRange[0]) / xDivisor;
     for (let i = 0; i < yLabels.length; i++) {
@@ -536,7 +537,7 @@ function Plot(props) {
         props.enrichedFile.channels,
         null,
         yLabels[i].pos,
-        localPlot,
+        props.plot,
         props.enrichedFile.logicles
       );
 

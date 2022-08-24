@@ -339,6 +339,11 @@ class CustomFCS extends FCS {
                       entry.toLowerCase().indexOf("ss") > -1
                     ) {
                       display = "LIN";
+                    } else if (
+                      entry &&
+                      entry.toLowerCase().indexOf("time") > -1
+                    ) {
+                      display = "LIN";
                     } else {
                       display = "LOG";
                     }

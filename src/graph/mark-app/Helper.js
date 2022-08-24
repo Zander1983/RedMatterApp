@@ -612,33 +612,40 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
 };
 
 export const getPlotChannelAndPosition = (file) => {
-  const defaultFileChannels = file.channels;
-
-  const expectedXChannels = ["FSC-A", "FSC.A", "FSC-H", "FSC.H"];
-  let xAxisLabel = "";
-  let xAxisIndex = defaultFileChannels.findIndex((channel) =>
-    expectedXChannels.includes(channel?.value?.toUpperCase())
+  const expectedXChannels = "FSC";
+  let xAxisIndex, yAxisIndex;
+  let xAxisLabel, yAxisLabel;
+  let xAxisScaleType, yAxisScaleType;
+  let xChannel = file.channels.find(
+    (channel) => channel?.value?.toUpperCase().indexOf(expectedXChannels) > -1
   );
 
-  let yAxisLabel = "";
-  const expectedYChannels = ["SSC-A", "SSC.A", "SSC-H", "SSC.H"];
-  let yAxisIndex = defaultFileChannels.findIndex((channel, position) =>
-    expectedYChannels.includes(channel?.value?.toUpperCase())
+  const expectedYChannels = "SSC";
+  let yChannel = file.channels.find(
+    (channel) => channel?.value?.toUpperCase().indexOf(expectedYChannels) > -1
   );
 
-  if (xAxisIndex > -1) xAxisLabel = defaultFileChannels[xAxisIndex]?.value;
-  else
-    xAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  console.log("!!!!!!!!!yChannel is ", yChannel);
 
-  if (yAxisIndex > -1) yAxisLabel = defaultFileChannels[yAxisIndex]?.value;
-  else
-    yAxisIndex = Math.floor(Math.random() * (defaultFileChannels?.length - 1));
+  if (xChannel) {
+    xAxisIndex = xChannel.key;
+    xAxisLabel = xChannel.value;
+    xAxisScaleType = xChannel.display;
+  } else {
+    xAxisIndex = 0;
+    xAxisLabel = file.channels[0].value;
+    xAxisScaleType = file.channels[0].display;
+  }
 
-  xAxisLabel = xAxisLabel || defaultFileChannels[xAxisIndex]?.value;
-  yAxisLabel = yAxisLabel || defaultFileChannels[yAxisIndex]?.value;
-
-  let xAxisScaleType = defaultFileChannels[xAxisIndex]?.display;
-  let yAxisScaleType = defaultFileChannels[yAxisIndex]?.display;
+  if (yChannel) {
+    yAxisIndex = yChannel.key;
+    yAxisLabel = yChannel.value;
+    yAxisScaleType = yChannel.display;
+  } else {
+    yAxisIndex = 1;
+    yAxisLabel = file.channels[1].value;
+    yAxisScaleType = file.channels[1].display;
+  }
 
   return {
     xAxisLabel,
