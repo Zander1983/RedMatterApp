@@ -111,26 +111,26 @@ export const superAlgorithm = (
       let event = Files[fileIndex].events[eventIndex];
 
       // commenting out this reduces from 40 seconds to 19 seconds
-      let cachedEvent = JSON.parse(JSON.stringify(event));
-      event.forEach((eventChannelValue, paramIndex) => {
-        let hasSpilloverForParam =
-          file.paramNamesHasSpillover[paramIndex].hasSpillover;
-        if (hasSpilloverForParam) {
-          let matrixSpilloverIndex =
-            file.scale.matrixSpilloverIndexes[paramIndex];
+      // let cachedEvent = JSON.parse(JSON.stringify(event));
+      // event.forEach((eventChannelValue, paramIndex) => {
+      //   let hasSpilloverForParam =
+      //     file.paramNamesHasSpillover[paramIndex].hasSpillover;
+      //   if (hasSpilloverForParam) {
+      //     let matrixSpilloverIndex =
+      //       file.scale.matrixSpilloverIndexes[paramIndex];
 
-          let scaled = controlOriginalFile.scale.adjustSpillover({
-            // paramIndex: paramIndex,
-            // paramName: paramName,
-            eventValues: cachedEvent,
-            scaleType: file.channels[paramIndex].display,
-            matrixSpilloverIndex: matrixSpilloverIndex,
-            channelMaximums: file.channels.map((channel) => channel.maximum),
-          });
+      //     let scaled = controlOriginalFile.scale.adjustSpillover({
+      //       // paramIndex: paramIndex,
+      //       // paramName: paramName,
+      //       eventValues: cachedEvent,
+      //       scaleType: file.channels[paramIndex].display,
+      //       matrixSpilloverIndex: matrixSpilloverIndex,
+      //       channelMaximums: file.channels.map((channel) => channel.maximum),
+      //     });
 
-          event[paramIndex] = Math.round(scaled);
-        }
-      });
+      //     event[paramIndex] = Math.round(scaled);
+      //   }
+      // });
 
       // if the file has its own plots, use that, otherwise use control file plots
 

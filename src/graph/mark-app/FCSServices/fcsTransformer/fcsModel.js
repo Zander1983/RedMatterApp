@@ -131,6 +131,8 @@ class CustomFCS extends FCS {
     var eventString;
     var indexOfSpilloverParamX;
     let minimums = new Array(numParams);
+    let channelF1s = [];
+    let channelF2s = [];
 
     for (p = 0; p < numParams; p++) {
       minimums[p] = 0;
@@ -143,6 +145,9 @@ class CustomFCS extends FCS {
         paramName: paramNamesHasSpillover[p].paramName,
         paramIndex: p,
       });
+
+      channelF1s.push(this.scale.getEF1(p));
+      channelF2s.push(this.scale.getEF2(p));
     }
 
     console.log(">>>> starting to convert buffer to numbers ");
@@ -172,26 +177,52 @@ class CustomFCS extends FCS {
 
         if (dataE) dataE[paramIndex] = v;
 
-        if (v < minimums[paramIndex]) {
-          minimums[paramIndex] = v;
+        if (
+          this.channels[paramIndex].display == "bi" &&
+          channelF1s[paramIndex]
+        ) {
+          scaledX = this.scale.scaleWithAmplify({
+            value: dataE[paramIndex],
+            f1: channelF1s[paramIndex],
+            f2: channelF2s[paramIndex],
+            channelMaximum: channelMaximums[paramIndex],
+          });
+        } else {
+          scaledX = dataE[paramIndex];
         }
-      }
 
-      for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
-        scaledX = this.scale.scaleValue({
-          value: dataE[paramIndex],
-          paramIndex: paramIndex,
-          paramName: paramNamesHasSpillover[paramIndex].paramName,
-          scaleType: this.channels[paramIndex].display,
-          hasSpilloverForParam: paramNamesHasSpillover[paramIndex].hasSpillover,
-          arrayOfOneEvent: dataE,
-          matrixSpilloverIndex: indexOfSpilloverParamX,
-          channelMaximums: channelMaximums,
-        });
+        // console.log("paramIndex is ", paramIndex, ", scaledX is ", scaledX);
 
         if (dataE) dataE[paramIndex] = scaledX;
         if (scaledX < minimums[paramIndex]) {
           minimums[paramIndex] = scaledX;
+        }
+      }
+
+      // for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
+
+      // }
+
+      for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
+        let cachedEvent = JSON.parse(JSON.stringify(dataE));
+
+        let hasSpilloverForParam =
+          paramNamesHasSpillover[paramIndex].hasSpillover;
+        if (hasSpilloverForParam) {
+          let matrixSpilloverIndex = this.scale.matrixSpilloverIndexes[
+            paramIndex
+          ];
+
+          let compensated = this.scale.adjustSpillover({
+            eventValues: cachedEvent,
+            scaleType: this.channels[paramIndex].display,
+            matrixSpilloverIndex: matrixSpilloverIndex,
+            channelMaximums: channelMaximums,
+          });
+
+          // let compensated = cachedEvent[paramIndex];
+
+          dataE[paramIndex] = Math.round(compensated);
         }
       }
 

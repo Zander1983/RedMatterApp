@@ -63,8 +63,10 @@ function Scale(fcs) {
   });
 
   this.adjustSpillover = function (params) {
+    // console.log("******** adjustSpillover **********");
     // this will be an array of values, one for each param
     var eventValues = params.eventValues;
+    // console.log("eventValues is ", eventValues);
     var scaleType = params.scaleType;
     var matrixSpilloverIndex = params.matrixSpilloverIndex;
     var channelMaximums = params.channelMaximums;
@@ -72,18 +74,26 @@ function Scale(fcs) {
     var adjusted = 0;
 
     // console.log(
-    //   "in adjust spillover, matrixSpilloverIndex is ",
-    //   matrixSpilloverIndex
+    //   ">>>this.indexesOfSpilloverParams is ",
+    //   this.indexesOfSpilloverParams
     // );
 
+    // console.log(">>> this.invertedMatrix is ", this.invertedMatrix);
     for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
       if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
-        var scaled = this.scaleValueAccordingToFile({
-          value: eventValues[this.indexesOfSpilloverParams[i]],
-          paramIndex: this.indexesOfSpilloverParams[i],
-          scaleType: scaleType,
-          channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
-        });
+        // console.log(
+        //   ">>> this.invertedMatrix.data[i][matrixSpilloverIndex] is ",
+        //   this.invertedMatrix.data[i][matrixSpilloverIndex]
+        // );
+
+        // var scaled = this.scaleValueAccordingToFile({
+        //   value: eventValues[this.indexesOfSpilloverParams[i]],
+        //   paramIndex: this.indexesOfSpilloverParams[i],
+        //   scaleType: scaleType,
+        //   channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
+        // });
+
+        var scaled = eventValues[this.indexesOfSpilloverParams[i]];
 
         let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
 
@@ -106,15 +116,16 @@ function Scale(fcs) {
     let channelMaximum = params.channelMaximum;
 
     // only scale with gain (PnG) is its linera, see doumentation
-    if (scaleType == "lin") {
-      value = this.scaleWithGain({
-        value: value,
-        paramIndex: paramIndex,
-        g: g,
-        f1: f1,
-        f2: f2,
-      });
-    } else {
+    // if (scaleType == "lin") {
+    //   value = this.scaleWithGain({
+    //     value: value,
+    //     paramIndex: paramIndex,
+    //     g: g,
+    //     f1: f1,
+    //     f2: f2,
+    //   });
+    // } else {
+    if (scaleType == "bi") {
       value = this.scaleWithAmplify({
         value: value,
         scaleType: scaleType,
@@ -231,35 +242,36 @@ function Scale(fcs) {
     // values reaching from f2 to 10^(f1+log(f2)). A channel value xc can be converted to a scale value
     // xs as xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1.
 
-    var paramIndex = params.paramIndex;
     var value = params.value;
 
     // console.log("in scaleWithAmplify****, paramIndex is ", paramIndex);
 
-    var r = params.r;
+    var r = params.channelMaximum;
     var f1 = params.f1;
     var f2 = params.f2;
 
     var channelMaximum = params.channelMaximum;
 
-    if (!r) {
-      r = this.r[paramIndex];
-    }
+    // if (!r) {
+    //   r = this.r[paramIndex];
+    // }
 
-    if (!f1) {
-      f1 = this.getEF1(paramIndex);
-    }
+    // if (!f1) {
+    //   f1 = this.getEF1(paramIndex);
+    // }
 
-    if (!f2) {
-      f2 = this.getEF2(paramIndex);
-    }
+    // if (!f2) {
+    //   f2 = this.getEF2(paramIndex);
+    // }
+
+    // console.log("f1 is ", f1);
 
     // console.log(" channelMaximum is ", channelMaximum, ", f1 is  ", f1);
     // channelMaximum > f1 is for when some values are already scaled at this point and the max db value is below f1 e.g. https://www.redmatterapp.com/analyse/59ad5c4b59accd1775e185be/59ad5c6f59accd1775e185bf/
     if (r > 0 && f1 > 0 && channelMaximum > f1) {
       // xs = 10^(f1*xc /r) * f2. If f2 equals 0, consider it 1
 
-      if (f2 === 0) {
+      if (f2 == 0) {
         f2 = 1;
       }
 
@@ -322,6 +334,8 @@ Scale.prototype.scaleValueAccordingToFile = function (params) {
   let f2 = params.f2;
   // used as a check, not that important
   let channelMaximum = params.channelMaximum;
+
+  console.log("in scaleValueAccordingToFile.....");
 
   // only scale with gain (PnG) is its linera, see doumentation
   if (scaleType == "lin") {
@@ -662,32 +676,44 @@ Scale.prototype.memoizedScaleValueAccordingToFile = memoize(
   { length: 4 }
 );
 
-Scale.prototype.adjustSpillover = function (params) {
-  // this will be an array of values, one for each param
-  var eventValues = params.eventValues;
-  var scaleType = params.scaleType;
-  var matrixSpilloverIndex = params.matrixSpilloverIndex;
-  var channelMaximums = params.channelMaximums;
+// Scale.prototype.adjustSpillover = function (params) {
+//   console.log("******** adjustSpillover **********");
+//   // this will be an array of values, one for each param
+//   var eventValues = params.eventValues;
+//   var scaleType = params.scaleType;
+//   var matrixSpilloverIndex = params.matrixSpilloverIndex;
+//   var channelMaximums = params.channelMaximums;
 
-  var adjusted = 0;
+//   var adjusted = 0;
 
-  for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
-    if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
-      var scaled = this.scaleValueAccordingToFile({
-        value: eventValues[this.indexesOfSpilloverParams[i]],
-        paramIndex: this.indexesOfSpilloverParams[i],
-        scaleType: scaleType,
-        channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
-      });
+//   console.log(
+//     ">>>this.indexesOfSpilloverParams is ",
+//     this.indexesOfSpilloverParams
+//   );
 
-      let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
+//   console.log(">>> this.invertedMatrix is ", this.invertedMatrix);
+//   for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
+//     if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
+//       console.log(
+//         ">>> this.invertedMatrix.data[i][matrixSpilloverIndex] is ",
+//         this.invertedMatrix.data[i][matrixSpilloverIndex]
+//       );
 
-      adjusted = adjusted + after;
-    }
-  }
+//       var scaled = this.scaleValueAccordingToFile({
+//         value: eventValues[this.indexesOfSpilloverParams[i]],
+//         paramIndex: this.indexesOfSpilloverParams[i],
+//         scaleType: scaleType,
+//         channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
+//       });
 
-  return adjusted;
-};
+//       let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
+
+//       adjusted = adjusted + after;
+//     }
+//   }
+
+//   return adjusted;
+// };
 
 //Scale.prototype.reverseSpillover = function (params) {
 //   // $SPILL or $COMP and standard keyword is $SPILLOVER
