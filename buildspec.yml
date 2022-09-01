@@ -15,7 +15,7 @@ phases:
   pre_build:
     commands:
       - echo Installing dependencies...
-      - yarn
+      - yarn install --ignore-engines
   build:
     commands:
       - echo Building...
