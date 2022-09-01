@@ -155,10 +155,12 @@ class CustomFCS extends FCS {
     let scaledX;
     //eventsToRead
     let compenatedEvents = [];
+    let origEvents = new Array(eventsToRead);
     for (e = 0; e < eventsToRead; e++) {
       if (dataStrings) {
         eventString = "[";
       }
+      origEvents[e] = [];
       var dataE = dataNumbers ? dataNumbers[e] : null; // efficiency
 
       //console.log("dataE is ", dataE);
@@ -169,12 +171,6 @@ class CustomFCS extends FCS {
         v = databufReadFn.call(databuf, offset, bytesPerMeasurement);
 
         offset += bytesPerMeasurement;
-
-        // if (dataStrings) {
-        //   if (paramIndex > 0) eventString += ",";
-        //   if (decimalsToPrint >= 0) eventString += v.toFixed(decimalsToPrint);
-        //   else eventString += v;
-        // }
 
         if (dataE) dataE[paramIndex] = v;
 
@@ -192,25 +188,19 @@ class CustomFCS extends FCS {
           scaledX = dataE[paramIndex];
         }
 
-        // console.log("paramIndex is ", paramIndex, ", scaledX is ", scaledX);
-
         if (dataE) dataE[paramIndex] = scaledX;
         if (scaledX < minimums[paramIndex]) {
           minimums[paramIndex] = scaledX;
         }
       }
 
-      // for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
-
-      // }
-
-      //let cachedEvent = JSON.parse(JSON.stringify(dataE));
       compenatedEvents = [];
       for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
         let hasSpilloverForParam =
           paramNamesHasSpillover[paramIndex].hasSpillover;
 
         if (hasSpilloverForParam) {
+          origEvents[e][paramIndex] = dataE[paramIndex];
           let matrixSpilloverIndex = this.scale.matrixSpilloverIndexes[
             paramIndex
           ];
@@ -241,7 +231,7 @@ class CustomFCS extends FCS {
       offset += readParameters.bigSkip;
     }
 
-    console.log(">>>> FINISHED converting buffer to numbers ");
+    console.log(">>>> FINISHED converting buffer to numbers");
 
     this.channels.forEach((channel, index) => {
       channel.minimum = minimums[index];
@@ -249,6 +239,7 @@ class CustomFCS extends FCS {
     });
 
     this.events = dataNumbers;
+    this.origEvents = origEvents;
     this.paramNamesHasSpillover = paramNamesHasSpillover;
     // this.dataAsStrings = dataStrings;
     return this;
