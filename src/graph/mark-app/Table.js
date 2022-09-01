@@ -3,6 +3,7 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
+import drag from "assets/images/drag.png";
 import { Button } from "@material-ui/core";
 import { getGateName, getGateNameFriendly } from "./Helper";
 import Draggable from "plain-draggable";
@@ -397,7 +398,22 @@ function Table(props) {
             setDraggingContainer(false);
             setDraggingContainer(false);
           }}
-        ></div>
+        >
+          {/* <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src={drag}
+              // alt="down-arrow"
+              style={{
+                height: 20,
+              }}
+            />
+          </div> */}
+        </div>
       </div>
     );
   }
@@ -452,7 +468,7 @@ function Table(props) {
       {PlotRender({
         plots: openEnrichedFile.plots,
       })}
-      above table
+
       <table
         style={{
           maxWidth: "100%",

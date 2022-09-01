@@ -802,7 +802,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fcsFile.label = file.file.label;
 
       if (process.env.REACT_APP_ENV == "production") {
-        console.log("logging event...");
+        console.log(">>>> fcsFile is ", fcsFile);
         ReactGA.event({
           category: "File",
           action:
@@ -819,8 +819,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       currentParsedFiles.push({
         name: file.file.name,
         //@ts-ignore
-        eventCount: fcsFile.jsonEventCount,
+        eventCount: fcsFile.events ? fcsFile.events.length : 0,
       });
+
+      console.log(">>>currentParsedFiles is ", currentParsedFiles);
 
       this.setState({
         ...this.state,

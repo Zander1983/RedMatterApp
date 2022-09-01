@@ -154,6 +154,7 @@ class CustomFCS extends FCS {
 
     let scaledX;
     //eventsToRead
+    let compenatedEvents = [];
     for (e = 0; e < eventsToRead; e++) {
       if (dataStrings) {
         eventString = "[";
@@ -203,18 +204,19 @@ class CustomFCS extends FCS {
 
       // }
 
+      //let cachedEvent = JSON.parse(JSON.stringify(dataE));
+      compenatedEvents = [];
       for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
-        let cachedEvent = JSON.parse(JSON.stringify(dataE));
-
         let hasSpilloverForParam =
           paramNamesHasSpillover[paramIndex].hasSpillover;
+
         if (hasSpilloverForParam) {
           let matrixSpilloverIndex = this.scale.matrixSpilloverIndexes[
             paramIndex
           ];
 
           let compensated = this.scale.adjustSpillover({
-            eventValues: cachedEvent,
+            eventValues: dataE,
             scaleType: this.channels[paramIndex].display,
             matrixSpilloverIndex: matrixSpilloverIndex,
             channelMaximums: channelMaximums,
@@ -222,9 +224,19 @@ class CustomFCS extends FCS {
 
           // let compensated = cachedEvent[paramIndex];
 
-          dataE[paramIndex] = Math.round(compensated);
+          compenatedEvents.push({
+            index: paramIndex,
+            value: compensated,
+          });
+
+          // dataE[paramIndex] = compensated;
         }
       }
+
+      compenatedEvents.forEach(
+        (compenatedEvent) =>
+          (dataE[compenatedEvent.index] = compenatedEvent.value)
+      );
 
       offset += readParameters.bigSkip;
     }

@@ -73,26 +73,8 @@ function Scale(fcs) {
 
     var adjusted = 0;
 
-    // console.log(
-    //   ">>>this.indexesOfSpilloverParams is ",
-    //   this.indexesOfSpilloverParams
-    // );
-
-    // console.log(">>> this.invertedMatrix is ", this.invertedMatrix);
     for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
       if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
-        // console.log(
-        //   ">>> this.invertedMatrix.data[i][matrixSpilloverIndex] is ",
-        //   this.invertedMatrix.data[i][matrixSpilloverIndex]
-        // );
-
-        // var scaled = this.scaleValueAccordingToFile({
-        //   value: eventValues[this.indexesOfSpilloverParams[i]],
-        //   paramIndex: this.indexesOfSpilloverParams[i],
-        //   scaleType: scaleType,
-        //   channelMaximum: channelMaximums[this.indexesOfSpilloverParams[i]],
-        // });
-
         var scaled = eventValues[this.indexesOfSpilloverParams[i]];
 
         let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
