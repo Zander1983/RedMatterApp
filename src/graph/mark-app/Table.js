@@ -3,7 +3,7 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-import drag from "assets/images/drag.png";
+//import drag from "assets/images/drag.png";
 import { Button } from "@material-ui/core";
 import { getGateName, getGateNameFriendly } from "./Helper";
 import Draggable from "plain-draggable";
