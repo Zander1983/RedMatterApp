@@ -19,7 +19,7 @@ phases:
   build:
     commands:
       - echo Building...
-      - yarn build:prod
+      - yarn build:dev
 artifacts:
   files:
     - "**/*"
