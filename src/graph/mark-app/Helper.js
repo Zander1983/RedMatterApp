@@ -274,6 +274,68 @@ export const superAlgorithm = (
   return Files;
 };
 
+export const compensate = (dataE, scale, channels, origEvents) => {
+  // let compenatedEvents = [];
+  // for (let paramIndex = 0; paramIndex < dataE[0].length; paramIndex++) {
+  //   let hasSpilloverForParam = paramNamesHasSpillover[paramIndex].hasSpillover;
+  //   if (hasSpilloverForParam) {
+  //     origEvents[e][paramIndex] = dataE[paramIndex];
+  //     let matrixSpilloverIndex = scale.matrixSpilloverIndexes[paramIndex];
+  //     let compensated = scale.adjustSpillover({
+  //       eventValues: dataE,
+  //       scaleType: channels[paramIndex].display,
+  //       matrixSpilloverIndex: matrixSpilloverIndex,
+  //       channelMaximums: channelMaximums,
+  //     });
+  //     // let compensated = cachedEvent[paramIndex];
+  //     compenatedEvents.push({
+  //       index: paramIndex,
+  //       value: compensated,
+  //     });
+  //     // dataE[paramIndex] = compensated;
+  //   }
+  // }
+  // return { compenatedEvents: compenatedEvents, origEvents: origEvents };
+};
+
+export const loopAndCompensate = (
+  events,
+  paramNamesHasSpillover,
+  scale,
+  channels,
+  channelMaximums,
+  origEvents
+) => {
+  console.log(">>>>in loopAndCompensate");
+  let compenatedEvents = [];
+  for (let e = 0; e < events.length; e++) {
+    for (let paramIndex = 0; paramIndex < events[0].length; paramIndex++) {
+      let hasSpilloverForParam =
+        paramNamesHasSpillover[paramIndex].hasSpillover;
+      if (hasSpilloverForParam) {
+        let matrixSpilloverIndex = scale.matrixSpilloverIndexes[paramIndex];
+        let compensated = scale.adjustSpillover({
+          eventValues: origEvents[e],
+          scaleType: channels[paramIndex].display,
+          matrixSpilloverIndex: matrixSpilloverIndex,
+          channelMaximums: channelMaximums,
+        });
+        // let compensated = cachedEvent[paramIndex];
+        compenatedEvents.push({
+          index: paramIndex,
+          value: compensated,
+        });
+        // dataE[paramIndex] = compensated;
+      }
+    }
+
+    compenatedEvents.forEach(
+      (compenatedEvent) =>
+        (events[e][compenatedEvent.index] = compenatedEvent.value)
+    );
+  }
+};
+
 export const getMedian = (values) => {
   values.sort(function (a, b) {
     return a - b;

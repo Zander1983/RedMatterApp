@@ -4,8 +4,19 @@ import { snackbarService } from "uno-material-ui";
 import { MenuItem, Select } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
-import { Grid, Button, TextField } from "@material-ui/core";
+import {
+  Grid,
+  Button,
+  TextField,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  TableContainer,
+} from "@material-ui/core";
 import WorkspaceTopBar from "./WorkspaceTopBar";
+import Modal from "@material-ui/core/Modal";
 import MultiStainState from "./MultiStainState.json";
 import MultiStainState3 from "./MultiStainState3.json";
 import Files from "./Files.json";
@@ -17,6 +28,7 @@ import {
   formatEnrichedFiles,
   DSC_SORT,
   ASC_SORT,
+  loopAndCompensate,
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -895,16 +907,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   setNewSpillover = () => {
-    let files = this.state.fcsFiles;
     let workspace = this.state.workspaceState;
-    files.find((file) => {
-      if (file.id == workspace.controlFileId) {
-        file.scale.setSpilloverInvertedMatrix(
+
+    this.state.fcsFiles.find((fcsFile) => {
+      if (fcsFile.id == workspace.controlFileId) {
+        fcsFile.scale.setSpilloverInvertedMatrix(
           //@ts-ignore
           this.state.controlFileScale.invertedMatrix
         );
       }
     });
+    //loopAndCompensate
+
+    this.state.fcsFiles.forEach((fcsFile) => {
+      //(events, scale, channels, origEvents)
+
+      loopAndCompensate(
+        fcsFile.events,
+        fcsFile.paramNamesHasSpillover,
+        fcsFile.scale,
+        fcsFile.channels,
+        fcsFile.channelMaximums,
+        fcsFile.origEvents
+      );
+
+      // fcsFile.events = compensatedEvents;
+    });
+
+    //loopAndCompensate();
 
     this.onInitState(this.state.workspaceState);
   };
@@ -1079,8 +1109,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           )}
           {this.state.showSpillover && (
             <div>
-              <>
-                <table
+              <TableContainer component={Paper}>
+                <Table
                   style={{
                     color: "#000",
                     //backgroundColor: "#ffff99",
@@ -1090,26 +1120,28 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     border: "1px solid #e0e0eb",
                   }}
                 >
-                  <tbody>
-                    <tr>
-                      <th>Fluorochrome</th>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Fluorochrome</TableCell>
                       {/* @ts-ignore */}
                       {this.state.controlFileScale?.spilloverParams.map(
                         (label: any, i: any) => {
-                          return <th key={`th--${i}`}>{label}</th>;
+                          return (
+                            <TableCell key={`th--${i}`}>{label}</TableCell>
+                          );
                         }
                       )}
-                    </tr>
+                    </TableRow>
                     {/* @ts-ignore */}
                     {this.state.controlFileScale?.invertedMatrix.data.map(
                       (rowData: any, rowI: number) => {
                         return (
-                          <tr key={`tr--${rowI}`}>
-                            <td
+                          <TableRow key={`tr--${rowI}`}>
+                            <TableCell
                               key={`td--${rowI}`}
                               style={{
                                 border: "1px solid #e0e0eb",
-                                padding: 15,
+                                padding: 5,
                               }}
                             >
                               {
@@ -1118,18 +1150,20 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                   rowI
                                 ]
                               }
-                            </td>
+                            </TableCell>
 
                             {rowData.map((columnData: any, colI: number) => {
                               return (
-                                <td
+                                <TableCell
                                   key={`th-${rowI}-${colI}`}
                                   style={{
                                     border: "1px solid #e0e0eb",
                                     padding: 15,
                                   }}
                                 >
-                                  <TextField
+                                  {columnData}
+                                  {/* <TextField
+                                    disabled
                                     style={
                                       {
                                         //width: "20%",
@@ -1143,18 +1177,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                         newColumnData.target.value
                                       );
                                     }}
-                                  />
-                                </td>
+                                  /> */}
+                                </TableCell>
                               );
                             })}
-                          </tr>
+                          </TableRow>
                         );
                       }
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-                <Button
+              {/* <Button
                   variant="outlined"
                   style={{
                     // backgroundColor: "#6666AA",
@@ -1163,11 +1198,37 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     backgroundColor: "#6666AA",
                     color: "white",
                   }}
-                  onClick={(e) => this.setNewSpillover()}
+                  onClick={(e) => {
+                    console.log("setting showSpillover to false ");
+                    this.setState({
+                      ...this.state,
+                      showSpillover: false,
+                    });
+                    setTimeout(() => {
+                      this.setNewSpillover();
+                    }, 100);
+                  }}
                 >
                   Update
-                </Button>
-              </>
+                </Button> */}
+              <Button
+                variant="outlined"
+                style={{
+                  // backgroundColor: "#6666AA",
+                  marginLeft: 5,
+                  marginBottom: 3,
+                  backgroundColor: "#6666AA",
+                  color: "white",
+                }}
+                onClick={(e) => {
+                  this.setState({
+                    ...this.state,
+                    showSpillover: false,
+                  });
+                }}
+              >
+                Close
+              </Button>
             </div>
           )}
           <Button
@@ -1195,89 +1256,91 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           {this.state.showRanges && (
             <div>
               <>
-                <table
-                  style={{
-                    color: "#000",
-                    //backgroundColor: "#ffff99",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    marginBottom: 5,
-                    border: "1px solid #e0e0eb",
-                  }}
-                >
-                  <tbody>
-                    <tr>
-                      <th></th>
-                      <th>Min</th>
-                      <th>Max</th>
-                    </tr>
-                    {controlEnrichedFile.channels.map(
-                      (rowData: any, rowI: number) => {
-                        return (
-                          <tr key={`tr--${rowI}`}>
-                            <td
-                              key={`td--${rowI}-2`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 15,
-                              }}
-                            >
-                              {rowData.name}
-                            </td>
-
-                            <td
-                              key={`td--${rowI}-3`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 15,
-                              }}
-                            >
-                              <TextField
-                                style={
-                                  {
-                                    //width: "20%",
-                                  }
-                                }
-                                value={rowData.minimum}
-                                onChange={(newColumnData: any) => {
-                                  this.updateRanges(
-                                    rowI,
-                                    "minimum",
-                                    newColumnData.target.value
-                                  );
+                <TableContainer component={Paper}>
+                  <Table
+                    style={{
+                      color: "#000",
+                      //backgroundColor: "#ffff99",
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      marginBottom: 5,
+                      border: "1px solid #e0e0eb",
+                    }}
+                  >
+                    <TableBody>
+                      <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Min</TableCell>
+                        <TableCell>Max</TableCell>
+                      </TableRow>
+                      {controlEnrichedFile.channels.map(
+                        (rowData: any, rowI: number) => {
+                          return (
+                            <TableRow key={`tr--${rowI}`}>
+                              <TableCell
+                                key={`td--${rowI}-2`}
+                                style={{
+                                  border: "1px solid #e0e0eb",
+                                  padding: 5,
                                 }}
-                              />
-                            </td>
+                              >
+                                {rowData.name}
+                              </TableCell>
 
-                            <td
-                              key={`td--${rowI}-4`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 15,
-                              }}
-                            >
-                              <TextField
-                                style={
-                                  {
-                                    //width: "20%",
-                                  }
-                                }
-                                value={rowData.maximum}
-                                onChange={(newColumnData: any) => {
-                                  this.updateRanges(
-                                    rowI,
-                                    "maximum",
-                                    newColumnData.target.value
-                                  );
+                              <TableCell
+                                key={`td--${rowI}-3`}
+                                style={{
+                                  border: "1px solid #e0e0eb",
+                                  padding: 5,
                                 }}
-                              />
-                            </td>
-                          </tr>
-                        );
-                      }
-                    )}
-                  </tbody>
-                </table>
+                              >
+                                <TextField
+                                  style={
+                                    {
+                                      //width: "20%",
+                                    }
+                                  }
+                                  value={rowData.minimum}
+                                  onChange={(newColumnData: any) => {
+                                    this.updateRanges(
+                                      rowI,
+                                      "minimum",
+                                      newColumnData.target.value
+                                    );
+                                  }}
+                                />
+                              </TableCell>
+
+                              <TableCell
+                                key={`td--${rowI}-4`}
+                                style={{
+                                  border: "1px solid #e0e0eb",
+                                  padding: 15,
+                                }}
+                              >
+                                <TextField
+                                  style={
+                                    {
+                                      //width: "20%",
+                                    }
+                                  }
+                                  value={rowData.maximum}
+                                  onChange={(newColumnData: any) => {
+                                    this.updateRanges(
+                                      rowI,
+                                      "maximum",
+                                      newColumnData.target.value
+                                    );
+                                  }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
                 <Button
                   variant="outlined"

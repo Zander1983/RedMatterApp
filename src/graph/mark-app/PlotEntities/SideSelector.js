@@ -197,7 +197,7 @@ function SideSelector(props) {
               ))}
             </Select>
           </Tooltip>
-          <Select
+          {/* <Select
             disableUnderline
             style={{
               textAlign: "center",
@@ -216,7 +216,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select>
+          </Select> */}
         </div>
       </div>
 

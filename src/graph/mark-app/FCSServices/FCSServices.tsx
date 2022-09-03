@@ -27,6 +27,8 @@ class FCSServices {
           events: parsedFcsFile.events,
           scale: parsedFcsFile.scale,
           paramNamesHasSpillover: parsedFcsFile.paramNamesHasSpillover,
+          origEvents: parsedFcsFile.origEvents,
+          channelMaximums: parsedFcsFile.channelMaximums,
         };
 
         return fileData;

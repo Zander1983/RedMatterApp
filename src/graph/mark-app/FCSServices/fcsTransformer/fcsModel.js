@@ -6,6 +6,7 @@ import Q from "q";
 import * as math from "mathjs";
 import generalHelper from "./generalHelper";
 import Scale from "./scale";
+import { compensate } from "../../Helper";
 
 class CustomFCS extends FCS {
   _prepareReadParameters(databuf) {
@@ -97,7 +98,7 @@ class CustomFCS extends FCS {
 
     this.scale = new Scale(this);
     const paramNamesHasSpillover = this.getParamNameHasSpillover(this.scale);
-    const channelMaximums = generalHelper.removeNulls(this.get$PnX("R"));
+    this.channelMaximums = generalHelper.removeNulls(this.get$PnX("R"));
     this.channels = this.getParamsAndScales();
     //eneralHelper.removeNulls(fcs.get$PnX("R"));
 
@@ -156,11 +157,13 @@ class CustomFCS extends FCS {
     //eventsToRead
     let compenatedEvents = [];
     let origEvents = new Array(eventsToRead);
+    let compenatedAndOrigEvents = {};
+    let compensated;
     for (e = 0; e < eventsToRead; e++) {
       if (dataStrings) {
         eventString = "[";
       }
-      origEvents[e] = [];
+
       var dataE = dataNumbers ? dataNumbers[e] : null; // efficiency
 
       //console.log("dataE is ", dataE);
@@ -182,7 +185,7 @@ class CustomFCS extends FCS {
             value: dataE[paramIndex],
             f1: channelF1s[paramIndex],
             f2: channelF2s[paramIndex],
-            channelMaximum: channelMaximums[paramIndex],
+            channelMaximum: this.channelMaximums[paramIndex],
           });
         } else {
           scaledX = dataE[paramIndex];
@@ -194,39 +197,45 @@ class CustomFCS extends FCS {
         }
       }
 
+      // compenatedAndOrigEvents = compensate(dataE, this.scale, this.channels);
       compenatedEvents = [];
       for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
         let hasSpilloverForParam =
           paramNamesHasSpillover[paramIndex].hasSpillover;
-
         if (hasSpilloverForParam) {
-          origEvents[e][paramIndex] = dataE[paramIndex];
+          // origEvents[e][paramIndex] = dataE[paramIndex];
           let matrixSpilloverIndex = this.scale.matrixSpilloverIndexes[
             paramIndex
           ];
-
-          let compensated = this.scale.adjustSpillover({
+          compensated = this.scale.adjustSpillover({
             eventValues: dataE,
             scaleType: this.channels[paramIndex].display,
             matrixSpilloverIndex: matrixSpilloverIndex,
-            channelMaximums: channelMaximums,
+            channelMaximums: this.channelMaximums,
           });
-
-          // let compensated = cachedEvent[paramIndex];
-
-          compenatedEvents.push({
-            index: paramIndex,
-            value: compensated,
-          });
-
-          // dataE[paramIndex] = compensated;
+          // let compensated = dataE[paramIndex];
+          compenatedEvents.push(compensated);
+          dataE[paramIndex] = compensated;
         }
       }
 
-      compenatedEvents.forEach(
-        (compenatedEvent) =>
-          (dataE[compenatedEvent.index] = compenatedEvent.value)
-      );
+      // let index = 0;
+      // for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
+      //   let hasSpilloverForParam =
+      //     paramNamesHasSpillover[paramIndex].hasSpillover;
+
+      //   if (hasSpilloverForParam) {
+      //     dataE[paramIndex] = compenatedEvents[index];
+      //     index++;
+      //   }
+      // }
+
+      // dataE.forEach((eventPoint) => {});
+
+      // compenatedEvents.forEach(
+      //   (compenatedEvent) =>
+      //     (dataE[compenatedEvent.index] = compenatedEvent.value)
+      // );
 
       offset += readParameters.bigSkip;
     }
@@ -235,11 +244,11 @@ class CustomFCS extends FCS {
 
     this.channels.forEach((channel, index) => {
       channel.minimum = minimums[index];
-      channel.maximum = parseInt(channelMaximums[index]);
+      channel.maximum = parseInt(this.channelMaximums[index]);
     });
 
     this.events = dataNumbers;
-    this.origEvents = origEvents;
+
     this.paramNamesHasSpillover = paramNamesHasSpillover;
     // this.dataAsStrings = dataStrings;
     return this;
