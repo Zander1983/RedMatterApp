@@ -1341,9 +1341,35 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     backgroundColor: "#6666AA",
                     color: "white",
                   }}
-                  onClick={(e) => this.setNewRanges()}
+                  onClick={(e) => {
+                    this.setState({
+                      ...this.state,
+                      showRanges: false,
+                    });
+                    setTimeout(() => {
+                      this.setNewRanges();
+                    }, 100);
+                  }}
                 >
                   Update
+                </Button>
+                <Button
+                  variant="outlined"
+                  style={{
+                    // backgroundColor: "#6666AA",
+                    marginLeft: 5,
+                    marginBottom: 3,
+                    backgroundColor: "#6666AA",
+                    color: "white",
+                  }}
+                  onClick={(e) => {
+                    this.setState({
+                      ...this.state,
+                      showRanges: false,
+                    });
+                  }}
+                >
+                  Close
                 </Button>
               </>
             </div>
