@@ -141,6 +141,7 @@ class CustomFCS extends FCS {
 
     // loop over each event
 
+    let test = [];
     for (p = 0; p < numParams; p++) {
       indexOfSpilloverParamX = this.scale.getMatrixSpilloverIndex({
         paramName: paramNamesHasSpillover[p].paramName,
@@ -214,8 +215,16 @@ class CustomFCS extends FCS {
             channelMaximums: this.channelMaximums,
           });
           // let compensated = dataE[paramIndex];
-          compenatedEvents.push(compensated);
-          dataE[paramIndex] = compensated;
+          compenatedEvents.push({
+            index: paramIndex,
+            value: compensated,
+          });
+
+          // test.push({
+          //   index: paramIndex,
+          //   value: compensated,
+          // });
+          // dataE[paramIndex] = compensated;
         }
       }
 
@@ -232,15 +241,18 @@ class CustomFCS extends FCS {
 
       // dataE.forEach((eventPoint) => {});
 
-      // compenatedEvents.forEach(
-      //   (compenatedEvent) =>
-      //     (dataE[compenatedEvent.index] = compenatedEvent.value)
-      // );
+      compenatedEvents.forEach(
+        (compenatedEvent) =>
+          (dataE[compenatedEvent.index] = compenatedEvent.value)
+      );
 
       offset += readParameters.bigSkip;
     }
 
-    console.log(">>>> FINISHED converting buffer to numbers");
+    // console.log(
+    //   ">>>> FINISHED converting buffer to numbers, dataNumbers is ",
+    //   dataNumbers
+    // );
 
     this.channels.forEach((channel, index) => {
       channel.minimum = minimums[index];

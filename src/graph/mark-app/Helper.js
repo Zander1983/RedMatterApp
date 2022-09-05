@@ -21,41 +21,16 @@ export const superAlgorithm = (
   calculateMedianAndMean = false
 ) => {
   console.log("!!!! in super algorithm");
-  // event 1 is not in any gate, it will have color black
-  // event 2 is in both gate, it will have the color of the last gate
-  // event 3 is in gate 1 but not in gate 2, it will have the color of gate 1
-
-  // OriginalFiles[0].channels[0] = {
-  //   value: "FSC-A",
-  //   display: "lin",
-  //   minimum: 0,
-  //   maximum: 100,
-  //   paramName: "FSC-A",
-  // };
-  // OriginalFiles[0].channels[1] = {
-  //   value: "FSC-A",
-  //   display: "lin",
-  //   minimum: 0,
-  //   maximum: 100,
-  //   paramName: "FSC-A",
-  // };
-  // OriginalFiles[0].events = [
-  //   [20, 20],
-  //   [20, 80],
-  //   [50, 50],
-  //   [70, 10],
-  //   [90, 90],
-  //   [40, 15],
-  // ];
 
   let controlOriginalFile = OriginalFiles.find(
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
 
-  let Files = JSON.parse(JSON.stringify(OriginalFiles));
-  let WorkspaceState = JSON.parse(JSON.stringify(OriginalWorkspaceState));
+  let Files = OriginalFiles;
+  let WorkspaceState = OriginalWorkspaceState;
   let controlFileId = WorkspaceState.controlFileId;
 
+  console.log("looping through the files, Files.length is ", Files.length);
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
@@ -66,11 +41,14 @@ export const superAlgorithm = (
 
     let eventsInsideGate = [];
     for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
-      if (plots[plotIndex].gate) {
-        eventsInsideGate.push([]);
+      if (plots[plotIndex].gates) {
+        plots[plotIndex].gates.forEach((gate) => {
+          eventsInsideGate[gate.name] = 0;
+        });
       }
     }
 
+    console.log("now looping througb plots, plots is ", plots);
     plots.forEach((plot) => {
       plot?.gates?.map((gate, index) => {
         if (gate?.name !== undefined) {
@@ -101,7 +79,13 @@ export const superAlgorithm = (
 
     //let adjustedEvents = Files[fileIndex].events.map((event, eventIndex) => {});
 
-    console.log(">>> started looping through events....");
+    console.log("now started looping through events....");
+    let enrichedEvent;
+    let isInGate;
+    let plot;
+    let gates;
+
+    console.log(">>>the first event is ", Files[fileIndex].events[0]);
     for (
       let eventIndex = 0;
       eventIndex < Files[fileIndex].events.length;
@@ -109,35 +93,13 @@ export const superAlgorithm = (
       eventIndex++
     ) {
       let event = Files[fileIndex].events[eventIndex];
-
-      // commenting out this reduces from 40 seconds to 19 seconds
-      // let cachedEvent = JSON.parse(JSON.stringify(event));
-      // event.forEach((eventChannelValue, paramIndex) => {
-      //   let hasSpilloverForParam =
-      //     file.paramNamesHasSpillover[paramIndex].hasSpillover;
-      //   if (hasSpilloverForParam) {
-      //     let matrixSpilloverIndex =
-      //       file.scale.matrixSpilloverIndexes[paramIndex];
-
-      //     let scaled = controlOriginalFile.scale.adjustSpillover({
-      //       // paramIndex: paramIndex,
-      //       // paramName: paramName,
-      //       eventValues: cachedEvent,
-      //       scaleType: file.channels[paramIndex].display,
-      //       matrixSpilloverIndex: matrixSpilloverIndex,
-      //       channelMaximums: file.channels.map((channel) => channel.maximum),
-      //     });
-
-      //     event[paramIndex] = Math.round(scaled);
-      //   }
-      // });
+      event["color"] = "#000";
+      // event["isInGate" + gate.name] = true;
 
       // if the file has its own plots, use that, otherwise use control file plots
-
       for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
-        let isInGate;
-        let plot = plots[plotIndex];
-        let gates = plot.gates;
+        plot = plots[plotIndex];
+        gates = plot.gates;
         if (!event["color"]) {
           event["color"] = "#000";
         }
@@ -214,7 +176,8 @@ export const superAlgorithm = (
 
               if (isInGate) {
                 if (calculateMedianAndMean) {
-                  eventsInsideGate[plotIndex].push(event.filter(Number));
+                  eventsInsideGate[gate.name] = event.filter(Number);
+                  // eventsInsideGate[plotIndex].push(event.filter(Number));
                 }
 
                 event["color"] = gate["color"];
@@ -223,6 +186,8 @@ export const superAlgorithm = (
                 !gateStatsObj[gate.name] && !gateStatsObj[gate.name].count
                   ? (gateStatsObj[gate.name].count = 1)
                   : gateStatsObj[gate.name].count++;
+              } else {
+                event["isInGate" + gate.name] = false;
               }
             }
           });
@@ -258,7 +223,7 @@ export const superAlgorithm = (
           gateName: gateName,
           count: gateStatsObj[gateKey],
           percentage: percentage,
-          eventsInsideGate: eventsInsideGate[index],
+          eventsInsideGate: eventsInsideGate[gateName],
         });
       } else {
         gateStats.push({

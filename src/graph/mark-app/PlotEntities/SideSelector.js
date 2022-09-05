@@ -86,7 +86,7 @@ function SideSelector(props) {
               </MenuItem>
             </Select>
           </Tooltip>
-          <Select
+          {/* <Select
             disableUnderline
             style={{
               width: props.plot.width * 0.35,
@@ -105,7 +105,7 @@ function SideSelector(props) {
           >
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
-          </Select>
+          </Select> */}
         </div>
       </div>
       <div

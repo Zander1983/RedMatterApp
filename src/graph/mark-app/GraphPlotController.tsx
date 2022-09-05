@@ -185,10 +185,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       controlFileId
     ].plots.filter((plot: any) => plot.level == level);
 
-    let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
+    // let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
     newPlot.left = 350 * level;
-    newPlot.top = 350 * numAtThatLevel;
+    newPlot.top = 350;
+    // newPlot.top = 350 * numAtThatLevel;
 
     newPlot.population = change.newGate.name;
     // for histograms
