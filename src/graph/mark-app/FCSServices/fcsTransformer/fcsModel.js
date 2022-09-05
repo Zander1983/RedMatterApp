@@ -39,7 +39,6 @@ class CustomFCS extends FCS {
     )
       readParameters.eventsToRead = this.meta.eventCount;
 
-    s;
     switch (this.text.$DATATYPE) {
       case "D":
         readParameters.fn = isBE ? databuf.readDoubleBE : databuf.readDoubleLE;
