@@ -524,7 +524,6 @@ function Plot(props) {
       verticalBinCount
     );
 
-    console.log("in draw label, before yAxis");
     let contextY = document
       .getElementById("canvas-" + props.plotIndex + "-yAxis")
       .getContext("2d");

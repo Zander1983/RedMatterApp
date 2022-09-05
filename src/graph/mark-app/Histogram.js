@@ -180,7 +180,6 @@ const getAxisRatio = (minimum, maximum, width, scaleType) => {
 };
 
 function Histogram(props) {
-  console.log("in Histogram, props are ", props);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
@@ -231,7 +230,6 @@ function Histogram(props) {
   });
 
   useEffect(() => {
-    console.log("in the useEffect for newPoints....");
     let context = getContext("covering-canvas-" + props.plotIndex);
 
     if (context) {
@@ -239,7 +237,6 @@ function Histogram(props) {
       context.fillStyle = "white";
 
       if (newPoints && newPoints[0] && newPoints[1]) {
-        console.log("drawing the gate for newPoints....");
         drawGateLine(
           getContext("covering-canvas-" + props.plotIndex),
           props.plot,
@@ -252,7 +249,6 @@ function Histogram(props) {
           let points =
             gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
 
-          console.log("drawing the gate for plot.gates....");
           drawGateLine(
             getContext("covering-canvas-" + props.plotIndex),
             props.plot,
@@ -406,7 +402,6 @@ function Histogram(props) {
   }, [props.plot]);
 
   const drawGateLine = (context, plot, points, color) => {
-    console.log(">>> in drawGateLine");
     context.strokeStyle = color;
     context.lineWidth = 1;
     context.beginPath();
@@ -1053,7 +1048,6 @@ function Histogram(props) {
   };
 
   const onCancelGateName = () => {
-    console.log("in onCancelGateName.....");
     setModalIsOpen(false);
     setNewPoints([]);
     setStartPointsReal(null);

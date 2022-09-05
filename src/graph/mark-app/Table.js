@@ -75,7 +75,6 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
-  console.log(">>> Table props are ", props);
   let [containerHeight, setContainerheight] = useState(355);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
@@ -654,7 +653,6 @@ function Table(props) {
                               <span
                                 onClick={() => {
                                   fileViewHideHandler(enrichedFile?.fileId);
-                                  console.log("Calling scrollToElement!!!!");
                                   scrollToElement();
                                 }}
                                 style={{

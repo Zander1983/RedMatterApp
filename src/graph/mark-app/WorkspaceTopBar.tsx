@@ -70,7 +70,6 @@ const WorkspaceTopBar = (props: any) => {
   // };
 
   const downloadCSV = () => {
-    console.log("in downwload CSV");
     let workspaceState = props.workspaceState;
     // @ts-ignore
     const plots =
