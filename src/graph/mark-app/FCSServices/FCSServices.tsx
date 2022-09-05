@@ -5,7 +5,6 @@ import { parseAndUpload } from "./fcsTransformer/node-handler";
 
 class FCSServices {
   loadFileMetadata(file: Buffer) {
-    console.log(">>> starting parse of buffer, buffer is ", file);
     return fcsModel
       .getFCS({
         file: file,
@@ -13,8 +12,6 @@ class FCSServices {
         skip: 100,
       })
       .then(function (parsedFcsFile) {
-        console.log("parsedFcsFile is.....", parsedFcsFile);
-
         //let fileEvents = parseAndUpload({}, fcsFile, 123456, 987654, false);
 
         // channels: channels,

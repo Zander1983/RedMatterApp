@@ -16,8 +16,6 @@ class CustomFCS extends FCS {
 
     var options = this.meta;
 
-    console.log("???options are ", options);
-
     var readParameters = {
       asNumber:
         FCS.OPTION_VALUES.asNumber === options.dataFormat ||
@@ -41,7 +39,7 @@ class CustomFCS extends FCS {
     )
       readParameters.eventsToRead = this.meta.eventCount;
 
-    console.log(">>> this.text is ", this.text);
+    s;
     switch (this.text.$DATATYPE) {
       case "D":
         readParameters.fn = isBE ? databuf.readDoubleBE : databuf.readDoubleLE;
@@ -74,7 +72,6 @@ class CustomFCS extends FCS {
 
     readParameters.bytesPerEvent = readParameters.bytes * this.meta.$PAR;
 
-    console.log(">>>>>options.skip is ", options.skip);
     if (options.skip && readParameters.eventsToRead < this.meta.eventCount) {
       var events2Skip;
       if (isFinite(options.skip)) events2Skip = options.skip;
@@ -84,7 +81,6 @@ class CustomFCS extends FCS {
         this.meta.eventSkip = options.skip + " -> " + events2Skip;
       }
 
-      console.log(">>>events2Skip is ", events2Skip);
       readParameters.bigSkip = events2Skip * readParameters.bytesPerEvent;
     }
 
@@ -151,8 +147,6 @@ class CustomFCS extends FCS {
       channelF1s.push(this.scale.getEF1(p));
       channelF2s.push(this.scale.getEF2(p));
     }
-
-    console.log(">>>> starting to convert buffer to numbers ");
 
     let scaledX;
     //eventsToRead
@@ -308,8 +302,6 @@ class CustomFCS extends FCS {
     var paramArray = [];
     var range;
 
-    console.log(">>>>>>>!!!!!!! this is ", this);
-
     sArray = generalHelper.removeNulls(sArray);
 
     for (var x = 0; x < nArray.length; x++) {
@@ -348,8 +340,6 @@ class CustomFCS extends FCS {
             if (!display) {
               let PnS = self.getText("$P" + (index + 1) + "S");
 
-              console.log("index is ", index, " and PnS is ", PnS);
-
               if (!PnS) {
                 PnS = self.getText("P" + (index + 1) + "S");
               }
@@ -364,8 +354,6 @@ class CustomFCS extends FCS {
               if (!display) {
                 let PnS = self.getText("P" + (index + 1) + "S");
 
-                console.log("index is ", index, " and PnS is ", PnS);
-
                 if (PnS) {
                   display = "LOG";
                 }
@@ -376,7 +364,6 @@ class CustomFCS extends FCS {
                     param: index,
                   });
 
-                  console.log(">>> range is ", range);
                   if (range) {
                     display = "LOG";
                   }
@@ -403,9 +390,6 @@ class CustomFCS extends FCS {
                       display = "LOG";
                     }
                   }
-
-                  console.log("entry is ", entry);
-                  console.log("returning display ", display);
                 }
               }
             }
@@ -418,8 +402,6 @@ class CustomFCS extends FCS {
       } else {
         display = "lin";
       }
-
-      console.log("for index ", index, " returning ", display);
 
       json.push({
         key: index,
@@ -614,10 +596,8 @@ var getFcsFromDataBuf = function (params) {
   };
 
   return new Promise(function (resolve, reject) {
-    console.log("before CustomFCS");
     var fcs = new CustomFCS(options, params.databuf);
     if (fcs) {
-      console.log("resolving....fcs.dataAsNumbers is ", fcs.dataAsNumbers);
       resolve(fcs);
     } else {
       reject(fcs);

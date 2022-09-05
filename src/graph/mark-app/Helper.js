@@ -20,8 +20,6 @@ export const superAlgorithm = (
   OriginalWorkspaceState,
   calculateMedianAndMean = false
 ) => {
-  console.log("!!!! in super algorithm");
-
   let controlOriginalFile = OriginalFiles.find(
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
@@ -30,7 +28,6 @@ export const superAlgorithm = (
   let WorkspaceState = OriginalWorkspaceState;
   let controlFileId = WorkspaceState.controlFileId;
 
-  console.log("looping through the files, Files.length is ", Files.length);
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
@@ -43,12 +40,11 @@ export const superAlgorithm = (
     for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
       if (plots[plotIndex].gates) {
         plots[plotIndex].gates.forEach((gate) => {
-          eventsInsideGate[gate.name] = 0;
+          eventsInsideGate[gate.name] = [];
         });
       }
     }
 
-    console.log("now looping througb plots, plots is ", plots);
     plots.forEach((plot) => {
       plot?.gates?.map((gate, index) => {
         if (gate?.name !== undefined) {
@@ -79,13 +75,11 @@ export const superAlgorithm = (
 
     //let adjustedEvents = Files[fileIndex].events.map((event, eventIndex) => {});
 
-    console.log("now started looping through events....");
     let enrichedEvent;
     let isInGate;
     let plot;
     let gates;
 
-    console.log(">>>the first event is ", Files[fileIndex].events[0]);
     for (
       let eventIndex = 0;
       eventIndex < Files[fileIndex].events.length;
@@ -176,8 +170,7 @@ export const superAlgorithm = (
 
               if (isInGate) {
                 if (calculateMedianAndMean) {
-                  eventsInsideGate[gate.name] = event.filter(Number);
-                  // eventsInsideGate[plotIndex].push(event.filter(Number));
+                  eventsInsideGate[gate.name].push(event.filter(Number));
                 }
 
                 event["color"] = gate["color"];
@@ -194,8 +187,6 @@ export const superAlgorithm = (
         }
       }
     }
-
-    console.log("finsihed looping through events");
 
     const gateKeys = Object.keys(gateStatsObj);
 
@@ -271,7 +262,6 @@ export const loopAndCompensate = (
   channelMaximums,
   origEvents
 ) => {
-  console.log(">>>>in loopAndCompensate");
   let compenatedEvents = [];
   for (let e = 0; e < events.length; e++) {
     for (let paramIndex = 0; paramIndex < events[0].length; paramIndex++) {
@@ -651,8 +641,6 @@ export const getPlotChannelAndPosition = (file) => {
   let yChannel = file.channels.find(
     (channel) => channel?.value?.toUpperCase().indexOf(expectedYChannels) > -1
   );
-
-  console.log("!!!!!!!!!yChannel is ", yChannel);
 
   if (xChannel) {
     xAxisIndex = xChannel.key;

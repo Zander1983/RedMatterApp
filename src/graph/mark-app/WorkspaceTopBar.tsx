@@ -3,6 +3,7 @@ import { CSVLink } from "react-csv";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { Button } from "@material-ui/core";
+import { getGateName, getGateNameFriendly } from "./Helper";
 
 import {
   createDefaultPlotSnapShot,
@@ -226,9 +227,10 @@ const WorkspaceTopBar = (props: any) => {
       ) {
         const stats: any = {
           fileName: fcsFiles[fileIndex]?.label,
-          gateName:
+          gateName: getGateNameFriendly(
             eventsSeparatedByChannels[fcsFiles[fileIndex].fileId][statsIndex]
-              ?.gateName,
+              ?.gateName
+          ),
           percentage:
             eventsSeparatedByChannels[fcsFiles[fileIndex].fileId][statsIndex]
               ?.percentage,

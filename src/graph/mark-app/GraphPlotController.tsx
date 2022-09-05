@@ -128,18 +128,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       copyOfLocalFiles &&
       copyOfLocalFiles.length > 0
     ) {
-      console.log(">> starting SuperALgo");
       let enrichedFiles: any[] = superAlgorithm(
         copyOfLocalFiles,
         workspaceState
       );
 
-      console.log("Finished SuperAlgo");
-
-      console.log(">>> starting Format Enriched Files");
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
-
-      console.log("Finished Format Enriched Files");
 
       let controlEnrichedFile = enrichedFiles.find(
         (enrichedFile) => enrichedFile.isControlFile
@@ -188,7 +182,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
     newPlot.left = 350 * level;
-    newPlot.top = 350;
+    newPlot.top = 5;
     // newPlot.top = 350 * numAtThatLevel;
 
     newPlot.population = change.newGate.name;
@@ -803,8 +797,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         });
       });
 
-      console.log(">>>>fcsFile is ", fcsFile);
-
       //@ts-ignore
       fcsFile.name = file.file.name;
       //@ts-ignore
@@ -815,7 +807,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fcsFile.label = file.file.label;
 
       if (process.env.REACT_APP_ENV == "production") {
-        console.log(">>>> fcsFile is ", fcsFile);
         ReactGA.event({
           category: "File",
           action:
@@ -834,8 +825,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         //@ts-ignore
         eventCount: fcsFile.events ? fcsFile.events.length : 0,
       });
-
-      console.log(">>>currentParsedFiles is ", currentParsedFiles);
 
       this.setState({
         ...this.state,
