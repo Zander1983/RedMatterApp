@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import emailjs from "emailjs-com";
 import { snackbarService } from "uno-material-ui";
 import { Tooltip } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 import {
   UpCircleOutlined,
@@ -58,10 +59,17 @@ const ChatBox = () => {
         />
       ) : (
         <Tooltip title={"Click here to send feedback to the Red Matter Team."}>
-          <UpCircleOutlined
-            className={classes.icon}
+          <Button
+            color="primary"
+            variant="contained"
             onClick={() => setShowChatBox((prev) => !prev)}
-          />
+            style={{
+              marginBottom: 5,
+              marginRight: 5,
+            }}
+          >
+            Send Feedback
+          </Button>
         </Tooltip>
       )}
       {/* Chat Box */}
