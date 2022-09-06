@@ -463,7 +463,27 @@ function Table(props) {
             width: "20%",
             order: 1,
           }}
-        ></div>
+        >
+          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
+            <>
+              <span
+                style={{
+                  color: "#ff8080",
+                }}
+              >
+                Add NEW gates on the control file
+              </span>
+            </>
+          ) : (
+            <span
+              style={{
+                color: "#ff8080",
+              }}
+            >
+              Edit EXISTING gates on non-control files
+            </span>
+          )}
+        </div>
         <div
           style={{
             width: "60%",

@@ -1228,6 +1228,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               marginLeft: 5,
               marginBottom: 3,
               // color: "white",
+              color: "rgb(24, 144, 255)",
             }}
             onClick={(e) =>
               this.setState({
