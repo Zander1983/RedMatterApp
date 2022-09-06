@@ -176,6 +176,110 @@ function SideSelector(props) {
           </Tooltip>
         </div>
       </div>
+
+      {props.plot.plotType == "histogram" ? (
+        <div
+          style={{
+            marginLeft: "10px",
+            marginTop: "30px",
+            height: "fit-content",
+            padding: "5px",
+          }}
+        >
+          <Select
+            disableUnderline
+            multiple
+            style={{
+              textAlign: "center",
+              flex: "1 1 auto",
+              fontSize: 12,
+              width: 100,
+            }}
+            value={[""]}
+          >
+            <MenuItem value="">Overlays</MenuItem>
+            {props.allFileMinObj
+              .filter((x) => x.id != props.enrichedFile.fileId)
+              .map((x) => {
+                return (
+                  <MenuItem key={x?.id}>
+                    <div
+                      className="form-check"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: 5,
+                        backgroundColor: getOverlayColor(x.id),
+                      }}
+                    >
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        value={x.id}
+                        checked={
+                          props.plot?.overlays?.find((y) => y.id == x.id)
+                            ? true
+                            : false
+                        }
+                        onChange={(e) => {
+                          props.addOverlay(
+                            props.enrichedFile.fileId,
+                            e.target.value,
+                            props.plotIndex.split("-")[1],
+                            e.target.checked
+                          );
+                        }}
+                        id={props.plotIndex + x.id}
+                      ></input>
+                      <label
+                        className="form-check-label"
+                        style={{ wordBreak: "break-all", marginLeft: 3 }}
+                        // for={props.plotIndex + x.id}
+                      >
+                        {`${
+                          x.name.length > 50
+                            ? x.name.substring(0, 50) + "..."
+                            : x.name
+                        }`}
+                      </label>
+                    </div>
+                  </MenuItem>
+                );
+              })}
+          </Select>
+          <div
+            style={{
+              height: 180,
+              overflowY: "auto",
+              maxWidth: 230,
+            }}
+          >
+            {props.plot?.overlays?.map((x) => {
+              return (
+                <div
+                  key={x?.id}
+                  style={{ alignItems: "center", display: "flex" }}
+                >
+                  <div
+                    style={{
+                      userSelect: "none",
+                      backgroundColor: x.color,
+                      width: 15,
+                      height: 15,
+                      color: "transparent",
+                    }}
+                  >
+                    df
+                  </div>
+                  <div style={{ marginLeft: 5 }}>
+                    {props.allFileMinObj.find((y) => y.id == x.id).name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
