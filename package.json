@@ -32,6 +32,7 @@
     "emailjs-com": "^3.2.0",
     "env-cmd": "^10.1.0",
     "fcs": "0.0.5",
+    "firebase": "^9.9.4",
     "formik": "^2.2.6",
     "html-to-image": "^1.9.0",
     "jquery": "^3.5.1",

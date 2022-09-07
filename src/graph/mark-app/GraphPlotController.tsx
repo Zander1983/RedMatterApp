@@ -16,7 +16,9 @@ import {
   TableContainer,
 } from "@material-ui/core";
 import WorkspaceTopBar from "./WorkspaceTopBar";
-import Modal from "@material-ui/core/Modal";
+// import Modal from "@material-ui/core/Modal";
+//@ts-ignore
+import Modal from "react-modal";
 import MultiStainState from "./MultiStainState.json";
 import MultiStainState3 from "./MultiStainState3.json";
 import Files from "./Files.json";
@@ -33,6 +35,15 @@ import {
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import ChatBox from "./../../Components/common/ChatBox/ChatBox";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 interface PlotControllerProps {
   sharedWorkspace: boolean;
@@ -59,9 +70,25 @@ interface IState {
   showRanges: boolean;
   fcsFiles: any[];
   controlFileId: string;
+  userSignUpModalShowing: boolean;
+  signUpEmail: string;
 }
 
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "rgb(125 204 204)",
+  },
+};
+
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
+  firebaseApp = {};
+
   constructor(props: PlotControllerProps) {
     super(props);
 
@@ -82,6 +109,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       showRanges: false,
       fcsFiles: [],
       controlFileId: "",
+      userSignUpModalShowing: false,
+      signUpEmail: "",
     };
 
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -100,6 +129,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (process.env.REACT_APP_ENV == "production") {
       ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
     }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQvoAX5AHZ-BO20IbqN_E7-zJrXC5XcQo",
+      authDomain: "red-matter-1ed2f.firebaseapp.com",
+      projectId: "red-matter-1ed2f",
+      storageBucket: "red-matter-1ed2f.appspot.com",
+      messagingSenderId: "694058183837",
+      appId: "1:694058183837:web:f46f7700d16f484c623874",
+      measurementId: "G-JSEH91J4NT",
+    };
+
+    this.firebaseApp = initializeApp(firebaseConfig);
+
+    // const db = getFirestore(firebaseApp);
+
+    // console.log("db is ", db);
+
+    // const q = query(collection(db, "users"));
+
+    // console.log(">>.q is ", q);
+
+    // const querySnapshot = await getDocs(q);
+    // querySnapshot.forEach((doc) => {
+    //   // doc.data() is never undefined for query doc snapshots
+    //   console.log(doc.id, " => ", doc.data());
+    // });
+
+    // Firebase.initializeApp(firebaseConfig);
   }
 
   inputFile = {
@@ -107,6 +164,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       click: function () {},
     },
   };
+
+  // async loopNumbers(firebaseApp: any) {
+  //   const db = getFirestore(firebaseApp);
+
+  //   try {
+  //     const docRef = await addDoc(collection(db, "users"), {});
+  //   } catch (e) {
+  //     console.error("Error adding document: ", e);
+  //   }
+  // }
 
   // const [uploadingFiles, setUploadingFiles] = useState(Object);
 
@@ -871,6 +938,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //workspaceState: workspaceState,
     });
 
+    if (localStorage.getItem("signup") != "true") {
+      this.setState({
+        ...this.state,
+        userSignUpModalShowing: true,
+      });
+    }
+
     this.onInitState(workspaceState);
   };
 
@@ -1409,6 +1483,36 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     } else return null;
   };
 
+  handleUserSignUp = () => {
+    // @ts-ignore
+    const db = getFirestore(this.firebaseApp);
+    localStorage.setItem("signup", "true");
+
+    try {
+      const docRef = addDoc(collection(db, "users"), {
+        email: this.state.signUpEmail,
+      });
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+
+    this.setState({
+      ...this.state,
+      userSignUpModalShowing: false,
+    });
+  };
+
+  // async loopNumbers(firebaseApp: any) {
+  //   const db = getFirestore(firebaseApp);
+
+  //   try {
+  //     const docRef = await addDoc(collection(db, "users"), {
+  //     });
+  //   } catch (e) {
+  //     console.error("Error adding document: ", e);
+  //   }
+  // }
+
   renderUploadPanel = () => {
     return (
       <div
@@ -1515,11 +1619,113 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 accept=".fcs, .lmd"
                 style={{ display: "none" }}
                 onChange={(e) => {
+                  //
+
                   this.uploadFiles(e.target.files);
                 }}
               />
               Add Files
             </Button>
+            <Modal
+              isOpen={this.state.userSignUpModalShowing}
+              appElement={document.getElementById("root") || undefined}
+              style={customStyles}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <label>
+                  Sign up for latest updates about Red Matter App - the free &
+                  instant flow cytometry analysis tool{" "}
+                </label>
+                <TextField
+                  style={{
+                    width: 200,
+                    marginLeft: 5,
+                    backgroundColor: "#fff",
+                    // border: "none",
+                    // borderRadius: 5,
+                    // outline: "none",
+                  }}
+                  onChange={(e) => {
+                    this.setState({
+                      ...this.state,
+                      signUpEmail: e.target.value,
+                    });
+                  }}
+                />
+
+                {/* <p style={{ height: 16, textAlign: "center", paddingTop: 2.5 }}>
+                  {gateName.error && "A unique gate name is required"}
+                </p> */}
+                <div
+                  style={{
+                    padding: 10,
+                    alignSelf: "center",
+                    paddingTop: 0,
+                    paddingBottom: 25,
+                  }}
+                ></div>
+                <div style={{ margin: "auto" }}>
+                  <Button
+                    style={{
+                      backgroundColor: "#6666AA",
+                      color: "#fff",
+                      marginRight: 5,
+                      // backgroundColor:
+                      //   gateName.error || !gateName.name ? "#f3f3f3" : "white",
+                      // borderRadius: 5,
+                      // border: "none",
+                      // cursor:
+                      //   gateName.error || !gateName.name ? "auto" : "pointer",
+                      // color:
+                      //   gateName.error || !gateName.name ? "gray" : "black",
+                    }}
+                    // disabled={gateName.error || !gateName.name}
+                    onClick={(e) => {
+                      this.handleUserSignUp();
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: "#6666AA",
+                      color: "#fff",
+                      // backgroundColor: "white",
+                      // borderRadius: 5,
+                      // border: "none",
+                      // cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      localStorage.setItem("signup", "true");
+                      this.setState({
+                        ...this.state,
+                        userSignUpModalShowing: false,
+                      });
+                    }}
+                  >
+                    Dont Sign Up
+                  </Button>
+                  {/* <button
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: 5,
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => onCancelGateName()}
+                  >
+                    Cancel
+                  </button> */}
+                </div>
+              </div>
+            </Modal>
           </span>
           <p
             style={{
