@@ -27,16 +27,22 @@ export const superAlgorithm = (
   let Files = OriginalFiles;
   let WorkspaceState = OriginalWorkspaceState;
   let controlFileId = WorkspaceState.controlFileId;
+  let gateNames = [];
+
+  WorkspaceState.files[controlFileId].plots.forEach((plot) => {
+    plot?.gates?.map((gate, index) => {
+      gateNames.push(gate.name);
+    });
+  });
 
   for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
     let file = Files[fileIndex];
     let gateStatsObj = {};
-
+    let eventsInsideGate = [];
     let plots = WorkspaceState.files[file.id]
       ? WorkspaceState.files[file.id].plots
       : WorkspaceState.files[controlFileId].plots;
 
-    let eventsInsideGate = [];
     for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
       if (plots[plotIndex].gates) {
         plots[plotIndex].gates.forEach((gate) => {
@@ -79,6 +85,7 @@ export const superAlgorithm = (
     let isInGate;
     let plot;
     let gates;
+    let event;
 
     for (
       let eventIndex = 0;
@@ -86,8 +93,9 @@ export const superAlgorithm = (
       //eventIndex < 1;
       eventIndex++
     ) {
-      let event = Files[fileIndex].events[eventIndex];
+      event = Files[fileIndex].events[eventIndex];
       event["color"] = "#000";
+      gateNames.forEach((gateName) => (event["isInGate" + gateName] = false));
       // event["isInGate" + gate.name] = true;
 
       // if the file has its own plots, use that, otherwise use control file plots
