@@ -601,9 +601,8 @@ export const graphLine = (params, ctx) => {
 };
 
 export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
-  let controlFileId = workspaceState.controlFileId;
-  let controlFile =
-    enrichedFiles.find((x) => x.name == controlFileId) || enrichedFiles[0];
+  // let controlFileId = workspaceState.controlFileId;
+  let controlFile = enrichedFiles[0];
 
   return enrichedFiles.map((file) => {
     let logicles = file.channels.map((channel, index) => {
@@ -776,17 +775,22 @@ export const createDefaultPlotSnapShot = (
 export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
   let plots = JSON.parse(JSON.stringify(workspaceState.plots));
 
-  if (
-    fileId &&
-    workspaceState.files &&
-    workspaceState.files[fileId] &&
-    workspaceState.files[fileId].plots
-  ) {
-    workspaceState.files[fileId].plots.forEach((plot) => {
-      let index = workspaceState.plots.findIndex(
-        (p) => p.population == plot.population
-      );
-      plots[index] = JSON.parse(JSON.stringify(plot));
+  if (fileId && workspaceState.customGates) {
+    //if (fileId && plots.gates && workspaceState.customGates) {
+
+    plots.forEach((plot) => {
+      if (plot.gates) {
+        plot.gates.forEach((gate) => {
+          let customGate = workspaceState.customGates.find(
+            (g) => g.madeOnFile == fileId
+          );
+
+          if (customGate) {
+            gate.points = customGate.points;
+          }
+          // plots[index] = JSON.parse(JSON.stringify(plot));
+        });
+      }
     });
   }
 
@@ -977,6 +981,10 @@ export const getGateName = (gateName) => {
 };
 
 export const getGateNameFriendly = (gateName) => {
+  if (!gateName) {
+    return "";
+  }
+
   gateName = gateName.split("_").join(" ") + "timestamp" + Date.now();
   return gateName.substring(0, gateName.indexOf("timestamp"));
 };

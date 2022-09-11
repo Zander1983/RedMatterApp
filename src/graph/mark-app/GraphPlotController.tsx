@@ -420,7 +420,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   onEditGate = (change: any) => {
     console.log(">> in onEditGate");
-    let fileKey = change.fileId;
+
     let newWorkspaceState: any = this.state.workspaceState;
 
     let isEditingOriginalFile = change.plot.madeOnFile == change.fileId;
@@ -436,25 +436,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       ] = JSON.parse(JSON.stringify(change.gate));
     } else {
       // so editing existing gate on a different file
-      if (
-        !(newWorkspaceState as any).files[change.fileId] ||
-        (newWorkspaceState as any).files[change.fileId].plots
-      ) {
-        (newWorkspaceState as any).files[change.fileId] = {};
-        (newWorkspaceState as any).files[change.fileId].plots = [
-          JSON.parse(JSON.stringify(change.plot)),
-        ];
+      if (!(newWorkspaceState as any).customGates) {
+        (newWorkspaceState as any).customGates = [];
+        // (newWorkspaceState as any).files[change.fileId].plots = [
+        //   JSON.parse(JSON.stringify(change.plot)),
+        // ];
       }
 
-      let plot = (newWorkspaceState as any).files[change.fileId].plots.find(
-        (p: any) => p.popuation == change.plot.popuation
-      );
+      // let plot = (newWorkspaceState as any).files[change.fileId].plots.find(
+      //   (p: any) => p.popuation == change.plot.popuation
+      // );
 
-      let gateIndex = plot.gates.findIndex(
-        (gate: any) => gate.name == change.gate.name
-      );
+      // let gateIndex = plot.gates.findIndex(
+      //   (gate: any) => gate.name == change.gate.name
+      // );
 
-      plot.gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+      let customGate = JSON.parse(JSON.stringify(change.gate));
+      customGate.madeOnFile = change.fileId;
+
+      let gateIndex = (newWorkspaceState as any).customGates.findIndex(
+        (g: any) => g.name == customGate.name
+      );
+      if (gateIndex > -1) {
+        (newWorkspaceState as any).customGates[gateIndex] = customGate;
+      } else {
+        (newWorkspaceState as any).customGates.push(customGate);
+      }
+
+      //plot.gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
     }
 
     newWorkspaceState.plots.forEach((plot: any) => {
@@ -682,64 +691,17 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           );
         }
 
-        Object.keys((newWorkspaceState as any).files).forEach(
-          (fileId, index) => {
-            // if the file being changed is the control file, change for all
-            // otherwise just change for it
-
-            (newWorkspaceState as any).files[fileId].plots.forEach(
-              (plot: any) => {
-                if (plot.population == change.population) {
-                  if (change.axis == "x") {
-                    newWorkspaceState = this.updateWorkspaceStateChannels(
-                      "x",
-                      newWorkspaceState,
-                      fileId,
-                      plot,
-                      change.axisIndex,
-                      change.axisLabel,
-                      change.scaleType,
-                      change.plotType
-                    );
-                  } else {
-                    newWorkspaceState = this.updateWorkspaceStateChannels(
-                      "y",
-                      newWorkspaceState,
-                      fileId,
-                      plot,
-                      change.axisIndex,
-                      change.axisLabel,
-                      change.scaleType,
-                      change.plotType
-                    );
-                  }
-                }
-              }
-            );
-          }
-        );
-
         break;
       case "ChangePlotType":
-        Object.keys((newWorkspaceState as any).files).forEach(
-          (fileId, index) => {
-            if (fileId == fileKey) {
-              //@ts-ignore
-              newWorkspaceState.files[fileId].plots[plotIndex].plotType =
-                change.plotType;
-            }
-          }
-        );
+        newWorkspaceState.plots[plotIndex].plotType = change.plotType;
 
         break;
 
       case "ChangePlotScale":
         if (change.axis === "x") {
-          newWorkspaceState.files[fileKey].plots[plotIndex].xScaleType =
-            change.scale;
+          newWorkspaceState.plots[plotIndex].xScaleType = change.scale;
         } else {
-          newWorkspaceState.files[fileKey].plots[plotIndex].yScaleType =
-            change.scale;
+          newWorkspaceState.plots[plotIndex].yScaleType = change.scale;
         }
         break;
     }

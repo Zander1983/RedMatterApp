@@ -1,6 +1,30 @@
 {
   "experimentId": "61f98c2ddf76230e13f6c585",
   "controlFileId": "ERICA_BM_Tube_001_001.fcs",
+
+  "customGates": [
+    {
+      "madeOnFile": "ERICA_BM_Tube_2.fcs",
+      "color": "#d5b34b",
+      "gateType": "polygon",
+      "name": "population1",
+      "points": [
+        [10000, 10000],
+        [170000, 10000],
+        [170000, 170000],
+        [10000, 170000]
+      ],
+      "xAxisLabel": "FSC-A",
+      "yAxisLabel": "SSC-A",
+      "xScaleType": "lin",
+      "yScaleType": "lin",
+      "xAxisIndex": 0,
+      "yAxisIndex": 1,
+      "xAxisOriginalRanges": [0, 262144],
+      "yAxisOriginalRanges": [0, 262144],
+      "parent": "All"
+    }
+  ],
   "plots": [
     {
       "madeOnFile": "ERICA_BM_Tube_001_001.fcs",
