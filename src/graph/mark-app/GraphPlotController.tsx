@@ -242,14 +242,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let level = newPlot.level;
 
+    //@ts-ignore
     let plotsAtSameLevel = (newWorkspaceState as any).files[
       controlFileId
     ].plots.filter((plot: any) => plot.level == level);
 
-    // let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
+    let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
-    newPlot.left = 350 * level;
-    newPlot.top = 5;
+    newPlot.left = 350 * level + 20 * numAtThatLevel;
+    newPlot.top = change.plot.top + 20 * numAtThatLevel;
     // newPlot.top = 350 * numAtThatLevel;
 
     newPlot.population = change.newGate.name;
@@ -336,31 +337,44 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  onDeleteGate = (plot: any) => {
+  onDeleteGate = (plotToDelete: any) => {
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
     let controlFileId: string = newWorkspaceState.controlFileId;
 
-    // deleting the children of the gate
-    const plotIndex = (newWorkspaceState as any).files[
-      controlFileId
-    ].plots.findIndex((plt: any) => plt.population === plot.population);
+    // find the plot in the array
+    // if the plot has gates, find those plots and remove them from plots array
+    // remove them from plots array
+    // loop through
+    let plotsToBeRemoved = [plotToDelete.population];
+    let allPlots = (newWorkspaceState as any).files[controlFileId].plots;
+
+    allPlots.forEach((plot: any) => {
+      if (plotsToBeRemoved.indexOf(plot.population) > -1) {
+        if (plot.gates) {
+          plot.gates.forEach((gate: any) => {
+            plotsToBeRemoved.push(gate.name);
+          });
+        }
+      }
+    });
+
     const fileIds = Object.keys((newWorkspaceState as any).files) || [];
-    for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[fileIds[i]].plots.length = plotIndex + 1;
-    }
 
     // deleting the gate from the parent plot
     for (let i = 0; i < fileIds.length; i++) {
       (newWorkspaceState as any).files[
         fileIds[i]
-      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.map(
-        (plt: any) => {
-          if (plt.population === plot.population) {
-            const { gate, ...plotWithOutGate } = plt;
-            return plotWithOutGate;
-          } else {
-            return plt;
+      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.filter(
+        (plot: any) => {
+          if (plotsToBeRemoved.indexOf(plot.population) < 0) {
+            if (plot.gates) {
+              plot.gates = plot.gates.filter(
+                (gate: any) => gate.name != plotToDelete.population
+              );
+            }
+
+            return plot;
           }
         }
       );

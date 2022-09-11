@@ -730,7 +730,7 @@ export const createDefaultPlotSnapShot = (
     editWorkspace: "true",
     isShared: "false",
     openFile: fileId,
-    workspaceContainerHeight: 350,
+    workspaceContainerHeight: 500,
   };
 };
 

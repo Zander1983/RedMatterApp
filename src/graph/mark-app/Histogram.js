@@ -1183,8 +1183,8 @@ function Histogram(props) {
                     minWidth: 200,
                     width: `${props.plot.width + 2}px`,
                     height: `${props.plot.height + 2}px`,
-                    resize: "both",
-                    overflow: "hidden",
+                    // resize: "both",
+                    // overflow: "hidden",
                     position: "relative",
                   }}
                 >

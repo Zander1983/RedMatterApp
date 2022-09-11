@@ -40,8 +40,8 @@ const getContext = (id) => {
   }
 };
 
-const areGatesOnPlot = (plot) => {
-  let showGate = false;
+const getGatesOnPlot = (plot) => {
+  let gates = [];
   plot?.gates?.map((gate) => {
     if (
       plot.xAxisIndex === gate.xAxisIndex &&
@@ -49,11 +49,11 @@ const areGatesOnPlot = (plot) => {
       plot.xScaleType === gate.xScaleType &&
       plot.yScaleType === gate.yScaleType
     ) {
-      showGate = true;
+      gates.push(gate);
     }
   });
 
-  return showGate;
+  return gates;
 };
 
 let isMouseDown = false;
@@ -63,6 +63,7 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  // console.log("in Plot, props is ", props);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -126,7 +127,8 @@ function Plot(props) {
     // draw here
     if (newPoints.length > 0) {
       if (context) {
-        props.plot.gates.map((gate) => {
+        let gates = getGatesOnPlot(props.plot);
+        gates.map((gate) => {
           let points =
             gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
 
@@ -152,6 +154,22 @@ function Plot(props) {
 
     setLocalPlot(props.plot);
   }, [props.plot]);
+
+  useEffect(() => {
+    let context = getContext("covering-canvas-" + props.plotIndex);
+    context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+    newGatePointsCanvas = [];
+
+    let gates = getGatesOnPlot(props.plot);
+    gates.map((gate) => {
+      drawGateLine(
+        getContext("covering-canvas-" + props.plotIndex),
+        props.plot,
+        gate.points
+      );
+    });
+  }, [props.clearAnyPoints]);
 
   useEffect(() => {
     return () => {
@@ -227,15 +245,14 @@ function Plot(props) {
 
     drawLabel();
 
-    if (areGatesOnPlot(props.plot)) {
-      props.plot.gates.map((gate) => {
-        drawGateLine(
-          getContext("covering-canvas-" + props.plotIndex),
-          props.plot,
-          gate.points
-        );
-      });
-    }
+    let gates = getGatesOnPlot(props.plot);
+    gates.map((gate) => {
+      drawGateLine(
+        getContext("covering-canvas-" + props.plotIndex),
+        props.plot,
+        gate.points
+      );
+    });
   }, [
     props.plot,
     props.workspaceState.files[props.enrichedFile.fileId]?.plots[
@@ -625,12 +642,13 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    event.stopPropagation();
     if (resizing) return;
 
     isMouseDown = true;
 
     if (hasGates()) {
-      //if (!areGatesOnPlot(localPlot)) return;
+      //if (!getGatesOnPlot(localPlot)) return;
 
       for (var i = 0; i < localPlot.gates.length; i++) {
         let gate = localPlot.gates[i];
@@ -700,7 +718,7 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
-    if (isMouseDown && hasGates() && areGatesOnPlot(localPlot)) {
+    if (isMouseDown && hasGates() && getGatesOnPlot(localPlot).length > 0) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       //typeof dragPointIndex == "number"
@@ -819,6 +837,8 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    event.stopPropagation();
+
     if (resizing) return;
     if (!isMouseDown) return;
 
@@ -898,7 +918,7 @@ function Plot(props) {
   const handleCursorProperty = (event) => {
     if (
       hasGates() &&
-      areGatesOnPlot(localPlot)
+      getGatesOnPlot(localPlot).length > 0
       //&& props?.plot?.gate?.gateType === "polygon"
     ) {
       for (var i = 0; i < localPlot.gates.length; i++) {
@@ -995,7 +1015,6 @@ function Plot(props) {
 
   return (
     <>
-      {" "}
       <div
         key={props.plotIndex}
         style={
@@ -1017,6 +1036,8 @@ function Plot(props) {
               flexDirection: "column",
               alignItems: "cneter",
               justifyContent: "center",
+
+              //newGatePointsCanvas
             }}
           >
             <label>

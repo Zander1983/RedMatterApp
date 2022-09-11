@@ -12,6 +12,7 @@ import { Resizable } from "re-resizable";
 // import AbcOutlinedIcon from "@mui/icons-material/AbcOutlined";
 // import PanToolIcon from "@mui/icons-material/PanTool";
 import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 // import { PlainDraggable } from "plain-draggable";
 
@@ -78,6 +79,8 @@ function Table(props) {
   let [containerHeight, setContainerheight] = useState(355);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
+  let [clearAnyPoints, setClearAnyPoints] = useState(false);
+
   const workspaceRef = useRef(null);
   const scrollToElement = () =>
     workspaceRef.current.scrollIntoView({
@@ -110,7 +113,7 @@ function Table(props) {
       //   document.getElementById("workspace-container").getBoundingClientRect()
       //     .top;
 
-      let elDistanceToTop = 130;
+      let elDistanceToTop = 150;
 
       const draggable = new Draggable(el, {
         left: plot.left,
@@ -235,6 +238,11 @@ function Table(props) {
           style={{
             height: props.workspaceState.workspaceContainerHeight,
           }}
+          onMouseDown={(e) => {
+            if (e.target.id == "workspace-container") {
+              setClearAnyPoints(!clearAnyPoints);
+            }
+          }}
         >
           {plots?.map((plot, plotIindex) => {
             return (
@@ -288,7 +296,7 @@ function Table(props) {
                         onChangeChannel={props.onChangeChannel}
                         plotIndex={`0-${plotIindex}`}
                         downloadPlotAsImage={props.downloadPlotAsImage}
-                        testParam={props.testParam}
+                        clearAnyPoints={clearAnyPoints}
                       />
                     );
                   } else {
@@ -350,6 +358,8 @@ function Table(props) {
               height: "25px",
               backgroundColor: "#333",
               cursor: "grab",
+              color: "#fff",
+              textAlign: "center",
             }}
             onMouseDown={(e) => {
               setDraggingContainer(true);
@@ -415,6 +425,7 @@ function Table(props) {
               setDraggingContainer(false);
             }}
           >
+            Drag to expand workspace
             {/* <div
             style={{
               display: "flex",
@@ -563,7 +574,18 @@ function Table(props) {
                         height: "15px",
                       }}
                     ></div>
-                    <div>
+                    <div style={{ alignItems: "center", display: "flex" }}>
+                      <Tooltip title="Delete this gate">
+                        <DeleteIcon
+                          onClick={() => props.onDeleteGate(plot)}
+                          style={{
+                            display:
+                              plot.population != "All" ? "block" : "none",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </Tooltip>
+
                       {getGateNameFriendly(plot.population)}
                       <img
                         onClick={() => {
