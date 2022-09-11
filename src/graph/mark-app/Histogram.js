@@ -568,6 +568,7 @@ function Histogram(props) {
       axis: axis,
       scale: e.scale,
       fileId: props.enrichedFile.fileId,
+      population: props.plot.population,
     };
     props.onChangeChannel(change);
   };
@@ -599,6 +600,7 @@ function Histogram(props) {
       plotType: newPlotType,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
       fileId: props.enrichedFile.fileId,
+      population: props.plot.population,
     };
 
     props.onChangeChannel(change);

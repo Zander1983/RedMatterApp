@@ -69,7 +69,7 @@ interface IState {
   showSpillover: boolean;
   showRanges: boolean;
   fcsFiles: any[];
-  controlFileId: string;
+  // controlFileId: string;
   userSignUpModalShowing: boolean;
   signUpEmail: string;
 }
@@ -108,7 +108,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       showSpillover: false,
       showRanges: false,
       fcsFiles: [],
-      controlFileId: "",
+      // controlFileId: "",
       userSignUpModalShowing: false,
       signUpEmail: "",
     };
@@ -202,13 +202,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 
-      let controlEnrichedFile = enrichedFiles.find(
-        (enrichedFile) => enrichedFile.isControlFile
-      );
+      // let controlEnrichedFile = enrichedFiles.find(
+      //   (enrichedFile) => enrichedFile.isControlFile
+      // );
+
+      console.log(">>> workspaceState is ", workspaceState);
 
       this.setState({
         ...this.state,
-        controlFileScale: controlEnrichedFile.scale,
+        controlFileScale: enrichedFiles[0].scale,
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
       });
@@ -243,9 +245,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let level = newPlot.level;
 
     //@ts-ignore
-    let plotsAtSameLevel = (newWorkspaceState as any).files[
-      controlFileId
-    ].plots.filter((plot: any) => plot.level == level);
+    let plotsAtSameLevel = (newWorkspaceState as any).plots.filter(
+      (plot: any) => plot.level == level
+    );
 
     let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
@@ -256,11 +258,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     newPlot.population = change.newGate.name;
     // for histograms
     newPlot.color = change.newGate.color;
+    newPlot.madeOnFile = change.fileId;
 
     // set the passed up plot to be in the state
     // let gatedPlot = JSON.parse(JSON.stringify(change.plot));
     // let gates: any[] = [];
-    // if (gatedPlot.gates && gatedPlot.gates.length > 0) {
+    // if (gatedPlot.gates && gatedPlot.gates.length > 0) {F
     //   gates = JSON.parse(JSON.stringify(gatedPlot.gates));
     //   gates.push(change.newGate);
     // } else {
@@ -290,40 +293,50 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // and make sure to keep them
     // TODO look at below
 
+    let origGatedPlotIndex = (newWorkspaceState as any).plots.findIndex(
+      (plot: any) => plot.population == change.plot.population
+    );
+
+    let gates = (newWorkspaceState as any).plots[origGatedPlotIndex].gates;
+
+    if (gates && gates.length > 0) {
+      (newWorkspaceState as any).plots[origGatedPlotIndex].gates.push(
+        change.newGate
+      );
+    } else {
+      (newWorkspaceState as any).plots[origGatedPlotIndex].gates = [
+        change.newGate,
+      ];
+    }
+
     let fileIds = Object.keys((newWorkspaceState as any).files);
     fileIds.forEach((fileId) => {
       //if (fileId != controlFileId) {
-      let origGatedPlotIndex = (newWorkspaceState as any).files[
-        fileId
-      ].plots.findIndex(
+
+      let plot = (newWorkspaceState as any).files[fileId].plots.find(
         (plot: any) => plot.population == change.plot.population
       );
 
-      let gates = (newWorkspaceState as any).files[fileId].plots[
-        origGatedPlotIndex
-      ].gates;
-
-      if (gates && gates.length > 0) {
-        (newWorkspaceState as any).files[fileId].plots[
-          origGatedPlotIndex
-        ].gates.push(change.newGate);
-      } else {
-        (newWorkspaceState as any).files[fileId].plots[
-          origGatedPlotIndex
-        ].gates = [change.newGate];
+      if (plot) {
+        if (plot.gates && plot.gates.length > 0) {
+          plot.gates.push(change.newGate);
+        } else {
+          plot.gates = [change.newGate];
+        }
       }
-
-      (newWorkspaceState as any).files[fileId].plots.push(newPlot);
-
-      // (newWorkspaceState as any).files[fileId].plots[
-      //   (newWorkspaceState as any).files[fileId].plots.length - 1
-      // ] = JSON.parse(JSON.stringify(gatedPlot));
-
-      // (newWorkspaceState as any).files[fileId].plots.push(
-      //   JSON.parse(JSON.stringify(newPlot))
-      // );
-      //}
     });
+
+    (newWorkspaceState as any).plots.push(newPlot);
+
+    // (newWorkspaceState as any).files[fileId].plots[
+    //   (newWorkspaceState as any).files[fileId].plots.length - 1
+    // ] = JSON.parse(JSON.stringify(gatedPlot));
+
+    // (newWorkspaceState as any).files[fileId].plots.push(
+    //   JSON.parse(JSON.stringify(newPlot))
+    // );
+    //}
+    //});
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
@@ -406,99 +419,124 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
+    console.log(">> in onEditGate");
     let fileKey = change.fileId;
     let newWorkspaceState: any = this.state.workspaceState;
 
-    let isEditingControlFile = fileKey == newWorkspaceState.controlFileId;
+    let isEditingOriginalFile = change.plot.madeOnFile == change.fileId;
     //newWorkspaceState.controlFileId
 
-    if (!(newWorkspaceState as any).files[fileKey]) {
-      // so its a non-control gate being edited
-      // copy plots from control
-      let plotsCopy = JSON.parse(
-        JSON.stringify(
-          (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
-            .plots
-        )
+    if (isEditingOriginalFile) {
+      let gateIndex = (newWorkspaceState as any).plots[
+        change.plotIndex
+      ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+      (newWorkspaceState as any).plots[change.plotIndex].gates[
+        gateIndex
+      ] = JSON.parse(JSON.stringify(change.gate));
+    } else {
+      // so editing existing gate on a different file
+      if (
+        !(newWorkspaceState as any).files[change.fileId] ||
+        (newWorkspaceState as any).files[change.fileId].plots
+      ) {
+        (newWorkspaceState as any).files[change.fileId] = {};
+        (newWorkspaceState as any).files[change.fileId].plots = [
+          JSON.parse(JSON.stringify(change.plot)),
+        ];
+      }
+
+      let plot = (newWorkspaceState as any).files[change.fileId].plots.find(
+        (p: any) => p.popuation == change.plot.popuation
       );
 
-      let plot = plotsCopy.find(
-        (plot: any) => plot.population == change.gate.name
+      let gateIndex = plot.gates.findIndex(
+        (gate: any) => gate.name == change.gate.name
       );
 
-      plot.edited = true;
-      (newWorkspaceState as any).files[fileKey] = {
-        //@ts-ignore
-        plots: plotsCopy,
-      };
+      plot.gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
     }
 
-    let fileIds = Object.keys((newWorkspaceState as any).files);
-    fileIds.forEach((fileId) => {
-      if (isEditingControlFile) {
-        // so editing the control file
-        // change for a file if that gate and its popuation havent been edited
-        if (fileId != newWorkspaceState.controlFileId) {
-          let plot = (newWorkspaceState as any).files[fileId].plots.find(
-            (plot: any) => plot.population == change.gate.name
-          );
-
-          if (plot.edited != true) {
-            let gateIndex = (newWorkspaceState as any).files[fileId].plots[
-              change.plotIndex
-            ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-            (newWorkspaceState as any).files[fileId].plots[
-              change.plotIndex
-            ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-          }
-        } else {
-          // so its the control file being edited
-          let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-          (newWorkspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-        }
-      } else {
-        // so editing a non-control file
-        if (fileId == fileKey) {
-          let plot = (newWorkspaceState as any).files[fileKey].plots.find(
-            (plot: any) => plot.population == change.gate.name
-          );
-          plot.edited = true;
-
-          let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-          (newWorkspaceState as any).files[fileKey].plots[
-            change.plotIndex
-          ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-        }
-      }
-      // if (fileId == newWorkspaceState.controlFileId) {
-      //   let origGatedPlotIndex = (newWorkspaceState as any).files[
-      //     fileId
-      //   ].plots.findIndex(
-      //     (plot: any) => plot.population == change.plot.population
-      //   );
-
-      //   let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-      //     change.plotIndex
-      //   ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-      // }
+    newWorkspaceState.plots.forEach((plot: any) => {
+      plot.reRender = !plot.reRender;
     });
 
-    // let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-    //   change.plotIndex
-    // ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+    if (
+      !isEditingOriginalFile ||
+      (newWorkspaceState as any).files[change.fileId]
+    ) {
+      // so its an editing of a gate only on that file
+    }
 
-    // (newWorkspaceState as any).files[fileKey].plots[change.plotIndex].gates[
-    //   gateIndex
-    // ] = JSON.parse(JSON.stringify(change.gate));
+    // if (!(newWorkspaceState as any).files[fileKey]) {
+    //   // so its a non-control gate being edited
+    //   // copy plots from control
+    //   let plotsCopy = JSON.parse(
+    //     JSON.stringify(
+    //       (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+    //         .plots
+    //     )
+    //   );
+
+    //   let plot = plotsCopy.find(
+    //     (plot: any) => plot.population == change.gate.name
+    //   );
+
+    //   plot.edited = true;
+    //   (newWorkspaceState as any).files[fileKey] = {
+    //     //@ts-ignore
+    //     plots: plotsCopy,
+    //   };
+    // }
+
+    let fileIds = Object.keys((newWorkspaceState as any).files);
+    // fileIds.forEach((fileId) => {
+    //   if (isEditingControlFile) {
+    //     // so editing the control file
+    //     // change for a file if that gate and its popuation havent been edited
+    //     if (fileId != newWorkspaceState.controlFileId) {
+    //       let plot = (newWorkspaceState as any).files[fileId].plots.find(
+    //         (plot: any) => plot.population == change.gate.name
+    //       );
+
+    //       if (plot.edited != true) {
+    //         let gateIndex = (newWorkspaceState as any).files[fileId].plots[
+    //           change.plotIndex
+    //         ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    //         (newWorkspaceState as any).files[fileId].plots[
+    //           change.plotIndex
+    //         ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+    //       }
+    //     } else {
+    //       // so its the control file being edited
+    //       let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+    //         change.plotIndex
+    //       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    //       (newWorkspaceState as any).files[fileKey].plots[
+    //         change.plotIndex
+    //       ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+    //     }
+    //   } else {
+    //     // so editing a non-control file
+    //     if (fileId == fileKey) {
+    //       let plot = (newWorkspaceState as any).files[fileKey].plots.find(
+    //         (plot: any) => plot.population == change.gate.name
+    //       );
+    //       plot.edited = true;
+
+    //       let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
+    //         change.plotIndex
+    //       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+
+    //       (newWorkspaceState as any).files[fileKey].plots[
+    //         change.plotIndex
+    //       ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
+    //     }
+    //   }
+
+    // });
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
@@ -511,6 +549,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceState: newWorkspaceState,
       isTableRenderCall: true,
     });
+
+    // this.state.workspaceState.plots.forEach((plot: any) => {
+    //   plot.reRender = false;
+    // });
   };
 
   downloadPlotAsImage = async (plot: any, plotIndex: any) => {
@@ -592,59 +634,88 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onChangeChannel = (change: any) => {
+    console.log("in on channel change");
     let type = change.type;
     let fileKey = change.fileId;
     let plotIndex = change.plotIndex;
     //let filesIds;
     let newWorkspaceState: any = this.state.workspaceState;
-    if (!(newWorkspaceState as any).files[fileKey]) {
-      // so its a non-control gate being edited, copy plots from control
-      //@ts-ignore
-      (newWorkspaceState as any).files[fileKey] = {
-        plots: JSON.parse(
-          JSON.stringify(
-            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
-              .plots
-          )
-        ),
-      };
-    }
+    // if (!(newWorkspaceState as any).files[fileKey]) {
+    //   // so its a non-control gate being edited, copy plots from control
+    //   //@ts-ignore
+    //   (newWorkspaceState as any).files[fileKey] = {
+    //     plots: JSON.parse(
+    //       JSON.stringify(
+    //         (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+    //           .plots
+    //       )
+    //     ),
+    //   };
+    // }
 
     switch (type) {
       case "ChannelIndexChange":
         // //@ts-ignore
         // workspaceState.files[fileKey].plots[plotIndex].plotType =
 
+        if (change.axis == "x") {
+          newWorkspaceState = this.updateWorkspaceStateChannels(
+            "x",
+            newWorkspaceState,
+            change.fileId,
+            (newWorkspaceState as any).plots[plotIndex],
+            change.axisIndex,
+            change.axisLabel,
+            change.scaleType,
+            change.plotType
+          );
+        } else {
+          newWorkspaceState = this.updateWorkspaceStateChannels(
+            "y",
+            newWorkspaceState,
+            change.fileId,
+            (newWorkspaceState as any).plots[plotIndex],
+            change.axisIndex,
+            change.axisLabel,
+            change.scaleType,
+            change.plotType
+          );
+        }
+
         Object.keys((newWorkspaceState as any).files).forEach(
           (fileId, index) => {
             // if the file being changed is the control file, change for all
             // otherwise just change for it
 
-            if (fileId === fileKey) {
-              if (change.axis == "x") {
-                newWorkspaceState = this.updateWorkspaceStateChannels(
-                  "x",
-                  newWorkspaceState,
-                  fileId,
-                  plotIndex,
-                  change.axisIndex,
-                  change.axisLabel,
-                  change.scaleType,
-                  change.plotType
-                );
-              } else {
-                newWorkspaceState = this.updateWorkspaceStateChannels(
-                  "y",
-                  newWorkspaceState,
-                  fileId,
-                  plotIndex,
-                  change.axisIndex,
-                  change.axisLabel,
-                  change.scaleType,
-                  change.plotType
-                );
+            (newWorkspaceState as any).files[fileId].plots.forEach(
+              (plot: any) => {
+                if (plot.population == change.population) {
+                  if (change.axis == "x") {
+                    newWorkspaceState = this.updateWorkspaceStateChannels(
+                      "x",
+                      newWorkspaceState,
+                      fileId,
+                      plot,
+                      change.axisIndex,
+                      change.axisLabel,
+                      change.scaleType,
+                      change.plotType
+                    );
+                  } else {
+                    newWorkspaceState = this.updateWorkspaceStateChannels(
+                      "y",
+                      newWorkspaceState,
+                      fileId,
+                      plot,
+                      change.axisIndex,
+                      change.axisLabel,
+                      change.scaleType,
+                      change.plotType
+                    );
+                  }
+                }
               }
-            }
+            );
           }
         );
 
@@ -697,15 +768,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     axis: any,
     workspaceState: any,
     fileKeyBeingChanged: any,
-    plotIndexBeingChanged: any,
+    plot: any,
     axisIndex: any,
     axisLabel: any,
     scaleType: any,
     plotType: any
   ) => {
-    let plot = (workspaceState as any).files[fileKeyBeingChanged].plots[
-      plotIndexBeingChanged
-    ];
     if (axis == "x") {
       plot.xAxisIndex = axisIndex;
       plot.xAxisLabel = axisLabel;
@@ -946,7 +1014,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     this.setState({
       ...this.state,
-      controlFileId: this.state.controlFileId || fcsFiles[0].id,
+      //controlFileId: this.state.controlFileId || fcsFiles[0].id,
       fcsFiles: fcsFiles,
       parsedFiles: [],
       //workspaceState: workspaceState,
@@ -1065,14 +1133,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   renderTable = () => {
-    let controlEnrichedFile = this.state.enrichedFiles.find(
-      (enrichedFile) => enrichedFile.isControlFile
-    );
+    let firstFile = this.state.enrichedFiles[0];
+
+    console.log("in renderTbake, firstFile is ", firstFile);
 
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
-          <>
+          {/* <>
             <span
               style={{
                 marginRight: 5,
@@ -1123,7 +1191,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 </MenuItem>
               ))}
             </Select>
-          </>
+          </> */}
           <Button
             variant="outlined"
             style={{
@@ -1352,71 +1420,69 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                         <TableCell>Min</TableCell>
                         <TableCell>Max</TableCell>
                       </TableRow>
-                      {controlEnrichedFile.channels.map(
-                        (rowData: any, rowI: number) => {
-                          return (
-                            <TableRow key={`tr--${rowI}`}>
-                              <TableCell
-                                key={`td--${rowI}-2`}
-                                style={{
-                                  border: "1px solid #e0e0eb",
-                                  padding: 5,
-                                }}
-                              >
-                                {rowData.name}
-                              </TableCell>
+                      {firstFile.channels.map((rowData: any, rowI: number) => {
+                        return (
+                          <TableRow key={`tr--${rowI}`}>
+                            <TableCell
+                              key={`td--${rowI}-2`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 5,
+                              }}
+                            >
+                              {rowData.name}
+                            </TableCell>
 
-                              <TableCell
-                                key={`td--${rowI}-3`}
-                                style={{
-                                  border: "1px solid #e0e0eb",
-                                  padding: 5,
-                                }}
-                              >
-                                <TextField
-                                  style={
-                                    {
-                                      //width: "20%",
-                                    }
+                            <TableCell
+                              key={`td--${rowI}-3`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 5,
+                              }}
+                            >
+                              <TextField
+                                style={
+                                  {
+                                    //width: "20%",
                                   }
-                                  value={rowData.minimum}
-                                  onChange={(newColumnData: any) => {
-                                    this.updateRanges(
-                                      rowI,
-                                      "minimum",
-                                      newColumnData.target.value
-                                    );
-                                  }}
-                                />
-                              </TableCell>
+                                }
+                                value={rowData.minimum}
+                                onChange={(newColumnData: any) => {
+                                  this.updateRanges(
+                                    rowI,
+                                    "minimum",
+                                    newColumnData.target.value
+                                  );
+                                }}
+                              />
+                            </TableCell>
 
-                              <TableCell
-                                key={`td--${rowI}-4`}
-                                style={{
-                                  border: "1px solid #e0e0eb",
-                                  padding: 15,
-                                }}
-                              >
-                                <TextField
-                                  style={
-                                    {
-                                      //width: "20%",
-                                    }
+                            <TableCell
+                              key={`td--${rowI}-4`}
+                              style={{
+                                border: "1px solid #e0e0eb",
+                                padding: 15,
+                              }}
+                            >
+                              <TextField
+                                style={
+                                  {
+                                    //width: "20%",
                                   }
-                                  value={rowData.maximum}
-                                  onChange={(newColumnData: any) => {
-                                    this.updateRanges(
-                                      rowI,
-                                      "maximum",
-                                      newColumnData.target.value
-                                    );
-                                  }}
-                                />
-                              </TableCell>
-                            </TableRow>
-                          );
-                        }
-                      )}
+                                }
+                                value={rowData.maximum}
+                                onChange={(newColumnData: any) => {
+                                  this.updateRanges(
+                                    rowI,
+                                    "maximum",
+                                    newColumnData.target.value
+                                  );
+                                }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -1757,7 +1823,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   render() {
-    if (this.state.workspaceState.controlFileId) {
+    if (this.state.workspaceState.plots) {
       // const plotGroups = getPlotGroups(getWorkspace().plots);
       return this.renderTable();
     } else {

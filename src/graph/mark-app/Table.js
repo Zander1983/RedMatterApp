@@ -5,7 +5,11 @@ import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 //import drag from "assets/images/drag.png";
 import { Button } from "@material-ui/core";
-import { getGateName, getGateNameFriendly } from "./Helper";
+import {
+  getGateName,
+  getGateNameFriendly,
+  getPlotsForFileFromWorkspaceState,
+} from "./Helper";
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
@@ -76,6 +80,7 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
+  console.log("!!! Table props is ", props);
   let [containerHeight, setContainerheight] = useState(355);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
@@ -94,11 +99,13 @@ function Table(props) {
   useEffect(() => {
     let els = [];
 
-    let controlEnrichedFile = props.enrichedFiles.find(
-      (enrichedFile) => enrichedFile.isControlFile
-    );
+    // let controlEnrichedFile = props.enrichedFiles.find(
+    //   (enrichedFile) => enrichedFile.isControlFile
+    // );
 
-    controlEnrichedFile.plots.forEach((plot, index) => {
+    let plots = getPlotsForFileFromWorkspaceState(null, props.workspaceState);
+
+    plots.forEach((plot, index) => {
       let plotNode = nodes.find((node) => {
         return node?.id && node.id == plot.population;
       });
@@ -127,12 +134,9 @@ function Table(props) {
         position: (pos) => {},
         onMoveStart: (newPosition) => {},
         onDrag: (newPosition) => {
-          props.workspaceState.files[props.workspaceState.controlFileId].plots[
-            index
-          ].top = newPosition.top - elDistanceToTop;
-          props.workspaceState.files[props.workspaceState.controlFileId].plots[
-            index
-          ].left = newPosition.left;
+          props.workspaceState.plots[index].top =
+            newPosition.top - elDistanceToTop;
+          props.workspaceState.plots[index].left = newPosition.left;
 
           plot.top = newPosition.top - elDistanceToTop;
           plot.left = newPosition.left;
@@ -147,7 +151,7 @@ function Table(props) {
       //}
     });
 
-    lines = getLines(els, draggables, controlEnrichedFile.plots);
+    lines = getLines(els, draggables, plots);
 
     return () => {
       lines?.forEach((line) => {
@@ -155,7 +159,7 @@ function Table(props) {
       });
     };
   }, [
-    props.workspaceState.files[props.workspaceState.controlFileId].plots.length,
+    props.workspaceState.plots.length,
     props.workspaceState.onResize,
     containerHeight,
   ]);

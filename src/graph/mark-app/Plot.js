@@ -63,7 +63,7 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  // console.log("in Plot, props is ", props);
+  console.log("in Plot, props is ", props);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -193,6 +193,7 @@ function Plot(props) {
     context.fillStyle = "white";
 
     if (context) {
+      console.log("formatting events...", props.plotIndex);
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
@@ -255,9 +256,15 @@ function Plot(props) {
     });
   }, [
     props.plot,
-    props.workspaceState.files[props.enrichedFile.fileId]?.plots[
-      props.plotIndex.split("-")[1]
-    ],
+    // props.workspaceState.files[props.enrichedFile.fileId]?.plots[
+    //   props.plotIndex.split("-")[1]
+    // ],
+    // props.workspaceState.plots[props.plotIndex.split("-")[1]],
+    // props.workspaceState.plots[props.plotIndex.split("-")[1]].gates &&
+    //   props.workspaceState.plots[props.plotIndex.split("-")[1]].gates[0].points,
+    props.plot.reRender,
+    props.workspaceState.openFile,
+    props.workspaceState.plots.length,
   ]);
 
   const drawGateLine = (context, plot, realPoints) => {
@@ -326,6 +333,7 @@ function Plot(props) {
       axis: axis,
       scale: e.scale,
       fileId: props.enrichedFile.fileId,
+      population: props.plot.population,
     };
     props.onChangeChannel(change);
   };
@@ -358,6 +366,7 @@ function Plot(props) {
       plotType: newPlotType,
       scaleType: props.enrichedFile.channels[channeIndex].defaultScale,
       fileId: props.enrichedFile.fileId,
+      population: props.plot.population,
     };
 
     props.onChangeChannel(change);
@@ -438,6 +447,7 @@ function Plot(props) {
       newGate: newGate,
       plotIndex: plotIndex,
       gateName: gateName.name,
+      fileId: props.enrichedFile.fileId,
     };
 
     props.onAddGate(change);
@@ -846,7 +856,7 @@ function Plot(props) {
 
     if (isInsideGate || isNearPoint) {
       for (var i = 0; i < localPlot.gates.length; i++) {
-        let gate = localPlot.gates[i];
+        let gate = JSON.parse(JSON.stringify(localPlot.gates[i]));
         if (gate.name == nameOfGateCursorIsInside) {
           setIsInsideGate(false);
           setIsNearPoint(false);
@@ -854,7 +864,7 @@ function Plot(props) {
           setNameOfGateCursorIsInside(null);
 
           if (newPoints && newPoints.length > 1) {
-            gate.points = JSON.parse(JSON.stringify(newPoints));
+            gate.points = newPoints;
 
             setNewPoints([]);
 
@@ -872,50 +882,51 @@ function Plot(props) {
     } else {
       // so its a new gate
       // only if the file is controlled file then it is allowed to create a new gate
-      if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
-        newGatePointsCanvas.forEach((newGatePointCanvas) => {
-          if (
-            inRange(
-              event.offsetX,
-              newGatePointCanvas[0] - 10,
-              newGatePointCanvas[0] + 10
-            ) &&
-            inRange(
-              event.offsetY,
-              newGatePointCanvas[1] - 10,
-              newGatePointCanvas[1] + 10
-            ) &&
-            newGatePointsCanvas.length >= 3
-          ) {
-            const suggestedGateName =
-              props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
-            setGateName({
-              name: suggestedGateName,
-            });
+      //if (props.enrichedFile.fileId === props.workspaceState.controlFileId) {
+      newGatePointsCanvas.forEach((newGatePointCanvas) => {
+        if (
+          inRange(
+            event.offsetX,
+            newGatePointCanvas[0] - 10,
+            newGatePointCanvas[0] + 10
+          ) &&
+          inRange(
+            event.offsetY,
+            newGatePointCanvas[1] - 10,
+            newGatePointCanvas[1] + 10
+          ) &&
+          newGatePointsCanvas.length >= 3
+        ) {
+          const suggestedGateName =
+            props.plot.yAxisLabel + ", " + props.plot.xAxisLabel + " subset";
+          setGateName({
+            name: suggestedGateName,
+          });
 
-            setModalIsOpen(true);
-            polygonComplete = true;
-          }
-        });
-
-        // checking if the points are unique or not
-        let uniqueGatePoint = true;
-        for (const point of newGatePointsCanvas) {
-          if (point[0] === event.offsetX && point[1] === event.offsetY) {
-            uniqueGatePoint = false;
-            break;
-          }
+          setModalIsOpen(true);
+          polygonComplete = true;
         }
+      });
 
-        if (!polygonComplete && uniqueGatePoint) {
-          newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      // checking if the points are unique or not
+      let uniqueGatePoint = true;
+      for (const point of newGatePointsCanvas) {
+        if (point[0] === event.offsetX && point[1] === event.offsetY) {
+          uniqueGatePoint = false;
+          break;
         }
-        redraw();
       }
+
+      if (!polygonComplete && uniqueGatePoint) {
+        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+      }
+      redraw();
+      //}
     }
   };
 
   const handleCursorProperty = (event) => {
+    console.log("in handleCursorProperty");
     if (
       hasGates() &&
       getGatesOnPlot(localPlot).length > 0
@@ -967,11 +978,11 @@ function Plot(props) {
         }
       }
     } else {
-      document.body.style.cursor =
-        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
-        !localPlot?.gate
-          ? "crosshair"
-          : "auto";
+      document.body.style.cursor = "crosshair";
+      // props.enrichedFile.fileId === props.workspaceState.controlFileId &&
+      // !localPlot?.gate
+      //   ? "crosshair"
+      //   : "auto";
     }
   };
 

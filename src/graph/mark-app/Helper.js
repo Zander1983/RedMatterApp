@@ -24,12 +24,16 @@ export const superAlgorithm = (
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
 
+  console.log("in super algorithm");
+
   let Files = OriginalFiles;
   let WorkspaceState = OriginalWorkspaceState;
   let controlFileId = WorkspaceState.controlFileId;
   let gateNames = [];
 
-  WorkspaceState.files[controlFileId].plots.forEach((plot) => {
+  let plots = getPlotsForFileFromWorkspaceState(null, WorkspaceState);
+
+  plots.forEach((plot) => {
     plot?.gates?.map((gate, index) => {
       gateNames.push(gate.name);
     });
@@ -39,9 +43,11 @@ export const superAlgorithm = (
     let file = Files[fileIndex];
     let gateStatsObj = {};
     let eventsInsideGate = [];
-    let plots = WorkspaceState.files[file.id]
-      ? WorkspaceState.files[file.id].plots
-      : WorkspaceState.files[controlFileId].plots;
+    // let plots = WorkspaceState.files[file.id]
+    //   ? WorkspaceState.files[file.id].plots
+    //   : WorkspaceState.files[controlFileId].plots;
+
+    plots = getPlotsForFileFromWorkspaceState(file.id, WorkspaceState);
 
     for (let plotIndex = 0; plotIndex < plots.length; plotIndex++) {
       if (plots[plotIndex].gates) {
@@ -618,9 +624,11 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
 
     let controlFileId = workspaceState.controlFileId;
 
-    let plots = workspaceState.files[file.fileId]
-      ? JSON.parse(JSON.stringify(workspaceState.files[file.fileId].plots))
-      : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
+    let plots = getPlotsForFileFromWorkspaceState(file.fileId, workspaceState);
+
+    // let plots = workspaceState.files[file.fileId]
+    //   ? JSON.parse(JSON.stringify(workspaceState.files[file.fileId].plots))
+    //   : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
 
     return {
       enrichedEvents: file.events || file.enrichedEvents,
@@ -691,40 +699,71 @@ export const createDefaultPlotSnapShot = (
 ) => {
   let plotType = DEFAULT_PLOT_TYPE;
   return {
-    controlFileId: fileId,
-    files: {
-      [fileId]: {
-        plots: [
-          {
-            population: "All",
-            level: 0,
-            left: 5,
-            top: 5,
-            plotType: plotType || DEFAULT_PLOT_TYPE,
-            width: DEFAULT_PLOT_WIDTH,
-            height: DEFAULT_PLOT_HEIGHT,
-            xAxisLabel: xAxisLabel || DEFAULT_X_AXIS_LABEL,
-            yAxisLabel: yAxisLabel || DEFAULT_Y_AXIS_LABEL,
-            xAxisIndex: xAxisIndex,
-            yAxisIndex: yAxisIndex,
-            plotScale: 2,
-            xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
-            yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
-            histogramAxis: "",
-            label: "",
-            dimensions: {
-              w: 9,
-              h: 10,
-            },
-            positions: {
-              x: 0,
-              y: 0,
-            },
-            parentPlotId: "",
-            gatingActive: "",
-          },
-        ],
+    // controlFileId: fileId,
+    plots: [
+      {
+        madeOnFile: fileId,
+        population: "All",
+        level: 0,
+        left: 5,
+        top: 5,
+        plotType: plotType || DEFAULT_PLOT_TYPE,
+        width: DEFAULT_PLOT_WIDTH,
+        height: DEFAULT_PLOT_HEIGHT,
+        xAxisLabel: xAxisLabel || DEFAULT_X_AXIS_LABEL,
+        yAxisLabel: yAxisLabel || DEFAULT_Y_AXIS_LABEL,
+        xAxisIndex: xAxisIndex,
+        yAxisIndex: yAxisIndex,
+        plotScale: 2,
+        xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
+        yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
+        histogramAxis: "",
+        label: "",
+        dimensions: {
+          w: 9,
+          h: 10,
+        },
+        positions: {
+          x: 0,
+          y: 0,
+        },
+        parentPlotId: "",
+        gatingActive: "",
       },
+    ],
+    files: {
+      // [fileId]: {
+      //   plots: [
+      //     {
+      //       population: "All",
+      //       level: 0,
+      //       left: 5,
+      //       top: 5,
+      //       plotType: plotType || DEFAULT_PLOT_TYPE,
+      //       width: DEFAULT_PLOT_WIDTH,
+      //       height: DEFAULT_PLOT_HEIGHT,
+      //       xAxisLabel: xAxisLabel || DEFAULT_X_AXIS_LABEL,
+      //       yAxisLabel: yAxisLabel || DEFAULT_Y_AXIS_LABEL,
+      //       xAxisIndex: xAxisIndex,
+      //       yAxisIndex: yAxisIndex,
+      //       plotScale: 2,
+      //       xScaleType: xScaleType ?? DEFAULT_X_SCALE_TYPE,
+      //       yScaleType: yScaleType ?? DEFAULT_Y_SCALE_TYPE,
+      //       histogramAxis: "",
+      //       label: "",
+      //       dimensions: {
+      //         w: 9,
+      //         h: 10,
+      //       },
+      //       positions: {
+      //         x: 0,
+      //         y: 0,
+      //       },
+      //       parentPlotId: "",
+      //       gatingActive: "",
+      //     },
+      //   ],
+      // },
     },
     sharedWorkspace: "false",
     editWorkspace: "true",
@@ -732,6 +771,26 @@ export const createDefaultPlotSnapShot = (
     openFile: fileId,
     workspaceContainerHeight: 500,
   };
+};
+
+export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
+  let plots = JSON.parse(JSON.stringify(workspaceState.plots));
+
+  if (
+    fileId &&
+    workspaceState.files &&
+    workspaceState.files[fileId] &&
+    workspaceState.files[fileId].plots
+  ) {
+    workspaceState.files[fileId].plots.forEach((plot) => {
+      let index = workspaceState.plots.findIndex(
+        (p) => p.population == plot.population
+      );
+      plots[index] = JSON.parse(JSON.stringify(plot));
+    });
+  }
+
+  return plots;
 };
 
 const numToLabelText = (num) => {
