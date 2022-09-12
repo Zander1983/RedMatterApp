@@ -63,7 +63,7 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  console.log("in Plot, props is ", props);
+  // console.log("in Plot, props is ", props);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -193,7 +193,7 @@ function Plot(props) {
     context.fillStyle = "white";
 
     if (context) {
-      console.log("formatting events...", props.plotIndex);
+      // console.log("formatting events...", props.plotIndex);
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
@@ -926,7 +926,6 @@ function Plot(props) {
   };
 
   const handleCursorProperty = (event) => {
-    console.log("in handleCursorProperty");
     if (
       hasGates() &&
       getGatesOnPlot(localPlot).length > 0

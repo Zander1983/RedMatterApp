@@ -24,8 +24,6 @@ export const superAlgorithm = (
     (file) => file.id == OriginalWorkspaceState.controlFileId
   );
 
-  console.log("in super algorithm");
-
   let Files = OriginalFiles;
   let WorkspaceState = OriginalWorkspaceState;
   let controlFileId = WorkspaceState.controlFileId;
@@ -782,7 +780,7 @@ export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
       if (plot.gates) {
         plot.gates.forEach((gate) => {
           let customGate = workspaceState.customGates.find(
-            (g) => g.madeOnFile == fileId
+            (g) => g.madeOnFile == fileId && g.name == gate.name
           );
 
           if (customGate) {
@@ -795,6 +793,20 @@ export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
   }
 
   return plots;
+};
+
+export const hasCustomGate = (fileId, population, workspaceState) => {
+  const gate =
+    workspaceState.customGates &&
+    workspaceState.customGates.find(
+      (g) => g.name == population && g.madeOnFile == fileId
+    );
+
+  if (gate) {
+    return true;
+  }
+
+  return false;
 };
 
 const numToLabelText = (num) => {

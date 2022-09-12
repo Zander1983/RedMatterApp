@@ -4,6 +4,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import { useHistory } from "react-router";
 import { Button } from "@material-ui/core";
 import { getGateName, getGateNameFriendly } from "./Helper";
+import { Tooltip } from "@material-ui/core";
 
 import {
   createDefaultPlotSnapShot,
@@ -78,25 +79,25 @@ const WorkspaceTopBar = (props: any) => {
       workspaceState?.files?.[workspaceState.controlFileId]?.plots;
     let isSnapShotCreated = false;
     let copyOfFiles: any[] = props.fcsFiles;
-    if (plots === null || plots === undefined) {
-      const defaultFile = copyOfFiles?.[0];
-      const {
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        xAxisScaleType,
-        yAxisScaleType,
-      } = getPlotChannelAndPosition(defaultFile);
-      workspaceState = createDefaultPlotSnapShot(
-        defaultFile?.id,
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex
-      );
-      isSnapShotCreated = true;
-    }
+    // if (plots === null || plots === undefined) {
+    //   const defaultFile = copyOfFiles?.[0];
+    //   const {
+    //     xAxisLabel,
+    //     yAxisLabel,
+    //     xAxisIndex,
+    //     yAxisIndex,
+    //     xAxisScaleType,
+    //     yAxisScaleType,
+    //   } = getPlotChannelAndPosition(defaultFile);
+    //   workspaceState = createDefaultPlotSnapShot(
+    //     defaultFile?.id,
+    //     xAxisLabel,
+    //     yAxisLabel,
+    //     xAxisIndex,
+    //     yAxisIndex
+    //   );
+    //   isSnapShotCreated = true;
+    // }
 
     let fcsFiles: any[] = superAlgorithm(copyOfFiles, workspaceState, true);
 
@@ -112,6 +113,7 @@ const WorkspaceTopBar = (props: any) => {
     }
 
     fcsFiles = formatEnrichedFiles(fcsFiles, workspaceState);
+
     const csvData = [];
     const eventsSeparatedByChannels: any = {};
     for (let i = 0; i < fcsFiles.length; i++) {
@@ -290,7 +292,9 @@ const WorkspaceTopBar = (props: any) => {
               fontSize="small"
               style={{ marginRight: 10 }}
             ></GetAppIcon>
-            Download Stats
+            <Tooltip title="download statistics such as the median and mean">
+              <>Download Stats</>
+            </Tooltip>
           </CSVLink>
         </Button>
         <Button

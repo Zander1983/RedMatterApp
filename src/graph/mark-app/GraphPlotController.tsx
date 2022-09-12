@@ -206,7 +206,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //   (enrichedFile) => enrichedFile.isControlFile
       // );
 
-      console.log(">>> workspaceState is ", workspaceState);
+      // console.log(">>> workspaceState is ", workspaceState);
 
       this.setState({
         ...this.state,
@@ -259,6 +259,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // for histograms
     newPlot.color = change.newGate.color;
     newPlot.madeOnFile = change.fileId;
+
+    change.newGate.madeOnFile = change.fileId;
 
     // set the passed up plot to be in the state
     // let gatedPlot = JSON.parse(JSON.stringify(change.plot));
@@ -419,11 +421,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
-    console.log(">> in onEditGate");
+    // console.log(">> in onEditGate");
 
     let newWorkspaceState: any = this.state.workspaceState;
 
-    let isEditingOriginalFile = change.plot.madeOnFile == change.fileId;
+    let isEditingOriginalFile = change.gate.madeOnFile == change.fileId;
     //newWorkspaceState.controlFileId
 
     if (isEditingOriginalFile) {
@@ -595,6 +597,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndex: number,
     checked: boolean
   ) => {
+    // console.log("adding the overlay....");
     let workspaceState = this.state.workspaceState;
     let newWorkspaceState: any = JSON.parse(JSON.stringify(workspaceState));
 
@@ -608,11 +611,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       color += letters[Math.floor(Math.random() * 16)];
     }
 
-    if (!newWorkspaceState.files[fileId]) {
-      newWorkspaceState.files[fileId] = { plots: foundEnrichedFile.plots };
-    }
+    // if (!newWorkspaceState.files[fileId]) {
+    //   newWorkspaceState.files[fileId] = { plots: foundEnrichedFile.plots };
+    // }
 
-    let workspaceStatePlot = newWorkspaceState.files[fileId].plots[plotIndex];
+    let workspaceStatePlot = newWorkspaceState.plots[plotIndex];
     if (!workspaceStatePlot?.overlays) {
       workspaceStatePlot.overlays = [];
     }
@@ -643,7 +646,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onChangeChannel = (change: any) => {
-    console.log("in on channel change");
+    // console.log("in on channel change");
     let type = change.type;
     let fileKey = change.fileId;
     let plotIndex = change.plotIndex;
@@ -1097,7 +1100,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   renderTable = () => {
     let firstFile = this.state.enrichedFiles[0];
 
-    console.log("in renderTbake, firstFile is ", firstFile);
+    // console.log("in renderTbake, firstFile is ", firstFile);
 
     if (this.state.enrichedFiles?.length > 0) {
       return (

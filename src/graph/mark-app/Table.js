@@ -9,6 +9,7 @@ import {
   getGateName,
   getGateNameFriendly,
   getPlotsForFileFromWorkspaceState,
+  hasCustomGate,
 } from "./Helper";
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
@@ -80,7 +81,7 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
-  console.log("!!! Table props is ", props);
+  // console.log("!!! Table props is ", props);
   let [containerHeight, setContainerheight] = useState(355);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
@@ -479,7 +480,7 @@ function Table(props) {
             order: 1,
           }}
         >
-          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
+          {/* {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
             <>
               <span
                 style={{
@@ -497,7 +498,7 @@ function Table(props) {
             >
               Edit EXISTING gates on non-control files
             </span>
-          )}
+          )} */}
         </div>
         <div
           style={{
@@ -736,14 +737,20 @@ function Table(props) {
                                 return gateStat && gateStat.percentage;
                               })}
                             %
-                            {plot.edited && (
-                              <span
-                                style={{
-                                  color: "#f8929a",
-                                }}
-                              >
-                                ***
-                              </span>
+                            {hasCustomGate(
+                              enrichedFile.fileId,
+                              plot.population,
+                              props.workspaceState
+                            ) && (
+                              <Tooltip title="this gate has been edited for this file">
+                                <span
+                                  style={{
+                                    color: "#f8929a",
+                                  }}
+                                >
+                                  ***
+                                </span>
+                              </Tooltip>
                             )}
                           </div>
                         )}
