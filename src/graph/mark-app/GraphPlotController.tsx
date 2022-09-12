@@ -1052,12 +1052,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   updateRanges = (rowI: any, minOrMax: any, newRange: any) => {
     this.state.fcsFiles.forEach((fcsFile) => {
-      fcsFile.channels[rowI][minOrMax] = newRange;
+      fcsFile.channels[rowI][minOrMax] = Number(newRange);
     });
 
-    let controlEnrichedFile = this.state.enrichedFiles.find(
-      (enrichedFile) => enrichedFile.isControlFile
-    );
+    let controlEnrichedFile = this.state.enrichedFiles[0];
 
     //this.state.fcsFiles.forEach((fcsFile) => {
     controlEnrichedFile.channels[rowI][minOrMax] = newRange;
