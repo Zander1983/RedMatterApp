@@ -105,7 +105,7 @@ const footerData = [
         open: false,
         description: (
           <div>
-            Red Matter was founded in 2017 in Dublin, Ireland by Mark Kelly. It
+            Red Matter was founded in 2018 in Dublin, Ireland by Mark Kelly. It
             was built in conjunction with a local hospital who wanted to be able
             to access FCS tools remotely and from mobile devices. Red Matter is
             now used by users in over 2,000 institutes and in over 100
