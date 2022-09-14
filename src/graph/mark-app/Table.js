@@ -341,7 +341,66 @@ function Table(props) {
           })}
         </div>
 
-        <div id="dragger-wrapper">
+        <div
+          id="dragger-wrapper"
+          style={{
+            height: 65,
+          }}
+          onMouseDown={(e) => {
+            setDraggingContainer(true);
+            setHeightStart(e.clientY);
+          }}
+          onMouseMove={(e) => {
+            if (draggingContainer) {
+              let workspaceContainer = document.getElementById(
+                "workspace-container"
+              );
+
+              // // 480 is the original height of dragger-container from the top of the window
+              // // 355 is the oringinal height of container-workspace
+              let diff = e.clientY - heightStart;
+
+              let newHeight = diff + containerHeight;
+
+              workspaceContainer.style.height = newHeight + "px";
+              // props.workspaceState.workspaceContainerHeight = newHeight;
+            }
+          }}
+          onMouseUp={(e) => {
+            let workspaceContainer = document.getElementById(
+              "workspace-container"
+            );
+
+            let containerNewHeight = parseFloat(
+              workspaceContainer.style.height.substring(
+                0,
+                workspaceContainer.style.height.length - 2
+              )
+            );
+
+            setContainerheight(containerNewHeight);
+
+            setDraggingContainer(false);
+          }}
+          // setContainerheight(newHeight);
+          onMouseLeave={(e) => {
+            let workspaceContainer = document.getElementById(
+              "workspace-container"
+            );
+
+            let containerNewHeight = parseFloat(
+              workspaceContainer.style.height.substring(
+                0,
+                workspaceContainer.style.height.length - 2
+              )
+            );
+
+            setContainerheight(containerNewHeight);
+
+            setDraggingContainer(false);
+            setDraggingContainer(false);
+          }}
+        >
           <img
             // onClick={() => {
             //   props.sortByGate(plot.population, DSC_SORT);
@@ -351,6 +410,7 @@ function Table(props) {
             title="Drag to make workspace bigger"
             style={{
               width: 20,
+              height: 20,
               // cursor: "pointer",
               display: "block",
               margin: "auto",
@@ -366,98 +426,22 @@ function Table(props) {
               color: "#fff",
               textAlign: "center",
             }}
-            onMouseDown={(e) => {
-              setDraggingContainer(true);
-              setHeightStart(e.clientY);
-            }}
-            onMouseMove={(e) => {
-              if (draggingContainer) {
-                let workspaceContainer = document.getElementById(
-                  "workspace-container"
-                );
-
-                // let containerHeight = parseFloat(
-                //   workspaceContainer.style.height.substring(
-                //     0,
-                //     workspaceContainer.style.height.length - 2
-                //   )
-                // );
-
-                // // 480 is the original height of dragger-container from the top of the window
-                // // 355 is the oringinal height of container-workspace
-
-                let diff = e.clientY - heightStart;
-
-                let newHeight = diff + containerHeight;
-
-                workspaceContainer.style.height = newHeight + "px";
-
-                props.workspaceState.workspaceContainerHeight = newHeight;
-              }
-            }}
-            onMouseUp={(e) => {
-              let workspaceContainer = document.getElementById(
-                "workspace-container"
-              );
-
-              let containerNewHeight = parseFloat(
-                workspaceContainer.style.height.substring(
-                  0,
-                  workspaceContainer.style.height.length - 2
-                )
-              );
-
-              setContainerheight(containerNewHeight);
-
-              setDraggingContainer(false);
-            }}
-            // setContainerheight(newHeight);
-            onMouseLeave={(e) => {
-              let workspaceContainer = document.getElementById(
-                "workspace-container"
-              );
-
-              let containerNewHeight = parseFloat(
-                workspaceContainer.style.height.substring(
-                  0,
-                  workspaceContainer.style.height.length - 2
-                )
-              );
-
-              setContainerheight(containerNewHeight);
-
-              setDraggingContainer(false);
-              setDraggingContainer(false);
-            }}
           >
             Drag to expand workspace
-            {/* <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <img
-              src={drag}
-              // alt="down-arrow"
-              style={{
-                height: 20,
-              }}
-            />
-          </div> */}
           </div>
+          <img
+            src={downArrow}
+            alt="down-arrow"
+            title="Drag to make workspace bigger"
+            style={{
+              width: 20,
+              height: 20,
+              // cursor: "pointer",
+              display: "block",
+              margin: "auto",
+            }}
+          />
         </div>
-        <img
-          src={downArrow}
-          alt="down-arrow"
-          title="Drag to make workspace bigger"
-          style={{
-            width: 20,
-            // cursor: "pointer",
-            display: "block",
-            margin: "auto",
-          }}
-        />
       </div>
     );
   }
