@@ -1092,6 +1092,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onInitState(this.state.workspaceState);
   };
 
+  compCustomStyles = {
+    content: {
+      top: "5%",
+      left: "5%",
+      width: "90%",
+      right: "auto",
+      bottom: "auto",
+      backgroundColor: "#F0AA89",
+      zIndex: 1,
+    },
+  };
+
   renderTable = () => {
     let firstFile = this.state.enrichedFiles[0];
 
@@ -1100,58 +1112,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
-          {/* <>
-            <span
-              style={{
-                marginRight: 5,
-                marginLeft: 5,
-                fontWeight: "bold",
-                color: "#ff8080",
-                fontSize: "17px",
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-              }}
-            >
-              CHANGE CONTROL FILE:
-            </span>
-            <Select
-              //disableUnderline
-              style={{
-                marginRight: 10,
-              }}
-              value={this.state.workspaceState.controlFileId}
-              onChange={(e) => {
-                let controlFile = this.state.fcsFiles.find(
-                  (file) => file.id == e.target.value
-                );
-                const {
-                  xAxisLabel,
-                  yAxisLabel,
-                  xAxisIndex,
-                  yAxisIndex,
-                  xAxisScaleType,
-                  yAxisScaleType,
-                } = getPlotChannelAndPosition(controlFile);
-
-                let workspaceState = createDefaultPlotSnapShot(
-                  controlFile.id,
-                  xAxisLabel,
-                  yAxisLabel,
-                  xAxisIndex,
-                  yAxisIndex,
-                  xAxisScaleType,
-                  yAxisScaleType
-                );
-
-                this.onInitState(workspaceState);
-              }}
-            >
-              {this.state.enrichedFiles.map((file) => (
-                <MenuItem key={file.fileId} value={file.fileId}>
-                  {file.fileId}
-                </MenuItem>
-              ))}
-            </Select>
-          </> */}
           <Button
             variant="outlined"
             style={{
@@ -1212,61 +1172,73 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             </Button>
           )}
           {this.state.showSpillover && (
-            <div>
-              <TableContainer component={Paper}>
-                <Table
-                  style={{
-                    color: "#000",
-                    //backgroundColor: "#ffff99",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    marginBottom: 5,
-                    border: "1px solid #e0e0eb",
-                  }}
-                >
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Fluorochrome</TableCell>
+            <Modal
+              isOpen={this.state.showSpillover}
+              appElement={document.getElementById("root") || undefined}
+              style={this.compCustomStyles}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "cneter",
+                  justifyContent: "center",
+                }}
+              >
+                <TableContainer component={Paper}>
+                  <Table
+                    style={{
+                      color: "#000",
+                      //backgroundColor: "#ffff99",
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      marginBottom: 5,
+                      border: "1px solid #e0e0eb",
+                    }}
+                  >
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>Fluorochrome</TableCell>
+                        {/* @ts-ignore */}
+                        {this.state.controlFileScale?.spilloverParams.map(
+                          (label: any, i: any) => {
+                            return (
+                              <TableCell key={`th--${i}`}>{label}</TableCell>
+                            );
+                          }
+                        )}
+                      </TableRow>
                       {/* @ts-ignore */}
-                      {this.state.controlFileScale?.spilloverParams.map(
-                        (label: any, i: any) => {
+                      {this.state.controlFileScale?.invertedMatrix.data.map(
+                        (rowData: any, rowI: number) => {
                           return (
-                            <TableCell key={`th--${i}`}>{label}</TableCell>
-                          );
-                        }
-                      )}
-                    </TableRow>
-                    {/* @ts-ignore */}
-                    {this.state.controlFileScale?.invertedMatrix.data.map(
-                      (rowData: any, rowI: number) => {
-                        return (
-                          <TableRow key={`tr--${rowI}`}>
-                            <TableCell
-                              key={`td--${rowI}`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 5,
-                              }}
-                            >
-                              {
-                                /* @ts-ignore */
-                                this.state.controlFileScale?.spilloverParams[
-                                  rowI
-                                ]
-                              }
-                            </TableCell>
+                            <TableRow key={`tr--${rowI}`}>
+                              <TableCell
+                                key={`td--${rowI}`}
+                                style={{
+                                  border: "1px solid #e0e0eb",
+                                  padding: 3,
+                                }}
+                              >
+                                {
+                                  /* @ts-ignore */
+                                  this.state.controlFileScale?.spilloverParams[
+                                    rowI
+                                  ]
+                                }
+                              </TableCell>
 
-                            {rowData.map((columnData: any, colI: number) => {
-                              return (
-                                <TableCell
-                                  key={`th-${rowI}-${colI}`}
-                                  style={{
-                                    border: "1px solid #e0e0eb",
-                                    padding: 15,
-                                  }}
-                                >
-                                  {columnData}
-                                  {/* <TextField
+                              {rowData.map((columnData: any, colI: number) => {
+                                return (
+                                  <TableCell
+                                    key={`th-${rowI}-${colI}`}
+                                    style={{
+                                      border: "1px solid #e0e0eb",
+                                      padding: 3,
+                                    }}
+                                  >
+                                    {columnData}
+                                    {/* <TextField
                                     disabled
                                     style={
                                       {
@@ -1282,18 +1254,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                       );
                                     }}
                                   /> */}
-                                </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        );
-                      }
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                                  </TableCell>
+                                );
+                              })}
+                            </TableRow>
+                          );
+                        }
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-              {/* <Button
+                <Button
                   variant="outlined"
                   style={{
                     // backgroundColor: "#6666AA",
@@ -1303,37 +1275,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     color: "white",
                   }}
                   onClick={(e) => {
-                    console.log("setting showSpillover to false ");
                     this.setState({
                       ...this.state,
                       showSpillover: false,
                     });
-                    setTimeout(() => {
-                      this.setNewSpillover();
-                    }, 100);
                   }}
                 >
-                  Update
-                </Button> */}
-              <Button
-                variant="outlined"
-                style={{
-                  // backgroundColor: "#6666AA",
-                  marginLeft: 5,
-                  marginBottom: 3,
-                  backgroundColor: "#6666AA",
-                  color: "white",
-                }}
-                onClick={(e) => {
-                  this.setState({
-                    ...this.state,
-                    showSpillover: false,
-                  });
-                }}
-              >
-                Close
-              </Button>
-            </div>
+                  Close
+                </Button>
+              </div>
+            </Modal>
           )}
 
           <WorkspaceTopBar
