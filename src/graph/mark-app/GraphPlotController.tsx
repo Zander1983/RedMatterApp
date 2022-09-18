@@ -1067,24 +1067,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  setNewRanges = () => {
-    let controlEnrichedFile = this.state.enrichedFiles.find(
-      (enrichedFile) => enrichedFile.isControlFile
-    );
+  onRangeChange = (channels: any) => {
+    console.log(">>> in GraphPlotController channels is ", channels);
+    // let controlEnrichedFile = this.state.enrichedFiles.find(
+    //   (enrichedFile) => enrichedFile.isControlFile
+    // );
 
     let files = this.state.fcsFiles;
     let workspace = this.state.workspaceState;
     files.find((file) => {
-      if (file.id == workspace.controlFileId) {
-        file.channels.forEach((channel: any, index: any) => {
-          channel.minimum = parseFloat(
-            controlEnrichedFile.channels[index].minimum
-          );
-          channel.maximum = parseFloat(
-            controlEnrichedFile.channels[index].maximum
-          );
-        });
-      }
+      file.channels.forEach((channel: any, index: any) => {
+        channel.minimum = parseFloat(channels[index].minimum);
+        channel.maximum = parseFloat(channels[index].maximum);
+      });
     });
 
     this.setState({
@@ -1338,158 +1333,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               </Button>
             </div>
           )}
-          <Button
-            variant="outlined"
-            style={{
-              // backgroundColor: "#6666AA",
-              marginLeft: 5,
-              marginBottom: 3,
-              // color: "white",
-              color: "rgb(24, 144, 255)",
-            }}
-            onClick={(e) =>
-              this.setState({
-                ...this.state,
-                showRanges: !this.state.showRanges,
-              })
-            }
-          >
-            Ranges
-            <img
-              src={!this.state?.showRanges ? downArrow : upArrow}
-              alt="arrow-icon"
-              style={{ width: 10, height: 10, marginLeft: 10 }}
-            />
-          </Button>
-          {this.state.showRanges && (
-            <div>
-              <>
-                <TableContainer component={Paper}>
-                  <Table
-                    style={{
-                      color: "#000",
-                      //backgroundColor: "#ffff99",
-                      textAlign: "center",
-                      fontWeight: "bold",
-                      marginBottom: 5,
-                      border: "1px solid #e0e0eb",
-                    }}
-                  >
-                    <TableBody>
-                      <TableRow>
-                        <TableCell></TableCell>
-                        <TableCell>Min</TableCell>
-                        <TableCell>Max</TableCell>
-                      </TableRow>
-                      {firstFile.channels.map((rowData: any, rowI: number) => {
-                        return (
-                          <TableRow key={`tr--${rowI}`}>
-                            <TableCell
-                              key={`td--${rowI}-2`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 5,
-                              }}
-                            >
-                              {rowData.name}
-                            </TableCell>
 
-                            <TableCell
-                              key={`td--${rowI}-3`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 5,
-                              }}
-                            >
-                              <TextField
-                                style={
-                                  {
-                                    //width: "20%",
-                                  }
-                                }
-                                value={rowData.minimum}
-                                onChange={(newColumnData: any) => {
-                                  this.updateRanges(
-                                    rowI,
-                                    "minimum",
-                                    newColumnData.target.value
-                                  );
-                                }}
-                              />
-                            </TableCell>
-
-                            <TableCell
-                              key={`td--${rowI}-4`}
-                              style={{
-                                border: "1px solid #e0e0eb",
-                                padding: 15,
-                              }}
-                            >
-                              <TextField
-                                style={
-                                  {
-                                    //width: "20%",
-                                  }
-                                }
-                                value={rowData.maximum}
-                                onChange={(newColumnData: any) => {
-                                  this.updateRanges(
-                                    rowI,
-                                    "maximum",
-                                    newColumnData.target.value
-                                  );
-                                }}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                <Button
-                  variant="outlined"
-                  style={{
-                    // backgroundColor: "#6666AA",
-                    marginLeft: 5,
-                    marginBottom: 3,
-                    backgroundColor: "#6666AA",
-                    color: "white",
-                  }}
-                  onClick={(e) => {
-                    this.setState({
-                      ...this.state,
-                      showRanges: false,
-                    });
-                    setTimeout(() => {
-                      this.setNewRanges();
-                    }, 100);
-                  }}
-                >
-                  Update
-                </Button>
-                <Button
-                  variant="outlined"
-                  style={{
-                    // backgroundColor: "#6666AA",
-                    marginLeft: 5,
-                    marginBottom: 3,
-                    backgroundColor: "#6666AA",
-                    color: "white",
-                  }}
-                  onClick={(e) => {
-                    this.setState({
-                      ...this.state,
-                      showRanges: false,
-                    });
-                  }}
-                >
-                  Close
-                </Button>
-              </>
-            </div>
-          )}
           <WorkspaceTopBar
             fcsFiles={this.state.fcsFiles}
             workspaceState={this.state.workspaceState}
@@ -1511,6 +1355,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               downloadPlotAsImage={this.downloadPlotAsImage}
               onResetToControl={this.onResetToControl}
               testParam={this.state.testParam}
+              onRangeChange={this.onRangeChange}
             />
           </div>
 

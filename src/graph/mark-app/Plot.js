@@ -63,7 +63,7 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  // console.log("in Plot, props is ", props);
+  console.log("in Plot, props is ", props);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -178,6 +178,7 @@ function Plot(props) {
   }, []);
 
   useEffect(() => {
+    console.log(">>>>>> in the main Use Effecct");
     if (resizing) setResizing(false);
     var arr = new Array(props.plot.length); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
@@ -256,6 +257,7 @@ function Plot(props) {
     });
   }, [
     props.plot,
+    props.enrichedFile.channels,
     // props.workspaceState.files[props.enrichedFile.fileId]?.plots[
     //   props.plotIndex.split("-")[1]
     // ],
@@ -1117,12 +1119,14 @@ function Plot(props) {
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
           plot={localPlot}
+          channels={props.enrichedFile.channels}
           plotIndex={props.plotIndex}
           onDeleteGate={props.onDeleteGate}
           handleResizeMouseDown={handleResizeMouseDown}
           handleResizeMouseMove={handleResizeMouseMove}
           handleResizeMouseUp={handleResizeMouseUp}
           downloadPlotAsImage={props.downloadPlotAsImage}
+          onRangeChange={props.onRangeChange}
           canvasComponent={
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex" }}>
