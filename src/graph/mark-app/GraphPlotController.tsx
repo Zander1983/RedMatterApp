@@ -1164,9 +1164,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               // color: "white",
             }}
             onClick={(e) => {
-              let controlFile = this.state.fcsFiles.find(
-                (file) => file.id == this.state.workspaceState.controlFileId
-              );
+              let firstFile = this.state.fcsFiles[0];
               const {
                 xAxisLabel,
                 yAxisLabel,
@@ -1174,10 +1172,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 yAxisIndex,
                 xAxisScaleType,
                 yAxisScaleType,
-              } = getPlotChannelAndPosition(controlFile);
+              } = getPlotChannelAndPosition(firstFile);
 
               let workspaceState = createDefaultPlotSnapShot(
-                controlFile.id,
+                firstFile.id,
                 xAxisLabel,
                 yAxisLabel,
                 xAxisIndex,

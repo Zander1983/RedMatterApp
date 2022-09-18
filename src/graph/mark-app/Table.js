@@ -82,7 +82,7 @@ let getLines = (els, draggables, plots) => {
 
 function Table(props) {
   // console.log("!!! Table props is ", props);
-  let [containerHeight, setContainerheight] = useState(355);
+  let [containerHeight, setContainerheight] = useState(500);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
   let [clearAnyPoints, setClearAnyPoints] = useState(false);
