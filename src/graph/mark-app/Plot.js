@@ -63,7 +63,6 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
-  console.log("in Plot, props is ", props);
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -178,7 +177,6 @@ function Plot(props) {
   }, []);
 
   useEffect(() => {
-    console.log(">>>>>> in the main Use Effecct");
     if (resizing) setResizing(false);
     var arr = new Array(props.plot.length); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
@@ -473,6 +471,11 @@ function Plot(props) {
   };
 
   const drawPolygon = () => {
+    // console.log(
+    //   "draeing the polygon...newGatePointsCanvas is ",
+    //   newGatePointsCanvas
+    // );
+
     let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "CornflowerBlue";

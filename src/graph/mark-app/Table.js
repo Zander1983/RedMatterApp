@@ -573,6 +573,7 @@ function Table(props) {
                             display:
                               plot.population != "All" ? "block" : "none",
                             cursor: "pointer",
+                            color: "red",
                           }}
                         />
                       </Tooltip>

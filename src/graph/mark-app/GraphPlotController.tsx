@@ -355,14 +355,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onDeleteGate = (plotToDelete: any) => {
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
-    let controlFileId: string = newWorkspaceState.controlFileId;
 
     // find the plot in the array
     // if the plot has gates, find those plots and remove them from plots array
     // remove them from plots array
     // loop through
     let plotsToBeRemoved = [plotToDelete.population];
-    let allPlots = (newWorkspaceState as any).files[controlFileId].plots;
+    let allPlots = (newWorkspaceState as any).plots;
 
     allPlots.forEach((plot: any) => {
       if (plotsToBeRemoved.indexOf(plot.population) > -1) {
@@ -374,22 +373,25 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    const fileIds = Object.keys((newWorkspaceState as any).files) || [];
+    (newWorkspaceState as any).plots = (newWorkspaceState as any).plots.filter(
+      (plot: any) => {
+        if (plotsToBeRemoved.indexOf(plot.population) < 0) {
+          if (plot.gates) {
+            plot.gates = plot.gates.filter(
+              (gate: any) => gate.name != plotToDelete.population
+            );
+          }
 
-    // deleting the gate from the parent plot
-    for (let i = 0; i < fileIds.length; i++) {
-      (newWorkspaceState as any).files[
-        fileIds[i]
-      ].plots = (newWorkspaceState as any).files[fileIds[i]].plots.filter(
-        (plot: any) => {
-          if (plotsToBeRemoved.indexOf(plot.population) < 0) {
-            if (plot.gates) {
-              plot.gates = plot.gates.filter(
-                (gate: any) => gate.name != plotToDelete.population
-              );
-            }
+          return plot;
+        }
+      }
+    );
 
-            return plot;
+    if ((newWorkspaceState as any).customGates) {
+      (newWorkspaceState as any).customGates = (newWorkspaceState as any).customGates.filter(
+        (gate: any) => {
+          if (plotsToBeRemoved.indexOf(gate.name) < 0) {
+            return gate;
           }
         }
       );

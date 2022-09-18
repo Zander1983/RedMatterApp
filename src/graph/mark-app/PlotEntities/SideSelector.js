@@ -17,14 +17,10 @@ import Modal from "react-modal";
 import { useState, useEffect } from "react";
 
 function SideSelector(props) {
-  console.log("in side selector, channels are ", props.channels);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [channels, setChannels] = useState([]);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
 
   useEffect(() => {
-    console.log("in Use Effct, setting tha channels are ", channels);
     setChannels(channels && channels.length > 0 ? channels : props.channels);
   }, [props.channels, channels]);
 
@@ -42,22 +38,35 @@ function SideSelector(props) {
   };
 
   const updateRanges = (rowI, minOrMax, newRange) => {
-    console.log("rowI, minOrMax, newRange is ", rowI, minOrMax, newRange);
-
-    console.log("setting the channels...");
-    // channels[rowI][minOrMax] = parseFloat(newRange);
     setChannels((channels) => {
       let newChannels = channels.map(
         (channel, i) =>
           i === rowI
-            ? { ...channel, [minOrMax]: Number(newRange) } // create a new object with "minumum" set to newRange if i === rowI
+            ? { ...channel, [minOrMax]: newRange } // create a new object with "minumum" set to newRange if i === rowI
             : channel // if i !== rowI then don't update the currennt item at this index
       );
 
-      console.log(">>> newChannels are ", newChannels);
       return newChannels;
     });
   };
+
+  // const handleClick = () => {
+  //   if (!this.state.showModal) {
+  //     document.addEventListener("click", this.handleOutsideClick, false);
+  //   } else {
+  //     document.removeEventListener("click", this.handleOutsideClick, false);
+  //   }
+
+  //   this.setState((prevState) => ({
+  //     showModal: !prevState.showModal,
+  //   }));
+
+  //   setModalIsOpen(!modalIsOpen);
+  // };
+
+  // const handleOutsideClick = (e) => {
+  //   if (!this.node.contains(e.target)) this.handleClick();
+  // };
 
   const customStyles = {
     content: {
@@ -68,17 +77,16 @@ function SideSelector(props) {
       marginRight: "-50%",
       transform: "translate(-50%, -50%)",
       backgroundColor: "#F0AA89",
+      zIndex: 1,
     },
   };
 
-  const columnStyles = {
-    flexGrow: 1,
-    width: "33%",
-    height: "100px",
-  };
-
   return (
-    <div>
+    <div
+      onClick={() => {
+        setModalIsOpen(false);
+      }}
+    >
       <Modal
         isOpen={modalIsOpen}
         appElement={document.getElementById("root") || undefined}
@@ -109,7 +117,6 @@ function SideSelector(props) {
                   <TableCell>Max</TableCell>
                 </TableRow>
                 {channels?.map((rowData, rowI) => {
-                  console.log(">>>rowI is ", rowI);
                   return (
                     <TableRow key={`tr--${rowI}`}>
                       <TableCell
@@ -130,14 +137,17 @@ function SideSelector(props) {
                         }}
                       >
                         <input
+                          type="number"
                           style={{
                             //width: "20%",
                             outline: "none",
                             border: "none",
                           }}
                           value={rowData.minimum}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
                           onChange={(newColumnData) => {
-                            console.log("rowI is now ", rowI);
                             updateRanges(
                               rowI,
                               "minimum",
@@ -155,12 +165,16 @@ function SideSelector(props) {
                         }}
                       >
                         <input
+                          type="number"
                           style={{
                             //width: "20%",
                             outline: "none",
                             border: "none",
                           }}
                           value={rowData.maximum}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
                           onChange={(newColumnData) => {
                             updateRanges(
                               rowI,
@@ -289,7 +303,10 @@ function SideSelector(props) {
             bottom: 0,
           }}
           variant="text"
-          onClick={() => setModalIsOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setModalIsOpen(true);
+          }}
         >
           Ranges
         </Button>
