@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: {
     backgroundColor: "#333",
     textColor: "#fafafa",
+    zIndex: 0,
   },
 }));
 

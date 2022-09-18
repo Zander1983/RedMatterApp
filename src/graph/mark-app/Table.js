@@ -302,6 +302,7 @@ function Table(props) {
                         plotIndex={`0-${plotIindex}`}
                         downloadPlotAsImage={props.downloadPlotAsImage}
                         clearAnyPoints={clearAnyPoints}
+                        onRangeChange={props.onRangeChange}
                       />
                     );
                   } else {
@@ -332,6 +333,7 @@ function Table(props) {
                         enrichedOverlayFiles={enrichedOverlayFiles}
                         plotIndex={`0-${plotIindex}`}
                         downloadPlotAsImage={props.downloadPlotAsImage}
+                        onRangeChange={props.onRangeChange}
                       />
                     );
                   }

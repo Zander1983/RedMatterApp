@@ -1,8 +1,33 @@
-import { MenuItem, Select, Tooltip } from "@material-ui/core";
+import {
+  MenuItem,
+  Select,
+  Tooltip,
+  TextField,
+  Button,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+  TableContainer,
+} from "@material-ui/core";
 import deleteIcon from "./../../../assets/images/delete.png";
 import cameraIcon from "./../../../assets/images/camera.png";
+import Modal from "react-modal";
+import { useState, useEffect } from "react";
 
 function SideSelector(props) {
+  console.log("in side selector, channels are ", props.channels);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [channels, setChannels] = useState([]);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  useEffect(() => {
+    console.log("in Use Effct, setting tha channels are ", channels);
+    setChannels(channels && channels.length > 0 ? channels : props.channels);
+  }, [props.channels, channels]);
+
   const getYAxisValue = () => {
     if (props.plot.plotType == "histogram") {
       return "histogram";
@@ -16,69 +41,226 @@ function SideSelector(props) {
     else return "transparent";
   };
 
+  const updateRanges = (rowI, minOrMax, newRange) => {
+    console.log("rowI, minOrMax, newRange is ", rowI, minOrMax, newRange);
+
+    console.log("setting the channels...");
+    // channels[rowI][minOrMax] = parseFloat(newRange);
+    setChannels((channels) => {
+      let newChannels = channels.map(
+        (channel, i) =>
+          i === rowI
+            ? { ...channel, [minOrMax]: Number(newRange) } // create a new object with "minumum" set to newRange if i === rowI
+            : channel // if i !== rowI then don't update the currennt item at this index
+      );
+
+      console.log(">>> newChannels are ", newChannels);
+      return newChannels;
+    });
+  };
+
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      backgroundColor: "#F0AA89",
+    },
+  };
+
+  const columnStyles = {
+    flexGrow: 1,
+    width: "33%",
+    height: "100px",
+  };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        paddingLeft: 5,
-        paddingBottom: 5,
-        paddingRight: 5,
-      }}
-    >
+    <div>
+      <Modal
+        isOpen={modalIsOpen}
+        appElement={document.getElementById("root") || undefined}
+        style={customStyles}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "cneter",
+            justifyContent: "center",
+          }}
+        >
+          <TableContainer component={Paper}>
+            <Table
+              style={{
+                color: "#000",
+                textAlign: "center",
+                fontWeight: "bold",
+                marginBottom: 5,
+                border: "1px solid #e0e0eb",
+              }}
+            >
+              <TableBody>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell>Min</TableCell>
+                  <TableCell>Max</TableCell>
+                </TableRow>
+                {channels?.map((rowData, rowI) => {
+                  console.log(">>>rowI is ", rowI);
+                  return (
+                    <TableRow key={`tr--${rowI}`}>
+                      <TableCell
+                        key={`td--${rowI}-2`}
+                        style={{
+                          // border: "1px solid #e0e0eb",
+                          padding: 0,
+                        }}
+                      >
+                        {rowData.name}
+                      </TableCell>
+
+                      <TableCell
+                        key={`td--${rowI}-3`}
+                        style={{
+                          // border: "1px solid #e0e0eb",
+                          padding: 0,
+                        }}
+                      >
+                        <input
+                          style={{
+                            //width: "20%",
+                            outline: "none",
+                            border: "none",
+                          }}
+                          value={rowData.minimum}
+                          onChange={(newColumnData) => {
+                            console.log("rowI is now ", rowI);
+                            updateRanges(
+                              rowI,
+                              "minimum",
+                              newColumnData.target.value
+                            );
+                          }}
+                        />
+                      </TableCell>
+
+                      <TableCell
+                        key={`td--${rowI}-4`}
+                        style={{
+                          // border: "1px solid #e0e0eb",
+                          padding: 0,
+                        }}
+                      >
+                        <input
+                          style={{
+                            //width: "20%",
+                            outline: "none",
+                            border: "none",
+                          }}
+                          value={rowData.maximum}
+                          onChange={(newColumnData) => {
+                            updateRanges(
+                              rowI,
+                              "maximum",
+                              newColumnData.target.value
+                            );
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "rgb(102, 102, 170)",
+              maxHeight: "50px",
+              marginTop: "20px",
+              marginBottom: "25px",
+              color: "white",
+            }}
+            size="small"
+            onClick={() => {
+              props.onRangeChange(channels);
+              setModalIsOpen(false);
+            }}
+          >
+            Apply
+          </Button>
+        </div>
+      </Modal>
+
       <div
-        className="pc-y"
         style={{
-          transform: "rotate(270deg)",
-          width: "30px",
-          // marginLeft: "-90px",
-          // marginRight: "-80px",
-          marginBottom: "15px",
           display: "flex",
           justifyContent: "center",
+          paddingLeft: 5,
+          paddingBottom: 5,
+          paddingRight: 5,
         }}
       >
-        <Tooltip
-          title={props.plot.yAxisLabel.length > 20 ? props.plot.yAxisLabel : ""}
+        <div
+          className="pc-y"
+          style={{
+            transform: "rotate(270deg)",
+            width: "30px",
+            // marginLeft: "-90px",
+            // marginRight: "-80px",
+            marginBottom: "15px",
+            display: "flex",
+            justifyContent: "center",
+          }}
         >
-          <Select
-            disableUnderline
-            style={{
-              width: props.plot.width * 0.6,
-              textAlign: "center",
-              flex: "1 1 auto",
-              fontSize: 12,
-            }}
-            onChange={(e) => {
-              props.onChange(
-                { value: e.target.value },
-                "y",
-                props.plotIndex.split("-")[1]
-              );
-            }}
-            value={getYAxisValue()}
+          <Tooltip
+            title={
+              props.plot.yAxisLabel.length > 20 ? props.plot.yAxisLabel : ""
+            }
           >
-            {props.channelOptions.map((e) => (
-              <MenuItem key={e.value} value={e.value}>
-                {e.label}
-              </MenuItem>
-            ))}
-            <MenuItem
+            <Select
+              disableUnderline
               style={{
-                backgroundColor: `${
-                  props.plot.plotType == "histogram"
-                    ? "rgb(236 235 235)"
-                    : "unset"
-                }`,
+                width: props.plot.width * 0.6,
+                textAlign: "center",
+                flex: "1 1 auto",
+                fontSize: 12,
               }}
-              key={`${props.plotIndex}-hist`}
-              value="histogram"
+              onChange={(e) => {
+                props.onChange(
+                  { value: e.target.value },
+                  "y",
+                  props.plotIndex.split("-")[1]
+                );
+              }}
+              value={getYAxisValue()}
             >
-              Histogram{" "}
-            </MenuItem>
-          </Select>
-        </Tooltip>
-        {/* <Select
+              {props.channelOptions.map((e) => (
+                <MenuItem key={e.value} value={e.value}>
+                  {e.label}
+                </MenuItem>
+              ))}
+              <MenuItem
+                style={{
+                  backgroundColor: `${
+                    props.plot.plotType == "histogram"
+                      ? "rgb(236 235 235)"
+                      : "unset"
+                  }`,
+                }}
+                key={`${props.plotIndex}-hist`}
+                value="histogram"
+              >
+                Histogram{" "}
+              </MenuItem>
+            </Select>
+          </Tooltip>
+
+          {/* <Select
             disableUnderline
             style={{
               width: props.plot.width * 0.35,
@@ -98,188 +280,201 @@ function SideSelector(props) {
             <MenuItem value={"lin"}>Linear</MenuItem>
             <MenuItem value={"bi"}>Logicle</MenuItem>
           </Select> */}
-      </div>
+        </div>
 
-      <div
-        className="pc-x"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingRight: 0,
-        }}
-      >
-        {/* canvas-top-bar */}
+        <Button
+          style={{
+            position: "absolute",
+            left: 0,
+            bottom: 0,
+          }}
+          variant="text"
+          onClick={() => setModalIsOpen(true)}
+        >
+          Ranges
+        </Button>
+
         <div
+          className="pc-x"
           style={{
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            alignSelf: "center",
-            marginTop: 5,
-            marginBottom: 10,
+            paddingRight: 0,
           }}
         >
-          {props.plot.gate && props.onDeleteGate && (
-            <Tooltip title={"delete the plot gate"}>
-              <img
-                src={deleteIcon}
-                alt={props.plot.id}
+          {/* canvas-top-bar */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              alignSelf: "center",
+              marginTop: 5,
+              marginBottom: 10,
+            }}
+          >
+            {props.plot.gate && props.onDeleteGate && (
+              <Tooltip title={"delete the plot gate"}>
+                <img
+                  src={deleteIcon}
+                  alt={props.plot.id}
+                  style={{
+                    width: 15,
+                    height: 15,
+                    marginLeft: 30,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => props.onDeleteGate(props.plot)}
+                />
+              </Tooltip>
+            )}
+          </div>
+          {props.canvasComponent}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: props.plot.width,
+            }}
+          >
+            <Tooltip
+              title={
+                props.plot.xAxisLabel.length > 20 ? props.plot.xAxisLabel : ""
+              }
+            >
+              <Select
+                disableUnderline
                 style={{
-                  width: 15,
-                  height: 15,
-                  marginLeft: 30,
-                  cursor: "pointer",
+                  width: props.plot.width * 0.6,
+                  textAlign: "center",
+                  flex: "1 1 auto",
+                  fontSize: 12,
                 }}
-                onClick={() => props.onDeleteGate(props.plot)}
-              />
+                onChange={(e) => {
+                  props.onChange(
+                    { value: e.target.value },
+                    "x",
+                    props.plotIndex.split("-")[1]
+                  );
+                }}
+                value={props.plot.xAxisIndex}
+              >
+                {props.channelOptions.map((e) => (
+                  <MenuItem key={e.value} name={e.label} value={e.value}>
+                    {e.label}
+                  </MenuItem>
+                ))}
+              </Select>
             </Tooltip>
-          )}
+          </div>
         </div>
-        {props.canvasComponent}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: props.plot.width,
-          }}
-        >
-          <Tooltip
-            title={
-              props.plot.xAxisLabel.length > 20 ? props.plot.xAxisLabel : ""
-            }
+
+        {props.plot.plotType == "histogram" ? (
+          <div
+            style={{
+              marginLeft: "10px",
+              marginTop: "30px",
+              height: "fit-content",
+              padding: "5px",
+            }}
           >
             <Select
               disableUnderline
+              multiple
               style={{
-                width: props.plot.width * 0.6,
                 textAlign: "center",
                 flex: "1 1 auto",
                 fontSize: 12,
+                width: 100,
               }}
-              onChange={(e) => {
-                props.onChange(
-                  { value: e.target.value },
-                  "x",
-                  props.plotIndex.split("-")[1]
-                );
-              }}
-              value={props.plot.xAxisIndex}
+              value={[""]}
             >
-              {props.channelOptions.map((e) => (
-                <MenuItem key={e.value} name={e.label} value={e.value}>
-                  {e.label}
-                </MenuItem>
-              ))}
+              <MenuItem value="">Overlays</MenuItem>
+              {props.allFileMinObj
+                .filter((x) => x.id != props.enrichedFile.fileId)
+                .map((x) => {
+                  return (
+                    <MenuItem key={x?.id}>
+                      <div
+                        className="form-check"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginTop: 5,
+                          backgroundColor: getOverlayColor(x.id),
+                        }}
+                      >
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          value={x.id}
+                          checked={
+                            props.plot?.overlays?.find((y) => y.id == x.id)
+                              ? true
+                              : false
+                          }
+                          onChange={(e) => {
+                            props.addOverlay(
+                              props.enrichedFile.fileId,
+                              e.target.value,
+                              props.plotIndex.split("-")[1],
+                              e.target.checked
+                            );
+                          }}
+                          id={props.plotIndex + x.id}
+                        ></input>
+                        <label
+                          className="form-check-label"
+                          style={{ wordBreak: "break-all", marginLeft: 3 }}
+                          // for={props.plotIndex + x.id}
+                        >
+                          {`${
+                            x.name.length > 50
+                              ? x.name.substring(0, 50) + "..."
+                              : x.name
+                          }`}
+                        </label>
+                      </div>
+                    </MenuItem>
+                  );
+                })}
             </Select>
-          </Tooltip>
-        </div>
-      </div>
-
-      {props.plot.plotType == "histogram" ? (
-        <div
-          style={{
-            marginLeft: "10px",
-            marginTop: "30px",
-            height: "fit-content",
-            padding: "5px",
-          }}
-        >
-          <Select
-            disableUnderline
-            multiple
-            style={{
-              textAlign: "center",
-              flex: "1 1 auto",
-              fontSize: 12,
-              width: 100,
-            }}
-            value={[""]}
-          >
-            <MenuItem value="">Overlays</MenuItem>
-            {props.allFileMinObj
-              .filter((x) => x.id != props.enrichedFile.fileId)
-              .map((x) => {
+            <div
+              style={{
+                height: 180,
+                overflowY: "auto",
+                maxWidth: 230,
+              }}
+            >
+              {props.plot?.overlays?.map((x) => {
                 return (
-                  <MenuItem key={x?.id}>
+                  <div
+                    key={x?.id}
+                    style={{ alignItems: "center", display: "flex" }}
+                  >
                     <div
-                      className="form-check"
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginTop: 5,
-                        backgroundColor: getOverlayColor(x.id),
+                        userSelect: "none",
+                        backgroundColor: x.color,
+                        width: 15,
+                        height: 15,
+                        color: "transparent",
                       }}
                     >
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        value={x.id}
-                        checked={
-                          props.plot?.overlays?.find((y) => y.id == x.id)
-                            ? true
-                            : false
-                        }
-                        onChange={(e) => {
-                          props.addOverlay(
-                            props.enrichedFile.fileId,
-                            e.target.value,
-                            props.plotIndex.split("-")[1],
-                            e.target.checked
-                          );
-                        }}
-                        id={props.plotIndex + x.id}
-                      ></input>
-                      <label
-                        className="form-check-label"
-                        style={{ wordBreak: "break-all", marginLeft: 3 }}
-                        // for={props.plotIndex + x.id}
-                      >
-                        {`${
-                          x.name.length > 50
-                            ? x.name.substring(0, 50) + "..."
-                            : x.name
-                        }`}
-                      </label>
+                      df
                     </div>
-                  </MenuItem>
+                    <div style={{ marginLeft: 5 }}>
+                      {props.allFileMinObj.find((y) => y.id == x.id).name}
+                    </div>
+                  </div>
                 );
               })}
-          </Select>
-          <div
-            style={{
-              height: 180,
-              overflowY: "auto",
-              maxWidth: 230,
-            }}
-          >
-            {props.plot?.overlays?.map((x) => {
-              return (
-                <div
-                  key={x?.id}
-                  style={{ alignItems: "center", display: "flex" }}
-                >
-                  <div
-                    style={{
-                      userSelect: "none",
-                      backgroundColor: x.color,
-                      width: 15,
-                      height: 15,
-                      color: "transparent",
-                    }}
-                  >
-                    df
-                  </div>
-                  <div style={{ marginLeft: 5 }}>
-                    {props.allFileMinObj.find((y) => y.id == x.id).name}
-                  </div>
-                </div>
-              );
-            })}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }

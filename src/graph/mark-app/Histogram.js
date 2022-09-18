@@ -1167,6 +1167,7 @@ function Histogram(props) {
           plotIndex={props.plotIndex}
           allFileMinObj={props.allFileMinObj}
           downloadPlotAsImage={props.downloadPlotAsImage}
+          onRangeChange={props.onRangeChange}
           canvasComponent={
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex" }}>
