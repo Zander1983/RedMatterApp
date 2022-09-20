@@ -897,6 +897,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     const fcsservice = new FCSServices();
     let fcsFiles = this.state.fcsFiles || [];
+    let abandon = false;
     for (const file of fileList) {
       this.setState({
         ...this.state,
@@ -912,6 +913,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           return e;
         });
       });
+
+      if (this.state.fcsFiles && this.state.fcsFiles.length > 0) {
+        if (this.state.fcsFiles[0].channels.length != fcsFile.channels.length) {
+          fcsFiles = [];
+          this.setState({
+            ...this.state,
+            currentParsingFile: "",
+          });
+          alert(
+            "Could not parse files - channels are not the same. Only upload files with the same channels"
+          );
+          abandon = true;
+          break;
+        }
+      }
 
       //@ts-ignore
       fcsFile.name = file.file.name;
@@ -955,46 +971,52 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       fcsFiles.push(fcsFile);
     }
 
-    let workspaceState = this.state.workspaceState;
+    if (!abandon) {
+      let workspaceState = this.state.workspaceState;
 
-    if (!workspaceState || Object.keys(workspaceState).length == 0) {
-      let controlFile = fcsFiles[0];
-      const {
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        xAxisScaleType,
-        yAxisScaleType,
-      } = getPlotChannelAndPosition(controlFile);
+      if (
+        (!workspaceState || Object.keys(workspaceState).length == 0) &&
+        fcsFiles &&
+        fcsFiles.length > 0
+      ) {
+        let controlFile = fcsFiles[0];
+        const {
+          xAxisLabel,
+          yAxisLabel,
+          xAxisIndex,
+          yAxisIndex,
+          xAxisScaleType,
+          yAxisScaleType,
+        } = getPlotChannelAndPosition(controlFile);
 
-      workspaceState = createDefaultPlotSnapShot(
-        controlFile.id,
-        xAxisLabel,
-        yAxisLabel,
-        xAxisIndex,
-        yAxisIndex,
-        xAxisScaleType,
-        yAxisScaleType
-      );
-    }
+        workspaceState = createDefaultPlotSnapShot(
+          controlFile.id,
+          xAxisLabel,
+          yAxisLabel,
+          xAxisIndex,
+          yAxisIndex,
+          xAxisScaleType,
+          yAxisScaleType
+        );
+      }
 
-    this.setState({
-      ...this.state,
-      //controlFileId: this.state.controlFileId || fcsFiles[0].id,
-      fcsFiles: fcsFiles,
-      parsedFiles: [],
-      //workspaceState: workspaceState,
-    });
-
-    if (localStorage.getItem("signup") != "true") {
       this.setState({
         ...this.state,
-        userSignUpModalShowing: true,
+        //controlFileId: this.state.controlFileId || fcsFiles[0].id,
+        fcsFiles: fcsFiles,
+        parsedFiles: [],
+        //workspaceState: workspaceState,
       });
-    }
 
-    this.onInitState(workspaceState);
+      if (localStorage.getItem("signup") != "true") {
+        this.setState({
+          ...this.state,
+          userSignUpModalShowing: true,
+        });
+      }
+
+      this.onInitState(workspaceState);
+    }
   };
 
   componentDidUpdate(
@@ -1070,7 +1092,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onRangeChange = (channels: any) => {
-    console.log(">>> in GraphPlotController channels is ", channels);
     // let controlEnrichedFile = this.state.enrichedFiles.find(
     //   (enrichedFile) => enrichedFile.isControlFile
     // );
