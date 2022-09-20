@@ -24,6 +24,7 @@ import Invite from "Components/users/Invite";
 import InviteExisting from "Components/users/InviteExisting";
 import SignInOutContainer from "./Components/users/signInOutContainer";
 import Terms from "Components/home/Terms";
+import HowToUse from "Components/home/HowToUse";
 import PremiumCheckout from "./Components/plans/PremiumCheckout";
 import Cancel from "./Components/plans/Cancel";
 import Success from "./Components/plans/Success";
@@ -163,6 +164,7 @@ const router = [
     ),
   },
   { path: "/terms", component: Terms },
+  { path: "/howtouse", component: HowToUse },
   {
     path: "/mailing-list",
     component: About,

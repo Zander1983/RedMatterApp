@@ -98,8 +98,21 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v5.0.23"}
+                  {"v5.0.24"}
                 </b>
+              </NavLink>
+              <NavLink
+                style={{
+                  color: "#fafafa",
+                  fontWeight: 600,
+                  fontFamily: "quicksand",
+                  fontSize: 25,
+                  float: "right",
+                  marginRight: "50px",
+                }}
+                to="/howtouse"
+              >
+                How To Use
               </NavLink>
             </Typography>
           </Toolbar>
