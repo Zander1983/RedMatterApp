@@ -296,20 +296,23 @@ function SideSelector(props) {
           </Select> */}
         </div>
 
-        <Button
-          style={{
-            position: "absolute",
-            left: 0,
-            bottom: 0,
-          }}
-          variant="text"
-          onClick={(e) => {
-            e.stopPropagation();
-            setModalIsOpen(true);
-          }}
-        >
-          Ranges
-        </Button>
+        <Tooltip title="changes the channels ranges">
+          <Button
+            style={{
+              position: "absolute",
+              left: 0,
+              bottom: 0,
+              fontSize: "10px",
+            }}
+            variant="text"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalIsOpen(true);
+            }}
+          >
+            Ranges
+          </Button>
+        </Tooltip>
 
         <div
           className="pc-x"
