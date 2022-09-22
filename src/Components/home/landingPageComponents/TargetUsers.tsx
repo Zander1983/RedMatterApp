@@ -90,8 +90,9 @@ const TargetUsers = () => {
 const analysis = [
   {
     img: researcher,
-    title: "Free Flow Cytometry Software",
-    text: "No installation, analyse instantly in the web",
+    title: "Core Flow Cytometry Functionality",
+    text:
+      "Most flow users do not need the huge amount of functionality provided by traditional Desktop applications. Red Matter took the core functionality, and built it in the web. No installation. Works on all browsers.",
   },
   // {
   //   img: integration,
