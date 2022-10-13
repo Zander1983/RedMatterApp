@@ -944,7 +944,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           action:
             "File with  " +
             //@ts-ignore
-            fcsFile.jsonEventCount +
+            fcsFile.events?.length +
             " events and " +
             fcsFile.channels.length +
             " channels uploaded",
