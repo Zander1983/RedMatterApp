@@ -7,7 +7,7 @@ import {
   getGateName,
 } from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
-
+import { Button } from "@material-ui/core";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -70,6 +70,8 @@ function Plot(props) {
   let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
+  let [showMenu, setShowMenu] = useState(null);
+  let [menuPosition, setMenuPosition] = useState([]);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -657,6 +659,17 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    if (event.button == 2) {
+      console.log("event is ", event);
+
+      setShowMenu(true);
+      setMenuPosition([event.offsetX, event.offsetY]);
+
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     event.stopPropagation();
     if (resizing) return;
 
@@ -1176,8 +1189,12 @@ function Plot(props) {
                       // display: "block" : "none",
                     }}
                     onMouseDown={(e) => {
+                      e.preventDefault();
                       let nativeEvent = e.nativeEvent;
                       handleMouseDown(nativeEvent);
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
                     }}
                     onMouseMove={(e) => {
                       let nativeEvent = e.nativeEvent;
@@ -1192,6 +1209,51 @@ function Plot(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
+
+                  {showMenu ? (
+                    <div
+                      id="menu"
+                      style={{
+                        top: menuPosition[1] + 3,
+                        left: menuPosition[0] + 3,
+                        position: "absolute",
+                        backgroundColor: "#fafafa",
+                        width: "170px",
+                        border: "1px solid lightgrey",
+                      }}
+                    >
+                      <div>
+                        <div
+                          // onClick={() => downloadCSV()}
+                          // className={classes.topButton}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                          //disabled={!hasGate}
+                        >
+                          Delete
+                        </div>
+                        <div
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            borderTop: "1px solid lightgrey",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Edit Gate Name/Color
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
               {/* X-axis */}
