@@ -640,7 +640,7 @@ function Histogram(props) {
       xAxisLabel: props.plot.xAxisLabel,
       xScaleType: props.plot.xScaleType,
       xAxisIndex: props.plot.xAxisIndex,
-      parent: props.plot.population,
+      // parent: props.plot.population,
       xAxisOriginalRanges: xRange,
       yAxisOriginalRanges: yRange,
     };

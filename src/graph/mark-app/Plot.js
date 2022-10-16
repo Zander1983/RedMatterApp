@@ -5,6 +5,7 @@ import {
   getAxisLabels,
   getBins,
   getGateName,
+  getGateNameFriendly,
 } from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
 import { Button } from "@material-ui/core";
@@ -57,7 +58,6 @@ const getGatesOnPlot = (plot) => {
 };
 
 let isMouseDown = false;
-let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 let interval = null;
@@ -71,7 +71,9 @@ function Plot(props) {
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
   let [showMenu, setShowMenu] = useState(null);
+  let [isEditingGate, setIsEditingGate] = useState(null);
   let [menuPosition, setMenuPosition] = useState([]);
+  let [newGatePointsCanvas, setNewGatePointsCanvas] = useState([]);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -150,6 +152,26 @@ function Plot(props) {
   }, [newPoints]);
 
   useEffect(() => {
+    if (newGatePointsCanvas && newGatePointsCanvas.length < 1) {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+      context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+      let gates = getGatesOnPlot(props.plot);
+
+      //    console.log("in clearAnyPoints");
+      gates.map((gate) => {
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          gate.points
+        );
+      });
+
+      setShowMenu(false);
+    }
+  }, [newGatePointsCanvas]);
+
+  useEffect(() => {
     let context = getContext("covering-canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
@@ -160,9 +182,11 @@ function Plot(props) {
     let context = getContext("covering-canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
 
     let gates = getGatesOnPlot(props.plot);
+
+    //    console.log("in clearAnyPoints");
     gates.map((gate) => {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
@@ -170,6 +194,8 @@ function Plot(props) {
         gate.points
       );
     });
+
+    setShowMenu(false);
   }, [props.clearAnyPoints]);
 
   useEffect(() => {
@@ -179,6 +205,8 @@ function Plot(props) {
   }, []);
 
   useEffect(() => {
+    console.log("in MAIN useEffect");
+
     if (resizing) setResizing(false);
     var arr = new Array(props.plot.length); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
@@ -194,7 +222,6 @@ function Plot(props) {
     context.fillStyle = "white";
 
     if (context) {
-      // console.log("formatting events...", props.plotIndex);
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
@@ -478,6 +505,8 @@ function Plot(props) {
     //   newGatePointsCanvas
     // );
 
+    console.log("in draw polygon points");
+
     let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "CornflowerBlue";
@@ -659,14 +688,9 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
-    if (event.button == 2) {
-      console.log("event is ", event);
-
-      setShowMenu(true);
-      setMenuPosition([event.offsetX, event.offsetY]);
-
-      event.stopPropagation();
-      event.preventDefault();
+    if (showMenu) {
+      setShowMenu(false);
+      setNewGatePointsCanvas([]);
       return false;
     }
 
@@ -702,13 +726,6 @@ function Plot(props) {
           event.offsetY
         );
 
-        setIsNearPoint(isNearPointIndex.isNear);
-
-        if (isNearPointIndex.isNear) {
-          setNameOfGateCursorIsInside(gate.name);
-          setDragPointIndex(isNearPointIndex.pointIndex);
-        }
-
         let isInside = false;
         if (!isNearPointIndex.isNear) {
           let newPointsReal = getRealPointFromCanvasPoints(
@@ -722,12 +739,29 @@ function Plot(props) {
             newPointsReal[1],
             gate.points
           );
-
-          setIsInsideGate(isInside);
         }
 
         if (isInside) {
           setNameOfGateCursorIsInside(gate.name);
+
+          if (event.button == 2) {
+            console.log("event is ", event);
+
+            setShowMenu(true);
+            setMenuPosition([event.offsetX, event.offsetY]);
+
+            event.stopPropagation();
+            event.preventDefault();
+            return false;
+          }
+        }
+
+        setIsNearPoint(isNearPointIndex.isNear);
+        setIsInsideGate(isInside);
+
+        if (isNearPointIndex.isNear) {
+          setNameOfGateCursorIsInside(gate.name);
+          setDragPointIndex(isNearPointIndex.pointIndex);
         }
 
         if (isInside || isNearPointIndex.isNear) {
@@ -746,6 +780,14 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
+    if (event.button == 2) {
+      console.log("mouse move, event is ", event);
+
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     if (isMouseDown && hasGates() && getGatesOnPlot(localPlot).length > 0) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
@@ -865,6 +907,12 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (event.button == 2) {
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     event.stopPropagation();
 
     if (resizing) return;
@@ -921,6 +969,7 @@ function Plot(props) {
             name: suggestedGateName,
           });
 
+          setGateColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
           setModalIsOpen(true);
           polygonComplete = true;
         }
@@ -936,7 +985,9 @@ function Plot(props) {
       }
 
       if (!polygonComplete && uniqueGatePoint) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        let newGatePointsCanvasCopy = newGatePointsCanvas;
+        newGatePointsCanvasCopy.push([event.offsetX, event.offsetY]);
+        setNewGatePointsCanvas(newGatePointsCanvasCopy);
       }
       redraw();
       //}
@@ -1004,17 +1055,69 @@ function Plot(props) {
   };
 
   const onSetGateName = () => {
+    //setGateColor
+
+    console.log("in onSetGateName and setIsEditingGate is ", isEditingGate);
+
+    if (isEditingGate) {
+      let gateNameHasChanged = false;
+      let gateColorHasChanged = false;
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      console.log("gateColor.color is ", gateColor);
+
+      console.log(
+        "getGateNameFriendly(gate.name)) is ",
+        getGateNameFriendly(gate.name)
+      );
+      console.log("gateName.name is ", gateName.name);
+
+      if (gate.color != gateColor) {
+        // on change color
+        console.log("color has changed!!!!");
+        gateColorHasChanged = true;
+      }
+
+      if (getGateNameFriendly(gate.name) != gateName.name) {
+        console.log("gate name has changed!!!!");
+
+        gateNameHasChanged = true;
+      }
+
+      if (gateColorHasChanged || gateNameHasChanged) {
+        props.onChangeGateName(
+          props.plot,
+          JSON.parse(JSON.stringify(gate)),
+          gateNameHasChanged,
+          getGateName(gateName.name),
+          gateColorHasChanged,
+          gateColor
+        );
+      }
+
+      setIsEditingGate(false);
+      setModalIsOpen(false);
+      setShowMenu(false);
+      setNewGatePointsCanvas([]);
+      polygonComplete = false;
+      return;
+    }
+
     onAddGate(localPlot, props.plotIndex);
     setModalIsOpen(false);
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
     polygonComplete = false;
   };
 
   const onCancelGateName = () => {
+    setIsEditingGate(false);
     setModalIsOpen(false);
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
     polygonComplete = false;
-    setNewPoints([]);
+    //setNewPoints([]);
     setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
   };
 
@@ -1039,6 +1142,49 @@ function Plot(props) {
       name: name,
       error: plotNames.includes(name) ? true : false,
     });
+  };
+
+  const deleteGate = () => {
+    console.log(
+      "in delete gate, nameOfGateCursorIsInside is ",
+      nameOfGateCursorIsInside
+    );
+    if (nameOfGateCursorIsInside) {
+      props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+    setShowMenu(false);
+  };
+
+  const onEditGateNameColor = () => {
+    console.log(
+      "in onEditGateNameColor, nameOfGateCursorIsInside is ",
+      nameOfGateCursorIsInside
+    );
+
+    if (nameOfGateCursorIsInside) {
+      //GateColor
+
+      setIsEditingGate(true);
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      setGateName({
+        name: getGateNameFriendly(gate.name),
+      });
+
+      console.log("gate is ", gate);
+      setGateColor(gate.color);
+
+      console.log("gateColor is now ", gateColor);
+
+      setModalIsOpen(true);
+
+      //props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+
+    //setModalIsOpen(true);
   };
 
   return (
@@ -1224,7 +1370,7 @@ function Plot(props) {
                     >
                       <div>
                         <div
-                          // onClick={() => downloadCSV()}
+                          onClick={() => deleteGate()}
                           // className={classes.topButton}
                           style={{
                             backgroundColor: "#fafafa",
@@ -1239,6 +1385,7 @@ function Plot(props) {
                           Delete
                         </div>
                         <div
+                          onClick={() => onEditGateNameColor()}
                           style={{
                             backgroundColor: "#fafafa",
                             color: "#1890ff",

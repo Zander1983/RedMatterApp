@@ -242,6 +242,61 @@ export const superAlgorithm = (
   return Files;
 };
 
+export const updateEnrichedFilesPlots = (
+  Files,
+  WorkspaceState,
+  gateNameHasChanged,
+  oldGateName,
+  newGateName,
+  gateColorHasChanged,
+  oldColor,
+  newGateColor
+) => {
+  for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    let file = Files[fileIndex];
+
+    let plots = getPlotsForFileFromWorkspaceState(file.fileId, WorkspaceState);
+    file.plots = plots;
+
+    for (
+      let eventIndex = 0;
+      eventIndex < file.enrichedEvents.length;
+      //eventIndex < 1;
+      eventIndex++
+    ) {
+      let event = file.enrichedEvents[eventIndex];
+      if (
+        gateNameHasChanged &&
+        Object.hasOwn(event, "isInGate" + oldGateName)
+      ) {
+        event["isInGate" + newGateName] = event["isInGate" + oldGateName];
+        delete event["isInGate" + oldGateName];
+      }
+
+      if (gateColorHasChanged && event.color == oldColor) {
+        event["color"] = newGateColor;
+      }
+    }
+
+    if (gateNameHasChanged) {
+      for (
+        let gateStatIndex = 0;
+        gateStatIndex < file.gateStats.length;
+        gateStatIndex++
+      ) {
+        let gateStat = file.gateStats[gateStatIndex];
+        if (gateStat.gateName == oldGateName) {
+          gateStat.gateName = newGateName;
+        }
+      }
+    }
+  }
+
+  for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
+    let file = Files[fileIndex];
+  }
+};
+
 export const compensate = (dataE, scale, channels, origEvents) => {
   // let compenatedEvents = [];
   // for (let paramIndex = 0; paramIndex < dataE[0].length; paramIndex++) {
@@ -796,6 +851,13 @@ export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
 };
 
 export const hasCustomGate = (fileId, population, workspaceState) => {
+  console.log(
+    ">>>> in hasCustom gates are params are ",
+    fileId,
+    population,
+    workspaceState
+  );
+
   const gate =
     workspaceState.customGates &&
     workspaceState.customGates.find(

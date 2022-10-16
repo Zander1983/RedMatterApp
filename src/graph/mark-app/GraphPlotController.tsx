@@ -31,6 +31,7 @@ import {
   DSC_SORT,
   ASC_SORT,
   loopAndCompensate,
+  updateEnrichedFilesPlots,
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -113,6 +114,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       signUpEmail: "",
     };
 
+    this.onChangeGateName = this.onChangeGateName.bind(this);
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onOpenFileChange = this.onOpenFileChange.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
@@ -206,7 +208,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //   (enrichedFile) => enrichedFile.isControlFile
       // );
 
-      // console.log(">>> workspaceState is ", workspaceState);
+      console.log(">>> workspaceState is ", workspaceState);
+      console.log("enrichedFiles is ", enrichedFiles);
 
       this.setState({
         ...this.state,
@@ -227,6 +230,103 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       return events;
     });
     return enrichedEvents;
+  };
+
+  onChangeGateName = (
+    changedPlot: any,
+    changedGate: any,
+    gateNameHasChanged: boolean,
+    newGateName: string,
+    gateColorHasChanged: boolean,
+    newGateColor: string
+  ) => {
+    console.log(
+      "in onChangeGateName...changedPlot is ",
+      changedPlot,
+      " newGateName is ",
+      newGateName
+    );
+
+    this.state.workspaceState.plots.forEach((plot: any) => {
+      if (plot.gates) {
+        //if (changedPlot.population == plot.population) {
+        plot.gates.forEach((gate: any) => {
+          // change the gate name
+          if (gate.name == changedGate.name) {
+            if (gateNameHasChanged) {
+              gate.name = newGateName;
+            }
+
+            if (gateColorHasChanged) {
+              gate.color = newGateColor;
+            }
+          }
+
+          //change the parent
+          if (gate.parent == changedGate.name) {
+            if (gateNameHasChanged) {
+              gate.parent = newGateName;
+            }
+          }
+
+          // if (gate.name == changedGate.name) {
+          //   if (gateNameHasChanged) {
+          //     gate.name = newGateName;
+          //   }
+
+          //   if (gateColorHasChanged) {
+          //     gate.color = newGateColor;
+          //   }
+          // }
+        });
+      }
+
+      if (plot.population == changedGate.name) {
+        if (gateNameHasChanged) {
+          plot.population = newGateName;
+        }
+
+        if (gateColorHasChanged) {
+          plot.color = newGateColor;
+        }
+      }
+    });
+
+    //customGates
+    console.log("before cuatomGates...");
+    if (this.state.workspaceState && this.state.workspaceState.customGates) {
+      this.state.workspaceState.customGates.forEach((gate: any) => {
+        if (gate.name == changedGate.name) {
+          if (gateNameHasChanged) {
+            gate.name = newGateName;
+          }
+
+          if (gateColorHasChanged) {
+            gate.color = newGateColor;
+          }
+        }
+      });
+    }
+
+    console.log("this.state.workspaceState is ", this.state.workspaceState);
+
+    console.log("enrichedFiles is ", this.state.enrichedFiles);
+
+    updateEnrichedFilesPlots(
+      this.state.enrichedFiles,
+      this.state.workspaceState,
+      gateNameHasChanged,
+      changedGate.name,
+      newGateName,
+      gateColorHasChanged,
+      changedGate.color,
+      newGateColor
+    );
+
+    this.setState({
+      enrichedFiles: this.state.enrichedFiles,
+      workspaceState: this.state.workspaceState,
+    });
   };
 
   onAddGate = (change: any) => {
@@ -345,6 +445,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
+    console.log(">>>OnAddGate: newWorkspaceState is ", newWorkspaceState);
+    console.log("enrichedFiles is ", enrichedFiles);
+
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -352,7 +455,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  onDeleteGate = (plotToDelete: any) => {
+  onDeleteGate = (gateName: any) => {
+    console.log("in onDeleteGate, plotToDelete is ", gateName);
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
 
@@ -360,7 +464,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // if the plot has gates, find those plots and remove them from plots array
     // remove them from plots array
     // loop through
-    let plotsToBeRemoved = [plotToDelete.population];
+    let plotsToBeRemoved = [gateName];
     let allPlots = (newWorkspaceState as any).plots;
 
     allPlots.forEach((plot: any) => {
@@ -378,7 +482,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         if (plotsToBeRemoved.indexOf(plot.population) < 0) {
           if (plot.gates) {
             plot.gates = plot.gates.filter(
-              (gate: any) => gate.name != plotToDelete.population
+              (gate: any) => gate.name != gateName
             );
           }
 
@@ -423,7 +527,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
-    // console.log(">> in onEditGate");
+    console.log(">> in onEditGate");
 
     let newWorkspaceState: any = this.state.workspaceState;
 
@@ -442,24 +546,15 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // so editing existing gate on a different file
       if (!(newWorkspaceState as any).customGates) {
         (newWorkspaceState as any).customGates = [];
-        // (newWorkspaceState as any).files[change.fileId].plots = [
-        //   JSON.parse(JSON.stringify(change.plot)),
-        // ];
       }
-
-      // let plot = (newWorkspaceState as any).files[change.fileId].plots.find(
-      //   (p: any) => p.popuation == change.plot.popuation
-      // );
-
-      // let gateIndex = plot.gates.findIndex(
-      //   (gate: any) => gate.name == change.gate.name
-      // );
 
       let customGate = JSON.parse(JSON.stringify(change.gate));
       customGate.madeOnFile = change.fileId;
 
+      //(newWorkspaceState as any).customGates.push(customGate);
+
       let gateIndex = (newWorkspaceState as any).customGates.findIndex(
-        (g: any) => g.name == customGate.name
+        (g: any) => g.name == customGate.name && g.madeOnFile == change.fileId
       );
       if (gateIndex > -1) {
         (newWorkspaceState as any).customGates[gateIndex] = customGate;
@@ -556,6 +651,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
+    console.log(">>>OnEDITGate: newWorkspaceState is ", newWorkspaceState);
+    console.log("enrichedFiles is ", enrichedFiles);
 
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -1321,6 +1419,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               onChangeChannel={this.onChangeChannel}
               onOpenFileChange={this.onOpenFileChange}
               addOverlay={this.addOverlay}
+              onChangeGateName={this.onChangeGateName}
               onAddGate={this.onAddGate}
               onDeleteGate={this.onDeleteGate}
               onEditGate={this.onEditGate}
