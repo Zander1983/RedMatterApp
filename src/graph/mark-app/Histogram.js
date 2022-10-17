@@ -12,7 +12,13 @@ import {
   getGateValue,
 } from "./PlotHelper";
 import { CompactPicker } from "react-color";
-import { drawText, getAxisLabels, getBins, getGateName } from "./Helper";
+import {
+  drawText,
+  getAxisLabels,
+  getBins,
+  getGateName,
+  getGateNameFriendly,
+} from "./Helper";
 
 let isMouseDown = false;
 let interval = null;
@@ -195,6 +201,9 @@ function Histogram(props) {
     `#${Math.floor(Math.random() * 16777215).toString(16)}`
   );
   const plotNames = props.enrichedFile.plots.map((plt) => plt.population);
+  let [showMenu, setShowMenu] = useState(null);
+  let [isEditingGate, setIsEditingGate] = useState(null);
+  let [menuPosition, setMenuPosition] = useState([]);
 
   const [
     maxCountPlusTenPercent_Value,
@@ -719,6 +728,11 @@ function Histogram(props) {
   // };
 
   const handleMouseDown = (event) => {
+    if (showMenu) {
+      setShowMenu(false);
+      return false;
+    }
+
     if (resizing) return;
     isMouseDown = true;
     let isNearOrInsideAnyGate;
@@ -774,6 +788,17 @@ function Histogram(props) {
 
         if (isInside) {
           setNameOfGateCursorIsInside(gate.name);
+
+          if (event.button == 2) {
+            isMouseDown = false;
+
+            setShowMenu(true);
+            setMenuPosition([event.offsetX, event.offsetY]);
+
+            event.stopPropagation();
+            event.preventDefault();
+            return false;
+          }
         }
 
         if (isInside || isNearPointIndex.isNear) {
@@ -814,6 +839,12 @@ function Histogram(props) {
   };
 
   const handleMouseMove = (event) => {
+    if (event.button == 2) {
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     if (!isMouseDown) return;
 
     let newPointsCanvas = [event.offsetX, event.offsetY];
@@ -899,6 +930,12 @@ function Histogram(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (event.button == 2) {
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     if (resizing) return;
     if (!isMouseDown) return;
 
@@ -959,7 +996,7 @@ function Histogram(props) {
   // };
 
   const hasGates = () => {
-    return !!props.plot.gates;
+    return props.plot.gates && props.plot.gates.length > 0;
   };
 
   const areGatesOnPlot = (plot) => {
@@ -1038,7 +1075,65 @@ function Histogram(props) {
     }
   };
 
+  const onEditGateNameColor = () => {
+    if (nameOfGateCursorIsInside) {
+      //GateColor
+
+      setIsEditingGate(true);
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      setGateName({
+        name: getGateNameFriendly(gate.name),
+      });
+
+      setGateColor(gate.color);
+
+      setModalIsOpen(true);
+
+      //props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+
+    //setModalIsOpen(true);
+  };
+
   const onSetGateName = () => {
+    if (isEditingGate) {
+      let gateNameHasChanged = false;
+      let gateColorHasChanged = false;
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      if (gate.color != gateColor) {
+        gateColorHasChanged = true;
+      }
+
+      if (getGateNameFriendly(gate.name) != gateName.name) {
+        gateNameHasChanged = true;
+      }
+
+      if (gateColorHasChanged || gateNameHasChanged) {
+        props.onChangeGateName(
+          props.plot,
+          JSON.parse(JSON.stringify(gate)),
+          gateNameHasChanged,
+          getGateName(gateName.name),
+          gateColorHasChanged,
+          gateColor
+        );
+      }
+
+      setIsEditingGate(false);
+      setModalIsOpen(false);
+      setShowMenu(false);
+
+      return;
+    }
+
     onAddGate();
     setModalIsOpen(false);
     setIsInsideGate(false);
@@ -1050,6 +1145,11 @@ function Histogram(props) {
   };
 
   const onCancelGateName = () => {
+    setShowMenu(false);
+    setIsEditingGate(false);
+    setNameOfGateCursorIsInside(null);
+    setIsInsideGate(false);
+    setDragPointIndex(false);
     setModalIsOpen(false);
     setNewPoints([]);
     setStartPointsReal(null);
@@ -1064,6 +1164,15 @@ function Histogram(props) {
 
   const handleChangeComplete = (color) => {
     setGateColor(color.hex);
+  };
+
+  const deleteGate = () => {
+    if (nameOfGateCursorIsInside) {
+      props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+    setShowMenu(false);
+    setIsInsideGate(false);
+    setIsNearPoint(false);
   };
 
   const customStyles = {
@@ -1213,6 +1322,9 @@ function Histogram(props) {
                       top: 0,
                       // display: "block" : "none",
                     }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                    }}
                     onMouseDown={(e) => {
                       let nativeEvent = e.nativeEvent;
                       handleMouseDown(nativeEvent);
@@ -1231,6 +1343,52 @@ function Histogram(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
+
+                  {showMenu ? (
+                    <div
+                      id="menu"
+                      style={{
+                        top: menuPosition[1] + 3,
+                        left: menuPosition[0] + 3,
+                        position: "absolute",
+                        backgroundColor: "#fafafa",
+                        width: "170px",
+                        border: "1px solid lightgrey",
+                      }}
+                    >
+                      <div>
+                        <div
+                          onClick={() => deleteGate()}
+                          // className={classes.topButton}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                          //disabled={!hasGate}
+                        >
+                          Delete
+                        </div>
+                        <div
+                          onClick={() => onEditGateNameColor()}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            borderTop: "1px solid lightgrey",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Edit Gate Name/Color
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
 
                   {/* checkbox here with selector of <br />
                   allFileIds OnClick on a fileId,

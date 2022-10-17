@@ -1067,23 +1067,11 @@ function Plot(props) {
         return gate.name == nameOfGateCursorIsInside;
       });
 
-      console.log("gateColor.color is ", gateColor);
-
-      console.log(
-        "getGateNameFriendly(gate.name)) is ",
-        getGateNameFriendly(gate.name)
-      );
-      console.log("gateName.name is ", gateName.name);
-
       if (gate.color != gateColor) {
-        // on change color
-        console.log("color has changed!!!!");
         gateColorHasChanged = true;
       }
 
       if (getGateNameFriendly(gate.name) != gateName.name) {
-        console.log("gate name has changed!!!!");
-
         gateNameHasChanged = true;
       }
 
@@ -1113,6 +1101,7 @@ function Plot(props) {
   };
 
   const onCancelGateName = () => {
+    setShowMenu(false);
     setIsEditingGate(false);
     setModalIsOpen(false);
     setNewGatePointsCanvas([]);

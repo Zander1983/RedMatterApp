@@ -325,7 +325,9 @@ function Table(props) {
                         key={`plot-${plotIindex + 1}`}
                         plot={plot}
                         onChangeChannel={props.onChangeChannel}
+                        onChangeGateName={props.onChangeGateName}
                         onAddGate={props.onAddGate}
+                        onDeleteGate={props.onDeleteGate}
                         onEditGate={props.onEditGate}
                         addOverlay={props.addOverlay}
                         enrichedFile={openEnrichedFile}
