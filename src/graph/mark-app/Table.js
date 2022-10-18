@@ -294,6 +294,7 @@ function Table(props) {
                         plot={plot}
                         enrichedFile={openEnrichedFile}
                         workspaceState={props.workspaceState}
+                        onChangeGateName={props.onChangeGateName}
                         onAddGate={props.onAddGate}
                         onDeleteGate={props.onDeleteGate}
                         onEditGate={props.onEditGate}
@@ -324,7 +325,9 @@ function Table(props) {
                         key={`plot-${plotIindex + 1}`}
                         plot={plot}
                         onChangeChannel={props.onChangeChannel}
+                        onChangeGateName={props.onChangeGateName}
                         onAddGate={props.onAddGate}
+                        onDeleteGate={props.onDeleteGate}
                         onEditGate={props.onEditGate}
                         addOverlay={props.addOverlay}
                         enrichedFile={openEnrichedFile}
@@ -532,7 +535,7 @@ function Table(props) {
       >
         <tbody>
           <tr>
-            {openEnrichedFile.plots.map((plot, plotIindex) => {
+            {props.workspaceState.plots.map((plot, plotIindex) => {
               return (
                 <td
                   key={`td-population-sorter-${plotIindex}`}

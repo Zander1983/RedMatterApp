@@ -5,9 +5,10 @@ import {
   getAxisLabels,
   getBins,
   getGateName,
+  getGateNameFriendly,
 } from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
-
+import { Button } from "@material-ui/core";
 import {
   getRealPointFromCanvasPoints,
   getPointOnCanvas,
@@ -57,7 +58,6 @@ const getGatesOnPlot = (plot) => {
 };
 
 let isMouseDown = false;
-let newGatePointsCanvas = [];
 let polygonComplete = false;
 let resizeStartPoints;
 let interval = null;
@@ -70,6 +70,10 @@ function Plot(props) {
   let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
+  let [showMenu, setShowMenu] = useState(null);
+  let [isEditingGate, setIsEditingGate] = useState(null);
+  let [menuPosition, setMenuPosition] = useState([]);
+  let [newGatePointsCanvas, setNewGatePointsCanvas] = useState([]);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -148,6 +152,26 @@ function Plot(props) {
   }, [newPoints]);
 
   useEffect(() => {
+    if (newGatePointsCanvas && newGatePointsCanvas.length < 1) {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+      context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+      let gates = getGatesOnPlot(props.plot);
+
+      //    console.log("in clearAnyPoints");
+      gates.map((gate) => {
+        drawGateLine(
+          getContext("covering-canvas-" + props.plotIndex),
+          props.plot,
+          gate.points
+        );
+      });
+
+      setShowMenu(false);
+    }
+  }, [newGatePointsCanvas]);
+
+  useEffect(() => {
     let context = getContext("covering-canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
@@ -158,9 +182,11 @@ function Plot(props) {
     let context = getContext("covering-canvas-" + props.plotIndex);
     context.clearRect(0, 0, localPlot.width, localPlot.height);
 
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
 
     let gates = getGatesOnPlot(props.plot);
+
+    //    console.log("in clearAnyPoints");
     gates.map((gate) => {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
@@ -168,6 +194,8 @@ function Plot(props) {
         gate.points
       );
     });
+
+    setShowMenu(false);
   }, [props.clearAnyPoints]);
 
   useEffect(() => {
@@ -192,7 +220,6 @@ function Plot(props) {
     context.fillStyle = "white";
 
     if (context) {
-      // console.log("formatting events...", props.plotIndex);
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
@@ -657,6 +684,12 @@ function Plot(props) {
 
   /*********************MOUSE EVENTS FOR GATES********************************/
   const handleMouseDown = (event) => {
+    if (showMenu) {
+      setShowMenu(false);
+      setNewGatePointsCanvas([]);
+      return false;
+    }
+
     event.stopPropagation();
     if (resizing) return;
 
@@ -689,13 +722,6 @@ function Plot(props) {
           event.offsetY
         );
 
-        setIsNearPoint(isNearPointIndex.isNear);
-
-        if (isNearPointIndex.isNear) {
-          setNameOfGateCursorIsInside(gate.name);
-          setDragPointIndex(isNearPointIndex.pointIndex);
-        }
-
         let isInside = false;
         if (!isNearPointIndex.isNear) {
           let newPointsReal = getRealPointFromCanvasPoints(
@@ -709,12 +735,27 @@ function Plot(props) {
             newPointsReal[1],
             gate.points
           );
-
-          setIsInsideGate(isInside);
         }
 
         if (isInside) {
           setNameOfGateCursorIsInside(gate.name);
+
+          if (event.button == 2) {
+            setShowMenu(true);
+            setMenuPosition([event.offsetX, event.offsetY]);
+
+            event.stopPropagation();
+            event.preventDefault();
+            return false;
+          }
+        }
+
+        setIsNearPoint(isNearPointIndex.isNear);
+        setIsInsideGate(isInside);
+
+        if (isNearPointIndex.isNear) {
+          setNameOfGateCursorIsInside(gate.name);
+          setDragPointIndex(isNearPointIndex.pointIndex);
         }
 
         if (isInside || isNearPointIndex.isNear) {
@@ -733,6 +774,12 @@ function Plot(props) {
   };
 
   const handleMouseMove = (event) => {
+    if (event.button == 2) {
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     if (isMouseDown && hasGates() && getGatesOnPlot(localPlot).length > 0) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
@@ -828,8 +875,6 @@ function Plot(props) {
             gate.xAxisOriginalRanges = xRange;
             gate.yAxisOriginalRanges = yRange;
 
-            //console.log(">>> points are ", points);
-
             setNewPoints(points);
           }
         }
@@ -852,6 +897,12 @@ function Plot(props) {
   };
 
   const handleMouseUp = (event) => {
+    if (event.button == 2) {
+      event.stopPropagation();
+      event.preventDefault();
+      return false;
+    }
+
     event.stopPropagation();
 
     if (resizing) return;
@@ -908,6 +959,7 @@ function Plot(props) {
             name: suggestedGateName,
           });
 
+          setGateColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
           setModalIsOpen(true);
           polygonComplete = true;
         }
@@ -923,7 +975,9 @@ function Plot(props) {
       }
 
       if (!polygonComplete && uniqueGatePoint) {
-        newGatePointsCanvas.push([event.offsetX, event.offsetY]);
+        let newGatePointsCanvasCopy = newGatePointsCanvas;
+        newGatePointsCanvasCopy.push([event.offsetX, event.offsetY]);
+        setNewGatePointsCanvas(newGatePointsCanvasCopy);
       }
       redraw();
       //}
@@ -991,17 +1045,56 @@ function Plot(props) {
   };
 
   const onSetGateName = () => {
+    //setGateColor
+
+    if (isEditingGate) {
+      let gateNameHasChanged = false;
+      let gateColorHasChanged = false;
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      if (gate.color != gateColor) {
+        gateColorHasChanged = true;
+      }
+
+      if (getGateNameFriendly(gate.name) != gateName.name) {
+        gateNameHasChanged = true;
+      }
+
+      if (gateColorHasChanged || gateNameHasChanged) {
+        props.onChangeGateName(
+          props.plot,
+          JSON.parse(JSON.stringify(gate)),
+          gateNameHasChanged,
+          getGateName(gateName.name),
+          gateColorHasChanged,
+          gateColor
+        );
+      }
+
+      setIsEditingGate(false);
+      setModalIsOpen(false);
+      setShowMenu(false);
+      setNewGatePointsCanvas([]);
+      polygonComplete = false;
+      return;
+    }
+
     onAddGate(localPlot, props.plotIndex);
     setModalIsOpen(false);
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
     polygonComplete = false;
   };
 
   const onCancelGateName = () => {
+    setShowMenu(false);
+    setIsEditingGate(false);
     setModalIsOpen(false);
-    newGatePointsCanvas = [];
+    setNewGatePointsCanvas([]);
     polygonComplete = false;
-    setNewPoints([]);
+    //setNewPoints([]);
     setLocalPlot(JSON.parse(JSON.stringify(localPlot)));
   };
 
@@ -1026,6 +1119,37 @@ function Plot(props) {
       name: name,
       error: plotNames.includes(name) ? true : false,
     });
+  };
+
+  const deleteGate = () => {
+    if (nameOfGateCursorIsInside) {
+      props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+    setShowMenu(false);
+  };
+
+  const onEditGateNameColor = () => {
+    if (nameOfGateCursorIsInside) {
+      //GateColor
+
+      setIsEditingGate(true);
+
+      const gate = props.plot.gates.find((gate) => {
+        return gate.name == nameOfGateCursorIsInside;
+      });
+
+      setGateName({
+        name: getGateNameFriendly(gate.name),
+      });
+
+      setGateColor(gate.color);
+
+      setModalIsOpen(true);
+
+      //props.onDeleteGate(nameOfGateCursorIsInside);
+    }
+
+    //setModalIsOpen(true);
   };
 
   return (
@@ -1176,8 +1300,12 @@ function Plot(props) {
                       // display: "block" : "none",
                     }}
                     onMouseDown={(e) => {
+                      e.preventDefault();
                       let nativeEvent = e.nativeEvent;
                       handleMouseDown(nativeEvent);
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
                     }}
                     onMouseMove={(e) => {
                       let nativeEvent = e.nativeEvent;
@@ -1192,6 +1320,52 @@ function Plot(props) {
                       document.body.style.cursor = "auto";
                     }}
                   />
+
+                  {showMenu ? (
+                    <div
+                      id="menu"
+                      style={{
+                        top: menuPosition[1] + 3,
+                        left: menuPosition[0] + 3,
+                        position: "absolute",
+                        backgroundColor: "#fafafa",
+                        width: "170px",
+                        border: "1px solid lightgrey",
+                      }}
+                    >
+                      <div>
+                        <div
+                          onClick={() => deleteGate()}
+                          // className={classes.topButton}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                          //disabled={!hasGate}
+                        >
+                          Delete
+                        </div>
+                        <div
+                          onClick={() => onEditGateNameColor()}
+                          style={{
+                            backgroundColor: "#fafafa",
+                            color: "#1890ff",
+                            fontWeight: 900,
+                            margin: "auto",
+                            textAlign: "center",
+                            borderTop: "1px solid lightgrey",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Edit Gate Name/Color
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
               {/* X-axis */}
