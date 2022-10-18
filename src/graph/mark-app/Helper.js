@@ -851,13 +851,6 @@ export const getPlotsForFileFromWorkspaceState = (fileId, workspaceState) => {
 };
 
 export const hasCustomGate = (fileId, population, workspaceState) => {
-  console.log(
-    ">>>> in hasCustom gates are params are ",
-    fileId,
-    population,
-    workspaceState
-  );
-
   const gate =
     workspaceState.customGates &&
     workspaceState.customGates.find(

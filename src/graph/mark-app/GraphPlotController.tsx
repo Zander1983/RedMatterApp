@@ -208,9 +208,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //   (enrichedFile) => enrichedFile.isControlFile
       // );
 
-      console.log(">>> workspaceState is ", workspaceState);
-      console.log("enrichedFiles is ", enrichedFiles);
-
       this.setState({
         ...this.state,
         controlFileScale: enrichedFiles[0].scale,
@@ -240,13 +237,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     gateColorHasChanged: boolean,
     newGateColor: string
   ) => {
-    console.log(
-      "in onChangeGateName...changedPlot is ",
-      changedPlot,
-      " newGateName is ",
-      newGateName
-    );
-
     this.state.workspaceState.plots.forEach((plot: any) => {
       if (plot.gates) {
         //if (changedPlot.population == plot.population) {
@@ -293,7 +283,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
 
     //customGates
-    console.log("before cuatomGates...");
+
     if (this.state.workspaceState && this.state.workspaceState.customGates) {
       this.state.workspaceState.customGates.forEach((gate: any) => {
         if (gate.name == changedGate.name) {
@@ -307,10 +297,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         }
       });
     }
-
-    console.log("this.state.workspaceState is ", this.state.workspaceState);
-
-    console.log("enrichedFiles is ", this.state.enrichedFiles);
 
     updateEnrichedFilesPlots(
       this.state.enrichedFiles,
@@ -445,9 +431,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
-    console.log(">>>OnAddGate: newWorkspaceState is ", newWorkspaceState);
-    console.log("enrichedFiles is ", enrichedFiles);
-
     //set state
     this.setState({
       enrichedFiles: enrichedFiles,
@@ -456,7 +439,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onDeleteGate = (gateName: any) => {
-    console.log("in onDeleteGate, plotToDelete is ", gateName);
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
 
@@ -527,8 +509,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onEditGate = (change: any) => {
-    console.log(">> in onEditGate");
-
     let newWorkspaceState: any = this.state.workspaceState;
 
     let isEditingOriginalFile = change.gate.madeOnFile == change.fileId;
@@ -651,9 +631,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
-
-    console.log(">>>OnEDITGate: newWorkspaceState is ", newWorkspaceState);
-    console.log("enrichedFiles is ", enrichedFiles);
 
     this.setState({
       enrichedFiles: enrichedFiles,

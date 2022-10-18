@@ -1134,10 +1134,6 @@ function Plot(props) {
   };
 
   const deleteGate = () => {
-    console.log(
-      "in delete gate, nameOfGateCursorIsInside is ",
-      nameOfGateCursorIsInside
-    );
     if (nameOfGateCursorIsInside) {
       props.onDeleteGate(nameOfGateCursorIsInside);
     }
@@ -1145,11 +1141,6 @@ function Plot(props) {
   };
 
   const onEditGateNameColor = () => {
-    console.log(
-      "in onEditGateNameColor, nameOfGateCursorIsInside is ",
-      nameOfGateCursorIsInside
-    );
-
     if (nameOfGateCursorIsInside) {
       //GateColor
 
