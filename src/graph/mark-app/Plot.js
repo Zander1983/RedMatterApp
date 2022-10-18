@@ -205,8 +205,6 @@ function Plot(props) {
   }, []);
 
   useEffect(() => {
-    console.log("in MAIN useEffect");
-
     if (resizing) setResizing(false);
     var arr = new Array(props.plot.length); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
@@ -505,8 +503,6 @@ function Plot(props) {
     //   newGatePointsCanvas
     // );
 
-    console.log("in draw polygon points");
-
     let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "CornflowerBlue";
@@ -745,8 +741,6 @@ function Plot(props) {
           setNameOfGateCursorIsInside(gate.name);
 
           if (event.button == 2) {
-            console.log("event is ", event);
-
             setShowMenu(true);
             setMenuPosition([event.offsetX, event.offsetY]);
 
@@ -781,8 +775,6 @@ function Plot(props) {
 
   const handleMouseMove = (event) => {
     if (event.button == 2) {
-      console.log("mouse move, event is ", event);
-
       event.stopPropagation();
       event.preventDefault();
       return false;
@@ -882,8 +874,6 @@ function Plot(props) {
 
             gate.xAxisOriginalRanges = xRange;
             gate.yAxisOriginalRanges = yRange;
-
-            //console.log(">>> points are ", points);
 
             setNewPoints(points);
           }
@@ -1057,8 +1047,6 @@ function Plot(props) {
   const onSetGateName = () => {
     //setGateColor
 
-    console.log("in onSetGateName and setIsEditingGate is ", isEditingGate);
-
     if (isEditingGate) {
       let gateNameHasChanged = false;
       let gateColorHasChanged = false;
@@ -1154,10 +1142,7 @@ function Plot(props) {
         name: getGateNameFriendly(gate.name),
       });
 
-      console.log("gate is ", gate);
       setGateColor(gate.color);
-
-      console.log("gateColor is now ", gateColor);
 
       setModalIsOpen(true);
 
