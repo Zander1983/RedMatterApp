@@ -1,7 +1,7 @@
 import React from "react";
 import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
-import { MenuItem, Select } from "@material-ui/core";
+import { Tooltip } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
 import FCSServices from "./FCSServices/FCSServices";
 import {
@@ -1244,28 +1244,34 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           </Button>
           {/* @ts-ignore */}
           {this.state.controlFileScale?.spilloverParams && (
-            <Button
-              variant="outlined"
-              style={{
-                // backgroundColor: "#6666AA",
-                marginLeft: 5,
-                marginBottom: 3,
-                // color: "white",
-              }}
-              onClick={(e) =>
-                this.setState({
-                  ...this.state,
-                  showSpillover: !this.state.showSpillover,
-                })
+            <Tooltip
+              title={
+                "Details of compensation that has been automatically applied to the samples"
               }
             >
-              Compensation
-              <img
-                src={!this.state?.showSpillover ? downArrow : upArrow}
-                alt="arrow-icon"
-                style={{ width: 10, height: 10, marginLeft: 10 }}
-              />
-            </Button>
+              <Button
+                variant="outlined"
+                style={{
+                  // backgroundColor: "#6666AA",
+                  marginLeft: 5,
+                  marginBottom: 3,
+                  // color: "white",
+                }}
+                onClick={(e) =>
+                  this.setState({
+                    ...this.state,
+                    showSpillover: !this.state.showSpillover,
+                  })
+                }
+              >
+                Compensation
+                <img
+                  src={!this.state?.showSpillover ? downArrow : upArrow}
+                  alt="arrow-icon"
+                  style={{ width: 10, height: 10, marginLeft: 10 }}
+                />
+              </Button>
+            </Tooltip>
           )}
           {this.state.showSpillover && (
             <Modal
