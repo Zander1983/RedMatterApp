@@ -280,6 +280,31 @@ export const isMousePointNearScatterPoints = (
   };
 };
 
+export const isMouseInGateName = (
+  gateCanvasPoints,
+  mousePointX,
+  mousePointY
+) => {
+  let near = false;
+  let pointIndex = false;
+  gateCanvasPoints.find((point, index) => {
+    let isNear =
+      point[0] + 5 >= mousePointX &&
+      point[0] - 5 <= mousePointX &&
+      point[1] + 5 >= mousePointY &&
+      point[1] - 5 <= mousePointY;
+    if (isNear) {
+      near = isNear;
+      pointIndex = index;
+    }
+    return isNear;
+  });
+  return {
+    isNear: near,
+    pointIndex: pointIndex,
+  };
+};
+
 export const isMousePointNearHistPoints = (
   leftPoint,
   rightPoint,
@@ -362,4 +387,39 @@ export const isCursorNearAPolygonPoint = (plot, mouseRealPoints) => {
     dragging: false,
     pointValue: undefined,
   };
+};
+
+export const getHistGateNameCenterPoints = (
+  channels,
+  points,
+  plot,
+  logicles
+) => {
+  let gateCanvasPoints = [
+    getPointOnCanvas(
+      channels,
+      points[0],
+      null,
+      // TODO make sure can only change gate when on correct channels
+      // this is important, make sure they can only edit gate when the gate channels match prop channels
+      plot,
+      logicles
+    )[0],
+    getPointOnCanvas(
+      channels,
+      points[1],
+      null,
+      // TODO make sure can only change gate when on correct channels
+      // this is important, make sure they can only edit gate when the gate channels match prop channels
+      plot,
+      logicles
+    )[0],
+  ];
+
+  let gateNamePos = [
+    gateCanvasPoints[0] + (gateCanvasPoints[1] - gateCanvasPoints[0]) / 2,
+    plot.height / 2 - 5,
+  ];
+
+  return gateNamePos;
 };

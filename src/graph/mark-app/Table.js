@@ -23,7 +23,6 @@ import DeleteIcon from "@material-ui/icons/Delete";
 
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
-import { CodeOutlined } from "@ant-design/icons";
 
 let getNumberOfPlots = (plotObject, nodes) => {
   let count = 0;
@@ -81,7 +80,6 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
-  // console.log("!!! Table props is ", props);
   let [containerHeight, setContainerheight] = useState(500);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
@@ -245,6 +243,7 @@ function Table(props) {
           }}
           onMouseDown={(e) => {
             if (e.target.id == "workspace-container") {
+              console.log("setting the clearAnyPoints....");
               setClearAnyPoints(!clearAnyPoints);
             }
           }}
@@ -298,6 +297,7 @@ function Table(props) {
                         onAddGate={props.onAddGate}
                         onDeleteGate={props.onDeleteGate}
                         onEditGate={props.onEditGate}
+                        onEditGateNamePosition={props.onEditGateNamePosition}
                         onResize={props.onResize}
                         onChangeChannel={props.onChangeChannel}
                         plotIndex={`0-${plotIindex}`}
@@ -329,6 +329,7 @@ function Table(props) {
                         onAddGate={props.onAddGate}
                         onDeleteGate={props.onDeleteGate}
                         onEditGate={props.onEditGate}
+                        onEditGateNamePosition={props.onEditGateNamePosition}
                         addOverlay={props.addOverlay}
                         enrichedFile={openEnrichedFile}
                         workspaceState={props.workspaceState}
@@ -337,6 +338,7 @@ function Table(props) {
                         plotIndex={`0-${plotIindex}`}
                         downloadPlotAsImage={props.downloadPlotAsImage}
                         onRangeChange={props.onRangeChange}
+                        clearAnyPoints={clearAnyPoints}
                       />
                     );
                   }
@@ -569,17 +571,22 @@ function Table(props) {
                       }}
                     ></div>
                     <div style={{ alignItems: "center", display: "flex" }}>
-                      <Tooltip title="Delete this gate">
-                        <DeleteIcon
-                          onClick={() => props.onDeleteGate(plot)}
-                          style={{
-                            display:
-                              plot.population != "All" ? "block" : "none",
-                            cursor: "pointer",
-                            color: "red",
-                          }}
-                        />
-                      </Tooltip>
+                      <div
+                        height="10"
+                        width="12"
+                        style={{
+                          display:
+                            plot.population != "All" ? "inlineBlock" : "none",
+                          // cursor: "pointer",
+                          // color: "red",
+                          // height: "15",
+                          // width: "8",
+                          backgroundColor: plot.color,
+                          // display: "inlineBlock",
+                          padding: "8px",
+                          marginRight: "2px",
+                        }}
+                      ></div>
 
                       {getGateNameFriendly(plot.population)}
                       <img

@@ -291,10 +291,6 @@ export const updateEnrichedFilesPlots = (
       }
     }
   }
-
-  for (let fileIndex = 0; fileIndex < Files.length; fileIndex++) {
-    let file = Files[fileIndex];
-  }
 };
 
 export const compensate = (dataE, scale, channels, origEvents) => {
@@ -1054,4 +1050,86 @@ export const getGateNameFriendly = (gateName) => {
 
   gateName = gateName.split("_").join(" ") + "timestamp" + Date.now();
   return gateName.substring(0, gateName.indexOf("timestamp"));
+};
+
+export const area = function (points, length) {
+  var area = 0,
+    i,
+    j,
+    point1,
+    point2;
+
+  for (i = 0, j = length - 1; i < length; j = i, i++) {
+    point1 = points[i];
+    point2 = points[j];
+    area += point1[0] * point2[1];
+    area -= point1[1] * point2[0];
+  }
+  area /= 2;
+
+  return area;
+};
+
+export const centroid = function (points, length) {
+  var x = 0,
+    y = 0,
+    i,
+    j,
+    f,
+    point1,
+    point2;
+
+  for (i = 0, j = length - 1; i < length; j = i, i++) {
+    point1 = points[i];
+    point2 = points[j];
+    f = point1[0] * point2[1] - point2[0] * point1[1];
+    x += (point1[0] + point2[0]) * f;
+    y += (point1[1] + point2[1]) * f;
+  }
+
+  f = area(points, length) * 6;
+
+  return [parseInt(x / f), parseInt(y / f)];
+};
+
+export const getCenter = (points) => {
+  let transformed = points.map((point) => {
+    return [parseInt(point[0]), parseInt(point[1])];
+  });
+
+  return centroid(transformed, transformed.length);
+};
+
+export const getGateNameBoundingBox = (
+  gateNameLengths,
+  gateName,
+  gateNamePosition
+) => {
+  const dims = { width: gateNameLengths[gateName], fontBoundingBoxAscent: 12 };
+
+  return [
+    [gateNamePosition[0], gateNamePosition[1] + 10],
+    [gateNamePosition[0] + dims.width, gateNamePosition[1] + 10],
+    [
+      gateNamePosition[0] + dims.width,
+      gateNamePosition[1] - dims.fontBoundingBoxAscent,
+    ],
+    [gateNamePosition[0], gateNamePosition[1] - dims.fontBoundingBoxAscent],
+  ];
+};
+
+export const getGatesOnPlot = (plot) => {
+  let gates = [];
+  plot?.gates?.map((gate) => {
+    if (
+      plot.xAxisIndex === gate.xAxisIndex &&
+      plot.yAxisIndex === gate.yAxisIndex &&
+      plot.xScaleType === gate.xScaleType &&
+      plot.yScaleType === gate.yScaleType
+    ) {
+      gates.push(gate);
+    }
+  });
+
+  return gates;
 };

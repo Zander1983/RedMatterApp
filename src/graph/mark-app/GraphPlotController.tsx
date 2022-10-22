@@ -118,6 +118,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onOpenFileChange = this.onOpenFileChange.bind(this);
     this.onEditGate = this.onEditGate.bind(this);
+    this.onEditGateNamePosition = this.onEditGateNamePosition.bind(this);
     this.onAddGate = this.onAddGate.bind(this);
     this.onDeleteGate = this.onDeleteGate.bind(this);
     this.onResize = this.onResize.bind(this);
@@ -531,8 +532,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       let customGate = JSON.parse(JSON.stringify(change.gate));
       customGate.madeOnFile = change.fileId;
 
-      //(newWorkspaceState as any).customGates.push(customGate);
-
       let gateIndex = (newWorkspaceState as any).customGates.findIndex(
         (g: any) => g.name == customGate.name && g.madeOnFile == change.fileId
       );
@@ -541,8 +540,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       } else {
         (newWorkspaceState as any).customGates.push(customGate);
       }
-
-      //plot.gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
     }
 
     newWorkspaceState.plots.forEach((plot: any) => {
@@ -556,76 +553,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // so its an editing of a gate only on that file
     }
 
-    // if (!(newWorkspaceState as any).files[fileKey]) {
-    //   // so its a non-control gate being edited
-    //   // copy plots from control
-    //   let plotsCopy = JSON.parse(
-    //     JSON.stringify(
-    //       (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
-    //         .plots
-    //     )
-    //   );
-
-    //   let plot = plotsCopy.find(
-    //     (plot: any) => plot.population == change.gate.name
-    //   );
-
-    //   plot.edited = true;
-    //   (newWorkspaceState as any).files[fileKey] = {
-    //     //@ts-ignore
-    //     plots: plotsCopy,
-    //   };
-    // }
-
-    let fileIds = Object.keys((newWorkspaceState as any).files);
-    // fileIds.forEach((fileId) => {
-    //   if (isEditingControlFile) {
-    //     // so editing the control file
-    //     // change for a file if that gate and its popuation havent been edited
-    //     if (fileId != newWorkspaceState.controlFileId) {
-    //       let plot = (newWorkspaceState as any).files[fileId].plots.find(
-    //         (plot: any) => plot.population == change.gate.name
-    //       );
-
-    //       if (plot.edited != true) {
-    //         let gateIndex = (newWorkspaceState as any).files[fileId].plots[
-    //           change.plotIndex
-    //         ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-    //         (newWorkspaceState as any).files[fileId].plots[
-    //           change.plotIndex
-    //         ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-    //       }
-    //     } else {
-    //       // so its the control file being edited
-    //       let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-    //         change.plotIndex
-    //       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-    //       (newWorkspaceState as any).files[fileKey].plots[
-    //         change.plotIndex
-    //       ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-    //     }
-    //   } else {
-    //     // so editing a non-control file
-    //     if (fileId == fileKey) {
-    //       let plot = (newWorkspaceState as any).files[fileKey].plots.find(
-    //         (plot: any) => plot.population == change.gate.name
-    //       );
-    //       plot.edited = true;
-
-    //       let gateIndex = (newWorkspaceState as any).files[fileKey].plots[
-    //         change.plotIndex
-    //       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
-
-    //       (newWorkspaceState as any).files[fileKey].plots[
-    //         change.plotIndex
-    //       ].gates[gateIndex] = JSON.parse(JSON.stringify(change.gate));
-    //     }
-    //   }
-
-    // });
-
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
     let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
@@ -637,10 +564,54 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       workspaceState: newWorkspaceState,
       isTableRenderCall: true,
     });
+  };
 
-    // this.state.workspaceState.plots.forEach((plot: any) => {
-    //   plot.reRender = false;
+  onEditGateNamePosition = (change: any) => {
+    let newWorkspaceState: any = this.state.workspaceState;
+    //newWorkspaceState.controlFileId
+
+    let gateIndex = (newWorkspaceState as any).plots[
+      change.plotIndex
+    ].gates.findIndex((gate: any) => gate.name == change.gateName);
+
+    (newWorkspaceState as any).plots[change.plotIndex].gates[
+      gateIndex
+    ].gateNamePosition = change.gateNamePosition;
+
+    this.state.enrichedFiles.forEach((file) => {
+      file.plots[change.plotIndex].gates[gateIndex].gateNamePosition =
+        change.gateNamePosition;
+    });
+
+    if (this.state.workspaceState && this.state.workspaceState.customGates) {
+      this.state.workspaceState.customGates.forEach((gate: any) => {
+        if (gate.name == change.gateName) {
+          gate.gateNamePosition = change.gateNamePosition;
+        }
+      });
+    }
+    // newWorkspaceState.plots.forEach((plot: any) => {
+    //   plot.reRender = !plot.reRender;
     // });
+
+    // if (
+    //   !isEditingOriginalFile ||
+    //   (newWorkspaceState as any).files[change.fileId]
+    // ) {
+    //   // so its an editing of a gate only on that file
+    // }
+
+    // let copyOfLocalFiles: any[] = this.state.fcsFiles;
+    // // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    // let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+
+    // enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+
+    this.setState({
+      enrichedFiles: this.state.enrichedFiles,
+      workspaceState: newWorkspaceState,
+      // isTableRenderCall: true,
+    });
   };
 
   downloadPlotAsImage = async (plot: any, plotIndex: any) => {
@@ -1406,6 +1377,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               onAddGate={this.onAddGate}
               onDeleteGate={this.onDeleteGate}
               onEditGate={this.onEditGate}
+              onEditGateNamePosition={this.onEditGateNamePosition}
               onResize={this.onResize}
               sortByGate={this.sortByGate}
               downloadPlotAsImage={this.downloadPlotAsImage}

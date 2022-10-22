@@ -6,6 +6,9 @@ import {
   getBins,
   getGateName,
   getGateNameFriendly,
+  getCenter,
+  getGateNameBoundingBox,
+  getGatesOnPlot,
 } from "./Helper";
 import { useResizeDetector } from "react-resize-detector";
 import { Button } from "@material-ui/core";
@@ -41,22 +44,6 @@ const getContext = (id) => {
   }
 };
 
-const getGatesOnPlot = (plot) => {
-  let gates = [];
-  plot?.gates?.map((gate) => {
-    if (
-      plot.xAxisIndex === gate.xAxisIndex &&
-      plot.yAxisIndex === gate.yAxisIndex &&
-      plot.xScaleType === gate.xScaleType &&
-      plot.yScaleType === gate.yScaleType
-    ) {
-      gates.push(gate);
-    }
-  });
-
-  return gates;
-};
-
 let isMouseDown = false;
 let polygonComplete = false;
 let resizeStartPoints;
@@ -66,15 +53,18 @@ function Plot(props) {
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
+  let [isInsideGateName, setIsInsideGateName] = useState(null);
   let [isNearPoint, setIsNearPoint] = useState(null);
   let [nameOfGateCursorIsInside, setNameOfGateCursorIsInside] = useState(null);
   let [newPoints, setNewPoints] = useState([]);
+  let [gateNameOffset, setGateNameOffset] = useState(null);
+  let [newGateNamePosition, setNewGateNamePosition] = useState([]);
   const [localPlot, setLocalPlot] = useState(props.plot);
   let [showMenu, setShowMenu] = useState(null);
   let [isEditingGate, setIsEditingGate] = useState(null);
   let [menuPosition, setMenuPosition] = useState([]);
   let [newGatePointsCanvas, setNewGatePointsCanvas] = useState([]);
-
+  let [gateNameLengths, setGateNameLengths] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const [
@@ -138,7 +128,9 @@ function Plot(props) {
           drawGateLine(
             getContext("covering-canvas-" + props.plotIndex),
             props.plot,
-            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points
+            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points,
+            null,
+            gate
           );
         });
 
@@ -152,18 +144,42 @@ function Plot(props) {
   }, [newPoints]);
 
   useEffect(() => {
+    if (newGateNamePosition.length > 0) {
+      let context = getContext("covering-canvas-" + props.plotIndex);
+      context.clearRect(0, 0, localPlot.width, localPlot.height);
+      context.fillStyle = "white";
+
+      if (context) {
+        let gates = getGatesOnPlot(props.plot);
+        gates.map((gate) => {
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            gate.points,
+            nameOfGateCursorIsInside == gate.name
+              ? newGateNamePosition
+              : gate.gateNamePosition,
+            gate
+          );
+        });
+      }
+    }
+  }, [newGateNamePosition]);
+
+  useEffect(() => {
     if (newGatePointsCanvas && newGatePointsCanvas.length < 1) {
       let context = getContext("covering-canvas-" + props.plotIndex);
       context.clearRect(0, 0, localPlot.width, localPlot.height);
 
       let gates = getGatesOnPlot(props.plot);
 
-      //    console.log("in clearAnyPoints");
       gates.map((gate) => {
         drawGateLine(
           getContext("covering-canvas-" + props.plotIndex),
           props.plot,
-          gate.points
+          gate.points,
+          null,
+          gate
         );
       });
 
@@ -186,12 +202,13 @@ function Plot(props) {
 
     let gates = getGatesOnPlot(props.plot);
 
-    //    console.log("in clearAnyPoints");
     gates.map((gate) => {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
         props.plot,
-        gate.points
+        gate.points,
+        null,
+        gate
       );
     });
 
@@ -277,7 +294,9 @@ function Plot(props) {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
         props.plot,
-        gate.points
+        gate.points,
+        null,
+        gate
       );
     });
   }, [
@@ -294,7 +313,13 @@ function Plot(props) {
     props.workspaceState.plots.length,
   ]);
 
-  const drawGateLine = (context, plot, realPoints) => {
+  const drawGateLine = (
+    context,
+    plot,
+    realPoints,
+    newGateNamePosition,
+    gate
+  ) => {
     context.strokeStyle = "CornflowerBlue";
     context.lineWidth = 1;
     context.beginPath();
@@ -327,6 +352,29 @@ function Plot(props) {
       context.fill();
       context.stroke();
     }
+
+    let center = newGateNamePosition
+      ? newGateNamePosition
+      : gate.gateNamePosition;
+
+    context.font = "12px Arial";
+
+    var metrics = context.measureText(getGateNameFriendly(gate.name));
+
+    // context.rect(center[0], center[1], metrics.width, 17);
+    context.fillStyle = "#fff";
+    // context.fillStyle = "#FF0000";
+    context.fillRect(center[0] - 2, center[1] - 13, metrics.width + 3, 17);
+    context.stroke();
+    // context.font = "bold 20pt Calibri";
+    // context.textAlign = "center";
+
+    let gateNameLengthsCopy = gateNameLengths;
+    gateNameLengthsCopy[gate.name] = metrics.width;
+    setGateNameLengths(gateNameLengthsCopy);
+
+    context.fillStyle = gate.color;
+    context.fillText(getGateNameFriendly(gate.name), center[0], center[1]);
   };
 
   const getFormattedEvents = (enrichedEvent, plot) => {
@@ -455,6 +503,7 @@ function Plot(props) {
       // need to ask for gate name
       name: getGateName(gateName.name),
       points: pointsReal,
+      gateNamePosition: getCenter(newGatePointsCanvas),
       xAxisLabel: plot.xAxisLabel,
       yAxisLabel: plot.yAxisLabel,
       xScaleType: plot.xScaleType,
@@ -498,11 +547,6 @@ function Plot(props) {
   };
 
   const drawPolygon = () => {
-    // console.log(
-    //   "draeing the polygon...newGatePointsCanvas is ",
-    //   newGatePointsCanvas
-    // );
-
     let context = getContext("covering-canvas-" + props.plotIndex);
     //context.fillStyle = "rgba(100,100,100,0.5)";
     context.strokeStyle = "CornflowerBlue";
@@ -695,6 +739,36 @@ function Plot(props) {
 
     isMouseDown = true;
 
+    // check if in gateName
+
+    if (hasGates()) {
+      //&& isInsideGateName()
+      for (var i = 0; i < localPlot.gates.length; i++) {
+        let gate = localPlot.gates[i];
+        // check if on point
+        // convert real points to canvas points and check if within 5 points of canvas points
+
+        let isInside = isPointInPolygon(
+          event.offsetX,
+          event.offsetY,
+          getGateNameBoundingBox(
+            gateNameLengths,
+            gate.name,
+            gate.gateNamePosition
+          )
+        );
+
+        if (isInside) {
+          let offset = event.offsetX - gate.gateNamePosition[0];
+          setGateNameOffset(offset);
+          setIsInsideGateName(true);
+          setNameOfGateCursorIsInside(gate.name);
+
+          return;
+        }
+      }
+    }
+
     if (hasGates()) {
       //if (!getGatesOnPlot(localPlot)) return;
 
@@ -783,9 +857,10 @@ function Plot(props) {
     if (isMouseDown && hasGates() && getGatesOnPlot(localPlot).length > 0) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
-      //typeof dragPointIndex == "number"
-      //gate.name == nameOfGateCursorIsInside
-      if (isInsideGate || isNearPoint) {
+      if (isInsideGateName) {
+        setNewGateNamePosition([event.offsetX - gateNameOffset, event.offsetY]);
+        return;
+      } else if (isInsideGate || isNearPoint) {
         // this code will run when a user will drag the entire polygon gate
 
         let moveX = getMoveValue(
@@ -910,7 +985,35 @@ function Plot(props) {
 
     isMouseDown = true;
 
-    if (isInsideGate || isNearPoint) {
+    if (isInsideGateName) {
+      let gate = props.plot.gates.find(
+        (gate) => gate.name == nameOfGateCursorIsInside
+      );
+
+      let change = {
+        type: "EditGateNamePosition",
+        gateName: nameOfGateCursorIsInside,
+        gateNamePosition: JSON.parse(JSON.stringify(newGateNamePosition)),
+        plotIndex: props.plotIndex.split("-")[1],
+      };
+
+      props.onEditGateNamePosition(change);
+
+      setNewGateNamePosition([]);
+      setIsInsideGateName(false);
+      setNameOfGateCursorIsInside(null);
+      setGateNameOffset(false);
+
+      // let change = {
+      //   type: "EditGate",
+      //   plot: localPlot,
+      //   gate: gate,
+      //   plotIndex: props.plotIndex.split("-")[1],
+      //   fileId: props.enrichedFile.fileId,
+      // };
+      // props.onEditGateNamePosition(change);
+      //NewGateNamePoints
+    } else if (isInsideGate || isNearPoint) {
       for (var i = 0; i < localPlot.gates.length; i++) {
         let gate = JSON.parse(JSON.stringify(localPlot.gates[i]));
         if (gate.name == nameOfGateCursorIsInside) {
@@ -919,7 +1022,8 @@ function Plot(props) {
           setDragPointIndex(false);
           setNameOfGateCursorIsInside(null);
 
-          if (newPoints && newPoints.length > 1) {
+          if (newGateNamePosition && newGateNamePosition.length > 0) {
+          } else if (newPoints && newPoints.length > 1) {
             gate.points = newPoints;
 
             setNewPoints([]);
@@ -992,6 +1096,21 @@ function Plot(props) {
     ) {
       for (var i = 0; i < localPlot.gates.length; i++) {
         let gate = localPlot.gates[i];
+
+        let isInsideGateName = isPointInPolygon(
+          event.offsetX,
+          event.offsetY,
+          getGateNameBoundingBox(
+            gateNameLengths,
+            gate.name,
+            gate.gateNamePosition
+          )
+        );
+
+        if (isInsideGateName) {
+          document.body.style.cursor = "grab";
+          return;
+        }
 
         let newPointsReal = getRealPointFromCanvasPoints(
           props.enrichedFile.channels,
@@ -1255,7 +1374,9 @@ function Plot(props) {
           downloadPlotAsImage={props.downloadPlotAsImage}
           onRangeChange={props.onRangeChange}
           canvasComponent={
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", zIndex: 1 }}
+            >
               <div style={{ display: "flex" }}>
                 {/* Y-axis */}
                 <canvas
@@ -1331,6 +1452,7 @@ function Plot(props) {
                         backgroundColor: "#fafafa",
                         width: "170px",
                         border: "1px solid lightgrey",
+                        zIndex: 1,
                       }}
                     >
                       <div>
@@ -1347,7 +1469,7 @@ function Plot(props) {
                           }}
                           //disabled={!hasGate}
                         >
-                          Delete
+                          Delete Gate
                         </div>
                         <div
                           onClick={() => onEditGateNameColor()}
