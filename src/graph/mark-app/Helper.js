@@ -894,7 +894,7 @@ export const drawText = (params, ctx) => {
     params.y = -bx * Math.sin(params.rotate) - by * Math.cos(params.rotate);
   }
 
-  ctx.fillText(linLabel(parseInt(params.text)), params.x, params.y);
+  ctx.fillText(params.text, params.x, params.y);
   ctx.font = "Arial";
   if (params.rotate !== undefined) {
     ctx.rotate(-params.rotate);

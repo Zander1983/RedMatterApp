@@ -15,6 +15,7 @@ import {
 import { CompactPicker } from "react-color";
 import {
   drawText,
+  linLabel,
   getAxisLabels,
   getBins,
   getGateName,
@@ -631,7 +632,7 @@ function Histogram(props) {
         {
           x: 0,
           y: yPos + 20,
-          text: values[i],
+          text: linLabel(parseInt(values[i])),
           font: "10px Arial",
           fillColor: "black",
         },
