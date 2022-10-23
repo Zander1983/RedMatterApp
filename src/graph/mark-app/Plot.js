@@ -120,7 +120,7 @@ function Plot(props) {
     // draw here
     if (newPoints.length > 0) {
       if (context) {
-        let gates = getGatesOnPlot(props.plot);
+        let gates = getGatesOnPlot(props.plot, "polygon");
         gates.map((gate) => {
           let points =
             gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
@@ -150,7 +150,7 @@ function Plot(props) {
       context.fillStyle = "white";
 
       if (context) {
-        let gates = getGatesOnPlot(props.plot);
+        let gates = getGatesOnPlot(props.plot, "polygon");
         gates.map((gate) => {
           drawGateLine(
             getContext("covering-canvas-" + props.plotIndex),
@@ -171,8 +171,7 @@ function Plot(props) {
       let context = getContext("covering-canvas-" + props.plotIndex);
       context.clearRect(0, 0, localPlot.width, localPlot.height);
 
-      let gates = getGatesOnPlot(props.plot);
-
+      let gates = getGatesOnPlot(props.plot, "polygon");
       gates.map((gate) => {
         drawGateLine(
           getContext("covering-canvas-" + props.plotIndex),
@@ -200,8 +199,7 @@ function Plot(props) {
 
     setNewGatePointsCanvas([]);
 
-    let gates = getGatesOnPlot(props.plot);
-
+    let gates = getGatesOnPlot(props.plot, "polygon");
     gates.map((gate) => {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
@@ -289,7 +287,7 @@ function Plot(props) {
 
     drawLabel();
 
-    let gates = getGatesOnPlot(props.plot);
+    let gates = getGatesOnPlot(props.plot, "polygon");
     gates.map((gate) => {
       drawGateLine(
         getContext("covering-canvas-" + props.plotIndex),
@@ -537,8 +535,12 @@ function Plot(props) {
     };
   });
 
-  const hasGates = () => {
-    return !!props.plot.gates;
+  const areGatesOnPlot = () => {
+    return (
+      props.plot.gates &&
+      props.plot.gates.length > 0 &&
+      getGatesOnPlot(props.plot, "polygon").length > 0
+    );
   };
 
   const redraw = () => {
@@ -735,16 +737,18 @@ function Plot(props) {
     }
 
     event.stopPropagation();
+    event.preventDefault();
     if (resizing) return;
 
     isMouseDown = true;
 
     // check if in gateName
 
-    if (hasGates()) {
+    if (areGatesOnPlot()) {
       //&& isInsideGateName()
-      for (var i = 0; i < localPlot.gates.length; i++) {
-        let gate = localPlot.gates[i];
+      let gates = getGatesOnPlot(props.plot, "polygon");
+      for (var i = 0; i < gates.length; i++) {
+        let gate = gates[i];
         // check if on point
         // convert real points to canvas points and check if within 5 points of canvas points
 
@@ -769,11 +773,12 @@ function Plot(props) {
       }
     }
 
-    if (hasGates()) {
+    if (areGatesOnPlot()) {
       //if (!getGatesOnPlot(localPlot)) return;
 
-      for (var i = 0; i < localPlot.gates.length; i++) {
-        let gate = localPlot.gates[i];
+      let gates = getGatesOnPlot(props.plot, "polygon");
+      for (var i = 0; i < gates.length; i++) {
+        let gate = gates[i];
         // check if on point
         // convert real points to canvas points and check if within 5 points of canvas points
         let gateCanvasPoints = gate.points.map((point) => {
@@ -854,7 +859,7 @@ function Plot(props) {
       return false;
     }
 
-    if (isMouseDown && hasGates() && getGatesOnPlot(localPlot).length > 0) {
+    if (isMouseDown && areGatesOnPlot()) {
       let newPointsCanvas = [event.offsetX, event.offsetY];
 
       if (isInsideGateName) {
@@ -1089,13 +1094,10 @@ function Plot(props) {
   };
 
   const handleCursorProperty = (event) => {
-    if (
-      hasGates() &&
-      getGatesOnPlot(localPlot).length > 0
-      //&& props?.plot?.gate?.gateType === "polygon"
-    ) {
-      for (var i = 0; i < localPlot.gates.length; i++) {
-        let gate = localPlot.gates[i];
+    if (areGatesOnPlot()) {
+      let gates = getGatesOnPlot(props.plot, "polygon");
+      for (var i = 0; i < gates.length; i++) {
+        let gate = gates[i];
 
         let isInsideGateName = isPointInPolygon(
           event.offsetX,

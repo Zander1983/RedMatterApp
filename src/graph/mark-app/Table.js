@@ -248,6 +248,49 @@ function Table(props) {
             }
           }}
         >
+          {/* <div
+            id="menu"
+            style={{
+              top: 3,
+              left: 3,
+              position: "absolute",
+              backgroundColor: "#fafafa",
+              width: "170px",
+              border: "1px solid lightgrey",
+              zIndex: 1,
+              padding: "300px",
+            }}
+          >
+            <div>
+              <div
+                // className={classes.topButton}
+                style={{
+                  backgroundColor: "#fafafa",
+                  color: "#1890ff",
+                  fontWeight: 900,
+                  margin: "auto",
+                  textAlign: "center",
+                  cursor: "pointer",
+                }}
+                //disabled={!hasGate}
+              >
+                Delete Gate
+              </div>
+              <div
+                style={{
+                  backgroundColor: "#fafafa",
+                  color: "#1890ff",
+                  fontWeight: 900,
+                  margin: "auto",
+                  textAlign: "center",
+                  borderTop: "1px solid lightgrey",
+                  cursor: "pointer",
+                }}
+              >
+                Edit Gate Name/Color
+              </div>
+            </div>
+          </div> */}
           {plots?.map((plot, plotIindex) => {
             return (
               <div

@@ -296,7 +296,7 @@ function SideSelector(props) {
           </Select> */}
         </div>
 
-        <Tooltip title="changes the channels ranges">
+        <Tooltip title="change the channels ranges">
           <Button
             style={{
               position: "absolute",

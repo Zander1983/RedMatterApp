@@ -270,8 +270,8 @@ function Histogram(props) {
           "red"
         );
       }
-      if (props.plot?.gates) {
-        props.plot?.gates?.map((gate) => {
+      if (props.plot?.gates && props.plot?.gates.length > 0) {
+        getGatesOnPlot(props.plot, "histogram")?.map((gate) => {
           let points =
             gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
 
@@ -299,18 +299,20 @@ function Histogram(props) {
       context.fillStyle = "white";
 
       if (context) {
-        props.plot?.gates.map((gate) => {
-          drawGateLine(
-            context,
-            props.plot,
-            gate.points,
-            nameOfGateCursorIsInside == gate.name
-              ? newGateNamePosition
-              : gate.gateNamePosition,
-            gate,
-            gate.color
-          );
-        });
+        if (areGatesOnPlot(props.plot)) {
+          getGatesOnPlot(props.plot, "histogram")?.map((gate) => {
+            drawGateLine(
+              context,
+              props.plot,
+              gate.points,
+              nameOfGateCursorIsInside == gate.name
+                ? newGateNamePosition
+                : gate.gateNamePosition,
+              gate,
+              gate.color
+            );
+          });
+        }
       }
     }
   }, [newGateNamePosition]);
@@ -323,16 +325,18 @@ function Histogram(props) {
     setNameOfGateCursorIsInside(false);
     setNewPoints([]);
 
-    props.plot?.gates?.map((gate) => {
-      drawGateLine(
-        context,
-        props.plot,
-        gate.points,
-        gate.gateNamePosition,
-        gate,
-        gate.color
-      );
-    });
+    if (areGatesOnPlot(props.plot)) {
+      getGatesOnPlot(props.plot, "histogram")?.map((gate) => {
+        drawGateLine(
+          context,
+          props.plot,
+          gate.points,
+          gate.gateNamePosition,
+          gate,
+          gate.color
+        );
+      });
+    }
 
     setShowMenu(false);
   }, [props.clearAnyPoints]);
@@ -468,7 +472,7 @@ function Histogram(props) {
     context.fillStyle = "white";
 
     if (areGatesOnPlot(props.plot)) {
-      props.plot.gates.map((gate) => {
+      getGatesOnPlot(props.plot, "histogram")?.map((gate) => {
         drawGateLine(context, props.plot, gate.points, null, gate, gate.color);
       });
     }
@@ -806,7 +810,7 @@ function Histogram(props) {
     isMouseDown = true;
     let isNearOrInsideAnyGate;
 
-    if (hasGates()) {
+    if (areGatesOnPlot()) {
       //&& isInsideGateName()
       for (var i = 0; i < props.plot.gates.length; i++) {
         let gate = props.plot.gates[i];
@@ -833,10 +837,12 @@ function Histogram(props) {
       }
     }
 
-    if (hasGates()) {
+    if (areGatesOnPlot()) {
       //if (!areGatesOnPlot(props.plot)) return;
-      for (var i = 0; i < props.plot.gates.length; i++) {
-        let gate = props.plot.gates[i];
+
+      let gates = getGatesOnPlot(props.plot, "histogram");
+      for (var i = 0; i < gates.length; i++) {
+        let gate = gates[i];
 
         let gateCanvasPoints = [
           getPointOnCanvas(
@@ -1123,26 +1129,16 @@ function Histogram(props) {
   //   }
   // };
 
-  const hasGates = () => {
-    return props.plot.gates && props.plot.gates.length > 0;
-  };
-
-  const areGatesOnPlot = (plot) => {
-    let showGate = false;
-    plot?.gates?.map((gate) => {
-      if (
-        plot.xAxisIndex === gate.xAxisIndex &&
-        plot.xScaleType === gate.xScaleType
-      ) {
-        showGate = true;
-      }
-    });
-
-    return showGate;
+  const areGatesOnPlot = () => {
+    return (
+      props.plot.gates &&
+      props.plot.gates.length > 0 &&
+      getGatesOnPlot(props.plot, "histogram").length > 0
+    );
   };
 
   const handleCursorProperty = (event) => {
-    if (hasGates() && areGatesOnPlot(props.plot)) {
+    if (areGatesOnPlot()) {
       for (var i = 0; i < props.plot.gates.length; i++) {
         let gate = props.plot.gates[i];
 
@@ -1210,11 +1206,7 @@ function Histogram(props) {
         }
       }
     } else {
-      document.body.style.cursor =
-        props.enrichedFile.fileId === props.workspaceState.controlFileId &&
-        !props.plot?.gate
-          ? "col-resize"
-          : "auto";
+      document.body.style.cursor = "col-resize";
     }
   };
 
@@ -1412,6 +1404,7 @@ function Histogram(props) {
           channelOptions={channelOptions}
           onChange={onChangeChannel}
           onChangeScale={onChangeScale}
+          channels={props.enrichedFile.channels}
           addOverlay={props.addOverlay}
           onDeleteGate={props.onDeleteGate}
           plot={props.plot}

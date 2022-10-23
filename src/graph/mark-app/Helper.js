@@ -893,7 +893,8 @@ export const drawText = (params, ctx) => {
     params.x = -bx * Math.cos(params.rotate) + by * Math.sin(params.rotate);
     params.y = -bx * Math.sin(params.rotate) - by * Math.cos(params.rotate);
   }
-  ctx.fillText(params.text, params.x, params.y);
+
+  ctx.fillText(linLabel(parseInt(params.text)), params.x, params.y);
   ctx.font = "Arial";
   if (params.rotate !== undefined) {
     ctx.rotate(-params.rotate);
@@ -1000,6 +1001,7 @@ export const getAxisLabels = (format, linRange, logicle, binsCount) => {
 
     labels.sort((a, b) => a.pos - b.pos);
   }
+
   return labels;
 };
 
@@ -1118,16 +1120,27 @@ export const getGateNameBoundingBox = (
   ];
 };
 
-export const getGatesOnPlot = (plot) => {
+export const getGatesOnPlot = (plot, gateType) => {
   let gates = [];
   plot?.gates?.map((gate) => {
-    if (
-      plot.xAxisIndex === gate.xAxisIndex &&
-      plot.yAxisIndex === gate.yAxisIndex &&
-      plot.xScaleType === gate.xScaleType &&
-      plot.yScaleType === gate.yScaleType
-    ) {
-      gates.push(gate);
+    if (gateType == "histogram") {
+      if (
+        gate.gateType == "histogram" &&
+        plot.xAxisIndex === gate.xAxisIndex &&
+        plot.xScaleType === gate.xScaleType
+      ) {
+        gates.push(gate);
+      }
+    } else {
+      if (
+        gate.gateType == "polygon" &&
+        plot.xAxisIndex === gate.xAxisIndex &&
+        plot.yAxisIndex === gate.yAxisIndex &&
+        plot.xScaleType === gate.xScaleType &&
+        plot.yScaleType === gate.yScaleType
+      ) {
+        gates.push(gate);
+      }
     }
   });
 

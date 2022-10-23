@@ -326,9 +326,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //@ts-ignore
     let newWorkspaceState: any = this.state.workspaceState;
 
-    //@ts-ignore
-    let controlFileId: string = newWorkspaceState.controlFileId;
-
     let level = newPlot.level;
 
     //@ts-ignore
@@ -338,7 +335,9 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
-    newPlot.left = 350 * level + 20 * numAtThatLevel;
+    newPlot.left =
+      (change.plot.plotType == "scatter" ? 350 : 450) * level +
+      20 * numAtThatLevel;
     newPlot.top = change.plot.top + 20 * numAtThatLevel;
     // newPlot.top = 350 * numAtThatLevel;
 
@@ -348,34 +347,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     newPlot.madeOnFile = change.fileId;
 
     change.newGate.madeOnFile = change.fileId;
-
-    // set the passed up plot to be in the state
-    // let gatedPlot = JSON.parse(JSON.stringify(change.plot));
-    // let gates: any[] = [];
-    // if (gatedPlot.gates && gatedPlot.gates.length > 0) {F
-    //   gates = JSON.parse(JSON.stringify(gatedPlot.gates));
-    //   gates.push(change.newGate);
-    // } else {
-    //   gates = [change.newGate];
-    // }
-
-    // this is setting the last plot to be the gated plot on the contorl
-    // let origGatedPlotIndex = (newWorkspaceState as any).files[
-    //   controlFileId
-    // ].plots.findIndex((plot: any) => plot.population == gatedPlot.population);
-
-    //origGatedPlot = gatedPlot;
-
-    // (newWorkspaceState as any).files[fileId].plots[
-    //   (newWorkspaceState as any).files[fileId].plots.length - 1
-    // ] = JSON.parse(JSON.stringify(gatedPlot));
-
-    // (newWorkspaceState as any).files[controlFileId].plots[
-    //   origGatedPlotIndex
-    // ] = JSON.parse(JSON.stringify(gatedPlot));
-
-    // this is adding a new plot to the end of the plots array on the control
-    // (newWorkspaceState as any).files[controlFileId].plots.push(newPlot);
 
     // new plots are only added on the control file,
     // so loop through the other fileIds - which have adjusted gates
@@ -416,16 +387,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
 
     (newWorkspaceState as any).plots.push(newPlot);
-
-    // (newWorkspaceState as any).files[fileId].plots[
-    //   (newWorkspaceState as any).files[fileId].plots.length - 1
-    // ] = JSON.parse(JSON.stringify(gatedPlot));
-
-    // (newWorkspaceState as any).files[fileId].plots.push(
-    //   JSON.parse(JSON.stringify(newPlot))
-    // );
-    //}
-    //});
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
