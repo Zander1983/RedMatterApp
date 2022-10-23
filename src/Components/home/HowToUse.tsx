@@ -44,7 +44,7 @@ export default function HowToUse() {
             marginRight: "auto",
           }}
         >
-          <ReactPlayer url="https://www.youtube.com/watch?v=xCx7BECORc8" />
+          <ReactPlayer url="https://www.youtube.com/watch?v=toMj5kmlXBU" />
         </div>
       </Grid>
     </Grid>
