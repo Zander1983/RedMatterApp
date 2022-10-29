@@ -83,7 +83,7 @@ function Scale(fcs) {
       }
     }
 
-    return adjusted;
+    return Math.round(adjusted);
   };
 
   this.scaleValueAccordingToFile = function (params) {
