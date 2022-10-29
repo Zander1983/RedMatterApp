@@ -160,12 +160,13 @@ class CustomFCS extends FCS {
 
       var dataE = dataNumbers ? dataNumbers[e] : null; // efficiency
 
-      //console.log("dataE is ", dataE);
       //console.log("decimalsToPrint is ", decimalsToPrint);
 
       // loop over each parameter
       for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
-        v = databufReadFn.call(databuf, offset, bytesPerMeasurement);
+        v = Math.round(
+          databufReadFn.call(databuf, offset, bytesPerMeasurement)
+        );
 
         offset += bytesPerMeasurement;
 
