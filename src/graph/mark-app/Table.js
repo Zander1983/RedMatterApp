@@ -792,6 +792,24 @@ function Table(props) {
                                 </span>
                               </Tooltip>
                             )}
+                            <br />
+                            <span>
+                              {enrichedFile.gateStats
+                                .filter((gateStat) => {
+                                  return gateStat.gateName === plot.population;
+                                })
+                                .map((gateStat) => {
+                                  //plot
+                                  console.log("gateStat is ", gateStat);
+                                  return (
+                                    gateStat.means &&
+                                    "Mean of " +
+                                      plot.xAxisLabel +
+                                      ": " +
+                                      gateStat.means[plot.xAxisIndex]
+                                  );
+                                })}
+                            </span>
                           </div>
                         )}
                       </div>

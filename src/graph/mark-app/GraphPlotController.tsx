@@ -516,7 +516,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    let enrichedFiles = superAlgorithm(
+      copyOfLocalFiles,
+      newWorkspaceState,
+      true
+    );
+
+    console.log("enrichedFiles is ", enrichedFiles);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 

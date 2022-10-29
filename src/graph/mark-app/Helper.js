@@ -41,6 +41,7 @@ export const superAlgorithm = (
     let file = Files[fileIndex];
     let gateStatsObj = {};
     let eventsInsideGate = [];
+    let eventsInsideGateSum = [];
     // let plots = WorkspaceState.files[file.id]
     //   ? WorkspaceState.files[file.id].plots
     //   : WorkspaceState.files[controlFileId].plots;
@@ -51,6 +52,7 @@ export const superAlgorithm = (
       if (plots[plotIndex].gates) {
         plots[plotIndex].gates.forEach((gate) => {
           eventsInsideGate[gate.name] = [];
+          eventsInsideGateSum[gate.name] = [];
         });
       }
     }
@@ -183,6 +185,17 @@ export const superAlgorithm = (
               if (isInGate) {
                 if (calculateMedianAndMean) {
                   eventsInsideGate[gate.name].push(event.filter(Number));
+
+                  eventsInsideGateSum[gate.name].map(
+                    (eventChannelValue, channelIndex) => {
+                      return (
+                        eventChannelValue + event.filter(Number)[channelIndex]
+                      );
+                    }
+                  );
+
+                  // eventsInsideGateSum[gate.name] =
+                  //   event.filter(Number) + eventsInsideGateSum[gate.name];
                 }
 
                 event["color"] = gate["color"];
@@ -203,7 +216,10 @@ export const superAlgorithm = (
     const gateKeys = Object.keys(gateStatsObj);
 
     let gateStats = [];
+
     gateKeys.forEach((gateKey, index) => {
+      let medians = [];
+      let means = [];
       const gateName = gateKey.replace("_count", "");
 
       let parentGate = gateStatsObj[gateKey].parent;
@@ -222,11 +238,32 @@ export const superAlgorithm = (
       }
 
       if (calculateMedianAndMean) {
+        eventsInsideGate[gateName][0].forEach((channel, channelIndex) => {
+          let channelValues = eventsInsideGate[gateName].map((event) => {
+            return event[channelIndex];
+          });
+
+          console.log("channelValues are ", channelValues);
+
+          let median = getMedian(channelValues);
+          let mean = getMean(channelValues);
+
+          medians[channelIndex] = median;
+          means[channelIndex] = mean;
+        });
+
+        console.log("medians is ", medians);
+
         gateStats.push({
           gateName: gateName,
           count: gateStatsObj[gateKey],
           percentage: percentage,
           eventsInsideGate: eventsInsideGate[gateName],
+          means: means,
+          medians: medians,
+          // mean:
+          //   eventsInsideGateSum[gateName] / eventsInsideGate[gateName].length,
+          // median: getMedian(eventsInsideGate[gateName] || []),
         });
       } else {
         gateStats.push({
@@ -354,7 +391,13 @@ export const loopAndCompensate = (
   }
 };
 
+export const getMean = (values) => {
+  let sum = values.reduce((a, b) => a + b);
+  return sum / values.length;
+};
+
 export const getMedian = (values) => {
+  console.log("in getMedian, calues are ", values);
   values.sort(function (a, b) {
     return a - b;
   });

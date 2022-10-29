@@ -207,6 +207,7 @@ const WorkspaceTopBar = (props: any) => {
               ]?.array.length
             ).toFixed(2);
 
+            console.log("calculating the median....");
             eventsSeparatedByChannels[fcsFiles[fileIndex].fileId][statsIndex][
               channels[channelIndex]
             ].median = getMedian(
