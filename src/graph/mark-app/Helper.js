@@ -243,8 +243,6 @@ export const superAlgorithm = (
             return event[channelIndex];
           });
 
-          console.log("channelValues are ", channelValues);
-
           let median = getMedian(channelValues);
           let mean = getMean(channelValues);
 
@@ -273,6 +271,8 @@ export const superAlgorithm = (
         });
       }
     });
+
+    console.log("gateStats are ", gateStats);
 
     Files[fileIndex].gateStats = gateStats;
   }
@@ -397,7 +397,6 @@ export const getMean = (values) => {
 };
 
 export const getMedian = (values) => {
-  console.log("in getMedian, calues are ", values);
   values.sort(function (a, b) {
     return a - b;
   });
@@ -795,6 +794,7 @@ export const createDefaultPlotSnapShot = (
       {
         madeOnFile: fileId,
         population: "All",
+        tableData: "Percentage",
         level: 0,
         left: 5,
         top: 5,

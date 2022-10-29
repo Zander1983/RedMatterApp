@@ -3,8 +3,7 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-//import drag from "assets/images/drag.png";
-import { Button } from "@material-ui/core";
+import { Select, MenuItem } from "@material-ui/core";
 import {
   getGateName,
   getGateNameFriendly,
@@ -14,15 +13,12 @@ import {
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
-// import AbcOutlinedIcon from "@mui/icons-material/AbcOutlined";
-// import PanToolIcon from "@mui/icons-material/PanTool";
 import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
 import DeleteIcon from "@material-ui/icons/Delete";
 
-// import { PlainDraggable } from "plain-draggable";
-
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
+import GridTable from "@nadavshaar/react-grid-table";
 
 let getNumberOfPlots = (plotObject, nodes) => {
   let count = 0;
@@ -80,10 +76,13 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
+  console.log("props are ", props);
   let [containerHeight, setContainerheight] = useState(500);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
   let [clearAnyPoints, setClearAnyPoints] = useState(false);
+  let [columns, setColumns] = useState([]);
+  let [rows, setRows] = useState([]);
 
   const workspaceRef = useRef(null);
   const scrollToElement = () =>
@@ -163,6 +162,212 @@ function Table(props) {
     containerHeight,
   ]);
 
+  const allCol = ({
+    tableManager,
+    value,
+    field,
+    data,
+    column,
+    colIndex,
+    rowIndex,
+  }) => {
+    return (
+      <div
+        className="rgt-cell-inner"
+        style={{
+          display: "flex",
+          // alignItems: "center",
+          // overflow: "hidden",
+          flexDirection: "column",
+        }}
+      >
+        {/* <img src={data.avatar} alt="user avatar" /> */}
+        <div
+          className="rgt-text-truncate"
+          style={{
+            fontWeight: "bold",
+          }}
+        >
+          {data.fileId}
+        </div>
+        <div className="rgt-text-truncate" style={{ marginLeft: 10 }}>
+          {data.numEvents} events
+        </div>
+
+        <div
+          className="rgt-text-truncate"
+          onClick={() => {
+            fileViewHideHandler(data.fileId);
+            scrollToElement();
+          }}
+          style={{
+            cursor: "pointer",
+            fontWeight: "bold",
+            paddingRight: 5,
+            color: "#1890ff",
+            display: "block",
+          }}
+        >
+          View
+        </div>
+      </div>
+    );
+  };
+
+  const gateCols = ({
+    tableManager,
+    value,
+    field,
+    data,
+    column,
+    colIndex,
+    rowIndex,
+  }) => {
+    console.log("value is ", value);
+    console.log("field is ", field);
+    console.log("data is ", data);
+    return (
+      <div
+        className="rgt-cell-inner"
+        style={{
+          display: "flex",
+          // alignItems: "center",
+          // overflow: "hidden",
+          flexDirection: "column",
+        }}
+      ></div>
+    );
+  };
+
+  //({tableManager, column, mode, ref, checked, disabled, indeterminate, onChange}) => ( children )
+  const headerCellRenderer = ({
+    tableManager,
+    column,
+    mode,
+    ref,
+    checked,
+    disabled,
+    indeterminate,
+    onChange,
+  }) => {
+    return (
+      <div
+        className="rgt-cell-inner"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          // overflow: "hidden",
+          // flexDirection: "column",
+          textAlign: "center",
+        }}
+      >
+        <div
+          height="10"
+          width="12"
+          style={{
+            display: column.color ? "inlineBlock" : "none",
+            backgroundColor: column.color,
+            padding: "8px",
+            marginRight: "2px",
+          }}
+        ></div>
+        <div
+          // className="rgt-text-truncate"
+          style={{
+            fontWeight: "bold",
+          }}
+        >
+          {column.label}
+        </div>
+      </div>
+    );
+
+    //   <div
+    //   height="10"
+    //   width="12"
+    //   style={{
+    //     display:
+    //       plot.population != "All" ? "inlineBlock" : "none",
+    //     backgroundColor: plot.color,
+    //     padding: "8px",
+    //     marginRight: "2px",
+    //   }}
+    // ></div>
+    //headerCellRenderer
+  };
+  useEffect(() => {
+    let cols = [];
+    let col;
+    props.workspaceState.plots.map((plot, plotIindex) => {
+      col = {
+        id: plotIindex + 1,
+        field: plot.population,
+        // numEvents: "",
+        label: getGateNameFriendly(plot.population),
+        color: getGateNameFriendly(plot.color),
+      };
+
+      if (plotIindex == 0) {
+        col.cellRenderer = allCol;
+      } else {
+        col.sortable = true;
+        col.cellRenderer = gateCols;
+      }
+
+      col.headerCellRenderer = headerCellRenderer;
+
+      if (plot.colWidth) {
+        col.width = plot.colWidth;
+      }
+
+      cols.push(col);
+    });
+
+    setColumns(cols);
+
+    let localRows = [];
+    let row;
+
+    console.log("befpre props.enrichedFiles.map!!!!!!!!!!!");
+    props.enrichedFiles.map((file, fileIndex) => {
+      row = {
+        fileId: file.fileId,
+        id: fileIndex,
+        numEvents: file.enrichedEvents.length,
+      };
+
+      console.log(">>>>>>>>file.gateStats is ", file.gateStats);
+
+      file.plots.map((plot, plotIindex) => {
+        //columns.forEach(column => {
+        row.color = plot.color;
+        if (
+          file.gateStats &&
+          file.gateStats.length > 0 &&
+          file.gateStats.find(
+            (gateStat) => gateStat.gateName == plot.population
+          )
+        ) {
+          // row[plot.population] =
+          //   file.gateStats.find(
+          //     (gateStat) => gateStat.gateName == plot.population
+          //   ).percentage + "%";
+
+          row[plot.population] = file.gateStats.find(
+            (gateStat) => gateStat.gateName == plot.population
+          );
+        }
+
+        //});
+      });
+
+      // each plot is a row
+      localRows.push(row);
+    });
+
+    setRows(localRows);
+  }, [props.workspaceState.plots.length]);
+
   // let editedFiles = getWorkspace().workspaceState?.files;
   // let editedFileIds = Object.keys(editedFiles);
 
@@ -232,7 +437,6 @@ function Table(props) {
 
   function PlotRender({ plots: plots, node: node }) {
     const mappedPlots = plots.map((plot) => plot.top);
-    const maxTop = Math.max.apply(null, mappedPlots);
 
     return (
       <div>
@@ -243,54 +447,10 @@ function Table(props) {
           }}
           onMouseDown={(e) => {
             if (e.target.id == "workspace-container") {
-              console.log("setting the clearAnyPoints....");
               setClearAnyPoints(!clearAnyPoints);
             }
           }}
         >
-          {/* <div
-            id="menu"
-            style={{
-              top: 3,
-              left: 3,
-              position: "absolute",
-              backgroundColor: "#fafafa",
-              width: "170px",
-              border: "1px solid lightgrey",
-              zIndex: 1,
-              padding: "300px",
-            }}
-          >
-            <div>
-              <div
-                // className={classes.topButton}
-                style={{
-                  backgroundColor: "#fafafa",
-                  color: "#1890ff",
-                  fontWeight: 900,
-                  margin: "auto",
-                  textAlign: "center",
-                  cursor: "pointer",
-                }}
-                //disabled={!hasGate}
-              >
-                Delete Gate
-              </div>
-              <div
-                style={{
-                  backgroundColor: "#fafafa",
-                  color: "#1890ff",
-                  fontWeight: 900,
-                  margin: "auto",
-                  textAlign: "center",
-                  borderTop: "1px solid lightgrey",
-                  cursor: "pointer",
-                }}
-              >
-                Edit Gate Name/Color
-              </div>
-            </div>
-          </div> */}
           {plots?.map((plot, plotIindex) => {
             return (
               <div
@@ -496,6 +656,82 @@ function Table(props) {
     );
   }
 
+  //     {
+  //         "id": 2,
+  //         "username": "dbraddon2",
+  //         "gender": "Female",
+  //         "last_visited": "16/07/2018",
+  //         "test": {"x": 3, "y": 4},
+  //         "avatar":"https://robohash.org/etsedex.bmp?size=32x32&set=set1"
+  //     },
+  //     {
+  //         "id": 3,
+  //         "username": "dridett3",
+  //         "gender": "Male",
+  //         "last_visited": "20/11/2016",
+  //         "test": {"x": 5, "y": 8},
+  //         "avatar":"https://robohash.org/inimpeditquam.bmp?size=32x32&set=set1"
+  //     },
+  //     {
+  //         "id": 4,
+  //         "username": "gdefty6",
+  //         "gender": "Female",
+  //         "last_visited": "03/08/2019",
+  //         "test": {"x": 7, "y": 4},
+  //         "avatar":"https://robohash.org/nobisducimussaepe.bmp?size=32x32&set=set1"
+  //     },
+  //     {
+  //         "id": 5,
+  //         "username": "hbeyer9",
+  //         "gender": "Male",
+  //         "last_visited": "10/10/2016",
+  //         "test": {"x": 2, "y": 2},
+  //         "avatar":"https://robohash.org/etconsequatureaque.jpg?size=32x32&set=set1"
+  //     }
+  // ];
+
+  // rows = [
+  //   {
+  //     fileId: "Single_stainings_Zombie_auqa_CD14_CD19_BV510_002.fcs",
+  //     id: 0,
+  //     All: "11.19",
+  //     pop1timestamp1667026776138: "11.19",
+  //     pop2timestamp1667026784822: "11.19",
+  //   },
+  //   {
+  //     fileId: "Single stainings_Siglec-7 APC-Vio770_013.fcs",
+  //     id: 1,
+  //     All: "10.35",
+  //     pop1timestamp1667026776138: "10.35",
+  //     pop2timestamp1667026784822: "10.35",
+  //   },
+  //   {
+  //     fileId: "Single stainings_Unstained_001.fcs",
+  //     id: 2,
+  //     All: "11.59",
+  //     pop1timestamp1667026776138: "11.59",
+  //     pop2timestamp1667026784822: "11.59",
+  //   },
+  // ];
+
+  // columns = [
+  //   {
+  //     id: 1,
+  //     field: "All",
+  //     label: "All",
+  //   },
+  //   {
+  //     id: 2,
+  //     field: "pop1timestamp1667026776138",
+  //     label: "pop1",
+  //   },
+  //   {
+  //     id: 3,
+  //     field: "pop2timestamp1667026784822",
+  //     label: "pop2",
+  //   },
+  // ];
+
   return (
     <div>
       <div
@@ -513,27 +749,7 @@ function Table(props) {
             width: "20%",
             order: 1,
           }}
-        >
-          {/* {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
-            <>
-              <span
-                style={{
-                  color: "#ff8080",
-                }}
-              >
-                Add NEW gates on the control file
-              </span>
-            </>
-          ) : (
-            <span
-              style={{
-                color: "#ff8080",
-              }}
-            >
-              Edit EXISTING gates on non-control files
-            </span>
-          )} */}
-        </div>
+        ></div>
         <div
           style={{
             width: "60%",
@@ -541,20 +757,7 @@ function Table(props) {
             textAlign: "center",
           }}
         >
-          {openEnrichedFile.fileId == props.workspaceState.controlFileId ? (
-            <>
-              <span
-                style={{
-                  color: "#ff8080",
-                }}
-              >
-                CONTROL FILE
-              </span>
-              <span> - {openEnrichedFile.fileId}</span>
-            </>
-          ) : (
-            <span>{openEnrichedFile.fileId}</span>
-          )}
+          <span>{openEnrichedFile.fileId}</span>
         </div>
         <div
           style={{
@@ -567,260 +770,51 @@ function Table(props) {
         plots: openEnrichedFile.plots,
       })}
 
-      <table
+      <Select
+        disableUnderline
         style={{
-          maxWidth: "100%",
-          overflowX: "auto",
-          scrollBhavior: "smooth",
-          display: "block",
-          padding: "5px",
+          // width: props.plot.width * 0.6,
+          textAlign: "center",
+          flex: "1 1 auto",
+          fontSize: 12,
         }}
-        className="workspace"
-        ref={tableRef}
+        // onChange={(e) => {
+        //   props.onChange(
+        //     { value: e.target.value },
+        //     "x",
+        //     props.plotIndex.split("-")[1]
+        //   );
+        // }}
+        // value={props.plot.xAxisIndex}
       >
-        <tbody>
-          <tr>
-            {props.workspaceState.plots.map((plot, plotIindex) => {
-              return (
-                <td
-                  key={`td-population-sorter-${plotIindex}`}
-                  style={{
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    // minWidth: plot.width + 170,
-                    padding: 5,
-                    margin: 0.5,
-                    border: "1px solid gray",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div
-                      style={{
-                        marginRight: "10px",
-                        // backgroundColor: `${
-                        //   plotIindex > 0
-                        //     ? controlEnrichedFile.plots[plotIindex - 1].gate
-                        //         .color
-                        //     : "#000000"
-                        // }`,
-                        width: "15px",
-                        height: "15px",
-                      }}
-                    ></div>
-                    <div style={{ alignItems: "center", display: "flex" }}>
-                      <div
-                        height="10"
-                        width="12"
-                        style={{
-                          display:
-                            plot.population != "All" ? "inlineBlock" : "none",
-                          // cursor: "pointer",
-                          // color: "red",
-                          // height: "15",
-                          // width: "8",
-                          backgroundColor: plot.color,
-                          // display: "inlineBlock",
-                          padding: "8px",
-                          marginRight: "2px",
-                        }}
-                      ></div>
+        <MenuItem key={1} name={"Percentage"} value={"Percentage"}>
+          Percentage
+        </MenuItem>
+        <MenuItem key={2} name={"Count"} value={"Count"}>
+          Count
+        </MenuItem>
+        <MenuItem key={3} name={"Mean"} value={"Mean"}>
+          Mean
+        </MenuItem>
+        <MenuItem key={4} name={"Median"} value={"Median"}>
+          Median
+        </MenuItem>
+      </Select>
 
-                      {getGateNameFriendly(plot.population)}
-                      <img
-                        onClick={() => {
-                          props.sortByGate(plot.population, ASC_SORT);
-                        }}
-                        src={downArrow}
-                        alt="down-arrow"
-                        style={{
-                          width: 10,
-                          marginLeft: 5,
-                          cursor: "pointer",
-                        }}
-                      />
-                      <img
-                        onClick={() => {
-                          props.sortByGate(plot.population, DSC_SORT);
-                        }}
-                        src={upArrow}
-                        alt="up-arrow"
-                        style={{
-                          width: 10,
-                          marginLeft: 5,
-                          cursor: "pointer",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </td>
-              );
-            })}
-          </tr>
-          {props.enrichedFiles.map((enrichedFile, fileIndex) => {
-            // LOOPING THROUGH NON-CONTROL FILES
-            return (
-              <tr key={`tr-${fileIndex}`}>
-                {enrichedFile.plots.map((plot, plotIindex) => {
-                  let backgroundColor =
-                    enrichedFile.fileId == props.workspaceState.openFile
-                      ? "#f2f2f2"
-                      : "#fff";
-                  let disableView =
-                    enrichedFile.fileId == props.workspaceState.openFile
-                      ? true
-                      : false;
-                  return (
-                    <td
-                      key={`td-${plotIindex + 1}`}
-                      id={`entire-canvas-${fileIndex + 1}-${plotIindex}`}
-                      style={{
-                        margin: 0.5,
-                        border: "1px solid gray",
-                        backgroundColor: backgroundColor,
-                        // minWidth: plot.width + 170,
-                      }}
-                    >
-                      <div
-                        style={{
-                          textAlign: "center",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {plot.population == "All" && (
-                          <Tooltip
-                            title={
-                              plot.population === "All" &&
-                              enrichedFile?.label.length > 21
-                                ? enrichedFile?.label
-                                : ""
-                            }
-                          >
-                            <div>
-                              <div
-                                style={{
-                                  whiteSpace: "nowrap",
-                                  maxWidth: plot.width,
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  textAlign: "center",
-                                  fontWeight: "bold",
-                                  margin: "auto",
-                                }}
-                              >
-                                {props.workspaceState.controlFileId ==
-                                  enrichedFile.fileId && (
-                                  <span
-                                    style={{
-                                      color: "#ff8080",
-                                    }}
-                                  >
-                                    (C)
-                                  </span>
-                                )}
-
-                                {enrichedFile.label}
-                              </div>
-                              <span
-                                style={{
-                                  fontSize: "10px",
-                                }}
-                              >
-                                {" " +
-                                  enrichedFile.enrichedEvents.length +
-                                  " events"}
-                              </span>
-                              <br />
-
-                              <span
-                                onClick={() => {
-                                  fileViewHideHandler(enrichedFile?.fileId);
-                                  scrollToElement();
-                                }}
-                                style={{
-                                  cursor: "pointer",
-                                  fontWeight: "bold",
-                                  paddingRight: 5,
-                                  color: "#1890ff",
-                                }}
-                                disabled={disableView}
-                              >
-                                View
-                              </span>
-                            </div>
-                          </Tooltip>
-                        )}
-
-                        {plot.population != "All" && (
-                          <div
-                            style={{
-                              whiteSpace: "nowrap",
-                              maxWidth: plot.width,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              textAlign: "center",
-                              fontWeight: "bold",
-                              margin: "auto",
-                            }}
-                          >
-                            {enrichedFile.gateStats
-                              .filter((gateStat) => {
-                                return gateStat.gateName === plot.population;
-                              })
-
-                              .map((gateStat) => {
-                                return gateStat && gateStat.percentage;
-                              })}
-                            %
-                            {hasCustomGate(
-                              enrichedFile.fileId,
-                              plot.population,
-                              props.workspaceState
-                            ) && (
-                              <Tooltip title="this gate has been edited for this file">
-                                <span
-                                  style={{
-                                    color: "#f8929a",
-                                  }}
-                                >
-                                  ***
-                                </span>
-                              </Tooltip>
-                            )}
-                            <br />
-                            <span>
-                              {enrichedFile.gateStats
-                                .filter((gateStat) => {
-                                  return gateStat.gateName === plot.population;
-                                })
-                                .map((gateStat) => {
-                                  //plot
-                                  console.log("gateStat is ", gateStat);
-                                  return (
-                                    gateStat.means &&
-                                    "Mean of " +
-                                      plot.xAxisLabel +
-                                      ": " +
-                                      gateStat.means[plot.xAxisIndex]
-                                  );
-                                })}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <GridTable
+        showSearch={false}
+        showRowsInformation={false}
+        columns={columns}
+        rows={rows}
+        onColumnsChange={(res) => {
+          //console.log("in onColumnsChange, res is ", res);
+        }}
+        onColumnResizeEnd={(res) => {
+          //field
+          props.onChangeColWidth(res.column.field, res.column.width);
+          //onChangeColWidth
+        }}
+      />
     </div>
   );
 }

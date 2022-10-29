@@ -114,6 +114,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       signUpEmail: "",
     };
 
+    this.onChangeColWidth = this.onChangeColWidth.bind(this);
     this.onChangeGateName = this.onChangeGateName.bind(this);
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onOpenFileChange = this.onOpenFileChange.bind(this);
@@ -316,6 +317,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
+  onChangeColWidth = (population: any, width: any) => {
+    this.state.workspaceState.plots.forEach((plot: any) => {
+      if (plot.population == population) {
+        plot.colWidth = width;
+      }
+    });
+
+    this.setState({
+      enrichedFiles: this.state.enrichedFiles,
+      workspaceState: this.state.workspaceState,
+    });
+  };
+
   onAddGate = (change: any) => {
     // create a new plot from the plot that has just been gated, but remove
     // its gate and set population to be the gate.name
@@ -390,7 +404,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    let enrichedFiles = superAlgorithm(
+      copyOfLocalFiles,
+      newWorkspaceState,
+      true
+    );
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     //set state
@@ -612,7 +630,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndex: number,
     checked: boolean
   ) => {
-    // console.log("adding the overlay....");
     let workspaceState = this.state.workspaceState;
     let newWorkspaceState: any = JSON.parse(JSON.stringify(workspaceState));
 
@@ -1351,6 +1368,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               onResetToControl={this.onResetToControl}
               testParam={this.state.testParam}
               onRangeChange={this.onRangeChange}
+              onChangeColWidth={this.onChangeColWidth}
             />
           </div>
 
