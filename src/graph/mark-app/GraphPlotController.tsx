@@ -318,8 +318,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onChangeColWidth = (population: any, width: any) => {
-    console.log("in onChangeColWidth");
-
     this.state.workspaceState.plots.forEach((plot: any) => {
       if (plot.population == population) {
         plot.colWidth = width;
@@ -622,7 +620,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     plotIndex: number,
     checked: boolean
   ) => {
-    // console.log("adding the overlay....");
     let workspaceState = this.state.workspaceState;
     let newWorkspaceState: any = JSON.parse(JSON.stringify(workspaceState));
 
