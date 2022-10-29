@@ -331,7 +331,7 @@ function Table(props) {
     });
 
     setRows(localRows);
-  }, [props.workspaceState.plots.length]);
+  }, [props.workspaceState.plots.length, props.isTableRenderCall]);
 
   // let editedFiles = getWorkspace().workspaceState?.files;
   // let editedFileIds = Object.keys(editedFiles);
