@@ -547,7 +547,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       enrichedFiles: enrichedFiles,
       workspaceState: newWorkspaceState,
-      isTableRenderCall: true,
+      isTableRenderCall: !this.state.isTableRenderCall,
     });
   };
 
@@ -1351,6 +1351,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           />
           <div id="entire-table">
             <PlotTableComponent
+              isTableRenderCall={this.state.isTableRenderCall}
               enrichedFiles={this.state.enrichedFiles}
               workspaceState={this.state.workspaceState}
               className="workspace"
