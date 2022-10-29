@@ -114,6 +114,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       signUpEmail: "",
     };
 
+    this.onChangeColWidth = this.onChangeColWidth.bind(this);
     this.onChangeGateName = this.onChangeGateName.bind(this);
     this.onChangeChannel = this.onChangeChannel.bind(this);
     this.onOpenFileChange = this.onOpenFileChange.bind(this);
@@ -309,6 +310,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       changedGate.color,
       newGateColor
     );
+
+    this.setState({
+      enrichedFiles: this.state.enrichedFiles,
+      workspaceState: this.state.workspaceState,
+    });
+  };
+
+  onChangeColWidth = (population: any, width: any) => {
+    console.log("in onChangeColWidth");
+
+    this.state.workspaceState.plots.forEach((plot: any) => {
+      if (plot.population == population) {
+        plot.colWidth = width;
+      }
+    });
 
     this.setState({
       enrichedFiles: this.state.enrichedFiles,
@@ -1345,6 +1361,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               onResetToControl={this.onResetToControl}
               testParam={this.state.testParam}
               onRangeChange={this.onRangeChange}
+              onChangeColWidth={this.onChangeColWidth}
             />
           </div>
 
