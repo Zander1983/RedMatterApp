@@ -68,7 +68,7 @@ const ChatBox = () => {
               marginRight: 5,
             }}
           >
-            Send Feedback
+            Request a Feature
           </Button>
         </Tooltip>
       )}
