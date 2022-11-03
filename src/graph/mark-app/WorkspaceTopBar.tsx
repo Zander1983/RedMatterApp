@@ -207,7 +207,6 @@ const WorkspaceTopBar = (props: any) => {
               ]?.array.length
             ).toFixed(2);
 
-            console.log("calculating the median....");
             eventsSeparatedByChannels[fcsFiles[fileIndex].fileId][statsIndex][
               channels[channelIndex]
             ].median = getMedian(
@@ -294,7 +293,7 @@ const WorkspaceTopBar = (props: any) => {
               style={{ marginRight: 10 }}
             ></GetAppIcon>
             <Tooltip title="download statistics such as the median and mean">
-              <>Download Stats</>
+              <>Download All Stats</>
             </Tooltip>
           </CSVLink>
         </Button>

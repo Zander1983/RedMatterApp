@@ -32,6 +32,7 @@ import {
   ASC_SORT,
   loopAndCompensate,
   updateEnrichedFilesPlots,
+  shouldCalculateMeanMedian,
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -114,6 +115,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       signUpEmail: "",
     };
 
+    this.onChangeTableDataType = this.onChangeTableDataType.bind(this);
     this.onChangeColWidth = this.onChangeColWidth.bind(this);
     this.onChangeGateName = this.onChangeGateName.bind(this);
     this.onChangeChannel = this.onChangeChannel.bind(this);
@@ -145,22 +147,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     };
 
     this.firebaseApp = initializeApp(firebaseConfig);
-
-    // const db = getFirestore(firebaseApp);
-
-    // console.log("db is ", db);
-
-    // const q = query(collection(db, "users"));
-
-    // console.log(">>.q is ", q);
-
-    // const querySnapshot = await getDocs(q);
-    // querySnapshot.forEach((doc) => {
-    //   // doc.data() is never undefined for query doc snapshots
-    //   console.log(doc.id, " => ", doc.data());
-    // });
-
-    // Firebase.initializeApp(firebaseConfig);
   }
 
   inputFile = {
@@ -168,21 +154,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       click: function () {},
     },
   };
-
-  // async loopNumbers(firebaseApp: any) {
-  //   const db = getFirestore(firebaseApp);
-
-  //   try {
-  //     const docRef = await addDoc(collection(db, "users"), {});
-  //   } catch (e) {
-  //     console.error("Error adding document: ", e);
-  //   }
-  // }
-
-  // const [uploadingFiles, setUploadingFiles] = useState(Object);
-
-  // const [currentParsingFile, setcurrentParsingFile] = useState<string>("");
-  // const [parsedFiles, setParsedFiles] = useState([]);
 
   onInitState = (workspaceState: any) => {
     // @ts-ignore
@@ -192,6 +163,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     //workspaceState = MultiStainState3;
 
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      workspaceState.tableDataType
+    );
+    console.log("calculateMedianAndMean is ", calculateMedianAndMean);
     // @ts-ignore
     if (
       workspaceState &&
@@ -201,7 +176,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     ) {
       let enrichedFiles: any[] = superAlgorithm(
         copyOfLocalFiles,
-        workspaceState
+        workspaceState,
+        calculateMedianAndMean
       );
 
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
@@ -217,18 +193,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         workspaceState: workspaceState,
       });
     }
-  };
-
-  getEnrichedEvents = () => {
-    let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    let enrichedEvents = superAlgorithm(
-      copyOfLocalFiles,
-      this.state.workspaceState
-    );
-    enrichedEvents = enrichedEvents.map((events: any[]) => {
-      return events;
-    });
-    return enrichedEvents;
   };
 
   onChangeGateName = (
@@ -404,10 +368,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      this.state.workspaceState.tableDataType
+    );
+
     let enrichedFiles = superAlgorithm(
       copyOfLocalFiles,
       newWorkspaceState,
-      true
+      calculateMedianAndMean
     );
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
@@ -466,7 +434,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      this.state.workspaceState.tableDataType
+    );
+    let enrichedFiles = superAlgorithm(
+      copyOfLocalFiles,
+      newWorkspaceState,
+      calculateMedianAndMean
+    );
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     //set state
@@ -534,13 +509,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      this.state.workspaceState.tableDataType
+    );
     let enrichedFiles = superAlgorithm(
       copyOfLocalFiles,
       newWorkspaceState,
-      true
+      calculateMedianAndMean
     );
-
-    console.log("enrichedFiles is ", enrichedFiles);
 
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
@@ -551,9 +527,44 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
+  onChangeTableDataType = (change: any) => {
+    let enrichedFiles = this.state.enrichedFiles;
+
+    // TODO need to run superAlgorithm()
+
+    if (change.tableDataType == "Mean" || change.tableDataType == "Median") {
+      // if its currently neither
+      if (
+        this.state.workspaceState.tableDataType == "Count" ||
+        this.state.workspaceState.tableDataType == "Percentage"
+      ) {
+        // need to run Super
+        enrichedFiles = superAlgorithm(
+          this.state.fcsFiles,
+          this.state.workspaceState,
+          true
+        );
+
+        console.log("enrichedFiles is ", enrichedFiles);
+
+        enrichedFiles = formatEnrichedFiles(
+          enrichedFiles,
+          this.state.workspaceState
+        );
+      }
+    }
+
+    this.state.workspaceState.tableDataType = change.tableDataType;
+
+    this.setState({
+      enrichedFiles: enrichedFiles,
+      workspaceState: this.state.workspaceState,
+      isTableRenderCall: !this.state.isTableRenderCall,
+    });
+  };
+
   onEditGateNamePosition = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
-    //newWorkspaceState.controlFileId
 
     let gateIndex = (newWorkspaceState as any).plots[
       change.plotIndex
@@ -575,27 +586,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         }
       });
     }
-    // newWorkspaceState.plots.forEach((plot: any) => {
-    //   plot.reRender = !plot.reRender;
-    // });
-
-    // if (
-    //   !isEditingOriginalFile ||
-    //   (newWorkspaceState as any).files[change.fileId]
-    // ) {
-    //   // so its an editing of a gate only on that file
-    // }
-
-    // let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    // // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
-    // let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
-
-    // enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     this.setState({
       enrichedFiles: this.state.enrichedFiles,
       workspaceState: newWorkspaceState,
-      // isTableRenderCall: true,
     });
   };
 
@@ -615,7 +609,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     delete newWorkspaceState.files[fileId];
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      this.state.workspaceState.tableDataType
+    );
+    let enrichedFiles = superAlgorithm(
+      copyOfLocalFiles,
+      newWorkspaceState,
+      calculateMedianAndMean
+    );
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     this.setState({
@@ -668,7 +669,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    const calculateMedianAndMean = shouldCalculateMeanMedian(
+      this.state.workspaceState.tableDataType
+    );
+    let enrichedFiles = superAlgorithm(
+      copyOfLocalFiles,
+      newWorkspaceState,
+      calculateMedianAndMean
+    );
     enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
     this.setState({
@@ -1370,6 +1378,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               testParam={this.state.testParam}
               onRangeChange={this.onRangeChange}
               onChangeColWidth={this.onChangeColWidth}
+              onChangeTableDataType={this.onChangeTableDataType}
             />
           </div>
 

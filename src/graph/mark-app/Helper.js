@@ -184,7 +184,9 @@ export const superAlgorithm = (
 
               if (isInGate) {
                 if (calculateMedianAndMean) {
-                  eventsInsideGate[gate.name].push(event.filter(Number));
+                  // THERE is a problem with this if a value is 0
+
+                  eventsInsideGate[gate.name].push([...event]);
 
                   eventsInsideGateSum[gate.name].map(
                     (eventChannelValue, channelIndex) => {
@@ -238,19 +240,29 @@ export const superAlgorithm = (
       }
 
       if (calculateMedianAndMean) {
-        eventsInsideGate[gateName][0].forEach((channel, channelIndex) => {
-          let channelValues = eventsInsideGate[gateName].map((event) => {
-            return event[channelIndex];
+        if (eventsInsideGate[gateName].length > 0) {
+          eventsInsideGate[gateName][0].forEach((channel, channelIndex) => {
+            let channelValues = eventsInsideGate[gateName].map(
+              (event, eventIndex) => {
+                let val = event[channelIndex];
+                if (isNaN(val)) {
+                  debugger;
+                }
+                return val;
+              }
+            );
+
+            let mean = getMean(channelValues);
+            let median = getMedian(channelValues);
+
+            medians[channelIndex] = median;
+            means[channelIndex] = mean;
           });
-
-          let median = getMedian(channelValues);
-          let mean = getMean(channelValues);
-
-          medians[channelIndex] = median;
-          means[channelIndex] = mean;
-        });
-
-        console.log("medians is ", medians);
+        }
+        // else {
+        //   medians[channelIndex] = median;
+        //   means[channelIndex] = mean;
+        // }
 
         gateStats.push({
           gateName: gateName,
@@ -271,8 +283,6 @@ export const superAlgorithm = (
         });
       }
     });
-
-    console.log("gateStats are ", gateStats);
 
     Files[fileIndex].gateStats = gateStats;
   }
@@ -794,7 +804,6 @@ export const createDefaultPlotSnapShot = (
       {
         madeOnFile: fileId,
         population: "All",
-        tableData: "Percentage",
         level: 0,
         left: 5,
         top: 5,
@@ -861,6 +870,7 @@ export const createDefaultPlotSnapShot = (
     isShared: "false",
     openFile: fileId,
     workspaceContainerHeight: 500,
+    tableDataType: "Percentage",
   };
 };
 
@@ -1188,4 +1198,8 @@ export const getGatesOnPlot = (plot, gateType) => {
   });
 
   return gates;
+};
+
+export const shouldCalculateMeanMedian = (tableDataType) => {
+  return tableDataType == "Mean" || tableDataType == "Median";
 };
