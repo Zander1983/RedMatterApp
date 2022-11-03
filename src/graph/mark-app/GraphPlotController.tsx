@@ -1534,7 +1534,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   this.uploadFiles(e.target.files);
                 }}
               />
-              Add Files
+              Add FCS Files
             </Button>
             <Modal
               isOpen={this.state.userSignUpModalShowing}
@@ -1644,7 +1644,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               marginBottom: 25,
             }}
           >
-            Files must have the same channels
+            No data leaves the browser
           </p>
         </div>
         <ChatBox />
