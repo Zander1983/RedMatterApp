@@ -293,7 +293,7 @@ const WorkspaceTopBar = (props: any) => {
               style={{ marginRight: 10 }}
             ></GetAppIcon>
             <Tooltip title="download statistics such as the median and mean">
-              <>Download Stats</>
+              <>Download All Stats</>
             </Tooltip>
           </CSVLink>
         </Button>

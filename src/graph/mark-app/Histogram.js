@@ -325,6 +325,10 @@ function Histogram(props) {
 
     setNameOfGateCursorIsInside(false);
     setNewPoints([]);
+    setGateNameOffset(null);
+    setIsInsideGateName(false);
+    setIsNearPoint(false);
+    setIsInsideGate(false);
 
     if (areGatesOnPlot(props.plot)) {
       getGatesOnPlot(props.plot, "histogram")?.map((gate) => {

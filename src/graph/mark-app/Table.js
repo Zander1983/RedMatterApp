@@ -3,12 +3,13 @@ import Plot from "./Plot";
 import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
-import { Button } from "@material-ui/core";
+import { Select, MenuItem, InputLabel } from "@material-ui/core";
 import {
   getGateName,
   getGateNameFriendly,
   getPlotsForFileFromWorkspaceState,
   hasCustomGate,
+  linLabel,
 } from "./Helper";
 import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
@@ -19,6 +20,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 import GridTable from "@nadavshaar/react-grid-table";
+import numeral from "numeral";
 
 let getNumberOfPlots = (plotObject, nodes) => {
   let count = 0;
@@ -213,6 +215,115 @@ function Table(props) {
     );
   };
 
+  const gateCols = ({
+    tableManager,
+    value,
+    field,
+    data,
+    column,
+    colIndex,
+    rowIndex,
+  }) => {
+    return (
+      <div
+        className="rgt-cell-inner"
+        style={{
+          display: "flex",
+          // alignItems: "center",
+          // overflow: "hidden",
+          flexDirection: "column",
+        }}
+      >
+        {/* {this.state.yourVariable === 'news' && <Text>{data}<Text/>} */}
+
+        {props.workspaceState.tableDataType == "Percentage" &&
+          data[column.population].percentage && (
+            <>
+              <div className="rgt-text-truncate">
+                {numeral(data[column.population].percentage).format("0,0")}%
+              </div>
+            </>
+          )}
+
+        {props.workspaceState.tableDataType == "Count" &&
+          data[column.population].count &&
+          data[column.population].count.count && (
+            <>
+              <div className="rgt-text-truncate">
+                {numeral(data[column.population].count.count).format("0,0")}
+              </div>
+            </>
+          )}
+
+        {props.workspaceState.tableDataType == "Mean" &&
+          data[column.population].means && (
+            <>
+              {data[column.population].means.map((mean, channelIndex) => {
+                return (
+                  <div
+                    key={"mm-" + channelIndex}
+                    style={{
+                      display: "flex",
+                      fontSize: "9px",
+                    }}
+                  >
+                    <div
+                      className="rgt-text-truncate"
+                      style={{
+                        flex: "50%",
+                      }}
+                    >
+                      {props.enrichedFiles[0].channels[channelIndex].name}
+                    </div>
+                    <div
+                      style={{
+                        flex: "50%",
+                      }}
+                    >
+                      {linLabel(mean)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
+        {props.workspaceState.tableDataType == "Median" &&
+          data[column.population].medians && (
+            <>
+              {data[column.population].medians.map((median, channelIndex) => {
+                return (
+                  <div
+                    key={"mm-" + channelIndex}
+                    style={{
+                      display: "flex",
+                      fontSize: "9px",
+                    }}
+                  >
+                    <div
+                      className="rgt-text-truncate"
+                      style={{
+                        flex: "50%",
+                      }}
+                    >
+                      {props.enrichedFiles[0].channels[channelIndex].name}
+                    </div>
+                    <div
+                      style={{
+                        flex: "50%",
+                      }}
+                    >
+                      {linLabel(median)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+      </div>
+    );
+  };
+
   //({tableManager, column, mode, ref, checked, disabled, indeterminate, onChange}) => ( children )
   const headerCellRenderer = ({
     tableManager,
@@ -269,6 +380,15 @@ function Table(props) {
     // ></div>
     //headerCellRenderer
   };
+
+  const getValue = ({ value, column }) => {
+    if (props.workspaceState.tableDataType == "Percentage") {
+      return value.percentage;
+    } else if (props.workspaceState.tableDataType == "Count") {
+      return value.count.count;
+    }
+    return;
+  };
   useEffect(() => {
     let cols = [];
     let col;
@@ -279,12 +399,15 @@ function Table(props) {
         // numEvents: "",
         label: getGateNameFriendly(plot.population),
         color: getGateNameFriendly(plot.color),
+        population: plot.population,
       };
 
       if (plotIindex == 0) {
         col.cellRenderer = allCol;
       } else {
         col.sortable = true;
+        col.cellRenderer = gateCols;
+        col.getValue = getValue;
       }
 
       col.headerCellRenderer = headerCellRenderer;
@@ -300,6 +423,7 @@ function Table(props) {
 
     let localRows = [];
     let row;
+
     props.enrichedFiles.map((file, fileIndex) => {
       row = {
         fileId: file.fileId,
@@ -317,10 +441,14 @@ function Table(props) {
             (gateStat) => gateStat.gateName == plot.population
           )
         ) {
-          row[plot.population] =
-            file.gateStats.find(
-              (gateStat) => gateStat.gateName == plot.population
-            ).percentage + "%";
+          // row[plot.population] =
+          //   file.gateStats.find(
+          //     (gateStat) => gateStat.gateName == plot.population
+          //   ).percentage + "%";
+
+          row[plot.population] = file.gateStats.find(
+            (gateStat) => gateStat.gateName == plot.population
+          );
         }
 
         //});
@@ -621,82 +749,6 @@ function Table(props) {
     );
   }
 
-  //     {
-  //         "id": 2,
-  //         "username": "dbraddon2",
-  //         "gender": "Female",
-  //         "last_visited": "16/07/2018",
-  //         "test": {"x": 3, "y": 4},
-  //         "avatar":"https://robohash.org/etsedex.bmp?size=32x32&set=set1"
-  //     },
-  //     {
-  //         "id": 3,
-  //         "username": "dridett3",
-  //         "gender": "Male",
-  //         "last_visited": "20/11/2016",
-  //         "test": {"x": 5, "y": 8},
-  //         "avatar":"https://robohash.org/inimpeditquam.bmp?size=32x32&set=set1"
-  //     },
-  //     {
-  //         "id": 4,
-  //         "username": "gdefty6",
-  //         "gender": "Female",
-  //         "last_visited": "03/08/2019",
-  //         "test": {"x": 7, "y": 4},
-  //         "avatar":"https://robohash.org/nobisducimussaepe.bmp?size=32x32&set=set1"
-  //     },
-  //     {
-  //         "id": 5,
-  //         "username": "hbeyer9",
-  //         "gender": "Male",
-  //         "last_visited": "10/10/2016",
-  //         "test": {"x": 2, "y": 2},
-  //         "avatar":"https://robohash.org/etconsequatureaque.jpg?size=32x32&set=set1"
-  //     }
-  // ];
-
-  // rows = [
-  //   {
-  //     fileId: "Single_stainings_Zombie_auqa_CD14_CD19_BV510_002.fcs",
-  //     id: 0,
-  //     All: "11.19",
-  //     pop1timestamp1667026776138: "11.19",
-  //     pop2timestamp1667026784822: "11.19",
-  //   },
-  //   {
-  //     fileId: "Single stainings_Siglec-7 APC-Vio770_013.fcs",
-  //     id: 1,
-  //     All: "10.35",
-  //     pop1timestamp1667026776138: "10.35",
-  //     pop2timestamp1667026784822: "10.35",
-  //   },
-  //   {
-  //     fileId: "Single stainings_Unstained_001.fcs",
-  //     id: 2,
-  //     All: "11.59",
-  //     pop1timestamp1667026776138: "11.59",
-  //     pop2timestamp1667026784822: "11.59",
-  //   },
-  // ];
-
-  // columns = [
-  //   {
-  //     id: 1,
-  //     field: "All",
-  //     label: "All",
-  //   },
-  //   {
-  //     id: 2,
-  //     field: "pop1timestamp1667026776138",
-  //     label: "pop1",
-  //   },
-  //   {
-  //     id: 3,
-  //     field: "pop2timestamp1667026784822",
-  //     label: "pop2",
-  //   },
-  // ];
-
   return (
     <div>
       <div
@@ -734,8 +786,51 @@ function Table(props) {
       {PlotRender({
         plots: openEnrichedFile.plots,
       })}
+      <div
+        style={{
+          paddingLeft: "10px",
+        }}
+      >
+        <InputLabel
+          style={{
+            display: "inline-block",
+            marginRight: "8px",
+            fontSize: 12,
+          }}
+        >
+          Select data type
+        </InputLabel>
+        <Select
+          label="Select data type"
+          disableUnderline
+          style={{
+            // width: props.plot.width * 0.6,
+            textAlign: "center",
+            flex: "1 1 auto",
+            fontSize: 14,
+          }}
+          onChange={(e) => {
+            props.onChangeTableDataType({ tableDataType: e.target.value });
+          }}
+          value={props.workspaceState.tableDataType}
+        >
+          <MenuItem key={1} name={"Percentage"} value={"Percentage"}>
+            Percentage
+          </MenuItem>
+          <MenuItem key={2} name={"Count"} value={"Count"}>
+            Count
+          </MenuItem>
+          <MenuItem key={3} name={"Mean"} value={"Mean"}>
+            Mean
+          </MenuItem>
+          <MenuItem key={4} name={"Median"} value={"Median"}>
+            Median
+          </MenuItem>
+        </Select>
+      </div>
 
       <GridTable
+        showColumnVisibilityManager={false}
         showSearch={false}
         showRowsInformation={false}
         columns={columns}
