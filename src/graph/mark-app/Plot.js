@@ -1291,7 +1291,7 @@ function Plot(props) {
           <div
             style={{
               // position: "relative",
-              // zIndex: 2000,
+              zIndex: 2000,
               display: "flex",
               flexDirection: "column",
               alignItems: "cneter",

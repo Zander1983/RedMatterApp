@@ -344,6 +344,7 @@ function Table(props) {
           // overflow: "hidden",
           // flexDirection: "column",
           textAlign: "center",
+          zIndex: 0,
         }}
       >
         <div
@@ -400,6 +401,7 @@ function Table(props) {
         label: getGateNameFriendly(plot.population),
         color: getGateNameFriendly(plot.color),
         population: plot.population,
+        className: "data-table-col",
       };
 
       if (plotIindex == 0) {

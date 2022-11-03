@@ -25,6 +25,19 @@ body {
   content: "";
 }
 
+.rgt-cell-header-sticky {
+  z-index: 0;
+}
+
+.rgt-cell-header-sticky {
+  z-index: 0;
+  font-size: 2;
+}
+
+#entire-table .rgt-cell-header-virtual-col {
+  z-index: 0;
+}
+
 @keyframes dotty {
   0% {
     content: "";
