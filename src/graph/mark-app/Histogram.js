@@ -1074,7 +1074,9 @@ function Histogram(props) {
         plotIndex: props.plotIndex.split("-")[1],
       };
 
-      props.onEditGateNamePosition(change);
+      if (change.gateNamePosition && change.gateNamePosition.length > 0) {
+        props.onEditGateNamePosition(change);
+      }
 
       setNewGateNamePosition([]);
       setIsInsideGateName(false);

@@ -166,7 +166,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     const calculateMedianAndMean = shouldCalculateMeanMedian(
       workspaceState.tableDataType
     );
-    console.log("calculateMedianAndMean is ", calculateMedianAndMean);
+
     // @ts-ignore
     if (
       workspaceState &&
@@ -545,8 +545,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
           this.state.workspaceState,
           true
         );
-
-        console.log("enrichedFiles is ", enrichedFiles);
 
         enrichedFiles = formatEnrichedFiles(
           enrichedFiles,
