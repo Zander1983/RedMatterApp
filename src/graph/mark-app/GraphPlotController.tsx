@@ -47,6 +47,9 @@ import {
   getDocs,
 } from "firebase/firestore";
 
+//@ts-ignore
+import { saveAs } from "file-saver";
+
 interface PlotControllerProps {
   sharedWorkspace: boolean;
   experimentId: string;
@@ -74,6 +77,8 @@ interface IState {
   // controlFileId: string;
   userSignUpModalShowing: boolean;
   signUpEmail: string;
+  snackbarOpen: boolean;
+  uploadedWorkspace: string;
 }
 
 const customStyles = {
@@ -113,6 +118,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       // controlFileId: "",
       userSignUpModalShowing: false,
       signUpEmail: "",
+      snackbarOpen: false,
+      uploadedWorkspace: "",
     };
 
     this.onChangeTableDataType = this.onChangeTableDataType.bind(this);
@@ -128,7 +135,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onInitState = this.onInitState.bind(this);
     this.onResetToControl = this.onResetToControl.bind(this);
     this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
+    this.saveWorkspace = this.saveWorkspace.bind(this);
+    this.uploadWorkspace = this.uploadWorkspace.bind(this);
     this.setNewSpillover = this.setNewSpillover.bind(this);
+    this.parseUploadedWorkspace = this.parseUploadedWorkspace.bind(this);
     this.uploadFiles = this.uploadFiles.bind(this);
     this.inputFile = React.createRef();
 
@@ -192,6 +202,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
       });
+
+      let check = "";
     }
   };
 
@@ -600,6 +612,136 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     link.download = "workspace";
     link.href = dataUrl;
     link.click();
+  };
+
+  saveWorkspace = async (plot: any, plotIndex: any) => {
+    var data = {
+      key: "value",
+    };
+    var fileName = "red_matter_workspace.red";
+
+    // Create a blob of the data
+    var fileToSave = new Blob([JSON.stringify(this.state.workspaceState)], {
+      type: "application/json",
+    });
+
+    // Save the file
+    saveAs(fileToSave, fileName);
+  };
+
+  uploadWorkspace = async (files: any) => {
+    //@ts-ignore
+    let uploadedWorkspace;
+
+    if (files && files.length > 0) {
+      uploadedWorkspace = files[0].name;
+    } else {
+      return;
+    }
+
+    let reader = new FileReader();
+
+    // Setup the callback event to run when the file is read
+    reader.onload = (event: any) => {
+      let str = event.target.result;
+
+      if (str) {
+        let workspaceState = JSON.parse(str);
+
+        if (workspaceState) {
+          if (!workspaceState.plots) {
+            return;
+          }
+
+          let plots = workspaceState.plots.map((plot: any) => plot.madeOnFile);
+
+          if (
+            workspaceState.customGates &&
+            workspaceState.customGates.length > 0
+          ) {
+            let customPlots = workspaceState.customGates.map(
+              (plot: any) => plot.madeOnFile
+            );
+            plots = plots.concat(customPlots);
+          }
+
+          if (!this.state.enrichedEvents) {
+            return;
+          }
+
+          let fileIds = this.state.enrichedFiles.map(
+            (file: any) => file.fileId
+          );
+
+          let checker = (fileIds: any, plots: any) =>
+            plots.every((v: any) => fileIds.includes(v));
+
+          if (!checker(fileIds, plots)) {
+            snackbarService.showSnackbar(
+              "The Workspace dows not match the files - the files must have the same name as they had when the Workspace was created",
+              "error"
+            );
+            return;
+          }
+
+          //@ts-ignore
+          this.state.uploadedWorkspace = uploadedWorkspace;
+
+          this.onInitState(workspaceState);
+        }
+      }
+    };
+
+    reader.readAsText(files[0]);
+
+    //this.onInitState(workspaceState);
+  };
+
+  parseUploadedWorkspace = (event: any) => {
+    let str = event.target.result;
+
+    if (str) {
+      let workspaceState = JSON.parse(str);
+
+      if (workspaceState) {
+        if (!workspaceState.plots) {
+          return;
+        }
+
+        let plots = workspaceState.plots.map((plot: any) => plot.madeOnFile);
+
+        if (
+          workspaceState.customGates &&
+          workspaceState.customGates.length > 0
+        ) {
+          let customPlots = workspaceState.customGates.map(
+            (plot: any) => plot.madeOnFile
+          );
+          plots = plots.concat(customPlots);
+        }
+
+        if (!this.state.enrichedEvents) {
+          return;
+        }
+
+        let fileIds = this.state.enrichedFiles.map((file: any) => file.fileId);
+
+        let checker = (fileIds: any, plots: any) =>
+          plots.every((v: any) => fileIds.includes(v));
+
+        if (!checker(fileIds, plots)) {
+          snackbarService.showSnackbar(
+            "The Workspace dows not match the files - the files must have the same name as they had when the Workspace was created",
+            "error"
+          );
+          return;
+        }
+
+        // workspaceState.uploadedWorkspace =
+
+        this.onInitState(workspaceState);
+      }
+    }
   };
 
   onResetToControl = (fileId: string) => {
@@ -1163,146 +1305,158 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   renderTable = () => {
-    let firstFile = this.state.enrichedFiles[0];
-
-    // console.log("in renderTbake, firstFile is ", firstFile);
-
     if (this.state.enrichedFiles?.length > 0) {
       return (
         <>
-          <Button
-            variant="outlined"
+          <WorkspaceTopBar
+            fcsFiles={this.state.fcsFiles}
+            workspaceState={this.state.workspaceState}
+            downloadPlotAsImage={this.downloadPlotAsImage}
+            saveWorkspace={this.saveWorkspace}
+            uploadWorkspace={this.uploadWorkspace}
+            uploadedWorkspace={this.state.uploadedWorkspace}
+          />
+          <div
             style={{
-              // backgroundColor: "#6666AA",
-              marginLeft: 5,
-              marginBottom: 3,
-              // color: "white",
-            }}
-            onClick={(e) => {
-              let firstFile = this.state.fcsFiles[0];
-              const {
-                xAxisLabel,
-                yAxisLabel,
-                xAxisIndex,
-                yAxisIndex,
-                xAxisScaleType,
-                yAxisScaleType,
-              } = getPlotChannelAndPosition(firstFile);
-
-              let workspaceState = createDefaultPlotSnapShot(
-                firstFile.id,
-                xAxisLabel,
-                yAxisLabel,
-                xAxisIndex,
-                yAxisIndex,
-                xAxisScaleType,
-                yAxisScaleType
-              );
-
-              this.onInitState(workspaceState);
+              borderTop: "1px solid #ccc",
+              paddingTop: "5px",
             }}
           >
-            Reset
-          </Button>
-          {/* @ts-ignore */}
-          {this.state.controlFileScale?.spilloverParams && (
-            <Tooltip
-              title={
-                "Details of compensation that has been automatically applied to the samples"
-              }
+            <Button
+              variant="outlined"
+              style={{
+                // backgroundColor: "#6666AA",
+                marginLeft: 5,
+                marginBottom: 3,
+                // color: "white",
+              }}
+              onClick={(e) => {
+                let firstFile = this.state.fcsFiles[0];
+                const {
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType,
+                } = getPlotChannelAndPosition(firstFile);
+
+                let workspaceState = createDefaultPlotSnapShot(
+                  firstFile.id,
+                  xAxisLabel,
+                  yAxisLabel,
+                  xAxisIndex,
+                  yAxisIndex,
+                  xAxisScaleType,
+                  yAxisScaleType
+                );
+
+                //@ts-ignore
+                this.state.uploadedWorkspace = "";
+                this.onInitState(workspaceState);
+              }}
             >
-              <Button
-                variant="outlined"
-                style={{
-                  // backgroundColor: "#6666AA",
-                  marginLeft: 5,
-                  marginBottom: 3,
-                  // color: "white",
-                }}
-                onClick={(e) =>
-                  this.setState({
-                    ...this.state,
-                    showSpillover: !this.state.showSpillover,
-                  })
+              Reset
+            </Button>
+            {/* @ts-ignore */}
+            {this.state.controlFileScale?.spilloverParams && (
+              <Tooltip
+                title={
+                  "Details of compensation that has been automatically applied to the samples"
                 }
               >
-                Compensation
-                <img
-                  src={!this.state?.showSpillover ? downArrow : upArrow}
-                  alt="arrow-icon"
-                  style={{ width: 10, height: 10, marginLeft: 10 }}
-                />
-              </Button>
-            </Tooltip>
-          )}
-          {this.state.showSpillover && (
-            <Modal
-              isOpen={this.state.showSpillover}
-              appElement={document.getElementById("root") || undefined}
-              style={this.compCustomStyles}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "cneter",
-                  justifyContent: "center",
-                }}
+                <Button
+                  variant="outlined"
+                  style={{
+                    // backgroundColor: "#6666AA",
+                    marginLeft: 5,
+                    marginBottom: 3,
+                    // color: "white",
+                  }}
+                  onClick={(e) =>
+                    this.setState({
+                      ...this.state,
+                      showSpillover: !this.state.showSpillover,
+                    })
+                  }
+                >
+                  Compensation
+                  <img
+                    src={!this.state?.showSpillover ? downArrow : upArrow}
+                    alt="arrow-icon"
+                    style={{ width: 10, height: 10, marginLeft: 10 }}
+                  />
+                </Button>
+              </Tooltip>
+            )}
+            {this.state.showSpillover && (
+              <Modal
+                isOpen={this.state.showSpillover}
+                appElement={document.getElementById("root") || undefined}
+                style={this.compCustomStyles}
               >
-                <TableContainer component={Paper}>
-                  <Table
-                    style={{
-                      color: "#000",
-                      //backgroundColor: "#ffff99",
-                      textAlign: "center",
-                      fontWeight: "bold",
-                      marginBottom: 5,
-                      border: "1px solid #e0e0eb",
-                    }}
-                  >
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>Fluorochrome</TableCell>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "cneter",
+                    justifyContent: "center",
+                  }}
+                >
+                  <TableContainer component={Paper}>
+                    <Table
+                      style={{
+                        color: "#000",
+                        //backgroundColor: "#ffff99",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        marginBottom: 5,
+                        border: "1px solid #e0e0eb",
+                      }}
+                    >
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>Fluorochrome</TableCell>
+                          {/* @ts-ignore */}
+                          {this.state.controlFileScale?.spilloverParams.map(
+                            (label: any, i: any) => {
+                              return (
+                                <TableCell key={`th--${i}`}>{label}</TableCell>
+                              );
+                            }
+                          )}
+                        </TableRow>
                         {/* @ts-ignore */}
-                        {this.state.controlFileScale?.spilloverParams.map(
-                          (label: any, i: any) => {
+                        {this.state.controlFileScale?.invertedMatrix.data.map(
+                          (rowData: any, rowI: number) => {
                             return (
-                              <TableCell key={`th--${i}`}>{label}</TableCell>
-                            );
-                          }
-                        )}
-                      </TableRow>
-                      {/* @ts-ignore */}
-                      {this.state.controlFileScale?.invertedMatrix.data.map(
-                        (rowData: any, rowI: number) => {
-                          return (
-                            <TableRow key={`tr--${rowI}`}>
-                              <TableCell
-                                key={`td--${rowI}`}
-                                style={{
-                                  border: "1px solid #e0e0eb",
-                                  padding: 3,
-                                }}
-                              >
-                                {
-                                  /* @ts-ignore */
-                                  this.state.controlFileScale?.spilloverParams[
-                                    rowI
-                                  ]
-                                }
-                              </TableCell>
+                              <TableRow key={`tr--${rowI}`}>
+                                <TableCell
+                                  key={`td--${rowI}`}
+                                  style={{
+                                    border: "1px solid #e0e0eb",
+                                    padding: 3,
+                                  }}
+                                >
+                                  {
+                                    /* @ts-ignore */
+                                    this.state.controlFileScale
+                                      ?.spilloverParams[rowI]
+                                  }
+                                </TableCell>
 
-                              {rowData.map((columnData: any, colI: number) => {
-                                return (
-                                  <TableCell
-                                    key={`th-${rowI}-${colI}`}
-                                    style={{
-                                      border: "1px solid #e0e0eb",
-                                      padding: 3,
-                                    }}
-                                  >
-                                    {columnData}
-                                    {/* <TextField
+                                {rowData.map(
+                                  (columnData: any, colI: number) => {
+                                    return (
+                                      <TableCell
+                                        key={`th-${rowI}-${colI}`}
+                                        style={{
+                                          border: "1px solid #e0e0eb",
+                                          padding: 3,
+                                        }}
+                                      >
+                                        {columnData}
+                                        {/* <TextField
                                     disabled
                                     style={
                                       {
@@ -1318,44 +1472,40 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                       );
                                     }}
                                   /> */}
-                                  </TableCell>
-                                );
-                              })}
-                            </TableRow>
-                          );
-                        }
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                                      </TableCell>
+                                    );
+                                  }
+                                )}
+                              </TableRow>
+                            );
+                          }
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
 
-                <Button
-                  variant="outlined"
-                  style={{
-                    // backgroundColor: "#6666AA",
-                    marginLeft: 5,
-                    marginBottom: 3,
-                    backgroundColor: "#6666AA",
-                    color: "white",
-                  }}
-                  onClick={(e) => {
-                    this.setState({
-                      ...this.state,
-                      showSpillover: false,
-                    });
-                  }}
-                >
-                  Close
-                </Button>
-              </div>
-            </Modal>
-          )}
-
-          <WorkspaceTopBar
-            fcsFiles={this.state.fcsFiles}
-            workspaceState={this.state.workspaceState}
-            downloadPlotAsImage={this.downloadPlotAsImage}
-          />
+                  <Button
+                    variant="outlined"
+                    style={{
+                      // backgroundColor: "#6666AA",
+                      marginLeft: 5,
+                      marginBottom: 3,
+                      backgroundColor: "#6666AA",
+                      color: "white",
+                    }}
+                    onClick={(e) => {
+                      this.setState({
+                        ...this.state,
+                        showSpillover: false,
+                      });
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </Modal>
+            )}
+          </div>
           <div id="entire-table">
             <PlotTableComponent
               isTableRenderCall={this.state.isTableRenderCall}

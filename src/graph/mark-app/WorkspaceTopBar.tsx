@@ -24,10 +24,9 @@ interface Props {
 const TIME_INTERVAL = 35000;
 
 const WorkspaceTopBar = (props: any) => {
-  const history = useHistory();
-
   const [data, setData] = React.useState<any[]>([]);
   const [heeaderForCSV, setHeaderForCSV] = React.useState<any[]>([]);
+  const inputWorkspace = React.createRef();
 
   useEffect(() => {
     updateHeaders();
@@ -268,7 +267,11 @@ const WorkspaceTopBar = (props: any) => {
 
   const _renderToolbar = () => {
     return (
-      <span>
+      <div
+        style={{
+          height: "40px",
+        }}
+      >
         <Button
           variant="contained"
           size="small"
@@ -279,6 +282,7 @@ const WorkspaceTopBar = (props: any) => {
             color: "#1890ff",
             float: "right",
             marginRight: 10,
+            height: "30px",
           }}
           //disabled={!hasGate}
         >
@@ -309,13 +313,77 @@ const WorkspaceTopBar = (props: any) => {
             color: "#1890ff",
             float: "right",
             marginRight: 10,
+            height: "30px",
           }}
           //disabled={!hasGate}
         >
           <GetAppIcon fontSize="small" style={{ marginRight: 10 }}></GetAppIcon>
           Download SVG
         </Button>
-      </span>
+        <Tooltip title={"Save the Red Matter Workspace"}>
+          <Button
+            variant="contained"
+            id="save"
+            size="small"
+            onClick={() => {
+              props.saveWorkspace();
+            }}
+            // className={classes.topButton}
+            style={{
+              backgroundColor: "#fafafa",
+              color: "#1890ff",
+              float: "left",
+              marginRight: 10,
+              height: "30px",
+            }}
+            //disabled={!hasGate}
+          >
+            <GetAppIcon
+              fontSize="small"
+              style={{ marginRight: 10 }}
+            ></GetAppIcon>
+            Save Workspace
+          </Button>
+        </Tooltip>
+
+        <Tooltip
+          title={
+            "Add an existing Red Matter workspace (.red). All added files must have the same file names as when the Workspace was created"
+          }
+        >
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "#fafafa",
+              color: "#1890ff",
+              float: "left",
+              marginRight: 10,
+              height: "30px",
+            }}
+            onClick={() => {
+              // eslint-disable-next-line
+              //@ts-ignore
+              inputWorkspace.current.click();
+            }}
+          >
+            <input
+              type="file"
+              id="file"
+              //@ts-ignore
+              ref={inputWorkspace}
+              disabled={!props.fcsFiles || props.fcsFiles.length == 0}
+              multiple
+              accept=".red"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                props.uploadWorkspace(e.target.files);
+              }}
+            />
+            Add Workspace
+          </Button>
+        </Tooltip>
+        {props.uploadedWorkspace && <span>{props.uploadedWorkspace}</span>}
+      </div>
     );
   };
 
