@@ -86,6 +86,7 @@ export const superAlgorithm = (
     //eventIndex < Files[fileIndex].events
 
     //let adjustedEvents = Files[fileIndex].events.map((event, eventIndex) => {});
+    let events = Files[fileIndex].enrichedEvents || Files[fileIndex].events;
 
     let enrichedEvent;
     let isInGate;
@@ -95,11 +96,11 @@ export const superAlgorithm = (
 
     for (
       let eventIndex = 0;
-      eventIndex < Files[fileIndex].events.length;
+      eventIndex < events.length;
       //eventIndex < 1;
       eventIndex++
     ) {
-      event = Files[fileIndex].events[eventIndex];
+      event = events[eventIndex];
       event["color"] = "#000";
       gateNames.forEach((gateName) => (event["isInGate" + gateName] = false));
       // event["isInGate" + gate.name] = true;
@@ -227,9 +228,7 @@ export const superAlgorithm = (
       let parentGate = gateStatsObj[gateKey].parent;
 
       const divider =
-        parentGate == "All"
-          ? Files[fileIndex].events.length
-          : gateStatsObj[parentGate].count;
+        parentGate == "All" ? events.length : gateStatsObj[parentGate].count;
 
       let percentage = ((gateStatsObj[gateKey].count * 100) / divider).toFixed(
         2
@@ -722,13 +721,7 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       };
     });
 
-    let controlFileId = workspaceState.controlFileId;
-
     let plots = getPlotsForFileFromWorkspaceState(file.fileId, workspaceState);
-
-    // let plots = workspaceState.files[file.fileId]
-    //   ? JSON.parse(JSON.stringify(workspaceState.files[file.fileId].plots))
-    //   : JSON.parse(JSON.stringify(workspaceState.files[controlFileId].plots));
 
     return {
       enrichedEvents: file.events || file.enrichedEvents,
@@ -737,7 +730,6 @@ export const formatEnrichedFiles = (enrichedFiles, workspaceState) => {
       gateStats: file.gateStats,
       plots: plots,
       fileId: file.name || file.fileId,
-      isControlFile: (file.id || file.fileId) == controlFileId ? 1 : 0,
       label: file.name || file.label,
       scale: file.scale,
     };

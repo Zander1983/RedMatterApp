@@ -15,7 +15,7 @@ import Draggable from "plain-draggable";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
 import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
-import DeleteIcon from "@material-ui/icons/Delete";
+import cameraIcon from "assets/images/camera.png";
 
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
@@ -161,6 +161,7 @@ function Table(props) {
     props.workspaceState.plots.length,
     props.workspaceState.onResize,
     containerHeight,
+    props.isTableRenderCall,
   ]);
 
   const allCol = ({
@@ -461,7 +462,11 @@ function Table(props) {
     });
 
     setRows(localRows);
-  }, [props.workspaceState.plots.length, props.isTableRenderCall]);
+  }, [
+    props.workspaceState.plots.length,
+    props.enrichedFiles.length,
+    props.isTableRenderCall,
+  ]);
 
   // let editedFiles = getWorkspace().workspaceState?.files;
   // let editedFileIds = Object.keys(editedFiles);
@@ -558,6 +563,8 @@ function Table(props) {
                 // onResize={handleResize}
                 id={plot.population}
                 key={"resizable-plot-" + plotIindex}
+                // height={plot.height + 103}
+                width={plot.width + 174 + 140}
               >
                 <div
                   style={{
@@ -566,7 +573,7 @@ function Table(props) {
                 >
                   <div
                     style={{
-                      flex: "1",
+                      width: "60px",
                     }}
                   >
                     <ZoomOutMap
@@ -575,10 +582,41 @@ function Table(props) {
                   </div>
                   <div
                     style={{
-                      flex: "1",
+                      width: plot.width,
+                      maxWidth: plot.width,
+                      textAlign: "center",
+                      overflow: "hidden",
                     }}
                   >
                     {getGateNameFriendly(plot.population)}
+                  </div>
+                  <div
+                    style={{
+                      width: "20px",
+                      paddingLeft: "5px",
+                      textAlign: "right",
+                    }}
+                  >
+                    <Tooltip title={"Download plot as image"}>
+                      <img
+                        // onClick={() => {
+                        //   props.sortByGate(plot.population, DSC_SORT);
+                        // }}
+                        src={cameraIcon}
+                        alt="downlaod as image"
+                        style={{
+                          width: 20,
+                          height: 20,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          props.downloadPlotAsImage(
+                            plot.population,
+                            "plot_" + plot.population
+                          );
+                        }}
+                      />
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -637,6 +675,7 @@ function Table(props) {
                         downloadPlotAsImage={props.downloadPlotAsImage}
                         onRangeChange={props.onRangeChange}
                         clearAnyPoints={clearAnyPoints}
+                        onResize={props.onResize}
                       />
                     );
                   }

@@ -301,11 +301,11 @@ const WorkspaceTopBar = (props: any) => {
             </Tooltip>
           </CSVLink>
         </Button>
-        <Button
+        {/* <Button
           variant="contained"
           size="small"
           onClick={() => {
-            props.downloadPlotAsImage();
+            props.downloadPlotAsImage("entire-table", "workspace");
           }}
           // className={classes.topButton}
           style={{
@@ -318,8 +318,8 @@ const WorkspaceTopBar = (props: any) => {
           //disabled={!hasGate}
         >
           <GetAppIcon fontSize="small" style={{ marginRight: 10 }}></GetAppIcon>
-          Download SVG
-        </Button>
+          Download PNG
+        </Button> */}
         <Tooltip title={"Save the Red Matter Workspace"}>
           <Button
             variant="contained"

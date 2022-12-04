@@ -237,7 +237,7 @@ function Histogram(props) {
           fileId: props.enrichedFile.fileId,
         };
         props.onResize(change);
-      }, 1500);
+      }, 200);
     },
     [props.plot]
   );
@@ -347,7 +347,7 @@ function Histogram(props) {
   }, [props.clearAnyPoints]);
 
   useEffect(() => {
-    //setprops.plot(props.plot);
+    if (resizing) setResizing(false);
     let paintHistArr = [];
     let context = getContext("canvas-" + props.plotIndex);
     context.clearRect(0, 0, props.plot.width, props.plot.height);
@@ -481,7 +481,7 @@ function Histogram(props) {
         drawGateLine(context, props.plot, gate.points, null, gate, gate.color);
       });
     }
-  }, [props.plot]);
+  }, [props.plot, props.plot.reRender]);
 
   const drawGateLine = (
     context,
@@ -1438,10 +1438,11 @@ function Histogram(props) {
                     minWidth: 200,
                     width: `${props.plot.width + 2}px`,
                     height: `${props.plot.height + 2}px`,
-                    // resize: "both",
-                    // overflow: "hidden",
+                    resize: "both",
+                    overflow: "hidden",
                     position: "relative",
                   }}
+                  ref={ref}
                 >
                   <canvas
                     style={{

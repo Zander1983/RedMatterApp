@@ -169,6 +169,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
+    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
+
     //let copyOfLocalFiles: any[] = Files;
 
     //workspaceState = MultiStainState3;
@@ -192,18 +194,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
       enrichedFiles = formatEnrichedFiles(enrichedFiles, workspaceState);
 
-      // let controlEnrichedFile = enrichedFiles.find(
-      //   (enrichedFile) => enrichedFile.isControlFile
-      // );
-
       this.setState({
         ...this.state,
         controlFileScale: enrichedFiles[0].scale,
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
       });
-
-      let check = "";
     }
   };
 
@@ -327,7 +323,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let numAtThatLevel = plotsAtSameLevel ? plotsAtSameLevel.length : 0;
 
     newPlot.left =
-      (change.plot.plotType == "scatter" ? 350 : 450) * level +
+      (change.plot.plotType == "scatter"
+        ? change.plot.width + 150
+        : change.plot.width + 250) *
+        level +
       20 * numAtThatLevel;
     newPlot.top = change.plot.top + 20 * numAtThatLevel;
     // newPlot.top = 350 * numAtThatLevel;
@@ -336,6 +335,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // for histograms
     newPlot.color = change.newGate.color;
     newPlot.madeOnFile = change.fileId;
+    newPlot.height = 200;
+    newPlot.width = 200;
 
     change.newGate.madeOnFile = change.fileId;
 
@@ -386,7 +387,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
 
     let enrichedFiles = superAlgorithm(
-      copyOfLocalFiles,
+      this.state.enrichedFiles,
       newWorkspaceState,
       calculateMedianAndMean
     );
@@ -604,12 +605,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  downloadPlotAsImage = async (plot: any, plotIndex: any) => {
+  downloadPlotAsImage = async (id: string, imageName: string) => {
     // downloading functionality
-    const plotElement = document.getElementById("entire-table");
-    const dataUrl = await htmlToImage.toSvg(plotElement);
+    const plotElement = document.getElementById(id);
+    const dataUrl = await htmlToImage.toPng(plotElement, {
+      style: {
+        transform: "none",
+      },
+    });
     var link = document.createElement("a");
-    link.download = "workspace";
+    link.download = imageName;
     link.href = dataUrl;
     link.click();
   };
@@ -898,6 +903,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.setState({
       workspaceState: newWorkspaceState,
       enrichedFiles: enrichedFiles,
+      isTableRenderCall: !this.state.isTableRenderCall,
     });
   };
 
@@ -1018,36 +1024,37 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onResize = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
 
-    if (!(newWorkspaceState as any).files[change.fileId]) {
-      // so its a non-control gate being edited, copy plots from control
-      //@ts-ignore
-      (newWorkspaceState as any).files[change.fileId] = {
-        plots: JSON.parse(
-          JSON.stringify(
-            (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
-              .plots
-          )
-        ),
-      };
-    }
+    console.log(">> in onResize, change is ", change);
 
-    Object.keys((newWorkspaceState as any).files).forEach((fileId, index) => {
-      if (fileId == change.fileId) {
-        //@ts-ignore
-        newWorkspaceState.files[fileId].plots[change.plotIndex].width =
-          change.width;
-        newWorkspaceState.files[fileId].plots[change.plotIndex].height =
-          change.height;
-      }
+    console.log("newWorkspaceState is ", newWorkspaceState);
+    let plot = newWorkspaceState.plots[change.plotIndex];
+
+    plot.width = change.width;
+    plot.height = change.height;
+    plot.reRender = plot.reRender ? !plot.reRender : true;
+
+    this.state.enrichedFiles.forEach((file) => {
+      file.plots[change.plotIndex].width = change.width;
+      file.plots[change.plotIndex].height = change.height;
+      file.plots[change.plotIndex].reRender = file.plots[change.plotIndex]
+        .reRender
+        ? !file.plots[change.plotIndex].reRender
+        : true;
     });
 
-    let copyOfLocalFiles: any[] = this.state.fcsFiles;
-    let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
-    enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
+    // let copyOfLocalFiles: any[] = this.state.fcsFiles;
+    // let enrichedFiles = superAlgorithm(copyOfLocalFiles, newWorkspaceState);
+    // enrichedFiles = formatEnrichedFiles(enrichedFiles, newWorkspaceState);
 
+    newWorkspaceState.plots.forEach((plot: any) => {
+      plot.reRender = !plot.reRender;
+    });
+
+    console.log("Setting the new width, height on the State");
     this.setState({
-      enrichedFiles: enrichedFiles,
+      enrichedFiles: this.state.enrichedFiles,
       workspaceState: newWorkspaceState,
+      isTableRenderCall: !this.state.isTableRenderCall,
     });
   };
 
@@ -1186,6 +1193,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         parsedFiles: [],
         //workspaceState: workspaceState,
       });
+
+      console.log("setting the state fcsFiles to ", fcsFiles);
 
       if (localStorage.getItem("signup") != "true") {
         this.setState({
