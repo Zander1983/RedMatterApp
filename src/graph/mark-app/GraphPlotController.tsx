@@ -169,8 +169,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // @ts-ignore
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
 
-    console.log("copyOfLocalFiles is ", copyOfLocalFiles);
-
     //let copyOfLocalFiles: any[] = Files;
 
     //workspaceState = MultiStainState3;
@@ -1024,9 +1022,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onResize = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
 
-    console.log(">> in onResize, change is ", change);
-
-    console.log("newWorkspaceState is ", newWorkspaceState);
     let plot = newWorkspaceState.plots[change.plotIndex];
 
     plot.width = change.width;
@@ -1050,7 +1045,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       plot.reRender = !plot.reRender;
     });
 
-    console.log("Setting the new width, height on the State");
     this.setState({
       enrichedFiles: this.state.enrichedFiles,
       workspaceState: newWorkspaceState,
@@ -1193,8 +1187,6 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         parsedFiles: [],
         //workspaceState: workspaceState,
       });
-
-      console.log("setting the state fcsFiles to ", fcsFiles);
 
       if (localStorage.getItem("signup") != "true") {
         this.setState({

@@ -11,7 +11,7 @@ import {
   hasCustomGate,
   linLabel,
 } from "./Helper";
-import Draggable from "plain-draggable";
+import Draggable from "./plain-draggable-edited";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
 import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
@@ -564,7 +564,11 @@ function Table(props) {
                 id={plot.population}
                 key={"resizable-plot-" + plotIindex}
                 // height={plot.height + 103}
-                width={plot.width + 174 + 140}
+                // width={plot.width + 174 + 140}
+                style={{
+                  position: "absolute",
+                  // height: "100%",
+                }}
               >
                 <div
                   style={{
