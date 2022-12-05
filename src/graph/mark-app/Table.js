@@ -560,15 +560,8 @@ function Table(props) {
                   }
                 }}
                 className="node"
-                // onResize={handleResize}
                 id={plot.population}
                 key={"resizable-plot-" + plotIindex}
-                // height={plot.height + 103}
-                // width={plot.width + 174 + 140}
-                style={{
-                  position: "absolute",
-                  // height: "100%",
-                }}
               >
                 <div
                   style={{
