@@ -63,9 +63,9 @@ const useStyles = makeStyles((theme) => ({
     padding: 10,
   },
   footerMain: {
-    position: "absolute",
-    left: 0,
-    right: 0,
+    // position: "absolute",
+    // left: 0,
+    // right: 0,
     background:
       "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
   },

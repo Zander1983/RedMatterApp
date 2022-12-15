@@ -149,8 +149,6 @@
     "@types/react-table": "^7.7.9",
     "envify": "^4.1.0",
     "jqueryui": "^1.11.1",
-    "terser": "^5.7.0",
-    "terser-brunch": "^4.0.0",
     "uglifyify": "^5.0.2"
   }
 }

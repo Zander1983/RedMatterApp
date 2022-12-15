@@ -49,6 +49,7 @@ import {
 
 //@ts-ignore
 import { saveAs } from "file-saver";
+import OpenAI from "Components/common/OpenAI/OpenAI";
 
 interface PlotControllerProps {
   sharedWorkspace: boolean;
@@ -434,13 +435,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
 
     if ((newWorkspaceState as any).customGates) {
-      (newWorkspaceState as any).customGates = (newWorkspaceState as any).customGates.filter(
-        (gate: any) => {
-          if (plotsToBeRemoved.indexOf(gate.name) < 0) {
-            return gate;
-          }
+      (newWorkspaceState as any).customGates = (
+        newWorkspaceState as any
+      ).customGates.filter((gate: any) => {
+        if (plotsToBeRemoved.indexOf(gate.name) < 0) {
+          return gate;
         }
-      );
+      });
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -469,9 +470,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[
-        plotIndex
-      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -486,9 +486,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         change.plotIndex
       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
 
-      (newWorkspaceState as any).plots[change.plotIndex].gates[
-        gateIndex
-      ] = JSON.parse(JSON.stringify(change.gate));
+      (newWorkspaceState as any).plots[change.plotIndex].gates[gateIndex] =
+        JSON.parse(JSON.stringify(change.gate));
     } else {
       // so editing existing gate on a different file
       if (!(newWorkspaceState as any).customGates) {
@@ -1210,9 +1209,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   updateSpillover = (rowI: any, colI: any, newColumnData: any) => {
     if (!isNaN(parseFloat(newColumnData))) {
       //@ts-ignore
-      this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
-        newColumnData
-      );
+      this.state.controlFileScale.invertedMatrix.data[rowI][colI] =
+        parseFloat(newColumnData);
 
       this.setState({
         ...this.state,
@@ -1796,7 +1794,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             No data leaves the browser
           </p>
         </div>
-        <ChatBox />
+        <OpenAI />
+        {/* <ChatBox /> */}
       </div>
     );
   };
