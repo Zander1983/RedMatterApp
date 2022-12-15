@@ -67,10 +67,8 @@ function Plot(props) {
   let [gateNameLengths, setGateNameLengths] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  const [
-    eventsOutOfCanvasPercentage,
-    setEventsOutOfCanvasPercentage,
-  ] = useState(0);
+  const [eventsOutOfCanvasPercentage, setEventsOutOfCanvasPercentage] =
+    useState(0);
 
   const [gateName, setGateName] = useState({
     name: "",
@@ -1399,6 +1397,9 @@ function Plot(props) {
                     resize: "both",
                     overflow: "hidden",
                     position: "relative",
+                    "&:active": {
+                      height: 0,
+                    },
                   }}
                   ref={ref}
                 >

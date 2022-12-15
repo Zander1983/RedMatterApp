@@ -56,16 +56,15 @@ const useStyles = makeStyles((theme) => ({
       paddingTop: theme.spacing(6),
       paddingBottom: theme.spacing(6),
     },
-    marginTop: -225,
+    // marginTop: -225,
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center",
     padding: 10,
   },
   footerMain: {
-    // position: "absolute",
-    // left: 0,
-    // right: 0,
+    // position: "fixed",
+    // bottom: 0,
     background:
       "linear-gradient(180deg, #6666F919 0%, #6666F913 50%, #F0F2F5 100%)",
   },
@@ -113,43 +112,8 @@ const footerData = [
           </div>
         ),
       },
-      // {
-      //   name: "Terms of use",
-      //   open: false,
-      //   description: (
-      //     <div>
-      //       Any FCS data uploaded to Red Matter may be used by Red Matter in an
-      //       anonymised form. Red Matter defines anonymised FCS data as data that
-      //       excludes any file metadata, labels, or any other infromation that
-      //       would identify the FCS file or its source.
-      //     </div>
-      //   ),
-      // },
-      // {
-      //   name: "Credits",
-      //   path: "/credits",
-      // },
     ],
   },
-
-  // {
-  //   title: "Contact",
-  //   description: [
-  //     {
-  //       name: "Contact us",
-  //       open: false,
-  //       description: (
-  //         <div>
-  //           Send us an email at <b>support@redmatterapp.com</b>
-  //         </div>
-  //       ),
-  //     },
-  //     {
-  //       name: "Join our team",
-  //       path: "/jobs",
-  //     },
-  //   ],
-  // },
 ];
 export default function Footer(props: any) {
   const forceUpdate = useForceUpdate();

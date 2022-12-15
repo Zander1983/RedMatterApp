@@ -36,7 +36,6 @@ ReactDOM.render(
         <ErrorBoundaryMain mainScreen={true} appScreen={false}>
           <App />
         </ErrorBoundaryMain>
-        <Footer />
       </PersistGate>
     </Provider>
   </BrowserRouter>,

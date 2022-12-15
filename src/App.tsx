@@ -11,7 +11,7 @@ import { Layout } from "antd";
 
 import AppHeader from "./Components/common/Header";
 import AppLandingPage from "./Components/home/LandingPage";
-
+import Footer from "Components/common/Footer";
 import About from "./Components/home/About";
 
 import GraphWorkspaceComponent from "./graph/GraphWorkspaceComponent";
@@ -46,7 +46,7 @@ const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    paddingBottom: 240,
+    paddingBottom: 600,
     flex: "1 0 auto",
   },
   footer: {
@@ -350,6 +350,7 @@ const App = () => {
           </Content>
         )}
       </ThemeProvider>
+      <Footer />
     </Layout>
   );
 };
