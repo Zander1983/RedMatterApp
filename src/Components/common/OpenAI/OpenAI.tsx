@@ -26,31 +26,30 @@ const OpenAI = () => {
     if (question.current.value.trim().length) {
       // make a call to OpenAI API here
       // https://beta.openai.com/docs/api-reference/completions/create
-
-      setIsActive(true);
-      const response = await axios.post(
-        "https://api.openai.com/v1/completions",
-        {
-          prompt: "In flow cytometry, " + question.current.value,
-          model: "text-davinci-003",
-          // model: "text-curie-001",
-          // model: "text-ada-001",
-          max_tokens: 1024,
-          temperature: 0.5,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer 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",
-          },
-        }
-      );
-      console.log(response.data);
-      setIsActive(false);
-      if (response.data && response.data.choices) {
-        setQuestionResponse(response.data.choices[0].text);
-      }
+      // setIsActive(true);
+      // const response = await axios.post(
+      //   "https://api.openai.com/v1/completions",
+      //   {
+      //     prompt: "In flow cytometry, " + question.current.value,
+      //     model: "text-davinci-003",
+      //     // model: "text-curie-001",
+      //     // model: "text-ada-001",
+      //     max_tokens: 1024,
+      //     temperature: 0.5,
+      //   },
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization:
+      //         "Bearer sk-xxx",
+      //     },
+      //   }
+      // );
+      // console.log(response.data);
+      // setIsActive(false);
+      // if (response.data && response.data.choices) {
+      //   setQuestionResponse(response.data.choices[0].text);
+      // }
     } else {
       snackbarService.showSnackbar("Please enter a valid Feedback", "error");
     }
