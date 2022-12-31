@@ -67,10 +67,8 @@ function Plot(props) {
   let [gateNameLengths, setGateNameLengths] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  const [
-    eventsOutOfCanvasPercentage,
-    setEventsOutOfCanvasPercentage,
-  ] = useState(0);
+  const [eventsOutOfCanvasPercentage, setEventsOutOfCanvasPercentage] =
+    useState(0);
 
   const [gateName, setGateName] = useState({
     name: "",
@@ -268,15 +266,26 @@ function Plot(props) {
 
       if (props.plot.population === "All") {
         let mean = pointHitTotal / pointHitUnique;
+
+        // create a 1d array from arr with all the non undefined values arranged in ascending order
+        let arr1d = arr
+          .flat()
+          .filter((x) => x != undefined)
+          .sort((a, b) => a - b);
+
+        const redCutoff = arr1d[Math.round(arr1d.length * 0.95)];
+        const yellowCutoff = arr1d[Math.round(arr1d.length * 0.75)];
+        const greenCutoff = arr1d[Math.round(arr1d.length * 0.5)];
+
         for (let i = 0; i < arr.length; i++) {
           for (let x = 0; x < arr[i].length; x++) {
-            if (arr[i][x] >= Math.round(mean * 4)) {
+            if (arr[i][x] >= redCutoff) {
               context.fillStyle = "red";
               context.fillRect(i, x, 1, 1);
-            } else if (arr[i][x] >= Math.round(mean * 2)) {
+            } else if (arr[i][x] >= yellowCutoff) {
               context.fillStyle = "yellow";
               context.fillRect(i, x, 1, 1);
-            } else if (arr[i][x] >= Math.round(mean)) {
+            } else if (arr[i][x] > greenCutoff) {
               context.fillStyle = "green";
               context.fillRect(i, x, 1, 1);
             }
