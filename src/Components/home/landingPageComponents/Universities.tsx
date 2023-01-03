@@ -19,7 +19,7 @@ const Universities = () => {
   const classes = useStyles();
 
   return (
-    <Grid container>
+    <Grid id="institutes" container>
       <Grid item className={classes.mainContainer}>
         <h1>Users registered in over 2,000 Institutues</h1>
         <Grid container className={classes.universitiesContainer}>
