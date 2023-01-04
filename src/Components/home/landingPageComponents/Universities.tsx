@@ -9,7 +9,10 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     padding: 5,
   },
-  universitiesContainer: {},
+  institutionTitle: {
+    fontSize: 25,
+    fontWeight: 600,
+  },
   back: {
     borderRadius: 5,
   },
@@ -21,8 +24,10 @@ const Universities = () => {
   return (
     <Grid id="institutes" container>
       <Grid item className={classes.mainContainer}>
-        <h1>Users registered in over 2,000 Institutues</h1>
-        <Grid container className={classes.universitiesContainer}>
+        <h1 className={classes.institutionTitle}>
+          Users registered in over 2,000 Institutues
+        </h1>
+        <Grid container>
           <Grid item className={classes.back}>
             <LogosSlider content={universities} />
             <LogosSlider content={universities.reverse()} rtl={true} />

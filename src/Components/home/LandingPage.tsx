@@ -6,6 +6,7 @@ import TargetUsers from "./landingPageComponents/TargetUsers";
 import Features from "./landingPageComponents/Features";
 import Partners from "./landingPageComponents/Partners";
 import Universities from "./landingPageComponents/Universities";
+import Testimonials from "./landingPageComponents/Testimonials";
 import { Divider } from "antd";
 import {
   DialogActions,
@@ -85,6 +86,7 @@ const AppLandingPage = () => {
 
         <Divider />
         <Universities />
+        <Testimonials />
         <Partners />
         {/* <Divider></Divider>
         <Plans /> */}

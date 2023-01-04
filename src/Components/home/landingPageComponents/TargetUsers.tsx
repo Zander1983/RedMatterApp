@@ -11,8 +11,8 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: 20,
   },
   institutionTitle: {
-    fontWeight: 700,
-    fontSize: "1.8em",
+    fontSize: 25,
+    fontWeight: 600,
   },
   cardContainer: {
     textAlign: "center",
@@ -91,8 +91,7 @@ const analysis = [
   {
     img: researcher,
     title: "Core Flow Cytometry Functionality",
-    text:
-      "Most flow users do not need the huge amount of functionality provided by traditional Desktop applications. Red Matter took the core functionality, and built it in the web. No installation. Works on all browsers.",
+    text: "Most flow users do not need the huge amount of functionality provided by traditional Desktop applications. Red Matter took the core functionality, and built it in the web. No installation. Works on all browsers.",
   },
   // {
   //   img: integration,
@@ -116,8 +115,7 @@ const integrate = [
   {
     img: integration,
     title: "Integrate On Any Site",
-    text:
-      "A white-label version of the Red Matter software can be run on any website by simply dropping in the Red Matter Javascript library. For more email me at mark.kelly@redmatterapp.com",
+    text: "A white-label version of the Red Matter software can be run on any website by simply dropping in the Red Matter Javascript library. For more email me at mark.kelly@redmatterapp.com",
   },
   // {
   //   img: uni,
