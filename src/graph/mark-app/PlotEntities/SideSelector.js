@@ -107,7 +107,6 @@ function SideSelector(props) {
                 textAlign: "center",
                 fontWeight: "bold",
                 marginBottom: 5,
-                border: "1px solid #e0e0eb",
               }}
             >
               <TableBody>
@@ -219,6 +218,25 @@ function SideSelector(props) {
           paddingRight: 5,
         }}
       >
+        <Tooltip
+          title={
+            props.plot.yScaleType == "bi"
+              ? "Biexponential scaling with the Logicle Algoritm"
+              : "Linear scale"
+          }
+        >
+          <div
+            style={{
+              //marginTop: "113px",
+              position: "absolute",
+              top: "40px",
+              left: "10px",
+              fontWeight: "bold",
+            }}
+          >
+            {props.plot.yScaleType}
+          </div>
+        </Tooltip>
         <div
           className="pc-y"
           style={{
@@ -388,6 +406,25 @@ function SideSelector(props) {
                 ))}
               </Select>
             </Tooltip>
+            <Tooltip
+              title={
+                props.plot.xScaleType == "bi"
+                  ? "Biexponential scaling with the Logicle Algoritm"
+                  : "Linear scale"
+              }
+            >
+              <div
+                style={{
+                  //marginTop: "113px",
+                  // position: "absolute",
+                  // bottom: "45px",
+                  // left: "15px",
+                  fontWeight: "bold",
+                }}
+              >
+                {props.plot.xScaleType}
+              </div>
+            </Tooltip>
           </div>
         </div>
 
@@ -461,6 +498,7 @@ function SideSelector(props) {
                   );
                 })}
             </Select>
+
             <div
               style={{
                 height: 180,
