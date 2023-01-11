@@ -3,6 +3,7 @@ import PlotTableComponent from "./Table";
 import { snackbarService } from "uno-material-ui";
 import { Tooltip } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
+import html2canvas from "html2canvas";
 import FCSServices from "./FCSServices/FCSServices";
 import {
   Grid,
@@ -605,16 +606,25 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   downloadPlotAsImage = async (id: string, imageName: string) => {
     // downloading functionality
+    // const plotElement = document.getElementById(id);
+    // const dataUrl = await htmlToImage.toPng(plotElement, {
+    //   style: {
+    //     transform: "none",
+    //   },
+    // });
+    // var link = document.createElement("a");
+    // link.download = imageName;
+    // link.href = dataUrl;
+    // link.click();
     const plotElement = document.getElementById(id);
-    const dataUrl = await htmlToImage.toPng(plotElement, {
-      style: {
-        transform: "none",
-      },
-    });
+    const canvas = await html2canvas(plotElement);
+
     var link = document.createElement("a");
     link.download = imageName;
-    link.href = dataUrl;
+    link.href = canvas.toDataURL("image/png");
     link.click();
+
+    //html2canvas
   };
 
   saveWorkspace = async (plot: any, plotIndex: any) => {

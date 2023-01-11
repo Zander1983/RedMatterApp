@@ -37,6 +37,7 @@
     "firebase": "^9.9.4",
     "formik": "^2.2.6",
     "html-to-image": "^1.9.0",
+    "html2canvas": "^1.4.1",
     "jquery": "^3.5.1",
     "jquery-resizable": "^1.0.6",
     "lodash": "^4.17.21",

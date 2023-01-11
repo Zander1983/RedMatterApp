@@ -214,10 +214,8 @@ function Histogram(props) {
   let [isEditingGate, setIsEditingGate] = useState(null);
   let [menuPosition, setMenuPosition] = useState([]);
 
-  const [
-    maxCountPlusTenPercent_Value,
-    setMaxCountPlusTenPercent_Value,
-  ] = useState();
+  const [maxCountPlusTenPercent_Value, setMaxCountPlusTenPercent_Value] =
+    useState();
   const [resizing, setResizing] = useState(false);
 
   const onResizeDiv = useCallback(
@@ -409,8 +407,8 @@ function Histogram(props) {
       let overlayFileIndex = 0;
 
       for (let enrichedOverlayFile of props.enrichedOverlayFiles) {
-        let overlayEnrichedFileData = enrichedOverlayFile.enrichedEvents.flatMap(
-          (enrichedEvent, index) => {
+        let overlayEnrichedFileData =
+          enrichedOverlayFile.enrichedEvents.flatMap((enrichedEvent, index) => {
             if (
               props.plot.population == "All" ||
               enrichedEvent["isInGate" + props.plot.population]
@@ -427,8 +425,7 @@ function Histogram(props) {
             } else {
               return [];
             }
-          }
-        );
+          });
 
         const overlayHists = histogram({
           data: overlayEnrichedFileData,
@@ -1329,6 +1326,19 @@ function Histogram(props) {
     },
   };
 
+  const canvasSafariCSS = `
+  /* CSS targeting Safari only */
+  @media not all and (min-resolution:.001dpcm) {
+    .canvas-container {
+      will-change: opacity;
+    }
+    .canvas-container canvas {
+      position: relative;
+      z-index: -1;
+    }
+  }
+`;
+
   return (
     <>
       {" "}
@@ -1431,7 +1441,9 @@ function Histogram(props) {
                   width={25}
                 />
                 {/* main canvas */}
+                <style>{canvasSafariCSS}</style>
                 <div
+                  className="canvas-container"
                   style={{
                     border: "1px solid #32a1ce",
                     minHeight: 200,
