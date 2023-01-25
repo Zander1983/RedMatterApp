@@ -83,6 +83,8 @@ function Plot(props) {
 
   const onResizeDiv = useCallback(
     (w, h) => {
+      w = Math.floor(w);
+      h = Math.floor(h);
       if (w == props.plot.width && h == props.plot.height) return;
       drawLabel();
       setResizing(true);
@@ -219,7 +221,9 @@ function Plot(props) {
 
   useEffect(() => {
     if (resizing) setResizing(false);
-    var arr = new Array(props.plot.length); // create an empty array of length `M`
+
+    console.log("height is ", props.plot.height);
+    var arr = new Array(props.plot.height); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
       arr[i] = new Array(props.plot.width); // make each element an array
     }
