@@ -221,7 +221,9 @@ function Plot(props) {
 
   useEffect(() => {
     if (resizing) setResizing(false);
+
     var heatMap = new Array(props.plot.height); // create an empty array of length `M`
+
     for (var i = 0; i < props.plot.width; i++) {
       heatMap[i] = new Array(props.plot.width); // make each element an array
     }

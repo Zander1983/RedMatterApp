@@ -714,7 +714,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
           if (!checker(fileIds, plots)) {
             snackbarService.showSnackbar(
-              "The Workspace dows not match the files - the files must have the same name as they had when the Workspace was created",
+              "The Workspace does not match the files - the files must have the same name as they had when the Workspace was created",
               "error"
             );
             return;
@@ -1391,75 +1391,128 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             style={{
               borderTop: "1px solid #ccc",
               paddingTop: "5px",
+              display: "flex",
+              flexDirection: "row",
             }}
           >
-            <Button
-              variant="outlined"
+            <div>
+              <Button
+                variant="outlined"
+                style={{
+                  backgroundColor: "#fafafa",
+                  color: "#1890ff",
+                  marginLeft: 5,
+                  marginBottom: 3,
+                  // color: "white",
+                }}
+                onClick={(e) => {
+                  let firstFile = this.state.fcsFiles[0];
+                  const {
+                    xAxisLabel,
+                    yAxisLabel,
+                    xAxisIndex,
+                    yAxisIndex,
+                    xAxisScaleType,
+                    yAxisScaleType,
+                  } = getPlotChannelAndPosition(firstFile);
+
+                  let workspaceState = createDefaultPlotSnapShot(
+                    firstFile.id,
+                    xAxisLabel,
+                    yAxisLabel,
+                    xAxisIndex,
+                    yAxisIndex,
+                    xAxisScaleType,
+                    yAxisScaleType
+                  );
+
+                  console.log("workspaceState is ", workspaceState);
+
+                  //@ts-ignore
+                  this.state.uploadedWorkspace = "";
+                  this.onInitState(workspaceState);
+                }}
+              >
+                Reset This Analysis
+              </Button>
+            </div>
+            <div>
+              <Button
+                variant="outlined"
+                style={{
+                  backgroundColor: "#fafafa",
+                  color: "#1890ff",
+                  marginLeft: 5,
+                  marginBottom: 3,
+                }}
+                onClick={(e) => {
+                  let firstFile = this.state.fcsFiles[0];
+                  const {
+                    xAxisLabel,
+                    yAxisLabel,
+                    xAxisIndex,
+                    yAxisIndex,
+                    xAxisScaleType,
+                    yAxisScaleType,
+                  } = getPlotChannelAndPosition(firstFile);
+
+                  let workspaceState = createDefaultPlotSnapShot(
+                    firstFile.id,
+                    xAxisLabel,
+                    yAxisLabel,
+                    xAxisIndex,
+                    yAxisIndex,
+                    xAxisScaleType,
+                    yAxisScaleType
+                  );
+
+                  console.log("workspaceState is ", workspaceState);
+
+                  //@ts-ignore
+                  this.state.uploadedWorkspace = "";
+                  this.onInitState(workspaceState);
+                }}
+              >
+                New Analysis
+              </Button>
+            </div>
+            <div
               style={{
-                // backgroundColor: "#6666AA",
-                marginLeft: 5,
-                marginBottom: 3,
-                // color: "white",
-              }}
-              onClick={(e) => {
-                let firstFile = this.state.fcsFiles[0];
-                const {
-                  xAxisLabel,
-                  yAxisLabel,
-                  xAxisIndex,
-                  yAxisIndex,
-                  xAxisScaleType,
-                  yAxisScaleType,
-                } = getPlotChannelAndPosition(firstFile);
-
-                let workspaceState = createDefaultPlotSnapShot(
-                  firstFile.id,
-                  xAxisLabel,
-                  yAxisLabel,
-                  xAxisIndex,
-                  yAxisIndex,
-                  xAxisScaleType,
-                  yAxisScaleType
-                );
-
-                //@ts-ignore
-                this.state.uploadedWorkspace = "";
-                this.onInitState(workspaceState);
+                marginLeft: "auto",
               }}
             >
-              Reset
-            </Button>
-            {/* @ts-ignore */}
-            {this.state.controlFileScale?.spilloverParams && (
-              <Tooltip
-                title={
-                  "Details of compensation that has been automatically applied to the samples"
-                }
-              >
-                <Button
-                  variant="outlined"
-                  style={{
-                    // backgroundColor: "#6666AA",
-                    marginLeft: 5,
-                    marginBottom: 3,
-                    // color: "white",
-                  }}
-                  onClick={(e) =>
-                    this.setState({
-                      ...this.state,
-                      showSpillover: !this.state.showSpillover,
-                    })
+              {/* @ts-ignore */}
+              {this.state.controlFileScale?.spilloverParams && (
+                <Tooltip
+                  title={
+                    "Details of compensation that has been automatically applied to the samples"
                   }
                 >
-                  Compensation
-                  <img
-                    src={!this.state?.showSpillover ? downArrow : upArrow}
-                    alt="arrow-icon"
-                    style={{ width: 10, height: 10, marginLeft: 10 }}
-                  />
-                </Button>
-              </Tooltip>
-            )}
+                  <Button
+                    variant="outlined"
+                    style={{
+                      // backgroundColor: "#6666AA",
+                      marginLeft: 5,
+                      marginBottom: 3,
+                      // color: "white",
+                    }}
+                    onClick={(e) =>
+                      this.setState({
+                        ...this.state,
+                        showSpillover: !this.state.showSpillover,
+                      })
+                    }
+                  >
+                    Compensation
+                    <img
+                      src={!this.state?.showSpillover ? downArrow : upArrow}
+                      alt="arrow-icon"
+                      style={{ width: 10, height: 10, marginLeft: 10 }}
+                    />
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
             {this.state.showSpillover && (
               <Modal
                 isOpen={this.state.showSpillover}
