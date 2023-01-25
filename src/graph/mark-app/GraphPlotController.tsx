@@ -435,13 +435,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
 
     if ((newWorkspaceState as any).customGates) {
-      (newWorkspaceState as any).customGates = (newWorkspaceState as any).customGates.filter(
-        (gate: any) => {
-          if (plotsToBeRemoved.indexOf(gate.name) < 0) {
-            return gate;
-          }
+      (newWorkspaceState as any).customGates = (
+        newWorkspaceState as any
+      ).customGates.filter((gate: any) => {
+        if (plotsToBeRemoved.indexOf(gate.name) < 0) {
+          return gate;
         }
-      );
+      });
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -1032,13 +1032,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     let plot = newWorkspaceState.plots[change.plotIndex];
 
-    plot.width = change.width;
-    plot.height = change.height;
+    plot.width = Math.round(change.width);
+    plot.height = Math.round(change.height);
     plot.reRender = plot.reRender ? !plot.reRender : true;
 
     this.state.enrichedFiles.forEach((file) => {
-      file.plots[change.plotIndex].width = change.width;
-      file.plots[change.plotIndex].height = change.height;
+      file.plots[change.plotIndex].width = Math.round(change.width);
+      file.plots[change.plotIndex].height = Math.round(change.height);
       file.plots[change.plotIndex].reRender = file.plots[change.plotIndex]
         .reRender
         ? !file.plots[change.plotIndex].reRender

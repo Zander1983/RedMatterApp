@@ -83,8 +83,6 @@ function Plot(props) {
 
   const onResizeDiv = useCallback(
     (w, h) => {
-      w = Math.floor(w);
-      h = Math.floor(h);
       if (w == props.plot.width && h == props.plot.height) return;
       drawLabel();
       setResizing(true);
