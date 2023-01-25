@@ -4,6 +4,9 @@ phases:
     commands:
       - echo Installing Node 12...
       - apt update
+      - echo "running apt-key..."
+      - apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
+      - echo "running install -y ca-certificates..."
       - apt install -y ca-certificates
       - curl -sL https://deb.nodesource.com/setup_12.x | bash -
       - apt install -y nodejs
