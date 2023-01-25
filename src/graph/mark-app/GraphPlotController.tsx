@@ -5,6 +5,7 @@ import { Tooltip } from "@material-ui/core";
 import * as htmlToImage from "html-to-image";
 import html2canvas from "html2canvas";
 import FCSServices from "./FCSServices/FCSServices";
+import numeral from "numeral";
 import {
   Grid,
   Button,
@@ -34,6 +35,8 @@ import {
   loopAndCompensate,
   updateEnrichedFilesPlots,
   shouldCalculateMeanMedian,
+  kmeans,
+  skmeans,
 } from "./Helper";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
@@ -80,6 +83,11 @@ interface IState {
   signUpEmail: string;
   snackbarOpen: boolean;
   uploadedWorkspace: string;
+  filesToBeUploaded: string[];
+  showFilesToBeUploadedModal: boolean;
+  fileNameAndCounts: any;
+  selectedDownSample: number;
+  customSelectedDownSample: string;
 }
 
 const customStyles = {
@@ -91,7 +99,45 @@ const customStyles = {
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
     backgroundColor: "rgb(125 204 204)",
+    maxWidth: "600px",
   },
+};
+
+const resetState = () => {
+  return {
+    sortByChanged: false,
+    sortBy: "file",
+    isTableRenderCall: false,
+    //@ts-ignore
+    enrichedFiles: [],
+    workspaceState: {},
+    //@ts-ignore
+    enrichedEvents: [],
+    testParam: "some value",
+    activePipelineId: "",
+    //@ts-ignore
+    parsedFiles: [],
+    //@ts-ignore
+    uploadingFiles: [],
+    currentParsingFile: "",
+    controlFileScale: {},
+    showSpillover: false,
+    showRanges: false,
+    //@ts-ignore
+    fcsFiles: [],
+    // controlFileId: "",
+    userSignUpModalShowing: false,
+    signUpEmail: "",
+    snackbarOpen: false,
+    uploadedWorkspace: "",
+    //@ts-ignore
+    filesToBeUploaded: [],
+    showFilesToBeUploadedModal: false,
+    //@ts-ignore
+    fileNameAndCounts: [],
+    selectedDownSample: 100000,
+    customSelectedDownSample: "",
+  };
 };
 
 class NewPlotController extends React.Component<PlotControllerProps, IState> {
@@ -100,28 +146,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   constructor(props: PlotControllerProps) {
     super(props);
 
-    this.state = {
-      sortByChanged: false,
-      sortBy: "file",
-      isTableRenderCall: false,
-      enrichedFiles: [],
-      workspaceState: {},
-      enrichedEvents: [],
-      testParam: "some value",
-      activePipelineId: "",
-      parsedFiles: [],
-      uploadingFiles: [],
-      currentParsingFile: "",
-      controlFileScale: {},
-      showSpillover: false,
-      showRanges: false,
-      fcsFiles: [],
-      // controlFileId: "",
-      userSignUpModalShowing: false,
-      signUpEmail: "",
-      snackbarOpen: false,
-      uploadedWorkspace: "",
-    };
+    this.state = resetState();
 
     this.onChangeTableDataType = this.onChangeTableDataType.bind(this);
     this.onChangeColWidth = this.onChangeColWidth.bind(this);
@@ -435,13 +460,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
 
     if ((newWorkspaceState as any).customGates) {
-      (newWorkspaceState as any).customGates = (newWorkspaceState as any).customGates.filter(
-        (gate: any) => {
-          if (plotsToBeRemoved.indexOf(gate.name) < 0) {
-            return gate;
-          }
+      (newWorkspaceState as any).customGates = (
+        newWorkspaceState as any
+      ).customGates.filter((gate: any) => {
+        if (plotsToBeRemoved.indexOf(gate.name) < 0) {
+          return gate;
         }
-      );
+      });
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -470,9 +495,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     );
     const filesIds = Object.keys((this.state.workspaceState as any).files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[
-        plotIndex
-      ] = JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
+        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
     });
   };
 
@@ -487,9 +511,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         change.plotIndex
       ].gates.findIndex((gate: any) => gate.name == change.gate.name);
 
-      (newWorkspaceState as any).plots[change.plotIndex].gates[
-        gateIndex
-      ] = JSON.parse(JSON.stringify(change.gate));
+      (newWorkspaceState as any).plots[change.plotIndex].gates[gateIndex] =
+        JSON.parse(JSON.stringify(change.gate));
     } else {
       // so editing existing gate on a different file
       if (!(newWorkspaceState as any).customGates) {
@@ -1062,7 +1085,43 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
-  uploadFiles = async (files: FileList) => {
+  showUploadModal = async (files: []) => {
+    const fcsservice = new FCSServices();
+
+    // loop through files
+    let fileNameAndCounts = [];
+    for (let i = 0; i < files.length; i++) {
+      //@ts-ignore
+      let fcsFile = await files[i].arrayBuffer().then(async (e) => {
+        const buf = Buffer.from(e);
+        return await fcsservice.loadFileMetadata(buf, 1).then((e) => {
+          return e;
+        });
+      });
+
+      //@ts-ignore
+      files[i].eventCount = fcsFile.meta.eventCount;
+      //@ts-ignore
+      files[i].text = fcsFile.text;
+
+      fileNameAndCounts.push({
+        //@ts-ignore
+        fileName: files[i].name,
+        //@ts-ignore
+        eventCount: files[i].eventCount,
+      });
+    }
+
+    this.setState({
+      ...this.state,
+      showFilesToBeUploadedModal: true,
+      //@ts-ignore
+      filesToBeUploaded: files,
+      fileNameAndCounts: fileNameAndCounts,
+    });
+  };
+
+  uploadFiles = async (files: FileList, eventCount: number) => {
     const fileList: { tempId: string; file: File }[] = [];
     const allowedExtensions = ["fcs", "lmd"];
 
@@ -1099,22 +1158,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       //fileTempIdMap[file.tempId] = "";
       let fcsFile = await file.file.arrayBuffer().then(async (e) => {
         const buf = Buffer.from(e);
-        return await fcsservice.loadFileMetadata(buf).then((e) => {
+        return await fcsservice.loadFileMetadata(buf, eventCount).then((e) => {
           return e;
         });
       });
 
+      // fcsFile.events = skmeans(fcsFile.events);
+
       if (this.state.fcsFiles && this.state.fcsFiles.length > 0) {
         if (this.state.fcsFiles[0].channels.length != fcsFile.channels.length) {
           fcsFiles = [];
-          this.setState({
-            ...this.state,
-            currentParsingFile: "",
-          });
+          const resettedState = resetState();
+          this.setState(resettedState);
           alert(
             "Could not parse files - channels are not the same. Only upload files with the same channels"
           );
           abandon = true;
+          // let s = this.state;
+          // debugger;
           break;
         }
       }
@@ -1220,9 +1281,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   updateSpillover = (rowI: any, colI: any, newColumnData: any) => {
     if (!isNaN(parseFloat(newColumnData))) {
       //@ts-ignore
-      this.state.controlFileScale.invertedMatrix.data[rowI][colI] = parseFloat(
-        newColumnData
-      );
+      this.state.controlFileScale.invertedMatrix.data[rowI][colI] =
+        parseFloat(newColumnData);
 
       this.setState({
         ...this.state,
@@ -1690,11 +1750,314 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 onChange={(e) => {
                   //
 
-                  this.uploadFiles(e.target.files);
+                  this.showUploadModal(e.target.files);
                 }}
               />
               Add FCS Files
             </Button>
+
+            <Modal
+              isOpen={this.state.showFilesToBeUploadedModal}
+              appElement={document.getElementById("root") || undefined}
+              style={customStyles}
+            >
+              {/* list the filesToBeUploaded */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <h3
+                  style={{
+                    textAlign: "center",
+                  }}
+                >
+                  Files to be analysed
+                </h3>
+                <p
+                  style={{
+                    border: "1px solid #dadee6",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      maxHeight: "400px",
+                      overflow: "scroll",
+                    }}
+                  >
+                    {this.state.fileNameAndCounts.map(
+                      (file: any, index: number) => (
+                        <div
+                          key={"file-tbu-" + index}
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                          }}
+                        >
+                          <div
+                            key={"file-tbu-child-" + index}
+                            style={{
+                              width: "70%",
+                              padding: "1px",
+                              wordWrap: "break-word",
+                              fontSize: 10,
+                            }}
+                          >
+                            {file.fileName}
+                          </div>
+                          <div
+                            key={"file-tbu-events-" + index}
+                            style={{
+                              width: "30%",
+                              padding: "1px",
+                              fontSize: 10,
+                            }}
+                          >
+                            {numeral(file.eventCount).format("0,0")} events
+                          </div>
+                        </div>
+                      )
+                    )}
+                    <p
+                      style={{
+                        border: "1px solid #dadee6",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {this.state.fileNameAndCounts.reduce(
+                      (acc: any, cur: any) => acc + cur.eventCount,
+                      0
+                    ) > 3000 ? (
+                      <>
+                        <p>
+                          Files have more than 100,000 events. Downsampling will
+                          pick events at even intervals:
+                        </p>
+                        <div>
+                          <input
+                            type="radio"
+                            id="100000"
+                            name="selectedDownSample"
+                            value="100000"
+                            checked={this.state.selectedDownSample === 100000}
+                            onChange={(e) => {
+                              this.setState({
+                                selectedDownSample: Number(e.target.value),
+                              });
+                            }}
+                          />
+                          <label
+                            style={{
+                              marginLeft: 10,
+                            }}
+                            htmlFor="100000"
+                          >
+                            100,000
+                          </label>
+                        </div>
+                        <div>
+                          <input
+                            type="radio"
+                            id="50000"
+                            name="selectedDownSample"
+                            value="50000"
+                            checked={this.state.selectedDownSample === 50000}
+                            onChange={(e) => {
+                              this.setState({
+                                selectedDownSample: Number(e.target.value),
+                              });
+                            }}
+                          />
+                          <label
+                            style={{
+                              marginLeft: 10,
+                            }}
+                            htmlFor="50000"
+                          >
+                            50,000
+                          </label>
+                        </div>
+                        <div>
+                          <input
+                            type="radio"
+                            id="10000"
+                            name="selectedDownSample"
+                            value="10000"
+                            checked={this.state.selectedDownSample === 10000}
+                            onChange={(e) => {
+                              this.setState({
+                                selectedDownSample: Number(e.target.value),
+                              });
+                            }}
+                          />
+                          <label
+                            style={{
+                              marginLeft: 10,
+                            }}
+                            htmlFor="10000"
+                          >
+                            10,000
+                          </label>
+                        </div>
+                        <div>
+                          <input
+                            type="radio"
+                            id="custom"
+                            name="selectedDownSample"
+                            value="0"
+                            checked={this.state.selectedDownSample === 0}
+                            onChange={(e) => {
+                              this.setState({
+                                selectedDownSample: Number(e.target.value),
+                              });
+                            }}
+                          />
+                          <label
+                            style={{
+                              marginLeft: 10,
+                            }}
+                            htmlFor="custom"
+                          >
+                            Custom
+                          </label>
+                        </div>
+                        {this.state.selectedDownSample === 0 ? (
+                          <div>
+                            <input
+                              type="number"
+                              value={this.state.customSelectedDownSample}
+                              onChange={(e) => {
+                                this.setState({
+                                  customSelectedDownSample: e.target.value,
+                                });
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <></>
+                        )}
+
+                        <div>
+                          <input
+                            type="radio"
+                            id="noDownSample"
+                            name="selectedDownSample"
+                            value="-1"
+                            checked={this.state.selectedDownSample === -1}
+                            onChange={(e) => {
+                              this.setState({
+                                selectedDownSample: -1,
+                              });
+                            }}
+                          />
+                          <label
+                            style={{
+                              marginLeft: 10,
+                            }}
+                            htmlFor="noDownSample"
+                          >
+                            No Downsample
+                          </label>
+                        </div>
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </div>
+                  {/* // check the maximum eventCount is greater than 100000*/}
+
+                  {/*
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        border: "1px red dotted",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          border: "1px red dotted",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "70%",
+                            
+                            padding: "10px",
+                            wordWrap: "break-word",
+                          }}
+                        >
+                          Total */}
+                </div>
+
+                <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fff",
+                    maxHeight: 50,
+                    marginTop: 20,
+                    color: "black",
+                  }}
+                  onClick={() => {
+                    // @ts-ignore
+                    this.uploadFiles(
+                      // @ts-ignore
+                      this.state.filesToBeUploaded,
+                      this.state.selectedDownSample != 0
+                        ? this.state.selectedDownSample
+                        : Number(this.state.customSelectedDownSample) || -1
+                    );
+
+                    this.setState({
+                      ...this.state,
+                      showFilesToBeUploadedModal: false,
+                      filesToBeUploaded: [],
+                      selectedDownSample: 100000,
+                      customSelectedDownSample: "",
+                    });
+                    //this.showUploadModal(this.state.filesToBeUploaded);
+                  }}
+                >
+                  Confirm
+                </Button>
+                <Button
+                  variant="contained"
+                  style={{
+                    backgroundColor: "#fff",
+                    maxHeight: 50,
+                    marginTop: 20,
+                    marginBottom: 25,
+                    color: "black",
+                  }}
+                  onClick={() => {
+                    this.setState({
+                      ...this.state,
+                      showFilesToBeUploadedModal: false,
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Modal>
+
             <Modal
               isOpen={this.state.userSignUpModalShowing}
               appElement={document.getElementById("root") || undefined}

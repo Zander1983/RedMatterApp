@@ -4,12 +4,12 @@ import MarkLogicle from "../logicleMark";
 import { parseAndUpload } from "./fcsTransformer/node-handler";
 
 class FCSServices {
-  loadFileMetadata(file: Buffer) {
+  loadFileMetadata(file: Buffer, eventsToRead: number) {
     return fcsModel
       .getFCS({
         file: file,
-        eventsToRead: -1,
-        skip: 100,
+        eventsToRead: eventsToRead,
+        skip: true,
       })
       .then(function (parsedFcsFile) {
         //let fileEvents = parseAndUpload({}, fcsFile, 123456, 987654, false);
@@ -19,6 +19,7 @@ class FCSServices {
         // events: fileData,
         // scale: scale,
         // paramNamesHasSpillover: paramNamesHasSpillover,
+
         let fileData = {
           channels: parsedFcsFile.channels,
           events: parsedFcsFile.events,
@@ -26,6 +27,8 @@ class FCSServices {
           paramNamesHasSpillover: parsedFcsFile.paramNamesHasSpillover,
           origEvents: parsedFcsFile.origEvents,
           channelMaximums: parsedFcsFile.channelMaximums,
+          text: parsedFcsFile.text,
+          meta: parsedFcsFile.meta,
         };
 
         return fileData;

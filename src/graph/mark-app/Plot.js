@@ -83,6 +83,8 @@ function Plot(props) {
 
   const onResizeDiv = useCallback(
     (w, h) => {
+      w = Math.round(w);
+      h = Math.round(h);
       if (w == props.plot.width && h == props.plot.height) return;
       drawLabel();
       setResizing(true);
@@ -219,9 +221,9 @@ function Plot(props) {
 
   useEffect(() => {
     if (resizing) setResizing(false);
-    var arr = new Array(props.plot.length); // create an empty array of length `M`
+    var heatMap = new Array(props.plot.height); // create an empty array of length `M`
     for (var i = 0; i < props.plot.width; i++) {
-      arr[i] = new Array(props.plot.width); // make each element an array
+      heatMap[i] = new Array(props.plot.width); // make each element an array
     }
     var most = 0;
     let pointHitUnique = 0,
@@ -246,14 +248,14 @@ function Plot(props) {
             ) {
               pointsOutsideCanvasCount++;
             } else {
-              if (arr[formattedEvent[0]][formattedEvent[1]] == undefined) {
-                arr[formattedEvent[0]][formattedEvent[1]] = 1;
+              if (heatMap[formattedEvent[0]][formattedEvent[1]] == undefined) {
+                heatMap[formattedEvent[0]][formattedEvent[1]] = 1;
                 pointHitUnique = pointHitUnique + 1;
               } else {
-                arr[formattedEvent[0]][formattedEvent[1]] =
-                  arr[formattedEvent[0]][formattedEvent[1]] + 1;
+                heatMap[formattedEvent[0]][formattedEvent[1]] =
+                  heatMap[formattedEvent[0]][formattedEvent[1]] + 1;
 
-                if (arr[formattedEvent[0]][formattedEvent[1]] > most) {
+                if (heatMap[formattedEvent[0]][formattedEvent[1]] > most) {
                   most++;
                 }
               }
@@ -268,7 +270,7 @@ function Plot(props) {
         let mean = pointHitTotal / pointHitUnique;
 
         // create a 1d array from arr with all the non undefined values arranged in ascending order
-        let arr1d = arr
+        let arr1d = heatMap
           .flat()
           .filter((x) => x != undefined && x > 1)
           .sort((a, b) => a - b);
@@ -277,17 +279,43 @@ function Plot(props) {
         const yellowCutoff = arr1d[Math.round(arr1d.length * 0.75)];
         const greenCutoff = arr1d[Math.round(arr1d.length * 0.5)];
 
-        for (let i = 0; i < arr.length; i++) {
-          for (let x = 0; x < arr[i].length; x++) {
-            if (arr[i][x] >= redCutoff) {
-              context.fillStyle = "red";
-              context.fillRect(i, x, 1, 1);
-            } else if (arr[i][x] >= yellowCutoff) {
-              context.fillStyle = "yellow";
-              context.fillRect(i, x, 1, 1);
-            } else if (arr[i][x] >= greenCutoff) {
-              context.fillStyle = "green";
-              context.fillRect(i, x, 1, 1);
+        let canvasPointsOfGates = [];
+
+        if (props.plot.gates) {
+          props.plot.gates.map((gate) => {
+            let pointsOnCanvas = gate.points.map((point) => {
+              return getPointOnCanvas(
+                props.enrichedFile.channels,
+                point[0],
+                point[1],
+                props.plot,
+                props.enrichedFile.logicles
+              );
+            });
+            canvasPointsOfGates.push(pointsOnCanvas);
+          });
+        }
+
+        for (let i = 0; i < heatMap.length; i++) {
+          for (let x = 0; x < heatMap[i].length; x++) {
+            if (!isNaN(heatMap[i][x])) {
+              if (heatMap[i][x] >= redCutoff) {
+                // canvasPointsOfGates contains an array gates, and each entry contains an array of gate points. Check i, x are not in any of the gates
+                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                  context.fillStyle = "red";
+                  context.fillRect(i, x, 1, 1);
+                }
+              } else if (heatMap[i][x] >= yellowCutoff) {
+                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                  context.fillStyle = "yellow";
+                  context.fillRect(i, x, 1, 1);
+                }
+              } else if (heatMap[i][x] >= greenCutoff) {
+                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                  context.fillStyle = "green";
+                  context.fillRect(i, x, 1, 1);
+                }
+              }
             }
           } // make each element an array
         }
@@ -319,6 +347,17 @@ function Plot(props) {
     props.workspaceState.openFile,
     props.workspaceState.plots.length,
   ]);
+
+  const isCanvasPointsInGates = (canvasPointsOfGates, i, x) => {
+    let inGate = false;
+    canvasPointsOfGates.map((gate) => {
+      if (isPointInPolygon(i, x, gate)) {
+        inGate = true;
+      }
+    });
+
+    return inGate;
+  };
 
   const drawGateLine = (
     context,

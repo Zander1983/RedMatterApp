@@ -1195,3 +1195,26 @@ export const getGatesOnPlot = (plot, gateType) => {
 export const shouldCalculateMeanMedian = (tableDataType) => {
   return tableDataType == "Mean" || tableDataType == "Median";
 };
+
+const incrkmeans = require("@stdlib/ml-incr-kmeans");
+
+export const kmeans = (data) => {
+  const kmeans = require("ml-kmeans");
+
+  let kmeansResult = kmeans.default(data, 300);
+
+  let res = kmeansResult.centroids.map((c) => c.centroid);
+
+  return res;
+
+  // kmeansResult contains the centroids and the labels,
+};
+
+export const skmeans = (data) => {
+  const skmeansFunc = require("skmeans");
+  var res = skmeansFunc(data, 300, "kmpp");
+
+  console.log("res is ", res);
+
+  // kmeansResult contains the centroids and the labels,
+};

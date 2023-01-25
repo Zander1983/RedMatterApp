@@ -153,6 +153,7 @@ class CustomFCS extends FCS {
     let origEvents = new Array(eventsToRead);
     let compenatedAndOrigEvents = {};
     let compensated;
+
     for (e = 0; e < eventsToRead; e++) {
       if (dataStrings) {
         eventString = "[";
@@ -199,9 +200,8 @@ class CustomFCS extends FCS {
           paramNamesHasSpillover[paramIndex].hasSpillover;
         if (hasSpilloverForParam) {
           // origEvents[e][paramIndex] = dataE[paramIndex];
-          let matrixSpilloverIndex = this.scale.matrixSpilloverIndexes[
-            paramIndex
-          ];
+          let matrixSpilloverIndex =
+            this.scale.matrixSpilloverIndexes[paramIndex];
           compensated = this.scale.adjustSpillover({
             eventValues: dataE,
             scaleType: this.channels[paramIndex].display,
