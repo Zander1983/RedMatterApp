@@ -270,119 +270,143 @@ const WorkspaceTopBar = (props: any) => {
       <div
         style={{
           height: "40px",
+          display: "flex",
+          flexDirection: "row",
         }}
       >
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => downloadCSV()}
-          // className={classes.topButton}
+        <div
           style={{
-            backgroundColor: "#fafafa",
-            color: "#1890ff",
-            float: "right",
-            marginRight: 10,
-            height: "30px",
+            marginRight: "auto",
+            marginLeft: "5px",
           }}
-          //disabled={!hasGate}
         >
-          <CSVLink
-            headers={heeaderForCSV}
-            data={data}
-            filename="WorkspaceReport.csv"
-            // className={classes.downloadBtnLayout}
+          <Button
+            variant="outlined"
+            style={{
+              backgroundColor: "#fafafa",
+              color: "#1890ff",
+              marginLeft: "auto",
+            }}
+            onClick={(e) => {
+              // const resettedState = resetState();
+              // this.setState(resettedState);
+              // this.onInitState(workspaceState);
+              props.onNewAnlysis();
+            }}
           >
-            <GetAppIcon
-              fontSize="small"
-              style={{ marginRight: 10 }}
-            ></GetAppIcon>
-            <Tooltip title="download statistics such as the median and mean">
-              <>Download All Stats</>
-            </Tooltip>
-          </CSVLink>
-        </Button>
-        {/* <Button
-          variant="contained"
-          size="small"
-          onClick={() => {
-            props.downloadPlotAsImage("entire-table", "workspace");
-          }}
-          // className={classes.topButton}
+            New Analysis
+          </Button>
+        </div>
+        <div
           style={{
-            backgroundColor: "#fafafa",
-            color: "#1890ff",
-            float: "right",
-            marginRight: 10,
-            height: "30px",
+            marginRight: "5px",
           }}
-          //disabled={!hasGate}
         >
-          <GetAppIcon fontSize="small" style={{ marginRight: 10 }}></GetAppIcon>
-          Download PNG
-        </Button> */}
-        <Tooltip title={"Save the Red Matter Workspace"}>
           <Button
             variant="contained"
-            id="save"
             size="small"
-            onClick={() => {
-              props.saveWorkspace();
-            }}
+            onClick={() => downloadCSV()}
             // className={classes.topButton}
             style={{
               backgroundColor: "#fafafa",
               color: "#1890ff",
-              float: "left",
-              marginRight: 10,
+              // marginLeft: "auto",
+              // marginRight: 10,
               height: "30px",
             }}
             //disabled={!hasGate}
           >
-            <GetAppIcon
-              fontSize="small"
-              style={{ marginRight: 10 }}
-            ></GetAppIcon>
-            Save Workspace
+            <CSVLink
+              headers={heeaderForCSV}
+              data={data}
+              filename="WorkspaceReport.csv"
+              // className={classes.downloadBtnLayout}
+            >
+              <GetAppIcon
+                fontSize="small"
+                style={{ marginRight: 10 }}
+              ></GetAppIcon>
+              <Tooltip title="download statistics such as the median and mean">
+                <>Download All Stats</>
+              </Tooltip>
+            </CSVLink>
           </Button>
-        </Tooltip>
-
-        <Tooltip
-          title={
-            "Add an existing Red Matter workspace (.red). All added files must have the same file names as when the Workspace was created"
-          }
+        </div>
+        <div
+          style={{
+            marginRight: "5px",
+          }}
         >
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: "#fafafa",
-              color: "#1890ff",
-              float: "left",
-              marginRight: 10,
-              height: "30px",
-            }}
-            onClick={() => {
-              // eslint-disable-next-line
-              //@ts-ignore
-              inputWorkspace.current.click();
-            }}
-          >
-            <input
-              type="file"
-              id="file"
-              //@ts-ignore
-              ref={inputWorkspace}
-              disabled={!props.fcsFiles || props.fcsFiles.length == 0}
-              multiple
-              accept=".red"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                props.uploadWorkspace(e.target.files);
+          <Tooltip title={"Save the Red Matter Workspace"}>
+            <Button
+              variant="contained"
+              id="save"
+              size="small"
+              onClick={() => {
+                props.saveWorkspace();
               }}
-            />
-            Add Workspace
-          </Button>
-        </Tooltip>
-        {props.uploadedWorkspace && <span>{props.uploadedWorkspace}</span>}
+              // className={classes.topButton}
+              style={{
+                backgroundColor: "#fafafa",
+                color: "#1890ff",
+                // marginLeft: "auto",
+                // marginRight: 10,
+                height: "30px",
+              }}
+              //disabled={!hasGate}
+            >
+              <GetAppIcon
+                fontSize="small"
+                style={{ marginRight: 10 }}
+              ></GetAppIcon>
+              Save Workspace
+            </Button>
+          </Tooltip>
+        </div>
+        <div
+          style={{
+            marginRight: "5px",
+          }}
+        >
+          <Tooltip
+            title={
+              "Add an existing Red Matter workspace (.red). All added files must have the same file names as when the Workspace was created"
+            }
+          >
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "#fafafa",
+                color: "#1890ff",
+                // marginLeft: "auto",
+                // marginRight: 10,
+                height: "30px",
+              }}
+              onClick={() => {
+                // eslint-disable-next-line
+                //@ts-ignore
+                inputWorkspace.current.click();
+              }}
+            >
+              <input
+                type="file"
+                id="file"
+                //@ts-ignore
+                ref={inputWorkspace}
+                disabled={!props.fcsFiles || props.fcsFiles.length == 0}
+                multiple
+                accept=".red"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  props.uploadWorkspace(e.target.files);
+                }}
+              />
+              Add Workspace
+            </Button>
+          </Tooltip>
+
+          {props.uploadedWorkspace && <span>{props.uploadedWorkspace}</span>}
+        </div>
       </div>
     );
   };

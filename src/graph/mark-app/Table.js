@@ -232,18 +232,23 @@ function Table(props) {
           display: "flex",
           // alignItems: "center",
           // overflow: "hidden",
-          flexDirection: "column",
+          flexDirection: "row",
         }}
       >
+        {data[column.population].isCustomGate && (
+          <Tooltip title={"Custom gate for this file"}>
+            <span style={{ color: "red" }}>***</span>
+          </Tooltip>
+        )}
         {/* {this.state.yourVariable === 'news' && <Text>{data}<Text/>} */}
 
         {props.workspaceState.tableDataType == "Percentage" &&
           data[column.population].percentage && (
-            <>
+            <span>
               <div className="rgt-text-truncate">
                 {numeral(data[column.population].percentage).format("0,0")}%
               </div>
-            </>
+            </span>
           )}
 
         {props.workspaceState.tableDataType == "Count" &&
@@ -252,13 +257,28 @@ function Table(props) {
             <>
               <div className="rgt-text-truncate">
                 {numeral(data[column.population].count.count).format("0,0")}
+                {/* {console.log(
+                  "data[column.population] is ",
+                  data[column.population]
+                )} */}
+                {/* {data[column.population].isCustomGate && (
+                  <Tooltip title={"Custom gate for this file"}>
+                    <span style={{ color: "red" }}>***</span>
+                  </Tooltip>
+                )} */}
               </div>
             </>
           )}
 
         {props.workspaceState.tableDataType == "Mean" &&
           data[column.population].means && (
-            <>
+            <div
+              style={{
+                display: "flex",
+                fontSize: "9px",
+                flexDirection: "column",
+              }}
+            >
               {data[column.population].means.map((mean, channelIndex) => {
                 return (
                   <div
@@ -283,15 +303,26 @@ function Table(props) {
                     >
                       {linLabel(mean)}
                     </div>
+                    {/* {data[column.population].isCustomGate && (
+                      <Tooltip title={"Custom gate for this file"}>
+                        <span style={{ color: "red" }}>***</span>
+                      </Tooltip>
+                    )} */}
                   </div>
                 );
               })}
-            </>
+            </div>
           )}
 
         {props.workspaceState.tableDataType == "Median" &&
           data[column.population].medians && (
-            <>
+            <div
+              style={{
+                display: "flex",
+                fontSize: "9px",
+                flexDirection: "column",
+              }}
+            >
               {data[column.population].medians.map((median, channelIndex) => {
                 return (
                   <div
@@ -316,10 +347,15 @@ function Table(props) {
                     >
                       {linLabel(median)}
                     </div>
+                    {/* {data[column.population].isCustomGate && (
+                      <Tooltip title={"Custom gate for this file"}>
+                        <span style={{ color: "red" }}>***</span>
+                      </Tooltip>
+                    )} */}
                   </div>
                 );
               })}
-            </>
+            </div>
           )}
       </div>
     );
@@ -394,6 +430,7 @@ function Table(props) {
   useEffect(() => {
     let cols = [];
     let col;
+
     props.workspaceState.plots.map((plot, plotIindex) => {
       col = {
         id: plotIindex + 1,
@@ -428,6 +465,8 @@ function Table(props) {
     let row;
 
     props.enrichedFiles.map((file, fileIndex) => {
+      // props.workspaceSpace.customGates contains an array with objects with properties madeOnFile and name. check if file.fileId and plot.population are in customGates
+
       row = {
         fileId: file.fileId,
         id: fileIndex,
@@ -435,6 +474,18 @@ function Table(props) {
       };
 
       file.plots.map((plot, plotIindex) => {
+        let isCustomGate = false;
+        if (props.workspaceState.customGates) {
+          props.workspaceState.customGates.map((customGate) => {
+            if (
+              customGate.madeOnFile == file.fileId &&
+              plot.population == customGate.name
+            ) {
+              isCustomGate = true;
+            }
+          });
+        }
+
         //columns.forEach(column => {
         row.color = plot.color;
         if (
@@ -452,6 +503,8 @@ function Table(props) {
           row[plot.population] = file.gateStats.find(
             (gateStat) => gateStat.gateName == plot.population
           );
+
+          row[plot.population].isCustomGate = isCustomGate;
         }
 
         //});

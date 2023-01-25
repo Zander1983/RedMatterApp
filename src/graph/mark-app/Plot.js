@@ -248,15 +248,23 @@ function Plot(props) {
             ) {
               pointsOutsideCanvasCount++;
             } else {
-              if (heatMap[formattedEvent[0]][formattedEvent[1]] == undefined) {
-                heatMap[formattedEvent[0]][formattedEvent[1]] = 1;
-                pointHitUnique = pointHitUnique + 1;
-              } else {
-                heatMap[formattedEvent[0]][formattedEvent[1]] =
-                  heatMap[formattedEvent[0]][formattedEvent[1]] + 1;
+              if (heatMap) {
+                try {
+                  if (
+                    heatMap[formattedEvent[0]][formattedEvent[1]] == undefined
+                  ) {
+                    heatMap[formattedEvent[0]][formattedEvent[1]] = 1;
+                    pointHitUnique = pointHitUnique + 1;
+                  } else {
+                    heatMap[formattedEvent[0]][formattedEvent[1]] =
+                      heatMap[formattedEvent[0]][formattedEvent[1]] + 1;
 
-                if (heatMap[formattedEvent[0]][formattedEvent[1]] > most) {
-                  most++;
+                    if (heatMap[formattedEvent[0]][formattedEvent[1]] > most) {
+                      most++;
+                    }
+                  }
+                } catch (error) {
+                  //debugger;
                 }
               }
 

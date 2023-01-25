@@ -158,6 +158,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     this.onAddGate = this.onAddGate.bind(this);
     this.onDeleteGate = this.onDeleteGate.bind(this);
     this.onResize = this.onResize.bind(this);
+    this.onNewAnlysis = this.onNewAnlysis.bind(this);
     this.onInitState = this.onInitState.bind(this);
     this.onResetToControl = this.onResetToControl.bind(this);
     this.downloadPlotAsImage = this.downloadPlotAsImage.bind(this);
@@ -1052,6 +1053,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     });
   };
 
+  onNewAnlysis = () => {
+    const resettedState = resetState();
+    this.setState(resettedState);
+  };
+
   onResize = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
 
@@ -1386,6 +1392,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             saveWorkspace={this.saveWorkspace}
             uploadWorkspace={this.uploadWorkspace}
             uploadedWorkspace={this.state.uploadedWorkspace}
+            onNewAnlysis={this.onNewAnlysis}
           />
           <div
             style={{
@@ -1426,54 +1433,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     yAxisScaleType
                   );
 
-                  console.log("workspaceState is ", workspaceState);
-
                   //@ts-ignore
                   this.state.uploadedWorkspace = "";
                   this.onInitState(workspaceState);
                 }}
               >
                 Reset This Analysis
-              </Button>
-            </div>
-            <div>
-              <Button
-                variant="outlined"
-                style={{
-                  backgroundColor: "#fafafa",
-                  color: "#1890ff",
-                  marginLeft: 5,
-                  marginBottom: 3,
-                }}
-                onClick={(e) => {
-                  let firstFile = this.state.fcsFiles[0];
-                  const {
-                    xAxisLabel,
-                    yAxisLabel,
-                    xAxisIndex,
-                    yAxisIndex,
-                    xAxisScaleType,
-                    yAxisScaleType,
-                  } = getPlotChannelAndPosition(firstFile);
-
-                  let workspaceState = createDefaultPlotSnapShot(
-                    firstFile.id,
-                    xAxisLabel,
-                    yAxisLabel,
-                    xAxisIndex,
-                    yAxisIndex,
-                    xAxisScaleType,
-                    yAxisScaleType
-                  );
-
-                  console.log("workspaceState is ", workspaceState);
-
-                  //@ts-ignore
-                  this.state.uploadedWorkspace = "";
-                  this.onInitState(workspaceState);
-                }}
-              >
-                New Analysis
               </Button>
             </div>
             <div
@@ -1892,14 +1857,16 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                       flexDirection: "column",
                     }}
                   >
-                    {this.state.fileNameAndCounts.reduce(
-                      (acc: any, cur: any) => acc + cur.eventCount,
-                      0
-                    ) > 3000 ? (
+                    {/* // fileNameAndCounts is an array with objects with property eventCount. check entries eventC */}
+
+                    {this.state.fileNameAndCounts.filter(
+                      (fileNameAndCount: any) =>
+                        fileNameAndCount.eventCount > 100000
+                    ).length > 0 ? (
                       <>
                         <p>
-                          Files have more than 100,000 events. Downsampling will
-                          pick events at even intervals:
+                          Some files have more than 100,000 events. Downsampling
+                          will pick events at even intervals:
                         </p>
                         <div>
                           <input
