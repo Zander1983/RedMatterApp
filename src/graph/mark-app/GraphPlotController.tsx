@@ -100,6 +100,7 @@ const customStyles = {
     transform: "translate(-50%, -50%)",
     backgroundColor: "rgb(125 204 204)",
     maxWidth: "600px",
+    minWidth: "600px",
   },
 };
 

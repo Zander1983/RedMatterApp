@@ -304,28 +304,30 @@ function Plot(props) {
           });
         }
 
-        for (let i = 0; i < heatMap.length; i++) {
-          for (let x = 0; x < heatMap[i].length; x++) {
-            if (!isNaN(heatMap[i][x])) {
-              if (heatMap[i][x] >= redCutoff) {
-                // canvasPointsOfGates contains an array gates, and each entry contains an array of gate points. Check i, x are not in any of the gates
-                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
-                  context.fillStyle = "red";
-                  context.fillRect(i, x, 1, 1);
-                }
-              } else if (heatMap[i][x] >= yellowCutoff) {
-                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
-                  context.fillStyle = "yellow";
-                  context.fillRect(i, x, 1, 1);
-                }
-              } else if (heatMap[i][x] >= greenCutoff) {
-                if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
-                  context.fillStyle = "green";
-                  context.fillRect(i, x, 1, 1);
+        if (heatMap && heatMap.length > 0) {
+          for (let i = 0; i < heatMap.length; i++) {
+            for (let x = 0; x < heatMap[i].length; x++) {
+              if (!isNaN(heatMap[i][x])) {
+                if (heatMap[i][x] >= redCutoff) {
+                  // canvasPointsOfGates contains an array gates, and each entry contains an array of gate points. Check i, x are not in any of the gates
+                  if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                    context.fillStyle = "red";
+                    context.fillRect(i, x, 1, 1);
+                  }
+                } else if (heatMap[i][x] >= yellowCutoff) {
+                  if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                    context.fillStyle = "yellow";
+                    context.fillRect(i, x, 1, 1);
+                  }
+                } else if (heatMap[i][x] >= greenCutoff) {
+                  if (!isCanvasPointsInGates(canvasPointsOfGates, i, x)) {
+                    context.fillStyle = "green";
+                    context.fillRect(i, x, 1, 1);
+                  }
                 }
               }
-            }
-          } // make each element an array
+            } // make each element an array
+          }
         }
       }
     }
