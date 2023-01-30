@@ -630,17 +630,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   downloadPlotAsImage = async (id: string, imageName: string) => {
-    // downloading functionality
-    // const plotElement = document.getElementById(id);
-    // const dataUrl = await htmlToImage.toPng(plotElement, {
-    //   style: {
-    //     transform: "none",
-    //   },
-    // });
-    // var link = document.createElement("a");
-    // link.download = imageName;
-    // link.href = dataUrl;
-    // link.click();
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.event({
+        category: "Buttons",
+        action: "Download As Image clicked",
+      });
+    }
     const plotElement = document.getElementById(id);
     const canvas = await html2canvas(plotElement);
 
@@ -653,6 +648,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   saveWorkspace = async (plot: any, plotIndex: any) => {
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.event({
+        category: "Buttons",
+        action: "Save Workspace clicked",
+      });
+    }
+
     var data = {
       key: "value",
     };
@@ -668,6 +670,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   uploadWorkspace = async (files: any) => {
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.event({
+        category: "Buttons",
+        action: "Add Workspace clicked",
+      });
+    }
+
     //@ts-ignore
     let uploadedWorkspace;
 
@@ -1055,6 +1064,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   };
 
   onNewAnlysis = () => {
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.event({
+        category: "Buttons",
+        action: "New Analysis clicked",
+      });
+    }
+
     const resettedState = resetState();
     this.setState(resettedState);
   };
@@ -1414,6 +1430,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                   // color: "white",
                 }}
                 onClick={(e) => {
+                  if (process.env.REACT_APP_ENV == "production") {
+                    ReactGA.event({
+                      category: "Buttons",
+                      action: "Reset Analysis clicked",
+                    });
+                  }
+
                   let firstFile = this.state.fcsFiles[0];
                   const {
                     xAxisLabel,
@@ -1462,12 +1485,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                       marginBottom: 3,
                       // color: "white",
                     }}
-                    onClick={(e) =>
+                    onClick={(e) => {
+                      if (process.env.REACT_APP_ENV == "production") {
+                        ReactGA.event({
+                          category: "Buttons",
+                          action: "Compensation clicked",
+                        });
+                      }
                       this.setState({
                         ...this.state,
                         showSpillover: !this.state.showSpillover,
-                      })
-                    }
+                      });
+                    }}
                   >
                     Compensation
                     <img

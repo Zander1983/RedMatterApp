@@ -5,6 +5,7 @@ import { useHistory } from "react-router";
 import { Button } from "@material-ui/core";
 import { getGateName, getGateNameFriendly } from "./Helper";
 import { Tooltip } from "@material-ui/core";
+import ReactGA from "react-ga";
 
 import {
   createDefaultPlotSnapShot,
@@ -27,6 +28,8 @@ const WorkspaceTopBar = (props: any) => {
   const [data, setData] = React.useState<any[]>([]);
   const [heeaderForCSV, setHeaderForCSV] = React.useState<any[]>([]);
   const inputWorkspace = React.createRef();
+
+  ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
 
   useEffect(() => {
     updateHeaders();
@@ -70,6 +73,12 @@ const WorkspaceTopBar = (props: any) => {
   // };
 
   const downloadCSV = () => {
+    if (process.env.REACT_APP_ENV == "production") {
+      ReactGA.event({
+        category: "Buttons",
+        action: "Download CSV button clicked",
+      });
+    }
     let workspaceState = props.workspaceState;
     // @ts-ignore
     const plots =
