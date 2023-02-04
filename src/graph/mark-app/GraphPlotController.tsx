@@ -1795,9 +1795,10 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 multiple
                 accept=".fcs, .lmd"
                 style={{ display: "none" }}
+                onClick={(e) => {
+                  e.target.value = "";
+                }}
                 onChange={(e) => {
-                  //
-
                   this.showUploadModal(e.target.files);
                 }}
               />
