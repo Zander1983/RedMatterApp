@@ -340,7 +340,7 @@ export const updateEnrichedFilesPlots = (
 };
 
 export const compensate = (dataE, scale, channels, origEvents) => {
-  // let compenatedEvents = [];
+  // let compensatedEvents = [];
   // for (let paramIndex = 0; paramIndex < dataE[0].length; paramIndex++) {
   //   let hasSpilloverForParam = paramNamesHasSpillover[paramIndex].hasSpillover;
   //   if (hasSpilloverForParam) {
@@ -353,39 +353,66 @@ export const compensate = (dataE, scale, channels, origEvents) => {
   //       channelMaximums: channelMaximums,
   //     });
   //     // let compensated = cachedEvent[paramIndex];
-  //     compenatedEvents.push({
+  //     compensatedEvents.push({
   //       index: paramIndex,
   //       value: compensated,
   //     });
   //     // dataE[paramIndex] = compensated;
   //   }
   // }
-  // return { compenatedEvents: compenatedEvents, origEvents: origEvents };
+  // return { compensatedEvents: compensatedEvents, origEvents: origEvents };
 };
 
 export const loopAndCompensate = (
   events,
   paramNamesHasSpillover,
   scale,
-  channels,
-  channelMaximums,
-  origEvents
+  oldMatrixInverse,
+  netMatrix
 ) => {
-  let compenatedEvents = [];
+  let origEvents = [];
+  let compensatedEvents = [];
+
+  // i want to
   for (let e = 0; e < events.length; e++) {
+    origEvents = [];
     for (let paramIndex = 0; paramIndex < events[0].length; paramIndex++) {
       let hasSpilloverForParam =
         paramNamesHasSpillover[paramIndex].hasSpillover;
       if (hasSpilloverForParam) {
         let matrixSpilloverIndex = scale.matrixSpilloverIndexes[paramIndex];
-        let compensated = scale.adjustSpillover({
-          eventValues: origEvents[e],
-          scaleType: channels[paramIndex].display,
-          matrixSpilloverIndex: matrixSpilloverIndex,
-          channelMaximums: channelMaximums,
+        let orig = scale.adjustSpillover(
+          events[e],
+          matrixSpilloverIndex,
+          oldMatrixInverse
+        );
+
+        origEvents.push({
+          index: paramIndex,
+          value: orig,
         });
+        // dataE[paramIndex] = compensated;
+      }
+    }
+
+    origEvents.forEach(
+      (compenatedEvent) =>
+        (events[e][compenatedEvent.index] = compenatedEvent.value)
+    );
+
+    compensatedEvents = [];
+    for (let paramIndex = 0; paramIndex < events[0].length; paramIndex++) {
+      let hasSpilloverForParam =
+        paramNamesHasSpillover[paramIndex].hasSpillover;
+      if (hasSpilloverForParam) {
+        let matrixSpilloverIndex = scale.matrixSpilloverIndexes[paramIndex];
+        let compensated = scale.adjustSpillover(
+          events[e],
+          matrixSpilloverIndex,
+          netMatrix
+        );
         // let compensated = cachedEvent[paramIndex];
-        compenatedEvents.push({
+        compensatedEvents.push({
           index: paramIndex,
           value: compensated,
         });
@@ -393,7 +420,7 @@ export const loopAndCompensate = (
       }
     }
 
-    compenatedEvents.forEach(
+    compensatedEvents.forEach(
       (compenatedEvent) =>
         (events[e][compenatedEvent.index] = compenatedEvent.value)
     );

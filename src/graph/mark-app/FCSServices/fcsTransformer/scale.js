@@ -62,22 +62,14 @@ function Scale(fcs) {
     return matrixSpilloverIndex;
   });
 
-  this.adjustSpillover = function (params) {
-    // console.log("******** adjustSpillover **********");
-    // this will be an array of values, one for each param
-    var eventValues = params.eventValues;
-    // console.log("eventValues is ", eventValues);
-    var scaleType = params.scaleType;
-    var matrixSpilloverIndex = params.matrixSpilloverIndex;
-    var channelMaximums = params.channelMaximums;
-
+  this.adjustSpillover = function (eventValues, matrixSpilloverIndex, matrix) {
     var adjusted = 0;
 
     for (var i = 0; i < this.indexesOfSpilloverParams.length; i++) {
-      if (this.invertedMatrix.data[i][matrixSpilloverIndex] != 0) {
-        var scaled = eventValues[this.indexesOfSpilloverParams[i]];
+      if (matrix[i][matrixSpilloverIndex] != 0) {
+        var orig = eventValues[this.indexesOfSpilloverParams[i]];
 
-        let after = scaled * this.invertedMatrix.data[i][matrixSpilloverIndex];
+        let after = orig * matrix[i][matrixSpilloverIndex];
 
         adjusted = adjusted + after;
       }
@@ -85,6 +77,61 @@ function Scale(fcs) {
 
     return Math.round(adjusted);
   };
+
+  this.reverseAdjustSpillover = function (
+    spilloverAdjustments,
+    matrixSpilloverIndex
+  ) {
+    var original = 0;
+    for (var i = 0; i < spilloverAdjustments.length; i++) {
+      original =
+        original +
+        spilloverAdjustments[i] /
+          this.invertedMatrix.data[matrixSpilloverIndex][i];
+    }
+    return Math.round(original);
+  };
+
+  //   End of Method.
+
+  //   Example of params is = {
+  //   eventValues: [
+  //       118772,
+  //       28599,
+  //       77,
+  //       68,
+  //       1163,
+  //       29
+  //   ],
+  //   matrixSpilloverIndex: 1,
+
+  //   }
+
+  //   and this.indexesOfSpilloverParams = [
+  //     2,
+  //     3,
+  //     4
+  // ];
+
+  // and this.invertedMatrix.data = [
+  //   [
+  //       1.0015153082093076,
+  //       -0.1782672418018901,
+  //       -0.001051329309471067
+  //   ],
+  //   [
+  //       -0.008512873314297068,
+  //       1.0015152703439572,
+  //       -0.00021130192602001406
+  //   ],
+  //   [
+  //       -0.00003477265361437083,
+  //       0.000006189446131432386,
+  //       1.000000036502198
+  //   ]
+  // ];
+
+  // The method is called to adjust the values of the spillover params. Its possible this.invertedMatrix.data can change LinePattern, after adjusted has been calculatePaddingBoxPath, and I wont have the original values of eventValues. How would I rewrite the function that would take the adjusted values, and get the original eventValues, and then apply the new this.invertedMatrix.data?
 
   this.scaleValueAccordingToFile = function (params) {
     let scaleType = params.scaleType;
@@ -316,8 +363,6 @@ Scale.prototype.scaleValueAccordingToFile = function (params) {
   let f2 = params.f2;
   // used as a check, not that important
   let channelMaximum = params.channelMaximum;
-
-  console.log("in scaleValueAccordingToFile.....");
 
   // only scale with gain (PnG) is its linera, see doumentation
   if (scaleType == "lin") {

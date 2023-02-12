@@ -50,6 +50,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import { inv } from "mathjs";
 
 //@ts-ignore
 import { saveAs } from "file-saver";
@@ -75,6 +76,8 @@ interface IState {
   uploadingFiles: any[];
   currentParsingFile: string;
   controlFileScale: {};
+  appliedMatrixInv: {};
+  updatedMatrix: {};
   showSpillover: boolean;
   showRanges: boolean;
   fcsFiles: any[];
@@ -104,6 +107,20 @@ const customStyles = {
   },
 };
 
+const compCustomStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "rgb(125 204 204)",
+    maxWidth: "800px",
+    display: "block",
+  },
+};
+
 const resetState = () => {
   return {
     sortByChanged: false,
@@ -122,6 +139,8 @@ const resetState = () => {
     uploadingFiles: [],
     currentParsingFile: "",
     controlFileScale: {},
+    appliedMatrixInv: {},
+    updatedMatrix: {},
     showSpillover: false,
     showRanges: false,
     //@ts-ignore
@@ -223,6 +242,12 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       this.setState({
         ...this.state,
         controlFileScale: enrichedFiles[0].scale,
+        appliedMatrixInv: enrichedFiles[0].scale.invertedMatrix
+          ? inv(enrichedFiles[0].scale.invertedMatrix.data)
+          : {},
+        updatedMatrix: enrichedFiles[0].scale.invertedMatrix
+          ? enrichedFiles[0].scale.invertedMatrix.data
+          : {},
         enrichedFiles: enrichedFiles,
         workspaceState: workspaceState,
       });
@@ -1302,16 +1327,19 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   componentDidMount() {}
 
   updateSpillover = (rowI: any, colI: any, newColumnData: any) => {
-    if (!isNaN(parseFloat(newColumnData))) {
-      //@ts-ignore
-      this.state.controlFileScale.invertedMatrix.data[rowI][colI] =
-        parseFloat(newColumnData);
+    // this.state.fcsFiles[0].scale.setSpilloverInvertedMatrix(
+    //       //@ts-ignore
+    //       this.state.controlFileScale.invertedMatrix
+    //     );
 
-      this.setState({
-        ...this.state,
-        controlFileScale: this.state.controlFileScale,
-      });
-    }
+    //@ts-ignore
+    this.state.updatedMatrix[rowI][colI] =
+      parseFloat(newColumnData) || newColumnData;
+
+    this.setState({
+      ...this.state,
+      controlFileScale: this.state.controlFileScale,
+    });
   };
 
   setNewSpillover = () => {
@@ -1334,15 +1362,18 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
         fcsFile.events,
         fcsFile.paramNamesHasSpillover,
         fcsFile.scale,
-        fcsFile.channels,
-        fcsFile.channelMaximums,
-        fcsFile.origEvents
+        this.state.appliedMatrixInv,
+        this.state.updatedMatrix
       );
 
       // fcsFile.events = compensatedEvents;
     });
 
     //loopAndCompensate();
+
+    let appliedMatrixInv = inv(this.state.updatedMatrix);
+    this.state.appliedMatrixInv = JSON.parse(JSON.stringify(appliedMatrixInv));
+    this.state.showSpillover = false;
 
     this.onInitState(this.state.workspaceState);
   };
@@ -1388,13 +1419,14 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
   compCustomStyles = {
     content: {
-      top: "5%",
-      left: "5%",
-      width: "90%",
+      top: "50%",
+      left: "50%",
       right: "auto",
       bottom: "auto",
-      backgroundColor: "#F0AA89",
-      zIndex: 1,
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      backgroundColor: "rgb(125 204 204)",
+      maxWidth: "800px",
     },
   };
 
@@ -1498,7 +1530,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                       });
                     }}
                   >
-                    Compensation
+                    Update Compensation
                     <img
                       src={!this.state?.showSpillover ? downArrow : upArrow}
                       alt="arrow-icon"
@@ -1512,7 +1544,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
               <Modal
                 isOpen={this.state.showSpillover}
                 appElement={document.getElementById("root") || undefined}
-                style={this.compCustomStyles}
+                // style={this.compCustomStyles}
+                style={compCustomStyles}
               >
                 <div
                   style={{
@@ -1529,8 +1562,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                         //backgroundColor: "#ffff99",
                         textAlign: "center",
                         fontWeight: "bold",
-                        marginBottom: 5,
+                        marginBottom: 20,
                         border: "1px solid #e0e0eb",
+                        height: "500px",
+                        overflow: "scroll",
+                        display: "block",
                       }}
                     >
                       <TableBody>
@@ -1546,7 +1582,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                           )}
                         </TableRow>
                         {/* @ts-ignore */}
-                        {this.state.controlFileScale?.invertedMatrix.data.map(
+                        {this.state.updatedMatrix?.map(
                           (rowData: any, rowI: number) => {
                             return (
                               <TableRow key={`tr--${rowI}`}>
@@ -1574,23 +1610,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                           padding: 3,
                                         }}
                                       >
-                                        {columnData}
-                                        {/* <TextField
-                                    disabled
-                                    style={
-                                      {
-                                        //width: "20%",
-                                      }
-                                    }
-                                    value={columnData}
-                                    onChange={(newColumnData: any) => {
-                                      this.updateSpillover(
-                                        rowI,
-                                        colI,
-                                        newColumnData.target.value
-                                      );
-                                    }}
-                                  /> */}
+                                        <TextField
+                                          style={
+                                            {
+                                              //width: "20%",
+                                            }
+                                          }
+                                          value={columnData}
+                                          onChange={(newColumnData: any) => {
+                                            this.updateSpillover(
+                                              rowI,
+                                              colI,
+                                              newColumnData.target.value
+                                            );
+                                          }}
+                                        />
                                       </TableCell>
                                     );
                                   }
@@ -1603,6 +1637,21 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                     </Table>
                   </TableContainer>
 
+                  <Button
+                    variant="outlined"
+                    style={{
+                      // backgroundColor: "#6666AA",
+                      marginLeft: 5,
+                      marginBottom: 3,
+                      backgroundColor: "#6666AA",
+                      color: "white",
+                    }}
+                    onClick={(e) => {
+                      this.setNewSpillover();
+                    }}
+                  >
+                    Update
+                  </Button>
                   <Button
                     variant="outlined"
                     style={{

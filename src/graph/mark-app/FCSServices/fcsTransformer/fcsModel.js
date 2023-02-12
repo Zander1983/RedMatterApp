@@ -195,6 +195,8 @@ class CustomFCS extends FCS {
 
       // compenatedAndOrigEvents = compensate(dataE, this.scale, this.channels);
       compenatedEvents = [];
+      // debugger;
+
       for (let paramIndex = 0; paramIndex < numParams; paramIndex++) {
         let hasSpilloverForParam =
           paramNamesHasSpillover[paramIndex].hasSpillover;
@@ -202,12 +204,13 @@ class CustomFCS extends FCS {
           // origEvents[e][paramIndex] = dataE[paramIndex];
           let matrixSpilloverIndex =
             this.scale.matrixSpilloverIndexes[paramIndex];
-          compensated = this.scale.adjustSpillover({
-            eventValues: dataE,
-            scaleType: this.channels[paramIndex].display,
-            matrixSpilloverIndex: matrixSpilloverIndex,
-            channelMaximums: this.channelMaximums,
-          });
+
+          compensated = this.scale.adjustSpillover(
+            dataE,
+            matrixSpilloverIndex,
+            this.scale.invertedMatrix.data
+          );
+
           // let compensated = dataE[paramIndex];
           compenatedEvents.push({
             index: paramIndex,
@@ -514,15 +517,27 @@ class CustomFCS extends FCS {
       for (var i = 0; i < numParams; i++) {
         var arr = values.slice(i * numParams, i * numParams + numParams);
 
+        // round each value in arr to 5 decimal places
+        arr = arr.map(function (value) {
+          return parseFloat(value).toFixed(5);
+        });
+
         spilloverValues.push(arr);
       }
 
       var matrix = math.matrix(spilloverValues);
       var determinant = math.det(matrix);
+      // round determinant to 5 decimal places
+      determinant = parseFloat(determinant).toFixed(5);
 
       if (determinant != 0) {
         var invertedMatrix = math.inv(matrix);
-        invertedMatrix.data = invertedMatrix._data;
+        // invertedMatrix.data is a multidimensional array - round all values to 5 decimal places
+        invertedMatrix.data = invertedMatrix._data.map(function (arr) {
+          return arr.map(function (value) {
+            return parseFloat(value).toFixed(5);
+          });
+        });
         invertedMatrix.datatype = invertedMatrix._datatype;
         invertedMatrix.size = invertedMatrix._size;
 
