@@ -1,4 +1,3 @@
-/* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable  */
 module.exports.removeNulls = (array) => {
   return array.filter(function (val) {

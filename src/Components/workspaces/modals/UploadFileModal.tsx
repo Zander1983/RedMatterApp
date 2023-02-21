@@ -5,8 +5,6 @@ import Modal from "@material-ui/core/Modal";
 import Divider from "@material-ui/core/Divider";
 import { DropzoneArea } from "material-ui-dropzone";
 
-import userManager from "Components/users/userManager";
-
 import { snackbarService } from "uno-material-ui";
 import oldBackFileUploader from "utils/oldBackFileUploader";
 import useForceUpdate from "hooks/forceUpdate";
@@ -55,13 +53,12 @@ function UploadFileModal(props: {
     const addP = 100 / files.length;
     for (let i = 0; i < files.length; i++) {
       oldBackFileUploader(
-        userManager.getToken(),
         props.experiment.id,
-        userManager.getOrganiztionID(),
+
         files[i]
       )
-        .then((response:any) => {
-            console.log(response);
+        .then((response: any) => {
+          console.log(response);
           if (sum + addP >= 100) {
             endFileUpload();
           }
@@ -150,8 +147,8 @@ function UploadFileModal(props: {
             <Button
               variant="contained"
               style={{ backgroundColor: "#43A047", color: "white" }}
-              onClick={ () => {
-                 uploadFileToWorkpace();
+              onClick={() => {
+                uploadFileToWorkpace();
                 forceUpdate();
               }}
             >

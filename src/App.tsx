@@ -15,20 +15,11 @@ import AppLandingPage from "./Components/home/LandingPage";
 import About from "./Components/home/About";
 
 import GraphWorkspaceComponent from "./graph/GraphWorkspaceComponent";
-import Login from "./Components/users/Login";
-import Register from "./Components/users/Register";
-import ForgetPassword from "Components/users/ForgetPassword";
-import ResetPassword from "Components/users/ResetPassword";
-import VerifyEmail from "./Components/users/VerifyEmail";
-import Invite from "Components/users/Invite";
-import InviteExisting from "Components/users/InviteExisting";
-import SignInOutContainer from "./Components/users/signInOutContainer";
+
 import Terms from "Components/home/Terms";
 import HowToUse from "Components/home/HowToUse";
-import PremiumCheckout from "./Components/plans/PremiumCheckout";
-import Cancel from "./Components/plans/Cancel";
-import Success from "./Components/plans/Success";
-import UserProfileCompo from "./Components/plans/UserProfile";
+import Integrate from "Components/home/Integrate";
+
 import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import WhyRedMatter from "Components/home/whyRedMatter";
@@ -37,7 +28,7 @@ import Jobs from "Components/home/Jobs";
 import { useSelector } from "react-redux";
 import PlansPage from "Components/home/PlansPage";
 import axios from "axios";
-import userManager, { UserProfile } from "Components/users/userManager";
+
 import CircularProgress from "@material-ui/core/CircularProgress";
 import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
 import { updateUserStripeDetails } from "services/StripeService";
@@ -76,72 +67,28 @@ const router = [
   //     return <PrototypeForm workspaceID={match.params.workspaceID} />;
   //   },
   // },
-  {
-    path: "/authentication/:tabId",
-    component: SignInOutContainer,
-  },
-  {
-    path: "/login",
-    component: Login,
-  },
+
   {
     path: "/browse-experiments",
     component: BrowseExperiments,
   },
-  {
-    path: "/register",
-    component: Register,
-  },
+
   {
     path: "/why-red-matter",
     component: WhyRedMatter,
   },
-  {
-    path: "/forget-password",
-    component: ForgetPassword,
-  },
-  {
-    path: "/resetpassword/:verifyString",
-    component: ResetPassword,
-  },
-  {
-    path: "/invite/:id",
-    component: Invite,
-  },
-  {
-    path: "/inviteExisting/:id",
-    component: InviteExisting,
-  },
+
   {
     path: "/plans",
     component: PlansPage,
   },
-  {
-    path: "/verify",
-    component: VerifyEmail,
-  },
-  {
-    path: "/premium-checkout",
-    component: PremiumCheckout,
-  },
-  {
-    path: "/user-profile",
-    component: UserProfileCompo,
-  },
-  {
-    path: "/cancel",
-    component: Cancel,
-  },
+
   {
     path: "/success/:session_id",
     component: ({ match }: any) => {
       //@ts-ignore
       return <Success session_id={match.params.session_id} />;
     },
-  },
-  {
-    path: "/verify/:verifyStr",
-    component: VerifyEmail,
   },
 
   {
@@ -165,6 +112,7 @@ const router = [
   },
   { path: "/terms", component: Terms },
   { path: "/howtouse", component: HowToUse },
+  { path: "/integrate", component: Integrate },
   {
     path: "/mailing-list",
     component: About,
@@ -192,49 +140,6 @@ const App = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
-  const profile: UserProfile = useSelector((state: any) => state.user.profile);
-
-  useEffect(() => {
-    const updateProfileSub = (dispatch: any) => {
-      if (
-        profile &&
-        Object.keys(profile).length > 0 &&
-        userManager.isLoggedIn()
-      ) {
-        let subscriptionDetails = userManager.getSubscriptionDetails();
-        if (
-          userManager.isLoggedIn() &&
-          subscriptionDetails &&
-          subscriptionDetails.currentCycleEnd &&
-          userManager.getSubscriptionType()
-        ) {
-          let date = new Date(subscriptionDetails.currentCycleEnd * 1000);
-          let subEndTime = date.getTime();
-          let currentTime = new Date().getTime();
-          if (currentTime >= subEndTime) {
-            axios
-              .post(
-                "/api/updateProfileSubcription",
-                {
-                  subscriptionType: "",
-                },
-                {
-                  headers: {
-                    token: userManager.getToken(),
-                  },
-                }
-              )
-              .then(async (response) => {
-                await updateUserStripeDetails(dispatch);
-                sessionCheckStarted = false;
-              })
-              .catch((e) => {});
-          }
-        }
-      }
-    };
-    updateProfileSub(dispatch);
-  }, [profile, dispatch]);
 
   useMemo(() => {
     setLoading(false);
@@ -268,50 +173,6 @@ const App = () => {
     //   setLoading(false);
     // }
   }, [dispatch]);
-
-  useEffect(() => {
-    dispatch({ type: "RESET" });
-    axios.interceptors.response.use(
-      function (response) {
-        return response;
-      },
-      function (error) {
-        if (419 === error?.response?.status) {
-          if (!sessionCheckStarted) {
-            sessionCheckStarted = true;
-            axios
-              .get("/api/authVerify", {
-                headers: {
-                  refreshToken: userManager.getRefreshToken(),
-                },
-              })
-              .then(async (response) => {
-                let data = response.data;
-                dispatch({
-                  type: "UPDATE_TOKENS",
-                  payload: {
-                    token: data.token,
-                    refreshToken: data.refreshToken,
-                  },
-                });
-                await updateUserStripeDetails(dispatch);
-                sessionCheckStarted = false;
-                window.location.reload();
-              })
-              .catch((e) => {});
-          }
-        } else if (401 === error?.response?.status) {
-          userManager.logout();
-          sessionCheckStarted = false;
-          history.replace("/login");
-        } else {
-          return Promise.reject(error);
-        }
-      }
-    );
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>

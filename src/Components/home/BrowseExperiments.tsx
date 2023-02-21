@@ -4,7 +4,6 @@ import { NavLink, useHistory } from "react-router-dom";
 import { Grid, Button, TextField } from "@material-ui/core";
 import useForceUpdate from "hooks/forceUpdate";
 
-import userManager from "Components/users/userManager";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
@@ -45,59 +44,49 @@ const useStyles = makeStyles((theme) => ({
 const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const classes = useStyles();
-  const isLoggedIn = userManager.isLoggedIn();
+
   const forceUpdate = useForceUpdate();
-  if (!isLoggedIn || process.env.REACT_APP_NO_WORKSPACES === "true") {
-    history.replace("/login");
-  }
 
   const [experiments, setExperiments] = useState(null);
   const [name, setName] = useState("");
   const [skip, setSkip] = useState(0);
 
-  const getExperiments = useCallback(
-    (name: string, skip: number) => {
-      axios
-        .post(
-          "/browse-experiments",
-          {
-            name: name,
-            items: 25,
-            skip: skip,
-          },
-          {
-            headers: {
-              token: userManager.getToken(),
-            },
-          }
-        )
-        .then((response) => {
-          const exp = response.data.filter((e: any) => e?.details);
-          if (skip === 0) {
-            setExperiments(exp);
-          } else {
-            let aux = experiments;
-            //@ts-ignore
-            exp.map((experiment) => {
-              return aux.push(experiment);
-            });
+  // const getExperiments = useCallback(
+  //   (name: string, skip: number) => {
+  //     axios
+  //       .post(
+  //         "/browse-experiments",
+  //         {
+  //           name: name,
+  //           items: 25,
+  //           skip: skip,
+  //         },
+  //         {
+  //           headers: {
+  //             token: userManager.getToken(),
+  //           },
+  //         }
+  //       )
+  //       .then((response) => {
+  //         const exp = response.data.filter((e: any) => e?.details);
+  //         if (skip === 0) {
+  //           setExperiments(exp);
+  //         } else {
+  //           let aux = experiments;
+  //           //@ts-ignore
+  //           exp.map((experiment) => {
+  //             return aux.push(experiment);
+  //           });
 
-            setExperiments(aux);
-            forceUpdate();
-          }
-        });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name, skip]
-  );
+  //           setExperiments(aux);
+  //           forceUpdate();
+  //         }
+  //       });
+  //   },
+  //   [name, skip]
+  // );
 
-  useEffect(() => {
-    getExperiments(name, skip);
-  }, [getExperiments, name, skip]);
-
-  return !isLoggedIn ? (
-    <></>
-  ) : (
+  return (
     <>
       <Grid
         style={{

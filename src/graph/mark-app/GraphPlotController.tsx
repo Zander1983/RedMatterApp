@@ -367,7 +367,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let level = newPlot.level;
 
     //@ts-ignore
-    let plotsAtSameLevel = (newWorkspaceState as any).plots.filter(
+    let plotsAtSameLevel = newWorkspaceState.plots.filter(
       (plot: any) => plot.level == level
     );
 
@@ -396,27 +396,23 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // and make sure to keep them
     // TODO look at below
 
-    let origGatedPlotIndex = (newWorkspaceState as any).plots.findIndex(
+    let origGatedPlotIndex = newWorkspaceState.plots.findIndex(
       (plot: any) => plot.population == change.plot.population
     );
 
-    let gates = (newWorkspaceState as any).plots[origGatedPlotIndex].gates;
+    let gates = newWorkspaceState.plots[origGatedPlotIndex].gates;
 
     if (gates && gates.length > 0) {
-      (newWorkspaceState as any).plots[origGatedPlotIndex].gates.push(
-        change.newGate
-      );
+      newWorkspaceState.plots[origGatedPlotIndex].gates.push(change.newGate);
     } else {
-      (newWorkspaceState as any).plots[origGatedPlotIndex].gates = [
-        change.newGate,
-      ];
+      newWorkspaceState.plots[origGatedPlotIndex].gates = [change.newGate];
     }
 
-    let fileIds = Object.keys((newWorkspaceState as any).files);
+    let fileIds = Object.keys(newWorkspaceState.files);
     fileIds.forEach((fileId) => {
       //if (fileId != controlFileId) {
 
-      let plot = (newWorkspaceState as any).files[fileId].plots.find(
+      let plot = newWorkspaceState.files[fileId].plots.find(
         (plot: any) => plot.population == change.plot.population
       );
 
@@ -429,7 +425,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    (newWorkspaceState as any).plots.push(newPlot);
+    newWorkspaceState.plots.push(newPlot);
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
     // let copyOfLocalFiles = JSON.parse(JSON.stringify(Files21));
@@ -460,7 +456,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     // remove them from plots array
     // loop through
     let plotsToBeRemoved = [gateName];
-    let allPlots = (newWorkspaceState as any).plots;
+    let allPlots = newWorkspaceState.plots;
 
     allPlots.forEach((plot: any) => {
       if (plotsToBeRemoved.indexOf(plot.population) > -1) {
@@ -472,28 +468,24 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       }
     });
 
-    (newWorkspaceState as any).plots = (newWorkspaceState as any).plots.filter(
-      (plot: any) => {
-        if (plotsToBeRemoved.indexOf(plot.population) < 0) {
-          if (plot.gates) {
-            plot.gates = plot.gates.filter(
-              (gate: any) => gate.name != gateName
-            );
-          }
-
-          return plot;
+    newWorkspaceState.plots = newWorkspaceState.plots.filter((plot: any) => {
+      if (plotsToBeRemoved.indexOf(plot.population) < 0) {
+        if (plot.gates) {
+          plot.gates = plot.gates.filter((gate: any) => gate.name != gateName);
         }
+
+        return plot;
       }
-    );
+    });
 
-    if ((newWorkspaceState as any).customGates) {
-      (newWorkspaceState as any).customGates = (
-        newWorkspaceState as any
-      ).customGates.filter((gate: any) => {
-        if (plotsToBeRemoved.indexOf(gate.name) < 0) {
-          return gate;
+    if (newWorkspaceState.customGates) {
+      newWorkspaceState.customGates = newWorkspaceState.customGates.filter(
+        (gate: any) => {
+          if (plotsToBeRemoved.indexOf(gate.name) < 0) {
+            return gate;
+          }
         }
-      });
+      );
     }
 
     let copyOfLocalFiles: any[] = this.state.fcsFiles;
@@ -520,10 +512,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let controlEnrichedFile = this.state.enrichedFiles.find(
       (enrichedFile) => enrichedFile.isControlFile
     );
-    const filesIds = Object.keys((this.state.workspaceState as any).files);
+    const filesIds = Object.keys(this.state.workspaceState.files);
     filesIds.forEach((fileId, index) => {
-      (this.state.workspaceState as any).files[fileId].plots[plotIndex] =
-        JSON.parse(JSON.stringify(controlEnrichedFile.plots[plotIndex]));
+      this.state.workspaceState.files[fileId].plots[plotIndex] = JSON.parse(
+        JSON.stringify(controlEnrichedFile.plots[plotIndex])
+      );
     });
   };
 
@@ -534,28 +527,29 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     //newWorkspaceState.controlFileId
 
     if (isEditingOriginalFile) {
-      let gateIndex = (newWorkspaceState as any).plots[
-        change.plotIndex
-      ].gates.findIndex((gate: any) => gate.name == change.gate.name);
+      let gateIndex = newWorkspaceState.plots[change.plotIndex].gates.findIndex(
+        (gate: any) => gate.name == change.gate.name
+      );
 
-      (newWorkspaceState as any).plots[change.plotIndex].gates[gateIndex] =
-        JSON.parse(JSON.stringify(change.gate));
+      newWorkspaceState.plots[change.plotIndex].gates[gateIndex] = JSON.parse(
+        JSON.stringify(change.gate)
+      );
     } else {
       // so editing existing gate on a different file
-      if (!(newWorkspaceState as any).customGates) {
-        (newWorkspaceState as any).customGates = [];
+      if (!newWorkspaceState.customGates) {
+        newWorkspaceState.customGates = [];
       }
 
       let customGate = JSON.parse(JSON.stringify(change.gate));
       customGate.madeOnFile = change.fileId;
 
-      let gateIndex = (newWorkspaceState as any).customGates.findIndex(
+      let gateIndex = newWorkspaceState.customGates.findIndex(
         (g: any) => g.name == customGate.name && g.madeOnFile == change.fileId
       );
       if (gateIndex > -1) {
-        (newWorkspaceState as any).customGates[gateIndex] = customGate;
+        newWorkspaceState.customGates[gateIndex] = customGate;
       } else {
-        (newWorkspaceState as any).customGates.push(customGate);
+        newWorkspaceState.customGates.push(customGate);
       }
     }
 
@@ -563,10 +557,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
       plot.reRender = !plot.reRender;
     });
 
-    if (
-      !isEditingOriginalFile ||
-      (newWorkspaceState as any).files[change.fileId]
-    ) {
+    if (!isEditingOriginalFile || newWorkspaceState.files[change.fileId]) {
       // so its an editing of a gate only on that file
     }
 
@@ -627,11 +618,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
   onEditGateNamePosition = (change: any) => {
     let newWorkspaceState: any = this.state.workspaceState;
 
-    let gateIndex = (newWorkspaceState as any).plots[
-      change.plotIndex
-    ].gates.findIndex((gate: any) => gate.name == change.gateName);
+    let gateIndex = newWorkspaceState.plots[change.plotIndex].gates.findIndex(
+      (gate: any) => gate.name == change.gateName
+    );
 
-    (newWorkspaceState as any).plots[change.plotIndex].gates[
+    newWorkspaceState.plots[change.plotIndex].gates[
       gateIndex
     ].gateNamePosition = change.gateNamePosition;
 
@@ -905,13 +896,13 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
     let plotIndex = change.plotIndex;
     //let filesIds;
     let newWorkspaceState: any = this.state.workspaceState;
-    // if (!(newWorkspaceState as any).files[fileKey]) {
+    // if (!(newWorkspaceState).files[fileKey]) {
     //   // so its a non-control gate being edited, copy plots from control
     //   //@ts-ignore
-    //   (newWorkspaceState as any).files[fileKey] = {
+    //   (newWorkspaceState).files[fileKey] = {
     //     plots: JSON.parse(
     //       JSON.stringify(
-    //         (newWorkspaceState as any).files[newWorkspaceState.controlFileId]
+    //         (newWorkspaceState).files[newWorkspaceState.controlFileId]
     //           .plots
     //       )
     //     ),
@@ -928,7 +919,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             "x",
             newWorkspaceState,
             change.fileId,
-            (newWorkspaceState as any).plots[plotIndex],
+            newWorkspaceState.plots[plotIndex],
             change.axisIndex,
             change.axisLabel,
             change.scaleType,
@@ -939,7 +930,7 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
             "y",
             newWorkspaceState,
             change.fileId,
-            (newWorkspaceState as any).plots[plotIndex],
+            newWorkspaceState.plots[plotIndex],
             change.axisIndex,
             change.axisLabel,
             change.scaleType,

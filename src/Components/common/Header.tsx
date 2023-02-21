@@ -10,7 +10,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useLocation } from "react-router";
 
 import icon from "../../assets/images/white_icon.png";
-import userManager from "Components/users/userManager";
 import { useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -55,10 +54,6 @@ const AppHeader = (props: any) => {
 
   const classes = useStyles();
 
-  const onLogout = () => {
-    userManager.logout();
-  };
-
   useEffect(() => {
     ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
     ReactGA.pageview(location.pathname);
@@ -98,7 +93,7 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v5.9.0"}
+                  {"v5.9.1"}
                 </b>
               </NavLink>
               <NavLink
@@ -113,6 +108,19 @@ const AppHeader = (props: any) => {
                 to="/howtouse"
               >
                 How To Use
+              </NavLink>
+              <NavLink
+                style={{
+                  color: "#fafafa",
+                  fontWeight: 600,
+                  fontFamily: "quicksand",
+                  fontSize: 25,
+                  float: "right",
+                  marginRight: "50px",
+                }}
+                to="/integrate"
+              >
+                Integrate
               </NavLink>
             </Typography>
           </Toolbar>

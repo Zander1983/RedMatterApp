@@ -8,7 +8,6 @@ import Button from "@material-ui/core/Button";
 import loop_analytics from "assets/videos/loop_analytics.mp4";
 import icon from "assets/images/white_icon.png";
 
-import userManager from "Components/users/userManager";
 import { Grid } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
@@ -57,7 +56,6 @@ const useStyles = makeStyles((theme) => ({
 
 const LandingHeader = () => {
   const classes = useStyles();
-  const isLoggedIn = userManager.isLoggedIn();
 
   return (
     <div className={classes.topDialogBar}>

@@ -50,6 +50,8 @@ let resizeStartPoints;
 let interval = null;
 
 function Plot(props) {
+  // const canvasRef = useRef();
+
   let [dragPointIndex, setDragPointIndex] = useState(null);
   let [startPointsReal, setStartPointsReal] = useState(null);
   let [isInsideGate, setIsInsideGate] = useState(null);
@@ -112,32 +114,34 @@ function Plot(props) {
 
   useEffect(() => {
     let context = getContext("covering-canvas-" + props.plotIndex);
-    context.clearRect(0, 0, localPlot.width, localPlot.height);
-    context.fillStyle = "white";
-
-    // draw here
-    if (newPoints.length > 0) {
-      if (context) {
-        let gates = getGatesOnPlot(props.plot, "polygon");
-        gates.map((gate) => {
-          let points =
-            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
-
-          drawGateLine(
-            getContext("covering-canvas-" + props.plotIndex),
-            props.plot,
-            gate.name == nameOfGateCursorIsInside ? newPoints : gate.points,
-            null,
-            gate
-          );
-        });
-
-        //drawTemporaryGateLine(context, props.plot);
-      }
-    } else {
-      let context = getContext("covering-canvas-" + props.plotIndex);
-      context.clearRect(0, 0, props.plot.width, props.plot.height);
+    if (context) {
+      context.clearRect(0, 0, localPlot.width, localPlot.height);
       context.fillStyle = "white";
+
+      // draw here
+      if (newPoints.length > 0) {
+        if (context) {
+          let gates = getGatesOnPlot(props.plot, "polygon");
+          gates.map((gate) => {
+            let points =
+              gate.name == nameOfGateCursorIsInside ? newPoints : gate.points;
+
+            drawGateLine(
+              getContext("covering-canvas-" + props.plotIndex),
+              props.plot,
+              gate.name == nameOfGateCursorIsInside ? newPoints : gate.points,
+              null,
+              gate
+            );
+          });
+
+          //drawTemporaryGateLine(context, props.plot);
+        }
+      } else {
+        let context = getContext("covering-canvas-" + props.plotIndex);
+        context.clearRect(0, 0, props.plot.width, props.plot.height);
+        context.fillStyle = "white";
+      }
     }
   }, [newPoints]);
 
@@ -167,7 +171,40 @@ function Plot(props) {
   useEffect(() => {
     if (newGatePointsCanvas && newGatePointsCanvas.length < 1) {
       let context = getContext("covering-canvas-" + props.plotIndex);
+      if (context) {
+        context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+        let gates = getGatesOnPlot(props.plot, "polygon");
+        gates.map((gate) => {
+          drawGateLine(
+            getContext("covering-canvas-" + props.plotIndex),
+            props.plot,
+            gate.points,
+            null,
+            gate
+          );
+        });
+
+        setShowMenu(false);
+      }
+    }
+  }, [newGatePointsCanvas]);
+
+  useEffect(() => {
+    let context = getContext("covering-canvas-" + props.plotIndex);
+    if (context) {
       context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+      setLocalPlot(props.plot);
+    }
+  }, [props.plot]);
+
+  useEffect(() => {
+    let context = getContext("covering-canvas-" + props.plotIndex);
+    if (context) {
+      context.clearRect(0, 0, localPlot.width, localPlot.height);
+
+      setNewGatePointsCanvas([]);
 
       let gates = getGatesOnPlot(props.plot, "polygon");
       gates.map((gate) => {
@@ -182,33 +219,6 @@ function Plot(props) {
 
       setShowMenu(false);
     }
-  }, [newGatePointsCanvas]);
-
-  useEffect(() => {
-    let context = getContext("covering-canvas-" + props.plotIndex);
-    context.clearRect(0, 0, localPlot.width, localPlot.height);
-
-    setLocalPlot(props.plot);
-  }, [props.plot]);
-
-  useEffect(() => {
-    let context = getContext("covering-canvas-" + props.plotIndex);
-    context.clearRect(0, 0, localPlot.width, localPlot.height);
-
-    setNewGatePointsCanvas([]);
-
-    let gates = getGatesOnPlot(props.plot, "polygon");
-    gates.map((gate) => {
-      drawGateLine(
-        getContext("covering-canvas-" + props.plotIndex),
-        props.plot,
-        gate.points,
-        null,
-        gate
-      );
-    });
-
-    setShowMenu(false);
   }, [props.clearAnyPoints]);
 
   useEffect(() => {
@@ -235,9 +245,11 @@ function Plot(props) {
     context.fillStyle = "white";
 
     if (context) {
+      let formattedEvents = [];
       props.enrichedFile.enrichedEvents.forEach((enrichedEvent, index) => {
         getFormattedEvents(enrichedEvent, props.plot).forEach(
           (formattedEvent) => {
+            formattedEvents.push(formattedEvent);
             context.fillStyle = formattedEvent.color;
             context.fillRect(formattedEvent[0], formattedEvent[1], 1, 1);
             if (
@@ -273,6 +285,16 @@ function Plot(props) {
           }
         );
       });
+
+      // const canvas = canvasRef.current;
+      // const ctx = canvas.getContext("2d");
+      // for (let i = 0; i < formattedEvents.length; i++) {
+      //   const color = ["yellow", "red", "green", "black"][
+      //     Math.floor(Math.random() * 4)
+      //   ];
+      //   ctx.fillStyle = color;
+      //   ctx.fillRect(formattedEvents[i][0], formattedEvents[i][1], 1, 1);
+      // }
 
       if (props.plot.population === "All") {
         let mean = pointHitTotal / pointHitUnique;
@@ -1461,8 +1483,17 @@ function Plot(props) {
                 />
                 {/* main canvas */}
                 <style>{canvasSafariCSS}</style>
+                {/* <div id="outerDivRef" style={{ border: "1px solid red" }}>
+                  <canvas
+                    ref={canvasRef}
+                    width="500"
+                    height="500"
+                    style={{ border: "1px grey solid" }}
+                  ></canvas>
+                </div> */}
                 <div
                   className="canvas-container"
+                  id="canvas-container"
                   style={{
                     border: "1px solid #32a1ce",
                     minHeight: 200,
@@ -1472,6 +1503,9 @@ function Plot(props) {
                     resize: "both",
                     overflow: "hidden",
                     position: "relative",
+                    "&:active": {
+                      height: 0,
+                    },
                   }}
                   ref={ref}
                 >

@@ -4,6 +4,7 @@ import Histogram from "./Histogram";
 import upArrow from "assets/images/up_arrow.png";
 import downArrow from "assets/images/down_arrow.png";
 import { Select, MenuItem, InputLabel } from "@material-ui/core";
+import html2canvas from "html2canvas";
 import {
   getGateName,
   getGateNameFriendly,
@@ -11,16 +12,28 @@ import {
   hasCustomGate,
   linLabel,
 } from "./Helper";
+import * as htmlToImage from "html-to-image";
 import Draggable from "./plain-draggable-edited";
 import LeaderLine from "react-leader-line";
 import { Resizable } from "re-resizable";
 import ZoomOutMap from "@material-ui/icons/ZoomOutMap";
 import cameraIcon from "assets/images/camera.png";
+import jsPDF from "jspdf";
+import html2pdf from "html2pdf.js";
+import {
+  documentToSVG,
+  elementToSVG,
+  inlineResources,
+  formatXML,
+} from "dom-to-svg";
+import domtoimage from "dom-to-image";
+import { saveAs } from "file-saver";
 
 import { DSC_SORT, ASC_SORT } from "./Helper";
 import { Tooltip } from "@material-ui/core";
 import GridTable from "@nadavshaar/react-grid-table";
 import numeral from "numeral";
+import domtoimageLocal from "./domtoimage-local";
 
 let getNumberOfPlots = (plotObject, nodes) => {
   let count = 0;
@@ -78,6 +91,9 @@ let getLines = (els, draggables, plots) => {
 };
 
 function Table(props) {
+  // const outerDivRef = useRef();
+  // const canvasRef = useRef();
+
   let [containerHeight, setContainerheight] = useState(500);
   let [draggingContainer, setDraggingContainer] = useState(false);
   let [heightStart, setHeightStart] = useState(false);
@@ -617,6 +633,7 @@ function Table(props) {
                 key={"resizable-plot-" + plotIindex}
               >
                 <div
+                  id="top-div"
                   style={{
                     display: "flex",
                   }}
@@ -660,10 +677,126 @@ function Table(props) {
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          props.downloadPlotAsImage(
-                            plot.population,
-                            "plot_" + plot.population
-                          );
+                          console.log("nodes is  ", nodes);
+
+                          // USING dom-to-img
+                          // const options = {
+                          //   style: {
+                          //     transform: "scale(2)", // optional styling
+                          //   },
+                          //   canvas: true, // include canvas elements
+                          // };
+
+                          // domtoimage
+                          //   .toSvg(nodes[0], options)
+                          //   .then(function (svg) {
+                          //     // handle the generated SVG here
+                          //     console.log(svg);
+                          //     const blob = new Blob([svg], {
+                          //       type: "image/svg+xml",
+                          //     });
+
+                          //     // create a URL for the blob
+                          //     const url = URL.createObjectURL(blob);
+
+                          //     // create a link with the URL and download attribute
+                          //     const link = document.createElement("a");
+                          //     link.href = url;
+                          //     link.download = "image.svg";
+
+                          //     // click the link to trigger the download
+                          //     link.click();
+                          //   })
+                          //   .catch(function (error) {
+                          //     // handle any errors here
+                          //     console.error("Error generating SVG:", error);
+                          //   });
+
+                          // USAING dom-to-svg
+                          //const options = {
+                          //   canvas: true, // include canvas elements
+                          // };
+                          // const svgDocument = elementToSVG(
+                          //   document.getElementById("test-canvas-wrapper"),
+                          //   options
+                          // );
+                          // const svgString =
+                          //   new XMLSerializer().serializeToString(svgDocument);
+                          // console.log(svgString);
+                          // const svg = svgString;
+                          // const blob = new Blob([svg], {
+                          //   type: "image/svg+xml;charset=utf-8",
+                          // });
+                          // saveAs(blob, "JioGeneratedRibbon.svg");
+
+                          // USING html2canvas
+
+                          // const element = document.getElementById(
+                          //   "test-canvas-wrapper"
+                          // );
+                          // html2canvas(element).then((canvas) => {
+                          //   const data = canvas.toDataURL("image/svg+xml");
+                          //   const link = document.createElement("a");
+                          //   link.download = "my-element.svg";
+                          //   link.href = data;
+                          //   link.click();
+                          // });
+
+                          // USING htmlToImage
+                          // const plotElement =
+                          //   document.getElementById("entire-table");
+                          //@ts-ignore
+                          const filter = (node: HTMLElement) => {
+                            if (node.parentElement) {
+                              console.log(
+                                "node.parentElement.className is ",
+                                node.parentElement.className
+                              );
+                            }
+                            if (
+                              node.parentElement.className ==
+                              "node plain-draggable"
+                            ) {
+                              let nodeCopy = node.cloneNode(true);
+
+                              // nodeCopy.parentElement.style.transform = "";
+                              // nodeCopy.parentElement.style.border =
+                              //   "2px red solid";
+                              // //border: 2px red solid;
+
+                              // console.log(
+                              //   "node.parentElement.style.transform is now ",
+                              //   nodeCopy.parentElement.style.transform
+                              // );
+
+                              return nodeCopy;
+                              // const exclusionClasses = [
+                              //   "remove-me",
+                              //   "secret-div",
+                              // ];
+                              // return !exclusionClasses.some((classname) =>
+                              //   node.classList?.contains(classname)
+                              // );
+                            }
+
+                            return node;
+                          };
+                          htmlToImage
+                            .toSvg(
+                              document.getElementById("test-canvas-wrapper"),
+                              { filter: filter }
+                            )
+                            .then((dataUrl) => {
+                              var link = document.createElement("a");
+                              link.download = "workspace";
+                              link.href = dataUrl;
+                              link.click();
+                            });
+
+                          // props.downloadPlotAsImage(
+                          //   plot.population,
+                          //   "plot_" + plot.population
+                          // );
                         }}
                       />
                     </Tooltip>
@@ -840,8 +973,50 @@ function Table(props) {
     );
   }
 
+  function handleDownloadClickDomToImage() {
+    let node = document.getElementById("canvas-container");
+    console.log("nodes[0] is ", nodes[0]);
+    domtoimageLocal
+      .toSvg(nodes[0], {
+        style: {
+          overflow: "visible",
+        },
+        filter: function (node) {
+          console.log(">>> in the filter, node is ", node);
+          console.log("nodeName is ", node.nodeName);
+          console.log("node.style is ", node.style);
+          if (node.id == "top-div") {
+            console.log("not returning node!!!!!!!");
+            return;
+          }
+          return node;
+        },
+      })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = "real-plot.svg";
+        link.href = dataUrl;
+        link.click();
+      });
+
+    // const outerDiv = outerDivRef.current;
+    // console.log("outerDiv is ", outerDiv);
+
+    // let outer = document.getElementById("outerDivRef");
+
+    // domtoimageLocal.toSvg(outer).then((dataUrl) => {
+    //   const link = document.createElement("a");
+    //   link.download = "hello-world.svg";
+    //   link.href = dataUrl;
+    //   link.click();
+    // });
+  }
+
   return (
     <div>
+      {/* <button onClick={handleDownloadClickDomToImage}>
+        Download SVG (dom-to-image)
+      </button> */}
       <div
         style={{
           color: "#000",
