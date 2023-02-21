@@ -84,14 +84,6 @@ const router = [
   },
 
   {
-    path: "/success/:session_id",
-    component: ({ match }: any) => {
-      //@ts-ignore
-      return <Success session_id={match.params.session_id} />;
-    },
-  },
-
-  {
     path: "/graph-workspace",
     component: ({ match }: any) => (
       <GraphWorkspaceComponent
