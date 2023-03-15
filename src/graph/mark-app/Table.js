@@ -664,7 +664,7 @@ function Table(props) {
                       textAlign: "right",
                     }}
                   >
-                    <Tooltip title={"Download plot as image"}>
+                    {/* <Tooltip title={"Download plot as image"}>
                       <img
                         // onClick={() => {
                         //   props.sortByGate(plot.population, DSC_SORT);
@@ -799,7 +799,7 @@ function Table(props) {
                           // );
                         }}
                       />
-                    </Tooltip>
+                    </Tooltip> */}
                   </div>
                 </div>
 
