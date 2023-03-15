@@ -664,7 +664,7 @@ function Table(props) {
                       textAlign: "right",
                     }}
                   >
-                    {/* <Tooltip title={"Download plot as image"}>
+                    <Tooltip title={"Download plot as image"}>
                       <img
                         // onClick={() => {
                         //   props.sortByGate(plot.population, DSC_SORT);
@@ -677,7 +677,10 @@ function Table(props) {
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          console.log("nodes is  ", nodes);
+                          props.downloadPlotAsImage(
+                            plot.population,
+                            "plot_" + plot.population
+                          );
 
                           // USING dom-to-img
                           // const options = {
@@ -746,52 +749,52 @@ function Table(props) {
                           // const plotElement =
                           //   document.getElementById("entire-table");
                           //@ts-ignore
-                          const filter = (node: HTMLElement) => {
-                            if (node.parentElement) {
-                              console.log(
-                                "node.parentElement.className is ",
-                                node.parentElement.className
-                              );
-                            }
-                            if (
-                              node.parentElement.className ==
-                              "node plain-draggable"
-                            ) {
-                              let nodeCopy = node.cloneNode(true);
+                          // const filter = (node: HTMLElement) => {
+                          //   if (node.parentElement) {
+                          //     console.log(
+                          //       "node.parentElement.className is ",
+                          //       node.parentElement.className
+                          //     );
+                          //   }
+                          //   if (
+                          //     node.parentElement.className ==
+                          //     "node plain-draggable"
+                          //   ) {
+                          //     let nodeCopy = node.cloneNode(true);
 
-                              // nodeCopy.parentElement.style.transform = "";
-                              // nodeCopy.parentElement.style.border =
-                              //   "2px red solid";
-                              // //border: 2px red solid;
+                          //     // nodeCopy.parentElement.style.transform = "";
+                          //     // nodeCopy.parentElement.style.border =
+                          //     //   "2px red solid";
+                          //     // //border: 2px red solid;
 
-                              // console.log(
-                              //   "node.parentElement.style.transform is now ",
-                              //   nodeCopy.parentElement.style.transform
-                              // );
+                          //     // console.log(
+                          //     //   "node.parentElement.style.transform is now ",
+                          //     //   nodeCopy.parentElement.style.transform
+                          //     // );
 
-                              return nodeCopy;
-                              // const exclusionClasses = [
-                              //   "remove-me",
-                              //   "secret-div",
-                              // ];
-                              // return !exclusionClasses.some((classname) =>
-                              //   node.classList?.contains(classname)
-                              // );
-                            }
+                          //     return nodeCopy;
+                          //     // const exclusionClasses = [
+                          //     //   "remove-me",
+                          //     //   "secret-div",
+                          //     // ];
+                          //     // return !exclusionClasses.some((classname) =>
+                          //     //   node.classList?.contains(classname)
+                          //     // );
+                          //   }
 
-                            return node;
-                          };
-                          htmlToImage
-                            .toSvg(
-                              document.getElementById("test-canvas-wrapper"),
-                              { filter: filter }
-                            )
-                            .then((dataUrl) => {
-                              var link = document.createElement("a");
-                              link.download = "workspace";
-                              link.href = dataUrl;
-                              link.click();
-                            });
+                          //   return node;
+                          // };
+                          // htmlToImage
+                          //   .toSvg(
+                          //     document.getElementById("test-canvas-wrapper"),
+                          //     { filter: filter }
+                          //   )
+                          //   .then((dataUrl) => {
+                          //     var link = document.createElement("a");
+                          //     link.download = "workspace";
+                          //     link.href = dataUrl;
+                          //     link.click();
+                          //   });
 
                           // props.downloadPlotAsImage(
                           //   plot.population,
@@ -799,7 +802,7 @@ function Table(props) {
                           // );
                         }}
                       />
-                    </Tooltip> */}
+                    </Tooltip>
                   </div>
                 </div>
 
