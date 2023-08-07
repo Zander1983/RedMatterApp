@@ -115,7 +115,7 @@ const integrate = [
   {
     img: integration,
     title: "Integrate On Any Site",
-    text: "A white-label version of the Red Matter software can be run on any website by simply dropping in the Red Matter Javascript library. For more email me at mark.kelly@redmatterapp.com",
+    text: "A white-label version of the Red Matter software can be run on any website by simply dropping in the Red Matter Javascript library. For more email me at markkelly1983@yahoo.co.uk",
   },
   // {
   //   img: uni,
