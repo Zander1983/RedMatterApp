@@ -9,7 +9,6 @@ import Button from "@material-ui/core/Button";
 import { useHistory, useLocation } from "react-router";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
-import useForceUpdate from "hooks/forceUpdate";
 
 const useStyles = makeStyles((theme) => ({
   "@global": {
@@ -152,7 +151,6 @@ const footerData = [
   // },
 ];
 export default function Footer(props: any) {
-  const forceUpdate = useForceUpdate();
   const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
@@ -185,7 +183,6 @@ export default function Footer(props: any) {
                               let newFooter = footers;
                               newFooter[i].description[j].open = !item.open;
                               setFooters(newFooter);
-                              forceUpdate();
                             }}
                           >
                             {item.name}

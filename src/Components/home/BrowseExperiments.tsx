@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { NavLink, useHistory } from "react-router-dom";
 import { Grid, Button, TextField } from "@material-ui/core";
-import useForceUpdate from "hooks/forceUpdate";
 
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -44,8 +43,6 @@ const useStyles = makeStyles((theme) => ({
 const BrowseExperiments = (props: { backFromQuestions?: boolean }) => {
   const history = useHistory();
   const classes = useStyles();
-
-  const forceUpdate = useForceUpdate();
 
   const [experiments, setExperiments] = useState(null);
   const [name, setName] = useState("");

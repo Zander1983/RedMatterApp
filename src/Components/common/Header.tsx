@@ -40,17 +40,6 @@ const useStyles = makeStyles((theme) => ({
 
 const AppHeader = (props: any) => {
   const location = useLocation();
-  const isLoggedIn =
-    Object.keys(
-      useSelector((state: any) => {
-        if (Object.keys(state).includes("user")) {
-          if (Object.keys(state.user).includes("profile")) {
-            return state.user.profile;
-          }
-        }
-        return {};
-      })
-    ).length !== 0;
 
   const classes = useStyles();
 
@@ -93,7 +82,7 @@ const AppHeader = (props: any) => {
                     fontSize: 15,
                   }}
                 >
-                  {"v5.9.3"}
+                  {"v2.0.1"}
                 </b>
               </NavLink>
               <NavLink

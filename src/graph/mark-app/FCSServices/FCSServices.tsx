@@ -1,5 +1,4 @@
 import fcsModel from "./fcsTransformer/fcsModel";
-import LogicleAPI from "./logicle-js/logicleApi";
 import MarkLogicle from "../logicleMark";
 import { parseAndUpload } from "./fcsTransformer/node-handler";
 
@@ -54,16 +53,6 @@ class FCSServices {
     this.logicleM = M;
     this.logicleW = W;
     this.logicleA = A;
-  }
-
-  logicleJsTransformer(data: number[]) {
-    return new LogicleAPI().logicleTransform(
-      data,
-      this.logicleT,
-      this.logicleW,
-      this.logicleM,
-      this.logicleA
-    );
   }
 
   logicleMarkTransformer(

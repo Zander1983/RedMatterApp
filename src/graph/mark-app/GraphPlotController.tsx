@@ -1362,8 +1362,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
 
     //loopAndCompensate();
 
+    //@ts-ignore
     let appliedMatrixInv = inv(this.state.updatedMatrix);
+    //@ts-ignore
     this.state.appliedMatrixInv = JSON.parse(JSON.stringify(appliedMatrixInv));
+    //@ts-ignore
     this.state.showSpillover = false;
 
     this.onInitState(this.state.workspaceState);
@@ -1586,8 +1589,8 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                                 >
                                   {
                                     /* @ts-ignore */
-                                    this.state.controlFileScale
-                                      ?.spilloverParams[rowI]
+                                    /* @ts-ignore */
+                                    this.state.controlFileScale?.spilloverParams[rowI]
                                   }
                                 </TableCell>
 
@@ -1836,9 +1839,11 @@ class NewPlotController extends React.Component<PlotControllerProps, IState> {
                 accept=".fcs, .lmd"
                 style={{ display: "none" }}
                 onClick={(e) => {
+                  /* @ts-ignore */
                   e.target.value = "";
                 }}
                 onChange={(e) => {
+                  /* @ts-ignore */
                   this.showUploadModal(e.target.files);
                 }}
               />

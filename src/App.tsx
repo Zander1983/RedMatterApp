@@ -24,15 +24,12 @@ import Credits from "Components/home/Credits";
 import BrowseExperiments from "Components/home/BrowseExperiments";
 import WhyRedMatter from "Components/home/whyRedMatter";
 
-import Jobs from "Components/home/Jobs";
 import { useSelector } from "react-redux";
-import PlansPage from "Components/home/PlansPage";
+
 import axios from "axios";
 
 import CircularProgress from "@material-ui/core/CircularProgress";
-import ErrorBoundaryMain from "Components/errors/errorBoundaryMain";
-import { updateUserStripeDetails } from "services/StripeService";
-import SecurityUtil from "./utils/Security.js";
+
 const { Content } = Layout;
 
 const useStyles = makeStyles((theme) => ({
@@ -79,11 +76,6 @@ const router = [
   },
 
   {
-    path: "/plans",
-    component: PlansPage,
-  },
-
-  {
     path: "/graph-workspace",
     component: ({ match }: any) => (
       <GraphWorkspaceComponent
@@ -113,10 +105,6 @@ const router = [
     path: "/credits",
     component: Credits,
   },
-  {
-    path: "/jobs",
-    component: Jobs,
-  },
 ].filter((e) => {
   if (process.env.REACT_APP_NO_WORKSPACES === "true") {
     return e.path.indexOf("experiment") === -1;
@@ -129,7 +117,7 @@ let sessionCheckStarted = false;
 
 const App = () => {
   const history = useHistory();
-  const dispatch = useDispatch();
+
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
 
@@ -164,7 +152,7 @@ const App = () => {
     // } else {
     //   setLoading(false);
     // }
-  }, [dispatch]);
+  }, []);
 
   return (
     <Layout className="mainLayout" style={{ minHeight: "100%" }}>
@@ -187,19 +175,18 @@ const App = () => {
             </Switch>
             {/* 
             // @ts-ignore */}
-            <ErrorBoundaryMain mainScreen={false} appScreen={true}>
-              <Switch>
-                {router.map((e, number) => (
-                  // @ts-ignore
-                  <Route
-                    key={number}
-                    exact
-                    path={e.path}
-                    component={e.component}
-                  />
-                ))}
-              </Switch>
-            </ErrorBoundaryMain>
+
+            <Switch>
+              {router.map((e, number) => (
+                // @ts-ignore
+                <Route
+                  key={number}
+                  exact
+                  path={e.path}
+                  component={e.component}
+                />
+              ))}
+            </Switch>
           </Content>
         )}
       </ThemeProvider>

@@ -1,6 +1,6 @@
 var percentileHelper = require("./percentileHelper");
 var generalHelper = require("./generalHelper");
-var Logicle = require("./logicle");
+var Logicle = require("../../logicleMark");
 
 module.exports.getParamMax = (fcs, param) => {
   var maxArray = fcs.get$PnX("R");
