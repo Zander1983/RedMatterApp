@@ -1,7 +1,7 @@
 
 Use node v12.14.1
 
-Just clone [RedMatterAppFrontend](https://github.com/RedMatterApplication/RedMatterAppFrontend), install and run:
+To run:
 
 ```
 $ npm i
